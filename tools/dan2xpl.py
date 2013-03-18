@@ -55,7 +55,7 @@ class Region(object):
             for i in range(self.repeat):
                 x += self.shift[0]
                 y += self.shift[1]
-                output.write('      <item %(a0)s="%(x).4f" %(a1)s="%(y).4f"><ref name="%(name)s"/></item>\n' % locals())
+                output.write('      <item %(a0)s="%(x).4f" %(a1)s="%(y).4f"><again ref="%(name)s"/></item>\n' % locals())
 
 
 class Material(object):

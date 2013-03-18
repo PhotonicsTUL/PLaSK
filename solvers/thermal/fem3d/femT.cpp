@@ -398,10 +398,12 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVe
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
+    PrecondJacobi precond(A);
+
     DataVector<double> X = temperatures.copy(); // We use previous temperatures as initial solution
     double err;
     try {
-        int iter = solveDCG(A, &SparseBandMatrix::precondJacobi, X.data(), B.data(), err, itermax, itererr);
+        int iter = solveDCG(A, precond, X.data(), B.data(), err, itermax, itererr);
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
     } catch (DCGError err) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());

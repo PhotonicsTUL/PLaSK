@@ -420,7 +420,7 @@ static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
             },
             [&]() {
                 if (height_reader.tryReadZero(result)) return;
-                result->push_front(reader.readObject< typename StackContainer<dim>::ChildType >());
+                result->push_front(reader.readObject<typename StackContainer<dim>::ChildType>(), default_aligner);
             }
     );
     height_reader.setBaseHeight(result, true);

@@ -49,12 +49,12 @@ struct AlignerImpl: public Printable {
     /// Direction of activity.
     static const Direction direction = _direction;
 
-    /// Coordinate to which this aligner align.
+    /// Coordinate to which this aligner aligns.
     double coordinate;
 
     /**
      * Construct new aligner.
-     * @param coordinate coordinate to which this aligner align.
+     * @param coordinate coordinate to which this aligner aligns.
      */
     AlignerImpl(double coordinate): coordinate(coordinate) {}
 
@@ -77,7 +77,7 @@ struct AlignerImpl: public Printable {
      * Set object coordinate in direction of aligner activity.
      *
      * This version is called if caller knows child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
     inline double align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
@@ -143,9 +143,9 @@ struct AlignerBase: public HolderRef<AlignerImpl<_direction>> {
     double getCoordinate() const { return this->held->coordinate; }
 
     /**
-     * Get translation for aligned obiect.
+     * Get translation for aligned object.
      * @param low, hi aligned object bounds in direction of activity of this aligner
-     * @return aligned obiect translation in direction of activity
+     * @return aligned object translation in direction of activity
      */
     double getAlign(double low, double hi) const { return this->held->getAlign(low, hi); }
 

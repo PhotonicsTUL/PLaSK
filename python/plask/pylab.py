@@ -179,77 +179,126 @@ def plot_vectors(field, color='w', angles='xy', scale_units='xy', **kwargs):
            color=color, angles=angles, scale_units=scale_units, **kwargs)
 
 
-def plot_geometry(geometry, color='k', width=1.0, set_limits=False, zorder=3, mirror=False):
+def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
     '''Plot geometry.'''
     #TODO documentation
+
     axes = matplotlib.pylab.gca()
     patches = []
+
+    if type(geometry) == plask.geometry.Cartesian3D:
+        if plane is None:
+            raise ValueError("for 3D geometry plane must be specified")
+        ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
+        if len(ax) != 2:
+            raise ValueError("bad plane specified")
+        dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
+    else:
+        ax = (0,1)
+        dirs = (("left", "right"), ("top", "bottom"))
+
+    hmirror = mirror and ((dirs[0][0] == "left" and type(geometry) == plask.geometry.Cylindrical2D) or \
+                          geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror')
+    vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+
     for leaf,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
-        #TODO other shapes than rectangles
+
+        #TODO other shapes than rectangles (use collection of _draw_outline functions)
         def add_path(bottom):
-            lefts = [box.lower[0]]
-            if mirror and (type(geometry) == plask.geometry.Cylindrical2D or \
-                           geometry.borders['left'] == 'mirror' or geometry.borders['right'] == 'mirror'):
-                lefts.append(-box.upper[0])
+            lefts = [box.lower[ax[0]]]
+            if hmirror:
+                lefts.append(-box.upper[ax[0]])
             for left in lefts:
                 patches.append(matplotlib.patches.Rectangle([left, bottom],
-                                                            box.upper[0]-box.lower[0], box.upper[1]-box.lower[1],
+                                                            box.upper[ax[0]]-box.lower[ax[0]], box.upper[ax[1]]-box.lower[ax[1]],
                                                             ec=color, lw=width, fill=False, zorder=zorder))
-        add_path(box.lower[1])
-        if mirror and (geometry.borders['top'] == 'mirror' or geometry.borders['bottom'] == 'mirror'):
-            add_path(-box.upper[1])
+
+        add_path(box.lower[ax[1]])
+        if vmirror:
+            add_path(-box.upper[ax[1]])
     for patch in patches:
         axes.add_patch(patch)
     if set_limits:
         box = geometry.bbox
-        axes.set_xlim(box.lower[0], box.upper[0])
-        axes.set_ylim(box.lower[1], box.upper[1])
+        axes.set_xlim(box.lower[ax[0]], box.upper[ax[0]])
+        axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
 
-    # return patches
+    return patches
 
 
-def plot_mesh(mesh, color='0.5', width=1.0, set_limits=False, zorder=2):
+def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
     #TODO documentation
+
     axes = matplotlib.pylab.gca()
     lines = []
-    if type(mesh) in [plask.mesh.Regular2D, plask.mesh.Rectilinear2D]:
+
+    if type(mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
         for x in mesh.axis0:
             lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=width, zorder=zorder))
         x_min = mesh.axis0[0]; x_max = mesh.axis0[-1]
         for y in mesh.axis1:
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
+
+    elif type(mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+        if plane is None:
+            raise ValueError("for 3D mesh plane must be specified")
+        axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i,c in enumerate(plask.config.axes) if c in plane)
+        if len(axis) != 2:
+            raise ValueError("bad plane specified")
+
+        y_min = axis[1][0]; y_max = axis[1][-1]
+        for x in axis[0]:
+            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=width, zorder=zorder))
+        x_min = axis[0][0]; x_max = axis[0][-1]
+        for y in axis[1]:
+            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
+
+
     for line in lines:
         axes.add_line(line)
     if set_limits:
         axes.set_xlim(x_min, x_max)
         axes.set_ylim(y_min, y_max)
 
-    # return lines
+    return lines
 
 
-def plot_boundary(boundary, mesh, cmap=None, color='0.75', zorder=4, **kwargs):
+def plot_boundary(boundary, mesh, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
     '''Plot points of specified boundary'''
     #TODO documentation
+
     if type(cmap) == str: cmap = get_cmap(cmap)
     if cmap is not None: c = []
     else: c = color
+
+    if isinstance(mesh, plask.mesh.Mesh3D):
+        if plane is None:
+            raise ValueError("for 3D mesh plane must be specified")
+        ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
+        if len(ax) != 2:
+            raise ValueError("bad plane specified")
+    else:
+        ax = (0,1)
+
+
     x = []
     y = []
     for place, value in boundary:
         points = place(mesh)
         for i in points:
-            x.append(mesh[i][0])
-            y.append(mesh[i][1])
+            x.append(mesh[i][ax[0]])
+            y.append(mesh[i][ax[1]])
         if cmap is not None:
             c.extend(len(points) * [value])
+
     return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
 
 
 def plot_material_param(geometry, param, axes=None, mirror=False, **kwargs):
     '''Plot selected material parameter as color map'''
-    #TODO documentation
+    #TODO merge into plot_geometry
     if axes is None: axes = matplotlib.pylab.gca()
     if type(param) == str:
         param = eval('lambda m: m.' + param)

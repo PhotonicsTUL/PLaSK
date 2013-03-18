@@ -94,24 +94,30 @@ struct SparseBandMatrix {
         }
     }
 
+    inline void noUpdate(double*) {}
+};
 
-    /**
-     * Jacobi preconditioner for symmetric banded matrix (i.e. diagonal scaling)
-     */
-    void precondJacobi(double* z, double* r) const { // z = inv(M) r
-        for (double* m = data, *zend = z + size; z < zend; ++z, ++r, m += LDA)
+
+/**
+ * Jacobi preconditioner for symmetric banded matrix (i.e. diagonal scaling)
+ */
+struct PrecondJacobi {
+
+    const SparseBandMatrix& matrix;
+
+    PrecondJacobi(const SparseBandMatrix& A): matrix(A) {}
+
+    void operator()(double* z, double* r) const { // z = inv(M) r
+        for (double* m = matrix.data, *zend = z + matrix.size; z < zend; ++z, ++r, m += LDA)
             *z = *r / *m;
     }
-
-    inline void noUpdate(double*) {}
-
 };
 
 
 
 /**
  * This routine does preconditioned conjugate gradient iteration
- * on the symmetric positive definte system Ax = b.
+ * on the symmetric positive definite system Ax = b.
  *
  * \param[in] matrix Matrix to solve
  * \param[in] msolve (z, r) Functor that solves M z = r for z, given a vector r. Throw exception if an error occures.
@@ -120,14 +126,14 @@ struct SparseBandMatrix {
  * \param[out] err L2 norm of the relative residual error estimate (||b-Ax||/||b||)².
  *
  *                 This estimate of the true error is not always very accurate.
- * \param[in] eps Requested error tollerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1e-8.
+ * \param[in] eps Requested error tolerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1e-8.
  * \param[in] itmax Maximum number of iterations the user is willing to allow. Default value is 100.
  * \param[in] updatea Function that updates the matrix A basing on the current solution x
  * \return number of iterations
  * \throw DCGError
  */
-template <typename Matrix>
-int solveDCG(Matrix& matrix, void(Matrix::*msolve)(double*,double*)const, double* x, double* b, double& err,
+template <typename Matrix, typename Preconditioner>
+int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b, double& err,
              int itmax=10000, double eps=1e-8, void(Matrix::*updatea)(double*)=&Matrix::noUpdate)
 {
     size_t n = matrix.size;
@@ -177,7 +183,7 @@ int solveDCG(Matrix& matrix, void(Matrix::*msolve)(double*,double*)const, double
 
         // Solve M z = r.
         try {
-            (matrix.*msolve)(z, r);
+            msolve(z, r);
         } catch (...) {
             delete[] p; delete[] z; delete[] r;
             throw;
