@@ -85,31 +85,33 @@ material.complex = lambda mat, **kwargs: material.register_material(mat, complex
 
 ## ## plask.geometry ## ##
 
-def Stack2D(repeat=None, shift=0.):
+def Stack2D(repeat=None, shift=0., **kwargs):
     '''Stack2D(repeat=None, shift=0)
            Create the stack, optionally repeating it 'repeat' times and with the bottom side
            of the first object at the 'shift' position (in container local coordinates).
+           'kwargs' may contain default aligner specification.
 
            If 'repeat' is None, this function creates SingleStack2D and MultiStack2D otherwise.
     '''
     if repeat is None:
-        return geometry.SingleStack2D(shift)
+        return geometry.SingleStack2D(shift, **kwargs)
     else:
-        return geometry.MultiStack2D(repeat, shift)
+        return geometry.MultiStack2D(repeat, shift, **kwargs)
 geometry.Stack2D = Stack2D
 del Stack2D
 
-def Stack3D(repeat=None, shift=0.):
+def Stack3D(repeat=None, shift=0., **kwargs):
     '''Stack3D(repeat=None, shift=0)
            Create the stack, optionally repeating it 'repeat' times and with the bottom side
            of the first object at the 'shift' position (in container local coordinates).
+           'kwargs' may contain default aligner specification.
 
            If 'repeat' is None, this function creates SingleStack3D and MultiStack3D otherwise.
     '''
     if repeat is None:
-        return geometry.SingleStack3D(shift)
+        return geometry.SingleStack3D(shift, **kwargs)
     else:
-        return geometry.MultiStack3D(repeat, shift)
+        return geometry.MultiStack3D(repeat, shift, **kwargs)
 geometry.Stack3D = Stack3D
 del Stack3D
 

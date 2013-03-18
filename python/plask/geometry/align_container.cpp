@@ -96,7 +96,7 @@ static void register_geometry_aligncontainer(const std::string& suffix)
         .def("__init__", raw_constructor(AlignContainer__init__<dim,direction>, 1))
         .def("add", raw_function(AlignContainer_add<dim,direction>), "Add object to the container")
         .add_property("aligner", py::make_function(&AlignContainerT::getAligner, py::return_value_policy<py::return_by_value>()),
-                                 &AlignContainerT::setAligner, "Default container alignment")
+                                 &AlignContainerT::setAligner, "Container alignment")
     ;
 }
 

@@ -302,6 +302,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     virtual std::string getTypeName() const { return NAME; }
 
+    ChildAligner default_aligner;
+
   private:
     std::vector< ChildAligner > aligners;
 
@@ -339,8 +341,10 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
     /**
      * @param baseHeight height where the first object should start
+     * @param aligner default stack aligner
      */
-    explicit StackContainer(const double baseHeight = 0.0): StackContainerBaseImpl<dim>(baseHeight) {}
+    explicit StackContainer(const double baseHeight = 0.0, const ChildAligner& aligner=DefaultAligner()):
+        StackContainerBaseImpl<dim>(baseHeight), default_aligner(aligner) {}
 
     //virtual ~StackContainer() { for (auto a: aligners) delete a; }
 
@@ -352,7 +356,11 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner = DefaultAligner());
+    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner);
+
+    PathHints::Hint insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos) {
+        return insertUnsafe(el, pos, default_aligner);
+    }
 
     /**
      * Insert children to stack at given position.
@@ -362,9 +370,13 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner = DefaultAligner()) {
+    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner) {
         this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, pos, aligner);
+    }
+
+    PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos) {
+        return insert(el, pos, default_aligner);
     }
 
     /**
@@ -374,7 +386,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const ChildAligner& aligner = DefaultAligner()) {
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const ChildAligner& aligner) {
         double el_translation, next_height;
         auto elBB = el->getBoundingBox();
         this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
@@ -387,6 +399,10 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
 
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el) {
+        return addUnsafe(el);
+    }
+
     /**
      * Add children to stack top.
      * @param el object to add
@@ -394,9 +410,13 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint add(const shared_ptr<ChildType> &el, const ChildAligner& aligner = DefaultAligner()) {
+    PathHints::Hint add(const shared_ptr<ChildType> &el, const ChildAligner& aligner) {
         this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, aligner);
+    }
+
+    PathHints::Hint add(const shared_ptr<ChildType>& el) {
+        return add(el, default_aligner);
     }
 
     /**
@@ -406,7 +426,13 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const ChildAligner& aligner = DefaultAligner()) { return add(el, aligner); }
+    PathHints::Hint push_back(const shared_ptr<ChildType> &el, const ChildAligner& aligner) {
+        return add(el, aligner);
+    }
+
+    PathHints::Hint push_back(const shared_ptr<ChildType> &el) {
+        return push_back(el, default_aligner);
+    }
 
     /**
      * Add child to stack bottom, move all other children up.
@@ -415,12 +441,16 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @return path hint, see @ref geometry_paths
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
-    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const ChildAligner& aligner = DefaultAligner()) {
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el, const ChildAligner& aligner) {
         this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, 0, aligner);
     }
 
-    const ChildAligner& getAlignerAt(std::size_t child_no) const {
+    PathHints::Hint push_front(const shared_ptr<ChildType>& el) {
+        return push_front(el, default_aligner);
+    }
+
+     const ChildAligner& getAlignerAt(std::size_t child_no) const {
         this->ensureIsValidChildNr(child_no, "getAlignerAt");
         return aligners[child_no];
     }
@@ -517,7 +547,9 @@ class MultiStackContainer: public StackContainer<dim> {
      * @param repeat_count how many times stack should be repeated, must be 1 or more
      * @param baseHeight height where the first object should start
      */
-    explicit MultiStackContainer(unsigned repeat_count = 1, const double baseHeight = 0.0): UpperClass(baseHeight), repeat_count(repeat_count) {}
+    explicit MultiStackContainer(unsigned repeat_count=1, const double baseHeight=0.0,
+                                 const typename StackContainer<dim>::ChildAligner& aligner=StackContainer<dim>::DefaultAligner()):
+        UpperClass(baseHeight, aligner), repeat_count(repeat_count) {}
 
     //this is not used but, just for case redefine UpperClass::getChildForHeight
     /*const shared_ptr<TranslationT> getChildForHeight(double height) const {
