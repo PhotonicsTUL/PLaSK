@@ -223,6 +223,20 @@ private:
     }
 
     /**
+     * Get path hints with given name.
+     * @param path_hints_name name of path hints to get
+     * @return path hints with given name or @c nullptr if there is no path hints with name @p path_hints_name
+     */
+    PathHints* getPathHints(const std::string& path_hints_name);
+
+    /**
+     * Get path hints with given name.
+     * @param path_hints_name name of path hints to get
+     * @return path hints with given name or @c nullptr if there is no path hints with name @p path_hints_name
+     */
+    const PathHints* getPathHints(const std::string& path_hints_name) const;
+
+    /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
      * @param path_hints_name name of path hints to get
      * @return path hints with given name

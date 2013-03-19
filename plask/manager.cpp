@@ -38,12 +38,6 @@ Manager::SetAxisNames::SetAxisNames(Manager &manager, XMLReader& source)
     if (axis) manager.axisNames = &AxisNames::axisNamesRegister.get(*axis);
 }
 
-PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
-    auto result_it = pathHints.find(path_hints_name);
-    if (result_it == pathHints.end()) throw NoSuchPath(path_hints_name);
-    return result_it->second;
-}
-
 bool Manager::tryLoadFromExternal(XMLReader& reader, const MaterialsSource& materialsSource, const Manager::LoadFunCallbackT& load_from) {
     boost::optional<std::string> from_attr = reader.getAttribute("external");
     if (!from_attr) return false;
@@ -54,6 +48,24 @@ bool Manager::tryLoadFromExternal(XMLReader& reader, const MaterialsSource& mate
     std::pair< XMLReader, std::unique_ptr<LoadFunCallbackT> > new_loader = load_from.get(*from_attr);
     load(new_loader.first, materialsSource, *new_loader.second, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
     return true;*/
+}
+
+PathHints *Manager::getPathHints(const std::string &path_hints_name) {
+    auto result_it = pathHints.find(path_hints_name);
+    if (result_it == pathHints.end()) return nullptr;
+    return &result_it->second;
+}
+
+const PathHints *Manager::getPathHints(const std::string &path_hints_name) const {
+    auto result_it = pathHints.find(path_hints_name);
+    if (result_it == pathHints.end()) return nullptr;
+    return &result_it->second;
+}
+
+PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
+    auto result_it = pathHints.find(path_hints_name);
+    if (result_it == pathHints.end()) throw NoSuchPath(path_hints_name);
+    return result_it->second;
 }
 
 const PathHints& Manager::requirePathHints(const std::string& path_hints_name) const {

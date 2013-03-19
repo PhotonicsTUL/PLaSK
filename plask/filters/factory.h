@@ -56,9 +56,9 @@ public:
      *
      * Throw exception if reader points to filter tag, but this tag can't be parsed.
      * @param reader source of filter configuration, should point to begin of tag
-     * @return one of:
-     * - filter - in such case reader point to end of filter tag
-     * - nullptr - if reader doesn't point to filter tag, in such case, reader is not changed
+     * @return One of:
+     * - filter - in such case reader point to end of filter tag,
+     * - nullptr - if reader doesn't point to filter tag, in such case, reader is not changed.
      */
     shared_ptr<Solver> get(XMLReader& reader, Manager& manager);
 
@@ -71,7 +71,22 @@ public:
 
 template <typename PropertyTag>
 inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& manager) {
+    shared_ptr<GeometryObject> in = manager.requireGeometryObject(reader.requireAttribute("in"));
+    shared_ptr<GeometryObject> out = manager.requireGeometryObject(reader.requireAttribute("out"));
+    boost::optional<std::string> path_str = reader.getAttribute("path");
+    const PathHints *path = path_str ? manager.getPathHints(*path_str) : nullptr;
+    if (in->isInSubtree(*out)) {  //input is outer
+        shared_ptr<Geometry3D> in_as_geom3D = dynamic_pointer_cast<Geometry3D>(in);
+        if (in_as_geom3D) {
+            shared_ptr<Geometry3D> out_as_geom2Dcart = dynamic_pointer_cast<Geometry2DCartesian>(out);
+            if (out_as_geom2Dcart) {
 
+            }
+        }
+
+    } else if (out->isInSubtree(*in)) {   //output is outer
+
+    }
     throw NotImplemented("standard filter (for given configuration)");
 }
 
