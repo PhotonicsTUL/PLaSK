@@ -31,7 +31,16 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
 //         } else
 //             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <newton>, or <wavelength>");
 //     }
-    reader.requireTagEnd();
+    while (reader.requireTagOrEnd())
+    {
+        std::string param = reader.getNodeName();
+        if (param == "config") {
+            mLifeTime = reader.getAttribute<double>("lifetime", mLifeTime);
+            mMatrixElem = reader.getAttribute<double>("matrix_elem", mMatrixElem);
+            reader.requireTagEnd();
+        } else
+            this->parseStandardConfiguration(reader, manager, "<geometry> or <config>");
+    }
 }
 
 
@@ -286,9 +295,8 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
     gainModule.Set_cond_waveguide_depth(0.26);
     gainModule.Set_vale_waveguide_depth(0.13);
 
-    gainModule.Set_lifetime(0.5);
-    gainModule.Set_momentum_matrix_element(8.0);
-
+    gainModule.Set_lifetime(mLifeTime); //gainModule.Set_lifetime(0.5);
+    gainModule.Set_momentum_matrix_element(mMatrixElem); //gainModule.Set_momentum_matrix_element(8.0);
 
 //    std::cout<<gainModule.Get_temperature()<<std::endl;
 //    std::cout<<gainModule.Get_koncentr()<<std::endl;

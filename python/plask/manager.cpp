@@ -63,30 +63,14 @@ void PythonManager_load(py::object self, py::object src, py::dict vars)
     if (!vars.has_key("self")) locals["self"] = self;
 
     reader.stringInterpreter.set(
-        [&](const std::string& str) -> double { return py::extract<double>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> dcomplex { return py::extract<dcomplex>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> size_t { return py::extract<size_t>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> int { return py::extract<int>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> short { return py::extract<short>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> long { return py::extract<long>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> unsigned int { return py::extract<unsigned int>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
-        [&](const std::string& str) -> unsigned short { return py::extract<unsigned short>(py::eval(py::str(str), xml_globals, locals)); }
-    );
-    reader.stringInterpreter.set(
+        [&](const std::string& str) -> double { return py::extract<double>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> dcomplex { return py::extract<dcomplex>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> size_t { return py::extract<size_t>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> int { return py::extract<int>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> short { return py::extract<short>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> long { return py::extract<long>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> unsigned int { return py::extract<unsigned int>(py::eval(py::str(str), xml_globals, locals)); },
+        [&](const std::string& str) -> unsigned short { return py::extract<unsigned short>(py::eval(py::str(str), xml_globals, locals)); },
         [&](const std::string& str) -> unsigned long { return py::extract<unsigned long>(py::eval(py::str(str), xml_globals, locals)); }
     );
 

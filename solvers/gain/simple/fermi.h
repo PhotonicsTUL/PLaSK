@@ -104,7 +104,10 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     void determineLevels(double T, double n);
 
   protected:
+    double mLifeTime;///< stimulated emission lifetime [ps]
+    double mMatrixElem;///< optical matrix element [m0*eV]
 
+  public:
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;
 
@@ -145,6 +148,12 @@ struct FermiGainSolver: public SolverOver<GeometryType>
      */
     const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
 
+  public:
+    double getLifeTime() const { return mLifeTime; }
+    void setLifeTime(double iLifeTime)  { mLifeTime = iLifeTime; }
+
+    double getMatrixElem() const { return mMatrixElem; }
+    void setMatrixElem(double iMatrixElem)  { mMatrixElem = iMatrixElem; }
 };
 
 
