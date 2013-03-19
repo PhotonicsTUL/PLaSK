@@ -7,13 +7,14 @@
 #include <string>
 #include <functional>
 #include "../utils/xml/reader.h"
+#include "../manager.h"
 
 namespace plask {
 
 struct FiltersFactory
 {
 
-    typedef std::function<shared_ptr<Solver>(XMLReader& reader)> FilterCreator;
+    typedef std::function<shared_ptr<Solver>(XMLReader& reader, Manager& manager)> FilterCreator;
 
 private:
     /// property name -> constructor of filters for this property
@@ -48,7 +49,7 @@ public:
 
     /// Standard filter factory.
     template <typename PropertyTag>
-    static shared_ptr<Solver> standard(XMLReader& reader);
+    static shared_ptr<Solver> standard(XMLReader& reader, Manager& manager);
 
     /**
      * Try to get filter from tag which is pointed by @p reader.
@@ -59,7 +60,7 @@ public:
      * - filter - in such case reader point to end of filter tag
      * - nullptr - if reader doesn't point to filter tag, in such case, reader is not changed
      */
-    shared_ptr<Solver> get(XMLReader& reader);
+    shared_ptr<Solver> get(XMLReader& reader, Manager& manager);
 
     void add(const std::string typeName, FilterCreator filterCreator);
 
@@ -69,7 +70,7 @@ public:
 };
 
 template <typename PropertyTag>
-inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader) {
+inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& manager) {
 
     throw NotImplemented("standard filter (for given configuration)");
 }

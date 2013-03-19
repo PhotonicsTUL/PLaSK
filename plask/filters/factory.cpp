@@ -7,14 +7,14 @@ FiltersFactory &FiltersFactory::getDefault() {
     return defaultDb;
 }
 
-shared_ptr<Solver> FiltersFactory::get(XMLReader &reader) {
+shared_ptr<Solver> FiltersFactory::get(XMLReader &reader, Manager& manager) {
     if (reader.getTagName() != "filter")
         return shared_ptr<Solver>();
     std::string typeName = reader.requireAttribute("type");
     auto it = filterCreators.find(typeName);
     if (it == filterCreators.end())
         throw Exception("No filter for such type: %1%", typeName);
-    return it->second(reader);
+    return it->second(reader, manager);
 }
 
 void FiltersFactory::add(const std::string typeName, FiltersFactory::FilterCreator filterCreator) {
