@@ -77,6 +77,11 @@ shared_ptr<Mesh> Manager::getMesh(const std::string& name) const {
     return result_it == meshes.end() ? shared_ptr<Mesh>() : result_it->second;
 }
 
+void Manager::loadDefines(XMLReader &reader) {
+    writelog(LOG_ERROR, "Loading defines from C++ not implemented. Ignoring XML section <defines>");
+    reader.gotoEndOfCurrentTag();
+}
+
 void Manager::loadFromReader(XMLReader &reader, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
     load(reader, materialsDB.toSource(), load_from_cb);
 }
@@ -246,9 +251,9 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
         reader.removeAlienNamespaceAttr();  //eventual schema decl. will be removed
         reader.requireTag();
 
-        if (reader.getNodeName() == TAG_NAME_MATERIALS) {
-            if (section_filter(TAG_NAME_MATERIALS)) {
-                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, materialsSource);
+        if (reader.getNodeName() == TAG_NAME_DEFINES) {
+            if (section_filter(TAG_NAME_DEFINES)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadDefines(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;

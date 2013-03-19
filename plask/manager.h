@@ -114,6 +114,7 @@ private:
   public:
 
     static constexpr const char* TAG_NAME_ROOT = "plask";           ///< name of root XML tag
+    static constexpr const char* TAG_NAME_DEFINES = "defines";      ///< name of XML tag of section with const definitions
     static constexpr const char* TAG_NAME_MATERIALS = "materials";  ///< name of XML tag of section with materials
     static constexpr const char* TAG_NAME_GEOMETRY = "geometry";    ///< name of XML tag of section with geometry
     static constexpr const char* TAG_NAME_GRIDS = "grids";          ///< name of XML tag of section with grids (meshes and generators)
@@ -236,6 +237,12 @@ private:
         if (!geometry) throw NoSuchGeometry(name);
         return geometry;
     }
+
+    /**
+     * Load constants defintions from the file.
+     * \param reader XMLreader to load from
+     */
+    virtual void loadDefines(XMLReader& reader);
 
     /**
      * Load geometry using geometry reader.
