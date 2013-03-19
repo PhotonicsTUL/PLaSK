@@ -4,6 +4,7 @@
 
 #include "utils/stl.h"
 #include "geometry/reader.h"
+#include "filters/factory.h"
 
 #include "utils/dynlib/manager.h"
 
@@ -196,6 +197,11 @@ void Manager::loadSolvers(XMLReader& reader) {
     while (reader.requireTagOrEnd()) {
         const std::string name = reader.requireAttribute("name");
         BadId::throwIfBad("solver", name);
+        if (shared_ptr<Solver> filter = FiltersFactory::getDefault().get(reader, *this)) {
+            if (!this->solvers.insert(std::make_pair(name, filter)).second)
+                throw NamesConflictException("Solver", name);
+            continue;
+        }
         boost::optional<std::string> lib = reader.getAttribute("lib");
         const std::string solver_name = reader.requireAttribute("solver");
         if (!lib) {
@@ -265,6 +271,14 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
         if (reader.getNodeName() == TAG_NAME_DEFINES) {
             if (section_filter(TAG_NAME_DEFINES)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadDefines(reader);
+            } else
+                reader.gotoEndOfCurrentTag();
+            if (!reader.requireTagOrEnd()) return;
+        }
+
+        if (reader.getNodeName() == TAG_NAME_MATERIALS) {
+            if (section_filter(TAG_NAME_MATERIALS)) {
+                if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, materialsSource);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
