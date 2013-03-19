@@ -331,7 +331,7 @@ shared_ptr<GeometryObject> read_TranslationContainer(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
         [&]() -> PathHints::Hint {
-            auto aligner = align::fromXML(reader.source, *reader.axisNames, align::fromVector(Primitive<dim>::ZERO_VEC));
+            auto aligner = align::fromXML(reader.source, reader.getAxisNames(), align::fromVector(Primitive<dim>::ZERO_VEC));
             return result->add(reader.readExactlyOneChild< typename TranslationContainer<dim>::ChildType >(), aligner);
         },
         [&]() {

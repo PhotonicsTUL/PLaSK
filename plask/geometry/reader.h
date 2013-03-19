@@ -26,7 +26,6 @@ class GeometryReader {
   public:
 
     static constexpr const char* XML_NAME_ATTR = "name";    ///< name of object's/geometry's name attribute in XML
-    static constexpr const char* XML_AXES_ATTR = "axes";    ///< name of axes attribute in XML
     static constexpr const char* XML_MATERIAL_ATTR = "material";    ///< name of material attribute in XML
 
     /**
@@ -62,9 +61,6 @@ class GeometryReader {
         }
     };
 
-    /// Current names of axis.
-    const AxisNames* axisNames;
-
     /**
      * Currently expected suffix for names of geometry objects types, can have one of the following values:
      * - 0 dimensions of children space can't be deduced (initial value),
@@ -73,12 +69,14 @@ class GeometryReader {
      */
     const char* expectedSuffix;
 
+    const AxisNames& getAxisNames() const;
+
     /**
      * Get current axis name.
      * @param axis_index axis index
      * @return name of axis which have an @p axis_index
      */
-    std::string getAxisName(std::size_t axis_index) { return axisNames->operator [](axis_index); }
+    std::string getAxisName(std::size_t axis_index);
 
     /**
      * Get current lon direction axis name.
@@ -97,17 +95,6 @@ class GeometryReader {
      * @return name of up axis
      */
     std::string getAxisUpName() { return getAxisName(axis::up_index); }
-
-    /**
-     * Read axis name from current reader tag, set it in reader as current,
-     * and restore old axisNames value when out of the scope.
-     */
-    struct ReadAxisNames {
-        GeometryReader& reader;
-        const AxisNames* old;
-        ReadAxisNames(GeometryReader& reader);
-        ~ReadAxisNames() { reader.axisNames = old; }
-    };
 
     /**
      * Store current expectedSuffix, set new one, and restore old when out of the scope (in destructor).

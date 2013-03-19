@@ -412,12 +412,12 @@ static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
                     new StackContainer<dim>(baseH)
                 );
 
-    result->default_aligner = align::fromXML(reader.source, *reader.axisNames, StackContainer<dim>::DefaultAligner());
+    result->default_aligner = align::fromXML(reader.source, reader.getAxisNames(), StackContainer<dim>::DefaultAligner());
 
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
             [&]() -> PathHints::Hint {
-                auto aligner = align::fromXML(reader.source, *reader.axisNames, result->default_aligner);
+                auto aligner = align::fromXML(reader.source, reader.getAxisNames(), result->default_aligner);
                 return result->push_front(reader.readExactlyOneChild<typename StackContainer<dim>::ChildType>(), aligner);
             },
             [&]() {

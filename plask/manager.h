@@ -122,6 +122,8 @@ private:
     static constexpr const char* TAG_NAME_CONNECTS = "connects";    ///< name of XML tag of section with provides-receiver connections
     static constexpr const char* TAG_NAME_SCRIPT = "script";        ///< name of XML tag of section with (python) script
 
+    static constexpr const char* XML_AXES_ATTR = "axes";            ///< name of axes attribute in XML
+
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
 
@@ -152,6 +154,73 @@ private:
 
     /// Line in which script begins
     unsigned scriptline;
+
+    /// Current or default names of axis.
+    const AxisNames* axisNames;
+
+    /**
+     * Get current axis name.
+     * @param axis_index axis index
+     * @return name of axis which have an @p axis_index
+     */
+    std::string getAxisName(std::size_t axis_index) { return axisNames->operator [](axis_index); }
+
+    /**
+     * Get current lon direction axis name.
+     * @return name of lon axis
+     */
+    std::string getAxisLonName() { return getAxisName(axis::lon_index); }
+
+    /**
+     * Get current tran direction axis name.
+     * @return name of tran axis
+     */
+    std::string getAxisTranName() { return getAxisName(axis::tran_index); }
+
+    /**
+     * Get current up direction axis name.
+     * @return name of up axis
+     */
+    std::string getAxisUpName() { return getAxisName(axis::up_index); }
+
+    /**
+     * Set axis name from current reader tag, set it in manager as current,
+     * and restore old axisNames value when out of the scope.
+     */
+    class SetAxisNames {
+        Manager& manager;
+        const AxisNames* old;
+
+    public:
+
+        /**
+         * Set axes names to @p names.
+         * @param manager manager to change
+         * @param names new axes names
+         */
+        SetAxisNames(Manager& manager, const AxisNames* names);
+
+        /**
+         * Set axes names to one read from tag attribute.
+         *
+         * Does not change the axes names in case of lack the attribute.
+         * @param manager manager to change
+         * @param source XML data source
+         */
+        SetAxisNames(Manager& manager, XMLReader& source);
+
+        /**
+         * Set axes names to one read from tag attribute, same as SetAxisNames(reader.manager, reader.source).
+         * @param reader geometry reader
+         */
+        SetAxisNames(GeometryReader& reader): SetAxisNames(reader.manager, reader.source) {}
+
+        /// Revert axes names to old one.
+        ~SetAxisNames() { manager.axisNames = old; }
+    };
+
+    Manager(): axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")) {
+    }
 
     /**
      * Get path hints with given name, throw exception if there is no path hints with name @p path_hints_name.
@@ -239,19 +308,19 @@ private:
     }
 
     /**
-     * Load constants defintions from the file.
-     * \param reader XMLreader to load from
+     * Load constants defintions from the @p reader.
+     * @param reader XMLreader to load from, should point to @c \<defines> tag, after read it will be point to @c \</defines> tag
      */
     virtual void loadDefines(XMLReader& reader);
 
     /**
-     * Load geometry using geometry reader.
+     * Load geometry using geometry @p reader.
      * @param reader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */
     void loadGeometry(GeometryReader& reader);
 
     /**
-     * Load materials using geometry reader.
+     * Load materials using @p reader.
      * @param reader reader to read from, should point to @c \<materials> tag, after read it will be point to @c \</materials> tag
      * @param materialsSource materials source, which was passed to load method
      *  (in case of using material database, you can convert @p materialsSource back to MaterialsDB using Manager::getMaterialsDBfromSource)
@@ -271,13 +340,13 @@ private:
     void loadSolvers(XMLReader& greader);
 
     /**
-     * Load solvers intrconnects from the file.
+     * Load solvers intrconnects from the @p reader.
      * \param reader XMLreader to load from
      */
     virtual void loadConnects(XMLReader& reader);
 
     /**
-     * Load script from the file. Do not execute it.
+     * Load script from the @p reader. Do not execute it.
      * \param reader XMLreader to load from
      * \return read script
      */

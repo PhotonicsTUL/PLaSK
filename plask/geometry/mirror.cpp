@@ -115,7 +115,7 @@ template struct Mirror<3>;
 template <typename GeometryType>
 shared_ptr<GeometryObject> read_flip_like(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, GeometryType::dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
-    auto flipDir = reader.axisNames->get<GeometryType::dim>(reader.source.requireAttribute("axis"));
+    auto flipDir = reader.getAxisNames().get<GeometryType::dim>(reader.source.requireAttribute("axis"));
     return make_shared< GeometryType >(flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>());
 }
 

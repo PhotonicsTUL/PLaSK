@@ -26,6 +26,17 @@ void Manager::ExternalSourcesFromFile::operator ()(Manager &manager, const Mater
     manager.loadSection(reader, section, materialsSource, ExternalSourcesFromFile(url_path, section, this));
 }
 
+Manager::SetAxisNames::SetAxisNames(Manager &manager, const AxisNames* names)
+    : manager(manager), old(manager.axisNames) {
+    manager.axisNames = names;
+}
+
+Manager::SetAxisNames::SetAxisNames(Manager &manager, XMLReader& source)
+    : manager(manager), old(manager.axisNames) {
+    boost::optional<std::string> axis = source.getAttribute(XML_AXES_ATTR);
+    if (axis) manager.axisNames = &AxisNames::axisNamesRegister.get(*axis);
+}
+
 PathHints& Manager::requirePathHints(const std::string& path_hints_name) {
     auto result_it = pathHints.find(path_hints_name);
     if (result_it == pathHints.end()) throw NoSuchPath(path_hints_name);
@@ -132,7 +143,7 @@ void Manager::loadFromFILE(FILE* file, const MaterialsSource &materialsSource, c
 void Manager::loadGeometry(GeometryReader& greader) {
     if (greader.source.getNodeType() != XMLReader::NODE_ELEMENT || greader.source.getNodeName() != std::string("geometry"))
         throw XMLUnexpectedElementException(greader.source, "<geometry>");
-    GeometryReader::ReadAxisNames read_axis_tag(greader);
+    SetAxisNames read_axis_tag(greader);
     while(greader.source.requireTagOrEnd())
         roots.push_back(greader.readGeometry());
 }
