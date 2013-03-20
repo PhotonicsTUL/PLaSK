@@ -53,7 +53,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     if (name && !isAutoName(*name))
         BadId::throwIfBad("geometry object", *name, '-');
 
-    boost::optional<std::string> roles = source.getAttribute("role");    //r ead roles (tags)
+    boost::optional<std::string> roles = source.getAttribute("role");    // read roles (tags)
 
     shared_ptr<GeometryObject> new_object;    //new object will be constructed
 
@@ -78,7 +78,12 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
             } else if (operation_name == "toblock") {
                 shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
                 shared_ptr<Material> blockMaterial = getMaterial(source.requireAttribute("material"));
-                changers.append(new GeometryObject::ToBlockChanger(op_from, blockMaterial));
+                GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
+                changers.append(changer);
+                //TODO read and process name and path
+                if (boost::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
+                    for (const std::string& c: splitEscIterator(*block_roles, ',')) changer->to->addRole(c);
+                }
                 source.requireTagEnd();
             } else {
                 throw Exception("\"%1%\" is not proper name of copy operation and so it is not alowed in <copy> tag.", operation_name);

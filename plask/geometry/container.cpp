@@ -145,15 +145,15 @@ shared_ptr<const GeometryObject> GeometryObjectContainer<dim>::changedVersion(co
     bool were_changes = false;    //any children was changed?
     std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>> children_after_change;
     for (const shared_ptr<TranslationT>& child_tran: children) {
-        //shared_ptr<const ChildType> new_child = child_tran->getChild();
-        shared_ptr<GeometryObject> new_child = child_tran->getChild();
         Vec<3, double> trans_from_child;
-        if (changer.apply(new_child, &trans_from_child)) were_changes = true;
+        shared_ptr<GeometryObject> old_child = child_tran->getChild();
+        shared_ptr<GeometryObject> new_child = const_pointer_cast<GeometryObject>(old_child->changedVersion(changer, &trans_from_child));
+        if (new_child != old_child) were_changes = true;
         children_after_change.emplace_back(dynamic_pointer_cast<ChildType>(new_child), trans_from_child);
     }
 
     if (translation) *translation = vec(0.0, 0.0, 0.0); // we can't recommend nothing special
-    if (were_changes) result = changedVersionForChildren(children_after_change, translation);
+    if (were_changes) result = this->changedVersionForChildren(children_after_change, translation);
 
     return result;
 }
