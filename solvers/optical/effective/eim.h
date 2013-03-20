@@ -72,7 +72,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     // Parameters for rootdigger
     RootDigger::Params root;
-    RootDigger::Params striperoot;
+    RootDigger::Params stripe_root;
 
     EffectiveIndex2DSolver(const std::string& name="");
 

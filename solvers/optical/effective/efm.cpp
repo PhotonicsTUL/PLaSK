@@ -17,15 +17,15 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     inTemperature = 300.;
     inGain = NAN;
     root.tolx = 1.0e-9;
-    root.tolf_min = 1.0e-12;
-    root.tolf_max = 1.0e-8;
+    root.tolf_min = 1.0e-10;
+    root.tolf_max = 1.0e-7;
     root.maxstep = 0.1;
     root.maxiter = 500;
-    striperoot.tolx = 1.0e-9;
-    striperoot.tolf_min = 1.0e-12;
-    striperoot.tolf_max = 1.0e-8;
-    striperoot.maxstep = 0.5;
-    striperoot.maxiter = 500;
+    stripe_root.tolx = 1.0e-9;
+    stripe_root.tolf_min = 1.0e-10;
+    stripe_root.tolf_max = 1.0e-7;
+    stripe_root.maxstep = 0.5;
+    stripe_root.maxiter = 500;
 }
 
 
@@ -48,18 +48,18 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
             root.maxiter = reader.getAttribute<int>("maxiter", root.maxstep);
             reader.requireTagEnd();
-        } else if (param == "striperoot") {
-            striperoot.tolx = reader.getAttribute<double>("tolx", striperoot.tolx);
-            striperoot.tolf_min = reader.getAttribute<double>("tolf-min", striperoot.tolf_min);
-            striperoot.tolf_max = reader.getAttribute<double>("tolf-max", striperoot.tolf_max);
-            striperoot.maxstep = reader.getAttribute<double>("maxstep", striperoot.maxstep);
-            striperoot.maxiter = reader.getAttribute<int>("maxiter", striperoot.maxiter);
+        } else if (param == "stripe-root") {
+            stripe_root.tolx = reader.getAttribute<double>("tolx", stripe_root.tolx);
+            stripe_root.tolf_min = reader.getAttribute<double>("tolf-min", stripe_root.tolf_min);
+            stripe_root.tolf_max = reader.getAttribute<double>("tolf-max", stripe_root.tolf_max);
+            stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
+            stripe_root.maxiter = reader.getAttribute<int>("maxiter", stripe_root.maxiter);
             reader.requireTagEnd();
         } else if (param == "outer") {
             outdist = reader.requireAttribute<double>("distance");
             reader.requireTagEnd();
         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <striperoot>, or <outer>");
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
     }
 }
 
@@ -258,7 +258,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                 nng[i] = same_nr * same_ng;
             } else {
                 Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "veff", "det");
-                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, striperoot);
+                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, stripe_root);
                 veffs[i] = rootdigger.getSolution(1e-3);
                 computeStripeNNg(i);
             }

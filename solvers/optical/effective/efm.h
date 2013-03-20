@@ -71,7 +71,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     // Parameters for rootdigger
     RootDigger::Params root;
-    RootDigger::Params striperoot;
+    RootDigger::Params stripe_root;
 
     EffectiveFrequencyCylSolver(const std::string& name="");
 

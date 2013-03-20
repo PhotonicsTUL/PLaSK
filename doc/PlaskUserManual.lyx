@@ -8862,7 +8862,7 @@ object
 \labelwidthstring 00.00.0000
 
 \family typewriter
-to
+with
 \family default
  Name of the object to replace with.
  This object does not need to be located in the subtree of the copied object.
@@ -12009,7 +12009,7 @@ object
 \labelwidthstring 00.00.0000
 
 \family typewriter
-to
+with
 \family default
  Name of the object to replace with.
  This object does not need to be located in the subtree of the copied object.
@@ -16930,7 +16930,7 @@ Maximum number of root finding iterations.
 
 \family typewriter
 \series bold
-<striperoot>
+<stripe-root>
 \family default
 \series default
  Parameters of root-finding algorithm for one stripe.
@@ -17318,7 +17318,7 @@ maxiter
 
 \family typewriter
 \series bold
-<striperoot>
+<stripe-root>
 \family default
 \series default
  Parameters of root-finding algorithm for one stripe.

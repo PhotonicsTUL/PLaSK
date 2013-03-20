@@ -78,7 +78,7 @@ inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& m
     if (in->isInSubtree(*out)) {  //input is outer
         shared_ptr<Geometry3D> in_as_geom3D = dynamic_pointer_cast<Geometry3D>(in);
         if (in_as_geom3D) {
-            shared_ptr<Geometry3D> out_as_geom2Dcart = dynamic_pointer_cast<Geometry2DCartesian>(out);
+            shared_ptr<Geometry2DCartesian> out_as_geom2Dcart = dynamic_pointer_cast<Geometry2DCartesian>(out);
             if (out_as_geom2Dcart) {
 
             }

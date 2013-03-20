@@ -65,7 +65,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
             if (operation_name == "replace") {
                 shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
                 shared_ptr<GeometryObject> to;
-                boost::optional<std::string> to_name = source.getAttribute("to");
+                boost::optional<std::string> to_name = source.getAttribute("with");
                 if (to_name) {
                     to = requireObjectWithName(*to_name);
                 } else {

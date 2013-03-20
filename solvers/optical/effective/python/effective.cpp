@@ -125,7 +125,7 @@ BOOST_PYTHON_MODULE(effective)
         solver.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
-        RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
+        RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
@@ -150,7 +150,7 @@ BOOST_PYTHON_MODULE(effective)
         solver.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
-        RO_FIELD(striperoot, "Configuration of the rootdigger for a single stripe");
+        RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified wavelength", "wavelength");
