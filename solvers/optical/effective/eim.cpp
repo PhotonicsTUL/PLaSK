@@ -1,3 +1,4 @@
+#include <exception>
 #include "eim.h"
 
 using plask::dcomplex;
@@ -216,30 +217,37 @@ void EffectiveIndex2DSolver::stageOne()
         old_polarization = polarization;
 
         // Compute effective indices for all stripes
+        std::exception_ptr error; // needed to handle exceptions from OMP loop
         #pragma omp parallel for
         for (size_t i = xbegin; i < nrCache.size(); ++i) {
+            if (error != std::exception_ptr()) continue; // just skip loops after error
+            try {
+                writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
+#               ifndef NDEBUG
+                    std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
+                    writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
+#               endif
 
-            writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
-#           ifndef NDEBUG
-                std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
-                writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
-#           endif
-
-            dcomplex same_val = nrCache[i].front();
-            bool all_the_same = true;
-            for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
-            if (all_the_same) {
-                stripeNeffs[i] = same_val;
-            } else {
-                Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i-xbegin), "neff", "det");
-                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, stripe_root);
-                dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-                stripeNeffs[i] = rootdigger.getSolution(0.999999*maxn);
-                // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-                // auto map = rootdigger.findMap(0.999999*maxn, 1.000001*minn, initial_stripe_neff_map, 0);
-                // stripeNeffs[i] = rootdigger.getSolution(map[0]);
+                dcomplex same_val = nrCache[i].front();
+                bool all_the_same = true;
+                for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
+                if (all_the_same) {
+                    stripeNeffs[i] = same_val;
+                } else {
+                    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i-xbegin), "neff", "det");
+                    RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, stripe_root);
+                    dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+                    stripeNeffs[i] = rootdigger.getSolution(0.999999 * real(maxn));
+                    // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+                    // auto map = rootdigger.findMap(0.999999*maxn, 1.000001*minn, initial_stripe_neff_map, 0);
+                    // stripeNeffs[i] = rootdigger.getSolution(map[0]);
+                }
+            } catch (...) {
+                error = std::current_exception();
             }
         }
+        if (error != std::exception_ptr()) std::rethrow_exception(error);
+
         if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
 
 #       ifndef NDEBUG

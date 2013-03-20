@@ -238,31 +238,37 @@ void EffectiveFrequencyCylSolver::stageOne()
         }
 
         // Compute effective frequencies for all stripes
+        std::exception_ptr error; // needed to handle exceptions from OMP loop
         #pragma omp parallel for
         for (size_t i = 0; i < nrCache.size(); ++i) {
+            if (error != std::exception_ptr()) continue; // just skip loops after error
+            try {
+                writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
+#               ifndef NDEBUG
+                    std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
+                        nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
+                    writelog(LOG_DEBUG, "nR/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
+#               endif
 
-            writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
-#           ifndef NDEBUG
-                std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
-                    nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
-                writelog(LOG_DEBUG, "nR/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
-#           endif
-
-            dcomplex same_nr = nrCache[i].front();
-            dcomplex same_ng = ngCache[i].front();
-            bool all_the_same = true;
-            for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
-                if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
-            if (all_the_same) {
-                veffs[i] = 1.; // TODO make sure this is so!
-                nng[i] = same_nr * same_ng;
-            } else {
-                Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "veff", "det");
-                RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, stripe_root);
-                veffs[i] = rootdigger.getSolution(1e-3);
-                computeStripeNNg(i);
+                dcomplex same_nr = nrCache[i].front();
+                dcomplex same_ng = ngCache[i].front();
+                bool all_the_same = true;
+                for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
+                    if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
+                if (all_the_same) {
+                    veffs[i] = 1.; // TODO make sure this is so!
+                    nng[i] = same_nr * same_ng;
+                } else {
+                    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "veff", "det");
+                    RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, stripe_root);
+                    veffs[i] = rootdigger.getSolution(1e-3);
+                    computeStripeNNg(i);
+                }
+            } catch (...) {
+                error = std::current_exception();
             }
         }
+        if (error != std::exception_ptr()) std::rethrow_exception(error);
 
 #       ifndef NDEBUG
             std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
