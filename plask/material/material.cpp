@@ -109,10 +109,10 @@ double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); retur
 
 double Material::nr(double wl, double T) const { throwNotImplemented("nr(double wl, double T)"); return 0; }
 
-dcomplex Material::nR(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
+dcomplex Material::Nr(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
 
 Tensor3<dcomplex> Material::nR_tensor(double wl, double T) const {
-    return nR(wl, T);
+    return Nr(wl, T);
 }
 
 bool Material::operator ==(const Material &other) const {
@@ -455,8 +455,8 @@ double MixedMaterial::nr(double wl, double T) const {
     return avg([&](const Material& m) { return m.nr(wl, T); });
 }
 
-dcomplex MixedMaterial::nR(double wl, double T) const {
-    return avg([&](const Material& m) { return m.nR(wl, T); });
+dcomplex MixedMaterial::Nr(double wl, double T) const {
+    return avg([&](const Material& m) { return m.Nr(wl, T); });
 }
 
 Tensor3<dcomplex> MixedMaterial::nR_tensor(double wl, double T) const {

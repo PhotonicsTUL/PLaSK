@@ -514,10 +514,10 @@ struct Material {
     virtual double cp(double T) const;
 
     /**
-     * Get refractive index nR [-].
+     * Get refractive index Nr [-].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
-     * @return refractive index nR [-]
+     * @return refractive index Nr [-]
      */
     virtual double nr(double wl, double T) const;
 
@@ -530,20 +530,20 @@ struct Material {
     virtual double absp(double wl, double T) const;
 
     /**
-     * Get refractive index nR [-].
+     * Get refractive index Nr [-].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
-     * @return refractive index nR[-]
+     * @return refractive index Nr[-]
      */
-    virtual dcomplex nR(double wl, double T) const;
+    virtual dcomplex Nr(double wl, double T) const;
 
     /**
-     * Get anisotropic refractive index tensor nR [-].
+     * Get anisotropic refractive index tensor Nr [-].
      * Tensor must have the form \f$ \left[\begin{array}{ccc} n_{0} & n_{3} & 0\\ n_{4} & n_{1} & 0\\ 0 & 0 & n_{2} \end{array}\right] \f$,
      * where \f$ n_i \f$ is i-th object of the returned tuple.
      * @param wl Wavelength [nm]
      * @param T temperature [K]
-     * @return refractive index tensor nR[-]
+     * @return refractive index tensor Nr[-]
      */
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const;
 
@@ -756,7 +756,7 @@ struct MixedMaterial: public Material {
 
     virtual double absp(double wl, double T) const;
 
-    virtual dcomplex nR(double wl, double T) const;
+    virtual dcomplex Nr(double wl, double T) const;
 
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const;
 

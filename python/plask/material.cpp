@@ -252,16 +252,16 @@ class PythonMaterial : public Material
     virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
     virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
     virtual double absp(double wl, double T) const { return override<double>("absp", &Material::absp, wl, T); }
-    virtual dcomplex nR(double wl, double T) const {
-        if (overriden("nR")) return py::call_method<dcomplex>(self, "nR", wl, T);
+    virtual dcomplex Nr(double wl, double T) const {
+        if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T);
         if (overriden("nr") || overriden("absp"))
             return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
-        return base->nR(wl, T);
+        return base->Nr(wl, T);
     }
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
         if (overriden("nR_tensor")) return py::call_method<Tensor3<dcomplex>>(self, "nR_tensor", wl, T);
-        if (overriden("nR")) {
-            dcomplex n = py::call_method<dcomplex>(self, "nR", wl, T);
+        if (overriden("Nr")) {
+            dcomplex n = py::call_method<dcomplex>(self, "Nr", wl, T);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
         if (overriden("nr") || overriden("absp")) {
@@ -634,8 +634,8 @@ void initMaterials() {
         .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")
         .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.), "Get absorption coefficient alpha")
-        .def("nR", &Material::nR, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index nR")
-        .def("nR_tensor", &Material::nR_tensor, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor nR")
+        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index Nr")
+        .def("nR_tensor", &Material::nR_tensor, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor Nr")
     ;
 
     Material_from_Python_string();

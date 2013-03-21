@@ -26,21 +26,21 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     PyCodeObject
         *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *c11, *c12, *eps, *chi,
         *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
-        *thermk, *dens, *cp, *nr, *absp, *nR, *nR_tensor;
+        *thermk, *dens, *cp, *nr, *absp, *Nr, *nR_tensor;
 
     PythonEvalMaterialConstructor(const std::string& name) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), nR(NULL), nR_tensor(NULL) {}
+        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), nR_tensor(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), nR(NULL), nR_tensor(NULL) {}
+        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), nR_tensor(NULL) {}
 
     virtual ~PythonEvalMaterialConstructor() {
         Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
@@ -48,7 +48,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
         Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
         Py_XDECREF(thermk); Py_XDECREF(dens); Py_XDECREF(cp);
-        Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(nR); Py_XDECREF(nR_tensor);
+        Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr); Py_XDECREF(nR_tensor);
     }
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
@@ -157,16 +157,16 @@ class PythonEvalMaterial : public Material
     virtual double cp(double T) const { PYTHON_EVAL_CALL_1(double, cp, T) }
     virtual double nr(double wl, double T) const { PYTHON_EVAL_CALL_2(double, nr, wl, T) }
     virtual double absp(double wl, double T) const { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
-    virtual dcomplex nR(double wl, double T) const {
+    virtual dcomplex Nr(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
-        if (cls->nR != NULL) {
-            PyObject* result = PY_EVAL(cls->nR);
+        if (cls->Nr != NULL) {
+            PyObject* result = PY_EVAL(cls->Nr);
             if (!result) throw py::error_already_set();
             return py::extract<dcomplex>(result);
         }
         if (cls->nr != NULL || cls->absp != NULL)
             return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
-        return base->nR(wl, T);
+        return base->Nr(wl, T);
     }
     virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
@@ -175,8 +175,8 @@ class PythonEvalMaterial : public Material
             if (!result) throw py::error_already_set();
             return py::extract<Tensor3<dcomplex>>(result);
         }
-        if (cls->nR != NULL) {
-            dcomplex n = nR(wl, T);
+        if (cls->Nr != NULL) {
+            dcomplex n = Nr(wl, T);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
         if (cls->nr != NULL || cls->absp != NULL) {
@@ -304,8 +304,8 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(cp)
         COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
         COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(nR)
-        COMPILE_PYTHON_MATERIAL_FUNCTION2("nR-tensor", nR_tensor)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
+        COMPILE_PYTHON_MATERIAL_FUNCTION2("Nr-tensor", nR_tensor)
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
     }
 

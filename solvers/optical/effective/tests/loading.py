@@ -4,7 +4,7 @@ import unittest
 
 @material.simple
 class LowContrastMaterial(material.Material):
-    def nR(self, wl, T): return 1.3
+    def Nr(self, wl, T): return 1.3
 
 class EffectiveIndex2D_Test(unittest.TestCase):
 

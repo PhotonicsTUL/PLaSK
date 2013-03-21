@@ -200,10 +200,10 @@ void EffectiveIndex2DSolver::stageOne()
                 auto roles = geometry->getRolesAt(point);
                 if ( ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1 ||
                      (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) )
-                    nrCache[ix][iy] = geometry->getMaterial(point)->nR(w, T);
+                    nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
                 else {  // we ignore the material absorption as it should be considered in the gain already
                     double g = gain[midmesh->index(ix-1, iy-1)];
-                    nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->nR(w, T)),
+                    nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
                                                 w * g * 7.95774715459e-09 );
                 }
             }
@@ -225,7 +225,7 @@ void EffectiveIndex2DSolver::stageOne()
                 writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
 #               ifndef NDEBUG
                     std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
-                    writelog(LOG_DEBUG, "nR[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
+                    writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
 #               endif
 
                 dcomplex same_val = nrCache[i].front();
@@ -236,13 +236,12 @@ void EffectiveIndex2DSolver::stageOne()
                 } else {
                     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i-xbegin), "neff", "det");
                     RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i]);}, log_stripe, stripe_root);
-                    dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-                    stripeNeffs[i] = rootdigger.getSolution(0.999999 * real(maxn));
-                    // dcomplex minn = *std::min_element(nrCache[i].begin(), nrCache[i].end(), [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-                    // auto map = rootdigger.findMap(0.999999*maxn, 1.000001*minn, initial_stripe_neff_map, 0);
-                    // stripeNeffs[i] = rootdigger.getSolution(map[0]);
+                    dcomplex maxn = *std::max_element(nrCache[i].begin(), nrCache[i].end(),
+                                                      [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+                    stripeNeffs[i] = rootdigger.getSolution(0.999 * real(maxn));
                 }
             } catch (...) {
+                #pragma omp critical
                 error = std::current_exception();
             }
         }
@@ -268,27 +267,34 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         if (imag(beta[i]) > 0.) beta[i] = -beta[i];
     }
 
-    auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex f =  (polarization==TM)? NR[i+1]/NR[i] : 1.;
-        dcomplex n = 0.5 * beta[i]/beta[i+1] * f*f;
-        Matrix2cd M; M << (0.5+n), (0.5-n),
-                          (0.5-n), (0.5+n);
-        return M;
-    };
+    dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
 
-    Vector2cd E; E << 0., 1.;
-    E = fresnel(0) * E;
+    dcomplex phas = 1.;
 
-    for (size_t i = 1; i < N-1; ++i) {
-        double d = mesh->axis1[i] - mesh->axis1[i-1];
-        dcomplex phas = exp(-I * beta[i] * d);
-        DiagonalMatrix<dcomplex, 2> P;
-        P.diagonal() << phas, 1./phas;
-        E = P * E;
-        E = fresnel(i) * E;
+    for (size_t i = 0; i < N-1; ++i) {
+
+        // Compute shift inside one layer
+        s1 *= phas;
+        s3 *= phas * phas;
+        s4 *= phas;
+
+        // Compute matrix after boundary
+        dcomplex f = (polarization==TM)? NR[i]/NR[i+1] : 1.;
+        dcomplex p = 0.5 + 0.5 * beta[i+1] / beta[i] * f*f;
+        dcomplex m = 1.0 - p;
+        dcomplex chi = 1. / (p - m * s3);
+        // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
+        // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
+        s2 += s1*m*chi*s4;
+        s1 *= (p*p - m*m) * chi;
+        s3  = (p*s3-m) * chi;
+        s4 *= chi;
+
+        phas = exp(I * beta[i+1] * (mesh->axis1[i+1]-mesh->axis1[i]));
+
     }
 
-    return E[1];
+    return s1*s4 - s2*s3;
 }
 
 

@@ -6,7 +6,7 @@ using namespace plask::solvers::effective;
 struct Glass: public Material {
     virtual std::string name() const { return "glass"; }
     virtual Kind kind() const { return Material::DIELECTRIC; }
-    virtual dcomplex nR(double wl, double T) const { return 1.3; }
+    virtual dcomplex Nr(double wl, double T) const { return 1.3; }
 };
 
 int main() {

@@ -10,11 +10,11 @@ from optical.effective import EffectiveIndex2D
 
 @material.simple
 class Glass(material.Material):
-    def nR(self, wl, T): return 1.3
+    def Nr(self, wl, T): return 1.3
 
 @material.simple
 class LowConstrast(material.Material):
-    def nR(self, wl, T): return 1.05
+    def Nr(self, wl, T): return 1.05
 
 class EffectiveIndex2D_Test(unittest.TestCase):
 

@@ -56,7 +56,7 @@ struct MaterialInfo {
         cp,         ///< specific heat at constant pressure
         nr,         ///< refractive index
         absp,       ///< absorption coefficient alpha
-        nR          ///< refractive index
+        Nr          ///< refractive index
     };
 
     /// Names of arguments for which we need to give the ranges

@@ -220,17 +220,17 @@ void EffectiveFrequencyCylSolver::stageOne()
                 auto material = geometry->getMaterial(point);
                 auto roles = geometry->getRolesAt(point);
 
-                // nR = nr + i/(4π) λ g
-                // Ng = nR - λ dN/dλ = nR - λ dn/dλ - i/(4π) λ^2 dg/dλ
+                // Nr = nr + i/(4π) λ g
+                // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
                 if ( ix == rsize-1 || iy == 0 || iy == zsize-1 ||
                      (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) ) {
-                    nrCache[ix][iy] = material->nR(lam, T);
-                    ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2;
+                    nrCache[ix][iy] = material->Nr(lam, T);
+                    ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
                 } else { // we ignore the material absorption as it should be considered in the gain already
                     double g = gain[midmesh->index(ix, iy-1)];
                     double gs = gain_slope[midmesh->index(ix, iy-1)];
-                    double nr = real(material->nR(lam, T));
-                    double ng = real(nrCache[ix][iy] - lam * (material->nR(lam2, T) - material->nR(lam1, T)) * ih2);
+                    double nr = real(material->Nr(lam, T));
+                    double ng = real(nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2);
                     nrCache[ix][iy] = dcomplex(nr, 7.95774715459e-09 * lam * g);
                     ngCache[ix][iy] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
                 }
@@ -247,7 +247,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 #               ifndef NDEBUG
                     std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
                         nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
-                    writelog(LOG_DEBUG, "nR/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
+                    writelog(LOG_DEBUG, "Nr/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
 #               endif
 
                 dcomplex same_nr = nrCache[i].front();
@@ -265,6 +265,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                     computeStripeNNg(i);
                 }
             } catch (...) {
+                #pragma omp critical
                 error = std::current_exception();
             }
         }

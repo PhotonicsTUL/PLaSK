@@ -5552,7 +5552,7 @@ T
 
 \family typewriter
 \series bold
-<nR>
+<Nr>
 \family default
 \series default
  Complex refractive index
@@ -5626,7 +5626,7 @@ T
 
 \family typewriter
 \series bold
-<nR-tensor>
+<Nr-tensor>
 \family default
 \series default
  Anisotropic complex refractive index

@@ -338,6 +338,10 @@ int main(int argc, const char *argv[])
             int exitcode = handlePythonException(scriptline, argv[1]);
             endPlask();
             return exitcode;
+        } catch (std::runtime_error& err) {
+            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+            endPlask();
+            return 3;
         }
 
     } else { // start the interactive console
