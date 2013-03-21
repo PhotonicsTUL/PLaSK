@@ -23,12 +23,17 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
     XMLPythonDataSource(const py::object& file): file(file) {}
 
     virtual size_t read(char* buff, size_t buf_size) {
-        py::object readobj = file.attr("read")(buf_size);
-        const char* data = py::extract<const char*>(readobj);
-        size_t len = strlen(data);
-        if (len > buf_size) throw CriticalException("Too much data read");
-        std::copy_n(data, len, buff);
-        return len;
+        size_t read = 0, len;
+        do {
+            py::object readobj = file.attr("read")(buf_size-read);
+            const char* data = py::extract<const char*>(readobj);
+            len = strlen(data);
+            if (len > buf_size-read) throw CriticalException("Too much data read");
+            std::copy_n(data, len, buff);
+            buff += len;
+            read += len;
+        } while (read < buf_size && len != 0);
+        return read;;
     }
 
     /// Empty, virtual destructor.

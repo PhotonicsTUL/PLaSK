@@ -16,14 +16,14 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
-    root.tolx = 1.0e-9;
-    root.tolf_min = 1.0e-10;
-    root.tolf_max = 1.0e-7;
+    root.tolx = 1.0e-6;
+    root.tolf_min = 1.0e-8;
+    root.tolf_max = 1.0e-5;
     root.maxstep = 0.1;
     root.maxiter = 500;
-    stripe_root.tolx = 1.0e-9;
-    stripe_root.tolf_min = 1.0e-10;
-    stripe_root.tolf_max = 1.0e-7;
+    stripe_root.tolx = 1.0e-6;
+    stripe_root.tolf_min = 1.0e-8;
+    stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxstep = 0.5;
     stripe_root.maxiter = 500;
 }

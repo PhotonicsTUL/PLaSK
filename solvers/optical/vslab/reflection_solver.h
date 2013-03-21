@@ -55,6 +55,41 @@ namespace plask { namespace solvers { namespace vslab {
 //     /// Method computing the value for the delegate provider
 //     const DataVector<const double> getDelegated(const MeshD<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
 //
+    // /*
+    //  * Get the position of the matching interface.
+    //  *
+    //  * \return index of the vertical mesh, where interface is set
+    //  */
+    // inline size_t getInterface() { return interface; }
+    //
+    // /*
+    //  * Set the position of the matching interface.
+    //  *
+    //  * \param index index of the vertical mesh, where interface is set
+    //  */
+    // inline void setInterface(size_t index) {
+    //     if (!mesh) setSimpleMesh();
+    //     if (index < 0 || index >= mesh->vert().size())
+    //         throw BadInput(getId(), "wrong interface position");
+    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[index], index);
+    //     interface = index;
+    // }
+    //
+    // /*
+    //  * Set the position of the matching interface at the top of the provided geometry object
+    //  *
+    //  * \param path path to the object in the geometry
+    //  */
+    // void setInterfaceOn(const PathHints& path) {
+    //     if (!mesh) setSimpleMesh();
+    //     auto boxes = geometry->getLeafsBoundingBoxes(path);
+    //     if (boxes.size() != 1) throw NotUniqueObjectException();
+    //     interface = std::lower_bound(mesh->vert().begin(), mesh->vert().end(), boxes[0].upper.vert()) - mesh->vert().begin();
+    //     if (interface >= mesh->vert().size()) interface = mesh->vert().size() - 1;
+    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[interface], interface);
+    // }
+
+
 // };
 
 

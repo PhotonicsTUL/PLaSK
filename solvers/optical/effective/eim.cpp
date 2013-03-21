@@ -16,14 +16,14 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
-    root.tolx = 1.0e-9;
-    root.tolf_min = 1.0e-10;
-    root.tolf_max = 1.0e-7;
+    root.tolx = 1.0e-6;
+    root.tolf_min = 1.0e-8;
+    root.tolf_max = 1.0e-5;
     root.maxstep = 0.1;
     root.maxiter = 500;
-    stripe_root.tolx = 1.0e-9;
-    stripe_root.tolf_min = 1.0e-10;
-    stripe_root.tolf_max = 1.0e-7;
+    stripe_root.tolx = 1.0e-6;
+    stripe_root.tolf_min = 1.0e-8;
+    stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxstep = 0.5;
     stripe_root.maxiter = 500;
 }
@@ -158,6 +158,9 @@ void EffectiveIndex2DSolver::stageOne()
     bool recompute_neffs = false;
 
     xbegin = 0;
+    ybegin = 0;
+    xend = mesh->axis0.size() + 1;
+    yend = mesh->axis1.size() + 1;
 
     // Some additional checks
     if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
@@ -171,8 +174,10 @@ void EffectiveIndex2DSolver::stageOne()
         }
     }
 
-    size_t xsize = mesh->tran().size() + 1;
-    size_t ysize = mesh->vert().size() + 1;
+    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_TRAN, false)) xbegin = 1;
+    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_VERT, false)) ybegin = 1;
+    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_TRAN, true))  --xend;
+    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_VERT, true))  --yend;
 
     if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed) {
         // we need to update something
@@ -180,35 +185,38 @@ void EffectiveIndex2DSolver::stageOne()
         k0 = 2e3*M_PI / inWavelength();
         double w = inWavelength();
 
+        RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
+        if (xbegin == 0) {
+            if (symmetry != NO_SYMMETRY) midmesh.axis0.addPoint(0.5 * mesh->axis0[0]);
+            else midmesh.axis0.addPoint(mesh->axis0[0] - outdist);
+        }
+        if (xend == mesh->axis0.size()+1)
+            midmesh.axis0.addPoint(mesh->axis0[mesh->axis0.size()-1] + outdist);
+        if (ybegin == 0)
+            midmesh.axis1.addPoint(mesh->axis1[0] - outdist);
+        if (yend == mesh->axis1.size()+1)
+            midmesh.axis1.addPoint(mesh->axis1[mesh->axis1.size()-1] + outdist);
+
         writelog(LOG_DEBUG, "Updating refractive indices cache");
-        auto temp = inTemperature(*mesh);
-        auto midmesh = mesh->getMidpointsMesh();
+        auto temp = inTemperature(midmesh);
         auto gain = inGain(midmesh, w);
-        for (size_t ix = xbegin; ix < xsize; ++ix) {
-            size_t tx0, tx1;
-            double x0, x1;
-            if (ix > 0) { tx0 = ix-1; x0 = mesh->axis0[tx0]; } else { tx0 = 0; x0 = mesh->axis0[tx0] - 2.*outdist; }
-            if (ix < xsize-1) { tx1 = ix; x1 = mesh->axis0[tx1]; } else { tx1 = xsize-2; x1 = mesh->axis0[tx1] + 2.*outdist; }
-            for (size_t iy = 0; iy < ysize; ++iy) {
-                size_t ty0, ty1;
-                double y0, y1;
-                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outdist; }
-                if (iy < ysize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = ysize-2; y1 = mesh->axis1[ty1] + 2.*outdist; }
-                double T = 0.25 * ( temp[mesh->index(tx0,ty0)] + temp[mesh->index(tx0,ty1)] +
-                                    temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
-                auto point = 0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1));
+
+        for (size_t ix = xbegin; ix < xend; ++ix) {
+            size_t tx = ix - xbegin;
+            for (size_t iy = ybegin; iy < yend; ++iy) {
+                size_t ty = iy - ybegin;
+                double T = temp[midmesh.index(tx,ty)];
+                auto point = midmesh(tx, ty);
                 auto roles = geometry->getRolesAt(point);
-                if ( ix == 0 || ix == xsize-1 || iy == 0 || iy == ysize-1 ||
-                     (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) )
+                if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end())
                     nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
                 else {  // we ignore the material absorption as it should be considered in the gain already
-                    double g = gain[midmesh->index(ix-1, iy-1)];
+                    double g = gain[midmesh.index(tx, ty)];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
                                                 w * g * 7.95774715459e-09 );
                 }
             }
         }
-        if (xbegin == 1) nrCache[0] = nrCache[1];
         recompute_neffs = true;
     }
 
@@ -219,18 +227,18 @@ void EffectiveIndex2DSolver::stageOne()
         // Compute effective indices for all stripes
         std::exception_ptr error; // needed to handle exceptions from OMP loop
         #pragma omp parallel for
-        for (size_t i = xbegin; i < nrCache.size(); ++i) {
+        for (size_t i = xbegin; i < xend; ++i) {
             if (error != std::exception_ptr()) continue; // just skip loops after error
             try {
                 writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
 #               ifndef NDEBUG
-                    std::stringstream nrs; for (auto nr: nrCache[i]) nrs << ", " << str(nr);
+                    std::stringstream nrs; for (size_t j = ybegin; j != yend; ++j) nrs << ", " << str(nrCache[i][j]);
                     writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
 #               endif
 
-                dcomplex same_val = nrCache[i].front();
+                dcomplex same_val = nrCache[i][ybegin];
                 bool all_the_same = true;
-                for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
+                for (size_t j = ybegin; j != yend; ++j) if (nrCache[i][j] != same_val) { all_the_same = false; break; }
                 if (all_the_same) {
                     stripeNeffs[i] = same_val;
                 } else {
@@ -247,8 +255,6 @@ void EffectiveIndex2DSolver::stageOne()
         }
         if (error != std::exception_ptr()) std::rethrow_exception(error);
 
-        if (xbegin == 1) stripeNeffs[0] = stripeNeffs[1];
-
 #       ifndef NDEBUG
             std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
             writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
@@ -259,10 +265,8 @@ void EffectiveIndex2DSolver::stageOne()
 
 dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR)
 {
-    size_t N = NR.size();
-
-    std::vector<dcomplex> beta(N);
-    for (size_t i = 0; i < N; ++i) {
+    std::vector<dcomplex> beta(yend);
+    for (size_t i = ybegin; i < yend; ++i) {
         beta[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
         if (imag(beta[i]) > 0.) beta[i] = -beta[i];
     }
@@ -270,14 +274,14 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
     dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
 
     dcomplex phas = 1.;
+    if (ybegin != 0)
+        phas = exp(I * beta[ybegin] * (mesh->axis1[ybegin]-mesh->axis1[ybegin-1]));
 
-    for (size_t i = 0; i < N-1; ++i) {
-
+    for (size_t i = ybegin; i < yend-1; ++i) {
         // Compute shift inside one layer
         s1 *= phas;
         s3 *= phas * phas;
         s4 *= phas;
-
         // Compute matrix after boundary
         dcomplex f = (polarization==TM)? NR[i]/NR[i+1] : 1.;
         dcomplex p = 0.5 + 0.5 * beta[i+1] / beta[i] * f*f;
@@ -289,67 +293,61 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         s1 *= (p*p - m*m) * chi;
         s3  = (p*s3-m) * chi;
         s4 *= chi;
-
-        phas = exp(I * beta[i+1] * (mesh->axis1[i+1]-mesh->axis1[i]));
-
+        // Compute phase shift for the next step
+        if (i != mesh->axis1.size())
+            phas = exp(I * beta[i+1] * (mesh->axis1[i+1]-mesh->axis1[i]));
     }
 
-    return s1*s4 - s2*s3;
-}
-
-
-Matrix2cd EffectiveIndex2DSolver::getMatrix(dcomplex neff)
-{
-    // Adjust for mirror losses
-    neff = dcomplex(real(neff), imag(neff)-getMirrorLosses(neff));
-
-    size_t N = stripeNeffs.size();
-
-    std::vector<dcomplex> beta(N);
-    for (size_t i = xbegin; i < N; ++i) {
-        beta[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
-        if (imag(beta[i]) > 0.) beta[i] = -beta[i];
-    }
-
-    auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex f =  (polarization==TE)? stripeNeffs[i+1]/stripeNeffs[i] :  1.;
-        dcomplex n = 0.5 * beta[i]/beta[i+1] * f*f;
-        Matrix2cd M; M << (0.5+n), (0.5-n),
-                          (0.5-n), (0.5+n);
-        return M;
-    };
-
-
-    Matrix2cd T = fresnel(xbegin);
-
-    if (symmetry != NO_SYMMETRY) { // we have symmetry, so begin of the transfer matrix is at the axis
-        dcomplex phas = exp(-I * beta[xbegin] * mesh->axis0[xbegin]);
-        DiagonalMatrix<dcomplex, 2> P;
-        P.diagonal() << phas, 1./phas;
-        T = T * P;
-    }
-
-    for (size_t i = xbegin+1; i < N-1; ++i) {
-        double d = mesh->axis0[i] - mesh->axis0[i-1];
-        dcomplex phas = exp(- I * beta[i] * d);
-        DiagonalMatrix<dcomplex, 2> P;
-        P.diagonal() << phas, 1./phas;
-        T = P * T;
-        T = fresnel(i) * T;
-    }
-
-    return T;
+    return s4 - s2*s3/s1;
 }
 
 
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x)
 {
-    Matrix2cd T = getMatrix(x);
+    // Adjust for mirror losses
+    dcomplex neff = dcomplex(real(x), imag(x)-getMirrorLosses(x));
+
+    std::vector<dcomplex> beta(xend);
+    for (size_t i = xbegin; i < xend; ++i) {
+        beta[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
+        if (imag(beta[i]) > 0.) beta[i] = -beta[i];
+    }
+
+    dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+
+    dcomplex phas = 1.;
+
+    if (symmetry != NO_SYMMETRY) // we have symmetry, so begin of the transfer matrix is at the axis
+        phas = exp(I * beta[xbegin] * mesh->axis0[xbegin]);
+    else if (xbegin != 0)
+        phas = exp(I * beta[xbegin] * (mesh->axis0[xbegin]-mesh->axis0[xbegin-1]));
+
+    for (size_t i = xbegin; i < xend-1; ++i) {
+        // Compute shift inside one layer
+        s1 *= phas;
+        s3 *= phas * phas;
+        s4 *= phas;
+        // Compute matrix after boundary
+        dcomplex f = (polarization==TE)? stripeNeffs[i]/stripeNeffs[i+1] : 1.;
+        dcomplex p = 0.5 + 0.5 * beta[i+1] / beta[i] * f*f;
+        dcomplex m = 1.0 - p;
+        dcomplex chi = 1. / (p - m * s3);
+        // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
+        // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
+        s2 += s1*m*chi*s4;
+        s1 *= (p*p - m*m) * chi;
+        s3  = (p*s3-m) * chi;
+        s4 *= chi;
+        // Compute phase shift for the next step
+        if (i != mesh->axis0.size())
+            phas = exp(I * beta[i+1] * (mesh->axis0[i+1]-mesh->axis0[i]));
+    }
+
     // Rn = | T00 T01 | R0
     // Ln = | T10 T11 | L0
-    if (symmetry == SYMMETRY_POSITIVE) return T(1,0) + T(1,1);      // R0 = L0   Ln = 0
-    else if (symmetry == SYMMETRY_NEGATIVE) return T(1,0) - T(1,1); // R0 = -L0  Ln = 0
-    else return T(1,1);                                             // R0 = 0    Ln = 0
+    if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
+    else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
+    else return s4 - s2*s3 / s1;
 }
 
 
@@ -364,9 +362,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 
     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
 
-    size_t Nx = mesh->tran().size()+1;
-    std::vector<dcomplex> betax(Nx);
-    for (size_t i = 0; i < Nx; ++i) {
+    std::vector<dcomplex> betax(xend);
+    for (size_t i = 0; i < xend; ++i) {
         betax[i] = k0 * sqrt(stripeNeffs[i]*stripeNeffs[i] - neff*neff);
         if (imag(betax[i]) > 0.) betax[i] = -betax[i];
     }
@@ -375,14 +372,14 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             dcomplex f =  (polarization==TE)? stripeNeffs[i]/stripeNeffs[i+1] :  1.;
             dcomplex n = 0.5 * betax[i+1]/betax[i] * f*f;
             Matrix2cd M; M << (0.5+n), (0.5-n),
-                            (0.5-n), (0.5+n);
+                              (0.5-n), (0.5+n);
             return M;
         };
-        fieldX.resize(Nx);
-        fieldX[Nx-1] << 1., 0;
-        fieldWeights.resize(Nx);
-        fieldWeights[Nx-1] = 0.;
-        for (ptrdiff_t i = Nx-2; i >= 0; --i) {
+        fieldX.resize(xend);
+        fieldX[xend-1] << 1., 0;
+        fieldWeights.resize(xend);
+        fieldWeights[xend-1] = 0.;
+        for (ptrdiff_t i = xend-2; i >= 0; --i) {
             fieldX[i].noalias() = fresnelX(i) * fieldX[i+1];
             double d = (symmetry == NO_SYMMETRY)? mesh->tran()[i] - mesh->tran()[max(int(i)-1, 0)] :
                        (i == 0)? mesh->tran()[0] : mesh->tran()[i] - mesh->tran()[i-1];
@@ -413,15 +410,14 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
         double sumw = 0; for (const double& w: fieldWeights) sumw += w;
         double factor = 1./sumw; for (double& w: fieldWeights) w *= factor;
 #       ifndef NDEBUG
-            std::stringstream weightss; for (size_t i = xbegin; i < Nx; ++i) weightss << ", " << str(fieldWeights[i]);
+            std::stringstream weightss; for (size_t i = xbegin; i < xend; ++i) weightss << ", " << str(fieldWeights[i]);
             writelog(LOG_DEBUG, "field confinement in stripes = [%1% ]", weightss.str().substr(1));
 #       endif
     }
 
-    size_t Ny = mesh->vert().size()+1;
     size_t mid_x = std::max_element(fieldWeights.begin(), fieldWeights.end()) - fieldWeights.begin();
     // double max_val = 0.;
-    // for (size_t i = 1; i != Nx; ++i) { // Find stripe with maximum weight that has non-constant refractive indices
+    // for (size_t i = 1; i != xend; ++i) { // Find stripe with maximum weight that has non-constant refractive indices
     //     if (fieldWeights[i] > max_val) {
     //         dcomplex same_val = nrCache[i].front(); bool all_the_same = true;
     //         for (auto n: nrCache[i]) if (n != same_val) { all_the_same = false; break; }
@@ -432,31 +428,31 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
     //     }
     // }
     writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", mid_x-xbegin);
-    std::vector<dcomplex> betay(Ny);
+    std::vector<dcomplex> betay(yend);
     bool all_the_same = true; dcomplex same_n = nrCache[mid_x][0];
-    for (const dcomplex& n: nrCache[mid_x]) if (n != same_n) { all_the_same = false; break; }
+    for (size_t j = ybegin; j != yend; ++j) if (nrCache[mid_x][j] != same_n) { all_the_same = false; break; }
     if (all_the_same) {
-        betay.assign(Ny, 0.);
+        betay.assign(yend, 0.);
     } else {
-        for (size_t i = 0; i < Ny; ++i) {
+        for (size_t i = ybegin; i < yend; ++i) {
             betay[i] = k0 * sqrt(nrCache[mid_x][i]*nrCache[mid_x][i] - stripeNeffs[mid_x]*stripeNeffs[mid_x]);
             if (imag(betay[i]) > 0.) betay[i] = -betay[i];
         }
     }
     if (!have_fields) {
         if (all_the_same) {
-            fieldY.assign(Ny, 0.5 * Vector2cd::Ones(2));
+            fieldY.assign(yend, 0.5 * Vector2cd::Ones(2));
         } else {
             auto fresnelY = [&](size_t i) -> Matrix2cd {
                 dcomplex f =  (polarization==TM)? nrCache[mid_x][i]/nrCache[mid_x][i+1] :  1.;
                 dcomplex n = 0.5 * betay[i+1]/betay[i] * f*f;
                 Matrix2cd M; M << (0.5+n), (0.5-n),
-                                (0.5-n), (0.5+n);
+                                  (0.5-n), (0.5+n);
                 return M;
             };
-            fieldY.resize(Ny);
-            fieldY[Ny-1] << 1., 0;
-            for (ptrdiff_t i = Ny-2; i >= 0; --i) {
+            fieldY.resize(yend);
+            fieldY[yend-1] << 1., 0;
+            for (ptrdiff_t i = yend-2; i >= 0; --i) {
                 fieldY[i].noalias() = fresnelY(i) * fieldY[i+1];
                 double d = mesh->vert()[i] - mesh->vert()[max(int(i)-1, 0)];
                 dcomplex phas = exp(- I * betay[i] * d);
@@ -483,6 +479,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
                 x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
             }
             size_t ix = mesh->tran().findIndex(x);
+            if (ix >= xend) ix = xend-1;
+            if (ix < xbegin) ix = xbegin;
             if (ix != 0) x -= mesh->tran()[ix-1];
             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
             dcomplex phasx = exp(- I * betax[ix] * x);
@@ -490,6 +488,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             if (negate) val = - val;
 
             size_t iy = mesh->vert().findIndex(y);
+            if (iy >= yend) iy = yend-1;
+            if (iy < ybegin) iy = ybegin;
             y -= mesh->vert()[max(int(iy)-1, 0)];
             dcomplex phasy = exp(- I * betay[iy] * y);
             val *= fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;
@@ -526,6 +526,8 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
                     x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
                 }
                 size_t ix = mesh->tran().findIndex(x);
+                if (ix >= xend) ix = xend-1;
+                if (ix < xbegin) ix = xbegin;
                 if (ix != 0) x -= mesh->tran()[ix-1];
                 else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
                 dcomplex phasx = exp(- I * betax[ix] * x);
@@ -538,6 +540,8 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             for (size_t idy = 0; idy < rect_mesh.vert().size(); ++idy) {
                 double y = rect_mesh.vert()[idy];
                 size_t iy = mesh->vert().findIndex(y);
+                if (iy >= yend) iy = yend-1;
+                if (iy < ybegin) iy = ybegin;
                 y -= mesh->vert()[max(int(iy)-1, 0)];
                 dcomplex phasy = exp(- I * betay[iy] * y);
                 valy[idy] = fieldY[iy][0] * phasy + fieldY[iy][1] / phasy;

@@ -38,13 +38,21 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     friend struct RootDigger;
 
+    /// Mesh of points where data is sampled
+    RectilinearMesh2D midpoints;
+
+    size_t xbegin,  ///< First element of horizontal mesh to consider
+           xend,    ///< Last element of horizontal mesh to consider
+           ybegin,  ///<First element of vertical mesh to consider
+           yend;    ///< Last element of vertical mesh to consider
+
     /// Logger for determinant
     Data2DLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices
     std::vector<std::vector<dcomplex>> nrCache;
 
-    /// Computed horizontal fields
+    /// Computed horizontal and vertical fields
     std::vector<Eigen::Vector2cd> fieldX, fieldY;
 
     /// Field confinement weights in stripes
@@ -55,9 +63,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Computed effective indices for each stripe
     std::vector<dcomplex> stripeNeffs;
-
-    /// Number of stripe to start from
-    size_t xbegin;
 
     /// Old polarization
     Polarization old_polarization;
@@ -105,40 +110,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         meshxy->axis0 = meshx;
         setMesh(meshxy);
     }
-
-    // /*
-    //  * Get the position of the matching interface.
-    //  *
-    //  * \return index of the vertical mesh, where interface is set
-    //  */
-    // inline size_t getInterface() { return interface; }
-    //
-    // /*
-    //  * Set the position of the matching interface.
-    //  *
-    //  * \param index index of the vertical mesh, where interface is set
-    //  */
-    // inline void setInterface(size_t index) {
-    //     if (!mesh) setSimpleMesh();
-    //     if (index < 0 || index >= mesh->vert().size())
-    //         throw BadInput(getId(), "wrong interface position");
-    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[index], index);
-    //     interface = index;
-    // }
-    //
-    // /*
-    //  * Set the position of the matching interface at the top of the provided geometry object
-    //  *
-    //  * \param path path to the object in the geometry
-    //  */
-    // void setInterfaceOn(const PathHints& path) {
-    //     if (!mesh) setSimpleMesh();
-    //     auto boxes = geometry->getLeafsBoundingBoxes(path);
-    //     if (boxes.size() != 1) throw NotUniqueObjectException();
-    //     interface = std::lower_bound(mesh->vert().begin(), mesh->vert().end(), boxes[0].upper.vert()) - mesh->vert().begin();
-    //     if (interface >= mesh->vert().size()) interface = mesh->vert().size() - 1;
-    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[interface], interface);
-    // }
 
     /**
      * Find the mode around the specified effective index.
@@ -246,9 +217,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Return S matrix determinant for one stripe
     dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR);
-
-    /// Return the  effective index of the whole structure, optionally also computing fields
-    Eigen::Matrix2cd getMatrix(dcomplex neff);
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const dcomplex& x);

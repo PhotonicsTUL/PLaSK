@@ -341,7 +341,7 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
     } catch (const XMLException&) {
         throw;
     } catch (const std::exception& err) {
-        throw XMLException(reader, err.what());
+        throw Exception(XMLException(reader, err.what()).what());
     // } catch (...) {
     //     throw XMLException(reader, "Unrecognized exception");
     }

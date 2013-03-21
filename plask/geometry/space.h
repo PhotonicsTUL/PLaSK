@@ -131,6 +131,16 @@ struct Geometry: public GeometryObject {
         return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
     }
 
+    /**
+     * Check if structure extends in given direction.
+     * \param direction direction to check
+     * \param higher \c true for higher bound, \c false for lower
+     * \return \c true only if structure is periodic in given \p direction
+     */
+    bool isExtended(Direction direction, bool higher) const {
+        return getBorder(direction, higher).type() == border::Strategy::EXTEND;
+    }
+
     virtual Type getType() const { return TYPE_GEOMETRY; }
 
     /**

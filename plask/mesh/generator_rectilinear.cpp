@@ -63,6 +63,9 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 template <int dim>
 RectilinearMesh1D RectilinearMeshDivideGenerator<dim>::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir)
 {
+    if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
+    if (post_divisions[dir] == 0) post_divisions[dir] = 1;
+
     RectilinearMesh1D result = initial;
 
     // First add refinement points
