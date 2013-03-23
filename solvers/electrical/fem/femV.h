@@ -75,7 +75,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     void saveHeatDensities();
 
     /// Matrix solver
-    int solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
     virtual void onInitialize();

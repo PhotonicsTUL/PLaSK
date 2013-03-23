@@ -6,6 +6,7 @@
 # include <boost/python/object/enum_base.hpp>
 # include <boost/python/converter/rvalue_from_python_data.hpp>
 # include <boost/python/converter/registered.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace plask { namespace python {
 
@@ -84,13 +85,20 @@ void* py_enum<T>::convertible_from_python(PyObject* obj)
 template <class T>
 void py_enum<T>::construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
 {
-#   if PY_VERSION_HEX >= 0x03000000
-    if (PyUnicode_Check(obj)) obj = boost::python::object(names_dict()[boost::python::handle<>(boost::python::borrowed(obj))]).ptr();
+#if PY_VERSION_HEX >= 0x03000000
+    if (PyUnicode_Check(obj)) {
+#else
+    if (PyString_Check(obj)) {
+#endif
+        std::string key = boost::python::extract<std::string>(obj);
+        boost::algorithm::to_upper(key);
+        obj = boost::python::object(names_dict()[key]).ptr();
+    }
+#if PY_VERSION_HEX >= 0x03000000
     T x = static_cast<T>(PyLong_AS_LONG(obj));
-#   else
-    if (PyString_Check(obj)) obj = boost::python::object(names_dict()[boost::python::handle<>(boost::python::borrowed(obj))]).ptr();
+#else
     T x = static_cast<T>(PyInt_AS_LONG(obj));
-#   endif
+#endif
     void* const storage = ((boost::python::converter::rvalue_from_python_storage<T>*)data)->storage.bytes;
     new (storage) T(x);
     data->convertible = storage;

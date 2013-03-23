@@ -502,36 +502,51 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 
 template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& iA, DataVector<double>& ioB)
 {
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
     int info = 0;
+    std::unique_ptr<double> Sguard(new double[iA.size]);
+    double* S = Sguard.get();
+    double scond, amax;
+    char equed;
+
+    // Compute row and column scalings to equilibrate the matrix A
+    dpbequ(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, info);
+    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
+    else if (info > 0)
+        throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
+
+    // Equilibrate the matrix
+    dlaqsb(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, equed);
+
+    // Scale the right-hand side
+    if (equed == 'Y') {
+    this->writelog(LOG_DETAIL, "Solving equilibrated matrix system");
+        for (size_t i = 0; i != iA.size; ++i)
+            ioB[i] *= S[i];
+    } else
+        this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
     switch (mAlgorithm) {
-
         case ALGORITHM_SLOW:
-            //Factorize
             dpbtf2(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, info);
-            if (info < 0)
-                throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
-            else if (info > 0)
-                throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
-            // Find solutions
-            dpbtrs(UPLO, iA.size, iA.bands, 1, iA.data, iA.bands+1, ioB.data(), ioB.size(), info);
-            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
             break;
-
         case ALGORITHM_BLOCK:
-            //Factorize
             dpbtrf(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, info);
-            if (info < 0)
-                throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
-            else if (info > 0)
-                throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
-            // Find solutions
-            dpbtrs(UPLO, iA.size, iA.bands, 1, iA.data, iA.bands+1, ioB.data(), ioB.size(), info);
-            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
             break;
+    }
+    if (info > 0)
+        throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
+
+    // Find solutions
+    dpbtrs(UPLO, iA.size, iA.bands, 1, iA.data, iA.bands+1, ioB.data(), ioB.size(), info);
+    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+
+    // Transform the solution matrix X to the solution of the original
+    if (equed == 'Y') {
+        for (size_t i = 0; i != iA.size; ++i)
+            ioB[i] *= S[i];
     }
 
     // now iA contains factorized matrix and ioB the solutions

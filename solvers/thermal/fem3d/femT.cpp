@@ -2,17 +2,6 @@
 
 #include "femT.h"
 
-// LAPACK routines to solve set of linear equations
-#define dpbtrf F77_GLOBAL(dpbtrf,DPBTRF)
-F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
-
-#define dpbtf2 F77_GLOBAL(dpbtf2,DPBTF2)
-F77SUB dpbtf2(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
-
-#define dpbtrs F77_GLOBAL(dpbtrs,DPBTRS)
-F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
-
-
 namespace plask { namespace solvers { namespace thermal3d {
 
 const size_t SparseBandMatrix::bands = 13;
@@ -375,22 +364,47 @@ double FiniteElementMethodThermal3DSolver::compute(int loops) {
 
 void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
     int info = 0;
+    std::unique_ptr<double> Sguard(new double[A.size]);
+    double* S = Sguard.get();
+    double scond, amax;
+    char equed;
+
+    // Compute row and column scalings to equilibrate the matrix A
+    dpbequ(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, info);
+    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
+    else if (info > 0)
+        throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
+
+    // Equilibrate the matrix
+    dlaqsb(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, equed);
+
+    // Scale the right-hand side
+    if (equed == 'Y') {
+    this->writelog(LOG_DETAIL, "Solving equilibrated matrix system");
+        for (size_t i = 0; i != A.size; ++i)
+            B[i] *= S[i];
+    } else
+        this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.bands, A.data, A.bands+1, info);
     if (info < 0)
         throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
-    else if (info > 0)
+    if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
     dpbtrs(UPLO, A.size, A.bands, 1, A.data, A.bands+1, B.data(), B.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
-    // now A contains the factorized matrix and B the solutions
+    // Transform the solution matrix X to the solution of the original
+    if (equed == 'Y') {
+        for (size_t i = 0; i != A.size; ++i)
+            B[i] *= S[i];
+    }
+
+    // now A contains factorized matrix and B the solutions
 }
 
 

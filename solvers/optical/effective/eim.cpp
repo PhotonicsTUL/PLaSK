@@ -298,7 +298,7 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
             phas = exp(I * beta[i+1] * (mesh->axis1[i+1]-mesh->axis1[i]));
     }
 
-    return s4 - s2*s3/s1;
+    return s1*s4 - s2*s3;
 }
 
 

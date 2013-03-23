@@ -2,7 +2,6 @@
 #define PLASK__MODULE_THERMAL_BAND_MATRIX_H
 
 #include <cstddef>
-#include <boost/concept_check.hpp>
 
 #define UPLO 'L'
 
@@ -15,6 +14,12 @@ F77SUB dpbtf2(const char& uplo, const int& n, const int& kd, double* ab, const i
 
 #define dpbtrs F77_GLOBAL(dpbtrs,DPBTRS)
 F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
+
+#define dpbequ F77_GLOBAL(dpbequ,DPBEQU)
+F77SUB dpbequ(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, double* s, double& scond, double& amax, int& info);
+
+#define dlaqsb F77_GLOBAL(dlaqsb,DLAQSB)
+F77SUB dlaqsb(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, const double* s, const double& scond, const double& amax, char& equed);
 
 namespace plask { namespace solvers { namespace electrical {
 
