@@ -51,6 +51,7 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(itermax, "Maximum nunber of iterations for iterative method");
+        solver.def_readwrite("equil", &__Class__::equilibrate, "True if the matrix should be equilibrated");
     }
 
 }

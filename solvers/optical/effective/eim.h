@@ -38,9 +38,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     friend struct RootDigger;
 
-    /// Mesh of points where data is sampled
-    RectilinearMesh2D midpoints;
-
     size_t xbegin,  ///< First element of horizontal mesh to consider
            xend,    ///< Last element of horizontal mesh to consider
            ybegin,  ///<First element of vertical mesh to consider

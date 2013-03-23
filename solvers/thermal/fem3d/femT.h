@@ -112,6 +112,8 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     double itererr;     ///< Allowed residual iteration for iterative method
     unsigned itermax;   ///< Maximum nunber of iterations for iterative method
 
+    bool equilibrate;      ///< Should the matrix system be equilibrated before solving?
+
     // Boundary conditions
     BoundaryConditions<RectilinearMesh3D,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
     BoundaryConditions<RectilinearMesh3D,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]

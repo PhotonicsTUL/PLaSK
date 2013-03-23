@@ -135,14 +135,26 @@ void EffectiveFrequencyCylSolver::onInitialize()
     if (!mesh) setSimpleMesh();
 
     // Assign space for refractive indices cache and stripe effective indices
-    size_t rsize = mesh->axis0.size();
+    rsize = mesh->axis0.size();
+    zsize = mesh->axis1.size() + 1;
+    zbegin = 0;
+
+    if (geometry->isExtended(Geometry::DIRECTION_VERT, false) &&
+        abs(mesh->axis1[0] - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
+        zbegin = 1;
+    if (geometry->isExtended(Geometry::DIRECTION_TRAN, true) &&
+        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
+        --rsize;
+    if (geometry->isExtended(Geometry::DIRECTION_VERT, true) &&
+        abs(mesh->axis1[mesh->axis1.size()-1] - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
+        --zsize;
 
     if (geometry->getBorder(Geometry::DIRECTION_TRAN, true).type() == border::Strategy::EXTEND &&
-        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper[0]) < SMALL)
+        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
         --rsize;
 
-    nrCache.assign(rsize, std::vector<dcomplex>(mesh->axis1.size()+1));
-    ngCache.assign(rsize, std::vector<dcomplex>(mesh->axis1.size()+1));
+    nrCache.assign(rsize, std::vector<dcomplex>(zsize));
+    ngCache.assign(rsize, std::vector<dcomplex>(zsize));
     veffs.resize(rsize);
     nng.resize(rsize);
 }
@@ -175,9 +187,6 @@ void EffectiveFrequencyCylSolver::stageOne()
     }
     if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-    size_t rsize = veffs.size();
-    size_t zsize = mesh->axis1.size() + 1;
-
     if (fresh || inTemperature.changed || inGain.changed || m != old_m || k0 != old_k0) { // we need to update something
 
         old_m = m;
@@ -186,13 +195,20 @@ void EffectiveFrequencyCylSolver::stageOne()
         double lam = real(2e3*M_PI / k0);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
-        auto temp = inTemperature(*mesh);
 
         double h = 1e6 * sqrt(SMALL);
         double lam1 = lam - h, lam2 = lam + h;
         double ih2 = 0.5 / h;
 
-        auto midmesh = mesh->getMidpointsMesh();
+        RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
+        if (rsize == mesh->axis0.size())
+            midmesh.axis0.addPoint(mesh->axis0[mesh->axis0.size()-1] + outdist);
+        if (zbegin == 0)
+            midmesh.axis1.addPoint(mesh->axis1[0] - outdist);
+        if (zsize == mesh->axis1.size()+1)
+            midmesh.axis1.addPoint(mesh->axis1[mesh->axis1.size()-1] + outdist);
+
+        auto temp = inTemperature(midmesh);
         auto gain = inGain(midmesh, lam1);
         auto gain_slope = inGain(midmesh, lam2).claim();
         {
@@ -202,51 +218,46 @@ void EffectiveFrequencyCylSolver::stageOne()
         }
         gain = inGain(midmesh, lam);
 
-        for (size_t ix = 0; ix != rsize; ++ix) {
-            size_t tx1;
-            double x0, x1;
-            x0 = mesh->axis0[ix];
-            if (ix < mesh->axis0.size()-1) { tx1 = ix+1; x1 = mesh->axis0[tx1]; } else { tx1 = mesh->axis0.size()-1; x1 = mesh->axis0[tx1] + 2.*outdist; }
-            for (size_t iy = 0; iy < zsize; ++iy) {
-                size_t ty0, ty1;
-                double y0, y1;
-                if (iy > 0) { ty0 = iy-1; y0 = mesh->axis1[ty0]; } else { ty0 = 0; y0 = mesh->axis1[ty0] - 2.*outdist; }
-                if (iy < zsize-1) { ty1 = iy; y1 = mesh->axis1[ty1]; } else { ty1 = zsize-2; y1 = mesh->axis1[ty1] + 2.*outdist; }
-
-                double T = 0.25 * ( temp[mesh->index(ix,ty0)] + temp[mesh->index(ix,ty1)] +
-                                    temp[mesh->index(tx1,ty0)] + temp[mesh->index(tx1,ty1)] );
-
-                auto point = 0.25 * (vec(x0,y0) + vec(x0,y1) + vec(x1,y0) + vec(x1,y1));
+        for (size_t ir = 0; ir != rsize; ++ir) {
+            for (size_t iz = zbegin; iz < zsize; ++iz) {
+                size_t idx = midmesh.index(ir, iz-zbegin);
+                double T = temp[idx];
+                auto point = midmesh[idx];
                 auto material = geometry->getMaterial(point);
                 auto roles = geometry->getRolesAt(point);
 
                 // Nr = nr + i/(4π) λ g
                 // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
-                if ( ix == rsize-1 || iy == 0 || iy == zsize-1 ||
-                     (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) ) {
-                    nrCache[ix][iy] = material->Nr(lam, T);
-                    ngCache[ix][iy] = nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
+                if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) {
+                    nrCache[ir][iz] = material->Nr(lam, T);
+                    ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
                 } else { // we ignore the material absorption as it should be considered in the gain already
-                    double g = gain[midmesh->index(ix, iy-1)];
-                    double gs = gain_slope[midmesh->index(ix, iy-1)];
+                    double g = gain[idx];
+                    double gs = gain_slope[idx];
                     double nr = real(material->Nr(lam, T));
-                    double ng = real(nrCache[ix][iy] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2);
-                    nrCache[ix][iy] = dcomplex(nr, 7.95774715459e-09 * lam * g);
-                    ngCache[ix][iy] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
+                    double ng = real(nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2);
+                    nrCache[ir][iz] = dcomplex(nr, 7.95774715459e-09 * lam * g);
+                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
                 }
+            }
+            if (zbegin != 0) {
+                nrCache[ir][0] = nrCache[ir][1];
+                ngCache[ir][0] = ngCache[ir][1];
             }
         }
 
         // Compute effective frequencies for all stripes
         std::exception_ptr error; // needed to handle exceptions from OMP loop
         #pragma omp parallel for
-        for (size_t i = 0; i < nrCache.size(); ++i) {
+        for (size_t i = 0; i < rsize; ++i) {
             if (error != std::exception_ptr()) continue; // just skip loops after error
             try {
                 writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
 #               ifndef NDEBUG
-                    std::stringstream nrgs; for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
+                    std::stringstream nrgs; for (auto nr = nrCache[i].end(), ng = ngCache[i].end(); nr != nrCache[i].begin();) {
+                        --nr; --ng;
                         nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
+                    }
                     writelog(LOG_DEBUG, "Nr/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
 #               endif
 
@@ -503,10 +514,11 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
             }
             dcomplex val = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
 
-            size_t iy = mesh->axis1.findIndex(z);
-            z -= mesh->axis1[max(int(iy)-1, 0)];
-            dcomplex phasz = exp(- I * betaz[iy] * z);
-            val *= fieldZ[iy][0] * phasz + fieldZ[iy][1] / phasz;
+            size_t iz = mesh->axis1.findIndex(z);
+            if (iz >= zsize) iz = zsize-1;
+            z -= mesh->axis1[max(int(iz)-1, 0)];
+            dcomplex phasz = exp(- I * betaz[iz] * z);
+            val *= fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
 
             results[id] = real(abs2(val));
         }
@@ -556,6 +568,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
             for (size_t idz = 0; idz < rect_mesh.vert().size(); ++idz) {
                 double z = rect_mesh.axis1[idz];
                 size_t iz = mesh->axis1.findIndex(z);
+                if (iz >= zsize) iz = zsize-1;
                 z -= mesh->axis1[max(int(iz)-1, 0)];
                 dcomplex phasz = exp(- I * betaz[iz] * z);
                 valz[idz] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;

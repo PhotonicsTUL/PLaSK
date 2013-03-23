@@ -104,6 +104,8 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     Algorithm mAlgorithm;   ///< Factorization algorithm to use
 
+    bool mEquilibrate;      ///< Should the matrix system be equilibrated before solving?
+
     /**
      * Run temperature calculations
      * \return max correction of temperature against the last call

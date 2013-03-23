@@ -10,7 +10,8 @@ template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DT
     mCorrType(CORRECTION_ABSOLUTE),
     outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes),
-    mAlgorithm(ALGORITHM_BLOCK)
+    mAlgorithm(ALGORITHM_BLOCK),
+    mEquilibrate(false)
 {
     mTemperatures.reset();
     mHeatFluxes.reset();
@@ -55,6 +56,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
                 .value("block", ALGORITHM_BLOCK)
                 .value("slow", ALGORITHM_SLOW)
                 .get(mAlgorithm);
+            mEquilibrate = source.getAttribute<bool>("equil", mEquilibrate);
             source.requireTagEnd();
         } else
             this->parseStandardConfiguration(source, manager);
@@ -506,20 +508,22 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     std::unique_ptr<double> Sguard(new double[iA.size]);
     double* S = Sguard.get();
     double scond, amax;
-    char equed;
+    char equed = 'E';
 
-    // Compute row and column scalings to equilibrate the matrix A
-    dpbequ(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
-    else if (info > 0)
-        throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
+    if (mEquilibrate) {
+        // Compute row and column scalings to equilibrate the matrix A
+        dpbequ(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, info);
+        if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
+        else if (info > 0)
+            throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
+        // Equilibrate the matrix
+        dlaqsb(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, equed);
+    }
 
-    // Equilibrate the matrix
-    dlaqsb(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, equed);
 
     // Scale the right-hand side
     if (equed == 'Y') {
-    this->writelog(LOG_DETAIL, "Solving equilibrated matrix system");
+        this->writelog(LOG_DETAIL, "Solving equilibrated matrix system");
         for (size_t i = 0; i != iA.size; ++i)
             ioB[i] *= S[i];
     } else

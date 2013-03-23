@@ -15,6 +15,7 @@ FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std
     corrtype(CORRECTION_ABSOLUTE),
     itererr(1e-8),
     itermax(10000),
+    equilibrate(false),
     outTemperature(this, &FiniteElementMethodThermal3DSolver::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal3DSolver::getHeatFluxes)
 {
@@ -63,6 +64,7 @@ void FiniteElementMethodThermal3DSolver::loadConfiguration(XMLReader &source, Ma
                 .get(algorithm);
             itererr = source.getAttribute<double>("itererr", itererr);
             itermax = source.getAttribute<unsigned>("itermax", itermax);
+            equilibrate = source.getAttribute<bool>("equil", equilibrate);
             source.requireTagEnd();
         } else
             this->parseStandardConfiguration(source, manager);
@@ -376,16 +378,16 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<do
     else if (info > 0)
         throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
 
-    // Equilibrate the matrix
-    dlaqsb(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, equed);
+    if (equilibrate) {
+        // Compute row and column scalings to equilibrate the matrix A
+        dpbequ(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, info);
+        if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
+        else if (info > 0)
+            throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
+        // Equilibrate the matrix
+        dlaqsb(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, equed);
+    }
 
-    // Scale the right-hand side
-    if (equed == 'Y') {
-    this->writelog(LOG_DETAIL, "Solving equilibrated matrix system");
-        for (size_t i = 0; i != A.size; ++i)
-            B[i] *= S[i];
-    } else
-        this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.bands, A.data, A.bands+1, info);

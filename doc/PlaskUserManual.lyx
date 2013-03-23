@@ -14948,6 +14948,54 @@ slow
 )
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+equil
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+True if the matrix should be equilibrated.
+ Defaults ot no equilibration.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+true
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+false
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
 \end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
@@ -15704,6 +15752,54 @@ block
 
 \emph on
 slow
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+equil
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+True if the matrix should be equilibrated.
+ Defaults ot no equilibration.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+true
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+false
 \emph default
 
 \begin_inset Quotes erd

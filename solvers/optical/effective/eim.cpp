@@ -24,7 +24,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     stripe_root.tolx = 1.0e-6;
     stripe_root.tolf_min = 1.0e-8;
     stripe_root.tolf_max = 1.0e-5;
-    stripe_root.maxstep = 0.5;
+    stripe_root.maxstep = 0.05;
     stripe_root.maxiter = 500;
 }
 
@@ -130,9 +130,27 @@ void EffectiveIndex2DSolver::onInitialize()
     // Set default mesh
     if (!mesh) setSimpleMesh();
 
+    xbegin = 0;
+    ybegin = 0;
+    xend = mesh->axis0.size() + 1;
+    yend = mesh->axis1.size() + 1;
+
+    if (geometry->isExtended(Geometry::DIRECTION_TRAN, false) &&
+        abs(mesh->axis0[0] - geometry->getChild()->getBoundingBox().lower.c0) < SMALL)
+        xbegin = 1;
+    if (geometry->isExtended(Geometry::DIRECTION_VERT, false) &&
+        abs(mesh->axis1[0] - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
+        ybegin = 1;
+    if (geometry->isExtended(Geometry::DIRECTION_TRAN, true) &&
+        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
+        --xend;
+    if (geometry->isExtended(Geometry::DIRECTION_VERT, true) &&
+        abs(mesh->axis1[mesh->axis1.size()-1] - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
+        --yend;
+
     // Assign space for refractive indices cache and stripe effective indices
-    nrCache.assign(mesh->tran().size()+1, std::vector<dcomplex>(mesh->vert().size()+1));
-    stripeNeffs.resize(mesh->tran().size()+1);
+    nrCache.assign(xend, std::vector<dcomplex>(yend));
+    stripeNeffs.resize(xend);
 }
 
 
@@ -157,11 +175,6 @@ void EffectiveIndex2DSolver::stageOne()
     bool fresh = !initCalculation();
     bool recompute_neffs = false;
 
-    xbegin = 0;
-    ybegin = 0;
-    xend = mesh->axis0.size() + 1;
-    yend = mesh->axis1.size() + 1;
-
     // Some additional checks
     if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
@@ -173,11 +186,6 @@ void EffectiveIndex2DSolver::stageOne()
             symmetry = NO_SYMMETRY;
         }
     }
-
-    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_TRAN, false)) xbegin = 1;
-    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_VERT, false)) ybegin = 1;
-    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_TRAN, true))  --xend;
-    if (geometry->isExtended(Geometry2DCartesian::DIRECTION_VERT, true))  --yend;
 
     if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed) {
         // we need to update something
@@ -202,16 +210,15 @@ void EffectiveIndex2DSolver::stageOne()
         auto gain = inGain(midmesh, w);
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
-            size_t tx = ix - xbegin;
             for (size_t iy = ybegin; iy < yend; ++iy) {
-                size_t ty = iy - ybegin;
-                double T = temp[midmesh.index(tx,ty)];
-                auto point = midmesh(tx, ty);
+                size_t idx = midmesh.index(ix-xbegin, iy-ybegin);
+                double T = temp[idx];
+                auto point = midmesh[idx];
                 auto roles = geometry->getRolesAt(point);
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end())
                     nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
                 else {  // we ignore the material absorption as it should be considered in the gain already
-                    double g = gain[midmesh.index(tx, ty)];
+                    double g = gain[idx];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
                                                 w * g * 7.95774715459e-09 );
                 }
@@ -232,7 +239,7 @@ void EffectiveIndex2DSolver::stageOne()
             try {
                 writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", i-xbegin, (polarization==TE)?"TE":"TM");
 #               ifndef NDEBUG
-                    std::stringstream nrs; for (size_t j = ybegin; j != yend; ++j) nrs << ", " << str(nrCache[i][j]);
+                    std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[i][j]);
                     writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", i-xbegin, nrs.str().substr(1));
 #               endif
 
@@ -256,7 +263,7 @@ void EffectiveIndex2DSolver::stageOne()
         if (error != std::exception_ptr()) std::rethrow_exception(error);
 
 #       ifndef NDEBUG
-            std::stringstream nrs; for (size_t i = xbegin; i < stripeNeffs.size(); ++i) nrs << ", " << str(stripeNeffs[i]);
+            std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i) nrs << ", " << str(stripeNeffs[i]);
             writelog(LOG_DEBUG, "stripes neffs = [%1% ]", nrs.str().substr(1));
 #       endif
     }

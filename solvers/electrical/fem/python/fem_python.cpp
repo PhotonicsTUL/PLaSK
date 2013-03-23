@@ -65,6 +65,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
+        solver.def_readwrite("equil", &__Class__::mEquilibrate, "True if the matrix should be equilibrated");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
@@ -86,6 +87,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
+        solver.def_readwrite("equil", &__Class__::mEquilibrate, "True if the matrix should be equilibrated");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
