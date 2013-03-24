@@ -52,10 +52,14 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double mMaxVCorr;     ///< Maximum absolute voltage correction (useful for calculations with internal loops)
     double mDV;           ///< Maximum voltage
 
-    DataVector<Tensor2<double>> mCond;     ///< Cached element conductivities
+    DataVector<Tensor2<double>> mCond;              ///< Cached element conductivities
     DataVector<double> mPotentials;                 ///< Computed potentials
     DataVector<Vec<2,double>> mCurrentDensities;    ///< Computed current densities
     DataVector<double> mHeatDensities;              ///< Computed and cached heat source densities
+
+    size_t mActLo,  ///< Vertical index of the lower side fo the active region
+           mActHi;  ///< Vertical index of the higher side fo the active region
+    double mDact;   ///< Active region thickness
 
     /// Set stiffness matrix + load vector
     void setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,

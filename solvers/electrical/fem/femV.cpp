@@ -106,6 +106,43 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     mABand = this->mesh->minorAxis().size() + 2;
     mPotentials.reset(mAOrder, 0.);
     mCond.reset(this->mesh->elements.size());
+
+    // Scan for active region
+    bool tHadActive = false;
+    auto tMidMesh = this->mesh->getMidpointsMesh();
+    for (size_t tX = 0; tX != tMidMesh->axis0.size(); ++tX) {
+        bool tActive = false;
+        for (size_t tY = 0; tY != tMidMesh->axis1.size(); ++tY) {
+            if (this->geometry->hasRoleAt("active", tMidMesh->at(tX, tY))) {
+                if (!tActive) {
+                    if (tHadActive && mActLo != tY)
+                        throw BadInput(this->getId(), "Only single flat active region allowed");
+                    mActLo = tY;
+                    tActive = true;
+                }
+            } else {
+                if (tActive) {
+                    if (tHadActive && mActHi != tY)
+                        throw BadInput(this->getId(), "Only single flat active region allowed");
+                    mActHi = tY;
+                    tActive = false;
+                    tHadActive = true;
+                }
+            }
+        }
+        if (tActive) {
+            if (tHadActive && mActHi != tMidMesh->axis1.size())
+                throw BadInput(this->getId(), "Only single flat active region allowed");
+            mActHi = tMidMesh->axis1.size();
+            tHadActive = true;
+        }
+    }
+    if (tHadActive) {
+        mDact = this->mesh->axis1[mActHi] - this->mesh->axis1[mActLo];
+#ifndef NDEBUG
+        this->writelog(LOG_DEBUG, "Active layer thickness = %1%nm", 1e3 * mDact);
+#endif
+    }
 }
 
 
@@ -146,11 +183,13 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(DpbMa
 
         Vec<2,double> tMidPoint = tE.getMidpoint();
         if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
-            auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-            double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-            double tJy = 0.5e6 * mCond[i].c11 * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                    / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
-            mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
+            size_t tLeft = this->mesh->index0(tLoLeftNo);
+            size_t tRight = this->mesh->index0(tLoRghtNo);
+            double tJy = 0.5e6 * mCond[i].c11 *
+                abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
+                     + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
+                   ) / mDact; // [j] = A/m²
+             mCond[i] = std::make_pair(mCondJuncX0, 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
         }
         double tKx = mCond[i].c00;
         double tKy = mCond[i].c11;
@@ -240,11 +279,13 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Dpb
         double r = tMidPoint.rad_r();
 
         if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
-            auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-            double tDact = 1e-6 * tLeaf->getBoundingBox().height();
-            double tJy = 0.5e6 * mCond[i].c11 * fabs(- mPotentials[tLoLeftNo] - mPotentials[tLoRghtNo] + mPotentials[tUpLeftNo] + mPotentials[tUpRghtNo])
-                                                    / (tE.getUpper1() - tE.getLower1()); // [j] = A/m²
-            mCond[i] = std::make_pair(mCondJuncX0, mBeta * tJy * tDact / log(tJy / mJs + 1.));
+            size_t tLeft = this->mesh->index0(tLoLeftNo);
+            size_t tRight = this->mesh->index0(tLoRghtNo);
+            double tJy = 0.5e6 * mCond[i].c11 *
+                abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
+                     + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
+                   ) / mDact; // [j] = A/m²
+            mCond[i] = std::make_pair(mCondJuncX0, 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
         }
         double tKx = mCond[i].c00;
         double tKy = mCond[i].c11;
@@ -507,7 +548,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             }
         }
     } else {
-        boost::optional<double> tDact;
+        double tHeatFact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength()) * mDact);
         for (auto tE: this->mesh->elements) {
             size_t i = tE.getIndex();
             size_t tLoLeftNo = tE.getLoLoIndex();
@@ -521,15 +562,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             auto tMidPoint = tE.getMidpoint();
             auto tRoles = this->geometry->getRolesAt(tMidPoint);
             if (tRoles.find("active") != tRoles.end()) {
-                if (!tDact) {
-                    auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
-                    tDact.reset(1e-6 * tLeaf->getBoundingBox().height()); // m
-                    #ifndef NDEBUG
-                        this->writelog(LOG_DEBUG, "active layer thickness = %1%nm", 1e9 * *tDact);
-                    #endif
-                }
                 double tJy = mCond[i].c11 * fabs(tDVy); // [j] = A/m²
-                mHeatDensities[i] = phys::h_J * phys::c * tJy / ( phys::qe * real(inWavelength())*1e-9 * *tDact );
+                mHeatDensities[i] = tHeatFact * tJy ;
             } else if (this->geometry->getMaterial(tMidPoint)->kind() == Material::NONE || tRoles.find("noheat") != tRoles.end())
                 mHeatDensities[i] = 0.;
             else
