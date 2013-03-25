@@ -123,7 +123,7 @@ class PythonEvalMaterial : public Material
         try { PYTHON_EVAL_CALL_3(double, CBO, T, e, point) }
         catch (NotImplemented) { return VBO(T, e, point) + Eg(T, e, point); }
     }
-    virtual double VBO(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, CBO, T, e, point) }
+    virtual double VBO(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, VBO, T, e, point) }
     virtual double Dso(double T, double e) const { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
     virtual double Mso(double T, double e) const { PYTHON_EVAL_CALL_2(double, Mso, T, e) }
     virtual Tensor2<double> Me(double T, double e, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, e, point) }
