@@ -24,6 +24,8 @@ BOOST_PYTHON_MODULE(simple)
         PROVIDER(outGain, "Optical gain in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
+        solver.def_readwrite("condWaveguideDepth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
+        solver.def_readwrite("valeWaveguideDepth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
 //        solver.def_readwrite("wavelegth", &__Class__::lambda, "Wavelength for which gain is calculated");
     }
     {CLASS(FermiGainSolver<Geometry2DCylindrical>, "FermiCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
@@ -33,6 +35,8 @@ BOOST_PYTHON_MODULE(simple)
         PROVIDER(outGain, "Optical gain in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
+        solver.def_readwrite("condWaveguideDepth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
+        solver.def_readwrite("valeWaveguideDepth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
 //        solver.def_readwrite("wavelegth", &__Class__::lambda, "Wavelength for which gain is calculated");
     }
 

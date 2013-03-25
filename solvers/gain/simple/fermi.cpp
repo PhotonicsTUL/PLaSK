@@ -8,6 +8,10 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverO
     outGain(this, &FermiGainSolver<GeometryType>::getGain) // getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
+    mLifeTime = 0.1; // [ps]
+    mMatrixElem = 10.0;
+    cond_waveguide_depth = 0.26; // [eV]
+    vale_waveguide_depth = 0.13; //[eV]
 //    lambda = 0.98;
 }
 
@@ -289,11 +293,11 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 
     gainModule.Set_split_off(QW_material->Dso(T));
     gainModule.Set_bandgap(QW_material->Eg(T));
-    gainModule.Set_conduction_depth(QW_material->CBO(T));
-    gainModule.Set_valence_depth(QW_material->VBO(T));
+    gainModule.Set_conduction_depth(QW_material->CBO(T) - Bar_material->CBO(T));
+    gainModule.Set_valence_depth(QW_material->VBO(T) - Bar_material->VBO(T));
 
-    gainModule.Set_cond_waveguide_depth(0.26);
-    gainModule.Set_vale_waveguide_depth(0.13);
+    gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
+    gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
 
     gainModule.Set_lifetime(mLifeTime); //gainModule.Set_lifetime(0.5);
     gainModule.Set_momentum_matrix_element(mMatrixElem); //gainModule.Set_momentum_matrix_element(8.0);

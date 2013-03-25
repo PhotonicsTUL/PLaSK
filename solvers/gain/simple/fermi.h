@@ -103,13 +103,15 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Main computation function TODO: is this necessary in this solver?
     void determineLevels(double T, double n);
 
-  protected:
-    double mLifeTime;///< stimulated emission lifetime [ps]
-    double mMatrixElem;///< optical matrix element [m0*eV]
-
   public:
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;
+
+    double cond_waveguide_depth;///< waveguide conduction band depth [eV]
+    double vale_waveguide_depth;///< waveguide valence band depth [eV]
+    double mLifeTime;///< stimulated emission lifetime [ps]
+    double mMatrixElem;///< optical matrix element [m0*eV]
+
 
 //    double lambda_start;
 //    double lambda_stop;
