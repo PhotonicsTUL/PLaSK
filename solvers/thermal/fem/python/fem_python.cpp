@@ -18,6 +18,18 @@ using namespace plask::solvers::thermal;
 //     return result;
 // }
 
+namespace plask { namespace solvers { namespace thermal {
+
+    std::string Convection__repr__(const Convection& self) {
+        return "Convection(" + str(self.mConvCoeff) + "," + str(self.mTAmb1) + ")";
+    }
+
+    std::string Radiation__repr__(const Radiation& self) {
+        return "Radiation(" + str(self.mSurfEmiss) + "," + str(self.mTAmb2) + ")";
+    }
+
+}}}
+
 
 
 /**
@@ -42,11 +54,13 @@ BOOST_PYTHON_MODULE(fem)
     py::class_<Convection>("Convection", "Convective boundary condition value", py::init<double,double>())
         .def_readwrite("coeff", &Convection::mConvCoeff)
         .def_readwrite("ambient", &Convection::mTAmb1)
+        .def("__repr__", &Convection__repr__)
     ;
 
     py::class_<Radiation>("Radiation", "Radiative boundary condition value", py::init<double,double>())
         .def_readwrite("emissivity", &Radiation::mSurfEmiss)
         .def_readwrite("ambient", &Radiation::mTAmb2)
+        .def("__repr__", &Radiation__repr__)
     ;
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D", "Finite element thermal solver for 2D Cartesian Geometry.")
