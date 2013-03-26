@@ -159,21 +159,6 @@ namespace detail {
     template <typename, PropertyType, typename> struct ProfileProvider;
 
     template <typename ReceiverT, typename... ExtraParams>
-    struct ProfileProvider<ReceiverT,ON_MESH_PROPERTY,VariadicTemplateTypesHolder<ExtraParams...>>:
-    public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>, public Provider::Listener
-    {
-        shared_ptr<PythonProfile> profile;
-        ProfileProvider(const shared_ptr<PythonProfile>& parent): profile(parent) {
-            parent->add(this);
-        }
-        virtual ~ProfileProvider() { profile->remove(this); }
-        virtual DataVector<typename ReceiverT::PropertyTag::ValueType> operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams...) const {
-            return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
-        }
-        virtual void onChange() { this->fireChanged(); }
-    };
-
-    template <typename ReceiverT, typename... ExtraParams>
     struct ProfileProvider<ReceiverT,FIELD_PROPERTY,VariadicTemplateTypesHolder<ExtraParams...>>:
     public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>, public Provider::Listener
     {
@@ -279,35 +264,6 @@ namespace detail {
         }
     };
 
-    template <typename ReceiverT, typename... ExtraParams>
-    struct RegisterReceiverImpl<ReceiverT, ON_MESH_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
-    public RegisterReceiverBase<ReceiverT>
-    {
-        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
-        static const int DIMS = ReceiverT::SpaceType::DIMS;
-        typedef DataVectorWrap<const ValueT, DIMS> DataT;
-
-        static void assign(ReceiverT& self, const py::object& obj) {
-            if (obj == py::object()) { self.setProvider(nullptr); return; }
-            if (assignProvider(self, obj)) return;
-            if (assignProfile(self, obj)) return;
-            if (assignValue(self, obj)) return;
-            throw TypeError("You can only assign %1% provider, profile, or constant of type '%2%'",
-                            type_name<typename ReceiverT::PropertyTag>(),
-                            std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
-        }
-
-        static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params) {
-            return DataT(self(*mesh, params...), mesh);
-        }
-
-        RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
-            this->receiver_class.def("__lshift__", &connectProfileProvider<ReceiverT>, "(DEPRECIATED) Connect profile to receiver");
-            this->receiver_class.def("connect", &connectProfileProvider<ReceiverT>, "Connect profile to receiver");
-        }
-    };
-
     template <int DIMS, typename ReceiverT, typename... ExtraParams> struct ReceiverSetValueForMeshes;
 
     template <typename ReceiverT, typename... ExtraParams>
@@ -381,20 +337,6 @@ namespace detail {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static ValueT __call__(ProviderT& self, const ExtraParams&... params) { return self(params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider");
-        }
-    };
-
-    template <typename ProviderT, typename... ExtraParams>
-    struct RegisterProviderImpl<ProviderT, ON_MESH_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
-    public RegisterProviderBase<ProviderT>
-    {
-        typedef typename ProviderT::PropertyTag::ValueType ValueT;
-        static const int DIMS = ProviderT::SpaceType::DIMS;
-        static DataVectorWrap<ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params) {
-            return DataVectorWrap<ValueT,DIMS>(self(*mesh, params...), mesh);
-        }
-        RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__, "Get value from the provider");
         }
     };

@@ -42,7 +42,6 @@ Physical property tag class is an class which only has static fields and typedef
 physical property. It can be easy obtain by subclass instantiation of one of templates:
 - plask::Property — allows to obtain all possible physical properties tags classes, but require many parameters (not recommended);
 - plask::SingleValueProperty — allows to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
-- plask::OnMeshProperty — allows to obtain tags for properties described by values in points described by mesh (doesn't use interpolation), require only one parameter - type of provided value;
 - plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
 - plask::ScalarFieldProperty — equals to plask::FieldProperty\<double\>, doesn't require any parameters.
 
@@ -429,47 +428,16 @@ struct SingleValueProvider: public Provider {
 //TODO typedef for SingleValueReceiver (GCC 4.7 needed)
 
 /**
- * Instantiation of this template is abstract base class for provider which provide values in points described by mesh
- * and don't use interpolation.
+ * Instantiation of this template is abstract base class for provider class which provide values in points described by mesh
+ * and use interpolation.
  */
 template <typename ValueT, typename SpaceT, typename... ExtraArgs>
-struct OnMeshProvider: public Provider {
+struct FieldProvider: public Provider {
 
     static constexpr const char* NAME = "undefined field";
 
     /// Type of value provided by this (returned by operator()).
     typedef DataVector<const ValueT> ProvidedType;
-
-    /**
-     * @param dst_mesh set of requested points
-     * @param extra_args additional provider arguments
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const = 0;
-
-    /**
-     * @param dst_mesh set of requested points
-     * @param extra_args additional provider arguments
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    inline ProvidedType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args) const {
-        return this->operator()(*dst_mesh, extra_args...);
-    }
-};
-
-//TODO typedef for OnMeshReceiver (GCC 4.7 needed)
-
-/**
- * Instantiation of this template is abstract base class for provider class which provide values in points described by mesh
- * and use interpolation.
- */
-template <typename ValueT, typename SpaceT, typename... ExtraArgs>
-struct FieldProvider: public OnMeshProvider<ValueT, SpaceT, ExtraArgs...> {
-
-    static constexpr const char* NAME = "undefined field";
-
-    /// Type of value provided by this (returned by operator()).
-    typedef typename OnMeshProvider<ValueT, SpaceT, ExtraArgs...>::ProvidedType ProvidedType;
 
     /**
      * @param dst_mesh set of requested points
@@ -485,7 +453,7 @@ struct FieldProvider: public OnMeshProvider<ValueT, SpaceT, ExtraArgs...> {
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {
+    inline ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(dst_mesh, extra_args..., DEFAULT_INTERPOLATION);
     }
 
@@ -495,7 +463,7 @@ struct FieldProvider: public OnMeshProvider<ValueT, SpaceT, ExtraArgs...> {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+    inline ProvidedType operator()(const shared_ptr<MeshD<SpaceT::DIMS>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
         return this->operator()(*dst_mesh, extra_args..., method);
     }
 

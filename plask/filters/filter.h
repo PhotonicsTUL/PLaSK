@@ -43,26 +43,6 @@ struct ChangeSpaceFilterImpl {
 
 /// Don't use this directly, use ChangeSpaceFilter instead.
 template <typename PropertyT, typename ValueT, typename inputSpaceType, typename outputSpaceType, typename... _ExtraParams>
-struct ChangeSpaceFilterImpl<PropertyT, ValueT, ON_MESH_PROPERTY, inputSpaceType, outputSpaceType, VariadicTemplateTypesHolder<_ExtraParams...> >
-: public Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate > {
-
-    ChangeSpaceFilterImpl(const std::string &name)
-    : Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate >(name) {
-        this->out.valueGetter = [&] (const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams&&... extra_args) -> DataVector<const ValueT> {
-            return this->apply(dst_mesh, std::forward<_ExtraParams>(extra_args)...);
-        };
-    }
-
-    /**
-     * @param dst_mesh set of requested points
-     * @param extra_args additional provider arguments
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    virtual DataVector<const ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams... extra_args) const = 0;
-};
-
-/// Don't use this directly, use ChangeSpaceFilter instead.
-template <typename PropertyT, typename ValueT, typename inputSpaceType, typename outputSpaceType, typename... _ExtraParams>
 struct ChangeSpaceFilterImpl<PropertyT, ValueT, FIELD_PROPERTY, inputSpaceType, outputSpaceType, VariadicTemplateTypesHolder<_ExtraParams...> >
 : public Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate > {
 
@@ -97,6 +77,59 @@ struct ChangeSpaceFilterImpl<PropertyT, ValueT, FIELD_PROPERTY, inputSpaceType, 
 template <typename PropertyT, typename inputSpaceType, typename outputSpaceType>
 using ChangeSpaceFilter = ChangeSpaceFilterImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, inputSpaceType, outputSpaceType, typename PropertyT::ExtraParams>;
 
+template <typename DataType>
+struct Data3Din2DCartesianSource {
+    virtual DataVector<const DataType> get(const MeshD<3>& dst_mesh) const = 0;
+    virtual Vec<3, double> getTranslation() const = 0;
+    virtual double getLonSize() const = 0;
+
+    /**
+     * Each point in 2D geometry is extruded to line segment in 3D geometry.
+     *
+     * If @c b is begin of this line segment, than each point inside this segment has coordinate
+     * which can be calulate by adding to @c b.lon() number in range [0.0, lonSize].
+     * @param v point in 2D geometry coordinates
+     * @return begin of line segment, in geometry 3D coordinates
+     */
+    Vec<3,double> lineBegin(const Vec<2,double>& v) const {
+        Vec<3, double> result = getTranslation();
+        result.tran() += v.tran();
+        result.vert() += v.vert();
+        return result;
+    }
+
+    /**
+     * Each point in 2D geometry is extruded to line segment in 3D geometry.
+     * @param v point in 2D geometry coordinates
+     * @return end of line segment, in geometry 3D coordinates
+     * @see lineBegin(const Vec<2,double>&)
+     */
+    Vec<3,double> lineEnd(const Vec<2,double>& v) const {
+        Vec<3, double> result = getTranslation();
+        result.tran() += v.tran();
+        result.vert() += v.vert();
+        result.lon() += getLonSize();
+        return result;
+    }
+
+    /**
+     * Each point in 2D geometry is extruded to line in segment 3D geometry.
+     * @param v point in 2D geometry coordinates
+     * @param at position in line, from 0.0 to 1.0: 0.0 for line begin, 1.0 for line end
+     * @return point at line segment, in geometry 3D coordinates
+     * @see lineBegin(const Vec<2,double>&)
+     */
+    Vec<3,double> lineAt(const Vec<2,double>& v, double at) const {
+        Vec<3, double> result = getTranslation();
+        result.tran() += v.tran();
+        result.vert() += v.vert();
+        result.lon() += getLonSize() * at;
+        return result;
+    }
+};
+
+
+
 /**
  * Filter which recalculate field from 3D geometry to 2D cartesian geometry included in this 3D geometry.
  *
@@ -108,6 +141,14 @@ class ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3D
     boost::signals2::connection geomConnection;
     
 public:
+
+    /// type of ChangeSpaceCartesian2Dto3D logic, it calculates and returns values at requested_points using given data_source
+    typedef std::function<
+        DataVector<const typename PropertyT::ValueType>(
+            const MeshD<2>& requested_points,
+            const Data3Din2DCartesianSource<typename PropertyT::ValueType>& data_source
+        )
+    > Logic;
     
     /// Place of extrusion inside outer 3D geometry, calculated using geometries.
     Vec<3, double> translation;
@@ -143,49 +184,7 @@ public:
         geomConnection.disconnect();
     }
 
-    /**
-     * Each point in 2D geometry is extruded to line segment in 3D geometry.
-     *
-     * If @c b is begin of this line segment, than each point inside this segment has coordinate
-     * which can be calulate by adding to @c b.lon() number in range [0.0, lonSize].
-     * @param v point in 2D geometry coordinates
-     * @return begin of line segment, in geometry 3D coordinates
-     */
-    Vec<3,double> lineBegin(const Vec<2,double>& v) const {
-        Vec<3, double> result = translation;
-        result.tran() += v.tran();
-        result.vert() += v.vert();
-        return result;
-    }
-    
-    /**
-     * Each point in 2D geometry is extruded to line segment in 3D geometry.
-     * @param v point in 2D geometry coordinates
-     * @return end of line segment, in geometry 3D coordinates
-     * @see lineBegin(const Vec<2,double>&)
-     */
-    Vec<3,double> lineEnd(const Vec<2,double>& v) const {
-        Vec<3, double> result = translation;
-        result.tran() += v.tran();
-        result.vert() += v.vert();
-        result.lon() += lonSize;
-        return result;
-    }
-    
-    /**
-     * Each point in 2D geometry is extruded to line in segment 3D geometry.
-     * @param v point in 2D geometry coordinates
-     * @param at position in line, from 0.0 to 1.0: 0.0 for line begin, 1.0 for line end
-     * @return point at line segment, in geometry 3D coordinates
-     * @see lineBegin(const Vec<2,double>&)
-     */
-    Vec<3,double> lineAt(const Vec<2,double>& v, double at) const {
-        Vec<3, double> result = translation;
-        result.tran() += v.tran();
-        result.vert() += v.vert();
-        result.lon() += lonSize * at;
-        return result;
-    }
+
 
 };
 
