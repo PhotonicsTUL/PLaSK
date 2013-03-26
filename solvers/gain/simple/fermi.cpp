@@ -276,16 +276,16 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 
     gainModule.Set_refr_index(QW_material->nr(wavelength, T));
 
-    gainModule.Set_electron_mass_in_plain(QW_material->Me(T).c11);
-    gainModule.Set_electron_mass_transverse(QW_material->Me(T).c00);
-    gainModule.Set_heavy_hole_mass_in_plain(QW_material->Mhh(T).c11);
-    gainModule.Set_heavy_hole_mass_transverse(QW_material->Mhh(T).c00);
-    gainModule.Set_light_hole_mass_in_plain(QW_material->Mlh(T).c11);
-    gainModule.Set_light_hole_mass_transverse(QW_material->Mlh(T).c00);
+    gainModule.Set_electron_mass_in_plain(QW_material->Me(T).c00);
+    gainModule.Set_electron_mass_transverse(QW_material->Me(T).c11);
+    gainModule.Set_heavy_hole_mass_in_plain(QW_material->Mhh(T).c00);
+    gainModule.Set_heavy_hole_mass_transverse(QW_material->Mhh(T).c11);
+    gainModule.Set_light_hole_mass_in_plain(QW_material->Mlh(T).c00);
+    gainModule.Set_light_hole_mass_transverse(QW_material->Mlh(T).c11);
 
-    gainModule.Set_electron_mass_in_barrier(Bar_material->Me(T).c11);
-    gainModule.Set_heavy_hole_mass_in_barrier(Bar_material->Mhh(T).c11);
-    gainModule.Set_light_hole_mass_in_barrier(Bar_material->Mlh(T).c11);
+    gainModule.Set_electron_mass_in_barrier(Bar_material->Me(T).c00);
+    gainModule.Set_heavy_hole_mass_in_barrier(Bar_material->Mhh(T).c00);
+    gainModule.Set_light_hole_mass_in_barrier(Bar_material->Mlh(T).c00);
 //    gainModule.Set_barrier_width(15);
 
     gainModule.Set_well_width(determineBoxWidth(QWBox)*1e+4);
@@ -293,7 +293,7 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 
     gainModule.Set_split_off(QW_material->Dso(T));
     gainModule.Set_bandgap(QW_material->Eg(T));
-    gainModule.Set_conduction_depth(QW_material->CBO(T) - Bar_material->CBO(T));
+    gainModule.Set_conduction_depth(Bar_material->CBO(T) - QW_material->CBO(T));
     gainModule.Set_valence_depth(QW_material->VBO(T) - Bar_material->VBO(T));
 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
