@@ -15,6 +15,7 @@ struct FilterBlock {
 
 
 
+
 /**
  * Filter is a special kind of Solver which solves the problem using another Solver.
  *
@@ -35,18 +36,20 @@ struct Filter: public Solver {
     }
 };
 
-/// Don't use this directly, use ChangeSpaceFilter instead.
-template <typename PropertyT, typename ValueT, PropertyType propertyType, typename inputSpaceType, typename outputSpaceType, typename VariadicTemplateTypesHolder>
-struct ChangeSpaceFilterImpl {
+/// Don't use this directly, use StandardFilter instead.
+template <typename PropertyT, PropertyType propertyType, typename inputSpaceType, typename outputSpaceType, typename VariadicTemplateTypesHolder>
+struct StandardFilterImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "space change filter can't be use with single value properties (it can be use only with fields properties)");
 };
 
-/// Don't use this directly, use ChangeSpaceFilter instead.
-template <typename PropertyT, typename ValueT, typename inputSpaceType, typename outputSpaceType, typename... _ExtraParams>
-struct ChangeSpaceFilterImpl<PropertyT, ValueT, FIELD_PROPERTY, inputSpaceType, outputSpaceType, VariadicTemplateTypesHolder<_ExtraParams...> >
+/// Don't use this directly, use StandardFilter instead.
+template <typename PropertyT, typename inputSpaceType, typename outputSpaceType, typename... _ExtraParams>
+struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpaceType, VariadicTemplateTypesHolder<_ExtraParams...> >
 : public Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate > {
 
-    ChangeSpaceFilterImpl(const std::string &name)
+    typedef typename PropertyT::ValueType ValueT;
+
+    StandardFilterImpl(const std::string &name)
     : Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate >(name) {
         this->out.valueGetter = [&] (const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->apply(dst_mesh, std::forward<_ExtraParams>(extra_args)..., method);
@@ -61,27 +64,38 @@ struct ChangeSpaceFilterImpl<PropertyT, ValueT, FIELD_PROPERTY, inputSpaceType, 
     virtual DataVector<const ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const = 0;
 };
 
+
+
 /**
  * Filter which recalculate field from one space to another.
  *
- * Subclass should overwrite apply method which can access @c in field (of type ReceiverFor<PropertyT, inputSpaceType>) and has signature which depends from PropertyT type:
+ * Subclasses should overwrite apply method which can access @c in field (of type ReceiverFor<PropertyT, inputSpaceType>) and has signature which depends from PropertyT type:
  * @code
- * virtual DataVector<const PropertyT::ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, PropertyT::ExtraParams[, InterpolationMethod method]) const;
+ * virtual DataVector<const PropertyT::ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, PropertyT::ExtraParams, InterpolationMethod method) const;
  * @endcode
- * InterpolationMethod is in signature only if PropertyT type is FIELD_PROPERTY (there is no InterpolationMethod if PropertyT type is ON_MESH_PROPERTY).
  *
  * @tparam PropertyT property which has type ON_MESH_PROPERTY or FIELD_PROPERTY.
  * @tparam inputSpaceType space of @c in receiver included in this filter
  * @tparam outputSpaceType space of @c out provider included in this filter
  */
 template <typename PropertyT, typename inputSpaceType, typename outputSpaceType>
-using ChangeSpaceFilter = ChangeSpaceFilterImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, inputSpaceType, outputSpaceType, typename PropertyT::ExtraParams>;
+using StandardFilter = StandardFilterImpl<PropertyT, PropertyT::propertyType, inputSpaceType, outputSpaceType, typename PropertyT::ExtraParams>;
 
-template <typename DataType>
-struct Data3Din2DCartesianSource {
-    virtual DataVector<const DataType> get(const MeshD<3>& dst_mesh) const = 0;
-    virtual Vec<3, double> getTranslation() const = 0;
-    virtual double getLonSize() const = 0;
+template <int DIMS, typename typeName>
+using DataSource = std::function<DataVector<const typeName>(const MeshD<DIMS>& dst_mesh)>;
+
+struct Cartesian2Dto3DEnviroment {
+
+    /// Place of extrusion inside outer 3D geometry, calculated using geometries.
+    Vec<3, double> translation;
+
+    /// Length of line in 3D geometry. This line is calculated for each point in inner 2D space. Length from extrusion.
+    double lonSize;
+
+    Cartesian2Dto3DEnviroment() {}
+
+    Cartesian2Dto3DEnviroment(Vec<3, double> translation, double lonSize)
+        : translation(translation), lonSize(lonSize) {}
 
     /**
      * Each point in 2D geometry is extruded to line segment in 3D geometry.
@@ -92,7 +106,7 @@ struct Data3Din2DCartesianSource {
      * @return begin of line segment, in geometry 3D coordinates
      */
     Vec<3,double> lineBegin(const Vec<2,double>& v) const {
-        Vec<3, double> result = getTranslation();
+        Vec<3, double> result = translation;
         result.tran() += v.tran();
         result.vert() += v.vert();
         return result;
@@ -105,10 +119,10 @@ struct Data3Din2DCartesianSource {
      * @see lineBegin(const Vec<2,double>&)
      */
     Vec<3,double> lineEnd(const Vec<2,double>& v) const {
-        Vec<3, double> result = getTranslation();
+        Vec<3, double> result = translation;
         result.tran() += v.tran();
         result.vert() += v.vert();
-        result.lon() += getLonSize();
+        result.lon() += lonSize;
         return result;
     }
 
@@ -120,76 +134,88 @@ struct Data3Din2DCartesianSource {
      * @see lineBegin(const Vec<2,double>&)
      */
     Vec<3,double> lineAt(const Vec<2,double>& v, double at) const {
-        Vec<3, double> result = getTranslation();
+        Vec<3, double> result = translation;
         result.tran() += v.tran();
         result.vert() += v.vert();
-        result.lon() += getLonSize() * at;
+        result.lon() += lonSize * at;
         return result;
     }
 };
 
+/// Don't use this directly, use ChangeSpaceCartesian2Dto3D instead.
+template <typename PropertyT, typename VariadicTemplateTypesHolder>
+struct ChangeSpaceCartesian2Dto3DImpl: public StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian> {};
 
-
-/**
- * Filter which recalculate field from 3D geometry to 2D cartesian geometry included in this 3D geometry.
- *
- * To use it, @p apply method must be implemented, see @ref ChangeSpaceFilter.
- */
-template <typename PropertyT>
-class ChangeSpaceCartesian2Dto3D: public ChangeSpaceFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
+/// Don't use this directly, use ChangeSpaceCartesian2Dto3D instead.
+template <typename PropertyT, typename... ExtraParams>
+class ChangeSpaceCartesian2Dto3DImpl<PropertyT, VariadicTemplateTypesHolder<ExtraParams...> >
+        : public StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
 
     boost::signals2::connection geomConnection;
     
 public:
 
-    /// type of ChangeSpaceCartesian2Dto3D logic, it calculates and returns values at requested_points using given data_source
+    /// type of ChangeSpaceCartesian2Dto3D logic, it calculates and returns values at requested_points using given data_source and enviroment
     typedef std::function<
         DataVector<const typename PropertyT::ValueType>(
             const MeshD<2>& requested_points,
-            const Data3Din2DCartesianSource<typename PropertyT::ValueType>& data_source
+            DataSource<3, const typename PropertyT::DataType> data_source,
+            const Cartesian2Dto3DEnviroment& enviroment
         )
     > Logic;
+
+    Logic logic;
     
-    /// Place of extrusion inside outer 3D geometry, calculated using geometries.
-    Vec<3, double> translation;
-    
-    /// Length of line in 3D geometry. This line is calculated for each point in inner 2D space. Length from extrusion.
-    double lonSize; 
+    Cartesian2Dto3DEnviroment enviroment;
     
     void getParameters(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints* path = nullptr) {
         std::vector< Vec<3, double> > pos = outerInGeometry->getObjectPositions(innerOutGeometry, path);
         if (pos.size() != 1) throw Exception("ChangeSpaceCartesian2Dto3D: innerOutGeometry has no unambiguous position in outerInGeometry.");
-        translation = pos[0];
-        lonSize = innerOutGeometry->getLength();
+        enviroment.translation = pos[0];
+        enviroment.lonSize = innerOutGeometry->getLength();
     }
     
-    ChangeSpaceCartesian2Dto3D(const Vec<3, double>& translation, double lonSize)
-        : translation(translation), lonSize(lonSize) {}
+    ChangeSpaceCartesian2Dto3DImpl(const Vec<3, double>& translation, double lonSize)
+        : enviroment(translation, lonSize) {}
     
-    ChangeSpaceCartesian2Dto3D(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry) {
+    ChangeSpaceCartesian2Dto3DImpl(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry) {
         getParameters(outerInGeometry, innerOutGeometry);
         geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
                 if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry);
         });
     }
 
-    ChangeSpaceCartesian2Dto3D(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints& path) {
+    ChangeSpaceCartesian2Dto3DImpl(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints& path) {
         getParameters(outerInGeometry, innerOutGeometry, &path);
         geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
                 if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry, &path);
         });
     }
     
-    ~ChangeSpaceCartesian2Dto3D() {
+    ~ChangeSpaceCartesian2Dto3DImpl() {
         geomConnection.disconnect();
     }
 
-
+    virtual DataVector<const typename PropertyT::ValueType> apply(const MeshD<2>& requested_points, ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        /*return logic(
+            requested_points,
+            [&, extra_args...] (const MeshD<3>& dst_mesh) -> DataVector<const typename PropertyT::DataType> {
+                return in(dst_mesh, extra_args..., method);
+            },
+            enviroment
+        );*/
+    }
 
 };
 
+/**
+ * Filter which recalculate field from 3D geometry to 2D cartesian geometry included in this 3D geometry.
+ */
+template <typename PropertyT>
+using ChangeSpaceCartesian2Dto3D = ChangeSpaceCartesian2Dto3DImpl<PropertyT, typename PropertyT::ExtraParams>;
+
 /*template <typename PropertyT>
-struct ExtrusionBase: public ChangeSpaceFilter<PropertyT, Geometry2DCartesian, Geometry3D> {
+struct ExtrusionBase: public StandardFilter<PropertyT, Geometry2DCartesian, Geometry3D> {
 
     typedef typename PropertyT::ValueType ValueType;
 
