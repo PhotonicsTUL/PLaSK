@@ -282,7 +282,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     };
 
     /**
-     * Geometry changer which holds vector of changers and try to apply this changers sequently.
+     * Geometry changer which holds vector of changers and try to apply this changers sequentially.
      *
      * Its apply method call: changers[0].apply(to_change, translation), changers[1].apply(to_change, translation), ...
      * up to time when one of this call returns @c true (and then it returns @c true) or

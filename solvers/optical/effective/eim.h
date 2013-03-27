@@ -3,15 +3,6 @@
 
 #include <limits>
 
-#include <Eigen/Dense>
-
-#include<Eigen/StdVector> // This is needed to ensure the proper alignment of Eigen::Vector2cd in std::vector
-#ifndef PLASK_EIGEN_STL_VECTOR_SPECIALIZATION_DEFINED
-#   define PLASK_EIGEN_STL_VECTOR_SPECIALIZATION_DEFINED
-    EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2cd)
-#endif
-
-
 #include <plask/plask.hpp>
 
 #include "broyden.h"
@@ -34,6 +25,16 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         TM,
     };
 
+    struct Field {
+        dcomplex F, B;
+        Field() = default;
+        Field(dcomplex f, dcomplex b): F(f), B(b) {}
+        Field operator*(dcomplex a) const { return Field(a*F, a*B); }
+        Field operator/(dcomplex a) const { return Field(a*F, a*B); }
+        Field operator*=(dcomplex a) { F *= a; B *= a; return *this; }
+        Field operator/=(dcomplex a) { F /= a; B /= a; return *this; }
+    };
+
   protected:
 
     friend struct RootDigger;
@@ -50,27 +51,31 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     std::vector<std::vector<dcomplex>> nrCache;
 
     /// Computed horizontal and vertical fields
-    std::vector<Eigen::Vector2cd> fieldX, fieldY;
+    std::vector<Field> fieldX, fieldY;
 
     /// Field confinement weights in stripes
-    std::vector<double> fieldWeights;
+    std::vector<double> weights;
 
     /// Did we compute fields for current Neff?
     bool have_fields;
 
     /// Computed effective indices for each stripe
-    std::vector<dcomplex> stripeNeffs;
+    std::vector<dcomplex> neffs;
 
-    /// Old polarization
-    Polarization old_polarization;
+    /// Should stripe indices be recomputed
+    bool recompute_neffs;
 
-  public:
+    double stripex;             ///< Position of the main stripe
 
     Polarization polarization;  ///< Chosen light polarization
 
-    Symmetry symmetry;  ///< Symmetry of the searched modes
+    Symmetry symmetry;          ///< Symmetry of the searched modes
 
-    double outdist; ///< Distance outside outer borders where material is sampled
+  public:
+
+    dcomplex vneff;             ///< Vertical effective index of the main stripe
+
+    double outdist;             ///< Distance outside outer borders where material is sampled
 
     // Parameters for rootdigger
     RootDigger::Params root;
@@ -86,6 +91,43 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     }
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
+
+    /// \return position of the main stripe
+    double getStripeX() const { return stripex; }
+
+    /**
+     * Set position of the main stripe
+     * \param x horizontal position of the main stripe
+     */
+    void setStripex(double x) {
+        stripex = x;
+        recompute_neffs = true;
+        vneff = 0.;
+    }
+
+    /// \return current polarization
+    Polarization getPolarization() const { return polarization; }
+
+    /**
+     * Set new polarization
+     * \param polar new polarization
+     */
+    void setPolarization(Polarization polar) {
+        polarization = polar;
+        recompute_neffs = true;
+        vneff = 0.;
+    }
+
+    /// \return current polarization
+    Symmetry getSymmetry() const { return symmetry; }
+
+    /**
+     * Set new symmetry
+     * \param sym new symmetry
+     */
+    void setSymmetry(Symmetry sym) {
+        symmetry = sym;
+    }
 
     /**
      * Set the simple mesh based on the geometry bounding boxes.
@@ -212,11 +254,28 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      */
     void stageOne();
 
-    /// Return S matrix determinant for one stripe
-    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR);
+    /**
+     * Compute field weights basing on solution for given stripe. Also compute data for determining vertical fields
+     * \param stripe main stripe number
+     */
+    void computeWeights(size_t stripe);
 
-    /// Return S matrix determinant for the whole structure
-    dcomplex detS(const dcomplex& x);
+
+
+    /**
+     * Compute S matrix determinant for one stripe
+     * \param x vertical effective index
+     * \param NR refractive indices
+     * \param save if \c true, the fields are saved to fieldY
+     */
+    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR, bool save=false);
+
+    /**
+     * Return S matrix determinant for the whole structure
+     * \param x effective index
+     * \param save if \c true, the fields are saved to fieldX
+     */
+    dcomplex detS(const dcomplex& x, bool save=false);
 
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);

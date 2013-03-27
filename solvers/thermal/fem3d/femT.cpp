@@ -479,7 +479,7 @@ void FiniteElementMethodThermal3DSolver::saveHeatFluxes()
         if (leaf)
             std::tie(kxy,kz) = std::tuple<double,double>(material->thermk(temp, leaf->getBoundingBox().height()));
         else
-            std::tie(kz,kz) = std::tuple<double,double>(material->thermk(temp));
+            std::tie(kxy,kz) = std::tuple<double,double>(material->thermk(temp));
 
         fluxes[el.getIndex()] = vec(
             - 0.25e6 * kxy * (- temperatures[lll] - temperatures[llu] - temperatures[lul] - temperatures[luu]

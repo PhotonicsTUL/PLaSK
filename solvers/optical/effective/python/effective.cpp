@@ -12,7 +12,7 @@ using namespace plask::python;
 using namespace plask::solvers::effective;
 
 static py::object EffectiveIndex2DSolver_getSymmetry(const EffectiveIndex2DSolver& self) {
-    switch (self.symmetry) {
+    switch (self.getSymmetry()) {
         case EffectiveIndex2DSolver::SYMMETRY_POSITIVE: return py::object("positive");
         case EffectiveIndex2DSolver::SYMMETRY_NEGATIVE: return py::object("negative");
         case EffectiveIndex2DSolver::NO_SYMMETRY: return py::object();
@@ -21,26 +21,26 @@ static py::object EffectiveIndex2DSolver_getSymmetry(const EffectiveIndex2DSolve
 }
 
 static void EffectiveIndex2DSolver_setSymmetry(EffectiveIndex2DSolver& self, py::object symmetry) {
-    if (symmetry == py::object()) { self.symmetry = EffectiveIndex2DSolver::NO_SYMMETRY; return; }
+    if (symmetry == py::object()) { self.setSymmetry(EffectiveIndex2DSolver::NO_SYMMETRY); return; }
     try {
         std::string sym = py::extract<std::string>(symmetry);
         if (sym == "0" || sym == "none" ) {
-            self.symmetry = EffectiveIndex2DSolver::NO_SYMMETRY; return;
+            self.setSymmetry(EffectiveIndex2DSolver::NO_SYMMETRY); return;
         }
         else if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
-            self.symmetry = EffectiveIndex2DSolver::SYMMETRY_POSITIVE; return;
+            self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_POSITIVE); return;
         }
         else if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
-            self.symmetry = EffectiveIndex2DSolver::SYMMETRY_NEGATIVE; return;
+            self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_NEGATIVE); return;
         }
         throw py::error_already_set();
     } catch (py::error_already_set) {
         PyErr_Clear();
         try {
             int sym = py::extract<int>(symmetry);
-            if (sym ==  0) { self.symmetry = EffectiveIndex2DSolver::NO_SYMMETRY; return; }
-            else if (sym == +1) { self.symmetry = EffectiveIndex2DSolver::SYMMETRY_POSITIVE; return; }
-            else if (sym == -1) { self.symmetry = EffectiveIndex2DSolver::SYMMETRY_NEGATIVE; return; }
+            if (sym ==  0) { self.setSymmetry(EffectiveIndex2DSolver::NO_SYMMETRY); return; }
+            else if (sym == +1) { self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_POSITIVE); return; }
+            else if (sym == -1) { self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_NEGATIVE); return; }
             throw py::error_already_set();
         } catch (py::error_already_set) {
             throw ValueError("Wrong symmetry specification.");
@@ -49,15 +49,15 @@ static void EffectiveIndex2DSolver_setSymmetry(EffectiveIndex2DSolver& self, py:
 }
 
 static std::string EffectiveIndex2DSolver_getPolarization(const EffectiveIndex2DSolver& self) {
-    return self.polarization==EffectiveIndex2DSolver::TE ? "TE" : "TM";
+    return self.getPolarization() == EffectiveIndex2DSolver::TE ? "TE" : "TM";
 }
 
 static void EffectiveIndex2DSolver_setPolarization(EffectiveIndex2DSolver& self, std::string polarization) {
     if (polarization == "TE" || polarization == "s" ) {
-        self.polarization = EffectiveIndex2DSolver::TE; return;
+        self.setPolarization(EffectiveIndex2DSolver::TE); return;
     }
     if (polarization == "TM" || polarization == "p") {
-        self.polarization = EffectiveIndex2DSolver::TM; return;
+        self.setPolarization(EffectiveIndex2DSolver::TM); return;
     }
 }
 
@@ -162,7 +162,8 @@ BOOST_PYTHON_MODULE(effective)
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", (py::arg("lam"), "ext"));
         solver.def("get_stripe_determinant_v", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
                    (py::arg("stripe"), "veff"));
-        solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes", py::arg("v"));
+        solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",
+                   py::arg("v"));
         solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain distribution in the active region");
