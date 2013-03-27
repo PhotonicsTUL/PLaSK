@@ -4,8 +4,6 @@
 
 namespace plask { namespace solvers { namespace thermal3d {
 
-const size_t SparseBandMatrix::bands = 13;
-
 FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
     algorithm(ALGORITHM_BLOCK),
@@ -139,7 +137,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
                    const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%)", A.size, A.bands);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
     auto heats = inHeatDensity(mesh->getMidpointsMesh());
 
@@ -252,8 +250,8 @@ void FiniteElementMethodThermal3DSolver::applyBC<DpbMatrix>(DpbMatrix& A, DataVe
         for (auto r: cond.place) {
             A(r,r) = 1.;
             register double val = B[r] = cond.value;
-            size_t start = (r > A.bands)? r-A.bands : 0;
-            size_t end = (r + A.bands < A.size)? r+A.bands+1 : A.size;
+            size_t start = (r > A.kd)? r-A.kd : 0;
+            size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
             for(size_t c = start; c < r; ++c) {
                 B[c] -= A(r,c) * val;
                 A(r,c) = 0.;
@@ -373,31 +371,31 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<do
     char equed;
 
     // Compute row and column scalings to equilibrate the matrix A
-    dpbequ(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, info);
+    dpbequ(UPLO, A.size, A.kd, A.data, A.ld+1, S, scond, amax, info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
 
     if (equilibrate) {
         // Compute row and column scalings to equilibrate the matrix A
-        dpbequ(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, info);
+        dpbequ(UPLO, A.size, A.kd, A.data, A.ld+1, S, scond, amax, info);
         if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
         else if (info > 0)
             throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
         // Equilibrate the matrix
-        dlaqsb(UPLO, A.size, A.bands, A.data, A.bands+1, S, scond, amax, equed);
+        dlaqsb(UPLO, A.size, A.kd, A.data, A.ld+1, S, scond, amax, equed);
     }
 
 
     // Factorize matrix
-    dpbtrf(UPLO, A.size, A.bands, A.data, A.bands+1, info);
+    dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
     if (info < 0)
         throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
     if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.bands, 1, A.data, A.bands+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
     // Transform the solution matrix X to the solution of the original

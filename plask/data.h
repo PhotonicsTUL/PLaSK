@@ -14,27 +14,34 @@ This file includes classes which can hold (or points to) datas.
 #include <memory>   //std::unique_ptr
 #include <cassert>
 
+#include "memalloc.h"
+
 namespace plask {
 
-/**
-  * Base class for optional data guardian.
-  * When the reference count reaches 0 then if there is a guardian set, the data is not deleted, but the guradian is descructed.
-  * It should delete or otherwise release the data in its destructor. Furthermore, the data cannot be claimed if the guardian is set.
-  */
-struct DataVectorGuardian {
-    virtual ~DataVectorGuardian() {}
-};
-
-
 namespace detail {
+
     /// Garbage collector info for DataVector
     struct DataVectorGC {
         // Count is atomic so many threads can increment and decrement it at same time.
         // If it is 0, it means that there has been only one DataVector object, so probably one thread uses it.
         std::atomic<unsigned> count;
-        DataVectorGuardian* guardian;
-        explicit DataVectorGC(unsigned initial) : count(initial), guardian(nullptr) {}
-        ~DataVectorGC() { delete guardian; }
+
+        std::function<void(void*)>* deleter;
+
+        explicit DataVectorGC(unsigned initial): count(initial), deleter(nullptr) {}
+
+        explicit DataVectorGC(unsigned initial, const std::function<void(void*)>& deleter):
+            count(initial), deleter(new std::function<void(void*)>(deleter)) {}
+
+        explicit DataVectorGC(unsigned initial, std::function<void(void*)>&& deleter):
+            count(initial), deleter(new std::function<void(void*)>(std::forward<std::function<void(void*)>>(deleter))) {}
+
+        void free(void* data) {
+            if (deleter) (*deleter)(data);
+            else aligned_free(data);
+        }
+
+        ~DataVectorGC() { delete deleter; }
     };
 }
 
@@ -42,7 +49,7 @@ namespace detail {
  * Store pointer and size. Is like intelligent pointer for plain data arrays.
  *
  * Can work in two modes:
- * - managed — data will be deleted (by delete[]) by destructor of last DataVector instance which referee to this data (reference counting is using);
+ * - managed — data will be deleted (by aligned_free) by destructor of last DataVector instance which referee to this data (reference counting is using);
  * - non-managed — data will be not deleted by DataVector (so DataVector just refers to external data).
  *
  * In both cases, assign operation and copy constructor of DataVector do not copy the data, but just create DataVectors which refers to the same data.
@@ -51,9 +58,10 @@ namespace detail {
 template <typename T>
 struct DataVector {
 
-    typedef detail::DataVectorGC Gc;
-    typedef DataVectorGuardian Guardian;
+    typedef typename std::remove_const<T>::type VT;
+    typedef const T CT;
 
+    typedef detail::DataVectorGC Gc;
   private:
 
     std::size_t size_;                  ///< size of the stored data
@@ -63,7 +71,7 @@ struct DataVector {
     /// Decrease GC counter and free memory if necessary.
     void dec_ref() {
         if (gc_ && --(gc_->count) == 0) {
-            if (gc_->guardian == nullptr) delete[] data_;
+            gc_->free(reinterpret_cast<void*>(const_cast<VT*>(data_)));
             delete gc_;
         }
     }
@@ -73,8 +81,8 @@ struct DataVector {
         if (gc_) ++(gc_->count);
     }
 
-    friend struct DataVector<typename std::remove_const<T>::type>;
-    friend struct DataVector<const T>;
+    friend struct DataVector<VT>;
+    friend struct DataVector<CT>;
 
   public:
 
@@ -89,10 +97,10 @@ struct DataVector {
     /**
      * Create vector of given @p size with uninitialized data values.
      *
-     * Reserve memory using new T[size] call.
+     * Reserve memory using aligned_malloc<T>(size) call.
      * @param size total size of the data
      */
-    DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(new T[size]) {}
+    DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {}
 
     /**
      * Create data vector with given @p size and fill all its' cells with given @p value.
@@ -100,7 +108,8 @@ struct DataVector {
      * @param value initial value for each cell
      */
     DataVector(std::size_t size, const T& value): size_(size) {
-        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::unique_ptr<typename std::remove_const<T>::type[], aligned_deleter<T>>
+            data_non_const(aligned_malloc<VT>(size));
         std::fill_n(data_non_const.get(), size, value);   // this may throw, but no memory leak than
         gc_ = new Gc(1);
         data_ = data_non_const.release();
@@ -196,38 +205,38 @@ struct DataVector {
      * Create vector out of existing data.
      * @param size  total size of the existing data
      * @param existing_data pointer to existing data
-     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
-     */
-    DataVector(T* existing_data, std::size_t size, bool manage = false):
-        size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
-
-    /**
-     * Create vector out of existing data.
-     * @param size  total size of the existing data
-     * @param existing_data pointer to existing data
-     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
     template <typename TS>
-    DataVector(TS* existing_data, std::size_t size, bool manage = false):
-        size_(size), gc_(manage ? new Gc(1) : nullptr), data_(existing_data) {}
+    DataVector(TS* existing_data, std::size_t size):
+        size_(size), gc_(nullptr), data_(existing_data) {}
 
     /**
      * Create vector out of existing data with guardian.
      * \param size  total size of the existing data
      * \param existing_data pointer to existing data
-     * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
+     * \param deleter function deleting data
      */
     template <typename TS>
-    DataVector(TS* existing_data, std::size_t size, Guardian* guardian) :
-        size_(size), gc_(new Gc(1)), data_(existing_data) {
-        gc_->guardian = guardian;
+    DataVector(TS* existing_data, std::size_t size, const std::function<void(void*)>& deleter):
+        size_(size), gc_(new Gc(1, deleter)), data_(existing_data) {
+    }
+
+    /**
+     * Create vector out of existing data with guardian.
+     * \param size  total size of the existing data
+     * \param existing_data pointer to existing data
+     * \param deleter function deleting data
+     */
+    template <typename TS>
+    DataVector(TS* existing_data, std::size_t size, std::function<void(void*)>&& deleter):
+        size_(size), gc_(new Gc(1, std::forward<std::function<void(void*)>>(deleter))), data_(existing_data) {
     }
 
     /**
      * Create data vector and fill it with data from initializer list.
      * @param init initializer list with data
      */
-    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new Gc(1)), data_(new T[size_]) {
+    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(size_)) {
         std::copy(init.begin(), init.end(), data_);
     }
 
@@ -236,7 +245,7 @@ struct DataVector {
      * @param init initializer list with data
      */
     template <typename TS>
-    DataVector(std::initializer_list<TS> init): size_(init.size()), gc_(new Gc(1)), data_(new T[size_]) {
+    DataVector(std::initializer_list<TS> init): size_(init.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(size_)) {
         std::copy(init.begin(), init.end(), data_);
     }
 
@@ -256,52 +265,58 @@ struct DataVector {
     }
 
     /**
-     * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
-     * @param size  total size of the existing data
-     * @param existing_data pointer to existing data
-     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
-     */
-    void reset(T* existing_data, std::size_t size, bool manage = false) {
-        reset<T>(existing_data, size, manage);
-    }
-
-    /**
-     * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * Change data of this data vector. Same as: DataVector(existing_data, size).swap(*this);
      * @param size  total size of the existing data
      * @param existing_data pointer to existing data
      * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
     template <typename TS>
-    void reset(TS* existing_data, std::size_t size, bool manage = false) {
+    void reset(TS* existing_data, std::size_t size) {
         dec_ref();
-        gc_ = manage ? new Gc(1) : nullptr;
+        gc_ = nullptr;
         size_ = size;
         data_ = existing_data;
     }
 
     /**
-     * Change data of this data vector. Same as: DataVector(existing_data, size, manage).swap(*this);
+     * Change data of this data vector. Same as: DataVector(existing_data, size, deleter).swap(*this);
      * \param size  total size of the existing data
      * \param existing_data pointer to existing data
      * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
      */
     template <typename TS>
-    void reset(TS* existing_data, std::size_t size, Guardian* guardian) {
-        reset<TS>(existing_data, size, true);
-        gc_->guardian = guardian;
+    void reset(TS* existing_data, std::size_t size, const std::function<void(void*)>& deleter) {
+        dec_ref();
+        gc_ = Gc(1, deleter);
+        size_ = size;
+        data_ = existing_data;
+    }
+
+    /**
+     * Change data of this data vector. Same as: DataVector(existing_data, size, deleter).swap(*this);
+     * \param size  total size of the existing data
+     * \param existing_data pointer to existing data
+     * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
+     */
+    template <typename TS>
+    void reset(TS* existing_data, std::size_t size, std::function<void(void*)>&& deleter) {
+        dec_ref();
+        gc_ = Gc(1, std::forward<std::function<void(void*)>>(deleter));
+        size_ = size;
+        data_ = existing_data;
     }
 
     /**
      * Change data of this data vector to uninitialized data with given @p size.
      *
-     * Reserve memory using new T[size] call.
+     * Reserve memory using aligned_malloc<T>(size) call.
      *
      * Same as: DataVector(size).swap(*this);
      * @param size total size of the data
      */
     void reset(std::size_t size) {
         dec_ref();
-        data_ = new T[size];
+        data_ = aligned_malloc<T>(size);
         gc_ = new Gc(1);
         size_ = size;
     }
@@ -314,7 +329,8 @@ struct DataVector {
      * @param value initial value for each cell
      */
     void reset(std::size_t size, const T& value) {
-        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::unique_ptr<VT[], aligned_deleter<T>>
+            data_non_const(aligned_malloc<VT>(size));
         std::fill_n(data_non_const.get(), size, value);   // this may throw, than our data will not change
         dec_ref();
         gc_ = new Gc(1);    //this also may throw
@@ -330,7 +346,8 @@ struct DataVector {
      */
     template <typename InIterT>
     void reset(InIterT begin, InIterT end) {
-        std::unique_ptr<typename std::remove_const<T>::type[]> data_non_const = std::unique_ptr<typename std::remove_const<T>::type[]>(new typename std::remove_const<T>::type[size]);
+        std::unique_ptr<VT[], aligned_deleter<T>>
+            data_non_const(aligned_malloc<VT>(size));
         std::copy(begin, end, data_non_const.get());    //this may throw, and than our vector will not changed
         dec_ref();
         gc_ = new Gc(1);
@@ -392,10 +409,10 @@ struct DataVector {
      * Make a deep copy of the data.
      * @return new object with manage copy of this data
      */
-    DataVector<typename std::remove_const<T>::type> copy() const {
-        typename std::remove_const<T>::type* new_data = new typename std::remove_const<T>::type[size_];
-        std::copy(begin(), end(), new_data);
-        return DataVector< typename std::remove_const<T>::type >(new_data, size_, true);
+    DataVector<VT> copy() const {
+        DataVector<VT> new_data(size_);
+        std::copy(begin(), end(), new_data.begin());
+        return new_data;
     }
 
     /**
@@ -410,8 +427,8 @@ struct DataVector {
      * Allow to remove const qualifer from data, must be
      * @return non-const version of this which refere to the same data
      */
-    DataVector<typename std::remove_const<T>::type> remove_const() const {
-        DataVector<typename std::remove_const<T>::type> result(const_cast<typename std::remove_const<T>::type*>(this->data()), this->size(), false);
+    DataVector<VT> remove_const() const {
+        DataVector<VT> result(const_cast<VT*>(this->data()), this->size());
         result.gc_ = this->gc_;
         result.inc_ref();
         return result;
@@ -421,8 +438,8 @@ struct DataVector {
      * Make copy of data only if this is not the only one owner of it.
      * @return copy of this: shallow if unique() is @c true, deep if unique() is @c false
      */
-    DataVector<typename std::remove_const<T>::type> claim() const {
-        return (unique() && !gc_->guardian) ? remove_const() : copy();
+    DataVector<VT> claim() const {
+        return (unique() && !gc_->deleter)? remove_const() : copy();
     }
 
     /**
@@ -452,7 +469,7 @@ struct DataVector {
      */
     inline DataVector<T> getSubarrayRef(std::size_t begin_index, std::size_t subarray_size) {
         assert(begin_index + subarray_size <= size_);
-        return DataVector<T>(data_ + begin_index, subarray_size, false);
+        return DataVector<T>(data_ + begin_index, subarray_size);
     }
 
     /**
@@ -463,7 +480,7 @@ struct DataVector {
      */
     inline DataVector<const T> getSubarrayRef(std::size_t begin_index, std::size_t subarray_size) const {
         assert(begin_index + subarray_size <= size_);
-        return DataVector<const T>(data_ + begin_index, subarray_size, false);
+        return DataVector<const T>(data_ + begin_index, subarray_size);
     }
 
     /**
@@ -483,7 +500,7 @@ struct DataVector {
      */
     inline DataVector<T> getSubrangeRef(iterator begin, iterator end) {
         assert(begin() <= begin && begin <= end && end <= end());
-        return DataVector<T>(begin, end - begin, false);
+        return DataVector<T>(begin, end - begin);
     }
 
     /**
@@ -493,7 +510,7 @@ struct DataVector {
      */
     inline DataVector<const T> getSubrangeRef(const_iterator begin, const_iterator end) const {
         assert(begin() <= begin && begin <= end && end <= end());
-        return DataVector<T>(begin, end-begin, false);
+        return DataVector<T>(begin, end-begin);
     }
 
     /**

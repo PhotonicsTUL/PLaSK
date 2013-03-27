@@ -69,7 +69,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     if (!this->mesh) throw NoMeshException(this->getId());
     mLoopNo = 0;
     mAOrder = this->mesh->size();
-    mABand = this->mesh->minorAxis().size() + 2;
+    mABand = this->mesh->minorAxis().size() + 1;
     mTemperatures.reset(mAOrder, mTInit);
 }
 
@@ -142,12 +142,12 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& iRadiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAOrder, mABand);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", oA.size, oA.kd+1, oA.ld+1);
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto tHeatDensities = inHeatDensity(iMesh);
 
-    std::fill_n(oA.data, mABand*mAOrder, 0.); // zero the matrix
+    std::fill_n(oA.data, oA.size*(oA.ld+1), 0.); // zero the matrix
     oLoad.fill(0.);
 
     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
@@ -256,8 +256,8 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
         for (auto i: tCond.place) {
             oA(i,i) = 1.;
             register double val = oLoad[i] = tCond.value;
-            size_t start = (i > oA.bands)? i-oA.bands : 0;
-            size_t end = (i + oA.bands < oA.size)? i+oA.bands+1 : oA.size;
+            size_t start = (i > oA.kd)? i-oA.kd : 0;
+            size_t end = (i + oA.kd < oA.size)? i+oA.kd+1 : oA.size;
             for(size_t j = start; j < i; ++j) {
                 oLoad[j] -= oA(i,j) * val;
                 oA(i,j) = 0.;
@@ -270,7 +270,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
     }
 
 #ifndef NDEBUG
-    double* tAend = oA.data + oA.size * oA.bands;
+    double* tAend = oA.data + oA.size * oA.kd;
     for (double* pa = oA.data; pa != tAend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
@@ -421,8 +421,8 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMat
         for (auto i: tCond.place) {
             oA(i,i) = 1.;
             register double val = oLoad[i] = tCond.value;
-            size_t start = (i > oA.bands)? i-oA.bands : 0;
-            size_t end = (i + oA.bands < oA.size)? i+oA.bands+1 : oA.size;
+            size_t start = (i > oA.kd)? i-oA.kd : 0;
+            size_t end = (i + oA.kd < oA.size)? i+oA.kd+1 : oA.size;
             for(size_t j = start; j < i; ++j) {
                 oLoad[j] -= oA(i,j) * val;
                 oA(i,j) = 0.;
@@ -435,7 +435,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMat
     }
 
 #ifndef NDEBUG
-    double* tAend = oA.data + oA.size * oA.bands;
+    double* tAend = oA.data + oA.size * oA.kd;
     for (double* pa = oA.data; pa != tAend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position %1%", pa-oA.data);
@@ -512,12 +512,12 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
 
     if (mEquilibrate) {
         // Compute row and column scalings to equilibrate the matrix A
-        dpbequ(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, info);
+        dpbequ(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, S, scond, amax, info);
         if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
         else if (info > 0)
             throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
         // Equilibrate the matrix
-        dlaqsb(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, S, scond, amax, equed);
+        dlaqsb(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, S, scond, amax, equed);
     }
 
 
@@ -532,11 +532,11 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     // Factorize matrix
     switch (mAlgorithm) {
         case ALGORITHM_SLOW:
-            dpbtf2(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, info);
+            dpbtf2(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, info);
             if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
             break;
         case ALGORITHM_BLOCK:
-            dpbtrf(UPLO, iA.size, iA.bands, iA.data, iA.bands+1, info);
+            dpbtrf(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, info);
             if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
             break;
     }
@@ -544,7 +544,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, iA.size, iA.bands, 1, iA.data, iA.bands+1, ioB.data(), ioB.size(), info);
+    dpbtrs(UPLO, iA.size, iA.kd, 1, iA.data, iA.ld+1, ioB.data(), ioB.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
     // Transform the solution matrix X to the solution of the original

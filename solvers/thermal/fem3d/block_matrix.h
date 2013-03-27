@@ -32,7 +32,8 @@ namespace plask { namespace solvers { namespace thermal3d {
 struct DpbMatrix {
 
     const size_t size;  ///< Order of the matrix, i.e. number of columns or rows
-    const size_t bands; ///< Size of the band reduced by one
+    const size_t ld;    ///< leading dimension of the matrix
+    const size_t kd;    ///< Size of the band reduced by one
     double* data;       ///< Pointer to data
 
     /**
@@ -42,11 +43,12 @@ struct DpbMatrix {
      * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
      */
     DpbMatrix(size_t rank, size_t major, size_t minor):
-        size(rank), bands(major+minor+1), data(new double[rank*(major+minor+2)]) {}
+        size(rank), ld(((major+minor+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        kd(major+minor+1), data(aligned_malloc<double>(rank*(ld+1))) {}
 
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
 
-    ~DpbMatrix() { delete[] data; }
+    ~DpbMatrix() { aligned_free(data); }
 
     /**
      * Return index in data array
@@ -56,18 +58,20 @@ struct DpbMatrix {
     size_t index(size_t r, size_t c) {
         assert(r < size && c < size);
         if (r < c) {
-            assert(c - r <= bands);
+            assert(c - r <= kd);
+//          if UPLO = 'U', AB(kd+i-j,j) = A(i,j) for max(0,j-kd)<=i<=j;
+//          if UPLO = 'L', AB(i-j,j)    = A(i,j) for j<=i<=min(n,j+kd).
 #           if UPLO == 'U'
-                return bands * c + r + bands;
+                return ld * c + r + kd;
 #           else
-                return bands * r + c;
+                return ld * r + c;
 #           endif
         } else {
-            assert(r - c <= bands);
+            assert(r - c <= kd);
 #           if UPLO == 'U'
-                return bands * r + c + bands;
+                return ld * r + c + kd;
 #           else
-                return bands * c + r;
+                return ld * c + r;
 #           endif
         }
     }
@@ -83,7 +87,7 @@ struct DpbMatrix {
 
     /// Clear the matrix
     void clear() {
-        std::fill_n(data, size * (bands+1), 0.);
+        std::fill_n(data, size * (ld+1), 0.);
     }
 };
 

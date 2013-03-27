@@ -2,6 +2,7 @@
 #define PLASK__MODULE_THERMAL_BAND_MATRIX_H
 
 #include <cstddef>
+#include <plask/plask.hpp>
 
 #define UPLO 'L'
 
@@ -29,34 +30,39 @@ namespace plask { namespace solvers { namespace thermal {
  */
 struct DpbMatrix {
 
-    std::size_t size;  ///< order of the matrix, i.e. number of columns or rows
-    std::size_t bands;  ///< size of the band reduced by one
+    const size_t size;  ///< order of the matrix, i.e. number of columns or rows
+    const size_t ld;    ///< leading dimension of the matrix reduced by one
+    const size_t kd; ///< size of the band reduced by one
     double* data;       ///< pointer to data
 
-    DpbMatrix(std::size_t rank, std::size_t band): size(rank), bands(band-1), data(new double[rank*band]) {}
+    DpbMatrix(size_t rank, size_t bands): size(rank), ld((((bands+1) + (15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+                                                          // each column is aligned to 16 bytes
+                                         kd(bands), data(aligned_malloc<double>(rank*(ld+1))) {}
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
-    ~DpbMatrix() { delete[] data; }
+    ~DpbMatrix() { aligned_free(data); }
 
     /**
      * Return index in data array
      * \param r index of the element row
      * \param c index of the element column
      */
-    size_t index(std::size_t r, std::size_t c) {
+    size_t index(size_t r, size_t c) {
         assert(r < size && c < size);
         if (r < c) {
-            assert(c - r <= bands);
+            assert(c - r <= kd);
+//          if UPLO = 'U', AB(kd+i-j,j) = A(i,j) for max(0,j-kd)<=i<=j;
+//          if UPLO = 'L', AB(i-j,j)    = A(i,j) for j<=i<=min(n,j+kd).
 #           if UPLO == 'U'
-                return bands * c + r + bands;
+                return ld * c + r + kd;
 #           else
-                return bands * r + c;
+                return ld * r + c;
 #           endif
         } else {
-            assert(r - c <= bands);
+            assert(r - c <= kd);
 #           if UPLO == 'U'
-                return bands * r + c + bands;
+                return ld * r + c + kd;
 #           else
-                return bands * c + r;
+                return ld * c + r;
 #           endif
         }
     }
@@ -66,7 +72,7 @@ struct DpbMatrix {
      * \param r index of the element row
      * \param c index of the element column
      **/
-    double& operator()(std::size_t r, std::size_t c) {
+    double& operator()(size_t r, size_t c) {
         return data[index(r,c)];
     }
 };

@@ -2,7 +2,7 @@
 #define PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
 
 #include <algorithm>
-#include <plask/config.h>
+#include <plask/plask.hpp>
 
 // Necessary BLAS routines
 #define ddot F77_GLOBAL(ddot,DDOT)
@@ -33,7 +33,8 @@ struct SparseBandMatrix {
 
     double* data;           ///< Data stored in the matrix
 
-    static const size_t bands;
+    static constexpr size_t kd = 13;
+    static constexpr size_t ld = LDA;
 
     /**
      * Create matrix
@@ -48,11 +49,11 @@ struct SparseBandMatrix {
         bno[8]  = major         - 1;  bno[9]  = major        ;  bno[10] = major         + 1;
         bno[11] = major + minor - 1;  bno[12] = major + minor;  bno[13] = major + minor + 1;
 
-        data = new double[LDA*size];
+        data = aligned_malloc<double>(LDA*size);
     }
 
     ~SparseBandMatrix() {
-        delete[] data;
+        aligned_free<double>(data);
     }
 
     /**
@@ -108,8 +109,12 @@ struct PrecondJacobi {
     PrecondJacobi(const SparseBandMatrix& A): matrix(A) {}
 
     void operator()(double* z, double* r) const { // z = inv(M) r
-        for (double* m = matrix.data, *zend = z + matrix.size; z < zend; ++z, ++r, m += LDA)
+        for (double* m = matrix.data, *zend = z + matrix.size; z < zend; z+=4, r+=4, m += 4*LDA) {
             *z = *r / *m;
+            *(z+1) = *(r+1) / *(m+1);
+            *(z+2) = *(r+2) / *(m+2);
+            *(z+3) = *(r+3) / *(m+3);
+        }
     }
 };
 

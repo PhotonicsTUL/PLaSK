@@ -233,11 +233,10 @@ namespace detail {
         return mesh.size();
     }
 
-    template <typename T>
-    struct NumpyDataGuardian: public DataVector<T>::Guardian {
+    struct NumpyDataDeleter {
         PyArrayObject* arr;
-        NumpyDataGuardian(PyArrayObject* arr) : arr(arr) { Py_XINCREF(arr); }
-        virtual ~NumpyDataGuardian() { Py_XDECREF(arr); }
+        NumpyDataDeleter(PyArrayObject* arr) : arr(arr) { Py_XINCREF(arr); }
+        void operator()(void*) { Py_XDECREF(arr); }
     };
 
     template <typename T, int dim>
@@ -259,7 +258,9 @@ namespace detail {
 
         if (size != mesh->size()) throw ValueError("Sizes of data (%1%) and mesh (%2%) do not match", size, mesh->size());
 
-        auto data = make_shared<DataVectorWrap<const T,dim>>(DataVector<const T>((const T*)PyArray_DATA(arr), size, new NumpyDataGuardian<T>(arr)), mesh);
+        auto data = make_shared<DataVectorWrap<const T,dim>>(
+            DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)),
+            mesh);
 
         return py::object(data);
     }
