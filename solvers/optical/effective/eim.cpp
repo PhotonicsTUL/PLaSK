@@ -229,11 +229,11 @@ void EffectiveIndex2DSolver::stageOne()
         size_t stripe = mesh->tran().findIndex(stripex);
         if (stripe < xbegin) stripe = xbegin;
         else if (stripe >= xend) stripe = xend-1;
-        writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe, (polarization==TE)?"TE":"TM");
+        writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe-xbegin, (polarization==TE)?"TE":"TM");
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[stripe][j]);
-            writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe, nrs.str().substr(1));
+            writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
         }
 #endif
         Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
@@ -250,13 +250,9 @@ void EffectiveIndex2DSolver::stageOne()
 
         // Compute effective indices
         for (size_t i = xbegin; i < xend; ++i) {
-            if (i == stripex) {
-                neffs[i] = vneff;
-            } else {
-                neffs[i] = 0;
-                for (size_t j = ybegin; j < yend; ++j) {
-                    neffs[i] += weights[j] * nrCache[i][j];
-                }
+            neffs[i] = 0;
+            for (size_t j = ybegin; j < yend; ++j) {
+                neffs[i] += weights[j] * nrCache[i][j];
             }
         }
 #ifndef NDEBUG
@@ -274,13 +270,21 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     // Compute fields
     detS1(vneff, nrCache[stripe], true);
 
-    double sum = 0.;
     weights.resize(yend);
-    weights[ybegin] = 0.;
-    weights[yend-1] = 0.;
+    {
+        double b = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
+        dcomplex B = fieldY[ybegin].B;
+        weights[ybegin] = (B.real()*B.real() + B.imag()*B.imag()) * 0.5 / b;
+    }
+    {
+        double b = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
+        dcomplex F = fieldY[yend-1].F;
+        weights[yend-1] = (F.real()*F.real() + F.imag()*F.imag()) * 0.5 / b;
+    }
+    double sum = weights[ybegin] + weights[yend-1];
 
     for (size_t i = ybegin+1; i < yend-1; ++i) {
-        double d = mesh->axis1[i]-mesh->axis1[i];
+        double d = mesh->axis1[i]-mesh->axis1[i-1];
         dcomplex b = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff); if (imag(b) > 0.) b = -b;
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
@@ -308,13 +312,13 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     sum = 1. / sum;
     for (size_t i = ybegin; i < yend; ++i) {
         weights[i] *= sum;
-#ifndef NDEBUG
-        {
-            std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) nrs << ", " << str(weights[i]);
-            writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
-        }
-#endif
     }
+#ifndef NDEBUG
+    {
+        std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) nrs << ", " << str(weights[i]);
+        writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
+    }
+#endif
 
 }
 
@@ -416,8 +420,8 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
         s3 *= phas * phas;
         s4 *= phas;
         // Compute matrix after boundary
-        dcomplex f = (polarization==TE)? neffs[i]/neffs[i+1] : 1.;
-        dcomplex p = 0.5 + 0.5 * beta[i+1] / beta[i] * f*f;
+        dcomplex f = (polarization==TE)? neffs[i-1]/neffs[i] : 1.;
+        dcomplex p = 0.5 + 0.5 * beta[i] / beta[i-1] * f*f;
         dcomplex m = 1.0 - p;
         dcomplex chi = 1. / (p - m * s3);
         // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
@@ -428,7 +432,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
         s4 *= chi;
         // Compute phase shift for the next step
         if (i != mesh->axis0.size())
-            phas = exp(I * beta[i+1] * (mesh->axis0[i+1]-mesh->axis0[i]));
+            phas = exp(I * beta[i+1] * (mesh->axis0[i]-mesh->axis0[i-1]));
 
         // Compute fields and weights in the next layer
         if (save) {
@@ -444,12 +448,6 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
         }
     }
 
-    // Rn = | T00 T01 | R0
-    // Ln = | T10 T11 | L0
-    if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
-    else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
-    else return s4 - s2*s3 / s1;
-
     if (save) {
         maxf = 1. / maxf;
         for (size_t i = ybegin; i < yend; ++i) fieldY[i] *= maxf;
@@ -461,7 +459,11 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 #endif
     }
 
-
+    // Rn = | T00 T01 | R0
+    // Ln = | T10 T11 | L0
+    if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
+    else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
+    else return s4 - s2*s3 / s1;
 }
 
 
