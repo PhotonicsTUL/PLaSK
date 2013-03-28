@@ -130,8 +130,8 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
         METHOD(find_modes, findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
-        METHOD(find_map, findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
-        METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by findModes.", "neff");
+        METHOD(find_map, findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to 'compute' to get the full solution.", "start", "end", arg("steps")=100);
+        METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
         solver.def("get_stripe_determinant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
         solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
@@ -155,11 +155,11 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified wavelength", "wavelength");
         METHOD(find_modes, findModes, "Find the modes within the specified range", "start", "end", arg("steps")=100, arg("nummodes")=99999999);
-        METHOD(find_map, findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to computeMode to get the full solution.", "start", "end", arg("steps")=100);
+        METHOD(find_map, findModesMap, "Find approximate modes by scanning the desired range.\nValues returned by this method can be provided to 'compute' to get the full solution.", "start", "end", arg("steps")=100);
         solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(dcomplex))&EffectiveFrequencyCylSolver::setMode,
-                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", py::arg("lam"));
+                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", py::arg("lam"));
         solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(double,double))&EffectiveFrequencyCylSolver::setMode,
-                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by findModes.", (py::arg("lam"), "ext"));
+                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), "ext"));
         solver.def("get_stripe_determinant_v", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
                    (py::arg("stripe"), "veff"));
         solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",

@@ -70,7 +70,7 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-        RW_PROPERTY(pnjcond, getCondJunc0, setCondJunc0, "Conductivity of the n-contact");
+//         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Initial conductivity of the p-n junction");
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
@@ -92,7 +92,7 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-        RW_PROPERTY(pnjcond, getCondJunc0, setCondJunc0, "Initial conductivity of the p-n junction");
+//         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Initial conductivity of the p-n junction");
     }
 
     py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");

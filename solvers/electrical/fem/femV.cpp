@@ -6,8 +6,6 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
     mJs(1.),
     mBeta(20.),
-    mCondJuncX0(1e-6),
-    mCondJuncY0(5.),
     mCondPcontact(5.),
     mCondNcontact(50.),
     mVCorrLim(1e-3),
@@ -24,6 +22,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     mPotentials.reset();
     mCurrentDensities.reset();
     mHeatDensities.reset();
+    mCondJunc.reset(1, 5.);
 
     inTemperature = 300.;
 }
@@ -58,24 +57,11 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         else if (param == "junction") {
             mJs = source.getAttribute<double>("js", mJs);
             mBeta = source.getAttribute<double>("beta", mBeta);
-            auto tCondJunc0 = source.getAttribute("pnjcond");
-            if (tCondJunc0) {
-                try {
-                    auto tConds = splitString2(*tCondJunc0, ',');
-                    boost::trim(tConds.first);
-                    boost::trim(tConds.second);
-                    if (tConds.second != "") {
-                        mCondJuncX0 = boost::lexical_cast<double>(tConds.first);
-                        mCondJuncY0 = boost::lexical_cast<double>(tConds.second);
-                    } else
-                        mCondJuncX0 = mCondJuncY0 = boost::lexical_cast<double>(tConds.first);
-                } catch (boost::bad_lexical_cast) {
-                    throw XMLBadAttrException(source, "pnjcond", *tCondJunc0);
-                }
-            }
+            auto tCondJunc = source.getAttribute<double>("pnjcond");
+            if (tCondJunc) setCondJunc(*tCondJunc);
             auto tWavelength = source.getAttribute<double>("wavelength");
             if (tWavelength) inWavelength = *tWavelength;
-           mHeatMethod = source.enumAttribute<HeatMethod>("heat")
+            mHeatMethod = source.enumAttribute<HeatMethod>("heat")
                 .value("joules", HEAT_JOULES)
                 .value("wavelength", HEAT_BANDGAP)
                 .get(mHeatMethod);
@@ -106,6 +92,10 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     mABand = this->mesh->minorAxis().size() + 1;
     mPotentials.reset(mAOrder, 0.);
     mCond.reset(this->mesh->elements.size());
+
+    double tCondY = 0.;
+    for (auto cond: mCondJunc) tCondY += cond;
+    mCondJunc.reset(this->mesh->axis0.size()-1, tCondY / mCondJunc.size());
 
     // Scan for active region
     bool tHadActive = false;
@@ -182,6 +172,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(DpbMa
         double tElemHeight = tE.getUpper1() - tE.getLower1();
 
         Vec<2,double> tMidPoint = tE.getMidpoint();
+
+        // update junction conductivities
         if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
             size_t tLeft = this->mesh->index0(tLoLeftNo);
             size_t tRight = this->mesh->index0(tLoRghtNo);
@@ -189,7 +181,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setMatrix(DpbMa
                 abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
                      + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
                    ) / mDact; // [j] = A/m²
-             mCond[i] = std::make_pair(mCondJuncX0, 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
+             mCond[i] = Tensor2<double>(0., 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
         }
         double tKx = mCond[i].c00;
         double tKy = mCond[i].c11;
@@ -278,6 +270,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Dpb
         Vec<2,double> tMidPoint = tE.getMidpoint();
         double r = tMidPoint.rad_r();
 
+        // update junction conductivities
         if (mLoopNo != 0 && geometry->hasRoleAt("active", tMidPoint)) {
             size_t tLeft = this->mesh->index0(tLoLeftNo);
             size_t tRight = this->mesh->index0(tLoRghtNo);
@@ -285,7 +278,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Dpb
                 abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
                      + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
                    ) / mDact; // [j] = A/m²
-            mCond[i] = std::make_pair(mCondJuncX0, 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
+             mCond[i] = Tensor2<double>(0., 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
         }
         double tKx = mCond[i].c00;
         double tKy = mCond[i].c11;
@@ -345,7 +338,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setMatrix(Dpb
 
 }
 
-template<typename Geometry2DType>  void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
+template<typename Geometry2DType>  void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 {
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto tTemperature = inTemperature(iMesh);
@@ -357,17 +350,21 @@ template<typename Geometry2DType>  void FiniteElementMethodElectrical2DSolver<Ge
 
         auto tRoles = this->geometry->getRolesAt(tMidPoint);
         if (tRoles.find("active") != tRoles.end()) {
-            if (mLoopNo == 0) mCond[i] = std::make_pair(mCondJuncX0, mCondJuncY0);
-            // in other loops leave it as it was
+            mCond[i] = Tensor2<double>(0., mCondJunc[tE.getIndex0()]);
         } else if (tRoles.find("p-contact") != tRoles.end()) {
-            mCond[i] = std::make_pair(mCondPcontact, mCondPcontact);
+            mCond[i] = Tensor2<double>(mCondPcontact, mCondPcontact);
         } else if (tRoles.find("n-contact") != tRoles.end()) {
-            mCond[i] = std::make_pair(mCondNcontact, mCondNcontact);
+            mCond[i] = Tensor2<double>(mCondNcontact, mCondNcontact);
         } else
             mCond[i] = this->geometry->getMaterial(tMidPoint)->cond(tTemperature[i]);
     }
 }
 
+template<typename Geometry2DType>  void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
+{
+    for (size_t i = 0, j = (mActLo+mActHi)/2; i != this->mesh->axis0.size()-1; ++i)
+        mCondJunc[i] = mCond[this->mesh->elements(i,j).getIndex()].c11;
+}
 
 
 template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(int iLoopLim)
@@ -394,7 +391,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
     mPotentials = mPotentials.claim();
     DataVector<double> tV(mAOrder);
 
-    saveConductivities();
+    loadConductivities();
 
     do {
         setMatrix(tA, tV, tVConst);
@@ -412,6 +409,8 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
         this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", tLoop, mLoopNo, mDV, mMaxAbsVCorr, mMaxRelVCorr);
 
     } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsVCorr > mVCorrLim) : (mMaxRelVCorr > mVCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
+
+    saveConductivities();
 
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
@@ -603,13 +602,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
 template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent()
 {
     // Find the average of the active region
-    size_t level = 0, num = 0;
-    for (auto element: this->mesh->elements)
-        if (this->geometry->hasRoleAt("active", element.getMidpoint())) {
-            level += element.getLowerIndex1();
-            ++num;
-        }
-    level /= num;
+    size_t level = (mActLo + mActHi) / 2;
     return integrateCurrent(level);
 }
 

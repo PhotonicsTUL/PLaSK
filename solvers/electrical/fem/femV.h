@@ -35,22 +35,22 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   protected:
 
-    int mAOrder,         ///< Number of columns in the main matrix
-        mABand;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
+    int mAOrder,            ///< Number of columns in the main matrix
+        mABand;             ///< Number of non-zero rows on and below the main diagonal of the main matrix
 
-    double mJs;          ///< p-n junction parameter [A/m^2]
-    double mBeta;        ///< p-n junction parameter [1/V]
-    double mCondJuncX0;  ///< initial electrical conductivity for p-n junction in x-direction [S/m]
-    double mCondJuncY0;  ///< initial electrical conductivity for p-n junction in y-direction [S/m]
-    double mCondPcontact;///< p-contact electrical conductivity [S/m]
-    double mCondNcontact;///< n-contact electrical conductivity [S/m]
+    double mJs;             ///< p-n junction parameter [A/m^2]
+    double mBeta;           ///< p-n junction parameter [1/V]
+    double mCondPcontact;   ///< p-contact electrical conductivity [S/m]
+    double mCondNcontact;   ///< n-contact electrical conductivity [S/m]
 
-    double mVCorrLim;     ///< Maximum voltage correction accepted as convergence
-    int mLoopNo;          ///< Number of completed loops
-    double mMaxAbsVCorr;  ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
-    double mMaxRelVCorr;  ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
-    double mMaxVCorr;     ///< Maximum absolute voltage correction (useful for calculations with internal loops)
-    double mDV;           ///< Maximum voltage
+    double mVCorrLim;       ///< Maximum voltage correction accepted as convergence
+    int mLoopNo;            ///< Number of completed loops
+    double mMaxAbsVCorr;    ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
+    double mMaxRelVCorr;    ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
+    double mMaxVCorr;       ///< Maximum absolute voltage correction (useful for calculations with internal loops)
+    double mDV;             ///< Maximum voltage
+
+    DataVector<double> mCondJunc;                   ///< electrical conductivity for p-n junction in y-direction [S/m]
 
     DataVector<Tensor2<double>> mCond;              ///< Cached element conductivities
     DataVector<double> mPotentials;                 ///< Computed potentials
@@ -66,7 +66,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst
                   );
 
-    /// Save conductivities (excluding active region)
+    /// Load conductivities
+    void loadConductivities();
+
+    /// Save conductivities of active region
     void saveConductivities();
 
     /// Update stored potentials and calculate corrections
@@ -156,8 +159,18 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double getCondNcontact() const { return mCondNcontact; }
     void setCondNcontact(double iCondNcontact)  { mCondNcontact = iCondNcontact; }
 
-    Tensor2<double> getCondJunc0() const { return Tensor2<double>(mCondJuncX0, mCondJuncY0); }
-    void setCondJunc0(const Tensor2<double>& iCond)  { mCondJuncX0 = iCond.c00; mCondJuncY0 = iCond.c11; }
+    DataVector<double> getCondJunc() const { return mCondJunc; }
+    void setCondJunc(double iCond)  { mCondJunc.reset(mCondJunc.size(), iCond); }
+    void setCondJunc(const DataVector<double>& iCond)  {
+        if (!this->mesh || iCond.size() != this->mesh->axis0.size()-1)
+            throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
+        mCondJunc = iCond.claim();
+    }
+    void setCondJuncY(DataVector<double>&& iCond)  {
+        if (!this->mesh || iCond.size() != this->mesh->axis0.size()-1)
+            throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
+        mCondJunc = iCond.claim();
+    }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
