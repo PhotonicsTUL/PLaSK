@@ -48,19 +48,19 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     Data2DLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices
-    std::vector<std::vector<dcomplex>> nrCache;
+    std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache;
 
     /// Computed horizontal and vertical fields
-    std::vector<Field> fieldX, fieldY;
+    std::vector<Field,aligned_allocator<Field>> fieldX, fieldY;
 
     /// Field confinement weights in stripes
-    std::vector<double> weights;
+    std::vector<double,aligned_allocator<double>> weights;
 
     /// Did we compute fields for current Neff?
     bool have_fields;
 
     /// Computed effective indices for each stripe
-    std::vector<dcomplex> neffs;
+    std::vector<dcomplex,aligned_allocator<dcomplex>> neffs;
 
     /// Should stripe indices be recomputed
     bool recompute_neffs;
@@ -268,7 +268,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param NR refractive indices
      * \param save if \c true, the fields are saved to fieldY
      */
-    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR, bool save=false);
+    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save=false);
 
     /**
      * Return S matrix determinant for the whole structure
@@ -283,7 +283,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
   private:
     template <typename MeshT>
     bool getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
-                                     const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay);
+                                     const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
+                                     const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky);
 
 };
 

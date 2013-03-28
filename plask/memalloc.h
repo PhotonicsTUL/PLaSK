@@ -228,13 +228,9 @@ struct aligned_allocator {
 
     ~aligned_allocator(){}
 
-    size_type max_size() const {
-        return (std::numeric_limits<size_type>::max)();
-    }
+    size_type max_size() const { return (std::numeric_limits<size_type>::max)(); }
 
-    pointer allocate(size_type num, const void*) {
-        return static_cast<pointer>(aligned_malloc(num * sizeof(T)));
-    }
+    pointer allocate(size_type num) { return aligned_malloc<T>(num); }
 
     void construct(pointer p, const T& value) { new(p) T(value); }
 

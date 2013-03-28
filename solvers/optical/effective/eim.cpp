@@ -151,7 +151,7 @@ void EffectiveIndex2DSolver::onInitialize()
         --yend;
 
     // Assign space for refractive indices cache and stripe effective indices
-    nrCache.assign(xend, std::vector<dcomplex>(yend));
+    nrCache.assign(xend, std::vector<dcomplex,aligned_allocator<dcomplex>>(yend));
     neffs.resize(xend);
 }
 
@@ -272,9 +272,9 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 
     weights.resize(yend);
     {
-        double b = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
+        double ky = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
         dcomplex B = fieldY[ybegin].B;
-        weights[ybegin] = (B.real()*B.real() + B.imag()*B.imag()) * 0.5 / b;
+        weights[ybegin] = (B.real()*B.real() + B.imag()*B.imag()) * 0.5 / ky;
     }
     {
         double b = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
@@ -285,25 +285,26 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 
     for (size_t i = ybegin+1; i < yend-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
-        dcomplex b = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff); if (imag(b) > 0.) b = -b;
+        dcomplex ky = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff); if (imag(ky) > 0.) ky = -ky;
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
-            if (abs(imag(b)) > SMALL) {
-                dcomplex bb = b - conj(b);
-                w_ff = (exp(-I*d*bb) - 1.) / bb;
-                w_bb = (exp(+I*d*bb) - 1.) / bb;
+            if (abs(imag(ky)) > SMALL) {
+                dcomplex kk = ky - conj(ky);
+                w_ff =   (exp(-I*d*kk) - 1.) / kk;
+                w_bb = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            if (abs(real(b)) > SMALL) {
-                dcomplex bb = b + conj(b);
-                w_fb = (exp(-I*d*bb) - 1.) / bb;
-                w_bf = (exp(+I*d*bb) - 1.) / bb;
+            if (abs(real(ky)) > SMALL) {
+                dcomplex kk = ky + conj(ky);
+                w_fb =   (exp(-I*d*kk) - 1.) / kk;
+                w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            weights[i] = -imag(fieldY[i].F * conj(fieldY[i].F) * w_ff
-                                    - fieldY[i].B * conj(fieldY[i].F) * w_bf
-                                    + fieldY[i].F * conj(fieldY[i].B) * w_fb
-                                    - fieldY[i].B * conj(fieldY[i].B) * w_bb);
+            dcomplex weight = fieldY[i].F * conj(fieldY[i].F) * w_ff +
+                              fieldY[i].F * conj(fieldY[i].B) * w_fb +
+                              fieldY[i].B * conj(fieldY[i].F) * w_bf +
+                              fieldY[i].B * conj(fieldY[i].B) * w_bb;
+            weights[i] = -imag(weight);
         } else
             weights[i] = 0.;
         sum += weights[i];
@@ -322,7 +323,7 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 
 }
 
-dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vector<dcomplex>& NR, bool save)
+dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save)
 {
     double maxf = 0.;
     if (save) {
@@ -330,17 +331,17 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         fieldY[ybegin] = Field(0., 1.);
     }
 
-    std::vector<dcomplex> beta(yend);
+    std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
-        beta[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
-        if (imag(beta[i]) > 0.) beta[i] = -beta[i];
+        ky[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
+        if (imag(ky[i]) > 0.) ky[i] = -ky[i];
     }
 
     dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
 
     dcomplex phas = 1.;
     if (ybegin != 0)
-        phas = exp(I * beta[ybegin] * (mesh->axis1[ybegin]-mesh->axis1[ybegin-1]));
+        phas = exp(I * ky[ybegin] * (mesh->axis1[ybegin]-mesh->axis1[ybegin-1]));
 
     for (size_t i = ybegin+1; i < yend; ++i) {
         // Compute shift inside one layer
@@ -349,7 +350,7 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         s4 *= phas;
         // Compute matrix after boundary
         dcomplex f = (polarization==TM)? NR[i-1]/NR[i] : 1.;
-        dcomplex p = 0.5 + 0.5 * beta[i] / beta[i-1] * f*f;
+        dcomplex p = 0.5 + 0.5 * ky[i] / ky[i-1] * f*f;
         dcomplex m = 1.0 - p;
         dcomplex chi = 1. / (p - m * s3);
         // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
@@ -360,7 +361,7 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         s4 *= chi;
         // Compute phase shift for the next step
         if (i != mesh->axis1.size())
-            phas = exp(I * beta[i] * (mesh->axis1[i]-mesh->axis1[i-1]));
+            phas = exp(I * ky[i] * (mesh->axis1[i]-mesh->axis1[i-1]));
 
         // Compute fields and weights in the next layer
         if (save) {
@@ -399,10 +400,10 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     // Adjust for mirror losses
     dcomplex neff = dcomplex(real(x), imag(x)-getMirrorLosses(x));
 
-    std::vector<dcomplex> beta(xend);
+    std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {
-        beta[i] = k0 * sqrt(neffs[i]*neffs[i] - neff*neff);
-        if (imag(beta[i]) > 0.) beta[i] = -beta[i];
+        kx[i] = k0 * sqrt(neffs[i]*neffs[i] - neff*neff);
+        if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
     dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
@@ -410,9 +411,9 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     dcomplex phas = 1.;
 
     if (symmetry != NO_SYMMETRY) // we have symmetry, so begin of the transfer matrix is at the axis
-        phas = exp(I * beta[xbegin] * mesh->axis0[xbegin]);
+        phas = exp(I * kx[xbegin] * mesh->axis0[xbegin]);
     else if (xbegin != 0)
-        phas = exp(I * beta[xbegin] * (mesh->axis0[xbegin]-mesh->axis0[xbegin-1]));
+        phas = exp(I * kx[xbegin] * (mesh->axis0[xbegin]-mesh->axis0[xbegin-1]));
 
     for (size_t i = xbegin+1; i < xend; ++i) {
         // Compute shift inside one layer
@@ -421,7 +422,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
         s4 *= phas;
         // Compute matrix after boundary
         dcomplex f = (polarization==TE)? neffs[i-1]/neffs[i] : 1.;
-        dcomplex p = 0.5 + 0.5 * beta[i] / beta[i-1] * f*f;
+        dcomplex p = 0.5 + 0.5 * kx[i] / kx[i-1] * f*f;
         dcomplex m = 1.0 - p;
         dcomplex chi = 1. / (p - m * s3);
         // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
@@ -432,7 +433,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
         s4 *= chi;
         // Compute phase shift for the next step
         if (i != mesh->axis0.size())
-            phas = exp(I * beta[i+1] * (mesh->axis0[i]-mesh->axis0[i-1]));
+            phas = exp(I * kx[i+1] * (mesh->axis0[i]-mesh->axis0[i-1]));
 
         // Compute fields and weights in the next layer
         if (save) {
@@ -477,10 +478,10 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 
     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
 
-    std::vector<dcomplex> betax(xend);
+    std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = 0; i < xend; ++i) {
-        betax[i] = k0 * sqrt(neffs[i]*neffs[i] - neff*neff);
-        if (imag(betax[i]) > 0.) betax[i] = -betax[i];
+        kx[i] = k0 * sqrt(neffs[i]*neffs[i] - neff*neff);
+        if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
     size_t stripe = mesh->tran().findIndex(stripex);
@@ -488,18 +489,18 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
     else if (stripe >= xend) stripe = xend-1;
 
 
-    std::vector<dcomplex> betay(yend);
+    std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
-        betay[i] = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff);
-        if (imag(betay[i]) > 0.) betay[i] = -betay[i];
+        ky[i] = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff);
+        if (imag(ky[i]) > 0.) ky[i] = -ky[i];
     }
 
     if (!have_fields) detS(neff, true);
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, betax, betay) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, betax, betay)) {
+    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, kx, ky) &&
+        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, kx, ky)) {
 
         #pragma omp parallel for
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
@@ -516,7 +517,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             if (ix < xbegin) ix = xbegin;
             if (ix != 0) x -= mesh->tran()[ix-1];
             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
-            dcomplex phasx = exp(- I * betax[ix] * x);
+            dcomplex phasx = exp(- I * kx[ix] * x);
             dcomplex val = fieldX[ix].F * phasx + fieldX[ix].B / phasx;
             if (negate) val = - val;
 
@@ -524,7 +525,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             if (iy >= yend) iy = yend-1;
             if (iy < ybegin) iy = ybegin;
             y -= mesh->vert()[max(int(iy)-1, 0)];
-            dcomplex phasy = exp(- I * betay[iy] * y);
+            dcomplex phasy = exp(- I * ky[iy] * y);
             val *= fieldY[iy].F * phasy + fieldY[iy].B / phasy;
 
             results[idx] = real(abs2(val));
@@ -540,14 +541,15 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 
 template <typename MeshT>
 bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
-                                                         const std::vector<dcomplex>& betax, const std::vector<dcomplex>& betay)
+                                                         const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
+                                                         const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
 
         const MeshT& rect_mesh = dynamic_cast<const MeshT&>(dst_mesh);
 
-        std::vector<dcomplex> valx(rect_mesh.tran().size());
-        std::vector<dcomplex> valy(rect_mesh.vert().size());
+        std::vector<dcomplex,aligned_allocator<dcomplex>> valx(rect_mesh.tran().size());
+        std::vector<dcomplex,aligned_allocator<dcomplex>> valy(rect_mesh.vert().size());
 
         #pragma omp parallel
         {
@@ -563,7 +565,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
                 if (ix < xbegin) ix = xbegin;
                 if (ix != 0) x -= mesh->tran()[ix-1];
                 else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
-                dcomplex phasx = exp(- I * betax[ix] * x);
+                dcomplex phasx = exp(- I * kx[ix] * x);
                 dcomplex val = fieldX[ix].F * phasx + fieldX[ix].B / phasx;
                 if (negate) val = - val;
                 valx[idx] = val;
@@ -576,7 +578,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
                 if (iy >= yend) iy = yend-1;
                 if (iy < ybegin) iy = ybegin;
                 y -= mesh->vert()[max(int(iy)-1, 0)];
-                dcomplex phasy = exp(- I * betay[iy] * y);
+                dcomplex phasy = exp(- I * ky[iy] * y);
                 valy[idy] = fieldY[iy].F * phasy + fieldY[iy].B / phasy;
             }
 

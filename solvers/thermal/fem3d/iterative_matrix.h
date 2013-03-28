@@ -109,12 +109,15 @@ struct PrecondJacobi {
     PrecondJacobi(const SparseBandMatrix& A): matrix(A) {}
 
     void operator()(double* z, double* r) const { // z = inv(M) r
-        for (double* m = matrix.data, *zend = z + matrix.size; z < zend; z+=4, r+=4, m += 4*LDA) {
+        double* m = matrix.data, *zend = z + matrix.size-4;
+        for (; z < zend; z += 4, r += 4, m += 4*LDA) {
             *z = *r / *m;
             *(z+1) = *(r+1) / *(m+1);
             *(z+2) = *(r+2) / *(m+2);
             *(z+3) = *(r+3) / *(m+3);
         }
+        for (zend += 4; z != zend; ++z, ++r, m += LDA)
+            *z = *r / *m;
     }
 };
 
