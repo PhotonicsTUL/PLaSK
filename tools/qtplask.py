@@ -9,6 +9,7 @@ import sys
 import os
 import signal
 import atexit
+import subprocess
 
 from IPython.frontend.qt.kernelmanager import QtKernelManager
 from IPython.frontend.qt.console.qtconsoleapp import IPythonQtConsoleApp
@@ -27,8 +28,8 @@ preexec_lines = [
 ]
 
 import IPython.core.usage
-IPython.core.usage.default_gui_banner = '''\
-PLaSK 0.1 --- Photonic Laser Simulation Kit
+banner_tpl = '''\
+PLaSK %s --- Photonic Laser Simulation Kit
 (c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group
 
 Package 'plask' is already imported into global namespace.
@@ -110,9 +111,14 @@ class PlaskQtConsoleApp(IPythonQtConsoleApp):
         for line in preexec_lines:
             widget.execute(line, hidden=True)
 
+def get_version(executable):
+    pipe = subprocess.Popen([executable, "-version"], stdout=subprocess.PIPE).stdout
+    return pipe.read().strip()
+
 def main():
     app = PlaskQtConsoleApp()
     app.executable = os.path.join(os.path.dirname(sys.argv[0]), "plask")
+    IPython.core.usage.default_gui_banner = banner_tpl % get_version(app.executable)
     app.initialize(['--pylab=qt', '--profile=plask'])
     app.init_widget(app.widget)
     app.window.setWindowTitle("PLaSK")

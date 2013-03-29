@@ -8,11 +8,12 @@ namespace py = boost::python;
 #include <string>
 #include <stack>
 
+#include <plask/version.h>
 #include <plask/exceptions.h>
 #include <plask/utils/system.h>
 #include <plask/log/log.h>
-#include "plask/python_globals.h"
-#include "plask/python_manager.h"
+#include <plask/python_globals.h>
+#include <plask/python_manager.h>
 
 #ifdef _WIN32
 #   include <windows.h>
@@ -162,6 +163,11 @@ int main(int argc, const char *argv[])
     bool from_import = true;
     bool force_interactive = false;
     const char* command = nullptr;
+
+    if (argc > 1 && std::string(argv[1]) == "-version") {
+        std::cout << PLASK_VERSION << std::endl;
+        return 0;
+    }
 
     while (argc > 1) {
         if (std::string(argv[1]) == "-n") {
