@@ -1,7 +1,7 @@
 <plask>
 
 <geometry>
-  <cartesian2d axes="xy" left="mirror" name="main">
+  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
     <stack>
       <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
       <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>

@@ -230,6 +230,11 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::XMLException>(xml_error);
     py::scope().attr("XMLError") = py::handle<>(py::incref(xml_error));
 
+    PyObject* computation_error = PyErr_NewExceptionWithDoc((char*)"plask.ComputationError", (char*)"Computational error in some PLaSK solver.",
+                                                            PyExc_ArithmeticError, NULL);
+    register_exception<plask::ComputationError>(computation_error);
+    py::scope().attr("ComputationError") = py::handle<>(py::incref(computation_error));
+
     py::def("_print_exception", &printPythonException, "Print exception information to PLaSK logging system",
             (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("startline")=0, py::arg("scriptname")="", py::arg("second_is_script")=false));
 

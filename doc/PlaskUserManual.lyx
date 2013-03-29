@@ -995,7 +995,7 @@ status open
 
 \begin_layout Plain Layout
 
-  <cartesian2d axes="xy" left="mirror" name="main">
+  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
 \end_layout
 
 \begin_layout Plain Layout
@@ -1061,6 +1061,20 @@ e.
 left="mirror"
 \family default
  attribute.
+ The length of the chip in the third 
+\begin_inset Formula $z$
+\end_inset
+
+ direction is set to 1
+\begin_inset space \thinspace{}
+\end_inset
+
+mm (
+\family typewriter
+length="1000"
+\family default
+, where the value is specified in microns as all geometrical dimensions
+ in PLaSK).
  The last attribute 
 \family typewriter
 name
@@ -1107,7 +1121,7 @@ status open
 
 \begin_layout Plain Layout
 
-  <cartesian2d axes="xy" left="mirror" name="main">
+  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
 \end_layout
 
 \begin_layout Plain Layout
@@ -2307,7 +2321,7 @@ tutorial1.xpl
 
 \begin_layout Plain Layout
 
-  <cartesian2d axes="xy" left="mirror" name="main">
+  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
 \end_layout
 
 \begin_layout Plain Layout

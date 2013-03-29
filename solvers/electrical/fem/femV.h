@@ -132,16 +132,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
      */
     double getTotalCurrent();
 
-    /**
-     * Get max absolute correction for temperature
-     * \return get max absolute correction for temperature
-     **/
+    /// \return max absolute correction for temperature
     double getMaxAbsVCorr() const { return mMaxAbsVCorr; } // result in [K]
 
-    /**
-     * Get max relative correction for temperature
-     * \return get max relative correction for temperature
-     **/
+    /// \return get max relative correction for temperature
     double getMaxRelVCorr() const { return mMaxRelVCorr; } // result in [%]
 
     double getVCorrLim() const { return mVCorrLim; }
@@ -159,18 +153,16 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double getCondNcontact() const { return mCondNcontact; }
     void setCondNcontact(double iCondNcontact)  { mCondNcontact = iCondNcontact; }
 
-    DataVector<double> getCondJunc() const { return mCondJunc; }
+    DataVector<const double> getCondJunc() const { return mCondJunc; }
     void setCondJunc(double iCond)  { mCondJunc.reset(mCondJunc.size(), iCond); }
-    void setCondJunc(const DataVector<double>& iCond)  {
+    void setCondJunc(const DataVector<const double>& iCond)  {
         if (!this->mesh || iCond.size() != this->mesh->axis0.size()-1)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         mCondJunc = iCond.claim();
     }
-    void setCondJuncY(DataVector<double>&& iCond)  {
-        if (!this->mesh || iCond.size() != this->mesh->axis0.size()-1)
-            throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
-        mCondJunc = iCond.claim();
-    }
+
+    double getActLo() const { return mActLo; }
+    double getActHi() const { return mActHi; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 

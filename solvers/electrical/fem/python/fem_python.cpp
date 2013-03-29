@@ -6,24 +6,61 @@ using namespace plask::python;
 #include "../femV.h"
 using namespace plask::solvers::electrical;
 
-static shared_ptr<FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>> Fem2D(const std::string& name) {
-    auto result = make_shared<FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>>(name);
-    result->writelog(LOG_WARNING, "'electrical.Fem2D' name is depreciated! Use 'electrical.Beta2D' instead.");
-    return result;
-}
-
-static shared_ptr<FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>> FemCyl(const std::string& name) {
-    auto result = make_shared<FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>>(name);
-    result->writelog(LOG_WARNING, "'electrical.FemCyl' name is depreciated! Use 'electrical.BetaCyl' instead.");
-    return result;
-}
-
 static shared_ptr<SolverOver<Geometry2DCartesian>> DriftDiffusion2D(const std::string& name) {
     throw NotImplemented("DriftDiffusion2D: I want it to be implemented too!");
 }
 
 static shared_ptr<SolverOver<Geometry2DCylindrical>> DriftDiffusionCyl(const std::string& name) {
     throw NotImplemented("DriftDiffusionCyl: I want it to be implemented too!");
+}
+
+template <typename Cls>
+static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
+    auto midmesh = self->getMesh()->getMidpointsMesh();
+    RectilinearMesh1D line1;
+    line1.addPoint(self->getMesh()->axis1[(self->getActLo()+self->getActHi())/2]);
+    auto mesh = make_shared<RectilinearMesh2D>(midmesh->axis0, line1);
+    return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
+}
+
+template <typename Cls>
+static void setCondJunc(Cls* self, py::object value) {
+    size_t len = self->getMesh()->axis0.size()-1;
+    try {
+        double val = py::extract<double>(value);
+        self->setCondJunc(val);
+        return;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    try {
+        const DataVectorWrap<const double,2>& val = py::extract<DataVectorWrap<const double,2>&>(value);
+        double ylo = self->getMesh()->axis1[self->getActLo()], yhi = self->getMesh()->axis1[self->getActHi()];
+        {
+            auto mesh = dynamic_pointer_cast<RectilinearMesh2D>(val.mesh);
+            if (mesh && mesh->axis1.size() == 1 && ylo <= mesh->axis1[0] && mesh->axis1[0] <= yhi && val.size() == len) {
+                self->setCondJunc(val);
+                return;
+            }
+        }{
+            auto mesh = dynamic_pointer_cast<RegularMesh2D>(val.mesh);
+            if (mesh && mesh->axis1.size() == 1 && ylo <= mesh->axis1[0] && mesh->axis1[0] <= yhi && val.size() == len) {
+                self->setCondJunc(val);
+                return;
+            }
+        }
+        throw ValueError("pnjcond can be set either to float, sequence of %1% floats or data read from it", len);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    try {
+        if (py::len(value) != len) throw py::error_already_set();
+        DataVector<double> data(len);
+        for (size_t i = 0; i != len; ++i) data[i] = py::extract<double>(value[i]);
+        self->setCondJunc(DataVector<const double>(std::move(data)));
+    } catch (py::error_already_set) {
+        throw ValueError("pnjcond can be set either to float, sequence of %1% floats or data read from it", len);
+    }
 }
 
 /**
@@ -52,7 +89,7 @@ BOOST_PYTHON_MODULE(fem)
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Beta2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region");
+        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]");
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
         RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
@@ -70,11 +107,13 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-//         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Initial conductivity of the p-n junction");
+        solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
+        solver.setattr("outVoltage", solver.attr("outPotential"));
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
+        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]");
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
         RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
@@ -92,14 +131,11 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-//         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Initial conductivity of the p-n junction");
+        solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
+        solver.setattr("outVoltage", solver.attr("outPotential"));
     }
 
     py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");
     py::def("DriftDiffusionCyl", DriftDiffusionCyl, py::arg("name")="");
-
-    // Add methods to create classes using depreciate names
-    py::def("Fem2D", Fem2D, py::arg("name")="");
-    py::def("FemCyl", FemCyl, py::arg("name")="");
 }
 
