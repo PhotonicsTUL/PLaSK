@@ -48,11 +48,9 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver.inWavelength = 1000.
         self.solver.symmetry = "+"
         self.solver.polarization = "TE"
-        # self.assertAlmostEqual( self.solver.compute(1.15), 1.1502818, 6) # effective index
-        self.assertAlmostEqual( self.solver.compute(1.15), 1.2035235, 6) # weighted index TODO analytical solution
+        self.assertAlmostEqual( self.solver.compute(1.15), 1.147, 3)
         self.solver.polarization = "TM"
-        # self.assertAlmostEqual( self.solver.compute(1.10), 1.1156605, 6) # effective index
-        self.assertAlmostEqual( self.solver.compute(1.10), 1.0139379, 6) # weighted index TODO analytical solution
+        self.assertAlmostEqual( self.solver.compute(1.10), 1.111, 3)
 
     def testMesh(self):
         mesh = self.solver.mesh

@@ -225,7 +225,7 @@ void EffectiveIndex2DSolver::stageOne()
 
     if (recompute_neffs) {
 
-        // Compute effective index of main stripe
+        // Compute effective index of the main stripe
         size_t stripe = mesh->tran().findIndex(stripex);
         if (stripe < xbegin) stripe = xbegin;
         else if (stripe >= xend) stripe = xend-1;
@@ -250,14 +250,17 @@ void EffectiveIndex2DSolver::stageOne()
 
         // Compute effective indices
         for (size_t i = xbegin; i < xend; ++i) {
-            neffs[i] = 0;
-            for (size_t j = ybegin; j < yend; ++j) {
-                neffs[i] += weights[j] * nrCache[i][j];
-            }
+            dcomplex epsilon = vneff*vneff;
+            for (size_t j = ybegin; j < yend; ++j)
+                epsilon += weights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
+            neffs[i] = sqrt(epsilon);
         }
 #ifndef NDEBUG
         {
-            std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i) nrs << ", " << str(neffs[i]);
+            std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i) {
+                dcomplex n = neffs[i]; if (abs(n.real()) < 1e-10) n.real(0.); if (abs(n.imag()) < 1e-10) n.imag(0.);
+                nrs << ", " << str(n);
+            }
             writelog(LOG_DEBUG, "horizontal neffs = [%1% ]", nrs.str().substr(1));
         }
 #endif
@@ -377,7 +380,11 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         for (size_t i = ybegin; i < yend; ++i) fieldY[i] *= maxf;
 #ifndef NDEBUG
         {
-            std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) nrs << "), (" << str(fieldY[i].F) << ":" << str(fieldY[i].B);
+            std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) {
+                dcomplex F = fieldY[i].F; if (abs(F.real()) < 1e-10) F.real(0.); if (abs(F.imag()) < 1e-10) F.imag(0.);
+                dcomplex B = fieldY[i].B; if (abs(B.real()) < 1e-10) B.real(0.); if (abs(B.imag()) < 1e-10) B.imag(0.);
+                nrs << "), (" << str(F) << ":" << str(B);
+            }
             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
