@@ -83,19 +83,9 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry2DType>::~FiniteElementMethodElectrical2DSolver() {
 }
 
-
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize() {
-    if (!this->geometry) throw NoGeometryException(this->getId());
-    if (!this->mesh) throw NoMeshException(this->getId());
-    mLoopNo = 0;
-    mAOrder = this->mesh->size();
-    mABand = this->mesh->minorAxis().size() + 1;
-    mPotentials.reset(mAOrder, 0.);
-    mCond.reset(this->mesh->elements.size());
-
-    double tCondY = 0.;
-    for (auto cond: mCondJunc) tCondY += cond;
-    mCondJunc.reset(this->mesh->axis0.size()-1, tCondY / mCondJunc.size());
+template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegion()
+{
+    if (!this->geometry || !this->mesh) return;
 
     // Scan for active region
     bool tHadActive = false;
@@ -133,6 +123,25 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         this->writelog(LOG_DEBUG, "Active layer thickness = %1%nm", 1e3 * mDact);
 #endif
     }
+
+    if (mCondJunc.size() != this->mesh->axis0.size()-1) {
+        double tCondY = 0.;
+        for (auto cond: mCondJunc) tCondY += cond;
+        mCondJunc.reset(this->mesh->axis0.size()-1, tCondY / mCondJunc.size());
+    }
+}
+
+
+
+template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
+{
+    if (!this->geometry) throw NoGeometryException(this->getId());
+    if (!this->mesh) throw NoMeshException(this->getId());
+    mLoopNo = 0;
+    mAOrder = this->mesh->size();
+    mABand = this->mesh->minorAxis().size() + 1;
+    mPotentials.reset(mAOrder, 0.);
+    mCond.reset(this->mesh->elements.size());
 }
 
 

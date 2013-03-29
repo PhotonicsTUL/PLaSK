@@ -90,6 +90,20 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     /// Invalidate the data
     virtual void onInvalidate();
 
+    /// Get info on active region
+    void setActiveRegion();
+
+    virtual void onMeshChange(const typename RectilinearMesh2D::Event& evt) {
+        this->invalidate();
+        setActiveRegion();
+    }
+
+    virtual void onGeometryChange(const Geometry::Event& evt) {
+        this->invalidate();
+        setActiveRegion();
+    }
+
+
   public:
 
     CorrectionType mCorrType; ///< Type of the returned correction
