@@ -6,6 +6,10 @@ This file includes tools which provide compability with STL containers, etc.
 */
 
 #include <algorithm>
+#include <cstddef>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 namespace plask {
 
@@ -67,6 +71,49 @@ inline Iter find_nearest_binary(Iter begin, Iter end, const Val& to_find) {
 
 template <typename... Types>
 struct VariadicTemplateTypesHolder {};
+
+/// Don't use this directly, use applyTuple instead.
+template<size_t N>
+struct ApplyTuple {
+    template<typename F, typename T, typename... A>
+    static inline auto apply(F&& f, T && t, A &&... a)
+        -> decltype(ApplyTuple<N-1>::apply(::std::forward<F>(f), ::std::forward<T>(t),
+            ::std::get<N-1>(::std::forward<T>(t)), ::std::forward<A>(a)...
+        ))
+    {
+        return ApplyTuple<N-1>::apply(::std::forward<F>(f), ::std::forward<T>(t),
+            ::std::get<N-1>(::std::forward<T>(t)), ::std::forward<A>(a)...
+        );
+    }
+};
+
+/// Don't use this directly, use applyTuple instead.
+template<>
+struct ApplyTuple<0> {
+    template<typename F, typename T, typename... A>
+    static inline auto apply(F && f, T &&, A &&... a)
+        -> decltype(::std::forward<F>(f)(::std::forward<A>(a)...))
+    {
+        return ::std::forward<F>(f)(::std::forward<A>(a)...);
+    }
+};
+
+/**
+ * Call @p f using arguments from tuple.
+ * @param f functor to call
+ * @param t tuple which includes all @p f arguments
+ * @return result returned by @p f
+ */
+template<typename F, typename T>
+inline auto applyTuple(F && f, T && t)
+     -> decltype(ApplyTuple< ::std::tuple_size<
+         typename ::std::decay<T>::type
+     >::value>::apply(::std::forward<F>(f), ::std::forward<T>(t)))
+{
+    return ApplyTuple< ::std::tuple_size<
+        typename ::std::decay<T>::type
+    >::value>::apply(::std::forward<T>(f), ::std::forward<T>(t));
+}   //note: if this will not work, try http://preney.ca/paul/archives/486
 
 } // namespace plask
 

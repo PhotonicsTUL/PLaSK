@@ -203,7 +203,16 @@ public:
                 return in(dst_mesh, extra_args..., method);
             },
             enviroment
-        );*/
+        );*/    //good code but not supported by GCC 4.7
+        // workaround:
+        /*auto t = std::make_tuple(std::ref(extra_args)..., method);
+        return logic(
+                requested_points,
+                [&, extra_args...] (const MeshD<3>& dst_mesh) -> DataVector<const typename PropertyT::DataType> {
+                    return in(dst_mesh, extra_args..., method);
+                },
+                enviroment
+            );*/
     }
 
 };
