@@ -6,10 +6,7 @@ This file includes tools which provide compability with STL containers, etc.
 */
 
 #include <algorithm>
-#include <cstddef>
-#include <tuple>
-#include <type_traits>
-#include <utility>
+#include <cstddef> // for std::size_t
 
 namespace plask {
 
@@ -73,30 +70,92 @@ template <typename... Types>
 struct VariadicTemplateTypesHolder {};
 
 /// Don't use this directly, use applyTuple instead.
-template<size_t N>
-struct ApplyTuple {
-    template<typename F, typename T, typename... A>
-    static inline auto apply(F&& f, T && t, A &&... a)
-        -> decltype(ApplyTuple<N-1>::apply(::std::forward<F>(f), ::std::forward<T>(t),
-            ::std::get<N-1>(::std::forward<T>(t)), ::std::forward<A>(a)...
-        ))
-    {
-        return ApplyTuple<N-1>::apply(::std::forward<F>(f), ::std::forward<T>(t),
-            ::std::get<N-1>(::std::forward<T>(t)), ::std::forward<A>(a)...
-        );
-    }
+
+
+#include <cstddef>
+#include <tuple>
+#include <type_traits>
+
+//===================================================================
+
+template <std::size_t...>
+struct indices { };
+
+//===================================================================
+
+template <
+  std::size_t Begin,
+  std::size_t End,
+  typename Indices
+>
+struct make_seq_indices_impl;
+
+template <
+  std::size_t Begin,
+  std::size_t End,
+  std::size_t... Indices
+>
+struct make_seq_indices_impl<Begin, End, indices<Indices...>>
+{
+  using type =
+    typename
+      make_seq_indices_impl<Begin+1, End,indices<Indices..., Begin>
+    >::type
+  ;
 };
 
-/// Don't use this directly, use applyTuple instead.
-template<>
-struct ApplyTuple<0> {
-    template<typename F, typename T, typename... A>
-    static inline auto apply(F && f, T &&, A &&... a)
-        -> decltype(::std::forward<F>(f)(::std::forward<A>(a)...))
-    {
-        return ::std::forward<F>(f)(::std::forward<A>(a)...);
-    }
+template <std::size_t End, std::size_t... Indices>
+struct make_seq_indices_impl<End, End, indices<Indices...>>
+{
+  using type = indices<Indices...>;
 };
+
+template <std::size_t Begin, std::size_t End>
+using make_seq_indices =
+  typename make_seq_indices_impl<Begin, End, indices<>>::type;
+
+//===================================================================
+
+template <typename F>
+using return_type = typename std::result_of<F>::type;
+
+template <typename Tuple>
+constexpr std::size_t tuple_size()
+{
+  return std::tuple_size<typename std::decay<Tuple>::type>::value;
+}
+
+// No definition exists for the next prototype...
+template <
+  typename Op,
+  typename T,
+  template <std::size_t...> class I, std::size_t... Indices
+>
+constexpr auto apply_tuple_return_type_impl(
+  Op&& op,
+  T&& t,
+  I<Indices...>
+) ->
+  return_type<Op(
+    decltype(std::get<Indices>(std::forward<T>(t)))...
+  )>
+;
+
+// No definition exists for the next prototype...
+template <typename Op, typename T>
+constexpr auto apply_tuple_return_type(Op&& op, T&& t) ->
+  decltype(apply_tuple_return_type_impl(
+    op, t, make_seq_indices<0,tuple_size<T>()>{}
+  ));
+
+template <
+  typename Ret, typename Op, typename T,
+  template <std::size_t...> class I, std::size_t... Indices
+>
+inline Ret apply_tuple(Op&& op, T&& t, I<Indices...>)
+{
+  return op(std::get<Indices>(std::forward<T>(t))...);
+}
 
 /**
  * Call @p f using arguments from tuple.
@@ -104,16 +163,25 @@ struct ApplyTuple<0> {
  * @param t tuple which includes all @p f arguments
  * @return result returned by @p f
  */
-template<typename F, typename T>
-inline auto applyTuple(F && f, T && t)
-     -> decltype(ApplyTuple< ::std::tuple_size<
-         typename ::std::decay<T>::type
-     >::value>::apply(::std::forward<F>(f), ::std::forward<T>(t)))
+template <typename Op, typename Tuple>
+inline auto apply_tuple(Op&& op, Tuple&& t)
+  -> decltype(apply_tuple_return_type(
+    std::forward<Op>(op), std::forward<Tuple>(t)
+  ))
 {
-    return ApplyTuple< ::std::tuple_size<
-        typename ::std::decay<T>::type
-    >::value>::apply(::std::forward<T>(f), ::std::forward<T>(t));
-}   //note: if this will not work, try http://preney.ca/paul/archives/486
+  return
+    apply_tuple<
+      decltype(apply_tuple_return_type(
+        std::forward<Op>(op), std::forward<Tuple>(t)
+      ))
+    >(
+      std::forward<Op>(op), std::forward<Tuple>(t),
+      make_seq_indices<0,tuple_size<Tuple>()>{}
+    );
+  ;
+}   //http://preney.ca/paul/archives/934
+
+
 
 } // namespace plask
 
