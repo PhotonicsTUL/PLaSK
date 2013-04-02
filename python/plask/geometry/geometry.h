@@ -2,6 +2,7 @@
 #define PLASK__PYTHON_GEOMETRY_H
 
 #include "../python_globals.h"
+#include <plask/geometry/path.h>
 
 
 #define DECLARE_GEOMETRY_ELEMENT_23D(cls, pyname, pydoc1, pydoc2) \
@@ -27,6 +28,25 @@
     cls##_registrant
 
 namespace plask { namespace python {
+
+template <typename ContainerT>
+py::object Container_move(py::tuple args, py::dict kwargs) {
+    parseKwargs("move", args, kwargs, "self", "item");
+    ContainerT* self = py::extract<ContainerT*>(args[0]);
+    typename ContainerT::ChildAligner aligner = py::extract<typename ContainerT::ChildAligner>(kwargs);
+    try {
+        size_t index = py::extract<size_t>(args[1]);
+        self->move(index, aligner);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        PathHints path = py::extract<PathHints>(args[1]);
+        auto children = path.getTranslationChildren<ContainerT::DIM>(*self);
+        if (children.size() != 1)
+            throw ValueError("Non-unique item specified");
+        self->move(*children.begin(), aligner);
+    }
+    return py::object();
+}
 
 }} // namespace plask::python
 #endif // PLASK__PYTHON_GEOMETRY_H

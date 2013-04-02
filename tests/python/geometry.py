@@ -110,7 +110,7 @@ class Containers(unittest.TestCase):
         stack = plask.geometry.Stack2D()
         stack.append(self.block1, ycenter=0)
         stack.append(self.block1, left=0)
-        stack.append(self.block1, right=0)
+        third = stack.append(self.block1, right=0)
         self.assertEqual( stack.get_material(-1.0, 1.0), self.gan )
         self.assertEqual( stack.get_material(2.6, 1.0), None )
         self.assertEqual( stack.get_material(4.9, 4.0), self.gan )
@@ -120,6 +120,9 @@ class Containers(unittest.TestCase):
         self.assertEqual( stack.get_material(-5.1, 7.0), None )
         self.assertEqual( stack.get_material(0.1, 7.0), None )
         self.assertEqual( list(stack.get_leafs_bboxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
+        stack.move(0, left=0)
+        stack.move(third, left=0)
+        self.assertEqual( list(stack.get_leafs_bboxes()), [plask.geometry.Box2D(0.0,0,5.0,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(0.0,6,5.0,9)])
 
     def testMultiStack(self):
         multistack = plask.geometry.MultiStack2D(5, 10.0)
@@ -160,7 +163,6 @@ class Containers(unittest.TestCase):
         del container[container[-1]]
         self.assertEqual( len(container), 1 )
         self.assertEqual( container.get_material(6,1), None )
-
 
         stack = plask.geometry.Stack3D()
         stack.append(self.cube1, xcenter=0, ycenter=0) # to be removed by object

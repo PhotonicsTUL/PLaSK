@@ -83,14 +83,14 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transform that holds a
 
 template <typename Cls>
 shared_ptr<Cls> Mirror_constructor1(size_t axis, shared_ptr<typename Cls::ChildType> child) {
-    if (axis >= Cls::dim) throw ValueError("Wrong axis number.");
-    return make_shared<Cls>(typename Primitive<Cls::dim>::Direction(axis), child);
+    if (axis >= Cls::DIM) throw ValueError("Wrong axis number.");
+    return make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(axis), child);
 }
 
 template <typename Cls>
 shared_ptr<Cls> Mirror_constructor2(const std::string& axis, shared_ptr<typename Cls::ChildType> child) {
-    size_t no = config.axes[axis] + Cls::dim - 3;
-    return make_shared<Cls>(typename Primitive<Cls::dim>::Direction(no), child);
+    size_t no = config.axes[axis] + Cls::DIM - 3;
+    return make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(no), child);
 }
 
 template <typename Cls>
@@ -99,13 +99,13 @@ std::string getFlipDir(const Cls& self) { return config.axes[self.flipDir]; }
 template <typename Cls>
 void setFlipDir(Cls& self, py::object val) {
     try {
-        size_t no = config.axes[py::extract<std::string>(val)] + Cls::dim - 3;
-        self.flipDir = typename Primitive<Cls::dim>::Direction(no);
+        size_t no = config.axes[py::extract<std::string>(val)] + Cls::DIM - 3;
+        self.flipDir = typename Primitive<Cls::DIM>::Direction(no);
     } catch (py::error_already_set) {
         PyErr_Clear();
         size_t no = py::extract<size_t>(val);
-        if (no >= Cls::dim) throw ValueError("Wrong axis number.");
-        self.flipDir = typename Primitive<Cls::dim>::Direction(no);
+        if (no >= Cls::DIM) throw ValueError("Wrong axis number.");
+        self.flipDir = typename Primitive<Cls::DIM>::Direction(no);
     }
 }
 

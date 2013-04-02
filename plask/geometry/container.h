@@ -405,7 +405,7 @@ public:
     void move(std::size_t index, ChildAligner aligner) {
         this->ensureIsValidChildNr(index, "move", "index");
         aligners[index] = aligner;
-        aligners[index].align(children[index]);
+        aligners[index].align(*children[index]);
         this->fireChildrenChanged();    //or children[child_no]->fireChanged();??
     }
 

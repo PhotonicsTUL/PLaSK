@@ -943,14 +943,14 @@ template <int dim> struct Translation;
  * @tparam dimensions number of dimensions, 2 or 3
  * @ingroup GEOMETRY_OBJ
  */
-template <int dimensions>
+template <int dim>
 struct GeometryObjectD: public GeometryObject {
 
-    static const int dim = dimensions;
+    static const int DIM = dim;
     typedef typename Primitive<dim>::Box Box;
     typedef typename Primitive<dim>::DVec DVec;
 
-    int getDimensionsCount() const { return dimensions; }
+    int getDimensionsCount() const { return dim; }
 
     using GeometryObject::getPathsTo;
 
@@ -1295,7 +1295,7 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param dest[out] place to append resulted objects
     //  * @param path
     //  */
-    // virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints* path = 0) const = 0;
+    // virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* path = 0) const = 0;
 
     // /*
     //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
@@ -1304,7 +1304,7 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param dest[out] place to append resulted objects
     //  * @param path
     //  */
-    // void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dimensions> > >& dest, const PathHints& path) const {
+    // void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints& path) const {
     //     extractToVec(predicate, dest, &path);
     // }
 
@@ -1315,8 +1315,8 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector< shared_ptr<const GeometryObjectD<dimensions> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
-    //     std::vector< shared_ptr<const GeometryObjectD<dimensions> > > dest;
+    // std::vector< shared_ptr<const GeometryObjectD<dim> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
+    //     std::vector< shared_ptr<const GeometryObjectD<dim> > > dest;
     //     extractToVec(predicate, dest, path);
     //     return dest;
     // }
@@ -1328,7 +1328,7 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extract(const Predicate& predicate, const PathHints& path) const {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extract(const Predicate& predicate, const PathHints& path) const {
     //     return extract(predicate, &path);
     // }
 
@@ -1339,7 +1339,7 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints* path = 0) {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractObject(const GeometryObjectD<dim>& object, const PathHints* path = 0) {
     //     return extract(PredicateIsA(object), path);
     // }
 
@@ -1350,7 +1350,7 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractObject(const GeometryObjectD<dimensions>& object, const PathHints& path) {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractObject(const GeometryObjectD<dim>& object, const PathHints& path) {
     //     return extractObject(object, &path);
     // }
 
@@ -1359,7 +1359,7 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints* path = 0) {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractLeafs(const PathHints* path = 0) {
     //     return extract(&GeometryObject::PredicateIsLeaf, path);
     // }
 
@@ -1368,13 +1368,13 @@ struct GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dimensions>>> extractLeafs(const PathHints& path) {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractLeafs(const PathHints& path) {
     //     return extractLeafs(&path);
     // }
 
     // //TODO
-    // //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
-    // //shared_ptr<const TranslationContainer<dimensions>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
+    // //shared_ptr<const TranslationContainer<dim>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
+    // //shared_ptr<const TranslationContainer<dim>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
 
     //Path getMatchingPathToObjectAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
 

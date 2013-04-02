@@ -106,6 +106,7 @@ void register_geometry_container_stack()
         .def("prepend", py::raw_function(&Stack_push_front<StackContainer<2>>), "Prepend new object to the container")
         .def("insert", py::raw_function(&Stack_insert<StackContainer<2>>), "Insert new object to the container")
         .def("set_zero_below", &StackContainer<2>::setZeroHeightBefore, py::arg("index"), "Set zero below item with index 'index'")
+        .def("move", py::raw_function(&Container_move<StackContainer<2>>), "Move item in container")
         .add_property("default_aligner", py::make_getter(&StackContainer<2>::default_aligner, py::return_value_policy<py::return_by_value>()),
                       py::make_setter(&StackContainer<2>::default_aligner), "Default alignment for new stack item")
     ;
@@ -121,6 +122,7 @@ void register_geometry_container_stack()
         .def("prepend", py::raw_function(&Stack_push_front<StackContainer<3>>), "Prepend new object to the container")
         .def("insert", py::raw_function(&Stack_insert<StackContainer<3>>), "Insert new object to the container")
         .def("set_zero_below", &StackContainer<3>::setZeroHeightBefore, py::arg("index"), "Set zero below item with index 'index'")
+        .def("move", py::raw_function(&Container_move<StackContainer<3>>), "Move item in container")
         .add_property("default_aligner", py::make_getter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()),
                       py::make_setter(&StackContainer<3>::default_aligner), "Default alignment for new stack items")
     ;
