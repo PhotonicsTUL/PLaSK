@@ -406,7 +406,7 @@ public:
         this->ensureIsValidChildNr(index, "move", "index");
         aligners[index] = aligner;
         aligners[index].align(children[index]);
-        this->fireChildrenChanged();
+        this->fireChildrenChanged();    //or children[child_no]->fireChanged();??
     }
 
     /**

@@ -351,7 +351,13 @@ struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackCo
     explicit StackContainer(const double baseHeight = 0.0, const ChildAligner& aligner=DefaultAligner()):
         ParentClass(baseHeight), default_aligner(aligner) {}
 
-    //virtual ~StackContainer() { for (auto a: aligners) delete a; }
+    void onChildChanged(const GeometryObject::Event& evt) {
+        if (evt.isResize()) {
+            ParentClass::align(const_cast<TranslationT&>(evt.source<TranslationT>()));
+            this->updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
+        }
+        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+    }
 
     /**
      * Insert children to stack at given position.
@@ -459,8 +465,6 @@ struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackCo
         this->ensureIsValidChildNr(child_no, "getAlignerAt");
         return this->aligners[child_no];
     }
-
-    void setAlignerAt(std::size_t child_no, const ChildAligner& aligner);
 
     /*
      * Set new aligner.

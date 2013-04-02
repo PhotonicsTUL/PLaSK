@@ -114,15 +114,6 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
 }
 
 template <int dim>
-void StackContainer<dim>::setAlignerAt(std::size_t child_no, const ChildAligner& aligner) {
-    this->ensureIsValidChildNr(child_no, "setAlignerAt");
-    //TODO if (aligners[child_no].get() == &aligner) return; //protected against self assigment
-    this->aligners[child_no] = aligner;
-    this->aligners[child_no].align(*children[child_no]);
-    children[child_no]->fireChanged();
-}
-
-template <int dim>
 bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
     if (ParentClass::removeIfTUnsafe(predicate)) {
         this->rebuildStackHeights();
