@@ -31,12 +31,17 @@ namespace plask { namespace python {
 
 template <typename ContainerT>
 py::object Container_move(py::tuple args, py::dict kwargs) {
-    parseKwargs("move", args, kwargs, "self", "item");
+    parseKwargs("move_item", args, kwargs, "self", "item");
     ContainerT* self = py::extract<ContainerT*>(args[0]);
     typename ContainerT::ChildAligner aligner = py::extract<typename ContainerT::ChildAligner>(kwargs);
     try {
-        size_t index = py::extract<size_t>(args[1]);
-        self->move(index, aligner);
+        int i = py::extract<int>(args[1]);
+        if (i < 0) i = self->getChildrenCount() + i;
+        if (i < 0 || i >= self->getChildrenCount()) {
+            throw IndexError("%1% index %2% out of range (0 <= index < %3%)",
+                std::string(py::extract<std::string>(args[0].attr("__class__").attr("__name__"))), i, self->getChildrenCount());
+        }
+        self->move(i, aligner);
     } catch (py::error_already_set) {
         PyErr_Clear();
         PathHints path = py::extract<PathHints>(args[1]);

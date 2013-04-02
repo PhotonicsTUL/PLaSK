@@ -127,7 +127,7 @@ void register_geometry_container()
         .def("append", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
              (py::arg("item"), py::arg("translation")=Vec<2>(0.,0.)), "Add new object to the container with provided translation vector")
         .def("append", &TranslationContainer2_add, (py::arg("item"), "c0", "c1"), "Add new object to the container with tranlastion [c0,c1]")
-        .def("move", py::raw_function(&Container_move<TranslationContainer<2>>), "Move item in container")
+        .def("move_item", py::raw_function(&Container_move<TranslationContainer<2>>), "Move item in container")
        ;
 
     py::class_<TranslationContainer<3>, shared_ptr<TranslationContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>
@@ -139,7 +139,7 @@ void register_geometry_container()
         .def("append", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,
              (py::arg("item"), py::arg("translation")=Vec<3>(0.,0.,0.)), "Add new object to the container with provided translation vector")
         .def("append", &TranslationContainer3_add, (py::arg("item"), "c0", "c1", "c2"), "Add new object to the container with translation [c0,c1,c2]")
-        .def("move", py::raw_function(&Container_move<TranslationContainer<3>>), "Move item in container")
+        .def("move_item", py::raw_function(&Container_move<TranslationContainer<3>>), "Move item in container")
     ;
 
     register_geometry_container_stack();
