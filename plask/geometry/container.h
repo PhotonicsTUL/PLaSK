@@ -392,6 +392,38 @@ public:
         aligners[child_index].writeToXML(dest_xml_child_tag, axes);
     }
 
+    /**
+     * Set new alginer for child at given @p index.
+     * @param index index of child to move
+     * @param aligner new position for child at given @p index
+     */
+    void move(std::size_t index, ChildAligner aligner) {
+        this->ensureIsValidChildNr(index, "move", "index");
+        aligners[index] = aligner;
+        aligners[index].align(children[index]);
+        this->fireChildrenChanged();
+    }
+
+    /**
+     * Set new alginer for given @p child.
+     * @param child child to move
+     * @param aligner new position for given @p child
+     */
+    void move(shared_ptr<const TranslationT> child, ChildAligner aligner) {
+        auto it = std::find(children.begin(), children.end(), child);
+        if (it != children.end()) move(it - children.begin(), aligner);
+    }
+
+    /**
+     * Set new alginer for given @p child.
+     * @param child child to move
+     * @param aligner new position for given @p child
+     */
+    void move(const TranslationT& child, ChildAligner aligner) {
+        move(static_pointer_cast<const TranslationT>(child.shared_from_this()), aligner);
+    }
+
+
 };
 
 }	// namespace plask
