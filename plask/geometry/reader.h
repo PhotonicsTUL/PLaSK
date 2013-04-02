@@ -82,7 +82,7 @@ class GeometryReader {
      * Get current lon direction axis name.
      * @return name of lon axis
      */
-    std::string getAxisLonName() { return getAxisName(axis::lon_index); }
+    std::string getAxisLongName() { return getAxisName(axis::lon_index); }
 
     /**
      * Get current tran direction axis name.
@@ -94,7 +94,7 @@ class GeometryReader {
      * Get current up direction axis name.
      * @return name of up axis
      */
-    std::string getAxisUpName() { return getAxisName(axis::up_index); }
+    std::string getAxisVertName() { return getAxisName(axis::up_index); }
 
     /**
      * Store current expectedSuffix, set new one, and restore old when out of the scope (in destructor).

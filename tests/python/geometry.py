@@ -36,17 +36,20 @@ class GeometryObjects(unittest.TestCase):
         @plask.material.simple
         class Mat(plask.material.Material):
             pass
-
         self.mat = Mat()
         self.block53 = plask.geometry.Block2D(5,3, self.mat)
+        plask.config.axes = 'xy'
 
     def testRectangle(self):
         '''Test rectangle'''
-        self.assertEqual( self.block53.bbox.upper, plask.vec(5.0, 3.0) )
-        self.assertEqual( self.block53.bbox.lower, plask.vec(0.0, 0.0) )
-        self.assertIs( self.block53.get_material(plask.vec(4.0, 2.0)), self.mat)
-        self.assertIsNone( self.block53.get_material(plask.vec(6.0, 2.0)));
-
+        self.assertEqual( self.block53.bbox.upper, plask.vec(5., 3.) )
+        self.assertEqual( self.block53.bbox.lower, plask.vec(0., 0.) )
+        self.assertIs( self.block53.get_material(plask.vec(4., 2.)), self.mat)
+        self.assertIsNone( self.block53.get_material(plask.vec(6., 2.)));
+        self.block53.width *= 3
+        self.assertEqual( self.block53.dims, plask.vec(15., 3.) )
+        self.block53.dy *= 2
+        self.assertEqual( self.block53.dims, plask.vec(15., 6.) )
 
 
 class Transforms(unittest.TestCase):

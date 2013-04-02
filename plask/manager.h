@@ -169,7 +169,7 @@ private:
      * Get current lon direction axis name.
      * @return name of lon axis
      */
-    std::string getAxisLonName() { return getAxisName(axis::lon_index); }
+    std::string getAxisLongName() { return getAxisName(axis::lon_index); }
 
     /**
      * Get current tran direction axis name.
@@ -181,7 +181,7 @@ private:
      * Get current up direction axis name.
      * @return name of up axis
      */
-    std::string getAxisUpName() { return getAxisName(axis::up_index); }
+    std::string getAxisVertName() { return getAxisName(axis::up_index); }
 
     /**
      * Set axis name from current reader tag, set it in manager as current,

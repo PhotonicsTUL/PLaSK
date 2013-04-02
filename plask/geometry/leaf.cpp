@@ -3,7 +3,7 @@
 
 namespace plask {
 
-//initialization common for all leafs
+// Initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
     leaf.material = reader.requireMaterial();
@@ -11,10 +11,23 @@ inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
     reader.source.requireTagEnd();
 }
 
+// Read akternative attributes
+inline static double readAlternativeAttrs(GeometryReader& reader, const std::string& attr1, const std::string& attr2) {
+    auto value1 = reader.source.getAttribute<double>(attr1);
+    auto value2 = reader.source.getAttribute<double>(attr2);
+    if (value1) {
+        if (value2) throw XMLConflictingAttributesException(reader.source, attr1, attr2);
+        else return *value1;
+    } else {
+        if (!value2) throw XMLNoAttrException(reader.source, format("%1%' or '%2%", attr1, attr2));
+        else return *value2;
+    }
+}
+
 template <typename BlockType>
 inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
-    block.size.tran() = reader.source.requireAttribute<double>("d"+reader.getAxisTranName());
-    block.size.vert() = reader.source.requireAttribute<double>("d"+reader.getAxisUpName());
+    block.size.tran() = readAlternativeAttrs(reader, "d"+reader.getAxisTranName(), "width");
+    block.size.vert() = readAlternativeAttrs(reader, "d"+reader.getAxisVertName(), "height");
     setupLeaf(reader, block);
 }
 
@@ -44,7 +57,7 @@ shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
 
 shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
     shared_ptr< Block<3> > block(new Block<3>());
-    block->size.lon() = reader.source.requireAttribute<double>("d"+reader.getAxisLonName());
+    block->size.tran() = readAlternativeAttrs(reader, "d"+reader.getAxisLongName(), "depth");
     setupBlock2D3D(reader, *block);
     return block;
 }

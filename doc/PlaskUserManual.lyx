@@ -8617,6 +8617,40 @@ d
  (float [µm])
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+width
+\family default
+ Alias for 
+\family typewriter
+d
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+height
+\family default
+ Alias for 
+\family typewriter
+d
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+.
+\end_layout
+
 \end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
@@ -8878,8 +8912,46 @@ object
 \family typewriter
 with
 \family default
- Name of the object to replace with.
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Name of the object to replace with.
  This object does not need to be located in the subtree of the copied object.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A new geometry object to replace the original one.
+ Must be specified if and only if the 
+\family typewriter
+with
+\family default
+ attribute is not provided.
 \end_layout
 
 \end_deeper
@@ -11678,6 +11750,57 @@ d
  (float [µm])
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+depth
+\family default
+ Alias for 
+\family typewriter
+d
+\begin_inset Formula $x$
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+width
+\family default
+ Alias for 
+\family typewriter
+d
+\begin_inset Formula $y$
+\end_inset
+
+
+\family default
+.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+height
+\family default
+ Alias for 
+\family typewriter
+d
+\begin_inset Formula $z$
+\end_inset
+
+
+\family default
+.
+\end_layout
+
 \end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
@@ -12025,8 +12148,46 @@ object
 \family typewriter
 with
 \family default
- Name of the object to replace with.
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Name of the object to replace with.
  This object does not need to be located in the subtree of the copied object.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A new geometry object to replace the original one.
+ Must be specified if and only if the 
+\family typewriter
+with
+\family default
+ attribute is not provided.
 \end_layout
 
 \end_deeper

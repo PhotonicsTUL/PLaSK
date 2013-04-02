@@ -82,7 +82,7 @@ template struct Translation<3>;
 template <typename TranslationType>
 inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType& translation) {
     translation.translation.tran() = reader.source.getAttribute(reader.getAxisTranName(), 0.0);
-    translation.translation.vert() = reader.source.getAttribute(reader.getAxisUpName(), 0.0);
+    translation.translation.vert() = reader.source.getAttribute(reader.getAxisVertName(), 0.0);
     translation.setChild(reader.readExactlyOneChild<typename TranslationType::ChildType>());
 }
 
@@ -96,7 +96,7 @@ shared_ptr<GeometryObject> read_translation2D(GeometryReader& reader) {
 shared_ptr<GeometryObject> read_translation3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Translation<3> > translation(new Translation<3>());
-    translation->translation.lon() = reader.source.getAttribute(reader.getAxisLonName(), 0.0);
+    translation->translation.lon() = reader.source.getAttribute(reader.getAxisLongName(), 0.0);
     setupTranslation2D3D(reader, *translation);
     return translation;
 }
