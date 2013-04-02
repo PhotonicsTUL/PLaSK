@@ -398,7 +398,7 @@ public:
     }
 
     /**
-     * Set new alginer for child at given @p index.
+     * Set new aligner for child at given @p index.
      * @param index index of child to move
      * @param aligner new position for child at given @p index
      */
@@ -410,7 +410,7 @@ public:
     }
 
     /**
-     * Set new alginer for given @p child.
+     * Set new aligner for given @p child.
      * @param child child to move
      * @param aligner new position for given @p child
      */
@@ -420,7 +420,7 @@ public:
     }
 
     /**
-     * Set new alginer for given @p child.
+     * Set new aligner for given @p child.
      * @param child child to move
      * @param aligner new position for given @p child
      */

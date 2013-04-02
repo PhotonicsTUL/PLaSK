@@ -26,7 +26,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     stripe_root.tolx = 1.0e-8;
     stripe_root.tolf_min = 1.0e-10;
     stripe_root.tolf_max = 1.0e-6;
-    stripe_root.maxstep = 0.05;
+    stripe_root.maxstep = 0.1;
     stripe_root.maxiter = 500;
 }
 
@@ -153,6 +153,9 @@ void EffectiveIndex2DSolver::onInitialize()
     // Assign space for refractive indices cache and stripe effective indices
     nrCache.assign(xend, std::vector<dcomplex,aligned_allocator<dcomplex>>(yend));
     neffs.resize(xend);
+
+    fieldX.resize(xend);
+    fieldY.resize(yend);
 }
 
 
@@ -271,10 +274,7 @@ void EffectiveIndex2DSolver::stageOne()
 dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save)
 {
     double maxff = 0.;
-    if (save) {
-        fieldY.resize(yend);
-        fieldY[ybegin] = Field(0., 1.);
-    }
+    if (save) fieldY[ybegin] = Field(0., 1.);
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
@@ -348,9 +348,9 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
         weights[ybegin] = (B.real()*B.real() + B.imag()*B.imag()) * 0.5 / ky;
     }
     {
-        double b = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
+        double ky = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
         dcomplex F = fieldY[yend-1].F;
-        weights[yend-1] = (F.real()*F.real() + F.imag()*F.imag()) * 0.5 / b;
+        weights[yend-1] = (F.real()*F.real() + F.imag()*F.imag()) * 0.5 / ky;
     }
     double sum = weights[ybegin] + weights[yend-1];
 
@@ -398,7 +398,6 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
     double maxff = 0.;
     if (save) {
-        fieldX.resize(xend);
         if (symmetry == SYMMETRY_POSITIVE)      { fieldX[xbegin] = Field( 1., 1.); }    // F0 = B0
         else if (symmetry == SYMMETRY_NEGATIVE) { fieldX[xbegin] = Field(-1., 1.); }    // F0 = -B0
         else                                    { fieldX[xbegin] = Field( 0., 1.); }    // F0 = 0  B0 = 1

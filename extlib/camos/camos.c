@@ -33,7 +33,7 @@ double dgamln(double *z__, long *ierr)
 {
     /* Initialized data */
 
-    static double gln[100] = { 0., 0., .693147180559945309,
+    double gln[100] = { 0., 0., .693147180559945309,
 	1.791759469228055, 3.17805383034794562, 4.78749174278204599,
 	6.579251212010101, 8.5251613610654143, 10.6046029027452502,
 	12.8018274800814696, 15.1044125730755153, 17.5023078458738858,
@@ -68,7 +68,7 @@ double dgamln(double *z__, long *ierr)
 	345.379407062266854, 349.954118040770237, 354.539085519440809,
 	359.134205369575399
     };
-    static double cf[22] = { .0833333333333333333, -.00277777777777777778,
+    double cf[22] = { .0833333333333333333, -.00277777777777777778,
 	7.93650793650793651e-4, -5.95238095238095238e-4,
 	8.41750841750841751e-4, -.00191752691752691753,
 	.00641025641025641026, -.0295506535947712418, .179644372368830573,
@@ -78,7 +78,7 @@ double dgamln(double *z__, long *ierr)
 	347320283765.002252, -12369602142269.2745, 488788064793079.335,
 	-21320333960919373.9
     };
-    static double con = 1.83787706640934548;
+    double con = 1.83787706640934548;
 
     /* System generated locals */
     long i__1;
@@ -88,12 +88,12 @@ double dgamln(double *z__, long *ierr)
     double log(double);
 
     /* Local variables */
-    static long i__, k;
-    static double s, t1, fz, zm;
-    static long mz, nz;
-    static double zp;
-    static long i1m;
-    static double fln, tlg, rln, trm, tst, zsq, zinc, zmin, zdmy, wdtol;
+    long i__, k;
+    double s, t1, fz, zm;
+    long mz, nz;
+    double zp;
+    long i1m;
+    double fln, tlg, rln, trm, tst, zsq, zinc, zmin, zdmy, wdtol;
     extern double d1mach(long *);
     extern long i1mach(long *);
 
@@ -277,7 +277,7 @@ double azabs(double *zr, double *zi)
     double sqrt(double);
 
     /* Local variables */
-    static double q, s, u, v;
+    double q, s, u, v;
 
 /* ***BEGIN PROLOGUE  AZABS */
 /* ***REFER TO  ZBESH,ZBESI,ZBESJ,ZBESK,ZBESY,ZAIRY,ZBIRY */
@@ -320,25 +320,25 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double pi = 3.14159265358979324;
+    double pi = 3.14159265358979324;
 
     /* Builtin functions */
     double d_sign(double *, double *), sin(double), cos(double);
 
     /* Local variables */
-    static double az;
-    static long nn, nw;
-    static double yy, c1i, c2i, c1r, c2r, arg;
-    static long iuf;
-    static double cyi[2], fmr, sgn;
-    static long inu;
-    static double cyr[2], zni, znr, dfnu;
+    double az;
+    long nn, nw;
+    double yy, c1i, c2i, c1r, c2r, arg;
+    long iuf;
+    double cyi[2], fmr, sgn;
+    long inu;
+    double cyr[2], zni, znr, dfnu;
     extern /* Subroutine */ int zs1s2(double *, double *, double
 				      *, double *, double *, double *,
 				      long *, double *, double *, long *);
-    static double ascle;
+    double ascle;
     extern double azabs(double *, double *);
-    static double csgni, csgnr, cspni, cspnr;
+    double csgni, csgnr, cspni, cspnr;
     extern /* Subroutine */ int zbknu(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -480,9 +480,9 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double pi = 3.14159265358979324;
-    static double zeror = 0.;
-    static double coner = 1.;
+    double pi = 3.14159265358979324;
+    double zeror = 0.;
+    double coner = 1.;
 
     /* System generated locals */
     long i__1;
@@ -491,24 +491,24 @@ double azabs(double *zr, double *zi)
     double d_sign(double *, double *), cos(double), sin(double);
 
     /* Local variables */
-    static long i__;
-    static double fn;
-    static long nn, nw;
-    static double yy, c1i, c2i, c1m, as2, c1r, c2r, s1i, s2i, s1r, s2r,
+    long i__;
+    double fn;
+    long nn, nw;
+    double yy, c1i, c2i, c1m, as2, c1r, c2r, s1i, s2i, s1r, s2r,
 	cki, arg, ckr, cpn;
-    static long iuf;
-    static double cyi[2], fmr, csr, azn, sgn;
-    static long inu;
-    static double bry[3], cyr[2], pti, spn, sti, zni, rzi, ptr, str, znr,
+    long iuf;
+    double cyi[2], fmr, csr, azn, sgn;
+    long inu;
+    double bry[3], cyr[2], pti, spn, sti, zni, rzi, ptr, str, znr,
 	rzr, sc1i, sc2i, sc1r, sc2r, cscl, cscr, csrr[3], cssr[3], razn;
     extern /* Subroutine */ int zs1s2(double *, double *, double
 				      *, double *, double *, double *,
 				      long *, double *, double *, long *),
 	zmlt(double *, double *, double *, double *, double *, double *);
-    static long kflag;
-    static double ascle, bscle;
+    long kflag;
+    double ascle, bscle;
     extern double azabs(double *, double *);
-    static double csgni, csgnr, cspni, cspnr;
+    double csgni, csgnr, cspni, cspnr;
     extern /* Subroutine */ int zbinu(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -755,14 +755,14 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double tth = .666666666666666667;
-    static double c1 = .35502805388781724;
-    static double c2 = .258819403792806799;
-    static double coef = .183776298473930683;
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
+    double tth = .666666666666666667;
+    double c1 = .35502805388781724;
+    double c2 = .258819403792806799;
+    double coef = .183776298473930683;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1, i__2;
@@ -772,17 +772,17 @@ double azabs(double *zr, double *zi)
     double log(double), pow_dd(double *, double *), sqrt(double);
 
     /* Local variables */
-    static long k;
-    static double d1, d2;
-    static long k1, k2;
-    static double aa, bb, ad, cc, ak, bk, ck, dk, az;
-    static long nn;
-    static double rl;
-    static long mr;
-    static double s1i, az3, s2i, s1r, s2r, z3i, z3r, dig, fid, cyi[1],
+    long k;
+    double d1, d2;
+    long k1, k2;
+    double aa, bb, ad, cc, ak, bk, ck, dk, az;
+    long nn;
+    double rl;
+    long mr;
+    double s1i, az3, s2i, s1r, s2r, z3i, z3r, dig, fid, cyi[1],
 	r1m5, fnu, cyr[1], tol, sti, ptr, str, sfac, alim, elim, alaz,
 	csqi, atrm, ztai, csqr, ztar, trm1i, trm2i, trm1r, trm2r;
-    static long iflag;
+    long iflag;
     extern /* Subroutine */ int zacai(double *, double *, double
 				      *, long *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -1262,12 +1262,12 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double pi = 3.14159265358979324;
-    static double rtpi = .159154943091895336;
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
+    double pi = 3.14159265358979324;
+    double rtpi = .159154943091895336;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1, i__2;
@@ -1277,22 +1277,22 @@ double azabs(double *zr, double *zi)
     double sqrt(double), sin(double), cos(double);
 
     /* Local variables */
-    static long i__, j, k, m;
-    static double s, aa, bb;
-    static long ib;
-    static double ak, bk;
-    static long il, jl;
-    static double az;
-    static long nn;
-    static double p1i, s2i, p1r, s2r, cki, dki, fdn, arg, aez, arm, ckr,
+    long i__, j, k, m;
+    double s, aa, bb;
+    long ib;
+    double ak, bk;
+    long il, jl;
+    double az;
+    long nn;
+    double p1i, s2i, p1r, s2r, cki, dki, fdn, arg, aez, arm, ckr,
 	dkr, czi, ezi, sgn;
-    static long inu;
-    static double raz, czr, ezr, sqk, sti, rzi, tzi, str, rzr, tzr, ak1i,
+    long inu;
+    double raz, czr, ezr, sqk, sti, rzi, tzi, str, rzr, tzr, ak1i,
 	ak1r, cs1i, cs2i, cs1r, cs2r, dnu2, rtr1, dfnu, atol;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *),
 	zmlt(double *, double *, double *, double *, double *, double *);
-    static long koded;
+    long koded;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int azexp(double *, double *, double
 				      *, double *);
@@ -1500,7 +1500,7 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double hpi = 1.57079632679489662;
+    double hpi = 1.57079632679489662;
 
     /* System generated locals */
     long i__1, i__2;
@@ -1511,25 +1511,25 @@ double azabs(double *zr, double *zi)
 					     *), cos(double), sin(double);
 
     /* Local variables */
-    static long i__, k, k1, k2;
-    static double aa, bb, fn;
-    static long mm;
-    static double az;
-    static long ir, nn;
-    static double rl;
-    static long mr, nw;
-    static double dig, arg, aln, fmm, r1m5, ufl, sgn;
-    static long nuf, inu;
-    static double tol, sti, zni, zti, str, znr, alim, elim, atol, rhpi;
-    static long inuh;
-    static double fnul, rtol, ascle;
+    long i__, k, k1, k2;
+    double aa, bb, fn;
+    long mm;
+    double az;
+    long ir, nn;
+    double rl;
+    long mr, nw;
+    double dig, arg, aln, fmm, r1m5, ufl, sgn;
+    long nuf, inu;
+    double tol, sti, zni, zti, str, znr, alim, elim, atol, rhpi;
+    long inuh;
+    double fnul, rtol, ascle;
     extern double azabs(double *, double *);
-    static double csgni;
+    double csgni;
     extern /* Subroutine */ int zacon(double *, double *, double
 				      *, long *, long *, long *, double *,
 				      double *, long *, double *, double *,
 				      double *, double *, double *);
-    static double csgnr;
+    double csgnr;
     extern /* Subroutine */ int zbknu(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -1961,9 +1961,9 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double pi = 3.14159265358979324;
-    static double coner = 1.;
-    static double conei = 0.;
+    double pi = 3.14159265358979324;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1, i__2;
@@ -1973,15 +1973,15 @@ double azabs(double *zr, double *zi)
     double sqrt(double), cos(double), sin(double);
 
     /* Local variables */
-    static long i__, k, k1, k2;
-    static double aa, bb, fn, az;
-    static long nn;
-    static double rl, dig, arg, r1m5;
-    static long inu;
-    static double tol, sti, zni, str, znr, alim, elim, atol, fnul, rtol,
+    long i__, k, k1, k2;
+    double aa, bb, fn, az;
+    long nn;
+    double rl, dig, arg, r1m5;
+    long inu;
+    double tol, sti, zni, str, znr, alim, elim, atol, fnul, rtol,
 	ascle;
     extern double azabs(double *, double *);
-    static double csgni, csgnr;
+    double csgni, csgnr;
     extern /* Subroutine */ int zbinu(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -2304,7 +2304,7 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double hpi = 1.57079632679489662;
+    double hpi = 1.57079632679489662;
 
     /* System generated locals */
     long i__1, i__2;
@@ -2314,18 +2314,18 @@ double azabs(double *zr, double *zi)
     double sqrt(double), cos(double), sin(double);
 
     /* Local variables */
-    static long i__, k, k1, k2;
-    static double aa, bb, fn;
-    static long nl;
-    static double az;
-    static long ir;
-    static double rl, dig, cii, arg, r1m5;
-    static long inu;
-    static double tol, sti, zni, str, znr, alim, elim, atol;
-    static long inuh;
-    static double fnul, rtol, ascle;
+    long i__, k, k1, k2;
+    double aa, bb, fn;
+    long nl;
+    double az;
+    long ir;
+    double rl, dig, cii, arg, r1m5;
+    long inu;
+    double tol, sti, zni, str, znr, alim, elim, atol;
+    long inuh;
+    double fnul, rtol, ascle;
     extern double azabs(double *, double *);
-    static double csgni, csgnr;
+    double csgni, csgnr;
     extern /* Subroutine */ int zbinu(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -2648,14 +2648,14 @@ double azabs(double *zr, double *zi)
     double sqrt(double), log(double);
 
     /* Local variables */
-    static long k, k1, k2;
-    static double aa, bb, fn, az;
-    static long nn;
-    static double rl;
-    static long mr, nw;
-    static double dig, arg, aln, r1m5, ufl;
-    static long nuf;
-    static double tol, alim, elim, fnul;
+    long k, k1, k2;
+    double aa, bb, fn, az;
+    long nn;
+    double rl;
+    long mr, nw;
+    double dig, arg, aln, r1m5, ufl;
+    long nuf;
+    double tol, alim, elim, fnul;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int zacon(double *, double *, double
 				      *, long *, long *, long *, double *,
@@ -3028,12 +3028,12 @@ double azabs(double *zr, double *zi)
     double cos(double), sin(double), exp(double);
 
     /* Local variables */
-    static long i__, k, k1, k2;
-    static double aa, bb, ey, c1i, c2i, c1r, c2r;
-    static long nz1, nz2;
-    static double exi;
-    static float r1m5;
-    static double exr, sti, tay, tol, str, hcii, elim, atol, rtol, ascle;
+    long i__, k, k1, k2;
+    double aa, bb, ey, c1i, c2i, c1r, c2r;
+    long nz1, nz2;
+    double exi;
+    float r1m5;
+    double exr, sti, tay, tol, str, hcii, elim, atol, rtol, ascle;
     extern /* Subroutine */ int zbesh(double *, double *, double
 				      *, long *, long *, long *, double *,
 				      double *, long *, long *);
@@ -3329,21 +3329,21 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
+    double zeror = 0.;
+    double zeroi = 0.;
 
     /* System generated locals */
     long i__1;
 
     /* Local variables */
-    static long i__;
-    static double az;
-    static long nn, nw;
-    static double cwi[2], cwr[2];
-    static long nui, inw;
-    static double dfnu;
+    long i__;
+    double az;
+    long nn, nw;
+    double cwi[2], cwr[2];
+    long nui, inw;
+    double dfnu;
     extern double azabs(double *, double *);
-    static long nlast;
+    long nlast;
     extern /* Subroutine */ int zbuni(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, long *, long *,
@@ -3535,13 +3535,13 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double tth = .666666666666666667;
-    static double c1 = .614926627446000736;
-    static double c2 = .448288357353826359;
-    static double coef = .577350269189625765;
-    static double pi = 3.14159265358979324;
-    static double coner = 1.;
-    static double conei = 0.;
+    double tth = .666666666666666667;
+    double c1 = .614926627446000736;
+    double c2 = .448288357353826359;
+    double coef = .577350269189625765;
+    double pi = 3.14159265358979324;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1, i__2;
@@ -3552,17 +3552,17 @@ double azabs(double *zr, double *zi)
 	log(double), cos(double), sin(double);
 
     /* Local variables */
-    static long k;
-    static double d1, d2;
-    static long k1, k2;
-    static double aa, bb, ad, cc, ak, bk, ck, dk, az, rl;
-    static long nz;
-    static double s1i, az3, s2i, s1r, s2r, z3i, z3r, eaa, fid, dig, cyi[2]
+    long k;
+    double d1, d2;
+    long k1, k2;
+    double aa, bb, ad, cc, ak, bk, ck, dk, az, rl;
+    long nz;
+    double s1i, az3, s2i, s1r, s2r, z3i, z3r, eaa, fid, dig, cyi[2]
     , fmr, r1m5, fnu, cyr[2], tol, sti, str, sfac, alim, elim, csqi,
 	atrm, fnul, ztai, csqr;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *);
-    static double ztar, trm1i, trm2i, trm1r, trm2r;
+    double ztar, trm1i, trm2i, trm1r, trm2r;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int zbinu(double *, double *, double
 				      *, long *, long *, double *,
@@ -3986,20 +3986,20 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static long kmax = 30;
-    static double czeror = 0.;
-    static double czeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
-    static double ctwor = 2.;
-    static double r1 = 2.;
-    static double dpi = 3.14159265358979324;
-    static double rthpi = 1.25331413731550025;
-    static double spi = 1.90985931710274403;
-    static double hpi = 1.57079632679489662;
-    static double fpi = 1.89769999331517738;
-    static double tth = .666666666666666666;
-    static double cc[8] = { .577215664901532861, -.0420026350340952355,
+    long kmax = 30;
+    double czeror = 0.;
+    double czeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
+    double ctwor = 2.;
+    double r1 = 2.;
+    double dpi = 3.14159265358979324;
+    double rthpi = 1.25331413731550025;
+    double spi = 1.90985931710274403;
+    double hpi = 1.57079632679489662;
+    double fpi = 1.89769999331517738;
+    double tth = .666666666666666666;
+    double cc[8] = { .577215664901532861, -.0420026350340952355,
 	-.0421977345555443367, .00721894324666309954,
 	-2.15241674114950973e-4, -2.01348547807882387e-5,
 	1.13302723198169588e-6, 6.11609510448141582e-9
@@ -4014,31 +4014,31 @@ double azabs(double *zr, double *zi)
     , sqrt(double), log(double);
 
     /* Local variables */
-    static long i__, j, k;
-    static double s, a1, a2, g1, g2, t1, t2, aa, bb, fc, ak, bk;
-    static long ic;
-    static double fi, fk, as;
-    static long kk;
-    static double fr, pi, qi, tm, pr, qr;
-    static long nw;
-    static double p1i, p2i, s1i, s2i, p2m, p1r, p2r, s1r, s2r, cbi, cbr,
+    long i__, j, k;
+    double s, a1, a2, g1, g2, t1, t2, aa, bb, fc, ak, bk;
+    long ic;
+    double fi, fk, as;
+    long kk;
+    double fr, pi, qi, tm, pr, qr;
+    long nw;
+    double p1i, p2i, s1i, s2i, p2m, p1r, p2r, s1r, s2r, cbi, cbr,
 	cki, caz, csi, ckr, fhs, fks, rak, czi, dnu, csr, elm, zdi, bry[3]
     , pti, czr, sti, zdr, cyr[2], rzi, ptr, cyi[2];
-    static long inu;
-    static double str, rzr, dnu2, cchi, cchr, alas, cshi;
-    static long inub, idum;
-    static double cshr, fmui, rcaz, csrr[3], cssr[3], fmur;
+    long inu;
+    double str, rzr, dnu2, cchi, cchr, alas, cshi;
+    long inub, idum;
+    double cshr, fmui, rcaz, csrr[3], cssr[3], fmur;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *);
-    static double smui, smur;
+    double smui, smur;
     extern /* Subroutine */ int zmlt(double *, double *, double *
 				     , double *, double *, double *);
-    static long iflag, kflag;
-    static double coefi;
-    static long koded;
-    static double ascle, coefr, helim;
+    long iflag, kflag;
+    double coefi;
+    long koded;
+    double ascle, coefr, helim;
     extern double azabs(double *, double *);
-    static double celmr, csclr, crscr;
+    double celmr, csclr, crscr;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *), zshch(double *,
 								  double *,
@@ -4047,7 +4047,7 @@ double azabs(double *zr, double *zi)
 								  double *,
 								  double
 								  *);
-    static double etest;
+    double etest;
     extern /* Subroutine */ int zuchk(double *, double *, long *,
 				      double *, double *), azexp(double *,
 								 double *,
@@ -4731,10 +4731,10 @@ double azabs(double *zr, double *zi)
     long i__1;
 
     /* Local variables */
-    static long i__, k;
-    static double ax, ay;
-    static long nl, nw;
-    static double c1i, c1m, c1r, s1i, s2i, s1r, s2r, cyi[2], gnu, raz,
+    long i__, k;
+    double ax, ay;
+    long nl, nw;
+    double c1i, c1m, c1r, s1i, s2i, s1r, s2r, cyi[2], gnu, raz,
 	cyr[2], sti, bry[3], rzi, str, rzr, dfnu, fnui;
     extern /* Subroutine */ int zuni1(double *, double *, double
 				      *, long *, long *, double *,
@@ -4743,11 +4743,11 @@ double azabs(double *zr, double *zi)
     , zuni2(double *, double *, double *, long *, long *, double *,
 	    double *, long *, long *, double *, double *, double *,
 	    double *);
-    static long iflag;
-    static double ascle;
+    long iflag;
+    double ascle;
     extern double azabs(double *, double *);
-    static double csclr, cscrr;
-    static long iform;
+    double csclr, cscrr;
+    long iform;
     extern double d1mach(long *);
 
 /* ***BEGIN PROLOGUE  ZBUNI */
@@ -4963,7 +4963,7 @@ double azabs(double *zr, double *zi)
 			   double *yi, long *nz, double *tol, double *elim,
 			   double *alim)
 {
-    static double ax, ay;
+    double ax, ay;
     extern /* Subroutine */ int zunk1(double *, double *, double
 				      *, long *, long *, long *, double *,
 				      double *, long *, double *, double *,
@@ -5015,7 +5015,7 @@ double azabs(double *zr, double *zi)
 /* Subroutine */ int zdiv(double *ar, double *ai, double *br,
 			  double *bi, double *cr, double *ci)
 {
-    static double ca, cb, cc, cd, bm;
+    double ca, cb, cc, cd, bm;
     extern double azabs(double *, double *);
 
 /* ***BEGIN PROLOGUE  ZDIV */
@@ -5042,7 +5042,7 @@ double azabs(double *zr, double *zi)
     double exp(double), cos(double), sin(double);
 
     /* Local variables */
-    static double ca, cb, zm;
+    double ca, cb, zm;
 
 /* ***BEGIN PROLOGUE  AZEXP */
 /* ***REFER TO  ZBESH,ZBESI,ZBESJ,ZBESK,ZBESY,ZAIRY,ZBIRY */
@@ -5066,8 +5066,8 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
+    double zeror = 0.;
+    double zeroi = 0.;
 
     /* System generated locals */
     long i__1;
@@ -5076,15 +5076,15 @@ double azabs(double *zr, double *zi)
     double log(double), exp(double), cos(double), sin(double);
 
     /* Local variables */
-    static long i__, ic;
-    static double as, fn;
-    static long kk, nn, nw;
-    static double s1i, s2i, s1r, s2r, acs, cki, elm, csi, ckr, cyi[2],
+    long i__, ic;
+    double as, fn;
+    long kk, nn, nw;
+    double s1i, s2i, s1r, s2r, acs, cki, elm, csi, ckr, cyi[2],
 	zdi, csr, cyr[2], zdr, str, alas;
-    static long idum;
-    static double helim;
+    long idum;
+    double helim;
     extern double azabs(double *, double *);
-    static double celmr;
+    double celmr;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *), zuchk(double *,
 								  double *,
@@ -5247,16 +5247,16 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double dpi = 3.141592653589793238462643383;
-    static double dhpi = 1.570796326794896619231321696;
+    double dpi = 3.141592653589793238462643383;
+    double dhpi = 1.570796326794896619231321696;
 
     /* Builtin functions */
     double atan(double), log(double);
 
     /* Local variables */
-    static double zm;
+    double zm;
     extern double azabs(double *, double *);
-    static double dtheta;
+    double dtheta;
 
 /* ***BEGIN PROLOGUE  AZLOG */
 /* ***REFER TO  ZBESH,ZBESI,ZBESJ,ZBESK,ZBESY,ZAIRY,ZBIRY */
@@ -5322,10 +5322,10 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1, i__2;
@@ -5335,21 +5335,21 @@ double azabs(double *zr, double *zi)
     double sqrt(double), exp(double);
 
     /* Local variables */
-    static long i__, k, m;
-    static double ak, bk, ap, at;
-    static long kk, km;
-    static double az, p1i, p2i, p1r, p2r, ack, cki, fnf, fkk, ckr;
-    static long iaz;
-    static double rho;
-    static long inu;
-    static double pti, raz, sti, rzi, ptr, str, tst, rzr, rho2, flam,
+    long i__, k, m;
+    double ak, bk, ap, at;
+    long kk, km;
+    double az, p1i, p2i, p1r, p2r, ack, cki, fnf, fkk, ckr;
+    long iaz;
+    double rho;
+    long inu;
+    double pti, raz, sti, rzi, ptr, str, tst, rzr, rho2, flam,
 	fkap, scle, tfnf;
-    static long idum, ifnu;
-    static double sumi, sumr;
+    long idum, ifnu;
+    double sumi, sumr;
     extern /* Subroutine */ int zmlt(double *, double *, double *
 				     , double *, double *, double *);
     extern double azabs(double *, double *);
-    static long itime;
+    long itime;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *), azexp(double *,
 								  double *,
@@ -5357,7 +5357,7 @@ double azabs(double *zr, double *zi)
 								  double
 								  *);
     extern double d1mach(long *), dgamln(double *, long *);
-    static double cnormi, cnormr;
+    double cnormi, cnormr;
 
 /* ***BEGIN PROLOGUE  ZMLRI */
 /* ***REFER TO  ZBESI,ZBESK */
@@ -5594,7 +5594,7 @@ double azabs(double *zr, double *zi)
 /* Subroutine */ int zmlt(double *ar, double *ai, double *br,
 			  double *bi, double *cr, double *ci)
 {
-    static double ca, cb;
+    double ca, cb;
 
 /* ***BEGIN PROLOGUE  ZMLT */
 /* ***REFER TO  ZBESH,ZBESI,ZBESJ,ZBESK,ZBESY,ZAIRY,ZBIRY */
@@ -5615,11 +5615,11 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double czeror = 0.;
-    static double czeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
-    static double rt2 = 1.41421356237309505;
+    double czeror = 0.;
+    double czeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
+    double rt2 = 1.41421356237309505;
 
     /* System generated locals */
     long i__1;
@@ -5629,21 +5629,21 @@ double azabs(double *zr, double *zi)
     double sqrt(double);
 
     /* Local variables */
-    static long i__, k;
-    static double ak;
-    static long id, kk;
-    static double az, ap1, ap2, p1i, p2i, t1i, p1r, p2r, t1r, arg, rak,
+    long i__, k;
+    double ak;
+    long id, kk;
+    double az, ap1, ap2, p1i, p2i, t1i, p1r, p2r, t1r, arg, rak,
 	rho;
-    static long inu;
-    static double pti, tti, rzi, ptr, ttr, rzr, rap1, flam, dfnu, fdnu;
-    static long magz, idnu;
-    static double fnup;
+    long inu;
+    double pti, tti, rzi, ptr, ttr, rzr, rap1, flam, dfnu, fdnu;
+    long magz, idnu;
+    double fnup;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *);
-    static double test, test1, amagz;
+    double test, test1, amagz;
     extern double azabs(double *, double *);
-    static long itime;
-    static double cdfnui, cdfnur;
+    long itime;
+    double cdfnui, cdfnur;
 
 /* ***BEGIN PROLOGUE  ZRATI */
 /* ***REFER TO  ZBESI,ZBESK,ZBESH */
@@ -5798,15 +5798,15 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
+    double zeror = 0.;
+    double zeroi = 0.;
 
     /* Builtin functions */
     double log(double);
 
     /* Local variables */
-    static double aa, c1i, as1, as2, c1r, aln, s1di, s1dr;
-    static long idum;
+    double aa, c1i, as1, as2, c1r, aln, s1di, s1dr;
+    long idum;
     extern double azabs(double *, double *);
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *), azexp(double *,
@@ -5874,10 +5874,10 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1;
@@ -5886,26 +5886,26 @@ double azabs(double *zr, double *zi)
     double sqrt(double), exp(double), cos(double), sin(double);
 
     /* Local variables */
-    static long i__, k, l, m;
-    static double s, aa;
-    static long ib;
-    static double ak;
-    static long il;
-    static double az;
-    static long nn;
-    static double wi[2], rs, ss;
-    static long nw;
-    static double wr[2], s1i, s2i, s1r, s2r, cki, acz, arm, ckr, czi, hzi,
+    long i__, k, l, m;
+    double s, aa;
+    long ib;
+    double ak;
+    long il;
+    double az;
+    long nn;
+    double wi[2], rs, ss;
+    long nw;
+    double wr[2], s1i, s2i, s1r, s2r, cki, acz, arm, ckr, czi, hzi,
 	raz, czr, sti, hzr, rzi, str, rzr, ak1i, ak1r, rtr1, dfnu;
-    static long idum;
-    static double atol, fnup;
+    long idum;
+    double atol, fnup;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *),
 	zmlt(double *, double *, double *, double *, double *, double *);
-    static long iflag;
-    static double coefi, ascle, coefr;
+    long iflag;
+    double coefi, ascle, coefr;
     extern double azabs(double *, double *);
-    static double crscr;
+    double crscr;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *), zuchk(double *,
 								  double *,
@@ -6161,7 +6161,7 @@ double azabs(double *zr, double *zi)
     double sinh(double), cosh(double), sin(double), cos(double);
 
     /* Local variables */
-    static double ch, cn, sh, sn;
+    double ch, cn, sh, sn;
 
 /* ***BEGIN PROLOGUE  ZSHCH */
 /* ***REFER TO  ZBESK,ZBESH */
@@ -6188,16 +6188,16 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double drt = .7071067811865475244008443621;
-    static double dpi = 3.141592653589793238462643383;
+    double drt = .7071067811865475244008443621;
+    double dpi = 3.141592653589793238462643383;
 
     /* Builtin functions */
     double sqrt(double), atan(double), cos(double), sin(double);
 
     /* Local variables */
-    static double zm;
+    double zm;
     extern double azabs(double *, double *);
-    static double dtheta;
+    double dtheta;
 
 /* ***BEGIN PROLOGUE  AZSQRT */
 /* ***REFER TO  ZBESH,ZBESI,ZBESJ,ZBESK,ZBESY,ZAIRY,ZBIRY */
@@ -6265,7 +6265,7 @@ double azabs(double *zr, double *zi)
 /* Subroutine */ int zuchk(double *yr, double *yi, long *nz,
 			   double *ascle, double *tol)
 {
-    static double wi, ss, st, wr;
+    double wi, ss, st, wr;
 
 /* ***BEGIN PROLOGUE  ZUCHK */
 /* ***REFER TO ZSERI,ZUOIK,ZUNK1,ZUNK2,ZUNI1,ZUNI2,ZKSCL */
@@ -6306,19 +6306,19 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double ar[14] = { 1., .104166666666666667, .0835503472222222222,
+    double ar[14] = { 1., .104166666666666667, .0835503472222222222,
 	.12822657455632716, .291849026464140464, .881627267443757652,
 	3.32140828186276754, 14.9957629868625547, 78.9230130115865181,
 	474.451538868264323, 3207.49009089066193, 24086.5496408740049,
 	198923.119169509794, 1791902.00777534383
     };
-    static double br[14] = { 1., -.145833333333333333,
+    double br[14] = { 1., -.145833333333333333,
 	-.0987413194444444444, -.143312053915895062, -.317227202678413548,
 	-.942429147957120249, -3.51120304082635426, -15.7272636203680451,
 	-82.2814390971859444, -492.355370523670524, -3316.21856854797251,
 	-24827.6742452085896, -204526.587315129788, -1838444.9170682099
     };
-    static double c__[105] = { 1., -.208333333333333333, .125,
+    double c__[105] = { 1., -.208333333333333333, .125,
 	.334201388888888889, -.401041666666666667, .0703125,
 	-1.02581259645061728, 1.84646267361111111, -.8912109375,
 	    .0732421875,
@@ -6355,7 +6355,7 @@ double azabs(double *zr, double *zi)
 	17634730606.8349694, -2167164983.22379509, 143157876.718888981,
 	-3871833.44257261262, 18257.7554742931747
     };
-    static double alfa[180] = { -.00444444444444444444,
+    double alfa[180] = { -.00444444444444444444,
 	-9.22077922077922078e-4, -8.84892884892884893e-5,
 	1.65927687832449737e-4, 2.4669137274179291e-4,
 	2.6599558934625478e-4, 2.61824297061500945e-4,
@@ -6447,7 +6447,7 @@ double azabs(double *zr, double *zi)
 	3.24724948503090564e-4, 2.20342042730246599e-4,
 	1.28412898401353882e-4, 4.82005924552095464e-5
     };
-    static double beta[210] = { .0179988721413553309,
+    double beta[210] = { .0179988721413553309,
 	.00559964911064388073, .00288501402231132779,
 	    .00180096606761053941,
 	.00124753110589199202, 9.22878876572938311e-4,
@@ -6556,7 +6556,7 @@ double azabs(double *zr, double *zi)
 	    .00177737008679454412,
 	.00159690280765839059, .00142111975664438546
     };
-    static double gama[30] = { .629960524947436582, .251984209978974633,
+    double gama[30] = { .629960524947436582, .251984209978974633,
 	.154790300415655846, .110713062416159013, .0857309395527394825,
 	.0697161316958684292, .0586085671893713576, .0504698873536310685,
 	.0442600580689154809, .0393720661543509966, .0354283195924455368,
@@ -6568,15 +6568,15 @@ double azabs(double *zr, double *zi)
 	.0132643378994276568, .0127517121970498651, .0122761545318762767,
 	.0118338262398482403
     };
-    static double ex1 = .333333333333333333;
-    static double ex2 = .666666666666666667;
-    static double hpi = 1.57079632679489662;
-    static double gpi = 3.14159265358979324;
-    static double thpi = 4.71238898038468986;
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
+    double ex1 = .333333333333333333;
+    double ex2 = .666666666666666667;
+    double hpi = 1.57079632679489662;
+    double gpi = 3.14159265358979324;
+    double thpi = 4.71238898038468986;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
 
     /* System generated locals */
     long i__1, i__2;
@@ -6587,39 +6587,39 @@ double azabs(double *zr, double *zi)
 	cos(double), sin(double), sqrt(double);
 
     /* Local variables */
-    static long j, k, l, m, l1, l2;
-    static double ac, ap[30], pi[30];
-    static long is, jr, ks, ju;
-    static double pp, wi, pr[30];
-    static long lr;
-    static double wr, aw2;
-    static long kp1;
-    static double t2i, w2i, t2r, w2r, ang, fn13, fn23;
-    static long ias;
-    static double cri[14], dri[14];
-    static long ibs;
-    static double zai, zbi, zci, crr[14], drr[14], raw, zar, upi[14], sti,
+    long j, k, l, m, l1, l2;
+    double ac, ap[30], pi[30];
+    long is, jr, ks, ju;
+    double pp, wi, pr[30];
+    long lr;
+    double wr, aw2;
+    long kp1;
+    double t2i, w2i, t2r, w2r, ang, fn13, fn23;
+    long ias;
+    double cri[14], dri[14];
+    long ibs;
+    double zai, zbi, zci, crr[14], drr[14], raw, zar, upi[14], sti,
 	zbr, zcr, upr[14], str, raw2;
-    static long lrp1;
-    static double rfn13;
-    static long idum;
-    static double atol, btol, tfni;
-    static long kmax;
-    static double azth, tzai, tfnr, rfnu;
+    long lrp1;
+    double rfn13;
+    long idum;
+    double atol, btol, tfni;
+    long kmax;
+    double azth, tzai, tfnr, rfnu;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *);
-    static double zthi, test, tzar, zthr, rfnu2;
+    double zthi, test, tzar, zthr, rfnu2;
     extern double azabs(double *, double *);
-    static double zetai;
+    double zetai;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *);
-    static double ptfni, sumai, sumbi, zetar, ptfnr, razth, sumar, sumbr,
+    double ptfni, sumai, sumbi, zetar, ptfnr, razth, sumar, sumbr,
 	rzthi;
     extern double d1mach(long *);
-    static double rzthr, rtzti, rtztr, przthi;
+    double rzthr, rtzti, rtztr, przthi;
     extern /* Subroutine */ int azsqrt(double *, double *,
 				       double *, double *);
-    static double przthr;
+    double przthr;
 
 /* ***BEGIN PROLOGUE  ZUNHJ */
 /* ***REFER TO  ZBESI,ZBESK */
@@ -7030,9 +7030,9 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
 
     /* System generated locals */
     long i__1;
@@ -7041,22 +7041,22 @@ double azabs(double *zr, double *zi)
     double log(double), exp(double), cos(double), sin(double);
 
     /* Local variables */
-    static long i__, k, m, nd;
-    static double fn;
-    static long nn, nw;
-    static double c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, cyi[2];
-    static long nuf;
-    static double bry[3], cyr[2], sti, rzi, str, rzr, aphi, cscl, phii,
+    long i__, k, m, nd;
+    double fn;
+    long nn, nw;
+    double c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, cyi[2];
+    long nuf;
+    double bry[3], cyr[2], sti, rzi, str, rzr, aphi, cscl, phii,
 	crsc, phir;
-    static long init;
-    static double csrr[3], cssr[3], rast, sumi, sumr;
-    static long iflag;
-    static double ascle;
+    long init;
+    double csrr[3], cssr[3], rast, sumi, sumr;
+    long iflag;
+    double ascle;
     extern double azabs(double *, double *);
-    static double cwrki[16];
+    double cwrki[16];
     extern /* Subroutine */ int zuchk(double *, double *, long *,
 				      double *, double *);
-    static double cwrkr[16];
+    double cwrkr[16];
     extern double d1mach(long *);
     extern /* Subroutine */ int zunik(double *, double *, double
 				      *, long *, long *, double *, long *,
@@ -7069,7 +7069,7 @@ double azabs(double *zr, double *zi)
 						       double *, double *,
 						       long *, double *,
 						       double *, double *);
-    static double zeta1i, zeta2i, zeta1r, zeta2r;
+    double zeta1i, zeta2i, zeta1r, zeta2r;
 
 /* ***BEGIN PROLOGUE  ZUNI1 */
 /* ***REFER TO  ZBESI,ZBESK */
@@ -7327,13 +7327,13 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double cipr[4] = { 1., 0., -1., 0. };
-    static double cipi[4] = { 0., 1., 0., -1. };
-    static double hpi = 1.57079632679489662;
-    static double aic = 1.265512123484645396;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double cipr[4] = { 1., 0., -1., 0. };
+    double cipi[4] = { 0., 1., 0., -1. };
+    double hpi = 1.57079632679489662;
+    double aic = 1.265512123484645396;
 
     /* System generated locals */
     long i__1;
@@ -7342,27 +7342,27 @@ double azabs(double *zr, double *zi)
     double cos(double), sin(double), log(double), exp(double);
 
     /* Local variables */
-    static long i__, j, k, nd;
-    static double fn;
-    static long in, nn, nw;
-    static double c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, aii, ang,
+    long i__, j, k, nd;
+    double fn;
+    long in, nn, nw;
+    double c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, aii, ang,
 	car;
-    static long nai;
-    static double air, zbi, cyi[2], sar;
-    static long nuf, inu;
-    static double bry[3], raz, sti, zbr, zni, cyr[2], rzi, str, znr, rzr,
+    long nai;
+    double air, zbi, cyi[2], sar;
+    long nuf, inu;
+    double bry[3], raz, sti, zbr, zni, cyr[2], rzi, str, znr, rzr,
 	daii, cidi, aarg;
-    static long ndai;
-    static double dair, aphi, argi, cscl, phii, crsc, argr;
-    static long idum;
-    static double phir, csrr[3], cssr[3], rast;
-    static long iflag;
-    static double ascle;
+    long ndai;
+    double dair, aphi, argi, cscl, phii, crsc, argr;
+    long idum;
+    double phir, csrr[3], cssr[3], rast;
+    long iflag;
+    double ascle;
     extern double azabs(double *, double *);
-    static double asumi, bsumi;
+    double asumi, bsumi;
     extern /* Subroutine */ int zuchk(double *, double *, long *,
 				      double *, double *);
-    static double asumr, bsumr;
+    double asumr, bsumr;
     extern double d1mach(long *);
     extern /* Subroutine */ int zunhj(double *, double *, double
 				      *, long *, double *, double *,
@@ -7379,7 +7379,7 @@ double azabs(double *zr, double *zi)
 								 long *),
 	zuoik(double *, double *, double *, long *, long *, long *,
 	      double *, double *, long *, double *, double *, double *);
-    static double zeta1i, zeta2i, zeta1r, zeta2r;
+    double zeta1i, zeta2i, zeta1r, zeta2r;
 
 /* ***BEGIN PROLOGUE  ZUNI2 */
 /* ***REFER TO  ZBESI,ZBESK */
@@ -7702,12 +7702,12 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double conei = 0.;
-    static double con[2] = { .398942280401432678, 1.25331413731550025 };
-    static double c__[120] = { 1., -.208333333333333333, .125,
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double conei = 0.;
+    double con[2] = { .398942280401432678, 1.25331413731550025 };
+    double c__[120] = { 1., -.208333333333333333, .125,
 	.334201388888888889, -.401041666666666667, .0703125,
 	-1.02581259645061728, 1.84646267361111111, -.8912109375,
 	    .0732421875,
@@ -7758,13 +7758,13 @@ double azabs(double *zr, double *zi)
     double log(double);
 
     /* Local variables */
-    static long i__, j, k, l;
-    static double ac, si, ti, sr, tr, t2i, t2r, rfn, sri, sti, zni, srr,
+    long i__, j, k, l;
+    double ac, si, ti, sr, tr, t2i, t2r, rfn, sri, sti, zni, srr,
 	str, znr;
-    static long idum;
+    long idum;
     extern /* Subroutine */ int zdiv(double *, double *, double *
 				     , double *, double *, double *);
-    static double test, crfni, crfnr;
+    double test, crfni, crfnr;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *);
     extern double d1mach(long *);
@@ -7925,10 +7925,10 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double pi = 3.14159265358979324;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double pi = 3.14159265358979324;
 
     /* System generated locals */
     long i__1;
@@ -7938,36 +7938,36 @@ double azabs(double *zr, double *zi)
 	d_sign(double *, double *);
 
     /* Local variables */
-    static long i__, j, k, m, ib, ic;
-    static double fn;
-    static long il, kk, nw;
-    static double c1i, c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, ang,
+    long i__, j, k, m, ib, ic;
+    double fn;
+    long il, kk, nw;
+    double c1i, c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r, ang,
 	asc, cki, fnf;
-    static long ifn;
-    static double ckr;
-    static long iuf;
-    static double cyi[2], fmr, csr, sgn;
-    static long inu;
-    static double bry[3], cyr[2], sti, rzi, zri, str, rzr, zrr, aphi,
+    long ifn;
+    double ckr;
+    long iuf;
+    double cyi[2], fmr, csr, sgn;
+    long inu;
+    double bry[3], cyr[2], sti, rzi, zri, str, rzr, zrr, aphi,
 	cscl, phii[2], crsc, phir[2];
-    static long init[2];
-    static double csrr[3], cssr[3], rast, sumi[2], razr;
+    long init[2];
+    double csrr[3], cssr[3], rast, sumi[2], razr;
     extern /* Subroutine */ int zs1s2(double *, double *, double
 				      *, double *, double *, double *,
 				      long *, double *, double *, long *);
-    static double sumr[2];
-    static long iflag, kflag;
-    static double ascle;
-    static long kdflg;
-    static double phidi;
-    static long ipard;
+    double sumr[2];
+    long iflag, kflag;
+    double ascle;
+    long kdflg;
+    double phidi;
+    long ipard;
     extern double azabs(double *, double *);
-    static double csgni, phidr;
-    static long initd;
-    static double cspni, cwrki[48] /* was [16][3] */ , sumdi;
+    double csgni, phidr;
+    long initd;
+    double cspni, cwrki[48] /* was [16][3] */ , sumdi;
     extern /* Subroutine */ int zuchk(double *, double *, long *,
 				      double *, double *);
-    static double cspnr, cwrkr[48] /* was [16][3] */ , sumdr;
+    double cspnr, cwrkr[48] /* was [16][3] */ , sumdr;
     extern double d1mach(long *);
     extern /* Subroutine */ int zunik(double *, double *, double
 				      *, long *, long *, double *, long *,
@@ -7975,7 +7975,7 @@ double azabs(double *zr, double *zi)
 				      double *, double *, double *,
 				      double *, double *, double *,
 				      double *);
-    static double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2],
+    double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2],
 	zeta2r[2], zet1dr, zet2dr;
 
 /* ***BEGIN PROLOGUE  ZUNK1 */
@@ -8515,18 +8515,18 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double coner = 1.;
-    static double cr1r = 1.;
-    static double cr1i = 1.73205080756887729;
-    static double cr2r = -.5;
-    static double cr2i = -.866025403784438647;
-    static double hpi = 1.57079632679489662;
-    static double pi = 3.14159265358979324;
-    static double aic = 1.26551212348464539;
-    static double cipr[4] = { 1., 0., -1., 0. };
-    static double cipi[4] = { 0., -1., 0., 1. };
+    double zeror = 0.;
+    double zeroi = 0.;
+    double coner = 1.;
+    double cr1r = 1.;
+    double cr1i = 1.73205080756887729;
+    double cr2r = -.5;
+    double cr2i = -.866025403784438647;
+    double hpi = 1.57079632679489662;
+    double pi = 3.14159265358979324;
+    double aic = 1.26551212348464539;
+    double cipr[4] = { 1., 0., -1., 0. };
+    double cipi[4] = { 0., -1., 0., 1. };
 
     /* System generated locals */
     long i__1;
@@ -8536,37 +8536,37 @@ double azabs(double *zr, double *zi)
 	d_sign(double *, double *);
 
     /* Local variables */
-    static long i__, j, k, ib, ic;
-    static double fn;
-    static long il, kk, in, nw;
-    static double yy, c1i, c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r,
+    long i__, j, k, ib, ic;
+    double fn;
+    long il, kk, in, nw;
+    double yy, c1i, c2i, c2m, c1r, c2r, s1i, s2i, rs1, s1r, s2r,
 	aii, ang, asc, car, cki, fnf;
-    static long nai;
-    static double air;
-    static long ifn;
-    static double csi, ckr;
-    static long iuf;
-    static double cyi[2], fmr, sar, csr, sgn, zbi;
-    static long inu;
-    static double bry[3], cyr[2], pti, sti, zbr, zni, rzi, ptr, zri, str,
+    long nai;
+    double air;
+    long ifn;
+    double csi, ckr;
+    long iuf;
+    double cyi[2], fmr, sar, csr, sgn, zbi;
+    long inu;
+    double bry[3], cyr[2], pti, sti, zbr, zni, rzi, ptr, zri, str,
 	znr, rzr, zrr, daii, aarg;
-    static long ndai;
-    static double dair, aphi, argi[2], cscl, phii[2], crsc, argr[2];
-    static long idum;
-    static double phir[2], csrr[3], cssr[3], rast, razr;
+    long ndai;
+    double dair, aphi, argi[2], cscl, phii[2], crsc, argr[2];
+    long idum;
+    double phir[2], csrr[3], cssr[3], rast, razr;
     extern /* Subroutine */ int zs1s2(double *, double *, double
 				      *, double *, double *, double *,
 				      long *, double *, double *, long *);
-    static long iflag, kflag;
-    static double argdi, ascle;
-    static long kdflg;
-    static double phidi, argdr;
+    long iflag, kflag;
+    double argdi, ascle;
+    long kdflg;
+    double phidi, argdr;
     extern double azabs(double *, double *);
-    static long ipard;
-    static double csgni, phidr, cspni, asumi[2], bsumi[2];
+    long ipard;
+    double csgni, phidr, cspni, asumi[2], bsumi[2];
     extern /* Subroutine */ int zuchk(double *, double *, long *,
 				      double *, double *);
-    static double cspnr, asumr[2], bsumr[2];
+    double cspnr, asumr[2], bsumr[2];
     extern double d1mach(long *);
     extern /* Subroutine */ int zunhj(double *, double *, double
 				      *, long *, double *, double *,
@@ -8581,7 +8581,7 @@ double azabs(double *zr, double *zi)
 								 double *,
 								 long *,
 								 long *);
-    static double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2],
+    double zeta1i[2], zeta2i[2], zet1di, zet2di, zeta1r[2],
 	zeta2r[2], zet1dr, zet2dr, asumdi, bsumdi, asumdr, bsumdr;
 
 /* ***BEGIN PROLOGUE  ZUNK2 */
@@ -9197,9 +9197,9 @@ double azabs(double *zr, double *zi)
 {
     /* Initialized data */
 
-    static double zeror = 0.;
-    static double zeroi = 0.;
-    static double aic = 1.265512123484645396;
+    double zeror = 0.;
+    double zeroi = 0.;
+    double aic = 1.265512123484645396;
 
     /* System generated locals */
     long i__1;
@@ -9208,23 +9208,23 @@ double azabs(double *zr, double *zi)
     double log(double), exp(double), cos(double), sin(double);
 
     /* Local variables */
-    static long i__;
-    static double ax, ay;
-    static long nn, nw;
-    static double fnn, gnn, zbi, czi, gnu, zbr, czr, rcz, sti, zni, zri,
+    long i__;
+    double ax, ay;
+    long nn, nw;
+    double fnn, gnn, zbi, czi, gnu, zbr, czr, rcz, sti, zni, zri,
 	str, znr, zrr, aarg, aphi, argi, phii, argr;
-    static long idum;
-    static double phir;
-    static long init;
-    static double sumi, sumr, ascle;
+    long idum;
+    double phir;
+    long init;
+    double sumi, sumr, ascle;
     extern double azabs(double *, double *);
-    static long iform;
+    long iform;
     extern /* Subroutine */ int azlog(double *, double *, double
 				      *, double *, long *);
-    static double asumi, bsumi, cwrki[16];
+    double asumi, bsumi, cwrki[16];
     extern /* Subroutine */ int zuchk(double *, double *, long *,
 				      double *, double *);
-    static double asumr, bsumr, cwrkr[16];
+    double asumr, bsumr, cwrkr[16];
     extern double d1mach(long *);
     extern /* Subroutine */ int zunhj(double *, double *, double
 				      *, long *, double *, double *,
@@ -9248,7 +9248,7 @@ double azabs(double *zr, double *zi)
 								 double *,
 								 double *,
 								 double *);
-    static double zeta1i, zeta2i, zeta1r, zeta2r;
+    double zeta1i, zeta2i, zeta1r, zeta2r;
 
 /* ***BEGIN PROLOGUE  ZUOIK */
 /* ***REFER TO  ZBESI,ZBESK,ZBESH */
@@ -9511,11 +9511,11 @@ double azabs(double *zr, double *zi)
     double cos(double), sin(double);
 
     /* Local variables */
-    static long i__, nw;
-    static double c1i, c2i, c1r, c2r, act, acw, cti, ctr, pti, sti, ptr,
+    long i__, nw;
+    double c1i, c2i, c1r, c2r, act, acw, cti, ctr, pti, sti, ptr,
 	str, ract, ascle;
     extern double azabs(double *, double *);
-    static double csclr, cinui, cinur;
+    double csclr, cinui, cinur;
     extern /* Subroutine */ int zbknu(double *, double *, double
 				      *, long *, long *, double *,
 				      double *, long *, double *, double *,

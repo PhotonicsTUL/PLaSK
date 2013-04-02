@@ -3,14 +3,6 @@
 
 #include <limits>
 
-#include <Eigen/Dense>
-
-#include<Eigen/StdVector> // This is needed to ensure the proper alignment of Eigen::Vector2cd in std::vector
-#ifndef PLASK_EIGEN_STL_VECTOR_SPECIALIZATION_DEFINED
-#   define PLASK_EIGEN_STL_VECTOR_SPECIALIZATION_DEFINED
-    EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2cd)
-#endif
-
 #include <plask/plask.hpp>
 
 #include "broyden.h"
@@ -21,6 +13,35 @@ namespace plask { namespace solvers { namespace effective {
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
 struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
+
+    struct FieldZ {
+        dcomplex F, B;
+        FieldZ() = default;
+        FieldZ(dcomplex f, dcomplex b): F(f), B(b) {}
+        FieldZ operator*(dcomplex a) const { return FieldZ(F*a, B*a); }
+        FieldZ operator/(dcomplex a) const { return FieldZ(F/a, B/a); }
+        FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
+        FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
+    };
+
+    struct FieldR {
+        dcomplex J, H;
+        FieldR() = default;
+        FieldR(dcomplex j, dcomplex h): J(j), H(h) {}
+        FieldR operator*(dcomplex a) const { return FieldR(a*J, a*H); }
+        FieldR operator/(dcomplex a) const { return FieldR(J/a, H/a); }
+        FieldR operator*=(dcomplex a) { J *= a; H *= a; return *this; }
+        FieldR operator/=(dcomplex a) { J /= a; H /= a; return *this; }
+    };
+
+    struct MatrixR {
+        dcomplex JJ, JH, HJ, HH;
+        MatrixR(dcomplex jj, dcomplex jh, dcomplex hj, dcomplex hh): JJ(jj), JH(jh), HJ(hj), HH(hh) {}
+        FieldR operator*(const FieldR& v) { return FieldR(JJ*v.J + JH*v.H, HJ*v.J + HH*v.H); }
+        FieldR solve(const FieldR& v) {
+            return FieldR(HH*v.J - JH*v.H, -HJ*v.J + JJ*v.H) / (JJ*HH - JH*HJ);
+        }
+    };
 
   protected:
 
@@ -34,22 +55,28 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
            zsize;   ///< Last element of vertical mesh to consider
 
     /// Cached refractive indices
-    std::vector<std::vector<dcomplex>> nrCache;
+    std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache;
 
     /// Cached group indices
-    std::vector<std::vector<dcomplex>> ngCache;
+    std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> ngCache;
 
     /// Computed horizontal fields
-    std::vector<Eigen::Vector2cd> fieldR, fieldZ;
+    std::vector<FieldR> fieldR;
+
+    /// Computed vertical fields
+    std::vector<FieldZ> fieldZ;
 
     /// Did we compute fields for current state?
     bool have_fields;
 
+    /// Stripe to take vertical fields from
+    size_t stripe;
+
     /// Computed effective frequencies for each stripe
-    std::vector<dcomplex> veffs;
+    std::vector<dcomplex,aligned_allocator<dcomplex>> veffs;
 
     /// Computed weighted indices for each stripe
-    std::vector<dcomplex> nng;
+    std::vector<dcomplex,aligned_allocator<dcomplex>> nng;
 
     /// Old value of the l number (to detect changes)
     int old_m;
@@ -59,9 +86,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Stored frequency parameter for field calculations
     dcomplex v;
-
-    /// Stored vertical propagation constants for field calculations
-    std::vector<dcomplex> betaz;
 
   public:
 
@@ -228,13 +252,17 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     void stageOne();
 
     /// Return S matrix determinant for one stripe
-    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG);
+    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
+                   const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, bool save=false);
+
+    /**
+     * Compute field weights basing on solution for given stripe. Also compute data for determining vertical fields
+     * \param stripe main stripe number
+     */
+    std::vector<double,aligned_allocator<double>> computeWeights(size_t stripe);
 
     /// Return S matrix determinant for one stripe
     void computeStripeNNg(std::size_t stripe);
-
-    /// Get matrix transforming amplitudes of J and Y from (i-1)-th layer to i-th one
-    Eigen::Matrix2cd getMatrix(plask::dcomplex v, std::size_t i);
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const plask::dcomplex& v);

@@ -16,15 +16,15 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
     inTemperature = 300.;
     inGain = NAN;
-    root.tolx = 1.0e-6;
-    root.tolf_min = 1.0e-8;
-    root.tolf_max = 1.0e-5;
+    root.tolx = 1.0e-8;
+    root.tolf_min = 1.0e-10;
+    root.tolf_max = 1.0e-6;
     root.maxstep = 0.1;
     root.maxiter = 500;
-    stripe_root.tolx = 1.0e-6;
-    stripe_root.tolf_min = 1.0e-8;
-    stripe_root.tolf_max = 1.0e-5;
-    stripe_root.maxstep = 0.5;
+    stripe_root.tolx = 1.0e-8;
+    stripe_root.tolf_min = 1.0e-10;
+    stripe_root.tolf_max = 1.0e-6;
+    stripe_root.maxstep = 0.05;
     stripe_root.maxiter = 500;
 }
 
@@ -63,13 +63,14 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
     }
 }
 
+
 dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
     v = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root).getSolution(0.);
-    dcomplex k = k0 / (1. - v/2.); // get wavelength back from frequency parameter
+    dcomplex k = k0 * (1. - v/2.); // get modal frequency back from frequency parameter
     dcomplex lam = 2e3*M_PI / k;
     outWavelength = real(lam);
     outModalLoss = 1e7 * imag(k);
@@ -79,7 +80,6 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
     have_fields = false;
     return lam;
 }
-
 
 
 std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, unsigned steps, unsigned nummodes)
@@ -95,6 +95,7 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, d
     return results;
 }
 
+
 std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps)
 {
     writelog(LOG_INFO, "Searching for the approximate modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
@@ -107,6 +108,7 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1
     for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
     return results;
 }
+
 
 void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
 {
@@ -149,14 +151,13 @@ void EffectiveFrequencyCylSolver::onInitialize()
         abs(mesh->axis1[mesh->axis1.size()-1] - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
         --zsize;
 
-    if (geometry->getBorder(Geometry::DIRECTION_TRAN, true).type() == border::Strategy::EXTEND &&
-        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
-        --rsize;
-
-    nrCache.assign(rsize, std::vector<dcomplex>(zsize));
-    ngCache.assign(rsize, std::vector<dcomplex>(zsize));
+    nrCache.assign(rsize, std::vector<dcomplex,aligned_allocator<dcomplex>>(zsize));
+    ngCache.assign(rsize, std::vector<dcomplex,aligned_allocator<dcomplex>>(zsize));
     veffs.resize(rsize);
     nng.resize(rsize);
+
+    fieldR.resize(rsize);
+    fieldZ.resize(zsize);
 }
 
 
@@ -173,8 +174,6 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 /********* Here are the computations *********/
 
 static const int mh = 2; // Hankel function type (1 or 2)
-
-using namespace Eigen;
 
 
 void EffectiveFrequencyCylSolver::stageOne()
@@ -292,134 +291,180 @@ void EffectiveFrequencyCylSolver::stageOne()
 }
 
 
-dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector<dcomplex>& NR, const std::vector<dcomplex>& NG)
+dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
+                                            const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, bool save)
 {
-    size_t N = NR.size();
+    double maxff = 0.;
+    if (save) fieldZ[zbegin] = FieldZ(0., 1.);
 
-    std::vector<dcomplex> beta(N);
-    for (size_t i = 0; i < N; ++i) {
-        beta[i] = k0 * sqrt(NR[i]*NR[i] - v * NR[i]*NG[i]);
-        if (real(beta[i]) < 0.) beta[i] = -beta[i];  // TODO verify this condition; in general it should consider really outgoing waves
+    std::vector<dcomplex> kz(zsize);
+    for (size_t i = zbegin; i < zsize; ++i) {
+        kz[i] = k0 * sqrt(NR[i]*NR[i] - v * NR[i]*NG[i]);
+        if (real(kz[i]) < 0.) kz[i] = -kz[i];
     }
 
-    auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex n = 0.5 * beta[i]/beta[i+1];
-        Matrix2cd M; M << (0.5+n), (0.5-n),
-                          (0.5-n), (0.5+n);
-        return M;
-    };
+    dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
 
-    Vector2cd E; E << 0., 1.;
-    E = fresnel(0) * E;
+    dcomplex phas = 1.;
+    if (zbegin != 0)
+        phas = exp(I * kz[zbegin] * (mesh->axis1[zbegin]-mesh->axis1[zbegin-1]));
 
-    for (size_t i = 1; i < N-1; ++i) {
-        double d = mesh->axis1[i] - mesh->axis1[i-1];
-        dcomplex phas = exp(-I * beta[i] * d);
-        DiagonalMatrix<dcomplex, 2> P;
-        P.diagonal() << phas, 1./phas;
-        E = P * E;
-        E = fresnel(i) * E;
+    for (size_t i = zbegin+1; i < zsize; ++i) {
+        // Compute shift inside one layer
+        s1 *= phas;
+        s3 *= phas * phas;
+        s4 *= phas;
+        // Compute matrix after boundary
+        dcomplex p = 0.5 + 0.5 * kz[i] / kz[i-1];
+        dcomplex m = 1.0 - p;
+        dcomplex chi = 1. / (p - m * s3);
+        // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
+        // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
+        s2 += s1*m*chi*s4;
+        s1 *= (p*p - m*m) * chi;
+        s3  = (p*s3-m) * chi;
+        s4 *= chi;
+        // Compute phase shift for the next step
+        if (i != mesh->axis1.size())
+            phas = exp(I * kz[i] * (mesh->axis1[i]-mesh->axis1[i-1]));
+
+        // Compute fields
+        if (save) {
+            dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
+            double aFF = abs2(F), aBB = abs2(B);
+            // zero very small fields to avoid errors in plotting for long layers
+            if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
+            if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
+            fieldZ[i] = FieldZ(F, B);
+        }
     }
 
-    return E[1];
+    if (save) {
+        fieldZ[zsize-1].B = 0.;
+        maxff = 1. / sqrt(maxff);
+        for (size_t i = zbegin; i < zsize; ++i) fieldZ[i] *= maxff;
+// #ifndef NDEBUG
+//         {
+//             std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
+//                 nrs << "), (" << str(fieldZ[i].F) << ":" << str(fieldZ[i].B);
+//             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
+//         }
+// #endif
+    }
+
+    return s4 - s2*s3/s1;
+}
+
+std::vector<double,aligned_allocator<double>> EffectiveFrequencyCylSolver::computeWeights(size_t stripe)
+{
+    dcomplex veff = veffs[stripe];
+
+    // Compute fields
+    detS1(veff, nrCache[stripe], ngCache[stripe], true);
+
+    std::vector<double,aligned_allocator<double>> weights(zsize);
+    weights[zbegin] = 0.;
+    weights[zsize-1] = 0.;
+    double sum = weights[zbegin] + weights[zsize-1];
+
+    for (size_t i = zbegin+1; i < zsize-1; ++i) {
+        double d = mesh->axis1[i]-mesh->axis1[i-1];
+        dcomplex kz = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - veff * nrCache[stripe][i]*ngCache[stripe][i]);
+        if (real(kz) < 0.) kz = -kz;
+        dcomplex w_ff, w_bb, w_fb, w_bf;
+        if (d != 0.) {
+            if (abs(imag(kz)) > SMALL) {
+                dcomplex kk = kz - conj(kz);
+                w_ff =   (exp(-I*d*kk) - 1.) / kk;
+                w_bb = - (exp(+I*d*kk) - 1.) / kk;
+            } else
+                w_ff = w_bb = dcomplex(0., -d);
+            if (abs(real(kz)) > SMALL) {
+                dcomplex kk = kz + conj(kz);
+                w_fb =   (exp(-I*d*kk) - 1.) / kk;
+                w_bf = - (exp(+I*d*kk) - 1.) / kk;
+            } else
+                w_ff = w_bb = dcomplex(0., -d);
+            dcomplex weight = fieldZ[i].F * conj(fieldZ[i].F) * w_ff +
+                              fieldZ[i].F * conj(fieldZ[i].B) * w_fb +
+                              fieldZ[i].B * conj(fieldZ[i].F) * w_bf +
+                              fieldZ[i].B * conj(fieldZ[i].B) * w_bb;
+            weights[i] = -imag(weight);
+        } else
+            weights[i] = 0.;
+        sum += weights[i];
+    }
+
+    sum = 1. / sum;
+    for (size_t i = zbegin; i < zsize; ++i) {
+        weights[i] *= sum;
+    }
+// #ifndef NDEBUG
+//     {
+//         std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i) nrs << ", " << str(weights[i]);
+//         writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
+//     }
+// #endif
+
+    return std::move(weights);
 }
 
 void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 {
-    size_t N = nrCache[stripe].size();
-    dcomplex veff = veffs[stripe];
-
+    std::vector<double,aligned_allocator<double>> weight = computeWeights(stripe);
     nng[stripe] = 0.;
-    dcomplex sum = 0.;
-
-    std::vector<dcomplex> beta(N);
-    for (size_t i = 0; i < N; ++i) {
-        beta[i] = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - veff * nrCache[stripe][i]*ngCache[stripe][i]);
-        if (real(beta[i]) < 0.) beta[i] = -beta[i];  // TODO verify this condition; in general it should consider really outgoing waves
+    for (size_t i = zbegin; i < zsize; ++i) {
+        nng[stripe] += weight[i] * nrCache[stripe][i] * ngCache[stripe][i];
     }
-
-    auto fresnel = [&](size_t i) -> Matrix2cd {
-        dcomplex n = 0.5 * beta[i]/beta[i+1];
-        Matrix2cd M; M << (0.5+n), (0.5-n),
-                          (0.5-n), (0.5+n);
-        return M;
-    };
-
-    Vector2cd E; E << 0., 1.;
-    E = fresnel(0) * E;
-
-    for (size_t i = 1; i < N-1; ++i) {
-        double d = mesh->axis1[i] - mesh->axis1[i-1];
-        // double f = real(E[0]*conj(E[0])) + real(E[1]*conj(E[1]));
-        dcomplex f = E[0]*E[0] + E[1]*E[1]; //TODO
-        nng[stripe] += f * nrCache[stripe][i] * ngCache[stripe][i];
-        sum += f;
-        dcomplex phas = exp(-I * beta[i] * d);
-        DiagonalMatrix<dcomplex, 2> P;
-        P.diagonal() << phas, 1./phas;
-        E = P * E;
-        E = fresnel(i) * E;
-    }
-
-    nng[stripe] /= sum;
-}
-
-
-Matrix2cd EffectiveFrequencyCylSolver::getMatrix(dcomplex v, size_t i)
-{
-    double r = mesh->axis0[i];
-
-    dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
-    if (real(x1) < 0.) x1 = -x1;
-
-    dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
-    if (real(x2) < 0.) x2 = -x2;
-
-    Matrix2cd A, B;
-
-    // Compute Bessel functions and their derivatives
-    dcomplex J1[2], H1[2];
-    dcomplex J2[2], H2[2];
-    double Jr[2], Ji[2], Hr[2], Hi[2];
-    long nz, ierr;
-
-    zbesj(x1.real(), x1.imag(), m, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x1));
-    zbesh(x1.real(), x1.imag(), m, 1, mh, 2, Hr, Hi, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x1));
-    for (int i = 0; i < 2; ++i) { J1[i] = dcomplex(Jr[i], Ji[i]); H1[i] = dcomplex(Hr[i], Hi[i]); }
-
-    zbesj(x2.real(), x2.imag(), m, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x2));
-    zbesh(x2.real(), x2.imag(), m, 1, mh, 2, Hr, Hi, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x2));
-    for (int i = 0; i < 2; ++i) { J2[i] = dcomplex(Jr[i], Ji[i]); H2[i] = dcomplex(Hr[i], Hi[i]); }
-
-
-    A <<   J1[0],                 H1[0],
-         m*J1[0] - x1*J1[1],    m*H1[0] - x1*H1[1];
-
-    B <<   J2[0],                 H2[0],
-         m*J2[0] - x2*J2[1],    m*H2[0] - x2*H2[1];
-
-    return A.inverse() * B;
 }
 
 
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 {
-    Vector2cd E;
-
     // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
-    E << 0., 1.;
+    fieldR[rsize-1] = FieldR(0., 1.);
 
-    for (size_t i = veffs.size()-1; i > 0; --i) {
-        E = getMatrix(v, i) * E;
+    for (size_t i = rsize-1; i > 0; --i) {
+
+        double r = mesh->axis0[i];
+
+        dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
+        if (real(x1) < 0.) x1 = -x1;
+
+        dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
+        if (real(x2) < 0.) x2 = -x2;
+
+        // Compute Bessel functions and their derivatives
+        dcomplex J1[2], H1[2];
+        dcomplex J2[2], H2[2];
+        double Jr[2], Ji[2], Hr[2], Hi[2];
+        long nz, ierr;
+
+        zbesj(x1.real(), x1.imag(), m, 1, 2, Jr, Ji, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x1));
+        zbesh(x1.real(), x1.imag(), m, 1, mh, 2, Hr, Hi, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x1));
+        for (int i = 0; i < 2; ++i) { J1[i] = dcomplex(Jr[i], Ji[i]); H1[i] = dcomplex(Hr[i], Hi[i]); }
+
+        zbesj(x2.real(), x2.imag(), m, 1, 2, Jr, Ji, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x2));
+        zbesh(x2.real(), x2.imag(), m, 1, mh, 2, Hr, Hi, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x2));
+        for (int i = 0; i < 2; ++i) { J2[i] = dcomplex(Jr[i], Ji[i]); H2[i] = dcomplex(Hr[i], Hi[i]); }
+
+
+        MatrixR A(  J1[0],                 H1[0],
+                  m*J1[0] - x1*J1[1],    m*H1[0] - x1*H1[1]);
+
+        MatrixR B(  J2[0],                 H2[0],
+                  m*J2[0] - x2*J2[1],    m*H2[0] - x2*H2[1]);
+
+        fieldR[i-1] = A.solve(B * fieldR[i]);
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
-    //return E[1] / E[0]; // to stress the difference between J and H
-    return E[1];
+    //return fieldR[0].H / fieldR[0].J; // to stress the difference between J and H
+    return fieldR[0].H;
 }
 
 
@@ -431,22 +476,15 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
     if (!outWavelength.hasValue() || k0 != old_k0 || m != old_m) throw NoValue(OpticalIntensity::NAME);
 
     if (!have_fields) {
-        fieldR.resize(veffs.size());
-        fieldR[veffs.size()-1] << 0., 1.;
-
-        writelog(LOG_INFO, "Computing field distribution for wavelength = %1%", str(outWavelength()));
-
-        // Compute horizontal part
-        for (size_t i = veffs.size()-1; i > 0; --i) {
-            fieldR[i-1].noalias() = getMatrix(v, i) * fieldR[i];
+#ifndef NDEBUG
+        {
+            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
+                nrs << "), (" << str(fieldR[i].J) << ":" << str(fieldR[i].H);
+            writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
+#endif
 
-#       ifndef NDEBUG
-            std::stringstream strf; for (size_t i = 0; i < fieldR.size(); ++i) strf << ", (" << str(fieldR[i][0]) << ")/(" << str(fieldR[i][1]) << ")";
-            writelog(LOG_DEBUG, "E=aY+bH: a/b = [%1% ]", strf.str().substr(1));
-#       endif
-
-        size_t stripe = 0;
+        stripe = 0;
         // Look for the innermost stripe with not constant refractive index
         bool all_the_same = true;
         while (all_the_same) {
@@ -459,31 +497,9 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
         writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
 
         // Compute vertical part
-        std::vector<dcomplex>& NR = nrCache[stripe];
-        std::vector<dcomplex>& NG = ngCache[stripe];
-        dcomplex veff = veffs[stripe];
-        betaz.resize(NR.size());
-        for (size_t i = 0; i < NR.size(); ++i) {
-            betaz[i] = k0 * sqrt(NR[i]*NR[i] - veff * NR[i]*NG[i]);
-            if (real(betaz[i]) < 0.) betaz[i] = -betaz[i];  // TODO verify this condition; in general it should consider really outgoing waves
-        }
-        auto fresnel = [&](size_t i) -> Matrix2cd {
-            dcomplex n = 0.5 * betaz[i]/betaz[i+1];
-            Matrix2cd M; M << (0.5+n), (0.5-n),
-                              (0.5-n), (0.5+n);
-            return M;
-        };
-        fieldZ.resize(NR.size());
-        fieldZ[0] << 0., 1.;
-        fieldZ[1].noalias() = fresnel(0) * fieldZ[0];
-        for (size_t i = 1; i < NR.size()-1; ++i) {
-            double d = mesh->axis1[i] - mesh->axis1[i-1];
-            dcomplex phas = exp(-I * betaz[i] * d);
-            DiagonalMatrix<dcomplex, 2> P;
-            P.diagonal() << phas, 1./phas;
-            fieldZ[i+1].noalias() = P * fieldZ[i];
-            fieldZ[i+1] = fresnel(i) * fieldZ[i+1];
-        }
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], true);
+
+        have_fields = true;
     }
 
     DataVector<double> results(dst_mesh.size());
@@ -502,7 +518,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
             long nz, ierr;
 
             size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
-            dcomplex x = r * k0 * sqrt(nng[ir-1] * (veffs[ir-1]-v));
+            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
             if (real(x) < 0.) x = -x;
             zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
             if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
@@ -512,15 +528,17 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
                 zbesh(x.real(), x.imag(), m, 1, mh, 1, &Hr, &Hi, nz, ierr);
                 if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
             }
-            dcomplex val = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
+            dcomplex val = fieldR[ir].J * dcomplex(Jr, Ji) + fieldR[ir].H * dcomplex(Hr, Hi);
 
             size_t iz = mesh->axis1.findIndex(z);
             if (iz >= zsize) iz = zsize-1;
+            dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - v * nrCache[stripe][iz]*ngCache[stripe][iz]);
+            if (real(kz) < 0.) kz = -kz;
             z -= mesh->axis1[max(int(iz)-1, 0)];
-            dcomplex phasz = exp(- I * betaz[iz] * z);
-            val *= fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
+            dcomplex phasz = exp(- I * kz * z);
+            val *= fieldZ[iz].F * phasz + fieldZ[iz].B / phasz;
 
-            results[id] = real(abs2(val));
+            results[id] = abs2(val);
         }
 
     }
@@ -542,58 +560,78 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
         std::vector<dcomplex> valr(rect_mesh.axis0.size());
         std::vector<dcomplex> valz(rect_mesh.axis1.size());
 
+        bool error = false; // needed to handle exceptions from OMP loop
+        std::string errormsg;
         #pragma omp parallel
         {
             #pragma omp for nowait
             for (size_t idr = 0; idr < rect_mesh.tran().size(); ++idr) {
+                if (error) continue;
                 double r = rect_mesh.axis0[idr];
                 double Jr, Ji, Hr, Hi;
                 long nz, ierr;
                 if (r < 0.) r = -r;
-                size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir;  if (ir >= veffs.size()) ir = veffs.size()-1;
+                size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
                 dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
                 if (real(x) < 0.) x = -x;
                 zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
-                if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
+                if (ierr != 0)
+                #pragma omp critical
+                {
+                    error = true;
+                    errormsg = format("Could not compute J(%1%, %2%)", m, str(x));
+                }
                 if (ir == 0) {
                     Hr = Hi = 0.;
                 } else {
                     zbesh(x.real(), x.imag(), m, 1, mh, 1, &Hr, &Hi, nz, ierr);
-                    if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
-                }
-                valr[idr] = fieldR[ir][0] * dcomplex(Jr, Ji) + fieldR[ir][1] * dcomplex(Hr, Hi);
-            }
-
-            #pragma omp for
-            for (size_t idz = 0; idz < rect_mesh.vert().size(); ++idz) {
-                double z = rect_mesh.axis1[idz];
-                size_t iz = mesh->axis1.findIndex(z);
-                if (iz >= zsize) iz = zsize-1;
-                z -= mesh->axis1[max(int(iz)-1, 0)];
-                dcomplex phasz = exp(- I * betaz[iz] * z);
-                valz[idz] = fieldZ[iz][0] * phasz + fieldZ[iz][1] / phasz;
-            }
-
-            if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
-                #pragma omp for
-                for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                    double* data = results.data() + i1 * rect_mesh.axis0.size();
-                    for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                        dcomplex f = valr[i0] * valz[i1];
-                        data[i0] = abs2(f);
+                    if (ierr != 0)
+                    #pragma omp critical
+                    {
+                        error = true;
+                        errormsg = format("Could not compute H(%1%, %2%)", m, str(x));
                     }
                 }
-            } else {
+                valr[idr] = fieldR[ir].J * dcomplex(Jr, Ji) + fieldR[ir].H * dcomplex(Hr, Hi);
+            }
+
+            if (!error) {
                 #pragma omp for
-                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                    double* data = results.data() + i0 * rect_mesh.axis1.size();
+                for (size_t idz = 0; idz < rect_mesh.vert().size(); ++idz) {
+                    double z = rect_mesh.axis1[idz];
+                    size_t iz = mesh->axis1.findIndex(z);
+                    if (iz >= zsize) iz = zsize-1;
+                    dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - v * nrCache[stripe][iz]*ngCache[stripe][iz]);
+                    if (real(kz) < 0.) kz = -kz;
+                    z -= mesh->axis1[max(int(iz)-1, 0)];
+                    dcomplex phasz = exp(- I * kz * z);
+                    valz[idz] = fieldZ[iz].F * phasz + fieldZ[iz].B / phasz;
+                }
+
+                if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
+                    #pragma omp for
                     for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                        dcomplex f = valr[i0] * valz[i1];
-                        data[i1] = abs2(f);
+                        double* data = results.data() + i1 * rect_mesh.axis0.size();
+                        for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                            dcomplex f = valr[i0] * valz[i1];
+                            data[i0] = abs2(f);
+                        }
+                    }
+                } else {
+                    #pragma omp for
+                    for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                        double* data = results.data() + i0 * rect_mesh.axis1.size();
+                        for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                            dcomplex f = valr[i0] * valz[i1];
+                            data[i1] = abs2(f);
+                        }
                     }
                 }
             }
         }
+
+        if (error)
+            throw ComputationError(getId(), errormsg);
 
         return true;
     }

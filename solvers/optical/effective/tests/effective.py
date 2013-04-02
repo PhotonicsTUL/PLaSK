@@ -6,15 +6,15 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.effective import EffectiveIndex2D
+from optical.effective import EffectiveIndex2D, EffectiveFrequencyCyl
 
 @material.simple
 class Glass(material.Material):
     def Nr(self, wl, T): return 1.3
 
 @material.simple
-class LowConstrast(material.Material):
-    def Nr(self, wl, T): return 1.05
+class Cladding(material.Material):
+    def Nr(self, wl, T): return 1.28
 
 class EffectiveIndex2D_Test(unittest.TestCase):
 
@@ -56,15 +56,22 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         mesh = self.solver.mesh
 
 
-class EffectiveFrequencyCyl_Test(unittest.TestCase):
+#class EffectiveFrequencyCyl_Test(unittest.TestCase):
 
-    def setUp(self):
-        self.solver = EffectiveIndex2D("test_efm")
-        R = 1.0
-        rect = geometry.Rectangle(R, 3.0, LowConstrast())
-        self.solver.geometry = geometry.Cartesian2D(rect)
-        self.solver.mesh = mesh.Rectilinear2D([0., R], [1.0, 2.0])
+    #def setUp(self):
+        #self.solver = EffectiveFrequencyCyl("test_efm")
+        #R = 1.0
+        #shelf = geometry.Shelf2D()
+        #shelf.append(geometry.Rectangle(R, 1.0, Glass()))
+        #shelf.append(geometry.Rectangle(3*R, 1.0, Cladding()))
+        #self.solver.geometry = geometry.Cartesian2D(shelf)
+        #self.solver.mesh = mesh.Rectilinear2D([0., R], [0., 1.0])
 
-    #def testBessel(self):
+    #def testVertical(self):
+        #self.solver.k0 =
+        #self.solver.get_stripe_determinant_v
+
+
+    ##def testBessel(self):
 
 

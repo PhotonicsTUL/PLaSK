@@ -303,7 +303,7 @@ def plot_material_param(geometry, param, axes=None, mirror=False, **kwargs):
     if type(param) == str:
         param = eval('lambda m: m.' + param)
     #TODO for different shapes of leafs, plot it somehow better (how? make patches instead of pcolor?)
-    grid = plask.mesh.Rectilinear2D.SimpleGenerator()(geometry.child)
+    grid = plask.mesh.Rectilinear2D.SimpleGenerator()(geometry.item)
     grid.ordering = '10'
     if mirror:
         if type(geometry) == plask.geometry.Cylindrical2D or \

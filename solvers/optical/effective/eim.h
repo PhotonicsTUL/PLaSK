@@ -29,8 +29,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         dcomplex F, B;
         Field() = default;
         Field(dcomplex f, dcomplex b): F(f), B(b) {}
-        Field operator*(dcomplex a) const { return Field(a*F, a*B); }
-        Field operator/(dcomplex a) const { return Field(a*F, a*B); }
+        Field operator*(dcomplex a) const { return Field(F*a, B*a); }
+        Field operator/(dcomplex a) const { return Field(F/a, B/a); }
         Field operator*=(dcomplex a) { F *= a; B *= a; return *this; }
         Field operator/=(dcomplex a) { F /= a; B /= a; return *this; }
     };
@@ -259,8 +259,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param stripe main stripe number
      */
     void computeWeights(size_t stripe);
-
-
 
     /**
      * Compute S matrix determinant for one stripe
