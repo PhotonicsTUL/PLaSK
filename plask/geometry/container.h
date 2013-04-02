@@ -356,6 +356,11 @@ protected:
 
 public:
 
+    /// Delegate all constructors to parent class.
+    //using ParentType::ParentType;//this is fine but not implemented in GCC 4.7
+    template<typename... Args>
+    WithAligners(Args&&... args): ParentType(std::forward<Args>(args)...) {}
+
     /// Called by child.change signal
     void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) align(const_cast<TranslationT&>(evt.source<TranslationT>()));

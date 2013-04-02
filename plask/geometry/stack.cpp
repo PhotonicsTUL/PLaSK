@@ -101,7 +101,7 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.vert(), bb);
     this->connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
-    aligners.insert(aligners.begin() + pos, aligner);
+    this->aligners.insert(this->aligners.begin() + pos, aligner);
     stackHeights.insert(stackHeights.begin() + pos, stackHeights[pos]);
     const double delta = bb.upper.vert() - bb.lower.vert();
     for (std::size_t i = pos + 1; i < children.size(); ++i) {
@@ -117,16 +117,21 @@ template <int dim>
 void StackContainer<dim>::setAlignerAt(std::size_t child_no, const ChildAligner& aligner) {
     this->ensureIsValidChildNr(child_no, "setAlignerAt");
     //TODO if (aligners[child_no].get() == &aligner) return; //protected against self assigment
-    aligners[child_no] = aligner;
-    aligners[child_no].align(*children[child_no]);
+    this->aligners[child_no] = aligner;
+    this->aligners[child_no].align(*children[child_no]);
     children[child_no]->fireChanged();
 }
 
 template <int dim>
 bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
-    auto dst = children.begin();
-    auto al_dst = aligners.begin();
-    auto al_src = aligners.begin();
+    if (ParentClass::removeIfTUnsafe(predicate)) {
+        this->rebuildStackHeights();
+        return true;
+    } else
+        return false;
+/*    auto dst = children.begin();
+    auto al_dst = this->aligners.begin();
+    auto al_src = this->aligners.begin();
     for (auto i: children) {
         if (predicate(i))
             this->disconnectOnChildChanged(*i);
@@ -138,17 +143,17 @@ bool StackContainer<dim>::removeIfTUnsafe(const std::function<bool(const shared_
     }
     if (dst != children.end()) {
         children.erase(dst, children.end());
-        aligners.erase(al_dst, aligners.end());
+        this->aligners.erase(al_dst, this->aligners.end());
         this->rebuildStackHeights();
         return true;
     } else
-        return false;
+        return false;*/
 }
 
 template <int dim>
 void StackContainer<dim>::removeAtUnsafe(std::size_t index) {
     GeometryObjectContainer<dim>::removeAtUnsafe(index);
-    aligners.erase(aligners.begin() + index);
+    this->aligners.erase(this->aligners.begin() + index);
     stackHeights.pop_back();
     this->updateAllHeights(index);
 }
@@ -167,7 +172,7 @@ void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_object, Geomet
 
 template <int dim>
 void StackContainer<dim>::writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const {
-    aligners[child_index].writeToXML(dest_xml_child_tag, axes);
+    this->aligners[child_index].writeToXML(dest_xml_child_tag, axes);
 }
 
 template <int dim>

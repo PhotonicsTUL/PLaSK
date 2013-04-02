@@ -274,16 +274,20 @@ public:
     virtual void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const;
 };
 
+template <int dim>
+using StackContainerChildAligner =
+    typename chooseType<dim-2, align::Aligner<Primitive<3>::DIRECTION_TRAN>, align::Aligner<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type;
 
 /**
  * Container which have children in stack/layers.
  * @ingroup GEOMETRY_OBJ
  */
 //TODO copy constructor
+//TODO remove some redundant code and use one from WithAligners
 template <int dim>
-struct StackContainer: public StackContainerBaseImpl<dim> {
+struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
 
-    typedef typename chooseType<dim-2, align::Aligner<Primitive<3>::DIRECTION_TRAN>, align::Aligner<Primitive<3>::DIRECTION_LONG, Primitive<3>::DIRECTION_TRAN> >::type ChildAligner;
+    typedef StackContainerChildAligner<dim> ChildAligner;
     static const StackContainer<dim>::ChildAligner& DefaultAligner();
 
     typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
@@ -305,7 +309,8 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
     ChildAligner default_aligner;
 
   private:
-    std::vector< ChildAligner > aligners;
+
+    typedef WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > ParentClass;
 
     /**
      * Get translation object over given object @p el.
@@ -344,7 +349,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
      * @param aligner default stack aligner
      */
     explicit StackContainer(const double baseHeight = 0.0, const ChildAligner& aligner=DefaultAligner()):
-        StackContainerBaseImpl<dim>(baseHeight), default_aligner(aligner) {}
+        ParentClass(baseHeight), default_aligner(aligner) {}
 
     //virtual ~StackContainer() { for (auto a: aligners) delete a; }
 
@@ -394,7 +399,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
         this->connectOnChildChanged(*trans_geom);
         children.push_back(trans_geom);
         stackHeights.push_back(next_height);
-        aligners.push_back(aligner);
+        this->aligners.push_back(aligner);
         this->fireChildrenInserted(children.size()-1, children.size());
         return PathHints::Hint(shared_from_this(), trans_geom);
     }
@@ -452,7 +457,7 @@ struct StackContainer: public StackContainerBaseImpl<dim> {
 
      const ChildAligner& getAlignerAt(std::size_t child_no) const {
         this->ensureIsValidChildNr(child_no, "getAlignerAt");
-        return aligners[child_no];
+        return this->aligners[child_no];
     }
 
     void setAlignerAt(std::size_t child_no, const ChildAligner& aligner);
