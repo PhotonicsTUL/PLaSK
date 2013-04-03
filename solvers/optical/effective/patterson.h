@@ -14,9 +14,10 @@ namespace plask { namespace solvers { namespace effective {
  * \param fun function to integrate
  * \param a starting point
  * \param b final point
+ * \param[in,out] err on input maximum error, on output estimated error
  * \return computed integral
  **/
-dcomplex patterson(const std::function<dcomplex(dcomplex)>& fun, dcomplex a, dcomplex b, double eps=1e-15);
+dcomplex patterson(const std::function<dcomplex(dcomplex)>& fun, dcomplex a, dcomplex b, double& err);
 
 
 }}} // namespace plask::solvers::effective

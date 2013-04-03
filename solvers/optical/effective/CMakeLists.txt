@@ -57,15 +57,14 @@ file(GLOB solver_src *.cpp *.hpp *.h)
 # below.
 #
 enable_testing()
-#add_executable(mytest test/source1.cpp test/source2.cpp)
-#set(SOLVER_TEST_DEPENDS mytest)
-#add_test(solvers/foo/bar mytest)
-add_python_test(solvers/loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
-add_python_test(solvers/optical/effective ${CMAKE_CURRENT_SOURCE_DIR}/tests/effective.py)
 
 add_executable(eimtest tests/eimtest.cpp)
-target_link_libraries(eimtest libplask ${SOLVER_LIBRARY})
+target_link_libraries(eimtest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
 set(SOLVER_TEST_DEPENDS eimtest)
+add_test(solvers/optical/effective ${PLASK_SOLVER_PATH}/eimtest)
+
+add_python_test(solvers/loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
+add_python_test(solvers/optical/effective ${CMAKE_CURRENT_SOURCE_DIR}/tests/effective.py)
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
