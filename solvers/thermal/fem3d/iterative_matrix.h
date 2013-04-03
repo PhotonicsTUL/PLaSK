@@ -34,7 +34,7 @@ struct SparseBandMatrix {
     double* data;           ///< Data stored in the matrix
 
     static constexpr size_t kd = 13;
-    static constexpr size_t ld = LDA;
+    static constexpr size_t ld = LDA-1;
 
     /**
      * Create matrix
@@ -112,9 +112,9 @@ struct PrecondJacobi {
         double* m = matrix.data, *zend = z + matrix.size-4;
         for (; z < zend; z += 4, r += 4, m += 4*LDA) {
             *z = *r / *m;
-            *(z+1) = *(r+1) / *(m+1);
-            *(z+2) = *(r+2) / *(m+2);
-            *(z+3) = *(r+3) / *(m+3);
+            *(z+1) = *(r+1) / *(m+LDA);
+            *(z+2) = *(r+2) / *(m+2*LDA);
+            *(z+3) = *(r+3) / *(m+3*LDA);
         }
         for (zend += 4; z != zend; ++z, ++r, m += LDA)
             *z = *r / *m;

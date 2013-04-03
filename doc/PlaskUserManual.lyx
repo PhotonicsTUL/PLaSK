@@ -15529,7 +15529,7 @@ Allowed residual error for the iterative algorithm.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-itermax
+iterlim
 \family default
  
 \begin_inset ERT

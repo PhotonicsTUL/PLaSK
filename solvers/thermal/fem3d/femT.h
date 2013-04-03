@@ -110,7 +110,7 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     CorrectionType corrtype; ///< Type of the returned correction
 
     double itererr;     ///< Allowed residual iteration for iterative method
-    unsigned itermax;   ///< Maximum nunber of iterations for iterative method
+    unsigned iterlim;   ///< Maximum nunber of iterations for iterative method
 
     bool equilibrate;      ///< Should the matrix system be equilibrated before solving?
 
