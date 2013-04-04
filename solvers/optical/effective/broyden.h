@@ -8,7 +8,7 @@ namespace plask { namespace solvers { namespace effective {
 
 struct RootDigger {
 
-    typedef std::function<dcomplex(const dcomplex&)> function_type;
+    typedef std::function<dcomplex(dcomplex)> function_type;
 
     struct Params {
         double tolx,        ///< Absolute tolerance on the argument

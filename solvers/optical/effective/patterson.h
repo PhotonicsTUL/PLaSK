@@ -7,7 +7,12 @@
  * Patterson quadrature for complex function along specified line
  */
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask {
+
+extern const double patterson_points[];
+extern const double patterson_weights[][256];
+
+namespace solvers { namespace effective {
 
 /**
  * Compute Patterson quadrature along line a-b in complex plane with specified precision
