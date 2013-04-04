@@ -599,6 +599,18 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
     return to_inc;
 }
 
+template <class T>
+T accumulate(const DataVector<T>& to_accum, T initial = T()) {
+    for (std::size_t i = 0; i < to_accum.size(); ++i)
+        initial += to_accum[i];
+    return initial;
+}
+
+template <class T>
+T avarage(const DataVector<T>& v) {
+    return accumulate(v) / v.size();
+}
+
 /** \relates DataVector
  * Cast DataVector<const T> into DataVector<T>
  * \param src vector of type DataVector<const T> or DataVector<T>

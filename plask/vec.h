@@ -70,13 +70,26 @@ namespace details {
 
 /** @relates Vec
  * Convert vector between space.
+ * @param src source vector
+ * @return @p src vector in destination space
  */
 template <int dst_dim, typename T, int src_dim>
 inline Vec<dst_dim, T> vec(const Vec<src_dim, T>& src) {
     return details::VecDimConverter<dst_dim, T>::get(src);
 }
 
-/**
+/** @relates Vec
+ * Convert vector 2D to 3D space.
+ * @param src source vector
+ * @param lon longitute coordinate
+ * @return @p src vector in destination space and given @p lon coordinate
+ */
+template <typename T>
+inline Vec<3, T> vec(const Vec<2, T>& src, T lon) {
+    return Vec<3, T>(lon, src.tran(), src.vert());
+}
+
+/** @relates Vec
  * Rotate @p v over up axis to lie on tran-vert plane.
  * @param r vector in 3D space
  * @return vector in 2D space, after rotation, with tran()>=0 and vert()==v.vert()
@@ -85,7 +98,7 @@ inline Vec<2, double> rotateToLonTranAbs(const Vec<3, double>& v) {
     return vec(std::hypot(v.lon(), v.tran()), v.vert());
 }
 
-/**
+/** @relates Vec
  * Rotate @p v over up axis to lie on tran-vert plane.
  * @param r vector in 3D space
  * @return vector in 2D space, after rotation, with sign of tran() same as v.tran() and vert()==v.vert()

@@ -22,8 +22,8 @@ storing the data value for the i-th point in the mesh under the i-th index.
 
 @section meshes_write How to implement a new mesh?
 There are two typical approaches to implementing new types of meshes:
-- @ref meshes_write_adapters "using adapters" (this approach is recommended),
-- @ref meshes_write_direct "direct".
+- @ref meshes_write_adapters using adapter over container of points [deprecated],
+- @ref meshes_write_direct "direct" (this approach is more flexible).
 
 @see @ref interpolation_write @ref boundaries_impl
 
@@ -160,7 +160,7 @@ struct Mesh {
         explicit Event(Mesh& source, unsigned char flags = 0):  EventWithSourceAndFlags<Mesh>(source, flags) {}
     };
 
-    /// Changed signal, fired when space was changed.
+    /// Changed signal, fired when mesh was changed.
     boost::signals2::signal<void(Event&)> changed;
 
     /**
