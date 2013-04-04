@@ -16080,8 +16080,8 @@ opt
 
 \end_inset
 
-Initial conductivity of the junction.
- (float or two floats [S/m])
+Initial vertical conductivity of the junction.
+ (float [S/m])
 \end_layout
 
 \begin_layout Labeling
