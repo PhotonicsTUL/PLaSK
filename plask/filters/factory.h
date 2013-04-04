@@ -80,8 +80,10 @@ inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& m
         if (in_as_geom3D) {
             shared_ptr<Geometry2DCartesian> out_as_geom2Dcart = dynamic_pointer_cast<Geometry2DCartesian>(out);
             if (out_as_geom2Dcart) {
-                return new ChangeSpaceCartesian2Dto3D<PropertyTag>(in_as_geom3D, out_as_geom2Dcart, path, reader.getAttribute<unsigned>("points", 10));
+                return shared_ptr<Solver>(new ChangeSpaceCartesian2Dto3D<PropertyTag>(in_as_geom3D, out_as_geom2Dcart->getExtrusion(), path, reader.getAttribute<unsigned>("points", 10)));
             }
+            //TODO shared_ptr<Geometry2DCartesian> out_as_geom2Dcyl = dynamic_pointer_cast<Geometry2DCylindrical>(out);
+            //TODO shared_ptr<Geometry2DCartesian> out_as_geom3D = dynamic_pointer_cast<Geometry3D>(out);
         }
 
     } else if (out->isInSubtree(*in)) {   //output is outer

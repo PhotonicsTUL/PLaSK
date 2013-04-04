@@ -31,8 +31,10 @@ struct Filter: public Solver {
 
     ProviderType out;
 
+    virtual std::string getClassName() const override { return "Filter"; }
+
     Filter(const std::string &name): Solver(name) {
-        in.providerValueChanged.connect([&] (ReceiverType&) { out.fireChange(); });
+        in.providerValueChanged.connect([&] (Provider::Listener&) { out.fireChanged(); });
     }
 };
 
@@ -61,7 +63,7 @@ struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpace
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual DataVector<const ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const = 0;
+    virtual DataVector<const ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) = 0;
 };
 
 
@@ -227,10 +229,10 @@ public:
     }
     
     ChangeSpaceCartesian2Dto3DImpl(const Vec<3, double>& translation, double lonSize, std::size_t pointsCount = 10)
-        : pointsCount(pointsCount), enviroment(translation, lonSize) {}
+        : StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian>("ChangeSpaceCartesian2Dto3DFilter"), pointsCount(pointsCount), enviroment(translation, lonSize) {}
     
-    ChangeSpaceCartesian2Dto3DImpl(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints* path = nullptr, std::size_t pointsCount = 10)
-        : pointsCount(pointsCount)
+    ChangeSpaceCartesian2Dto3DImpl(shared_ptr<Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints* path = nullptr, std::size_t pointsCount = 10)
+        : StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian>("ChangeSpaceCartesian2Dto3DFilter"), pointsCount(pointsCount)
     {
         getParameters(outerInGeometry, innerOutGeometry, path);
         if (path) {
@@ -248,7 +250,7 @@ public:
         geomConnection.disconnect();
     }
 
-    virtual DataVector<const typename PropertyT::ValueType> apply(const MeshD<2>& requested_points, ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+    virtual DataVector<const typename PropertyT::ValueType> apply(const MeshD<2>& requested_points, ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) {
         /*return logic(
             requested_points,
             [&, extra_args...] (const MeshD<3>& dst_mesh) -> DataVector<const typename PropertyT::DataType> {
@@ -266,13 +268,13 @@ public:
                 enviroment
             );*/
         if (pointsCount == 1) {
-            return in(
+            return this->in(
                         Mesh2DCartTo3D(requested_points, enviroment.translation.lon() + enviroment.lonSize * 0.5),
                         std::forward<ExtraParams>(extra_args)...,
                         method
                     );
         } else {
-            DataVector<const typename PropertyT::ValueType> result(requested_points.size());
+            DataVector<typename PropertyT::ValueType> result(requested_points.size());
             PointsOnLineMesh lineMesh;
             const double d = enviroment.lonSize / result.size();
             lineMesh.lastPointNr = result.size() - 1;
@@ -281,16 +283,15 @@ public:
             for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
                 enviroment.setVertTran(lineMesh.begin, requested_points[src_point_nr]);
                 result[src_point_nr] =
-                        avarage(in(
+                        avarage(this->in(
                             lineMesh,
                             std::forward<ExtraParams>(extra_args)...,
                             method
                         ));
             }
+            return result;
         }
-
     }
-
 };
 
 /**
@@ -298,6 +299,8 @@ public:
  */
 template <typename PropertyT>
 using ChangeSpaceCartesian2Dto3D = ChangeSpaceCartesian2Dto3DImpl<PropertyT, typename PropertyT::ExtraParams>;
+
+
 
 /*template <typename PropertyT>
 struct ExtrusionBase: public StandardFilter<PropertyT, Geometry2DCartesian, Geometry3D> {

@@ -600,7 +600,7 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
 }
 
 template <class T>
-T accumulate(const DataVector<T>& to_accum, T initial = T()) {
+typename std::remove_cv<T>::type accumulate(const DataVector<T>& to_accum, typename std::remove_cv<T>::type initial = typename std::remove_cv<T>::type()) {
     for (std::size_t i = 0; i < to_accum.size(); ++i)
         initial += to_accum[i];
     return initial;
