@@ -1,4 +1,4 @@
-namespace plask {
+namespace plask { namespace solvers { namespace effective {
 
 const double patterson_points[] = {
     0.000000000000000,
@@ -790,4 +790,4 @@ const double patterson_weights[][256] = {
     }
 };
 
-} // namespace plask::patterson
+}}} // namespace plask::solvers::effective
