@@ -237,13 +237,13 @@ public:
         getParameters(outerInGeometry, innerOutGeometry, path);
         if (path) {
             PathHints pathCopy = *path;
-            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
-                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry, &pathCopy);
-            });
-        } else
-            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
-                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry);
-            });
+//            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
+//                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry, &pathCopy);
+//            });
+        } //else
+//            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
+//                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry);
+//            });
     }
     
     ~ChangeSpaceCartesian2Dto3DImpl() {

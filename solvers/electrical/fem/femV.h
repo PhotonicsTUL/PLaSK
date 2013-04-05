@@ -233,7 +233,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
                 *rdata = 1.;
                 register double val = B[r] = cond.value;
                 // below diagonal
-                for (register ptrdiff_t i = 13; i > 0; --i) {
+                for (register ptrdiff_t i = 4; i > 0; --i) {
                     register ptrdiff_t c = r - A.bno[i];
                     if (c >= 0) {
                         B[c] -= A.data[LDA*c+i] * val;
@@ -241,7 +241,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
                     }
                 }
                 // above diagonal
-                for (register ptrdiff_t i = 1; i < 14; ++i) {
+                for (register ptrdiff_t i = 1; i < 5; ++i) {
                     register ptrdiff_t c = r + A.bno[i];
                     if (c < A.size) {
                         B[c] -= rdata[i] * val;
