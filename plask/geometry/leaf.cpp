@@ -11,7 +11,7 @@ inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
     reader.source.requireTagEnd();
 }
 
-// Read akternative attributes
+// Read alternative attributes
 inline static double readAlternativeAttrs(GeometryReader& reader, const std::string& attr1, const std::string& attr2) {
     auto value1 = reader.source.getAttribute<double>(attr1);
     auto value2 = reader.source.getAttribute<double>(attr2);
@@ -31,6 +31,22 @@ inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
     setupLeaf(reader, block);
 }
 
+template struct Block<2>;
+template struct Block<3>;
+
+shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
+    shared_ptr< Block<2> > block(new Block<2>());
+    setupBlock2D3D(reader, *block);
+    return block;
+}
+
+shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
+    shared_ptr< Block<3> > block(new Block<3>());
+    block->size.lon() = readAlternativeAttrs(reader, "d"+reader.getAxisLongName(), "depth");
+    setupBlock2D3D(reader, *block);
+    return block;
+}
+
 template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr(axes.getNameForTran(), size.tran())
@@ -44,22 +60,6 @@ void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
                     .attr(axes.getNameForTran(), size.tran())
                     .attr(axes.getNameForVert(), size.vert())
                     .attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
-}
-
-template struct Block<2>;
-template struct Block<3>;
-
-shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
-    shared_ptr< Block<2> > block(new Block<2>());
-    setupBlock2D3D(reader, *block);
-    return block;
-}
-
-shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
-    shared_ptr< Block<3> > block(new Block<3>());
-    block->size.tran() = readAlternativeAttrs(reader, "d"+reader.getAxisLongName(), "depth");
-    setupBlock2D3D(reader, *block);
-    return block;
 }
 
 static GeometryReader::RegisterObjectReader block2D_reader(Block<2>::NAME, read_block2D);

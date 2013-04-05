@@ -6,14 +6,14 @@ namespace plask { namespace solvers { namespace thermal3d {
 
 FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
-    algorithm(ALGORITHM_BLOCK),
+    algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
     inittemp(300.),
     corrlim(0.05),
     corrtype(CORRECTION_ABSOLUTE),
     itererr(1e-8),
     iterlim(10000),
-    equilibrate(false),
+    logfreq(500),
     outTemperature(this, &FiniteElementMethodThermal3DSolver::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal3DSolver::getHeatFluxes)
 {
@@ -57,12 +57,12 @@ void FiniteElementMethodThermal3DSolver::loadConfiguration(XMLReader &source, Ma
 
         else if (param == "matrix") {
             algorithm = source.enumAttribute<Algorithm>("algorithm")
-                .value("block", ALGORITHM_BLOCK)
+                .value("cholesky", ALGORITHM_CHOLESKY)
                 .value("iterative", ALGORITHM_ITERATIVE)
                 .get(algorithm);
             itererr = source.getAttribute<double>("itererr", itererr);
-            iterlim = source.getAttribute<unsigned>("iterlim", iterlim);
-            equilibrate = source.getAttribute<bool>("equil", equilibrate);
+            iterlim = source.getAttribute<size_t>("iterlim", iterlim);
+            logfreq = source.getAttribute<size_t>("logfreq", logfreq);
             source.requireTagEnd();
         } else
             this->parseStandardConfiguration(source, manager);
@@ -354,7 +354,7 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
 
 double FiniteElementMethodThermal3DSolver::compute(int loops) {
     switch (algorithm) {
-        case ALGORITHM_BLOCK: return doCompute<DpbMatrix>(loops);
+        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
     }
     return 0.;
@@ -365,27 +365,6 @@ double FiniteElementMethodThermal3DSolver::compute(int loops) {
 void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
-    std::unique_ptr<double> Sguard(new double[A.size]);
-    double* S = Sguard.get();
-    double scond, amax;
-    char equed;
-
-    // Compute row and column scalings to equilibrate the matrix A
-    dpbequ(UPLO, A.size, A.kd, A.data, A.ld+1, S, scond, amax, info);
-    if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
-    else if (info > 0)
-        throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
-
-    if (equilibrate) {
-        // Compute row and column scalings to equilibrate the matrix A
-        dpbequ(UPLO, A.size, A.kd, A.data, A.ld+1, S, scond, amax, info);
-        if (info < 0) throw CriticalException("%1%: Argument %2% of dpbequ has illegal value", this->getId(), -info);
-        else if (info > 0)
-            throw ComputationError(this->getId(), "Diagonal element no %1% of the stiffness matrix is not positive", info);
-        // Equilibrate the matrix
-        dlaqsb(UPLO, A.size, A.kd, A.data, A.ld+1, S, scond, amax, equed);
-    }
-
 
     // Factorize matrix
     dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
@@ -397,12 +376,6 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<do
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
-
-    // Transform the solution matrix X to the solution of the original
-    if (equed == 'Y') {
-        for (size_t i = 0; i != A.size; ++i)
-            B[i] *= S[i];
-    }
 
     // now A contains factorized matrix and B the solutions
 }
@@ -417,7 +390,7 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVe
     DataVector<double> X = temperatures.copy(); // We use previous temperatures as initial solution
     double err;
     try {
-        int iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr);
+        int iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
     } catch (DCGError err) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", err.what());

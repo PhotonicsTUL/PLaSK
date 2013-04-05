@@ -171,7 +171,7 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
 
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)",
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::DivideGenerator: Generating new mesh (%1%x%2%)",
              mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
@@ -198,7 +198,7 @@ RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::Geome
 
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)",
+    writelog(LOG_DETAIL, "mesh.Rectilinear3D::DivideGenerator: Generating new mesh (%1%x%2%x%3%)",
              mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
     return mesh;
 }

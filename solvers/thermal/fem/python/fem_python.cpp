@@ -42,7 +42,7 @@ BOOST_PYTHON_MODULE(fem)
 {
     py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
         .value("SLOW", ALGORITHM_SLOW)
-        .value("BLOCK", ALGORITHM_BLOCK)
+        .value("CHOLESKY", ALGORITHM_CHOLESKY)
         //.value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
@@ -78,7 +78,6 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("equil", &__Class__::mEquilibrate, "True if the matrix should be equilibrated");
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
@@ -96,7 +95,6 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("equil", &__Class__::mEquilibrate, "True if the matrix should be equilibrated");
     }
 
 //     // Add methods to create classes using depreciate names

@@ -29,7 +29,7 @@ struct Radiation
 /// Choice of matrix factorization algorithms
 enum Algorithm {
     ALGORITHM_SLOW,     ///< slow algorithm using BLAS level 2
-    ALGORITHM_BLOCK,    ///< block algorithm (thrice faster, however a little prone to failures)
+    ALGORITHM_CHOLESKY,    ///< block algorithm (thrice faster, however a little prone to failures)
 };
 
 /// Type of the returned correction
@@ -47,8 +47,8 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   protected:
 
-    int mAOrder,         ///< Number of columns in the main matrix
-        mABand;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
+    int mAsize,         ///< Number of columns in the main matrix
+        mAband;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
 
 
     double mTCorrLim;     ///< Maximum temperature correction accepted as convergence
@@ -103,8 +103,6 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     ReceiverFor<HeatDensity, Geometry2DType> inHeatDensity;
 
     Algorithm mAlgorithm;   ///< Factorization algorithm to use
-
-    bool mEquilibrate;      ///< Should the matrix system be equilibrated before solving?
 
     /**
      * Run temperature calculations

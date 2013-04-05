@@ -3,15 +3,17 @@
 
 #include <plask/plask.hpp>
 
-#include "band_matrix.h"
+#include "block_matrix.h"
+#include "iterative_matrix.h"
+#include "gauss_matrix.h"
 
 namespace plask { namespace solvers { namespace electrical {
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {
-    ALGORITHM_SLOW,	///< slow algorithm using BLAS level 2
-    ALGORITHM_BLOCK	///< block algorithm (thrice faster, however a little prone to failures)
-    //ITERATIVE_ALGORITHM
+    ALGORITHM_CHOLESKY, ///< Cholesky factorization
+    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
+    ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
 /// Type of the returned correction
@@ -35,8 +37,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   protected:
 
-    int mAOrder,            ///< Number of columns in the main matrix
-        mABand;             ///< Number of non-zero rows on and below the main diagonal of the main matrix
+    int mAsize;            ///< Number of columns in the main matrix
 
     double mJs;             ///< p-n junction parameter [A/m^2]
     double mBeta;           ///< p-n junction parameter [1/V]
@@ -61,10 +62,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
            mActHi;  ///< Vertical index of the higher side fo the active region
     double mDact;   ///< Active region thickness
 
-    /// Set stiffness matrix + load vector
-    void setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst
-                  );
+    /// Save locate stiffness matrix to global one
+    inline void setLocalMatrix(double& ioK44, double& ioK33, double& ioK22, double& ioK11,
+                               double& ioK43, double& ioK21, double& ioK42, double& ioK31, double& ioK32, double& ioK41,
+                               double iKy, double iElemWidth, const Vec<2,double>& iMidPoint);
 
     /// Load conductivities
     void loadConductivities();
@@ -83,6 +84,12 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     /// Matrix solver
     void solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
+
+    /// Matrix solver
+    void solveMatrix(DgbMatrix& iA, DataVector<double>& ioB);
+
+    /// Matrix solver
+    void solveMatrix(SparseBandMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -125,11 +132,13 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     Algorithm mAlgorithm;   ///< Factorization algorithm to use
 
-    bool mEquilibrate;      ///< Should the matrix system be equilibrated before solving?
+    double mIterErr;        ///< Allowed residual iteration for iterative method
+    size_t mIterLim;        ///< Maximum nunber of iterations for iterative method
+    size_t mLogFreq;        ///< Frequency of iteration progress reporting
 
     /**
-     * Run temperature calculations
-     * \return max correction of temperature against the last call
+     * Run electrical calculations
+     * \return max correction of potential against the last call
      **/
     double compute(int iLoopLim=1);
 
@@ -146,10 +155,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
      */
     double getTotalCurrent();
 
-    /// \return max absolute correction for temperature
+    /// \return max absolute correction for potential
     double getMaxAbsVCorr() const { return mMaxAbsVCorr; } // result in [K]
 
-    /// \return get max relative correction for temperature
+    /// \return get max relative correction for potential
     double getMaxRelVCorr() const { return mMaxRelVCorr; } // result in [%]
 
     double getVCorrLim() const { return mVCorrLim; }
@@ -193,6 +202,197 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     DataVector<const double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
     DataVector<const Vec<2>> getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+
+    template <typename MatrixT>
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+        // boundary conditions of the first kind
+        for (auto cond: bvoltage) {
+            for (auto r: cond.place) {
+                A(r,r) = 1.;
+                register double val = B[r] = cond.value;
+                size_t start = (r > A.kd)? r-A.kd : 0;
+                size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
+                for(size_t c = start; c < r; ++c) {
+                    B[c] -= A(r,c) * val;
+                    A(r,c) = 0.;
+                }
+                for(size_t c = r+1; c < end; ++c) {
+                    B[c] -= A(r,c) * val;
+                    A(r,c) = 0.;
+                }
+            }
+        }
+    }
+
+    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+        // boundary conditions of the first kind
+        for (auto cond: bvoltage) {
+            for (auto r: cond.place) {
+                double* rdata = A.data + LDA*r;
+                *rdata = 1.;
+                register double val = B[r] = cond.value;
+                // below diagonal
+                for (register ptrdiff_t i = 13; i > 0; --i) {
+                    register ptrdiff_t c = r - A.bno[i];
+                    if (c >= 0) {
+                        B[c] -= A.data[LDA*c+i] * val;
+                        A.data[LDA*c+i] = 0.;
+                    }
+                }
+                // above diagonal
+                for (register ptrdiff_t i = 1; i < 14; ++i) {
+                    register ptrdiff_t c = r + A.bno[i];
+                    if (c < A.size) {
+                        B[c] -= rdata[i] * val;
+                        rdata[i] = 0.;
+                    }
+                }
+            }
+        }
+    }
+
+    /// Set stiffness matrix + load vector
+    template <typename MatrixT>
+    void setMatrix(MatrixT& oA, DataVector<double>& oLoad, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst)
+    {
+        this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", oA.size, oA.kd+1, oA.ld+1);
+
+        std::fill_n(oA.data, oA.size*(oA.ld+1), 0.); // zero the matrix
+        oLoad.fill(0.);
+
+        std::vector<Box2D> tVecBox = this->geometry->getLeafsBoundingBoxes();
+
+        // Set stiffness matrix and load vector
+        for (auto tE: this->mesh->elements)
+        {
+            size_t i = tE.getIndex();
+
+            // nodes numbers for the current element
+            size_t tLoLeftNo = tE.getLoLoIndex();
+            size_t tLoRghtNo = tE.getUpLoIndex();
+            size_t tUpLeftNo = tE.getLoUpIndex();
+            size_t tUpRghtNo = tE.getUpUpIndex();
+
+            // element size
+            double tElemWidth = tE.getUpper0() - tE.getLower0();
+            double tElemHeight = tE.getUpper1() - tE.getLower1();
+
+            Vec<2,double> tMidPoint = tE.getMidpoint();
+
+            // update junction conductivities
+            if (mLoopNo != 0 && this->geometry->hasRoleAt("active", tMidPoint)) {
+                size_t tLeft = this->mesh->index0(tLoLeftNo);
+                size_t tRight = this->mesh->index0(tLoRghtNo);
+                double tJy = 0.5e6 * mCond[i].c11 *
+                    abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
+                        + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
+                    ) / mDact; // [j] = A/m²
+                mCond[i] = Tensor2<double>(0., 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
+            }
+            double tKx = mCond[i].c00;
+            double tKy = mCond[i].c11;
+
+            tKx *= tElemHeight; tKx /= tElemWidth;
+            tKy *= tElemWidth; tKy /= tElemHeight;
+
+            // set symmetric matrix components
+            double tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41;
+
+            tK44 = tK33 = tK22 = tK11 = (tKx + tKy) / 3.;
+            tK43 = tK21 = (-2. * tKx + tKy) / 6.;
+            tK42 = tK31 = - (tKx + tKy) / 6.;
+            tK32 = tK41 = (tKx - 2. * tKy) / 6.;
+
+            // set stiffness matrix
+            setLocalMatrix(tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41, tKy, tElemWidth, tMidPoint);
+
+            oA(tLoLeftNo, tLoLeftNo) += tK11;
+            oA(tLoRghtNo, tLoRghtNo) += tK22;
+            oA(tUpRghtNo, tUpRghtNo) += tK33;
+            oA(tUpLeftNo, tUpLeftNo) += tK44;
+
+            oA(tLoRghtNo, tLoLeftNo) += tK21;
+            oA(tUpRghtNo, tLoLeftNo) += tK31;
+            oA(tUpLeftNo, tLoLeftNo) += tK41;
+            oA(tUpRghtNo, tLoRghtNo) += tK32;
+            oA(tUpLeftNo, tLoRghtNo) += tK42;
+            oA(tUpLeftNo, tUpRghtNo) += tK43;
+        }
+
+        // boundary conditions of the first kind
+        applyBC(oA, oLoad, iVConst);
+
+    #ifndef NDEBUG
+        double* tAend = oA.data + oA.size * oA.kd;
+        for (double* pa = oA.data; pa != tAend; ++pa) {
+            if (isnan(*pa) || isinf(*pa))
+                throw ComputationError(this->getId(), "Error in stiffness matrix at position %1% (%2%)", pa-oA.data, isnan(*pa)?"nan":"inf");
+        }
+    #endif
+
+    }
+
+    /// Perform computations for particular matrix type
+    template <typename MatrixT>
+    double doCompute(int iLoopLim=1)
+    {
+        this->initCalculation();
+
+        mCurrentDensities.reset();
+        mHeatDensities.reset();
+
+        // Store boundary conditions for current mesh
+        auto tVConst = mVConst(this->mesh);
+
+        this->writelog(LOG_INFO, "Running electrical calculations");
+
+        int tLoop = 0;
+        MatrixT tA(mAsize, this->mesh->minorAxis().size());
+
+        double tMaxMaxAbsVCorr = 0.,
+            tMaxMaxRelVCorr = 0.;
+
+    #   ifndef NDEBUG
+            if (!mPotentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
+    #   endif
+        mPotentials = mPotentials.claim();
+        DataVector<double> tV(mAsize);
+
+        loadConductivities();
+
+        do {
+            setMatrix(tA, tV, tVConst);
+
+            solveMatrix(tA, tV);
+
+            savePotentials(tV);
+
+            if (mMaxAbsVCorr > tMaxMaxAbsVCorr) tMaxMaxAbsVCorr = mMaxAbsVCorr;
+
+            ++mLoopNo;
+            ++tLoop;
+
+            // show max correction
+            this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", tLoop, mLoopNo, mDV, mMaxAbsVCorr, mMaxRelVCorr);
+
+        } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsVCorr > mVCorrLim) : (mMaxRelVCorr > mVCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
+
+        saveConductivities();
+
+        outPotential.fireChanged();
+        outCurrentDensity.fireChanged();
+        outHeatDensity.fireChanged();
+
+        // Make sure we store the maximum encountered values, not just the last ones
+        // (so, this will indicate if the results changed since the last run, not since the last loop iteration)
+        mMaxAbsVCorr = tMaxMaxAbsVCorr;
+        mMaxRelVCorr = tMaxMaxRelVCorr;
+
+        if (mCorrType == CORRECTION_RELATIVE) return mMaxRelVCorr;
+        else return mMaxAbsVCorr;
+    }
+
 
 };
 

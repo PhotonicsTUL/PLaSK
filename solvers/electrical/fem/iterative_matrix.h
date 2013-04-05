@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
-#define PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
+#ifndef PLASK__MODULE_ELECTRICAL_ITERATIVE_MATRIX_H
+#define PLASK__MODULE_ELECTRICAL_ITERATIVE_MATRIX_H
 
 #include <algorithm>
 #include <plask/plask.hpp>
@@ -15,7 +15,7 @@ F77SUB daxpy(const int& n, const double& sa, const double* sx, const int& incx, 
 F77SUB dsbmv(const char& uplo, const int& n, const int& k, const double& alpha, const double* a, const int& lda,
              const double* x, const int& incx, const double& beta, double* y, const int& incy); // y = alpha*A*x + beta*y,
 
-namespace plask { namespace solvers { namespace thermal3d {
+namespace plask { namespace solvers { namespace electrical {
 
 /// Error code of solveDCG
 struct DCGError: public std::exception {
@@ -25,30 +25,24 @@ struct DCGError: public std::exception {
 
 };
 
-#define LDA 16
+#define LDA 8
 
 struct SparseBandMatrix {
     const ptrdiff_t size;   ///< Order of the matrix, i.e. number of columns or rows
-    ptrdiff_t bno[14];      ///< Vector of non-zero band numbers (shift from diagonal)
+    ptrdiff_t bno[5];      ///< Vector of non-zero band numbers (shift from diagonal)
 
     double* data;           ///< Data stored in the matrix
 
-    static constexpr size_t kd = 13;
+    static constexpr size_t kd = 4;
     static constexpr size_t ld = LDA-1;
 
     /**
      * Create matrix
      * \param rank size of the matrix
-     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
-     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
+     * \param major shift of nodes to the next row (mesh[x,y+1])
      */
-    SparseBandMatrix(size_t size, size_t major, size_t minor): size(size) {
-                                      bno[0]  =             0;  bno[1]  =                 1;
-        bno[2]  =         minor - 1;  bno[3]  =         minor;  bno[4]  =         minor + 1;
-        bno[5]  = major - minor - 1;  bno[6]  = major - minor;  bno[7]  = major - minor + 1;
-        bno[8]  = major         - 1;  bno[9]  = major        ;  bno[10] = major         + 1;
-        bno[11] = major + minor - 1;  bno[12] = major + minor;  bno[13] = major + minor + 1;
-
+    SparseBandMatrix(size_t size, size_t major): size(size) {
+        bno[0] = 0;  bno[1] = 1;  bno[2] = major - 1;  bno[3] = major;  bno[4] = major + 1;
         data = aligned_malloc<double>(LDA*size);
     }
 
@@ -63,8 +57,8 @@ struct SparseBandMatrix {
      **/
     double& operator()(size_t r, size_t c) {
         if (r < c) std::swap(r, c);
-        size_t i = std::find(bno, bno+14, r-c) - bno;
-        assert(i != 14);
+        size_t i = std::find(bno, bno+5, r-c) - bno;
+        assert(i != 5);
         return data[LDA*c+i];
     }
 
@@ -82,12 +76,12 @@ struct SparseBandMatrix {
             double* datar = data + LDA*r;
             register double v = 0.;
             // below diagonal
-            for (register ptrdiff_t i = 13; i > 0; --i) {
+            for (register ptrdiff_t i = 4; i > 0; --i) {
                 register ptrdiff_t c = r - bno[i];
                 if (c >= 0) v += data[LDA*c+i] * x[c];
             }
             // above diagonal
-            for (register ptrdiff_t i = 0; i < 14; ++i) {
+            for (register ptrdiff_t i = 0; i < 5; ++i) {
                 register ptrdiff_t c = r + bno[i];
                 if (c < size) v += datar[i] * x[c];
             }
@@ -254,6 +248,6 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
 }
 
 
-}}} // namespace plask::solvers::thermal3d
+}}} // namespace plask::solvers::electrical
 
-#endif // PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
+#endif // PLASK__MODULE_ELECTRICAL_ITERATIVE_MATRIX_H

@@ -29,7 +29,7 @@ struct Radiation
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {
-    ALGORITHM_BLOCK,    ///< block algorithm (thrice faster, however a little prone to failures)
+    ALGORITHM_CHOLESKY, ///< block algorithm (thrice faster, however a little prone to failures)
     ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
 };
 
@@ -98,6 +98,7 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     /// Invalidate the data
     virtual void onInvalidate();
 
+    /// Perform computations for particular matrix type
     template <typename MatrixT>
     double doCompute(int loops=1);
 
@@ -110,9 +111,9 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     CorrectionType corrtype; ///< Type of the returned correction
 
     double itererr;     ///< Allowed residual iteration for iterative method
-    unsigned iterlim;   ///< Maximum nunber of iterations for iterative method
+    size_t iterlim;     ///< Maximum nunber of iterations for iterative method
 
-    bool equilibrate;      ///< Should the matrix system be equilibrated before solving?
+    size_t logfreq;   ///< Frequency of iteration progress reporting
 
     // Boundary conditions
     BoundaryConditions<RectilinearMesh3D,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
