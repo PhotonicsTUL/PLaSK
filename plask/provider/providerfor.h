@@ -18,7 +18,7 @@ namespace plask {
  */
 enum PropertyType {
     SINGLE_VALUE_PROPERTY = 0,          ///< Single value property
-    FIELD_PROPERTY = 2                  ///< Property for field of values which can be interpolated
+    FIELD_PROPERTY = 1                  ///< Property for field of values which can be interpolated
 };  //TODO change this to empty classes(?)
 
 template <PropertyType prop_type>

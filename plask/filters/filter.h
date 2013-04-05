@@ -1,20 +1,100 @@
 #ifndef PLASK__FILTER_H
 #define PLASK__FILTER_H
 
+#include <vector>
+#include <memory>
+
 #include "../solver.h"
 #include "../provider/providerfor.h"
 
 namespace plask {
 
-//FilterBlock concept: has ResultType, has ParameterType, has ExtraParameters..., and ResultType operator()(ParameterType, ExtraParameters...)
-//or optional<ResultType> operator()(ParameterType, ExtraParameters...) ??
-//can be Receiver
-/*template <>
-struct FilterBlock {
-}; ??*/
+/// Don't use this directly, use DataSource instead.
+template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
+struct DataSourceImpl {
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "space change filter data sources can't be use with single value properties (it can be use only with fields properties)");
+};
+
+template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
+class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...>>: public ProviderFor<PropertyT> {
+
+    //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
+
+public:
+
+    /*shared_ptr<OutputSpaceType> getDestinationSpace() const { return destinationSpace; }
+
+    virtual void setDestinationSpace(shared_ptr<OutputSpaceType>) { this->destinationSpace = destinationSpace; }*/
+
+    /**
+     * Check if this source can provide value for given point.
+     * @param p point, in outer space coordinates
+     * @return @c true only if this can provide data in given point @p p
+     */
+    virtual bool canProvide(const Vec<OutputSpaceType::DIMS, double>& p) const = 0;
+
+   // virtual ValueT get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+   /* virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        DataVector<ValueT> result(dst_mesh.size());
+        for (std::size_t i = 0; i < result.size(); ++i)
+            result[i] = get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        return result;
+    }*/
+
+};
+
+template <typename PropertyT, typename OutputSpaceType>
+using DataSource = DataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpaceType, typename PropertyT::ExtraParams>;
+
+template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType>
+struct DataSourceWithReceiver: public DataSource<PropertyT, OutputSpaceType> {
+
+    ReceiverFor<PropertyT, InputSpaceType> in;
+
+    //shared_ptr<InputSpaceType> inSpace;   //or only connection?
+
+    DataSourceWithReceiver() {
+        in.providerValueChanged.connect([&] (Provider::Listener&) { this->fireChanged(); });
+    }
+
+};
+
+/// Don't use this directly, use StandardFilter instead.
+template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
+struct CombineDataSourceImpl {
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "space change filter data sources can't be use with single value properties (it can be use only with fields properties)");
+};
+
+template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
+struct CombineDataSourceImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
+    : public DataSource<PropertyT, OutputSpaceType>
+{
+    //one outer source (input)
+    //vector if inner sources (inputs)
+    //one output (provider)
+
+    typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
+    typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
+
+    std::vector<DataSourceTPtr> innerSources;
+
+    DataSourceTPtr outerSource;
+
+    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        //iterate over inner sources
+        //if inner sources don't provide data, use outer source
+        /*DataVector<ValueT> result(dst_mesh.size());
+            for (std::size_t i = 0; i < result.size(); ++i)
+                result[i] = get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            return result;*/
+    }
+
+};
 
 
 
+// -------- old code, to remove after implement new one ---------------------------------------
 
 /**
  * Filter is a special kind of Solver which solves the problem using another Solver.
@@ -25,7 +105,7 @@ struct FilterBlock {
  * Typically filter has one input (in receiver) and one output (out provider).
  */
 template <typename ReceiverType, typename ProviderType = typename ReceiverType::ProviderType::Delegate>
-struct Filter: public Solver {
+struct Filter1to1: public Solver {
 
     ReceiverType in;
 
@@ -33,7 +113,7 @@ struct Filter: public Solver {
 
     virtual std::string getClassName() const override { return "Filter"; }
 
-    Filter(const std::string &name): Solver(name) {
+    Filter1to1(const std::string &name): Solver(name) {
         in.providerValueChanged.connect([&] (Provider::Listener&) { out.fireChanged(); });
     }
 };
@@ -47,12 +127,12 @@ struct StandardFilterImpl {
 /// Don't use this directly, use StandardFilter instead.
 template <typename PropertyT, typename inputSpaceType, typename outputSpaceType, typename... _ExtraParams>
 struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpaceType, VariadicTemplateTypesHolder<_ExtraParams...> >
-: public Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate > {
+: public Filter1to1<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate > {
 
     typedef typename PropertyT::ValueType ValueT;
 
     StandardFilterImpl(const std::string &name)
-    : Filter<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate >(name) {
+    : Filter1to1<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate >(name) {
         this->out.valueGetter = [&] (const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->apply(dst_mesh, std::forward<_ExtraParams>(extra_args)..., method);
         };
@@ -243,7 +323,7 @@ public:
         } //else
 //            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
 //                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry);
-//            });
+//            });   //Windows GCC 4.7.1 not compile this
     }
     
     ~ChangeSpaceCartesian2Dto3DImpl() {
