@@ -47,7 +47,7 @@ public:
 template <typename PropertyT, typename OutputSpaceType>
 using DataSource = DataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpaceType, typename PropertyT::ExtraParams>;
 
-template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType>
+template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct DataSourceWithReceiver: public DataSource<PropertyT, OutputSpaceType> {
 
     ReceiverFor<PropertyT, InputSpaceType> in;
@@ -57,6 +57,8 @@ struct DataSourceWithReceiver: public DataSource<PropertyT, OutputSpaceType> {
     DataSourceWithReceiver() {
         in.providerValueChanged.connect([&] (Provider::Listener&) { this->fireChanged(); });
     }
+
+    //virtual void setupConnection(shared_ptr<InputGeomObj>, shared_ptr<OutputGeomObj>) = 0;    //+path //param or fields?
 
 };
 
