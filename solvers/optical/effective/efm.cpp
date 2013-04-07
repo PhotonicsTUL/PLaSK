@@ -69,7 +69,7 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
-    v = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root).getSolution(0.);
+    v = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)(0.);
     dcomplex k = k0 * (1. - v/2.); // get modal frequency back from frequency parameter
     dcomplex lam = 2e3*M_PI / k;
     outWavelength = real(lam);
@@ -82,31 +82,8 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 }
 
 
-std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, unsigned steps, unsigned nummodes)
+std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, double eps)
 {
-    writelog(LOG_INFO, "Searching for the modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
-    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
-    stageOne();
-    dcomplex v1 = 2. * (k0 - (2e3*M_PI/lambda1)) / k0;
-    dcomplex v2 = 2. * (k0 - (2e3*M_PI/lambda2)) / k0;
-    auto results = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)
-                       .searchSolutions(v1, v2, steps, 0, nummodes);
-    for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
-    return results;
-}
-
-
-std::vector<dcomplex> EffectiveFrequencyCylSolver::findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps)
-{
-    writelog(LOG_INFO, "Searching for the approximate modes for wavelength between %1% and %2%", str(lambda1), str(lambda2));
-    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
-    stageOne();
-    dcomplex v1 = 2. * (k0 - (2e3*M_PI/lambda1)) / k0;
-    dcomplex v2 = 2. * (k0 - (2e3*M_PI/lambda2)) / k0;
-    auto results =  RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
-                        .findMap(v1, v2, steps, 0);
-    for (auto& res: results) res = 2e3*M_PI / k0 / (1. - res/2.); // get wavelengths back from frequency parameter
-    return results;
 }
 
 
@@ -271,7 +248,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                 } else {
                     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "veff", "det");
                     RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, stripe_root);
-                    veffs[i] = rootdigger.getSolution(1e-3);
+                    veffs[i] = rootdigger(1e-3);
                     computeStripeNNg(i);
                 }
             } catch (...) {

@@ -68,44 +68,12 @@ struct RootDigger {
     {};
 
     /**
-     * Look for the minima map browsing through given points
-     *
-     * \param repoints list of points to browse in real domain
-     * \param impoints list of points to browse in imaginary domain
-     * \return potential values close to minima
-     */
-    std::vector<dcomplex> findMap(std::vector<double> repoints, std::vector<double> impoints) const;
-
-    /**
-     * Look for the minima map browsing through given points
-     *
-     * \param start start of the range
-     * \param end end of the range
-     * \param replot number of segments in real domain to divide the range into
-     * \param implot number of segments in imaginary domain to divide the range into
-     * \return potential values close to minima
-     */
-    std::vector<dcomplex> findMap(dcomplex start, dcomplex end, int replot, int implot);
-
-    /**
-     * Search for zeros within the region between \a start and \a end
-     *
-     * \param start start of the range
-     * \param end end of the range
-     * \param replot number of segments in real domain to divide the range into
-     * \param implot number of segments in imaginary domain to divide the range into
-     * \param num_modes maximum number of modes to look for
-     * \return list of found solutions
-     */
-    std::vector<dcomplex> searchSolutions(dcomplex start, dcomplex end, int replot, int implot, int num_modes);
-
-    /**
      * Search for a single zero starting from the given point
      *
      * \param point initial point to start search from
      * \return found solution
      */
-    dcomplex getSolution(dcomplex point) const;
+    dcomplex operator()(dcomplex point) const;
 };
 
 }}} // namespace plask::solvers::effective

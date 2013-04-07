@@ -99,7 +99,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * Set position of the main stripe
      * \param x horizontal position of the main stripe
      */
-    void setStripex(double x) {
+    void setStripeX(double x) {
         stripex = x;
         recompute_neffs = true;
         vneff = 0.;
@@ -160,30 +160,17 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      */
     dcomplex computeMode(dcomplex neff);
 
-
     /**
      * Find the modes within the specified range
      *
      * This method \b does \b not remember the determined modes!
      *
-     * \param neff1 one end of the range to browse
-     * \param neff2 another end of the range to browse
-     * \param steps number of steps for range browsing
-     * \param nummodes maximum number of modes to find
+     * \param lambda1 one corner of the range to browse
+     * \param lambda2 another corner of the range to browse
+     * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> findModes(dcomplex neff1, dcomplex neff2, unsigned steps=100, unsigned nummodes=std::numeric_limits<unsigned>::max());
-
-
-    /**
-     * Find approximate modes by scanning the desired range
-     *
-     * \param neff1 one end of the range to browse
-     * \param neff2 another end of the range to browse
-     * \param steps number of steps for range browsing
-     * \return vector of determined potential effective indices
-     */
-    std::vector<dcomplex> findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps=100);
+    std::vector<dcomplex> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., double eps=1e-12);
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
@@ -207,7 +194,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     dcomplex getDeterminant(dcomplex neff) {
         stageOne();
         dcomplex det = detS(neff);
-        log_value(neff, det);
+        // log_value(neff, det);
         return det;
     }
 

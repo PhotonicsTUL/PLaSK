@@ -143,30 +143,17 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      */
     dcomplex computeMode(dcomplex lambda0);
 
-
     /**
      * Find the modes within the specified range
      *
      * This method \b does \b not remember the determined modes!
      *
-     * \param lambda1 one end of the range to browse
-     * \param lambda2 another end of the range to browse
-     * \param steps number of steps for range browsing
-     * \param nummodes maximum number of modes to find
-     * \return vector of determined effective indices
+     * \param lambda1 one corner of the range to browse
+     * \param lambda2 another corner of the range to browse
+     * \param eps approximate error for integrals
+     * \return vector of determined complex wavelengths
      */
-    std::vector<dcomplex> findModes(dcomplex lambda1, dcomplex lambda2, unsigned steps=100, unsigned nummodes=std::numeric_limits<unsigned>::max());
-
-
-    /**
-     * Find approximate modes by scanning the desired range
-     *
-     * \param lambda1 one end of the range to browse
-     * \param lambda2 another end of the range to browse
-     * \param steps number of steps for range browsing
-     * \return vector of determined potential effective indices
-     */
-    std::vector<dcomplex> findModesMap(dcomplex lambda1, dcomplex lambda2, unsigned steps=100);
+    std::vector<dcomplex> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., double eps=1e-12);
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
@@ -217,7 +204,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         v =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
         dcomplex det = detS(v);
-        log_value(v, det);
+        // log_value(v, det);
         return det;
     }
 

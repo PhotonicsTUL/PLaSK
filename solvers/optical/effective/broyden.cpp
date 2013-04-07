@@ -4,137 +4,9 @@ using namespace std;
 
 namespace plask { namespace solvers { namespace effective {
 
-vector<dcomplex> RootDigger::findMap(vector<double> repoints, vector<double> impoints) const
-{
-
-    // The number of points in each direction
-    int NR = repoints.size();
-    int NI = impoints.size();
-
-    writelog(LOG_DETAIL, "Searching for the solutions map using %1% points", NR*NI);
-
-    // Handle situations with inconvenient number of points in some direction
-    // (this is not perfect but we must handle it somehow)
-    if (NR == 0) throw BadInput(solver.getId(), "At least one point in real domain required to browse for a map");
-    if (NI == 0) { impoints = vector<double>(1, 0.0); NI = 1; }
-    else if (NI  == 2) { impoints = vector<double>(1, 0.5*(impoints[0]+impoints[1])); NI = 1; }
-    if (NR  == 2) { repoints = vector<double>(1, 0.5*(repoints[0]+repoints[1])); NR = 1; }
-    if (NR == 1 && NI == 1) return vector<dcomplex>(1, repoints[0] + impoints[0]*I);
-
-    // Create space for char_val values in points
-    double** values = new double*[NR];
-    for (int i = 0; i < NR; i++)
-        values[i] = new double[NI];
-
-    // Compute the values at points
-    #pragma omp parallel for collapse(2)
-    for (int r = 0; r < NR; r++)
-        for (int i = 0; i < NI; i++) {
-        try {
-                dcomplex x = dcomplex(repoints[r], impoints[i]);
-                dcomplex y = val_function(x);
-                log_value(x, y);
-                values[r][i] = abs(y);
-        } catch(...) {
-            values[r][i] = NAN;
-            //TODO: print warning on screen and handle it in minima search
-        }
-        if (std::isnan(values[r][i])) writelog(LOG_WARNING, "Computed value is NaN in map search");
-    }
-
-    vector<dcomplex> results;
-
-    // Now browse them to find local minima
-    // (this method never will find anything at the boundaries)
-    if (NR == 1) {
-        for (int i = 0; i < NI; i++)
-            if (values[0][i] < values[0][i-1] && values[0][i] < values[0][i+1])
-                results.push_back(repoints[0] + impoints[i]*I);
-    } else if (NI == 1) {
-        for (int r = 1; r < NR-1; r++)
-            if (values[r][0] < values[r-1][0] && values[r][0] < values[r+1][0])
-                results.push_back(repoints[r] + impoints[0]*I);
-    } else {
-        for (int r = 1; r < NR-1; r++)
-            for (int i = 1; i < NI-1; i++)
-                if (values[r][i] < values[r-1][i] && values[r][i] < values[r+1][i] &&
-                       values[r][i] < values[r][i-1] && values[r][i] < values[r][i+1])
-                    results.push_back(repoints[r] + impoints[0]*I);
-    }
-
-    // Free space for char_val values in points
-    for (int r = 0; r < NR; r++)
-        delete[] values[r];
-    delete[] values;
-
-    // Log found results
-    std::stringstream resultsrt;
-    resultsrt << "Found map values: ";
-    for (auto map = results.begin(); map != results.end(); map++) {
-        if (map != results.begin()) resultsrt << ", ";
-        resultsrt << str(*map);
-    }
-    writelog(LOG_RESULT, resultsrt.str());
-
-    return results;
-}
-
-//**************************************************************************
-/// Look for the minima map browsing through given points
-std::vector<dcomplex> RootDigger::findMap(plask::dcomplex start, plask::dcomplex end, int replot, int implot)
-{
-    if (imag(start) == imag(end)) implot = 0;
-    if (real(start) == real(end)) replot = 0;
-
-    vector<double> repoints(replot+1), impoints(implot+1);
-    double restep = 0, imstep = 0;
-
-    // Set points for map search
-    if (replot != 0) {
-        double restart = real(start); restep = (real(end) - restart) / replot;
-        for (int i = 0; i <= replot; i++)
-            repoints[i] = restart + i*restep;
-    } else {
-        repoints[0] = 0.5 * (real(start) + real(end));
-    }
-    if (implot != 0) {
-        double imstart = imag(start); imstep = (imag(end) - imstart) / implot;
-        for (int i = 0; i <= implot; i++)
-            impoints[i] = imstart + i*imstep;
-    } else {
-        impoints[0] = 0.5 * (imag(start) + imag(end));
-    }
-
-    return findMap(repoints, impoints);
-}
-
-
-//**************************************************************************
-/// Search for solutions within the region real(start) - real(end),
-std::vector< dcomplex > RootDigger::searchSolutions(plask::dcomplex start, plask::dcomplex end, int replot, int implot, int num_modes)
-{
-    vector<dcomplex> modes;
-
-    // Determine map
-    vector<dcomplex> map = findMap(start, end, replot, implot);
-
-    // Find solutions starting from the map points
-    int iend = min(int(map.size()), num_modes);
-    for (int i = 0; i < iend; i++) {
-        try {
-            dcomplex mode = getSolution(map[i]);
-            modes.push_back(mode);
-        } catch (runtime_error err) {
-            writelog(LOG_ERROR, "Failed to get solution around " + str(map[i]) + " (" + err.what() + ")");
-        };
-    }
-
-    return modes;
-}
-
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootDigger::getSolution(dcomplex point) const
+dcomplex RootDigger::operator()(dcomplex point) const
 {
     writelog(LOG_DETAIL, "Searching for the solution with Broyden method starting from " + str(point));
     log_value.resetCounter();
@@ -142,9 +14,6 @@ dcomplex RootDigger::getSolution(dcomplex point) const
     writelog(LOG_RESULT, "Found solution at " + str(x));
     return x;
 }
-
-
-
 
 //**************************************************************************
 //**************************************************************************

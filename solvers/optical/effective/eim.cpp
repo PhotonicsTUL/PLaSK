@@ -55,6 +55,8 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             }
             auto wavelength = reader.getAttribute<double>("wavelength");
             if (wavelength) inWavelength.setValue(*wavelength);
+            stripex = reader.getAttribute<double>("stripex", stripex);
+            vneff = reader.getAttribute<dcomplex>("vneff", vneff);
             reader.requireTagEnd();
         } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
@@ -74,7 +76,7 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             outdist = reader.requireAttribute<double>("distance");
             reader.requireTagEnd();
         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");
     }
 }
 
@@ -82,7 +84,7 @@ dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
-    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root).getSolution(neff);
+    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)(neff);
     outNeff = result;
     outNeff.fireChanged();
     outIntensity.fireChanged();
@@ -92,21 +94,75 @@ dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 
 
 
-std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex neff2, unsigned steps, unsigned nummodes)
+std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcomplex lambda2, double eps)
 {
-    writelog(LOG_INFO, "Searching for the modes for Neff between %1% and %2%", str(neff1), str(neff2));
-    stageOne();
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
-            .searchSolutions(neff1, neff2, steps, 0, nummodes);
-}
-
-std::vector<dcomplex> EffectiveIndex2DSolver::findModesMap(dcomplex neff1, dcomplex neff2, unsigned steps)
-{
-    writelog(LOG_INFO, "Searching for the approximate modes for Neff between %1% and %2%", str(neff1), str(neff2));
     stageOne();
 
-    return RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)
-            .findMap(neff1, neff2, steps, 0);
+    double re0 = real(lambda1), re1 = real(lambda2);
+    double im0 = imag(lambda1), im1 = imag(lambda2);
+    if (re0 > re1) std::swap(re0, re1);
+    if (im0 > im1) std::swap(im0, im1);
+
+    if (re0 == 0. && re1 == 0.) {
+        re0 = 1e30;
+        re1 = -1e30;
+        for (size_t i = xbegin; i != xend; ++i) {
+            dcomplex n = neffs[i];
+            if (n.real() < re0) re0 = n.real();
+            if (n.real() > re1) re1 = n.real();
+        }
+    }
+    if (im0 == 0. && im1 == 0.) {
+        im0 = 1e30;
+        im1 = -1e30;
+        for (size_t i = xbegin; i != xend; ++i) {
+            dcomplex n = neffs[i];
+            if (n.imag() < im0) im0 = n.imag();
+            if (n.imag() > im1) im1 = n.imag();
+        }
+    }
+    writelog(LOG_DETAIL, "Looking for zeros between %1% and %2%", str(dcomplex(re0,im0)), str(dcomplex(re1,im1)));
+
+    size_t Nr = 256, Ni = 256;  //TODO make it configurable (based on eps)
+    double dr = (re1-re0) / Nr;
+    double di = (im1-im0) / Ni;
+    int wind = 0;
+    dcomplex gr0 = detS(re0,im0), gr1 = detS(re0+dr,im1);
+    dcomplex gi0 = detS(re0,im0+di), gi1 = detS(re1,im0);
+
+    for (size_t i = 1; i < Nr; ++i) {
+        double re = re0 + dr*i;
+        dcomplex f0 = detS(dcomplex(re,im0)), f1 = detS(dcomplex(re+dr,im1));
+        if (f0.real() <= 0) { //TODO handle == 0 separately
+            if (gr0.imag() >= 0 && f0.imag() < 0) ++wind;
+            else if (gr0.imag() < 0 && f0.imag() >= 0) --wind;
+        }
+        if (f1.real() <= 0) { //TODO handle == 0 separately
+            if (gr1.imag() >= 0 && f1.imag() < 0) --wind;
+            else if (gr1.imag() < 0 && f1.imag() >= 0) ++wind;
+        }
+        gr0 = f0;
+        gr1 = f1;
+    }
+
+    for (size_t i = 1; i < Ni; ++i) {
+        double im = im0 + di*i;
+        dcomplex f0 = detS(dcomplex(im,im0+di)), f1 = detS(dcomplex(im,im1));
+        if (f0.real() <= 0) { //TODO handle == 0 sepaiately
+            if (gi0.imag() >= 0 && f0.imag() < 0) --wind;
+            else if (gi0.imag() < 0 && f0.imag() >= 0) ++wind;
+        }
+        if (f1.real() <= 0) { //TODO handle == 0 sepaiately
+            if (gi1.imag() >= 0 && f1.imag() < 0) ++wind;
+            else if (gi1.imag() < 0 && f1.imag() >= 0) --wind;
+        }
+        gi0 = f0;
+        gi1 = f1;
+    }
+
+    writelog(LOG_RESULT, "Number of zeros: %1%", wind);
+
+    return std::vector<dcomplex>();
 }
 
 
@@ -246,7 +302,7 @@ void EffectiveIndex2DSolver::stageOne()
                                               [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
             vneff = 0.999 * real(maxn);
         }
-        vneff = rootdigger.getSolution(vneff);
+        vneff = rootdigger(vneff);
 
         // Compute field weights
         computeWeights(stripe);
