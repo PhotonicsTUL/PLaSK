@@ -94,12 +94,17 @@ dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 
 
 
-std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcomplex lambda2, double eps)
+std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcomplex lambda2, size_t resteps, size_t imsteps, dcomplex eps)
 {
     stageOne();
 
-    double re0 = real(lambda1), re1 = real(lambda2);
-    double im0 = imag(lambda1), im1 = imag(lambda2);
+    if (eps.imag() == 0.) eps.imag(eps.real());
+
+    if (real(eps) <= 0. || imag(eps) <= 0.)
+        throw BadInput(this->getId(), "Bad precision specified");
+
+    double re0 = real(lambda1), im0 = imag(lambda1);
+    double re1 = real(lambda2), im1 = imag(lambda2);
     if (re0 > re1) std::swap(re0, re1);
     if (im0 > im1) std::swap(im0, im1);
 
@@ -111,7 +116,8 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
             if (n.real() < re0) re0 = n.real();
             if (n.real() > re1) re1 = n.real();
         }
-    }
+    } else if (re0 == 0. || re1 == 0.)
+        throw BadInput(getId(), "Bad area to browse specified");
     if (im0 == 0. && im1 == 0.) {
         im0 = 1e30;
         im1 = -1e30;
@@ -121,48 +127,27 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
             if (n.imag() > im1) im1 = n.imag();
         }
     }
-    writelog(LOG_DETAIL, "Looking for zeros between %1% and %2%", str(dcomplex(re0,im0)), str(dcomplex(re1,im1)));
+    lambda1 = dcomplex(re0,im0);
+    lambda2 = dcomplex(re1,im1);
 
-    size_t Nr = 256, Ni = 256;  //TODO make it configurable (based on eps)
-    double dr = (re1-re0) / Nr;
-    double di = (im1-im0) / Ni;
-    int wind = 0;
-    dcomplex gr0 = detS(re0,im0), gr1 = detS(re0+dr,im1);
-    dcomplex gi0 = detS(re0,im0+di), gi1 = detS(re1,im0);
+    auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, lambda1, lambda2, resteps, imsteps, eps);
 
-    for (size_t i = 1; i < Nr; ++i) {
-        double re = re0 + dr*i;
-        dcomplex f0 = detS(dcomplex(re,im0)), f1 = detS(dcomplex(re+dr,im1));
-        if (f0.real() <= 0) { //TODO handle == 0 separately
-            if (gr0.imag() >= 0 && f0.imag() < 0) ++wind;
-            else if (gr0.imag() < 0 && f0.imag() >= 0) --wind;
+    if (results.size() != 0) {
+#ifndef NDEBUG
+        Data2DLog<dcomplex,dcomplex> logger(getId(), "zeros", "Neff", "det");
+#endif
+        std::string msg = "Found modes at: ";
+        for (auto z: results) {
+            msg += str(z) + ", ";
+#ifndef NDEBUG
+            logger(z, detS(z));
+#endif
         }
-        if (f1.real() <= 0) { //TODO handle == 0 separately
-            if (gr1.imag() >= 0 && f1.imag() < 0) --wind;
-            else if (gr1.imag() < 0 && f1.imag() >= 0) ++wind;
-        }
-        gr0 = f0;
-        gr1 = f1;
-    }
+        writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
+    } else
+        writelog(LOG_RESULT, "Did not find any modes");
 
-    for (size_t i = 1; i < Ni; ++i) {
-        double im = im0 + di*i;
-        dcomplex f0 = detS(dcomplex(im,im0+di)), f1 = detS(dcomplex(im,im1));
-        if (f0.real() <= 0) { //TODO handle == 0 sepaiately
-            if (gi0.imag() >= 0 && f0.imag() < 0) --wind;
-            else if (gi0.imag() < 0 && f0.imag() >= 0) ++wind;
-        }
-        if (f1.real() <= 0) { //TODO handle == 0 sepaiately
-            if (gi1.imag() >= 0 && f1.imag() < 0) ++wind;
-            else if (gi1.imag() < 0 && f1.imag() >= 0) --wind;
-        }
-        gi0 = f0;
-        gi1 = f1;
-    }
-
-    writelog(LOG_RESULT, "Number of zeros: %1%", wind);
-
-    return std::vector<dcomplex>();
+    return results;
 }
 
 

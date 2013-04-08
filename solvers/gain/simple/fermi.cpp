@@ -215,9 +215,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     DataVector<double> gainOnMesh(dst_mesh.size(), NAN);
 
     if (regions.size() == 1)
-        this->writelog(LOG_INFO, "Found %1% active region", regions.size());
+        this->writelog(LOG_DETAIL, "Found %1% active region", regions.size());
     else
-        this->writelog(LOG_INFO, "Found %1% active regions", regions.size());
+        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
     for (int act=0; act<regions.size(); act++)
     {
@@ -347,15 +347,16 @@ double FermiGainSolver<GeometryType>::nm_to_eV(double wavelength)
 }
 
 
+//  TODO: it should return computed levels
 template <typename GeometryType>
 void FermiGainSolver<GeometryType>::determineLevels(double T, double n)
 {
     this->initCalculation(); // This must be called before any calculation!
 
     if (regions.size() == 1)
-        this->writelog(LOG_INFO, "Found %1% active region", regions.size());
+        this->writelog(LOG_DETAIL, "Found %1% active region", regions.size());
     else
-        this->writelog(LOG_INFO, "Found %1% active regions", regions.size());
+        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
     for (int act=0; act<regions.size(); act++)
     {
@@ -370,43 +371,37 @@ void FermiGainSolver<GeometryType>::determineLevels(double T, double n)
         int j=0;
         double level;
 
-        writelog(LOG_DETAIL, "Electron energy levels (from the conduction band edge):");
-
+        std::string levelsstr = "Electron energy levels (from the conduction band edge) [eV]: ";
         do
         {
             level = gainModule.Get_electron_level_depth(j);
-            if (level > 0)
-//                writelog(LOG_RESULT, "%1%. electron level (from the conduction band edge) = %2% eV", j+1, level);
-                writelog(LOG_RESULT, "%1%. %2% eV", j+1, level);
+            if (level > 0) levelsstr += format("%1%, ", level);
             j++;
         }
         while(level>0);
+        writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
 
-        writelog(LOG_DETAIL, "Heavy hole energy levels (from the valence band edge):");
-
+        levelsstr = "Heavy hole energy levels (from the valence band edge) [eV]: ";
         j=0;
         do
         {
             level = gainModule.Get_heavy_hole_level_depth(j);
-            if (level > 0)
-//                writelog(LOG_RESULT, "%1%. heavy hole level (from the valence band edge) = %2% eV", j+1, level);
-                writelog(LOG_RESULT, "%1%. %2% eV", j+1, level);
+            if (level > 0) levelsstr += format("%1%, ", level);
             j++;
         }
         while(level>0);
+        writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
 
-        writelog(LOG_DETAIL, "Light hole energy levels (from the valence band edge):");
-
+        levelsstr = "Light hole energy levels (from the valence band edge) [eV]: ";
         j=0;
         do
         {
             level = gainModule.Get_light_hole_level_depth(j);
-            if (level > 0)
-//                writelog(LOG_RESULT, "%1%. light hole level (from the valence band edge) = %2% eV", j+1, level);
-                writelog(LOG_RESULT, "%1%. %2% eV", j+1, level);
+            if (level > 0) levelsstr += format("%1%, ", level);
             j++;
         }
         while(level>0);
+        writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
     }
 }
 

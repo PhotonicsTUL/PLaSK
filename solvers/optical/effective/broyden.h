@@ -1,5 +1,5 @@
-#ifndef BROYDEN_H
-#define BROYDEN_H
+#ifndef PLASK__OPTICAL_EFFECTIVE_BROYDEN_H
+#define PLASK__OPTICAL_EFFECTIVE_BROYDEN_H
 
 #include <functional>
 #include <plask/plask.hpp>
@@ -77,4 +77,4 @@ struct RootDigger {
 };
 
 }}} // namespace plask::solvers::effective
-#endif // BROYDEN_H
+#endif // PLASK__OPTICAL_EFFECTIVE_BROYDEN_H

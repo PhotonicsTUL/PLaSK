@@ -129,7 +129,8 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
-        METHOD(find_modes, findModes, "Find the modes within the specified range using global method", arg("start")=0., arg("end")=0., arg("eps")=1e-6);
+        METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
+               arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
         RW_PROPERTY(stripex, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominat mode)");
         RW_FIELD(vneff, "Effective index in the vertical direction");
@@ -155,7 +156,8 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified wavelength", "wavelength");
-        METHOD(find_modes, findModes, "Find the modes within the specified range using global method", arg("start")=0., arg("end")=0., arg("eps")=1e-6);
+        METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
+               arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(dcomplex))&EffectiveFrequencyCylSolver::setMode,
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", py::arg("lam"));
         solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(double,double))&EffectiveFrequencyCylSolver::setMode,

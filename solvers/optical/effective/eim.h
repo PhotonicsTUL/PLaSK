@@ -6,6 +6,7 @@
 #include <plask/plask.hpp>
 
 #include "broyden.h"
+#include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
 
@@ -167,10 +168,12 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      *
      * \param lambda1 one corner of the range to browse
      * \param lambda2 another corner of the range to browse
+     * \param resteps minimum number of steps to check function value on real contour
+     * \param imsteps minimum number of steps to check function value on imaginary contour
      * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., double eps=1e-12);
+    std::vector<dcomplex> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.

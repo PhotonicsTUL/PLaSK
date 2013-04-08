@@ -100,7 +100,8 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
-    /// Main computation function TODO: is this necessary in this solver?
+    /// Function computing energy levels
+    //  TODO: it should return computed levels
     void determineLevels(double T, double n);
 
   public:

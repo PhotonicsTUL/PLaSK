@@ -82,7 +82,7 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 }
 
 
-std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, double eps)
+std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, size_t resteps, size_t imsteps, dcomplex eps)
 {
 }
 
