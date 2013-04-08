@@ -50,16 +50,57 @@ using DataSource = DataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpac
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct DataSourceWithReceiver: public DataSource<PropertyT, OutputSpaceType> {
 
-    ReceiverFor<PropertyT, InputSpaceType> in;
+protected:
+    //in, out obj can't be hold by shared_ptr, due to memory leak (circle reference)
+    const InputGeomObj* inObj;
+    const OutputGeomObj* outObj;
+    boost::optional<const PathHints> path;
+    boost::signals2::connection geomConnectionIn;
+    boost::signals2::connection geomConnectionOut;
 
-    //shared_ptr<InputSpaceType> inSpace;   //or only connection?
+public:
+    ReceiverFor<PropertyT, InputSpaceType> in;
 
     DataSourceWithReceiver() {
         in.providerValueChanged.connect([&] (Provider::Listener&) { this->fireChanged(); });
     }
 
-    //virtual void setupConnection(shared_ptr<InputGeomObj>, shared_ptr<OutputGeomObj>) = 0;    //+path //param or fields?
+    ~DataSourceWithReceiver() {
+         disconnect();
+    }
 
+    void disconnect() {
+        geomConnectionIn.disconnect();
+        geomConnectionOut.disconnect();
+    }
+
+    /**
+     * This is called before request for data, but after setup inObj, outObj and path fields.
+     * It can calculate trasnaltion and so needed for quick operator() calculation.
+     */
+    virtual void calcConnectionParameters() = 0;
+
+    void setPath(const PathHints* path) {
+        if (path)
+            this->path = boost::optional<const PathHints>(*path);
+        else
+            this->path = boost::optional<const PathHints>();
+    }
+
+    void inOrOutWasChanged(GeometryObject::Event& e) {
+        if (e.hasFlag(GeometryObject::Event::DELETE)) disconnect(); else
+        if (e.hasFlag(GeometryObject::Event::RESIZE)) calcConnectionParameters();
+    }
+
+    void connect(const InputGeomObj& inObj, const OutputGeomObj& outObj, const PathHints* path = nullptr) {
+        disconnect();
+        this->setPath(path);
+        this->inObj = &inObj;
+        this->outObj = &outObj;
+        geomConnectionOut = outObj->changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
+        geomConnectionIn = inObj->changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
+        calcConnectionParameters();
+    }
 };
 
 /// Don't use this directly, use StandardFilter instead.
