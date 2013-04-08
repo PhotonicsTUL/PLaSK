@@ -55,10 +55,10 @@ int Contour::crossings(const DataVector<dcomplex>& line, double r0, double i0, d
     for (size_t i = 1; i < line.size(); ++i) {
         if (real(line[i-1]) < 0. && real(line[i]) < 0.) {
             if (imag(line[i-1]) >= 0. && imag(line[i]) < 0.) {
-//                 if (real(line[i-1]) >= 0. || real(line[i]) >= 0.) detail::contourLogZero(i, line.size(), solver, r0, i0, r1, i1);
+                if (real(line[i-1]) >= 0. || real(line[i]) >= 0.) detail::contourLogZero(i, line.size(), solver, r0, i0, r1, i1);
                 ++wind;
             } else if (imag(line[i-1]) < 0. && imag(line[i]) >= 0.) {
-//                 if (real(line[i-1]) >= 0. || real(line[i]) >= 0.) detail::contourLogZero(i, line.size(), solver, r0, i0, r1, i1);
+                if (real(line[i-1]) >= 0. || real(line[i]) >= 0.) detail::contourLogZero(i, line.size(), solver, r0, i0, r1, i1);
                 --wind;
             }
         }
@@ -67,12 +67,13 @@ int Contour::crossings(const DataVector<dcomplex>& line, double r0, double i0, d
 }
 
 
-std::pair<Contour,Contour> Contour::divide() const
+std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
 {
     Contour contoura(solver, fun), contourb(solver, fun);
 
-    if (bottom.size() > right.size()) { // divide vertically
+    assert(re1-re0 > reps || im1-im0 > ieps);
 
+    if (bottom.size() > right.size() || im1-im0 <= ieps) { // divide real axis
         double re = 0.5 * (re0 + re1);
         contoura.re0 = re0; contoura.im0 = im0; contoura.re1 = re; contoura.im1 = im1;
         contourb.re0 = re; contourb.im0 = im0; contourb.re1 = re1; contourb.im1 = im1;
@@ -97,14 +98,9 @@ std::pair<Contour,Contour> Contour::divide() const
         contourb.bottom = DataVector<dcomplex>(const_cast<dcomplex*>(&bottom[n]), n+1);
         contourb.top = DataVector<dcomplex>(const_cast<dcomplex*>(&top[n]), n+1);
 
-// std::cerr << "["<<str(dcomplex(re0,im0))<<" "<<str(dcomplex(re1,im1))<<"] -> ";
-// std::cerr << "["<<str(dcomplex(contoura.re0,contoura.im0))<<" "<<str(dcomplex(contoura.re1,contoura.im1))<<"] + ";
-// std::cerr << "["<<str(dcomplex(contourb.re0,contourb.im0))<<" "<<str(dcomplex(contourb.re1,contourb.im1))<<"]\n";
-
         return std::make_pair(std::move(contoura), std::move(contourb));
 
-    } else {
-
+    } else {    // divide imaginary axis
         double im = 0.5 * (im0 + im1);
         contoura.re0 = re0; contoura.im0 = im0; contoura.re1 = re1; contoura.im1 = im;
         contourb.re0 = re0; contourb.im0 = im; contourb.re1 = re1; contourb.im1 = im1;
@@ -150,17 +146,19 @@ namespace detail {
         std::vector<dcomplex>& results;
         ContourBisect(double reps, double ieps, std::vector<dcomplex>& results): reps(reps), ieps(ieps), results(results) {}
 
-        void operator()(const Contour& contour) {
-// std::cerr << "["<<str(dcomplex(contour.re0,contour.im0))<<" "<<str(dcomplex(contour.re1,contour.im1))<<"]:" << contour.winding() << "\n";
-            if (contour.winding() == 0)
-                return;
+        int operator()(const Contour& contour) {
+            int wind = contour.winding();
+            if (wind == 0)
+                return 0;
             if (contour.re1-contour.re0 <= reps && contour.im1-contour.im0 <= ieps) {
-                results.push_back(0.5 * dcomplex(contour.re0+contour.re1, contour.im0+contour.im1));
-                return;
+                for(int i = 0; i != abs(wind); ++i)
+                    results.push_back(0.5 * dcomplex(contour.re0+contour.re1, contour.im0+contour.im1));
+                return wind;
             }
-            auto contours = contour.divide();
+            auto contours = contour.divide(reps, ieps);
             (*this)(contours.first);
             (*this)(contours.second);
+            return wind;
         }
     };
 }
@@ -172,11 +170,13 @@ std::vector<dcomplex> findZeros(const Solver* solver, const std::function<dcompl
     size_t Nr = 1, Ni = 1;
     for(; resteps > Nr; Nr <<= 1);
     for(; imsteps > Ni; Ni <<= 1);
-    solver->writelog(LOG_DETAIL, "Looking for zeros between %1% and %2% with %3%/%4% real/imaginary intervals", str(corner0), str(corner1), Nr, Ni);
 
     std::vector<dcomplex> results;
     detail::ContourBisect bisection(real(eps), imag(eps), results);
     Contour contour(solver, fun, corner0, corner1, Nr, Ni);
+    int zeros = abs(contour.winding());
+    solver->writelog(LOG_DETAIL, "Looking for %5% zero%6% between %1% and %2% with %3%/%4% real/imaginary intervals",
+                     str(corner0), str(corner1), Nr, Ni, zeros, (zeros!=1)?"s":"");
     bisection(contour);
     return results;
 }

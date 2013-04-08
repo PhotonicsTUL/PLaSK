@@ -53,9 +53,10 @@ struct Contour {
      * Divide contour.
      * The contour is always divided across longer (by number of points) axis.
      * In case of equal axes, the imaginary one is cut.
+     * \param reps,ieps cell size limits along real and imaginary axis
      * \return pair of two contours
      */
-    std::pair<Contour,Contour> divide() const;
+    std::pair<Contour,Contour> divide(double reps, double ieps) const;
 
   private:
 

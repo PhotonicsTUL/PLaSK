@@ -133,15 +133,11 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
     auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, lambda1, lambda2, resteps, imsteps, eps);
 
     if (results.size() != 0) {
-#ifndef NDEBUG
-        Data2DLog<dcomplex,dcomplex> logger(getId(), "zeros", "Neff", "det");
-#endif
+        Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
         std::string msg = "Found modes at: ";
         for (auto z: results) {
             msg += str(z) + ", ";
-#ifndef NDEBUG
             logger(z, detS(z));
-#endif
         }
         writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
     } else
@@ -268,6 +264,8 @@ void EffectiveIndex2DSolver::stageOne()
     }
 
     if (recompute_neffs) {
+
+        outNeff.invalidate();
 
         // Compute effective index of the main stripe
         size_t stripe = mesh->tran().findIndex(stripex);
@@ -517,6 +515,12 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
     else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
     else return s4 - s2*s3 / s1;
+    // if (symmetry == SYMMETRY_POSITIVE) return s1*s4 - s2*s3 + s3;
+    // else if (symmetry == SYMMETRY_NEGATIVE) return s1*s4 - s2*s3 - s3;
+    // else return s1*s4 - s2*s3;
+    // if (symmetry == SYMMETRY_POSITIVE) return (s1*s4)/s3 - (s2 - 1.);
+    // else if (symmetry == SYMMETRY_NEGATIVE) return (s1*s4)/s3 - (s2 + 1.);
+    // else return (s1*s4)/s3 - s2;
 }
 
 
