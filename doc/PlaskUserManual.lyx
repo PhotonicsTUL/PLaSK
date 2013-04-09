@@ -15469,7 +15469,7 @@ Solution algorithm.
 
 
 \emph on
-block
+cholesky
 \emph default
 
 \begin_inset Quotes erd
@@ -15482,7 +15482,7 @@ block
 
 
 \emph on
-block
+cholesky
 \emph default
 
 \begin_inset Quotes erd
@@ -15901,7 +15901,7 @@ Solution algorithm.
 
 
 \emph on
-block
+cholesky
 \emph default
 
 \begin_inset Quotes erd
@@ -15914,21 +15914,25 @@ block
 
 
 \emph on
-block
+cholesky
 \emph default
 
 \begin_inset Quotes erd
 \end_inset
 
- or 
+, 
 \begin_inset Quotes eld
 \end_inset
 
+gauss
+\begin_inset Quotes erd
+\end_inset
 
-\emph on
-slow
-\emph default
+, or 
+\begin_inset Quotes eld
+\end_inset
 
+iterative
 \begin_inset Quotes erd
 \end_inset
 

@@ -168,6 +168,20 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     }
 
     /**
+     * Find the vertical effective indices within the specified range
+     *
+     * This method \b does \b not remember the determined modes!
+     *
+     * \param neff1 one corner of the range to browse
+     * \param neff2 another corner of the range to browse
+     * \param resteps minimum number of steps to check function value on real contour
+     * \param imsteps minimum number of steps to check function value on imaginary contour
+     * \param eps approximate error for integrals
+     * \return vector of determined effective indices
+     */
+    std::vector<dcomplex> findVeffs(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
+
+    /**
      * Find the mode around the specified effective index.
      *
      * This method remembers the determined mode, for retrieval of the field profiles.
@@ -182,14 +196,14 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      *
      * This method \b does \b not remember the determined modes!
      *
-     * \param lambda1 one corner of the range to browse
-     * \param lambda2 another corner of the range to browse
+     * \param neff1 one corner of the range to browse
+     * \param neff2 another corner of the range to browse
      * \param resteps minimum number of steps to check function value on real contour
      * \param imsteps minimum number of steps to check function value on imaginary contour
      * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
+    std::vector<dcomplex> findModes(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
@@ -253,6 +267,11 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
                      R2 = abs((n-n2) / (n+n2));
         return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->getLength());
     }
+
+    /**
+     * Update refractive index cache
+     */
+    void updateCache();
 
     /**
      * Fist stage of computations

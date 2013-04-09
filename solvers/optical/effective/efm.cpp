@@ -84,6 +84,64 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
 
 std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, size_t resteps, size_t imsteps, dcomplex eps)
 {
+    stageOne();
+    outWavelength.invalidate();
+    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
+
+    if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
+        throw BadInput(getId(), "Bad area to browse specified");
+
+    dcomplex v0 =  2. - 4e3*M_PI / lambda1 / k0;
+    dcomplex v1 =  2. - 4e3*M_PI / lambda1 / k0;
+
+    if (eps.imag() == 0.) eps.imag(eps.real());
+
+    if (real(eps) <= 0. || imag(eps) <= 0.)
+        throw BadInput(this->getId(), "Bad precision specified");
+
+    double re0 = real(v0), im0 = imag(v0);
+    double re1 = real(v1), im1 = imag(v1);
+    if (re0 > re1) std::swap(re0, re1);
+    if (im0 > im1) std::swap(im0, im1);
+
+    if (real(lambda1) == 0. && real(lambda2) == 0.) {
+        re0 = 1e30;
+        re1 = -1e30;
+        for (size_t i = 0; i != rsize; ++i) {
+            dcomplex v = veffs[i];
+            if (v.real() < re0) re0 = v.real();
+            if (v.real() > re1) re1 = v.real();
+        }
+    }
+    if (imag(lambda1) && imag(lambda2)) {
+        im0 = 1e30;
+        im1 = -1e30;
+        for (size_t i = 0; i != rsize; ++i) {
+            dcomplex v = veffs[i];
+            if (v.imag() < im0) im0 = v.imag();
+            if (v.imag() > im1) im1 = v.imag();
+        }
+    }
+    v0 = dcomplex(re0,im0);
+    v1 = dcomplex(re1,im1);
+
+    auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, v0, v1, resteps, imsteps, eps);
+
+    if (results.size() != 0) {
+        Data2DLog<dcomplex,dcomplex> logger(getId(), "freq", "v", "det");
+        std::string msg = "Found modes at: ";
+        for (auto& z: results) {
+            dcomplex k = k0 * (1. - v/2.); // get modal frequency back from frequency parameter
+            dcomplex lam = 2e3*M_PI / k;
+            msg += str(lam) + ", ";
+            logger(lam, detS(z));
+            z = lam;
+        }
+        writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
+    } else
+        writelog(LOG_RESULT, "Did not find any modes");
+
+    return results;
 }
 
 
@@ -96,7 +154,7 @@ void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
     }
     v =  2. - 4e3*M_PI / clambda / k0;
     double det = abs(detS(v));
-    if (det > root.tolf_max) throw BadInput(getId(), "Provided wavelength does not correspond to any mode (det = %1%)", det);
+    if (det > root.tolf_max) writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(clambda));
     outWavelength = real(clambda);
     outModalLoss = 1e7 * imag(2e3*M_PI/clambda);

@@ -128,6 +128,8 @@ BOOST_PYTHON_MODULE(effective)
         RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
+        METHOD(find_vneffs, findVeffs, "Find the effective index in the vertical direction within the specified range using global method",
+               arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
         METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));

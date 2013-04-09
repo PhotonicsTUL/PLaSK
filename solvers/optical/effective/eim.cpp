@@ -80,6 +80,64 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
     }
 }
 
+
+std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
+{
+    updateCache();
+
+    size_t stripe = mesh->tran().findIndex(stripex);
+    if (stripe < xbegin) stripe = xbegin;
+    else if (stripe >= xend) stripe = xend-1;
+
+    if (eps.imag() == 0.) eps.imag(eps.real());
+
+    if (real(eps) <= 0. || imag(eps) <= 0.)
+        throw BadInput(this->getId(), "Bad precision specified");
+
+    double re0 = real(neff1), im0 = imag(neff1);
+    double re1 = real(neff2), im1 = imag(neff2);
+    if (re0 > re1) std::swap(re0, re1);
+    if (im0 > im1) std::swap(im0, im1);
+
+    if (re0 == 0. && re1 == 0.) {
+        re0 = 1e30;
+        re1 = -1e30;
+        for (size_t i = xbegin; i != xend; ++i) {
+            dcomplex n = nrCache[stripe][i];
+            if (n.real() < re0) re0 = n.real();
+            if (n.real() > re1) re1 = n.real();
+        }
+    } else if (re0 == 0. || re1 == 0.)
+        throw BadInput(getId(), "Bad area to browse specified");
+    if (im0 == 0. && im1 == 0.) {
+        im0 = 1e30;
+        im1 = -1e30;
+        for (size_t i = xbegin; i != xend; ++i) {
+            dcomplex n = nrCache[stripe][i];
+            if (n.imag() < im0) im0 = n.imag();
+            if (n.imag() > im1) im1 = n.imag();
+        }
+    }
+    neff1 = dcomplex(re0,im0);
+    neff2 = dcomplex(re1,im1);
+
+    auto results = findZeros(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, neff1, neff2, resteps, imsteps, eps);
+
+    if (results.size() != 0) {
+        Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
+        std::string msg = "Found vertical effective indices at: ";
+        for (auto z: results) {
+            msg += str(z) + ", ";
+            logger(z, detS(z));
+        }
+        writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
+    } else
+        writelog(LOG_RESULT, "Did not find any vertical effective indices");
+
+    return results;
+}
+
+
 dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
@@ -93,8 +151,7 @@ dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
 }
 
 
-
-std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcomplex lambda2, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
 {
     stageOne();
 
@@ -103,8 +160,8 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
     if (real(eps) <= 0. || imag(eps) <= 0.)
         throw BadInput(this->getId(), "Bad precision specified");
 
-    double re0 = real(lambda1), im0 = imag(lambda1);
-    double re1 = real(lambda2), im1 = imag(lambda2);
+    double re0 = real(neff1), im0 = imag(neff1);
+    double re1 = real(neff2), im1 = imag(neff2);
     if (re0 > re1) std::swap(re0, re1);
     if (im0 > im1) std::swap(im0, im1);
 
@@ -112,7 +169,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
         re0 = 1e30;
         re1 = -1e30;
         for (size_t i = xbegin; i != xend; ++i) {
-            dcomplex n = epsilons[i];
+            dcomplex n = sqrt(epsilons[i]);
             if (n.real() < re0) re0 = n.real();
             if (n.real() > re1) re1 = n.real();
         }
@@ -122,15 +179,15 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
         im0 = 1e30;
         im1 = -1e30;
         for (size_t i = xbegin; i != xend; ++i) {
-            dcomplex n = epsilons[i];
+            dcomplex n = sqrt(epsilons[i]);
             if (n.imag() < im0) im0 = n.imag();
             if (n.imag() > im1) im1 = n.imag();
         }
     }
-    lambda1 = dcomplex(re0,im0);
-    lambda2 = dcomplex(re1,im1);
+    neff1 = dcomplex(re0,im0);
+    neff2 = dcomplex(re1,im1);
 
-    auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, lambda1, lambda2, resteps, imsteps, eps);
+    auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, neff1, neff2, resteps, imsteps, eps);
 
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
@@ -208,7 +265,7 @@ void EffectiveIndex2DSolver::onInvalidate()
 /********* Here are the computations *********/
 
 
-void EffectiveIndex2DSolver::stageOne()
+void EffectiveIndex2DSolver::updateCache()
 {
     bool fresh = !initCalculation();
 
@@ -263,6 +320,12 @@ void EffectiveIndex2DSolver::stageOne()
         }
         recompute_neffs = true;
     }
+}
+
+
+void EffectiveIndex2DSolver::stageOne()
+{
+    updateCache();
 
     if (recompute_neffs) {
 
@@ -437,7 +500,7 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
     // Adjust for mirror losses
-    dcomplex neff = dcomplex(real(x), imag(x)-getMirrorLosses(x));
+    dcomplex neff = save? x : dcomplex(real(x), imag(x)-getMirrorLosses(x));
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {
@@ -446,30 +509,30 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     }
 
     Matrix* matrices = nullptr;
-    if (save) matrices = aligned_malloc<Matrix>(xend);
+    if (save) matrices = aligned_malloc<Matrix>(xend-1);
 
     Matrix T = Matrix::eye();
     for (size_t i = xbegin; i < xend-1; ++i) {
-        if (save) matrices[i] = T;
         double d;
         if (i != xbegin) d = mesh->axis0[i] - mesh->axis0[i-1];
         else if (symmetry != NO_SYMMETRY) d = mesh->axis0[i];     // we have symmetry, so beginning of the transfer matrix is at the axis
         else d = 0.;
         dcomplex phas = exp(- I * kx[i] * d);
-        T.ff *= phas; T.fb *= phas;
-        T.bf /= phas; T.bb /= phas;
         // Transfer through boundary
-        dcomplex f =  (polarization==TE)? real(sqrt(epsilons[i+1]/epsilons[i])) : 1.;
+        dcomplex f = (polarization==TE)? (sqrt(epsilons[i+1]/epsilons[i])) : 1.;
         dcomplex n = 0.5 * kx[i]/kx[i+1] * f*f;
-        T = Matrix( (0.5+n), (0.5-n),
-                    (0.5-n), (0.5+n) ) * T;
+        Matrix T1 = Matrix( (0.5+n), (0.5-n),
+                            (0.5-n), (0.5+n) );
+        T1.ff *= phas; T1.fb /= phas;
+        T1.bf *= phas; T1.bb /= phas;
+        if (save) matrices[i] = T1;
+        T = T1 * T;
     }
+
     if (save) {
-        matrices[xend-1] = T;
         xfields[xend-1] = Field(1., 0.);
         for (size_t i = xend-1; i > xbegin; --i) {
-            size_t j = i-1;
-            xfields[j] = matrices[i].solve(xfields[i]);
+            xfields[i-1] = matrices[i-1].solve(xfields[i]);
         }
         have_fields = true;
 #ifndef NDEBUG
@@ -486,75 +549,6 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     if (symmetry == SYMMETRY_POSITIVE) return T.bf + T.bb;      // B0 = F0   Bn = 0
     else if (symmetry == SYMMETRY_NEGATIVE) return T.bf - T.bb; // B0 = -F0  Bn = 0
     else return T.bb;                                           // F0 = 0    Bn = 0
-
-//     dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
-//     dcomplex phas = 1.;
-//     double maxff = 0.;
-//
-//     if (symmetry != NO_SYMMETRY) // we have symmetry, so begin of the transfer matrix is at the axis
-//         phas = exp(I * kx[xbegin] * mesh->axis0[xbegin]);
-//     else if (xbegin != 0)
-//         phas = exp(I * kx[xbegin] * (mesh->axis0[xbegin]-mesh->axis0[xbegin-1]));
-//
-//     for (size_t i = xbegin+1; i < xend; ++i) {
-//         // Compute shift inside one layer
-//         s1 *= phas;
-//         s3 *= phas * phas;
-//         s4 *= phas;
-//         // Compute matrix after boundary
-//         dcomplex f = (polarization==TE)? real(sqrt(epsilons[i-1]/epsilons[i])) : 1.;
-//         dcomplex p = 0.5 + 0.5 * kx[i] / kx[i-1] * f*f;
-//         dcomplex m = 1.0 - p;
-//         dcomplex chi = 1. / (p - m * s3);
-//         // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
-//         // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
-//         s2 += s1*m*chi*s4;
-//         s1 *= (p*p - m*m) * chi;
-//         s3  = (p*s3-m) * chi;
-//         s4 *= chi;
-//         // Compute phase shift for the next step
-//         if (i != mesh->axis0.size())
-//             phas = exp(I * kx[i+1] * (mesh->axis0[i]-mesh->axis0[i-1]));
-//
-//         // Compute fields and weights in the next layer
-//         if (save) {
-//             // Fn = 1/s1 F0 - s2/s1 B0
-//             // Bn = s3/s1 F0 + (s1s4-s2s3)/s1 B0
-//             dcomplex F, B;
-//             if (symmetry == SYMMETRY_POSITIVE)      { F = ( 1.-s2) / s1; B = s4 - (s2*s3 - s3) / s1; }  // F0 = B0
-//             else if (symmetry == SYMMETRY_NEGATIVE) { F = (-1.-s2) / s1; B = s4 - (s2*s3 + s3) / s1; }  // F0 = -B0
-//             else                                    { F = -s2/s1; B = (s1*s4-s2*s3)/s1; }               // F0 = 0  B0 = 1
-//             double aFF = abs2(F), aBB = abs2(B);
-//             // zero very small fields to avoid errors in plotting for long layers
-//             if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
-//             if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
-//             xfields[i] = Field(F, B);
-//         }
-//     }
-//
-//     if (save) {
-//         if (symmetry == SYMMETRY_POSITIVE)      { xfields[xbegin] = Field( 1., 1.); }    // F0 = B0
-//         else if (symmetry == SYMMETRY_NEGATIVE) { xfields[xbegin] = Field(-1., 1.); }    // F0 = -B0
-//         else                                    { xfields[xbegin] = Field( 0., 1.); }    // F0 = 0  B0 = 1
-//
-//         xfields[xend-1].B = 0.;
-//         maxff = 1. / sqrt(maxff);
-//         for (size_t i = ybegin; i < yend; ++i) xfields[i] *= maxff;
-// // #ifndef NDEBUG
-// //         {
-// //             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i)
-// //                 nrs << "), (" << str(xfields[i].F) << ":" << str(xfields[i].B);
-// //             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
-// //         }
-// // #endif
-//         have_fields = true;
-//     }
-//
-//     // Rn = | T00 T01 | R0
-//     // Ln = | T10 T11 | L0
-//     if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
-//     else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
-//     else return s4 - s2*s3 / s1;
 }
 
 

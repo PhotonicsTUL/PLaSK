@@ -6,6 +6,7 @@
 #include <plask/plask.hpp>
 
 #include "broyden.h"
+#include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
 
