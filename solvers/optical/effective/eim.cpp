@@ -102,7 +102,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex
     if (re0 == 0. && re1 == 0.) {
         re0 = 1e30;
         re1 = -1e30;
-        for (size_t i = xbegin; i != xend; ++i) {
+        for (size_t i = ybegin; i != yend; ++i) {
             dcomplex n = nrCache[stripe][i];
             if (n.real() < re0) re0 = n.real();
             if (n.real() > re1) re1 = n.real();
@@ -112,7 +112,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex
     if (im0 == 0. && im1 == 0.) {
         im0 = 1e30;
         im1 = -1e30;
-        for (size_t i = xbegin; i != xend; ++i) {
+        for (size_t i = ybegin; i != yend; ++i) {
             dcomplex n = nrCache[stripe][i];
             if (n.imag() < im0) im0 = n.imag();
             if (n.imag() > im1) im1 = n.imag();
@@ -121,14 +121,14 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex
     neff1 = dcomplex(re0,im0);
     neff2 = dcomplex(re1,im1);
 
-    auto results = findZeros(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, neff1, neff2, resteps, imsteps, eps);
+    auto results = findZeros(this, [&](const dcomplex& z){return this->detS1(z,nrCache[stripe]);}, neff1, neff2, resteps, imsteps, eps);
 
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
         std::string msg = "Found vertical effective indices at: ";
         for (auto z: results) {
             msg += str(z) + ", ";
-            logger(z, detS(z));
+            logger(z, detS1(z,nrCache[stripe]));
         }
         writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
     } else
