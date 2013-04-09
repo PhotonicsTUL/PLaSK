@@ -61,10 +61,10 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> ngCache;
 
     /// Computed horizontal fields
-    std::vector<FieldR> fieldR;
+    std::vector<FieldR> rfields;
 
     /// Computed vertical fields
-    std::vector<FieldZ> fieldZ;
+    std::vector<FieldZ> zfields;
 
     /// Did we compute fields for current state?
     bool have_fields;

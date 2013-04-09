@@ -133,8 +133,8 @@ void EffectiveFrequencyCylSolver::onInitialize()
     veffs.resize(rsize);
     nng.resize(rsize);
 
-    fieldR.resize(rsize);
-    fieldZ.resize(zsize);
+    rfields.resize(rsize);
+    zfields.resize(zsize);
 }
 
 
@@ -272,7 +272,7 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
                                             const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, bool save)
 {
     double maxff = 0.;
-    if (save) fieldZ[zbegin] = FieldZ(0., 1.);
+    if (save) zfields[zbegin] = FieldZ(0., 1.);
 
     std::vector<dcomplex> kz(zsize);
     for (size_t i = zbegin; i < zsize; ++i) {
@@ -312,18 +312,18 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
             // zero very small fields to avoid errors in plotting for long layers
             if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
             if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
-            fieldZ[i] = FieldZ(F, B);
+            zfields[i] = FieldZ(F, B);
         }
     }
 
     if (save) {
-        fieldZ[zsize-1].B = 0.;
+        zfields[zsize-1].B = 0.;
         maxff = 1. / sqrt(maxff);
-        for (size_t i = zbegin; i < zsize; ++i) fieldZ[i] *= maxff;
+        for (size_t i = zbegin; i < zsize; ++i) zfields[i] *= maxff;
 // #ifndef NDEBUG
 //         {
 //             std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
-//                 nrs << "), (" << str(fieldZ[i].F) << ":" << str(fieldZ[i].B);
+//                 nrs << "), (" << str(zfields[i].F) << ":" << str(zfields[i].B);
 //             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
 //         }
 // #endif
@@ -362,10 +362,10 @@ std::vector<double,aligned_allocator<double>> EffectiveFrequencyCylSolver::compu
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            dcomplex weight = fieldZ[i].F * conj(fieldZ[i].F) * w_ff +
-                              fieldZ[i].F * conj(fieldZ[i].B) * w_fb +
-                              fieldZ[i].B * conj(fieldZ[i].F) * w_bf +
-                              fieldZ[i].B * conj(fieldZ[i].B) * w_bb;
+            dcomplex weight = zfields[i].F * conj(zfields[i].F) * w_ff +
+                              zfields[i].F * conj(zfields[i].B) * w_fb +
+                              zfields[i].B * conj(zfields[i].F) * w_bf +
+                              zfields[i].B * conj(zfields[i].B) * w_bb;
             weights[i] = -imag(weight);
         } else
             weights[i] = 0.;
@@ -399,7 +399,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
 {
     // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
-    fieldR[rsize-1] = FieldR(0., 1.);
+    rfields[rsize-1] = FieldR(0., 1.);
 
     for (size_t i = rsize-1; i > 0; --i) {
 
@@ -436,12 +436,12 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
         MatrixR B(  J2[0],                 H2[0],
                   m*J2[0] - x2*J2[1],    m*H2[0] - x2*H2[1]);
 
-        fieldR[i-1] = A.solve(B * fieldR[i]);
+        rfields[i-1] = A.solve(B * rfields[i]);
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
-    //return fieldR[0].H / fieldR[0].J; // to stress the difference between J and H
-    return fieldR[0].H;
+    //return rfields[0].H / rfields[0].J; // to stress the difference between J and H
+    return rfields[0].H;
 }
 
 
@@ -456,7 +456,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
-                nrs << "), (" << str(fieldR[i].J) << ":" << str(fieldR[i].H);
+                nrs << "), (" << str(rfields[i].J) << ":" << str(rfields[i].H);
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
@@ -505,7 +505,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
                 zbesh(x.real(), x.imag(), m, 1, mh, 1, &Hr, &Hi, nz, ierr);
                 if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
             }
-            dcomplex val = fieldR[ir].J * dcomplex(Jr, Ji) + fieldR[ir].H * dcomplex(Hr, Hi);
+            dcomplex val = rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
 
             size_t iz = mesh->axis1.findIndex(z);
             if (iz >= zsize) iz = zsize-1;
@@ -513,7 +513,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
             if (real(kz) < 0.) kz = -kz;
             z -= mesh->axis1[max(int(iz)-1, 0)];
             dcomplex phasz = exp(- I * kz * z);
-            val *= fieldZ[iz].F * phasz + fieldZ[iz].B / phasz;
+            val *= zfields[iz].F * phasz + zfields[iz].B / phasz;
 
             results[id] = abs2(val);
         }
@@ -569,7 +569,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                         errormsg = format("Could not compute H(%1%, %2%)", m, str(x));
                     }
                 }
-                valr[idr] = fieldR[ir].J * dcomplex(Jr, Ji) + fieldR[ir].H * dcomplex(Hr, Hi);
+                valr[idr] = rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
             }
 
             if (!error) {
@@ -582,7 +582,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                     if (real(kz) < 0.) kz = -kz;
                     z -= mesh->axis1[max(int(iz)-1, 0)];
                     dcomplex phasz = exp(- I * kz * z);
-                    valz[idz] = fieldZ[iz].F * phasz + fieldZ[iz].B / phasz;
+                    valz[idz] = zfields[iz].F * phasz + zfields[iz].B / phasz;
                 }
 
                 if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {

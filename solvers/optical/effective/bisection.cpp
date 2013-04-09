@@ -156,8 +156,12 @@ namespace detail {
                 return wind;
             }
             auto contours = contour.divide(reps, ieps);
-            (*this)(contours.first);
-            (*this)(contours.second);
+            size_t w1 = (*this)(contours.first);
+            size_t w2 = (*this)(contours.second);
+            if (w1 + w2 != wind) {
+                contour.solver->writelog(LOG_WARNING, "Lost zero between %1% and %2%",
+                                         str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
+            }
             return wind;
         }
     };

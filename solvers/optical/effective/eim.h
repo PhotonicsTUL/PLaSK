@@ -36,6 +36,22 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         Field operator/=(dcomplex a) { F /= a; B /= a; return *this; }
     };
 
+    struct Matrix {
+        dcomplex ff, fb, bf, bb;
+        Matrix() = default;
+        Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
+        static Matrix eye() { return Matrix(1.,0.,0.,1.); }
+        static Matrix diag(dcomplex f, dcomplex b) { return Matrix(f,0.,0.,b); }
+        Matrix operator*(const Matrix& T) {
+            return Matrix( ff*T.ff + fb*T.bf,   ff*T.fb + fb*T.bb,
+                           bf*T.ff + bb*T.bf,   bf*T.fb + bb*T.bb );
+        }
+        Field solve(const Field& v) {
+            return Field(bb*v.F - fb*v.B, -bf*v.F + ff*v.B) / (ff*bb - fb*bf);
+        }
+    };
+
+
   protected:
 
     friend struct RootDigger;
@@ -52,7 +68,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache;
 
     /// Computed horizontal and vertical fields
-    std::vector<Field,aligned_allocator<Field>> fieldX, fieldY;
+    std::vector<Field,aligned_allocator<Field>> xfields, yfields;
 
     /// Field confinement weights in stripes
     std::vector<double,aligned_allocator<double>> weights;
@@ -61,7 +77,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     bool have_fields;
 
     /// Computed effective indices for each stripe
-    std::vector<dcomplex,aligned_allocator<dcomplex>> neffs;
+    std::vector<dcomplex,aligned_allocator<dcomplex>> epsilons;
 
     /// Should stripe indices be recomputed
     bool recompute_neffs;
@@ -254,14 +270,14 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * Compute S matrix determinant for one stripe
      * \param x vertical effective index
      * \param NR refractive indices
-     * \param save if \c true, the fields are saved to fieldY
+     * \param save if \c true, the fields are saved to yfields
      */
     dcomplex detS1(const dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save=false);
 
     /**
      * Return S matrix determinant for the whole structure
      * \param x effective index
-     * \param save if \c true, the fields are saved to fieldX
+     * \param save if \c true, the fields are saved to xfields
      */
     dcomplex detS(const dcomplex& x, bool save=false);
 

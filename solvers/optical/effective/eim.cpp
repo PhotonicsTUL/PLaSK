@@ -112,7 +112,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
         re0 = 1e30;
         re1 = -1e30;
         for (size_t i = xbegin; i != xend; ++i) {
-            dcomplex n = neffs[i];
+            dcomplex n = epsilons[i];
             if (n.real() < re0) re0 = n.real();
             if (n.real() > re1) re1 = n.real();
         }
@@ -122,7 +122,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex lambda1, dcompl
         im0 = 1e30;
         im1 = -1e30;
         for (size_t i = xbegin; i != xend; ++i) {
-            dcomplex n = neffs[i];
+            dcomplex n = epsilons[i];
             if (n.imag() < im0) im0 = n.imag();
             if (n.imag() > im1) im1 = n.imag();
         }
@@ -154,7 +154,8 @@ void EffectiveIndex2DSolver::setMode(dcomplex neff)
         stageOne();
     }
     double det = abs(detS(neff));
-    if (det > root.tolf_max) throw BadInput(getId(), "Provided effective index does not correspond to any mode (det = %1%)", det);
+    if (det > root.tolf_max)
+        writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(neff));
     outNeff = neff;
     outNeff.fireChanged();
@@ -189,10 +190,10 @@ void EffectiveIndex2DSolver::onInitialize()
 
     // Assign space for refractive indices cache and stripe effective indices
     nrCache.assign(xend, std::vector<dcomplex,aligned_allocator<dcomplex>>(yend));
-    neffs.resize(xend);
+    epsilons.resize(xend);
 
-    fieldX.resize(xend);
-    fieldY.resize(yend);
+    xfields.resize(xend);
+    yfields.resize(yend);
 }
 
 
@@ -272,12 +273,12 @@ void EffectiveIndex2DSolver::stageOne()
         if (stripe < xbegin) stripe = xbegin;
         else if (stripe >= xend) stripe = xend-1;
         writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe-xbegin, (polarization==TE)?"TE":"TM");
-#ifndef NDEBUG
-        {
-            std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[stripe][j]);
-            writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
-        }
-#endif
+// #ifndef NDEBUG
+//         {
+//             std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[stripe][j]);
+//             writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
+//         }
+// #endif
         Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
         RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
         if (vneff == 0.) {
@@ -292,15 +293,15 @@ void EffectiveIndex2DSolver::stageOne()
 
         // Compute effective indices
         for (size_t i = xbegin; i < xend; ++i) {
-            dcomplex epsilon = vneff*vneff;
-            for (size_t j = ybegin; j < yend; ++j)
-                epsilon += weights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
-            neffs[i] = sqrt(epsilon);
+            epsilons[i] = vneff*vneff;
+            for (size_t j = ybegin; j < yend; ++j) {
+                epsilons[i] += weights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
+            }
         }
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i) {
-                dcomplex n = neffs[i]; if (abs(n.real()) < 1e-10) n.real(0.); if (abs(n.imag()) < 1e-10) n.imag(0.);
+                dcomplex n = sqrt(epsilons[i]); if (abs(n.real()) < 1e-10) n.real(0.); if (abs(n.imag()) < 1e-10) n.imag(0.);
                 nrs << ", " << str(n);
             }
             writelog(LOG_DEBUG, "horizontal neffs = [%1% ]", nrs.str().substr(1));
@@ -313,7 +314,7 @@ void EffectiveIndex2DSolver::stageOne()
 dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save)
 {
     double maxff = 0.;
-    if (save) fieldY[ybegin] = Field(0., 1.);
+    if (save) yfields[ybegin] = Field(0., 1.);
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
@@ -354,21 +355,21 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
             // zero very small fields to avoid errors in plotting for long layers
             if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
             if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
-            fieldY[i] = Field(F, B);
+            yfields[i] = Field(F, B);
         }
     }
 
     if (save) {
-        fieldY[yend-1].B = 0.;
+        yfields[yend-1].B = 0.;
         maxff = 1. / sqrt(maxff);
-        for (size_t i = ybegin; i < yend; ++i) fieldY[i] *= maxff;
-#ifndef NDEBUG
-        {
-            std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i)
-                nrs << "), (" << str(fieldY[i].F) << ":" << str(fieldY[i].B);
-            writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
-        }
-#endif
+        for (size_t i = ybegin; i < yend; ++i) yfields[i] *= maxff;
+// #ifndef NDEBUG
+//         {
+//             std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i)
+//                 nrs << "), (" << str(yfields[i].F) << ":" << str(yfields[i].B);
+//             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
+//         }
+// #endif
     }
 
     return s1*s4 - s2*s3;
@@ -383,12 +384,12 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     weights.resize(yend);
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
-        dcomplex B = fieldY[ybegin].B;
+        dcomplex B = yfields[ybegin].B;
         weights[ybegin] = (B.real()*B.real() + B.imag()*B.imag()) * 0.5 / ky;
     }
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
-        dcomplex F = fieldY[yend-1].F;
+        dcomplex F = yfields[yend-1].F;
         weights[yend-1] = (F.real()*F.real() + F.imag()*F.imag()) * 0.5 / ky;
     }
     double sum = weights[ybegin] + weights[yend-1];
@@ -410,10 +411,10 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            dcomplex weight = fieldY[i].F * conj(fieldY[i].F) * w_ff +
-                              fieldY[i].F * conj(fieldY[i].B) * w_fb +
-                              fieldY[i].B * conj(fieldY[i].F) * w_bf +
-                              fieldY[i].B * conj(fieldY[i].B) * w_bb;
+            dcomplex weight = yfields[i].F * conj(yfields[i].F) * w_ff +
+                              yfields[i].F * conj(yfields[i].B) * w_fb +
+                              yfields[i].B * conj(yfields[i].F) * w_bf +
+                              yfields[i].B * conj(yfields[i].B) * w_bb;
             weights[i] = -imag(weight);
         } else
             weights[i] = 0.;
@@ -424,103 +425,136 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     for (size_t i = ybegin; i < yend; ++i) {
         weights[i] *= sum;
     }
-#ifndef NDEBUG
-    {
-        std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) nrs << ", " << str(weights[i]);
-        writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
-    }
-#endif
+// #ifndef NDEBUG
+//     {
+//         std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i) nrs << ", " << str(weights[i]);
+//         writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
+//     }
+// #endif
 }
 
 
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
-    double maxff = 0.;
-    if (save) {
-        if (symmetry == SYMMETRY_POSITIVE)      { fieldX[xbegin] = Field( 1., 1.); }    // F0 = B0
-        else if (symmetry == SYMMETRY_NEGATIVE) { fieldX[xbegin] = Field(-1., 1.); }    // F0 = -B0
-        else                                    { fieldX[xbegin] = Field( 0., 1.); }    // F0 = 0  B0 = 1
-    }
-
     // Adjust for mirror losses
     dcomplex neff = dcomplex(real(x), imag(x)-getMirrorLosses(x));
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {
-        kx[i] = k0 * sqrt(neffs[i]*neffs[i] - neff*neff);
+        kx[i] = k0 * sqrt(epsilons[i] - neff*neff);
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
-    dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+    Matrix* matrices = nullptr;
+    if (save) matrices = aligned_malloc<Matrix>(xend);
 
-    dcomplex phas = 1.;
-
-    if (symmetry != NO_SYMMETRY) // we have symmetry, so begin of the transfer matrix is at the axis
-        phas = exp(I * kx[xbegin] * mesh->axis0[xbegin]);
-    else if (xbegin != 0)
-        phas = exp(I * kx[xbegin] * (mesh->axis0[xbegin]-mesh->axis0[xbegin-1]));
-
-    for (size_t i = xbegin+1; i < xend; ++i) {
-        // Compute shift inside one layer
-        s1 *= phas;
-        s3 *= phas * phas;
-        s4 *= phas;
-        // Compute matrix after boundary
-        dcomplex f = (polarization==TE)? neffs[i-1]/neffs[i] : 1.;
-        dcomplex p = 0.5 + 0.5 * kx[i] / kx[i-1] * f*f;
-        dcomplex m = 1.0 - p;
-        dcomplex chi = 1. / (p - m * s3);
-        // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
-        // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
-        s2 += s1*m*chi*s4;
-        s1 *= (p*p - m*m) * chi;
-        s3  = (p*s3-m) * chi;
-        s4 *= chi;
-        // Compute phase shift for the next step
-        if (i != mesh->axis0.size())
-            phas = exp(I * kx[i+1] * (mesh->axis0[i]-mesh->axis0[i-1]));
-
-        // Compute fields and weights in the next layer
-        if (save) {
-            // Fn = 1/s1 F0 - s2/s1 B0
-            // Bn = s3/s1 F0 + (s1s4-s2s3)/s1 B0
-            dcomplex F, B;
-            if (symmetry == SYMMETRY_POSITIVE)      { F = ( 1.-s2) / s1; B = s4 - (s2*s3 - s3) / s1; }  // F0 = B0
-            else if (symmetry == SYMMETRY_NEGATIVE) { F = (-1.-s2) / s1; B = s4 - (s2*s3 + s3) / s1; }  // F0 = -B0
-            else                                    { F = -s2/s1; B = (s1*s4-s2*s3)/s1; }               // F0 = 0  B0 = 1
-            double aFF = abs2(F), aBB = abs2(B);
-            // zero very small fields to avoid errors in plotting for long layers
-            if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
-            if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
-            fieldX[i] = Field(F, B);
-        }
+    Matrix T = Matrix::eye();
+    for (size_t i = xbegin; i < xend-1; ++i) {
+        if (save) matrices[i] = T;
+        double d;
+        if (i != xbegin) d = mesh->axis0[i] - mesh->axis0[i-1];
+        else if (symmetry != NO_SYMMETRY) d = mesh->axis0[i];     // we have symmetry, so beginning of the transfer matrix is at the axis
+        else d = 0.;
+        dcomplex phas = exp(- I * kx[i] * d);
+        T.ff *= phas; T.fb *= phas;
+        T.bf /= phas; T.bb /= phas;
+        // Transfer through boundary
+        dcomplex f =  (polarization==TE)? real(sqrt(epsilons[i+1]/epsilons[i])) : 1.;
+        dcomplex n = 0.5 * kx[i]/kx[i+1] * f*f;
+        T = Matrix( (0.5+n), (0.5-n),
+                    (0.5-n), (0.5+n) ) * T;
     }
-
     if (save) {
-        fieldX[xend-1].B = 0.;
-        maxff = 1. / sqrt(maxff);
-        for (size_t i = ybegin; i < yend; ++i) fieldY[i] *= maxff;
+        matrices[xend-1] = T;
+        xfields[xend-1] = Field(1., 0.);
+        for (size_t i = xend-1; i > xbegin; --i) {
+            size_t j = i-1;
+            xfields[j] = matrices[i].solve(xfields[i]);
+        }
+        have_fields = true;
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i)
-                nrs << "), (" << str(fieldX[i].F) << ":" << str(fieldX[i].B);
+                nrs << "), (" << str(xfields[i].F) << ":" << str(xfields[i].B);
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
-        have_fields = true;
     }
 
-    // Rn = | T00 T01 | R0
-    // Ln = | T10 T11 | L0
-    if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
-    else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
-    else return s4 - s2*s3 / s1;
-    // if (symmetry == SYMMETRY_POSITIVE) return s1*s4 - s2*s3 + s3;
-    // else if (symmetry == SYMMETRY_NEGATIVE) return s1*s4 - s2*s3 - s3;
-    // else return s1*s4 - s2*s3;
-    // if (symmetry == SYMMETRY_POSITIVE) return (s1*s4)/s3 - (s2 - 1.);
-    // else if (symmetry == SYMMETRY_NEGATIVE) return (s1*s4)/s3 - (s2 + 1.);
-    // else return (s1*s4)/s3 - s2;
+    if (matrices) aligned_free(matrices);
+
+    if (symmetry == SYMMETRY_POSITIVE) return T.bf + T.bb;      // B0 = F0   Bn = 0
+    else if (symmetry == SYMMETRY_NEGATIVE) return T.bf - T.bb; // B0 = -F0  Bn = 0
+    else return T.bb;                                           // F0 = 0    Bn = 0
+
+//     dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+//     dcomplex phas = 1.;
+//     double maxff = 0.;
+//
+//     if (symmetry != NO_SYMMETRY) // we have symmetry, so begin of the transfer matrix is at the axis
+//         phas = exp(I * kx[xbegin] * mesh->axis0[xbegin]);
+//     else if (xbegin != 0)
+//         phas = exp(I * kx[xbegin] * (mesh->axis0[xbegin]-mesh->axis0[xbegin-1]));
+//
+//     for (size_t i = xbegin+1; i < xend; ++i) {
+//         // Compute shift inside one layer
+//         s1 *= phas;
+//         s3 *= phas * phas;
+//         s4 *= phas;
+//         // Compute matrix after boundary
+//         dcomplex f = (polarization==TE)? real(sqrt(epsilons[i-1]/epsilons[i])) : 1.;
+//         dcomplex p = 0.5 + 0.5 * kx[i] / kx[i-1] * f*f;
+//         dcomplex m = 1.0 - p;
+//         dcomplex chi = 1. / (p - m * s3);
+//         // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
+//         // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
+//         s2 += s1*m*chi*s4;
+//         s1 *= (p*p - m*m) * chi;
+//         s3  = (p*s3-m) * chi;
+//         s4 *= chi;
+//         // Compute phase shift for the next step
+//         if (i != mesh->axis0.size())
+//             phas = exp(I * kx[i+1] * (mesh->axis0[i]-mesh->axis0[i-1]));
+//
+//         // Compute fields and weights in the next layer
+//         if (save) {
+//             // Fn = 1/s1 F0 - s2/s1 B0
+//             // Bn = s3/s1 F0 + (s1s4-s2s3)/s1 B0
+//             dcomplex F, B;
+//             if (symmetry == SYMMETRY_POSITIVE)      { F = ( 1.-s2) / s1; B = s4 - (s2*s3 - s3) / s1; }  // F0 = B0
+//             else if (symmetry == SYMMETRY_NEGATIVE) { F = (-1.-s2) / s1; B = s4 - (s2*s3 + s3) / s1; }  // F0 = -B0
+//             else                                    { F = -s2/s1; B = (s1*s4-s2*s3)/s1; }               // F0 = 0  B0 = 1
+//             double aFF = abs2(F), aBB = abs2(B);
+//             // zero very small fields to avoid errors in plotting for long layers
+//             if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
+//             if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
+//             xfields[i] = Field(F, B);
+//         }
+//     }
+//
+//     if (save) {
+//         if (symmetry == SYMMETRY_POSITIVE)      { xfields[xbegin] = Field( 1., 1.); }    // F0 = B0
+//         else if (symmetry == SYMMETRY_NEGATIVE) { xfields[xbegin] = Field(-1., 1.); }    // F0 = -B0
+//         else                                    { xfields[xbegin] = Field( 0., 1.); }    // F0 = 0  B0 = 1
+//
+//         xfields[xend-1].B = 0.;
+//         maxff = 1. / sqrt(maxff);
+//         for (size_t i = ybegin; i < yend; ++i) xfields[i] *= maxff;
+// // #ifndef NDEBUG
+// //         {
+// //             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i)
+// //                 nrs << "), (" << str(xfields[i].F) << ":" << str(xfields[i].B);
+// //             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
+// //         }
+// // #endif
+//         have_fields = true;
+//     }
+//
+//     // Rn = | T00 T01 | R0
+//     // Ln = | T10 T11 | L0
+//     if (symmetry == SYMMETRY_POSITIVE) return s4 - (s2*s3 - s3) / s1;
+//     else if (symmetry == SYMMETRY_NEGATIVE) return s4 - (s2*s3 + s3) / s1;
+//     else return s4 - s2*s3 / s1;
 }
 
 
@@ -538,7 +572,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = 0; i < xend; ++i) {
-        kx[i] = k0 * sqrt(neffs[i]*neffs[i] - neff*neff);
+        kx[i] = k0 * sqrt(epsilons[i] - neff*neff);
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
@@ -574,7 +608,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             if (ix != 0) x -= mesh->tran()[ix-1];
             else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
             dcomplex phasx = exp(- I * kx[ix] * x);
-            dcomplex val = fieldX[ix].F * phasx + fieldX[ix].B / phasx;
+            dcomplex val = xfields[ix].F * phasx + xfields[ix].B / phasx;
             if (negate) val = - val;
 
             size_t iy = mesh->vert().findIndex(y);
@@ -582,7 +616,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             if (iy < ybegin) iy = ybegin;
             y -= mesh->vert()[max(int(iy)-1, 0)];
             dcomplex phasy = exp(- I * ky[iy] * y);
-            val *= fieldY[iy].F * phasy + fieldY[iy].B / phasy;
+            val *= yfields[iy].F * phasy + yfields[iy].B / phasy;
 
             results[idx] = real(abs2(val));
         }
@@ -622,7 +656,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
                 if (ix != 0) x -= mesh->tran()[ix-1];
                 else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
                 dcomplex phasx = exp(- I * kx[ix] * x);
-                dcomplex val = fieldX[ix].F * phasx + fieldX[ix].B / phasx;
+                dcomplex val = xfields[ix].F * phasx + xfields[ix].B / phasx;
                 if (negate) val = - val;
                 valx[idx] = val;
             }
@@ -635,7 +669,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
                 if (iy < ybegin) iy = ybegin;
                 y -= mesh->vert()[max(int(iy)-1, 0)];
                 dcomplex phasy = exp(- I * ky[iy] * y);
-                valy[idy] = fieldY[iy].F * phasy + fieldY[iy].B / phasy;
+                valy[idy] = yfields[iy].F * phasy + yfields[iy].B / phasy;
             }
 
             if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
