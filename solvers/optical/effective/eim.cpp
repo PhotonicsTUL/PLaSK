@@ -500,7 +500,7 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
     // Adjust for mirror losses
-    dcomplex neff = save? x : dcomplex(real(x), imag(x)-getMirrorLosses(x));
+    dcomplex neff = dcomplex(real(x), imag(x)-getMirrorLosses());
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {

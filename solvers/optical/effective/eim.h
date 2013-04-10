@@ -94,8 +94,13 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     double outdist;             ///< Distance outside outer borders where material is sampled
 
-    // Parameters for rootdigger
+    /// Mirror reflectivities
+    boost::optional<std::pair<double,double>> mirrors;
+
+    /// Parameters for main rootdigger
     RootDigger::Params root;
+
+    /// Parameters for sripe rootdigger
     RootDigger::Params stripe_root;
 
     EffectiveIndex2DSolver(const std::string& name="");
@@ -258,13 +263,18 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     dcomplex k0;        ///< Cache of the normalized frequency
 
     /// Compute mirror losses for specified effective index
-    double getMirrorLosses(const dcomplex& neff) {
+    double getMirrorLosses() {
         const double lambda = inWavelength();
-        const double n = real(neff); // TODO is this really correct?
-        const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
-                     n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
-        const double R1 = abs((n-n1) / (n+n1)),
-                     R2 = abs((n-n2) / (n+n2));
+        double R1, R2;
+        if (mirrors) {
+            std::tie(R1,R2) = *mirrors;
+        } else {
+            const double n = real(vneff);
+            const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
+                         n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
+            R1 = abs((n-n1) / (n+n1));
+            R2 = abs((n-n2) / (n+n2));
+        }
         return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->getLength());
     }
 

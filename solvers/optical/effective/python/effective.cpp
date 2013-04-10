@@ -107,6 +107,29 @@ void EffectiveFrequencyCylSolver_setLambda0(EffectiveFrequencyCylSolver& self, d
     self.k0 = 2e3*M_PI / lambda0;
 }
 
+py::object EffectiveIndex2DSolver_getMirrors(const EffectiveIndex2DSolver& self) {
+    if (!self.mirrors) return py::object();
+    return py::make_tuple(self.mirrors->first, self.mirrors->second);
+}
+
+void EffectiveIndex2DSolver_setMirrors(EffectiveIndex2DSolver& self, py::object value) {
+    if (value == py::object())
+        self.mirrors.reset();
+    else {
+        try {
+            double v = py::extract<double>(value);
+            self.mirrors.reset(std::make_pair(v,v));
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            try {
+                if (py::len(value) != 2) throw py::error_already_set();
+                self.mirrors.reset(std::make_pair<double,double>(py::extract<double>(value[0]),py::extract<double>(value[1])));
+            } catch (py::error_already_set) {
+                throw ValueError("None, float, or tuple of two floats required");
+            }
+        }
+    }
+}
 
 /**
  * Initialization of your solver to Python
@@ -136,7 +159,9 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
         RW_PROPERTY(stripex, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominat mode)");
         RW_FIELD(vneff, "Effective index in the vertical direction");
-        solver.def("get_stripe_determinant", &EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
+        solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
+                    "Mirror reflectivities. If None then they are automatically estimated from Fresenel equations");
+        solver.def("get_stripe_determinant", EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
         solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
         RECEIVER(inWavelength, "Wavelength of the light");
