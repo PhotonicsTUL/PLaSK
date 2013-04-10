@@ -17239,6 +17239,55 @@ Attributes
 
 \family typewriter
 \series bold
+<mirrors>
+\family default
+\series default
+ Mirror losses
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+R1
+\family default
+ Reflectivity of the first mirror.
+ (float [-])
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+R2
+\family default
+ Reflectivity of the second mirror.
+ (float [-])
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
 <outer>
 \family default
 \series default

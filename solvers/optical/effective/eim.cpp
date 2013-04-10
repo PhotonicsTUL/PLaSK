@@ -72,6 +72,11 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
             stripe_root.maxiter = reader.getAttribute<int>("maxiter", stripe_root.maxiter);
             reader.requireTagEnd();
+        } else if (param == "mirrors") {
+            double R1 = reader.requireAttribute<double>("R1");
+            double R2 = reader.requireAttribute<double>("R2");
+            mirrors.reset(std::make_pair(R1,R2));
+            reader.requireTagEnd();
         } else if (param == "outer") {
             outdist = reader.requireAttribute<double>("distance");
             reader.requireTagEnd();
@@ -414,17 +419,18 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         // Compute fields
         if (save) {
             dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
-            double aFF = abs2(F), aBB = abs2(B);
+            double aF = abs(F), aB = abs(B);
             // zero very small fields to avoid errors in plotting for long layers
-            if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
-            if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
+            if (aF < 1e-8 * aB) F = 0.;
+            if (aB < 1e-8 * aF) B = 0.;
+            maxff = max(maxff, aF + aB);
             yfields[i] = Field(F, B);
         }
     }
 
     if (save) {
         yfields[yend-1].B = 0.;
-        maxff = 1. / sqrt(maxff);
+        maxff = 1. / maxff;
         for (size_t i = ybegin; i < yend; ++i) yfields[i] *= maxff;
 // #ifndef NDEBUG
 //         {
@@ -452,8 +458,7 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     }
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
-        dcomplex F = yfields[yend-1].F;
-        weights[yend-1] = (F.real()*F.real() + F.imag()*F.imag()) * 0.5 / ky;
+        weights[yend-1] = abs2(yfields[yend-1].F) * 0.5 / ky;
     }
     double sum = weights[ybegin] + weights[yend-1];
 
@@ -500,15 +505,15 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
     // Adjust for mirror losses
-    dcomplex neff = dcomplex(real(x), imag(x)-getMirrorLosses());
+    dcomplex neff2 = dcomplex(real(x), imag(x)-getMirrorLosses()); neff2 *= neff2;
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {
-        kx[i] = k0 * sqrt(epsilons[i] - neff*neff);
+        kx[i] = k0 * sqrt(epsilons[i] - neff2);
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
-    Matrix* matrices = nullptr;
+    Matrix* matrices;
     if (save) matrices = aligned_malloc<Matrix>(xend-1);
 
     Matrix T = Matrix::eye();
@@ -530,10 +535,14 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     }
 
     if (save) {
+        double maxf = 1.;
         xfields[xend-1] = Field(1., 0.);
-        for (size_t i = xend-1; i > xbegin; --i) {
+        for (size_t i = xend-1; i != xbegin; --i) {
             xfields[i-1] = matrices[i-1].solve(xfields[i]);
+            maxf = max(maxf, abs(xfields[i-1].F) + abs(xfields[i-1].B));
         }
+        maxf = 1. / maxf;
+        for (size_t i = xbegin; i != xend; ++i) xfields[i] *= maxf;
         have_fields = true;
 #ifndef NDEBUG
         {
@@ -542,9 +551,8 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
+        aligned_free(matrices);
     }
-
-    if (matrices) aligned_free(matrices);
 
     if (symmetry == SYMMETRY_POSITIVE) return T.bf + T.bb;      // B0 = F0   Bn = 0
     else if (symmetry == SYMMETRY_NEGATIVE) return T.bf - T.bb; // B0 = -F0  Bn = 0
@@ -560,20 +568,20 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 
     dcomplex neff = outNeff();
 
-    if (!have_fields) detS(neff, true);
+    if (!have_fields) std::cerr << detS(neff, true) << "\n";
 
     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
+    dcomplex neff2 = dcomplex(real(neff), imag(neff)-getMirrorLosses()); neff2 *= neff2;
     for (size_t i = 0; i < xend; ++i) {
-        kx[i] = k0 * sqrt(epsilons[i] - neff*neff);
+        kx[i] = k0 * sqrt(epsilons[i] - neff2);
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
     size_t stripe = mesh->tran().findIndex(stripex);
     if (stripe < xbegin) stripe = xbegin;
     else if (stripe >= xend) stripe = xend-1;
-
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {

@@ -86,7 +86,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     dcomplex old_k0;
 
     /// Stored frequency parameter for field calculations
-    dcomplex v;
+    dcomplex freqv;
 
   public:
 
@@ -204,9 +204,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      */
     dcomplex getDeterminant(dcomplex lambda) {
         if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
-        v =  2. - 4e3*M_PI / lambda / k0;
+        freqv =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
-        dcomplex det = detS(v);
+        dcomplex det = detS(freqv);
         // log_value(v, det);
         return det;
     }
@@ -255,7 +255,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     void computeStripeNNg(std::size_t stripe);
 
     /// Return S matrix determinant for the whole structure
-    dcomplex detS(const plask::dcomplex& v);
+    dcomplex detS(const dcomplex& v, bool scale=false);
 
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
@@ -269,3 +269,4 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 }}} // namespace plask::solvers::effective
 
 #endif // PLASK__MODULE_OPTICAL_EFM_HPP
+

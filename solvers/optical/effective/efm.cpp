@@ -69,8 +69,8 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
-    v = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)(0.);
-    dcomplex k = k0 * (1. - v/2.); // get modal frequency back from frequency parameter
+    freqv = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)(0.);
+    dcomplex k = k0 * (1. - freqv/2.); // get modal frequency back from frequency parameter
     dcomplex lam = 2e3*M_PI / k;
     outWavelength = real(lam);
     outModalLoss = 1e7 * imag(k);
@@ -131,7 +131,7 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, d
         Data2DLog<dcomplex,dcomplex> logger(getId(), "freq", "v", "det");
         std::string msg = "Found modes at: ";
         for (auto& z: results) {
-            dcomplex k = k0 * (1. - v/2.); // get modal frequency back from frequency parameter
+            dcomplex k = k0 * (1. - freqv/2.); // get modal frequency back from frequency parameter
             dcomplex lam = 2e3*M_PI / k;
             msg += str(lam) + ", ";
             logger(lam, detS(z));
@@ -152,8 +152,8 @@ void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
         writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
         stageOne();
     }
-    v =  2. - 4e3*M_PI / clambda / k0;
-    double det = abs(detS(v));
+    freqv =  2. - 4e3*M_PI / clambda / k0;
+    double det = abs(detS(freqv));
     if (det > root.tolf_max) writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(clambda));
     outWavelength = real(clambda);
@@ -366,10 +366,11 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
         // Compute fields
         if (save) {
             dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
-            double aFF = abs2(F), aBB = abs2(B);
+            double aF = abs(F), aB = abs(B);
             // zero very small fields to avoid errors in plotting for long layers
-            if (aFF < 1e-16 * aBB) F = 0.; else maxff = max(maxff, aFF);
-            if (aBB < 1e-16 * aFF) B = 0.; else maxff = max(maxff, aBB);
+            if (aF < 1e-8 * aB) F = 0.;
+            if (aB < 1e-8 * aF) B = 0.;
+            maxff = max(maxff, aF + aB);
             zfields[i] = FieldZ(F, B);
         }
     }
@@ -454,7 +455,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 }
 
 
-dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
+dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
 {
     // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
     rfields[rsize-1] = FieldR(0., 1.);
@@ -495,6 +496,12 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v)
                   m*J2[0] - x2*J2[1],    m*H2[0] - x2*H2[1]);
 
         rfields[i-1] = A.solve(B * rfields[i]);
+
+    }
+
+    if (scale) {
+        double f = 1. / abs(rfields[0].J);
+        for (size_t r = 0; r != rsize; ++r) rfields[r] *= f;
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
@@ -511,6 +518,9 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
     if (!outWavelength.hasValue() || k0 != old_k0 || m != old_m) throw NoValue(OpticalIntensity::NAME);
 
     if (!have_fields) {
+
+        detS(freqv, true);
+
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
@@ -553,7 +563,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
             long nz, ierr;
 
             size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
-            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
+            dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-freqv));
             if (real(x) < 0.) x = -x;
             zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
             if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
@@ -567,7 +577,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
 
             size_t iz = mesh->axis1.findIndex(z);
             if (iz >= zsize) iz = zsize-1;
-            dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - v * nrCache[stripe][iz]*ngCache[stripe][iz]);
+            dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - freqv * nrCache[stripe][iz]*ngCache[stripe][iz]);
             if (real(kz) < 0.) kz = -kz;
             z -= mesh->axis1[max(int(iz)-1, 0)];
             dcomplex phasz = exp(- I * kz * z);
@@ -607,7 +617,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                 long nz, ierr;
                 if (r < 0.) r = -r;
                 size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
-                dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-v));
+                dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-freqv));
                 if (real(x) < 0.) x = -x;
                 zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
                 if (ierr != 0)
@@ -636,7 +646,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                     double z = rect_mesh.axis1[idz];
                     size_t iz = mesh->axis1.findIndex(z);
                     if (iz >= zsize) iz = zsize-1;
-                    dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - v * nrCache[stripe][iz]*ngCache[stripe][iz]);
+                    dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - freqv * nrCache[stripe][iz]*ngCache[stripe][iz]);
                     if (real(kz) < 0.) kz = -kz;
                     z -= mesh->axis1[max(int(iz)-1, 0)];
                     dcomplex phasz = exp(- I * kz * z);
