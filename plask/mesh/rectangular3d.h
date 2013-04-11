@@ -787,9 +787,9 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<3, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
-        std::size_t index0 = axis0.findIndex(point.c0);
-        std::size_t index1 = axis1.findIndex(point.c1);
-        std::size_t index2 = axis2.findIndex(point.c2);
+        long index0 = axis0.findIndex(point.c0);
+        long index1 = axis1.findIndex(point.c1);
+        long index2 = axis2.findIndex(point.c2);
 
         if (index2 == 0)
             return interpolateLinear2D(
@@ -822,21 +822,21 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
         // index1 and index2 are in bounds here:
         if (index0 == 0)
         return interpolation::bilinear(axis1[index1-1], axis1[index1],
-                                        axis2[index2-1], axis2[index2],
-                                        data[index(0, index1-1, index2-1)],
-                                        data[index(0, index1,   index2-1)],
-                                        data[index(0, index1,   index2  )],
-                                        data[index(0, index1-1, index2  )],
-                                        point.c1, point.c2);
+                                       axis2[index2-1], axis2[index2],
+                                       data[index( 0, max<long>(index1-1,0),            max<long>(index2-1,0) )],
+                                       data[index( 0, min<long>(index1,axis1.size()-1), max<long>(index2-1,0) )],
+                                       data[index( 0, min<long>(index1,axis1.size()-1), min<long>(index2,axis2.size()-1) )],
+                                       data[index( 0, max<long>(index1-1,0),            min<long>(index2,axis2.size()-1) )],
+                                       point.c1, point.c2);
         if (index0 == axis0.size()) {
             --index0;
         return interpolation::bilinear(axis1[index1-1], axis1[index1],
-                                        axis2[index2-1], axis2[index2],
-                                        data[index(index0, index1-1, index2-1)],
-                                        data[index(index0, index1,   index2-1)],
-                                        data[index(index0, index1,   index2  )],
-                                        data[index(index0, index1-1, index2  )],
-                                        point.c1, point.c2);
+                                       axis2[index2-1], axis2[index2],
+                                       data[index( 0, max<long>(index1-1,0),            max<long>(index2-1,0) )],
+                                       data[index( 0, min<long>(index1,axis1.size()-1), max<long>(index2-1,0) )],
+                                       data[index( 0, min<long>(index1,axis1.size()-1), min<long>(index2,axis2.size()-1) )],
+                                       data[index( 0, max<long>(index1-1,0),            min<long>(index2,axis2.size()-1) )],
+                                       point.c1, point.c2);
         }
 
         // all indexes are in bounds

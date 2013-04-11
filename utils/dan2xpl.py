@@ -428,7 +428,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('voltage = ELECTRICAL.outPotential(plotgrid)')
             out('current = ELECTRICAL.outCurrentDensity(plotgrid)')
             if actlevel is not False:
-                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "HYMAN")')
+                out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "SPLINE")')
 
         h5mode = 'w'
         out('\nif has_hdf5:')

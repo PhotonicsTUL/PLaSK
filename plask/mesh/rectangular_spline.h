@@ -42,7 +42,7 @@ namespace detail {
 }
 
 template <typename Mesh1D, typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATION_HYMAN> {
+struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATION_SPLINE> {
 
     static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec,
                             const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {

@@ -366,6 +366,8 @@ double FiniteElementMethodThermal3DSolver::compute(int loops) {
 
 void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
+    this->writelog(LOG_DETAIL, "Solving matrix system");
+
     int info = 0;
 
     // Factorize matrix

@@ -28,7 +28,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
             plask::SolverOver<Geometry2DType> (name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
-            interpolation_method(INTERPOLATION_HYMAN)
+            interpolation_method(INTERPOLATION_SPLINE)
             {}
 
         virtual std::string getClassName() const;

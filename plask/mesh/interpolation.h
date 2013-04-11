@@ -87,8 +87,7 @@ enum InterpolationMethod: unsigned {
     DEFAULT_INTERPOLATION = 0,  ///< Default interpolation (depends on source mesh)
     INTERPOLATION_NEAREST,      ///< Nearest neighbor interpolation
     INTERPOLATION_LINEAR,       ///< Linear interpolation
-    INTERPOLATION_SPLINE,       ///< Spline interpolation
-    INTERPOLATION_HYMAN,        ///< Spline interpolation with Hyman monotonic filter and parabolic derivatives
+    INTERPOLATION_SPLINE,       ///< Spline interpolation with parabolic derivatives and Hyman monotonic filter
     INTERPOLATION_FOURIER,      ///< Fourier transform interpolation
     // ...add new interpolation algorithms here...
 #   ifndef DOXYGEN
@@ -101,7 +100,6 @@ static constexpr const char* interpolationMethodNames[] = {
     "NEAREST",
     "LINEAR",
     "SPLINE",
-    "HYMAN",
     "FOURIER",
     // ...attach new interpolation algorithm names here...
     "ILLEGAL"
