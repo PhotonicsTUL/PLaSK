@@ -28,9 +28,11 @@ struct FilterImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateT
 
     DataSourceTPtr outerSource;
 
+    shared_ptr<OutputSpaceType> outputSpace;    //shared_ptr?
+
     typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
 
-    FilterImpl(const std::string &name): Solver(name) {
+    FilterImpl(shared_ptr<OutputSpaceType> outputSpace): Solver("Filter"), outputSpace(outputSpace) {
         this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         };
