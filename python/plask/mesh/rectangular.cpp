@@ -719,13 +719,13 @@ void register_mesh_rectangular()
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
         "Two-dimensional mesh\n\n"
-        "Regular2D(ordering='10')\n    create empty mesh\n\n"
-        "Regular2D(axis0, axis1, ordering='10')\n    create mesh with axes supplied as sequences of numbers\n\n"
+        "Regular2D(ordering='01')\n    create empty mesh\n\n"
+        "Regular2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
         ); regular2d
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("copy", &Mesh__init__<RegularMesh2D, RegularMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh2D::axis1, "The second (vertical) axis of the mesh")
@@ -769,14 +769,14 @@ void register_mesh_rectangular()
 
     py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>, boost::noncopyable>regular3d("Regular3D",
         "Two-dimensional mesh\n\n"
-        "Regular3D(ordering='210')\n    create empty mesh\n\n"
-        "Regular3D(axis0, axis1, axis2, ordering='210')\n    create mesh with axes supplied as mesh.Regular1D\n\n"
+        "Regular3D(ordering='012')\n    create empty mesh\n\n"
+        "Regular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.Regular1D\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",
         py::no_init
         ); regular3d
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
         .def("copy", &Mesh__init__<RegularMesh3D, RegularMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh3D::axis1, "The second (transverse) axis of the mesh")

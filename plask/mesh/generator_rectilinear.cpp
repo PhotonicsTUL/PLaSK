@@ -105,10 +105,8 @@ RectilinearMesh1D RectilinearMeshDivideGenerator<dim>::get1DMesh(const Rectiline
     }
     result.addOrderedPoints(points.begin(), points.end());
 
-    if (result.size() <= 2) return result;
-
     // Now ensure, that the grids do not change to quickly
-    if (gradual) {
+    if (result.size() > 2 && gradual) {
         size_t end = result.size()-2;
         double w_prev = INFINITY, w = result[1]-result[0], w_next = result[2]-result[1];
         for (size_t i = 0; i <= end;) {

@@ -435,7 +435,12 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodE
     this->writelog(LOG_DETAIL, "Getting current densities");
     if (!mCurrentDensities) saveCurrentDensities();
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*(this->mesh->getMidpointsMesh()), mCurrentDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
+    auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    auto result = interpolate(*(this->mesh->getMidpointsMesh()), mCurrentDensities, dest_mesh, method);
+    constexpr Vec<2> zero(0.,0.);
+    for (size_t i = 0; i < result.size(); ++i)
+        if (!this->geometry->getChildBoundingBox().includes(dest_mesh[i])) result[i] = zero;
+    return result;
 }
 
 template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
@@ -444,7 +449,11 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
     this->writelog(LOG_DETAIL, "Getting heat densities");
     if (!mHeatDensities) saveHeatDensities(); // we will compute fluxes only if they are needed
     if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
-    return interpolate(*(this->mesh->getMidpointsMesh()), mHeatDensities, WrappedMesh<2>(dst_mesh, this->geometry), method);
+    auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    auto result = interpolate(*(this->mesh->getMidpointsMesh()), mHeatDensities, dest_mesh, method);
+    for (size_t i = 0; i < result.size(); ++i)
+        if (!this->geometry->getChildBoundingBox().includes(dest_mesh[i])) result[i] = 0.;
+    return result;
 }
 
 

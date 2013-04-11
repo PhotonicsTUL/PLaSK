@@ -153,13 +153,13 @@ def plot_field(field, levels=16, fill=True, antialiased=False, **kwargs):
     if type(field.mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         axis0 = field.mesh.axis0
         axis1 = field.mesh.axis1
-        data = field.array
+        data = field.array.transpose()
     elif type(field.mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
         axes = [ axis for axis in (field.mesh.axis0, field.mesh.axis1, field.mesh.axis2) if len(axis) > 1 ]
         if len(axes) != 2:
             raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
         axis0, axis1 = axes
-        data = field.array.reshape((len(axis1), len(axis0)))
+        data = field.array.reshape((len(axis0), len(axis1)))
     else:
         raise NotImplementedError("mesh type not supported")
 

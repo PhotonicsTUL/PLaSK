@@ -376,8 +376,8 @@ namespace detail {
         typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
         static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
 
-            if (RegisterT::template setValueForMesh< RectilinearMesh3D >(self, data)) return;
-            if (RegisterT::template setValueForMesh< RegularMesh3D >(self, data)) return;
+            if (RegisterT::template setValueForMesh<RectilinearMesh3D>(self, data)) return;
+            if (RegisterT::template setValueForMesh<RegularMesh3D>(self, data)) return;
 
             throw TypeError("Data on wrong mesh type for this operation");
         }

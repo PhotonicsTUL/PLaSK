@@ -64,7 +64,7 @@ double Air::nr(double wl, double T) const { return 1.; }
 
 double Air::cp(double T) const { throwNotApplicable("cp(double T)"); return 0; }
 
-Tensor2<double> Air::thermk(double T, double h) const { return 5e-5; }
+Tensor2<double> Air::thermk(double T, double h) const { return 0.024; }
 
 double Air::VBO(double T, double e, char point) const { throwNotApplicable("VBO(double T, double e, char point)"); return 0; }
 

@@ -492,10 +492,10 @@ struct Material {
     virtual double D(double T) const;
 
     /**
-     * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k[W/(m*K)].
+     * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k [W/(m*K)].
      * @param T temperature [K]
      * @param h layer thickness [µm]
-     * @return thermal conductivity k[W/(m*K)]
+     * @return thermal conductivity k [W/(m*K)]
      */
     virtual Tensor2<double> thermk(double T, double h=INFINITY) const;
 

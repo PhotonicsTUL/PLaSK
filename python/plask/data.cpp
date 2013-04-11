@@ -29,10 +29,10 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 5; }
 
 
-    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh3D& mesh) { return { mesh.axis2.size(), mesh.axis1.size(), mesh.axis0.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RegularMesh2D& mesh) { return { mesh.axis1.size(), mesh.axis0.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RegularMesh3D& mesh) { return { mesh.axis2.size(), mesh.axis1.size(), mesh.axis0.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis0.size(), mesh.axis1.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh3D& mesh) { return { mesh.axis0.size(), mesh.axis1.size(), mesh.axis2.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RegularMesh2D& mesh) { return { mesh.axis0.size(), mesh.axis1.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RegularMesh3D& mesh) { return { mesh.axis0.size(), mesh.axis1.size(), mesh.axis2.size() }; }
 
 
     template <typename T>
@@ -40,11 +40,11 @@ namespace detail {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
         if (mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
-            strides[0] = mesh.axis0.size() * sizeof(T);
-            strides[1] = sizeof(T);
-        } else {
             strides[0] = sizeof(T);
-            strides[1] = mesh.axis1.size() * sizeof(T);
+            strides[1] = mesh.axis0.size() * sizeof(T);
+        } else {
+            strides[0] = mesh.axis1.size() * sizeof(T);
+            strides[1] = sizeof(T);
         }
         return strides;
     }
@@ -65,9 +65,9 @@ namespace detail {
 
     #define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(MeshT, first, second, third) \
         case MeshT::ORDER_##first##second##third: \
-            strides[2-first] = mesh.axis##second.size() * mesh.axis##third.size() * sizeof(T); \
-            strides[2-second] = mesh.axis##third.size() * sizeof(T); \
-            strides[2-third] = sizeof(T); \
+            strides[first] = mesh.axis##second.size() * mesh.axis##third.size() * sizeof(T); \
+            strides[second] = mesh.axis##third.size() * sizeof(T); \
+            strides[third] = sizeof(T); \
             break;
 
     template <typename T>

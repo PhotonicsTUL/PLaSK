@@ -139,7 +139,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
-    auto heats = inHeatDensity(mesh->getMidpointsMesh());
+    auto heats = inHeatDensity(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 
     // zero the matrix and the load vector
     A.clear();
