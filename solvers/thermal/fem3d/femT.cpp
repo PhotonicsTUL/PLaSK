@@ -179,12 +179,14 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
         else
             std::tie(ky,kz) = std::tuple<double,double>(material->thermk(temp));
 
+        ky *= 1e-6; kz *= 1e-6;                                         // W/m -> W/µm
+
         kx = ky/dx; kx = ky*dy; kx = ky*dz;
         ky *= dx;   ky /= dy;   ky *= dz;
         kz *= dx;   kz *= dy;   kz /= dz;
 
         // load vector: heat densities
-        double f = 0.125e-18 * dx * dy * dz * heats[elem.getIndex()]; // 1e-18 -> to transform µm³ into m³
+        double f = 0.125e-18 * dx * dy * dz * heats[elem.getIndex()];   // 1e-18 -> to transform µm³ into m³
 
         // set symmetric matrix components
         double K[8][8];
