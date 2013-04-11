@@ -26,21 +26,28 @@ public:
 
     virtual void setDestinationSpace(shared_ptr<OutputSpaceType>) { this->destinationSpace = destinationSpace; }*/
 
-    /**
+    /*
      * Check if this source can provide value for given point.
      * @param p point, in outer space coordinates
      * @return @c true only if this can provide data in given point @p p
      */
-    virtual bool canProvide(const Vec<OutputSpaceType::DIMS, double>& p) const = 0;
+    //virtual bool canProvide(const Vec<OutputSpaceType::DIMS, double>& p) const = 0;
+
+    /**
+     * Check if this source can provide value for given point and eventualy return this value.
+     * @param p point (in outer space coordinates)
+     * @return value in point @p, set only if this can provide data in given point @p p
+     */
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
    // virtual ValueT get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-   /* virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
-        DataVector<ValueT> result(dst_mesh.size());
+    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        DataVector<typename PropertyT::ValueType> result(dst_mesh.size());
         for (std::size_t i = 0; i < result.size(); ++i)
-            result[i] = get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            result[i] = *get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         return result;
-    }*/
+    }
 
 };
 
@@ -87,6 +94,10 @@ public:
             this->path = boost::optional<const PathHints>();
     }
 
+    const PathHints* getPath() const {
+        return path ? &*path : nullptr;
+    }
+
     void inOrOutWasChanged(GeometryObject::Event& e) {
         if (e.hasFlag(GeometryObject::Event::DELETE)) disconnect(); else
         if (e.hasFlag(GeometryObject::Event::RESIZE)) calcConnectionParameters();
@@ -102,6 +113,68 @@ public:
         calcConnectionParameters();
     }
 };
+
+template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
+struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType, InputSpaceType, OutputGeomObj, InputGeomObj> {
+
+    struct Region {
+
+        /// Input bouding-box in output geometry.
+        typename OutputSpaceType::Box inGeomBB;
+
+        /// Translation to input object (before eventual space reduction).
+        typename OutputSpaceType::DVec inTranslation;
+
+        Region(const typename OutputSpaceType::Box& inGeomBB, const typename OutputSpaceType::DVec& inTranslation)
+            : inGeomBB(inGeomBB), inTranslation(inTranslation) {}
+
+    };
+
+    std::vector<Region> regions;
+
+    const Region* findRegion(const typename OutputSpaceType::DVec& p) const {
+        for (const Region& r: regions)
+            if (r->inGeomBB.include(p)) return &r;
+        return nullptr;
+    }
+
+    virtual void calcConnectionParameters() {
+        regions.clear();
+        std::vector<typename OutputSpaceType::DVec> pos = this->outObj->getObjectPositions(*this->inObj, this->getPath());
+        std::vector<typename OutputSpaceType::Box> bb = this->outObj->getObjectBoundingBoxes(*this->inObj, this->getPath());
+        for (std::size_t i = 0; i < pos.size(); ++i)
+            regions.emplace_back(bb[i], pos[i]);
+    }
+
+};
+
+/// Don't use this directly, use TranslatedDataSource instead.
+template <typename PropertyT, PropertyType propertyType, typename SpaceType, typename VariadicTemplateTypesHolder>
+struct TranslatedInnerDataSourceImpl {
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "TranslatedDataSource can't be used with single value properties (it can be use only with fields properties)");
+};
+
+/// Don't use this directly, use TranslatedDataSource instead.
+template <typename PropertyT, typename SpaceType, typename... ExtraArgs>
+struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
+: public InnerDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIMS>, GeometryObjectD<SpaceType::DIMS>>
+{
+    using typename InnerDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIMS>, GeometryObjectD<SpaceType::DIMS>>::Region;
+
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<SpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
+        const Region* r = this->findRegion(p);
+        if (r)
+            return in(p - r->inTranslation, std::forward<ExtraArgs>(extra_args)..., method);
+        else
+            return boost::optional<typename PropertyT::ValueType>();
+    }
+
+    //TODO effective: virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const
+};
+
+template <typename PropertyT, typename SpaceType>
+using TranslatedInnerDataSource = TranslatedInnerDataSourceImpl<PropertyT, PropertyT::propertyType, SpaceType, typename PropertyT::ExtraParams>;
+
 
 /// Don't use this directly, use StandardFilter instead.
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
