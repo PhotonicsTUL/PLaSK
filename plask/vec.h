@@ -107,6 +107,31 @@ inline Vec<2, double> rotateToLonTranSgn(const Vec<3, double>& v) {
     return vec(std::copysign(std::hypot(v.lon(), v.tran()), v.tran()), v.vert());
 }
 
+/**
+ * @relates Vec
+ * Calculate @p v3 + @p v2 with given @p lon coordinate.
+ * @param v3 vector in 3D space
+ * @param v2 vector in 2D space
+ * @param lon last coordinate of v2
+ * @return @p v3 + @p v2 with given @p lon coordinate
+ */
+template <typename T>
+inline Vec<3, T> vec3Dplus2D(const Vec<3, T>& v3, const Vec<2, T>& v2, T lon) {
+    return Vec<3, T>(v3.lon() + lon, v3.tran() + v2.tran(), v3.up() + v2.up());
+}
+
+/**
+ * @relates Vec
+ * Calculate @p v3 + @p v2, same as vec3Dplus2D(v3, v2, 0.0).
+ * @param v3 vector in 3D space
+ * @param v2 vector in 2D space
+ * @return @p v3 + @p v2
+ */
+template <typename T>
+inline Vec<3, T> vec3Dplus2D(const Vec<3, T>& v3, const Vec<2, T>& v2) {
+    return Vec<3, T>(v3.lon(), v3.tran() + v2.tran(), v3.up() + v2.up());
+}
+
 }
 
 #endif // PLASK__VEC_H

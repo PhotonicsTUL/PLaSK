@@ -71,7 +71,7 @@ public:
 
 template <typename PropertyTag>
 inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& manager) {
-    shared_ptr<GeometryObject> in = manager.requireGeometryObject(reader.requireAttribute("in"));
+ /*   shared_ptr<GeometryObject> in = manager.requireGeometryObject(reader.requireAttribute("in"));
     shared_ptr<GeometryObject> out = manager.requireGeometryObject(reader.requireAttribute("out"));
     boost::optional<std::string> path_str = reader.getAttribute("path");
     const PathHints *path = path_str ? manager.getPathHints(*path_str) : nullptr;
@@ -88,7 +88,7 @@ inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& m
 
     } else if (out->isInSubtree(*in)) {   //output is outer
 
-    }
+    }*/
     throw NotImplemented("standard filter (for given configuration)");
 }
 

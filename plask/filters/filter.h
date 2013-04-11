@@ -148,6 +148,19 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
 };
 
+template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
+struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType, InputSpaceType, OutputGeomObj, InputGeomObj> {
+
+    typename InputSpaceType::DVec inTranslation;
+
+    virtual void calcConnectionParameters() {
+        std::vector<typename OutputSpaceType::DVec> pos = this->outObj->getObjectPositions(*this->inObj, this->getPath());
+        if (pos.size() != 1) throw Exception("Inner output geometry object has no unambiguous position in outer input geometry object.");
+        inTranslation = pos[0];
+    }
+
+};
+
 /// Don't use this directly, use TranslatedDataSource instead.
 template <typename PropertyT, PropertyType propertyType, typename SpaceType, typename VariadicTemplateTypesHolder>
 struct TranslatedInnerDataSourceImpl {
@@ -174,6 +187,9 @@ struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, Vari
 
 template <typename PropertyT, typename SpaceType>
 using TranslatedInnerDataSource = TranslatedInnerDataSourceImpl<PropertyT, PropertyT::propertyType, SpaceType, typename PropertyT::ExtraParams>;
+
+
+
 
 
 /// Don't use this directly, use StandardFilter instead.
@@ -282,219 +298,7 @@ using StandardFilter = StandardFilterImpl<PropertyT, PropertyT::propertyType, in
 /*template <int DIMS, typename typeName>
 using DataSource = std::function<DataVector<const typeName>(const MeshD<DIMS>& dst_mesh)>;*/
 
-struct PointsOnLineMesh: public MeshD<3> {
 
-    std::size_t lastPointNr;
-
-    Vec<3, double> begin;
-
-    double longSize;
-
-    PointsOnLineMesh() = default;
-
-    PointsOnLineMesh(Vec<3, double> begin, double lonSize, std::size_t pointsCount)
-        : lastPointNr(pointsCount-1), begin(begin), longSize(lonSize) {}
-
-    virtual Vec<3, double> at(std::size_t index) const override {
-        Vec<3, double> ans = begin;
-        ans.lon() += longSize * index / lastPointNr;
-        return ans;
-    }
-
-    virtual std::size_t size() const override {
-        return lastPointNr + 1;
-    }
-
-};
-
-struct Mesh2DCartTo3D: public MeshD<3> {
-
-    const MeshD<2>& sourceMesh;
-
-    double lon;
-
-    Mesh2DCartTo3D(const MeshD<2>& sourceMesh, double lon)
-        : sourceMesh(sourceMesh), lon(lon) {}
-
-    virtual Vec<3, double> at(std::size_t index) const override {
-        return vec(sourceMesh.at(index), lon);
-    }
-
-    virtual std::size_t size() const override {
-        return sourceMesh.size();
-    }
-};
-
-struct Cartesian2Dto3DEnviroment {
-
-    /// Place of extrusion inside outer 3D geometry, calculated using geometries.
-    Vec<3, double> translation;
-
-    /// Length of line in 3D geometry. This line is calculated for each point in inner 2D space. Length from extrusion.
-    double lonSize;
-
-    Cartesian2Dto3DEnviroment() {}
-
-    Cartesian2Dto3DEnviroment(Vec<3, double> translation, double lonSize)
-        : translation(translation), lonSize(lonSize) {}
-
-    void setVertTran(Vec<3,double>& result, const Vec<2,double>& v) const {
-        result.tran() = translation.tran() + v.tran();
-        result.vert() = translation.vert() + v.vert();
-    }
-
-    /**
-     * Each point in 2D geometry is extruded to line segment in 3D geometry.
-     *
-     * If @c b is begin of this line segment, than each point inside this segment has coordinate
-     * which can be calulate by adding to @c b.lon() number in range [0.0, lonSize].
-     * @param v point in 2D geometry coordinates
-     * @return begin of line segment, in geometry 3D coordinates
-     */
-    Vec<3,double> lineBegin(const Vec<2,double>& v) const {
-        Vec<3, double> result = translation;
-        result.tran() += v.tran();
-        result.vert() += v.vert();
-        return result;
-    }
-
-    /**
-     * Each point in 2D geometry is extruded to line segment in 3D geometry.
-     * @param v point in 2D geometry coordinates
-     * @return end of line segment, in geometry 3D coordinates
-     * @see lineBegin(const Vec<2,double>&)
-     */
-    Vec<3,double> lineEnd(const Vec<2,double>& v) const {
-        Vec<3, double> result = translation;
-        result.tran() += v.tran();
-        result.vert() += v.vert();
-        result.lon() += lonSize;
-        return result;
-    }
-
-    /**
-     * Each point in 2D geometry is extruded to line in segment 3D geometry.
-     * @param v point in 2D geometry coordinates
-     * @param at position in line, from 0.0 to 1.0: 0.0 for line begin, 1.0 for line end
-     * @return point at line segment, in geometry 3D coordinates
-     * @see lineBegin(const Vec<2,double>&)
-     */
-    Vec<3,double> lineAt(const Vec<2,double>& v, double at) const {
-        Vec<3, double> result = translation;
-        result.tran() += v.tran();
-        result.vert() += v.vert();
-        result.lon() += lonSize * at;
-        return result;
-    }
-};
-
-/// Don't use this directly, use ChangeSpaceCartesian2Dto3D instead.
-template <typename PropertyT, typename VariadicTemplateTypesHolder>
-struct ChangeSpaceCartesian2Dto3DImpl: public StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian> {};
-
-/// Don't use this directly, use ChangeSpaceCartesian2Dto3D instead.
-template <typename PropertyT, typename... ExtraParams>
-class ChangeSpaceCartesian2Dto3DImpl<PropertyT, VariadicTemplateTypesHolder<ExtraParams...> >
-        : public StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian> {
-
-    boost::signals2::connection geomConnection;
-    
-public:
-
-    // type of ChangeSpaceCartesian2Dto3D logic, it calculates and returns values at requested_points using given data_source and enviroment
-    /*typedef std::function<
-        DataVector<const typename PropertyT::ValueType>(
-            const MeshD<2>& requested_points,
-            DataSource<3, const typename PropertyT::DataType> data_source,
-            const Cartesian2Dto3DEnviroment& enviroment
-        )
-    > Logic;
-
-    Logic logic;*/  //good, but unused now, allow to custom avarage logic, to enable when need
-
-    /// Points count for avarage function
-    std::size_t pointsCount;    //eventualy should be moved to logic
-    
-    Cartesian2Dto3DEnviroment enviroment;
-    
-    void getParameters(shared_ptr<const Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints* path = nullptr) {
-        std::vector< Vec<3, double> > pos = outerInGeometry->getObjectPositions(innerOutGeometry, path);
-        if (pos.size() != 1) throw Exception("ChangeSpaceCartesian2Dto3D: innerOutGeometry has no unambiguous position in outerInGeometry.");
-        enviroment.translation = pos[0];
-        enviroment.lonSize = innerOutGeometry->getLength();
-    }
-    
-    ChangeSpaceCartesian2Dto3DImpl(const Vec<3, double>& translation, double lonSize, std::size_t pointsCount = 10)
-        : StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian>("ChangeSpaceCartesian2Dto3DFilter"), pointsCount(pointsCount), enviroment(translation, lonSize) {}
-    
-    ChangeSpaceCartesian2Dto3DImpl(shared_ptr<Geometry3D> outerInGeometry, shared_ptr<const Extrusion> innerOutGeometry, const PathHints* path = nullptr, std::size_t pointsCount = 10)
-        : StandardFilter<PropertyT, Geometry3D, Geometry2DCartesian>("ChangeSpaceCartesian2Dto3DFilter"), pointsCount(pointsCount)
-    {
-        getParameters(outerInGeometry, innerOutGeometry, path);
-        if (path) {
-            PathHints pathCopy = *path;
-//            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
-//                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry, &pathCopy);
-//            });
-        } //else
-//            geomConnection = outerInGeometry->changed.connect([=](GeometryObject::Event& e) {
-//                    if (e.hasFlag(GeometryObject::Event::RESIZE)) getParameters(outerInGeometry, innerOutGeometry);
-//            });   //Windows GCC 4.7.1 not compile this
-    }
-    
-    ~ChangeSpaceCartesian2Dto3DImpl() {
-        geomConnection.disconnect();
-    }
-
-    virtual DataVector<const typename PropertyT::ValueType> apply(const MeshD<2>& requested_points, ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) {
-        /*return logic(
-            requested_points,
-            [&, extra_args...] (const MeshD<3>& dst_mesh) -> DataVector<const typename PropertyT::DataType> {
-                return in(dst_mesh, extra_args..., method);
-            },
-            enviroment
-        );    //good code but not supported by GCC 4.7
-        // workaround:
-        auto t = std::make_tuple(std::ref(extra_args)...);
-        return logic(
-                requested_points,
-                [&] (const MeshD<3>& dst_mesh) -> DataVector<const typename PropertyT::DataType> {
-                    return in(dst_mesh, t, method);
-                },
-                enviroment
-            );*/
-        if (pointsCount == 1) {
-            return this->in(
-                        Mesh2DCartTo3D(requested_points, enviroment.translation.lon() + enviroment.lonSize * 0.5),
-                        std::forward<ExtraParams>(extra_args)...,
-                        method
-                    );
-        } else {
-            DataVector<typename PropertyT::ValueType> result(requested_points.size());
-            PointsOnLineMesh lineMesh;
-            const double d = enviroment.lonSize / result.size();
-            lineMesh.lastPointNr = result.size() - 1;
-            lineMesh.longSize = enviroment.lonSize - d;
-            lineMesh.begin.lon() = enviroment.translation.lon() + d * 0.5;
-            for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
-                enviroment.setVertTran(lineMesh.begin, requested_points[src_point_nr]);
-                result[src_point_nr] =
-                        avarage(this->in(
-                            lineMesh,
-                            std::forward<ExtraParams>(extra_args)...,
-                            method
-                        ));
-            }
-            return result;
-        }
-    }
-};
-
-/**
- * Filter which recalculate field from 3D geometry to 2D cartesian geometry included in this 3D geometry.
- */
-template <typename PropertyT>
-using ChangeSpaceCartesian2Dto3D = ChangeSpaceCartesian2Dto3DImpl<PropertyT, typename PropertyT::ExtraParams>;
 
 
 
