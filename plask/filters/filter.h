@@ -66,6 +66,7 @@ public:
      */
     void setOuterSource(DataSourceTPtr&& outerSource) {
         this->outerSource = std::move(outerSource);
+        connect(*outerSource);
     }
 
     /**
@@ -74,14 +75,15 @@ public:
      */
     void setDefaultValue(const ValueT& value) {
         this->outerSource.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
+        connect(*outerSource);
     }
 
 private:
     // used by source creators methods
-    template <typename ReceiverT>
-    ReceiverT& connect(ReceiverT& in) {
+    template <typename SourceT>
+    void connect(SourceT& in) {
         in.providerValueChanged.connect([&] (/*Provider::Listener&*/) { out.fireChanged(); });
-        return in;
+        out.fireChanged();
     }
 
 };
