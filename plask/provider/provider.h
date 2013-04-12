@@ -252,7 +252,10 @@ public:
      * @param newProviderIsPrivate @c true only if @p provider is private for this and will be deleted by this receiver
      */
     void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
-        if (this->provider == provider) return;
+        if (this->provider == provider) {
+            this->hasPrivateProvider = newProviderIsPrivate;
+            return;
+        }
         providerConnection.disconnect();
         if (hasPrivateProvider) delete this->provider;
         if (provider) providerConnection = provider->changed.connect(
@@ -262,8 +265,7 @@ public:
                             this->provider = 0;
                         }
                         this->fireChanged();
-                    }
-                    );
+                    });
         this->provider = provider;
         this->hasPrivateProvider = newProviderIsPrivate;
         this->fireChanged();
