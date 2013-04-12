@@ -69,7 +69,7 @@ public:
     ReceiverFor<PropertyT, InputSpaceType> in;
 
     DataSourceWithReceiver() {
-        in.providerValueChanged.connect([&] (Provider::Listener&) { this->fireChanged(); });
+        in.providerValueChanged.connect([&] (/*Provider::Listener&*/) { this->fireChanged(); });
     }
 
     ~DataSourceWithReceiver() {
@@ -160,6 +160,35 @@ struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
     }
 
 };
+
+/// Don't use this directly, use ConstDataSource instead.
+template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
+struct ConstDataSourceImpl {
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "filter data sources can't be use with single value properties (it can be use only with fields properties)");
+};
+
+template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
+struct ConstDataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...>>
+        : public DataSource<PropertyT, OutputSpaceType> {
+
+public:
+
+    typename PropertyT::ValueType value;
+
+    ConstDataSourceImpl(const typename PropertyT::ValueType& value): value(value) {}
+
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return value;
+    }
+
+    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return DataVector<typename PropertyT::ValueType>(dst_mesh.size(), value);
+    }
+
+};
+
+template <typename PropertyT, typename OutputSpaceType>
+using ConstDataSource = ConstDataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpaceType, typename PropertyT::ExtraParams>;
 
 }   // plask
 

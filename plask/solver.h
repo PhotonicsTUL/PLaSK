@@ -604,18 +604,8 @@ class SolverOver: public Solver {
 
     void diconnectGeometry() {
         if (this->geometry)
-            this->geometry->changedDisconnectMethod(this, &SolverOver<SpaceT>::onGeometryChangeInternal);
+            this->geometry->changedDisconnectMethod(this, &SolverOver<SpaceT>::onGeometryChange);
     }
-
-    void onGeometryChangeInternal(const Geometry::Event& evt) {
-        this->onGeometryChange(evt);
-        this->regenerateMesh();
-    }
-
-    // By default this class does not have the mesh, so do nothing
-    virtual void regenerateMesh() {}
-
-    template <typename, typename> friend class SolverWithMesh;
 
   protected:
 
@@ -644,7 +634,7 @@ class SolverOver: public Solver {
         diconnectGeometry();
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager);
+    virtual void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
@@ -656,7 +646,6 @@ class SolverOver: public Solver {
     virtual void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
     }
-
 
     /**
      * Get current solver geometry space.
@@ -674,8 +663,8 @@ class SolverOver: public Solver {
         diconnectGeometry();
         this->geometry = geometry;
         if (this->geometry)
-            this->geometry->changedConnectMethod(this, &SolverOver<SpaceT>::onGeometryChangeInternal);
-        onGeometryChangeInternal(Geometry::Event(*geometry, 0));
+            this->geometry->changedConnectMethod(this, &SolverOver<SpaceT>::onGeometryChange);
+        onGeometryChange(Geometry::Event(*geometry, 0));
     }
 };
 
@@ -698,7 +687,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
         mesh_generator.reset();
     }
 
-    virtual void regenerateMesh() {
+    void regenerateMesh() {
         if (this->mesh_generator && this->geometry) {
             auto mesh = (*mesh_generator)(this->geometry->getChild());
             if (mesh == this->mesh) return;
@@ -735,7 +724,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
         clearGenerator();
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager);
+    virtual void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
@@ -746,6 +735,18 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      */
     virtual void onMeshChange(const typename MeshT::Event& evt) {
         this->invalidate();
+    }
+
+    /**
+     * This method is called when the geometry is changed.
+     * It calls invalidate(); and regenerateMesh();
+     *
+     * Typically, you should call SolverWithMesh::onGeometryChange(const Geometry::Event&) when you overwrite this method.
+     * @param evt information about geometry changes
+     */
+    virtual void onGeometryChange(const Geometry::Event& evt) override {
+        this->invalidate();
+        this->regenerateMesh();
     }
 
 	/**

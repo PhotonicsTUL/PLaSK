@@ -172,45 +172,14 @@ struct Provider {
     Provider() = default;
 
     /**
-     * Provider listener (observer). Can react to Provider changes.
+     * Signal called when providers value has been changed or provider is being deleted.
+     * Only in second case second parameter is @c true.
      */
-    struct Listener {
-        /// Called when provider value was changed.
-        virtual void onChange() = 0;
-
-        /**
-         * Called just before disconnecting. By default does nothing.
-         * @param from_where provider from which listener is being disconnected
-         */
-        virtual void onDisconnect(Provider* from_where) {}
-
-        virtual ~Listener() {}
-    };
-
-    /// Set of added (registered) listeners. This provider can call methods of listeners included in this set.
-    std::set<Listener*> listeners;
+    boost::signals2::signal<void(Provider&, bool)> changed;
 
     /// Call onDisconnect for all listeners in listeners set.
     virtual ~Provider() {
-        for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
-            (*i)->onDisconnect(this);
-    }
-
-    /**
-     * Add listener to listeners set.
-     * @param listener listener to add (register)
-     */
-    void add(Listener* listener) {
-        listeners.insert(listener);
-    }
-
-    /**
-     * Remove (unregister) listener from listeners set.
-     * @param listener listener to remove (unregister)
-     */
-    void remove(Listener* listener) {
-        listener->onDisconnect(this);
-        listeners.erase(listener);
+        changed(*this, true);
     }
 
     /**
@@ -218,8 +187,7 @@ struct Provider {
      * Should be called after change of value represented by this provider.
      */
     void fireChanged() {
-        for (typename std::set<Listener*>::iterator i = listeners.begin(); i != listeners.end(); ++i)
-            (*i)->onChange();
+        changed(*this, false);
     }
 
 };
@@ -238,7 +206,11 @@ struct Provider {
  * @see @ref providers
  */
 template <typename ProviderT>
-struct Receiver: public Provider::Listener {
+class Receiver {
+
+    boost::signals2::connection providerConnection;
+
+public:
 
     /// Name of provider.
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
@@ -265,8 +237,13 @@ struct Receiver: public Provider::Listener {
     Receiver(): provider(0), changed(true), hasPrivateProvider(false) {}
 
     /// Destructor. Disconnect from provider.
-    ~Receiver() {
+    virtual ~Receiver() {
         setProvider(0);
+    }
+
+    void fireChanged() {
+        changed = true;
+        providerValueChanged(*this);
     }
 
     /**
@@ -276,12 +253,20 @@ struct Receiver: public Provider::Listener {
      */
     void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
         if (this->provider == provider) return;
-        if (this->provider) this->provider->listeners.erase(this);
+        providerConnection.disconnect();
         if (hasPrivateProvider) delete this->provider;
-        if (provider) provider->add(this);
+        if (provider) providerConnection = provider->changed.connect(
+                    [&](Provider& which, bool isDeleted) {
+                        if (isDeleted) {
+                            providerConnection.disconnect();
+                            this->provider = 0;
+                        }
+                        this->fireChanged();
+                    }
+                    );
         this->provider = provider;
         this->hasPrivateProvider = newProviderIsPrivate;
-        onChange();
+        this->fireChanged();
     }
 
     /**
@@ -329,16 +314,10 @@ struct Receiver: public Provider::Listener {
     const ProviderT* getProvider() const { return provider; }
 
     /// React on provider value changes. Set changed flag to true.
-    void onChange() {
+    void onChange(Provider* which, bool isDeleted) {
+        if (isDeleted) provider = 0;
         changed = true;
         providerValueChanged(*this);
-    }
-
-    virtual void onDisconnect(Provider* from_where) {
-        if (from_where == provider) {
-            provider = 0;
-            onChange();
-        }
     }
 
     /// \return true if there is any provider connected
@@ -348,7 +327,8 @@ struct Receiver: public Provider::Listener {
 
     /// @throw NoProvider when provider is not available
     void ensureHasProvider() {
-        if (!provider) throw NoProvider(PROVIDER_NAME);
+        if (provider == nullptr)
+            throw NoProvider(PROVIDER_NAME);
     }
 
     /**

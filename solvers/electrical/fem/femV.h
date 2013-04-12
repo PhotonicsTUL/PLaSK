@@ -92,21 +92,21 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     void solveMatrix(SparseBandMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
-    virtual void onInitialize();
+    virtual void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate();
+    virtual void onInvalidate() override;
 
     /// Get info on active region
     void setActiveRegion();
 
-    virtual void onMeshChange(const typename RectilinearMesh2D::Event& evt) {
+    virtual void onMeshChange(const typename RectilinearMesh2D::Event& evt) override {
         this->invalidate();
         setActiveRegion();
     }
 
-    virtual void onGeometryChange(const Geometry::Event& evt) {
-        this->invalidate();
+    virtual void onGeometryChange(const Geometry::Event& evt) override {
+        SolverWithMesh<Geometry2DType, RectilinearMesh2D>::onGeometryChange(evt);
         setActiveRegion();
     }
 
@@ -191,7 +191,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     FiniteElementMethodElectrical2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const;
+    virtual std::string getClassName() const override;
 
     ~FiniteElementMethodElectrical2DSolver();
 

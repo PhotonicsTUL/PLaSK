@@ -159,18 +159,21 @@ namespace detail {
     template <typename, PropertyType, typename> struct ProfileProvider;
 
     template <typename ReceiverT, typename... ExtraParams>
-    struct ProfileProvider<ReceiverT,FIELD_PROPERTY,VariadicTemplateTypesHolder<ExtraParams...>>:
-    public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>, public Provider::Listener
+    class ProfileProvider<ReceiverT,FIELD_PROPERTY,VariadicTemplateTypesHolder<ExtraParams...>>:
+    public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>/*, public Provider::Listener*/
     {
+        boost::signals2::connection conn;
+    public:
         shared_ptr<PythonProfile> profile;
         ProfileProvider(const shared_ptr<PythonProfile>& parent): profile(parent) {
-                parent->add(this);
+                //parent->add(this);
+                conn = parent->changed.connect([&] (Provider&,bool) { this->fireChanged(); });
         }
-        virtual ~ProfileProvider() { profile->remove(this); }
+        virtual ~ProfileProvider() { /*profile->remove(this);*/ conn.disconnect(); }
         virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedType operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams..., InterpolationMethod) const {
             return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
         }
-        virtual void onChange() { this->fireChanged(); }
+        //virtual void onChange() { this->fireChanged(); }
     };
 
     template <typename ReceiverT>

@@ -111,7 +111,8 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
     template <typename ReceiverT>
     ExportSolver& add_receiver(const char* name, ReceiverT Class::* field, const char* help) {
 
-        static_assert(std::is_base_of<Provider::Listener, ReceiverT>::value, "add_receiver used for non-receiver type");
+        //TODO maybe introduce some base class for receiver?
+        //static_assert(std::is_base_of<Provider::Listener, ReceiverT>::value, "add_receiver used for non-receiver type");
 
         RegisterReceiver<ReceiverT>();
         this->add_property(name, py::make_getter(field),

@@ -8,12 +8,12 @@ namespace plask {
 
 /// Don't use this directly, use StandardFilter instead.
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
-struct FilterImpl {
+struct FilterBaseImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "Filter can't be use with single value properties (it can be use only with fields properties)");
 };
 
 template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
-struct FilterImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
+struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
     : public Solver
 {
     //one outer source (input)
@@ -24,15 +24,19 @@ struct FilterImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateT
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
 
+private:
     std::vector<DataSourceTPtr> innerSources;
 
     DataSourceTPtr outerSource;
 
-    shared_ptr<OutputSpaceType> outputSpace;    //shared_ptr?
+    /// Output space in which the results are privided.
+    shared_ptr<OutputSpaceType> geometry;
+
+public:
 
     typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
 
-    FilterImpl(shared_ptr<OutputSpaceType> outputSpace): Solver("Filter"), outputSpace(outputSpace) {
+    FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): Solver("Filter"), geometry(geometry) {
         this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         };
@@ -56,17 +60,61 @@ struct FilterImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateT
         return result;
     }
 
+    /**
+     * Set outer source to @p outerSource.
+     * @param outerSource source to use in all points where inner sources don't provide values.
+     */
+    void setOuterSource(DataSourceTPtr&& outerSource) {
+        this->outerSource = std::move(outerSource);
+    }
 
+    /**
+     * Set outer provider to provide constant @p value.
+     * @param value value which is used in all points where inner sources don't provide values.
+     */
+    void setDefaultValue(const ValueT& value) {
+        this->outerSource.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
+    }
 
 private:
     // used by source creators methods
     template <typename ReceiverT>
     ReceiverT& connect(ReceiverT& in) {
-        in.providerValueChanged.connect([&] (Provider::Listener&) { out.fireChanged(); });
+        in.providerValueChanged.connect([&] (/*Provider::Listener&*/) { out.fireChanged(); });
         return in;
     }
 
 };
+
+/**
+ * Base class for filter which recalculate field from one space to another (OutputSpaceType).
+ * @tparam PropertyT property which has type FIELD_PROPERTY
+ * @tparam OutputSpaceType space of @c out provider included in this filter
+ */
+template <typename PropertyT, typename OutputSpaceType>
+using FilterBase = FilterBaseImpl<PropertyT, PropertyT::propertyType, OutputSpaceType, typename PropertyT::ExtraParams>;
+
+template <typename PropertyT, typename OutputSpaceType>
+struct FilterImpl {};
+
+// filter in 3D cartesian space
+template <typename PropertyT>
+struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3D> {
+};
+
+// filter in 2D cartesian space
+template <typename PropertyT>
+struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, Geometry2DCartesian> {
+};
+
+// filter in 2D cylindrical space
+template <typename PropertyT>
+struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT, Geometry2DCylindrical> {
+};
+
+template <typename PropertyT, typename OutputSpaceType>
+using Filter = FilterImpl<PropertyT, OutputSpaceType>;
+
 
 
 
@@ -90,7 +138,7 @@ struct Filter1to1: public Solver {
     virtual std::string getClassName() const override { return "Filter"; }
 
     Filter1to1(const std::string &name): Solver(name) {
-        in.providerValueChanged.connect([&] (Provider::Listener&) { out.fireChanged(); });
+        in.providerValueChanged.connect([&] (/*Provider::Listener&*/) { out.fireChanged(); });
     }
 };
 

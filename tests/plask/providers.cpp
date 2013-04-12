@@ -11,12 +11,13 @@ BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(single_value) {
     struct OneDouble: public plask::SingleValueProperty<double> {};
-    plask::ProviderFor<OneDouble>::WithDefaultValue provider;
     plask::ReceiverFor<OneDouble> receiver;
 
+    BOOST_CHECK(receiver.getProvider() == nullptr);
     BOOST_CHECK_THROW(receiver(), plask::NoProvider);
     BOOST_CHECK(receiver.changed);
-    BOOST_CHECK(receiver.getProvider() == nullptr);
+
+    plask::ProviderFor<OneDouble>::WithDefaultValue provider;
     receiver.setProvider(provider);
     BOOST_CHECK(receiver.changed);
     BOOST_CHECK_EQUAL(receiver.getProvider(), &provider);
@@ -52,7 +53,7 @@ BOOST_AUTO_TEST_CASE(single_value_with_param) {
     plask::ProviderFor<OneDoubleWithParam>::Delegate provider([](int i) { return 2.0*i; });
     plask::ReceiverFor<OneDoubleWithParam> receiver;
     receiver.setProvider(provider);
-    //BOOST_CHECK_EQUAL(receiver(3), 6.0);
+    BOOST_CHECK_EQUAL(receiver(3), 6.0);
 }
 
 BOOST_AUTO_TEST_CASE(single_value_delegate) {
