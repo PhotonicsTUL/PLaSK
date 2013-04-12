@@ -832,10 +832,10 @@ class RectangularMesh<3,Mesh1D>: public MeshD<3> {
             --index0;
         return interpolation::bilinear(axis1[index1-1], axis1[index1],
                                        axis2[index2-1], axis2[index2],
-                                       data[index(0, index1-1, index2-1)],
-                                       data[index(0, index1, index2-1)],
-                                       data[index(0, index1, index2)],
-                                       data[index(0, index1-1, index2)],
+                                       data[index(index0, index1-1, index2-1)],
+                                       data[index(index0, index1, index2-1)],
+                                       data[index(index0, index1, index2)],
+                                       data[index(index0, index1-1, index2)],
                                        point.c1, point.c2);
         }
 

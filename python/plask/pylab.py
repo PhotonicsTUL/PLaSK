@@ -159,7 +159,7 @@ def plot_field(field, levels=16, fill=True, antialiased=False, **kwargs):
         if len(axes) != 2:
             raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
         axis0, axis1 = axes
-        data = field.array.reshape((len(axis0), len(axis1)))
+        data = field.array.reshape((len(axis0), len(axis1))).transpose()
     else:
         raise NotImplementedError("mesh type not supported")
 
