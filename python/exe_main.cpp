@@ -14,6 +14,7 @@ namespace py = boost::python;
 #include <plask/log/log.h>
 #include <plask/python_globals.h>
 #include <plask/python_manager.h>
+#include <plask/utils/string.h>
 
 #ifdef _WIN32
 #   include <windows.h>
@@ -40,6 +41,8 @@ py::dict globals;
 namespace plask { namespace python {
 
     int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
+
+    void PythonManager_load(py::object self, py::object src, py::dict vars);
 
     shared_ptr<Logger> makePythonLogger();
 
@@ -155,6 +158,11 @@ void endPlask() {
 //******************************************************************************
 int main(int argc, const char *argv[])
 {
+    if (argc > 1 && std::string(argv[1]) == "-version") {
+        std::cout << PLASK_VERSION << std::endl;
+        return 0;
+    }
+
 #   ifdef _WIN32
         SetDllDirectory(plask::exePath().c_str());
 #   endif
@@ -164,23 +172,24 @@ int main(int argc, const char *argv[])
     bool force_interactive = false;
     const char* command = nullptr;
 
-    if (argc > 1 && std::string(argv[1]) == "-version") {
-        std::cout << PLASK_VERSION << std::endl;
-        return 0;
-    }
+    std::deque<const char*> defs;
 
     while (argc > 1) {
-        if (std::string(argv[1]) == "-n") {
+        std::string arg = argv[1];
+        if (arg == "-n") {
             from_import = false;
             --argc; ++argv;
-        } else if (std::string(argv[1]) == "-i") {
+        } else if (arg == "-i") {
             force_interactive = true;
             --argc; ++argv;
-        } else if (std::string(argv[1]) == "-c") {
+        } else if (arg == "-c") {
             command = argv[2];
             argv[2] = "-c";
             --argc; ++argv;
             break;
+        } else if (arg.find('=') != std::string::npos) {
+            defs.push_back(argv[1]);
+            --argc; ++argv;
         } else break;
     }
 
@@ -204,6 +213,10 @@ int main(int argc, const char *argv[])
     if (command) { // run command specified in the command line
 
         try {
+            if (!defs.empty()) {
+                PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
+                throw py::error_already_set();
+            }
             globals = py::dict(py::import("__main__").attr("__dict__"));
             py::object plask = py::import("plask");
             plask.attr("__globals") = globals;
@@ -274,11 +287,16 @@ int main(int argc, const char *argv[])
             }
 
             if (*xml_input) {
+
+                py::dict locals;
+                for (const char* def: defs) {
+                    auto keyval = plask::splitString2(def, '=');
+                    locals[keyval.first] = py::eval(py::str(keyval.second));
+                }
+
                 auto manager = plask::make_shared<plask::python::PythonManager>();
                 globals["__manager__"] = py::object(manager);
-                FILE* file = std::fopen(filename.c_str(), "r");
-                if (!file) throw std::invalid_argument("No such file: " + filename);
-                manager->loadFromFILE(file); // it closes the file
+                plask::python::PythonManager_load(globals["__manager__"], py::str(filename), locals);
                 scriptline = manager->scriptline;
                 // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
@@ -310,6 +328,10 @@ int main(int argc, const char *argv[])
                 else Py_DECREF(result);
 
             } else {
+                if (!defs.empty()) {
+                    PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
+                    throw py::error_already_set();
+                }
 #               if PY_VERSION_HEX >= 0x03000000
                     PyObject* pyfile = PyUnicode_FromString(filename.c_str());
                     FILE* file = _Py_fopen(pyfile, "r");
@@ -351,6 +373,11 @@ int main(int argc, const char *argv[])
         }
 
     } else { // start the interactive console
+
+        if (!defs.empty()) {
+            PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
+            throw py::error_already_set();
+        }
 
         py::object sys = py::import("sys");
         sys.attr("executable") = plask::exePathAndName();

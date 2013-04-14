@@ -201,6 +201,7 @@ void PythonManager::export_dict(py::object self, py::dict dict) {
     dict["GEO"] = self.attr("geo");
     dict["MSH"] = self.attr("msh");
     dict["MSG"] = self.attr("msg");
+    dict["DEF"] = self.attr("def");
 
     PythonManager* ths = py::extract<PythonManager*>(self);
 
@@ -412,6 +413,7 @@ void register_manager() {
         .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &PythonManager::script, "Script read from XML file")
         .def_readonly("scriptline", &PythonManager::scriptline, "First line of the script in the XML file")
+        .def_readwrite("defines", &PythonManager::locals, "Local defines")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
     manager.attr("obj") = manager.attr("objects");
@@ -420,6 +422,7 @@ void register_manager() {
     manager.attr("msh") = manager.attr("meshes");
     manager.attr("msg") = manager.attr("mesh_generators");
     manager.attr("slv") = manager.attr("solvers");
+    manager.attr("def") = manager.attr("defines");
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
     register_manager_dict<shared_ptr<Geometry>>("Geometries");

@@ -35,30 +35,16 @@ namespace detail {
     inline static std::vector<npy_intp> mesh_dims(const RegularMesh3D& mesh) { return { mesh.axis0.size(), mesh.axis1.size(), mesh.axis2.size() }; }
 
 
-    template <typename T>
-    inline static std::vector<npy_intp> mesh_strides(const RectilinearMesh2D& mesh, size_t nd=2) {
+    template <typename T, typename Mesh1D>
+    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2,Mesh1D>& mesh, size_t nd) {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
-        if (mesh.getIterationOrder() == RectilinearMesh2D::NORMAL_ORDER) {
+        if (mesh.getIterationOrder() == RectangularMesh<2,Mesh1D>::NORMAL_ORDER) {
             strides[0] = sizeof(T);
             strides[1] = mesh.axis0.size() * sizeof(T);
         } else {
             strides[0] = mesh.axis1.size() * sizeof(T);
             strides[1] = sizeof(T);
-        }
-        return strides;
-    }
-
-    template <typename T>
-    inline static std::vector<npy_intp> mesh_strides(const RegularMesh2D& mesh, size_t nd=3) {
-        std::vector<npy_intp> strides(nd);
-        strides.back() = sizeof(T) / type_dim<T>();
-        if (mesh.getIterationOrder() == RegularMesh2D::NORMAL_ORDER) {
-            strides[0] = mesh.axis0.size() * sizeof(T);
-            strides[1] = sizeof(T);
-        } else {
-            strides[0] = sizeof(T);
-            strides[1] = mesh.axis1.size() * sizeof(T);
         }
         return strides;
     }
@@ -70,30 +56,17 @@ namespace detail {
             strides[third] = sizeof(T); \
             break;
 
-    template <typename T>
-    inline static std::vector<npy_intp> mesh_strides(const RectilinearMesh3D& mesh, size_t nd) {
+    template <typename T, typename Mesh1D>
+    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3,Mesh1D>& mesh, size_t nd) {
         std::vector<npy_intp> strides(nd, sizeof(T)/type_dim<T>());
+        typedef RectangularMesh<3,Mesh1D> Mesh3D;
         switch (mesh.getIterationOrder()) {
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RectilinearMesh3D, 0,1,2)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RectilinearMesh3D, 0,2,1)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RectilinearMesh3D, 1,0,2)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RectilinearMesh3D, 1,2,0)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RectilinearMesh3D, 2,0,1)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RectilinearMesh3D, 2,1,0)
-        }
-        return strides;
-    }
-
-    template <typename T>
-    inline static std::vector<npy_intp> mesh_strides(const RegularMesh3D& mesh, size_t nd) {
-        std::vector<npy_intp> strides(nd, sizeof(T)/type_dim<T>());
-        switch (mesh.getIterationOrder()) {
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RegularMesh3D, 0,1,2)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RegularMesh3D, 0,2,1)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RegularMesh3D, 1,0,2)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RegularMesh3D, 1,2,0)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RegularMesh3D, 2,0,1)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(RegularMesh3D, 2,1,0)
+            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0,1,2)
+            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0,2,1)
+            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 1,0,2)
+            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 1,2,0)
+            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 2,0,1)
+            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 2,1,0)
         }
         return strides;
     }
