@@ -64,32 +64,52 @@ void PythonManager_load(py::object self, py::object src, py::dict vars)
     XMLReader reader(source);
 
     // Variables
-    py::dict locals = vars.copy();
-    if (!vars.has_key("self")) locals["self"] = self;
+    manager->locals = vars.copy();
+    if (!manager->locals.has_key("self")) manager->locals["self"] = self;
 
     reader.stringInterpreter.set(
-        [&](const std::string& str) -> double { return py::extract<double>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> dcomplex { return py::extract<dcomplex>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> size_t { return py::extract<size_t>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> int { return py::extract<int>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> short { return py::extract<short>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> long { return py::extract<long>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> unsigned int { return py::extract<unsigned int>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> unsigned short { return py::extract<unsigned short>(py::eval(py::str(str), xml_globals, locals)); },
-        [&](const std::string& str) -> unsigned long { return py::extract<unsigned long>(py::eval(py::str(str), xml_globals, locals)); }
+        [manager](const std::string& str) -> double { return py::extract<double>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> dcomplex { return py::extract<dcomplex>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> size_t { return py::extract<size_t>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> int { return py::extract<int>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> short { return py::extract<short>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> long { return py::extract<long>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> unsigned int { return py::extract<unsigned int>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> unsigned short { return py::extract<unsigned short>(py::eval(py::str(str), xml_globals, manager->locals)); },
+        [manager](const std::string& str) -> unsigned long { return py::extract<unsigned long>(py::eval(py::str(str), xml_globals, manager->locals)); }
     );
 
     manager->loadFromReader(reader);
 }
 
-shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) {
+
+void PythonManager::loadDefines(XMLReader& reader)
+{
+    std::set<std::string> parsed;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() != "define") throw XMLUnexpectedElementException(reader, "<define>");
+        std::string name = reader.requireAttribute("name");
+        std::string value = reader.requireAttribute("value");
+        if (!locals.has_key(name))
+            locals[name] = (py::eval(py::str(value), xml_globals, locals));
+        else if (parsed.find(name) != parsed.end())
+            throw XMLDuplicatedElementException(reader, format("Definition of '%1%'", name));
+        parsed.insert(name);
+        reader.requireTagEnd();
+    }
+}
+
+
+shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name)
+{
     std::string module_name = category + "." + lib;
     py::object module = py::import(module_name.c_str());
     py::object solver = module.attr(solver_name.c_str())(name);
     return py::extract<shared_ptr<Solver>>(solver);
 }
 
-void PythonManager::loadConnects(XMLReader& reader) {
+void PythonManager::loadConnects(XMLReader& reader)
+{
 
     while(reader.requireTagOrEnd()) {
 

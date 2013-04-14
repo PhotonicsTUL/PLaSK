@@ -201,15 +201,20 @@ class Manager(unittest.TestCase):
         manager = plask.Manager()
         manager.load('''
         <plask>
+          <defines>
+            <define name="hh1" value="9"/>
+            <define name="h2" value="1"/>
+          </defines>
           <geometry>
             <cartesian2d axes="xy">
               <stack>
-                <rectangle name="block1" dx="5" dy="sqrt(hei)" material="GaAs" />
-                <rectangle name="block2" dx="self.obj.block1.dims[0]" dy="1" material="GaAs" />
+                <rectangle name="block1" dx="5" dy="sqrt(hh1)" material="GaAs" />
+                <rectangle name="block2" dx="self.obj.block1.dims[0]" dy="h2" material="GaAs" />
               </stack>
             </cartesian2d>
           </geometry>
         </plask>
-        ''', {'hei': 4})
+        ''', {'hh1': 4})
         self.assertEqual(manager.obj.block1.dims[1], 2)
         self.assertEqual(manager.obj.block2.dims[0], 5)
+        self.assertEqual(manager.obj.block2.dims[1], 1)

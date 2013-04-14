@@ -11,6 +11,9 @@ struct PythonManager: public Manager {
     /// List of constant profiles
     py::dict profiles;
 
+    /// Locals read from &lt;defines&gt; section and supplied by user
+    py::dict locals;
+
     MaterialsDB* materialsDB;
 
     PythonManager(MaterialsDB* db=nullptr) : materialsDB(db? db : &MaterialsDB::getDefault()) {}
@@ -18,6 +21,8 @@ struct PythonManager: public Manager {
     virtual ~PythonManager() {}
 
     virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);
+
+    virtual void loadDefines(XMLReader& reader);
 
     virtual void loadConnects(XMLReader& reader);
 

@@ -156,7 +156,7 @@ namespace detail {
 
 // ---------- Profile ------------
 
-    template <typename, PropertyType, typename> struct ProfileProvider;
+    template <typename, PropertyType, typename> class ProfileProvider;
 
     template <typename ReceiverT, typename... ExtraParams>
     class ProfileProvider<ReceiverT,FIELD_PROPERTY,VariadicTemplateTypesHolder<ExtraParams...>>:
