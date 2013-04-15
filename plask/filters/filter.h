@@ -46,16 +46,16 @@ public:
 
     DataVector<const ValueT> get(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         if (innerSources.empty())   //special case, for fast getting data from outer source
-            return outerSource(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         DataVector<ValueT> result(dst_mesh.size());
         for (std::size_t i = 0; i < result.size(); ++i) {
             //iterate over inner sources, if inner sources don't provide data, use outer source:
             boost::optional<ValueT> innerVal;
             for (const DataSourceTPtr& innerSource: innerSources) {
-                boost::optional<ValueT> innerVal = innerSource->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+                boost::optional<ValueT> innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
                 if (innerVal) break;
             }
-            result[i] = innerVal ? *innerVal : outerSource->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            result[i] = *(innerVal ? innerVal : outerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method));
         }
         return result;
     }
@@ -102,16 +102,19 @@ struct FilterImpl {};
 // filter in 3D cartesian space
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3D> {
+    FilterImpl(shared_ptr<Geometry3D> geometry): FilterBase<PropertyT, Geometry3D>(geometry) {}
 };
 
 // filter in 2D cartesian space
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, Geometry2DCartesian> {
+    FilterImpl(shared_ptr<Geometry2DCartesian> geometry): FilterBase<PropertyT, Geometry2DCartesian>(geometry) {}
 };
 
 // filter in 2D cylindrical space
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT, Geometry2DCylindrical> {
+    FilterImpl(shared_ptr<Geometry2DCylindrical> geometry): FilterBase<PropertyT, Geometry2DCylindrical>(geometry) {}
 };
 
 template <typename PropertyT, typename OutputSpaceType>

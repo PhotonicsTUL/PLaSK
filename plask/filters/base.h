@@ -16,7 +16,7 @@ struct DataSourceImpl {
 };
 
 template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
-class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...>>: public ProviderFor<PropertyT> {
+class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...>>: public ProviderFor<PropertyT, OutputSpaceType> {
 
     //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
 
@@ -45,7 +45,7 @@ public:
     virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         DataVector<typename PropertyT::ValueType> result(dst_mesh.size());
         for (std::size_t i = 0; i < result.size(); ++i)
-            result[i] = *get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            result[i] = *get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
         return result;
     }
 
