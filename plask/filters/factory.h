@@ -82,7 +82,7 @@ inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& m
     shared_ptr<Geometry2DCylindrical> out_as_geomCyl = dynamic_pointer_cast<Geometry2DCylindrical>(out);
     if (out_as_geomCyl) return shared_ptr<Solver>(new Filter<PropertyTag, Geometry2DCylindrical>(out_as_geomCyl));
 
-    throw NotImplemented("standard filter (for given configuration)");
+    throw NotImplemented("standard filter (for given configuration), geometry must be of type: Geometry3D, Geometry2DCartesian or Geometry2DCylindrical");
 }
 
 }   // namespace plask

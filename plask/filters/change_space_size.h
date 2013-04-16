@@ -59,10 +59,10 @@ struct DataFrom3Dto2DSourceImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "ChangeSpaceCartesian2Dto3DDataSource can't be used with single value properties (it can be use only with fields properties)");
 };
 
-/// Don't use this directly, use ChangeSpaceCartesian2Dto3DDataSource instead.
+/// Don't use this directly, use DataFrom3Dto2DSource instead.
 template <typename PropertyT, typename... ExtraArgs>
 struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
-: public OuterDataSource<PropertyT, Geometry2DCartesian, Geometry3D, Extrusion, GeometryObjectD<3>>
+: public OuterDataSource<PropertyT, Geometry2DCartesian, Geometry3D, Geometry2DCartesian /*Extrusion*/, GeometryObjectD<3>>
 {
     /// Points count for avarage function
     std::size_t pointsCount;

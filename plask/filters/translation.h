@@ -14,9 +14,9 @@ struct TranslatedInnerDataSourceImpl {
 /// Don't use this directly, use TranslatedDataSource instead.
 template <typename PropertyT, typename SpaceType, typename... ExtraArgs>
 struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
-: public InnerDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIMS>, GeometryObjectD<SpaceType::DIMS>>
+: public InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIMS>*/, GeometryObjectD<SpaceType::DIMS>>
 {
-    using typename InnerDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIMS>, GeometryObjectD<SpaceType::DIMS>>::Region;
+    using typename InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIMS>*/, GeometryObjectD<SpaceType::DIMS>>::Region;
 
     virtual boost::optional<typename PropertyT::ValueType> get(const Vec<SpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);

@@ -32,6 +32,24 @@ protected:
     /// Output space in which the results are privided.
     shared_ptr<OutputSpaceType> geometry;
 
+    template <typename SourceType>
+    auto setOuterRecv(std::unique_ptr<SourceType>&& outerSource) -> decltype(outerSource->in)& {
+        decltype(outerSource->in)& res = outerSource->in;
+        //setOuter(std::move(outerSource)); //can't call fireChange before connect provider to returned receiver
+        disconnect(this->outerSource);
+        this->outerSource = std::move(outerSource);
+        connect(*this->outerSource);
+        return res;
+    }
+
+    template <typename SourceType>
+    auto appendInnerRecv(std::unique_ptr<SourceType>&& innerSource) -> decltype(innerSource->in)& {
+        decltype(outerSource->in)& res = innerSource->in;
+        this->innerSources.push_back(std::move(innerSource));
+        connect(*this->innerSources.back());
+        return res;
+    }
+
 public:
 
     typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
@@ -65,8 +83,10 @@ public:
      * @param outerSource source to use in all points where inner sources don't provide values.
      */
     void setOuter(DataSourceTPtr&& outerSource) {
+        disconnect(this->outerSource);
         this->outerSource = std::move(outerSource);
-        connect(*outerSource);
+        connect(*this->outerSource);
+        out.fireChanged();
     }
 
     /**
@@ -74,18 +94,39 @@ public:
      * @param value value which is used in all points where inner sources don't provide values.
      */
     void setDefault(const ValueT& value) {
-        this->outer.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
-        connect(*outerSource);
-    }
-
-private:
-    // used by source creators methods
-    template <typename SourceT>
-    void connect(SourceT& in) {
-        in.providerValueChanged.connect([&] (/*Provider::Listener&*/) { out.fireChanged(); });
+        disconnect(this->outerSource);
+        this->outerSource.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
+        connect(*this->outerSource);
         out.fireChanged();
     }
 
+    /**
+     * Append inner data source.
+     * @param innerSource inner source to add
+     */
+    void appendInner(DataSourceTPtr&& innerSource) {
+        this->innerSources.push_back(std::move(innerSource));
+        connect(*this->innerSources.back());
+        out.fireChanged();
+    }
+
+private:
+
+    void onSourceChange(Provider&, bool isDestr) {
+        if (!isDestr) out.fireChanged();
+    }
+
+    void connect(DataSourceT& in) {
+        in.changed.connect(boost::bind(&FilterBaseImpl::onSourceChange, this, _1, _2));
+    }
+
+    void disconnect(DataSourceT& in) {
+        in.changed.disconnect(boost::bind(&FilterBaseImpl::onSourceChange, this, _1, _2));
+    }
+
+    void disconnect(DataSourceTPtr& in) {
+        if (in) disconnect(*in);
+    }
 };
 
 /**
@@ -107,7 +148,7 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
 
     using FilterBase<PropertyT, Geometry3D>::setOuter;
 
-
+    using FilterBase<PropertyT, Geometry3D>::appendInner;
 
 
 };
@@ -120,9 +161,18 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
 
     using FilterBase<PropertyT, Geometry2DCartesian>::setOuter;
 
-    ReceiverFor<PropertyT, Geometry3D>& setOuter() {
+    using FilterBase<PropertyT, Geometry2DCartesian>::appendInner;
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr) {
         std::unique_ptr< DataFrom3Dto2DSource<PropertyT> > source(new DataFrom3Dto2DSource<PropertyT>());
-        //source->connect(geometry, );
+        source->connect(*this->geometry, outerObj, path);
+        return this->setOuterRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(GeometryObjectD<2>& innerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< TranslatedInnerDataSource<PropertyT, Geometry2DCartesian> > source(new TranslatedInnerDataSource<PropertyT, Geometry2DCartesian>());
+        source->connect(*this->geometry, innerObj, path);
+        return this->appendInnerRecv(std::move(source));
     }
 };
 
@@ -133,6 +183,8 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
     FilterImpl(shared_ptr<Geometry2DCylindrical> geometry): FilterBase<PropertyT, Geometry2DCylindrical>(geometry) {}
 
     using FilterBase<PropertyT, Geometry2DCylindrical>::setOuter;
+
+    using FilterBase<PropertyT, Geometry2DCylindrical>::appendInner;
 };
 
 template <typename PropertyT, typename OutputSpaceType>

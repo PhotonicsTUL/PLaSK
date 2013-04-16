@@ -212,6 +212,8 @@ class Receiver {
 
 public:
 
+    typedef Receiver<ProviderT> Base;
+
     /// Name of provider.
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
 
