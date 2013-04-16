@@ -19,9 +19,6 @@ class RectilinearMeshes(unittest.TestCase):
     def testOrdering2D(self):
         m = self.mesh2
 
-        self.assertEqual( [list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]] )
-
-        m.ordering = '01'
         self.assertEqual( [list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]] )
         self.assertEqual( m.minor_axis, m.axis1 )
         self.assertEqual( m.major_axis, m.axis0 )
@@ -44,6 +41,11 @@ class RectilinearMeshes(unittest.TestCase):
     def testOrdering3D(self):
         m = self.mesh3
 
+        self.assertEqual( [list(i) for i in m], [[1,10,100], [1,10,200], [1,20,100], [1,20,200],
+                                                 [2,10,100], [2,10,200], [2,20,100], [2,20,200],
+                                                 [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
+
+        m.ordering = '210'
         self.assertEqual( [list(i) for i in m], [[1,10,100], [2,10,100], [3,10,100], [1,20,100], [2,20,100], [3,20,100],
                                                  [1,10,200], [2,10,200], [3,10,200], [1,20,200], [2,20,200], [3,20,200]] )
         m.ordering = '201'
@@ -58,8 +60,8 @@ class RectilinearMeshes(unittest.TestCase):
 
         m.ordering = 'best'
         self.assertEqual( [list(i) for i in m], [[1,10,100], [1,10,200], [1,20,100], [1,20,200],
-                                                [2,10,100], [2,10,200], [2,20,100], [2,20,200],
-                                                [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
+                                                 [2,10,100], [2,10,200], [2,20,100], [2,20,200],
+                                                 [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
         self.assertEqual( m.minor_axis,  m.axis2 )
         self.assertEqual( m.medium_axis, m.axis1 )
         self.assertEqual( m.major_axis,  m.axis0 )

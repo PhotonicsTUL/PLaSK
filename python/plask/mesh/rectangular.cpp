@@ -589,15 +589,15 @@ void register_mesh_rectangular()
 
     py::class_<RectilinearMesh2D, shared_ptr<RectilinearMesh2D>, py::bases<MeshD<2>>> rectilinear2d("Rectilinear2D",
         "Two-dimensional mesh\n\n"
-        "Rectilinear2D(ordering='10')\n    create empty mesh\n\n"
-        "Rectilinear2D(axis0, axis1, ordering='10')\n    create mesh with axes supplied as sequences of numbers\n\n"
-        "Rectilinear2D(geometry, ordering='10')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
+        "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
+        "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
+        "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
         ); rectilinear2d
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectilinearMesh2D>, py::default_call_policies(), (py::arg("ordering")="10")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="10")))
-        .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="10")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectilinearMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh2D, RegularMesh2D>, py::default_call_policies(), py::arg("src")))
         .def("copy", &Mesh__init__<RectilinearMesh2D, RectilinearMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh2D::axis0, "The first (transverse) axis of the mesh")
@@ -641,16 +641,16 @@ void register_mesh_rectangular()
 
     py::class_<RectilinearMesh3D, shared_ptr<RectilinearMesh3D>, py::bases<MeshD<3>>> rectilinear3d("Rectilinear3D",
         "Two-dimensional mesh\n\n"
-        "Rectilinear3D(ordering='210')\n    create empty mesh\n\n"
-        "Rectilinear3D(axis0, axis1, axis2, ordering='210')\n    create mesh with axes supplied as mesh.Rectilinear1D\n\n"
-        "Rectilinear3D(geometry, ordering='210')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
+        "Rectilinear3D(ordering='012')\n    create empty mesh\n\n"
+        "Rectilinear3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.Rectilinear1D\n\n"
+        "Rectilinear3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",
         py::no_init
         ); rectilinear3d
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="210")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="210")))
-        .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="210")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="012")))
         .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh3D, RegularMesh3D>, py::default_call_policies(), py::arg("src")))
         .def("copy", &Mesh__init__<RectilinearMesh3D, RectilinearMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh3D::axis0, "The first (longitudinal) axis of the mesh")

@@ -4203,6 +4203,10 @@ First of all each XML document must have a parent tag.
  Inside there are several sections that can be included in the XPL file:
  
 \family typewriter
+<defines>
+\family default
+, 
+\family typewriter
 <materials>
 \family default
 , 
@@ -4254,6 +4258,80 @@ from
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+Section <defines>
+\end_layout
+
+\begin_layout Standard
+\begin_inset Index idx
+status collapsed
+
+\begin_layout Plain Layout
+defines
+\end_layout
+
+\end_inset
+
+This section allows to define some constant parameters (that can be later
+ overridden either in the command line or while reading the XPL file from
+ Python).
+ Each parameter is defined with the only tag allowed in this section:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<define>
+\family default
+\series default
+ Definition of a parameter for use in the rest of the file.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+name
+\family default
+ Name of the parameter (each name must be unique).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+value
+\family default
+ Value of the parameter.
+ Any valid Python function can be used here, as well as any previously defined
+ parameter.
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Defined parameters can be used in the rest of the XPL file instead of numbers
+ that supplied as any attribute values.
 \end_layout
 
 \begin_layout Section

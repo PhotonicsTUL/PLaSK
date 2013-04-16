@@ -31,8 +31,7 @@ class ReceiverTest(unittest.TestCase):
 
 
     def testExternalData(self):
-        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
-        print v.strides
+        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]]).transpose((1,0,2))
         self.assertEqual( sys.getrefcount(v), 2 )
         data = plask.Data(v, self.mesh2)
         self.assertEqual( data.dtype, plask.vector2f )
@@ -46,16 +45,16 @@ class ReceiverTest(unittest.TestCase):
 
 
     def testStepProfile(self):
-        r1 = geometry.Rectangle(4, 1, None)
-        r2 = geometry.Rectangle(4, 2, None)
-        stack = geometry.Stack2D()
+        r1 = plask.geometry.Rectangle(4, 1, None)
+        r2 = plask.geometry.Rectangle(4, 2, None)
+        stack = plask.geometry.Stack2D()
         h = stack.append(r1)
         stack.append(r2)
         stack.append(r1)
-        geom = geometry.Cartesian2D(stack)
-        grid = mesh.Rectilinear2D([2.], [0.5, 2.0,  3.5])
+        geom = plask.geometry.Cartesian2D(stack)
+        grid = plask.mesh.Rectilinear2D([2.], [0.5, 2.0,  3.5])
 
-        step = StepProfile(geom)
+        step = plask.StepProfile(geom)
         self.solver.inTemperature = step
 
         step[r1] = 100.
