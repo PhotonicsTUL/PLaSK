@@ -24,7 +24,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
 
-private:
+protected:
     std::vector<DataSourceTPtr> innerSources;
 
     DataSourceTPtr outerSource;
@@ -64,7 +64,7 @@ public:
      * Set outer source to @p outerSource.
      * @param outerSource source to use in all points where inner sources don't provide values.
      */
-    void setOuterSource(DataSourceTPtr&& outerSource) {
+    void setOuter(DataSourceTPtr&& outerSource) {
         this->outerSource = std::move(outerSource);
         connect(*outerSource);
     }
@@ -73,8 +73,8 @@ public:
      * Set outer provider to provide constant @p value.
      * @param value value which is used in all points where inner sources don't provide values.
      */
-    void setDefaultValue(const ValueT& value) {
-        this->outerSource.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
+    void setDefault(const ValueT& value) {
+        this->outer.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
         connect(*outerSource);
     }
 
@@ -102,19 +102,37 @@ struct FilterImpl {};
 // filter in 3D cartesian space
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3D> {
+
     FilterImpl(shared_ptr<Geometry3D> geometry): FilterBase<PropertyT, Geometry3D>(geometry) {}
+
+    using FilterBase<PropertyT, Geometry3D>::setOuter;
+
+
+
+
 };
 
 // filter in 2D cartesian space
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, Geometry2DCartesian> {
+
     FilterImpl(shared_ptr<Geometry2DCartesian> geometry): FilterBase<PropertyT, Geometry2DCartesian>(geometry) {}
+
+    using FilterBase<PropertyT, Geometry2DCartesian>::setOuter;
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter() {
+        std::unique_ptr< DataFrom3Dto2DSource<PropertyT> > source(new DataFrom3Dto2DSource<PropertyT>());
+        //source->connect(geometry, );
+    }
 };
 
 // filter in 2D cylindrical space
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT, Geometry2DCylindrical> {
+
     FilterImpl(shared_ptr<Geometry2DCylindrical> geometry): FilterBase<PropertyT, Geometry2DCylindrical>(geometry) {}
+
+    using FilterBase<PropertyT, Geometry2DCylindrical>::setOuter;
 };
 
 template <typename PropertyT, typename OutputSpaceType>
