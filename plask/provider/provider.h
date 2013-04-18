@@ -240,7 +240,8 @@ public:
 
     /// Destructor. Disconnect from provider.
     virtual ~Receiver() {
-        setProvider(0);
+        providerConnection.disconnect();
+        if (hasPrivateProvider) delete this->provider;
     }
 
     void fireChanged() {
@@ -330,7 +331,7 @@ public:
     }
 
     /// @throw NoProvider when provider is not available
-    void ensureHasProvider() {
+    void ensureHasProvider() const {
         if (provider == nullptr)
             throw NoProvider(PROVIDER_NAME);
     }
@@ -342,7 +343,7 @@ public:
      * @throw NoValue when provider can't give value (is uninitialized, etc.)
      */
     template<typename ...Args> auto
-    operator()(const Args&... params) -> decltype((*provider)(params...)) {
+    operator()(const Args&... params) const -> decltype((*provider)(params...)) {
         beforeGetValue();
         return (*provider)(params...);
     }
@@ -353,11 +354,11 @@ public:
      * @return value from provider or empty optional if value couldn't be got
      */
     template<typename ...Args> auto
-    optional(const Args&... params) -> boost::optional<decltype((*provider)(params...))> {
+    optional(const Args&... params) const -> boost::optional<decltype((*provider)(params...))> {
         try {
             return boost::optional<decltype((*provider)(params...))>(this->operator()(params...));
         } catch (std::exception&) {
-            changed = false; // unless anything changes, next call to optional will return the same
+            const_cast<Receiver*>(this)->changed = false; // unless anything changes, next call to optional will return the same
             return boost::optional<decltype((*provider)(params...))>();
         }
     }
@@ -383,9 +384,9 @@ protected:
      *
      * @throw NoProvider when provider is not available
      */
-    void beforeGetValue() {
+    void beforeGetValue() const {
         ensureHasProvider();
-        changed = false;
+        const_cast<Receiver*>(this)->changed = false;
     }
 
 };

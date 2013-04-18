@@ -2,6 +2,7 @@
 #define PLASK__FILTER__TRANSLATION_H
 
 #include "base.h"
+#include "../mesh/basic.h"
 
 namespace plask {
 
@@ -21,7 +22,7 @@ struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, Vari
     virtual boost::optional<typename PropertyT::ValueType> get(const Vec<SpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
         if (r)
-            return in(p - r->inTranslation, std::forward<ExtraArgs>(extra_args)..., method);
+            return this->in(OnePointMesh<SpaceType::DIMS>(p - r->inTranslation), std::forward<ExtraArgs>(extra_args)..., method)[0];
         else
             return boost::optional<typename PropertyT::ValueType>();
     }

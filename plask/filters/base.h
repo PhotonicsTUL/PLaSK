@@ -61,7 +61,7 @@ protected:
     //in, out obj can't be hold by shared_ptr, due to memory leak (circle reference)
     const InputGeomObj* inObj;
     const OutputGeomObj* outObj;
-    boost::optional<const PathHints> path;
+    boost::optional<PathHints> path;
     boost::signals2::connection geomConnectionIn;
     boost::signals2::connection geomConnectionOut;
 
@@ -69,7 +69,7 @@ public:
     ReceiverFor<PropertyT, InputSpaceType> in;
 
     DataSourceWithReceiver() {
-        in.providerValueChanged.connect([&] (/*Provider::Listener&*/) { this->fireChanged(); });
+        in.providerValueChanged.connect([&] (typename ReceiverFor<PropertyT, InputSpaceType>::Base&) { this->fireChanged(); });
     }
 
     ~DataSourceWithReceiver() {
@@ -89,9 +89,9 @@ public:
 
     void setPath(const PathHints* path) {
         if (path)
-            this->path = boost::optional<const PathHints>(*path);
+            this->path = *path;
         else
-            this->path = boost::optional<const PathHints>();
+            this->path = boost::optional<PathHints>();
     }
 
     const PathHints* getPath() const {
@@ -103,13 +103,13 @@ public:
         if (e.hasFlag(GeometryObject::Event::RESIZE)) calcConnectionParameters();
     }
 
-    void connect(const InputGeomObj& inObj, const OutputGeomObj& outObj, const PathHints* path = nullptr) {
+    void connect(InputGeomObj& inObj, OutputGeomObj& outObj, const PathHints* path = nullptr) {
         disconnect();
         this->setPath(path);
         this->inObj = &inObj;
         this->outObj = &outObj;
-        geomConnectionOut = outObj->changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
-        geomConnectionIn = inObj->changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
+        geomConnectionOut = outObj.changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
+        geomConnectionIn = inObj.changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
         calcConnectionParameters();
     }
 };
@@ -117,31 +117,34 @@ public:
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType, InputSpaceType, OutputGeomObj, InputGeomObj> {
 
+    typedef typename Primitive<OutputSpaceType::DIMS>::Box OutBox;
+    typedef Vec<OutputSpaceType::DIMS, double> OutVec;
+
     struct Region {
 
         /// Input bouding-box in output geometry.
-        typename OutputSpaceType::Box inGeomBB;
+        OutBox inGeomBB;
 
         /// Translation to input object (before eventual space reduction).
-        typename OutputSpaceType::DVec inTranslation;
+        OutVec inTranslation;
 
-        Region(const typename OutputSpaceType::Box& inGeomBB, const typename OutputSpaceType::DVec& inTranslation)
+        Region(const OutBox& inGeomBB, const OutVec& inTranslation)
             : inGeomBB(inGeomBB), inTranslation(inTranslation) {}
 
     };
 
     std::vector<Region> regions;
 
-    const Region* findRegion(const typename OutputSpaceType::DVec& p) const {
+    const Region* findRegion(const OutVec& p) const {
         for (const Region& r: regions)
-            if (r->inGeomBB.include(p)) return &r;
+            if (r.inGeomBB.includes(p)) return &r;
         return nullptr;
     }
 
     virtual void calcConnectionParameters() {
         regions.clear();
-        std::vector<typename OutputSpaceType::DVec> pos = this->outObj->getObjectPositions(*this->inObj, this->getPath());
-        std::vector<typename OutputSpaceType::Box> bb = this->outObj->getObjectBoundingBoxes(*this->inObj, this->getPath());
+        std::vector<OutVec> pos = this->outObj->getObjectPositions(*this->inObj, this->getPath());
+        std::vector<OutBox> bb = this->outObj->getObjectBoundingBoxes(*this->inObj, this->getPath());
         for (std::size_t i = 0; i < pos.size(); ++i)
             regions.emplace_back(bb[i], pos[i]);
     }

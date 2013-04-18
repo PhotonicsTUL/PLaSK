@@ -44,7 +44,7 @@ protected:
 
     template <typename SourceType>
     auto appendInnerRecv(std::unique_ptr<SourceType>&& innerSource) -> decltype(innerSource->in)& {
-        decltype(outerSource->in)& res = innerSource->in;
+        decltype(innerSource->in)& res = innerSource->in;
         this->innerSources.push_back(std::move(innerSource));
         connect(*this->innerSources.back());
         return res;
@@ -70,7 +70,7 @@ public:
             //iterate over inner sources, if inner sources don't provide data, use outer source:
             boost::optional<ValueT> innerVal;
             for (const DataSourceTPtr& innerSource: innerSources) {
-                boost::optional<ValueT> innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
+                innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
                 if (innerVal) break;
             }
             result[i] = *(innerVal ? innerVal : outerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method));
@@ -171,8 +171,12 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(GeometryObjectD<2>& innerObj, const PathHints* path = nullptr) {
         std::unique_ptr< TranslatedInnerDataSource<PropertyT, Geometry2DCartesian> > source(new TranslatedInnerDataSource<PropertyT, Geometry2DCartesian>());
-        source->connect(*this->geometry, innerObj, path);
+        source->connect(innerObj, *this->geometry, path);
         return this->appendInnerRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<GeometryObjectD<2>> innerObj, const PathHints* path = nullptr) {
+        return this->appendInner(*innerObj, path);
     }
 };
 
