@@ -68,6 +68,8 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     /// Points count for avarage function
     std::size_t pointsCount;
 
+    explicit DataFrom3Dto2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
+
     //inLinePos in 0, inputObj->getLength()
     Vec<3, double> getPointAt(const Vec<2, double>& p, double lon) const {
         return vec3Dplus2D(this->inTranslation, p, lon);

@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_SUITE(filters) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(2.5, 2.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 2.0 });
 
         filter2D.setOuter(extrusion) = 3.0;
-        //BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(0.5, 0.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 3.0 });
+        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(0.5, 0.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 3.0 });
     }
 
 BOOST_AUTO_TEST_SUITE_END()
