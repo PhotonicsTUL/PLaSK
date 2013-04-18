@@ -47,7 +47,7 @@ static py::list Space_leafsAsTranslations(const S& self, const PathHints& path) 
     auto l = leafs.begin();
     auto t = translations.begin();
     for (; l != leafs.end(); ++l, ++t) {
-        result.append(make_shared<Translation<S::DIMS>>(const_pointer_cast<GeometryObjectD<S::DIMS>>(static_pointer_cast<const GeometryObjectD<S::DIMS>>(*l)), *t));
+        result.append(make_shared<Translation<S::DIM>>(const_pointer_cast<GeometryObjectD<S::DIM>>(static_pointer_cast<const GeometryObjectD<S::DIM>>(*l)), *t));
     }
     return result;
 }
@@ -199,7 +199,7 @@ static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs
 }
 
 template <typename S>
-static typename Primitive<S::DIMS>::Box Space_childBoundingBox(const S& self) {
+static typename Primitive<S::DIM>::Box Space_childBoundingBox(const S& self) {
     return self.getChildBoundingBox();
 }
 

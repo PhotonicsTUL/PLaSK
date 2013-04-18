@@ -2,6 +2,7 @@
 #define PLASK__FILTER__CHANGE_SPACE_SIZE_H
 
 #include "base.h"
+#include "../mesh/basic.h"
 
 namespace plask {
 
@@ -62,27 +63,27 @@ struct DataFrom3Dto2DSourceImpl {
 /// Don't use this directly, use DataFrom3Dto2DSource instead.
 template <typename PropertyT, typename... ExtraArgs>
 struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
-: public OuterDataSource<PropertyT, Geometry2DCartesian, Geometry3D, Geometry2DCartesian /*Extrusion*/, GeometryObjectD<3>>
+: public OuterDataSource<PropertyT, Geometry2DCartesian, Geometry3D, Extrusion, GeometryObjectD<3>>
 {
     /// Points count for avarage function
     std::size_t pointsCount;
 
-    //inLinePos in 0, inObj->getLength()
-    Vec<3, double> getPointAt(const Vec<2, double>& p, double lon) {
+    //inLinePos in 0, inputObj->getLength()
+    Vec<3, double> getPointAt(const Vec<2, double>& p, double lon) const {
         return vec3Dplus2D(this->inTranslation, p, lon);
     }
 
     //inLineRelPos in 0, 1
-    Vec<3, double> getPointAtRel(const Vec<2, double>& p, double inLineRelPos) {
-        return getPointAt(this->inObj->getLength() * inLineRelPos);
+    Vec<3, double> getPointAtRel(const Vec<2, double>& p, double inLineRelPos) const {
+        return getPointAt(p, this->outputObj->getLength() * inLineRelPos);
     }
 
     virtual boost::optional<typename PropertyT::ValueType> get(const Vec<2, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount == 1)
-            return in(getPointAtRel(0.5), std::forward<ExtraArgs>(extra_args)..., method);
-        const double d = this->inObj->getLength() / pointsCount;
+            return this->in(toMesh(getPointAtRel(p, 0.5)), std::forward<ExtraArgs>(extra_args)..., method)[0];
+        const double d = this->outputObj->getLength() / pointsCount;
         return avarage(this->in(
-                   PointsOnLineMesh(getPointAt(d*0.5), this->inObj->getLength()-d, pointsCount),
+                   PointsOnLineMesh(getPointAt(p, d*0.5), this->outputObj->getLength()-d, pointsCount),
                    std::forward<ExtraArgs>(extra_args)...,
                    method
                ));
@@ -91,16 +92,16 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<2>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount == 1)
             return this->in(
-                 CartesianMesh2DTo3D(requested_points, this->inTranslation, this->inObj->getLength() * 0.5),
+                 CartesianMesh2DTo3D(this->inTranslation, requested_points, this->outputObj->getLength() * 0.5),
                  std::forward<ExtraArgs>(extra_args)...,
                  method
              );
         DataVector<typename PropertyT::ValueType> result(requested_points.size());
         PointsOnLineMesh lineMesh;
-            const double d = this->inObj->getLength() / this->pointsCount;
+            const double d = this->outputObj->getLength() / this->pointsCount;
             lineMesh.lastPointNr = this->pointsCount - 1;
-            lineMesh.longSize = this->inObj->getLength() - d;
-            lineMesh.begin.lon() = this->inObj->getLength() + d * 0.5;
+            lineMesh.longSize = this->outputObj->getLength() - d;
+            lineMesh.begin.lon() = this->outputObj->getLength() + d * 0.5;
             for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
                 const auto v = requested_points[src_point_nr];
                 lineMesh.begin.tran() = this->inTranslation.tran() + v.tran();

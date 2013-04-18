@@ -55,14 +55,14 @@ public:
     typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
 
     FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): Solver("Filter"), geometry(geometry) {
-        this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
+        this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         };
     }
 
     virtual std::string getClassName() const override { return "Filter"; }
 
-    DataVector<const ValueT> get(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+    DataVector<const ValueT> get(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         if (innerSources.empty())   //special case, for fast getting data from outer source
             return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         DataVector<ValueT> result(dst_mesh.size());
@@ -165,8 +165,12 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr) {
         std::unique_ptr< DataFrom3Dto2DSource<PropertyT> > source(new DataFrom3Dto2DSource<PropertyT>());
-        source->connect(*this->geometry, outerObj, path);
+        source->connect(outerObj, *this->geometry->getExtrusion(), path);
         return this->setOuterRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<GeometryObjectD<3>> outerObj, const PathHints* path = nullptr) {
+        return setOuter(*outerObj, path);
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(GeometryObjectD<2>& innerObj, const PathHints* path = nullptr) {
@@ -236,7 +240,7 @@ struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpace
 
     StandardFilterImpl(const std::string &name)
     : Filter1to1<ReceiverFor<PropertyT, inputSpaceType>, typename ProviderFor<PropertyT, outputSpaceType>::Delegate >(name) {
-        this->out.valueGetter = [&] (const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
+        this->out.valueGetter = [&] (const MeshD<outputSpaceType::DIM>& dst_mesh, _ExtraParams&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->apply(dst_mesh, std::forward<_ExtraParams>(extra_args)..., method);
         };
     }
@@ -246,7 +250,7 @@ struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpace
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual DataVector<const ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, _ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) = 0;
+    virtual DataVector<const ValueT> apply(const MeshD<outputSpaceType::DIM>& dst_mesh, _ExtraParams... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) = 0;
 };
 
 
@@ -256,7 +260,7 @@ struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpace
  *
  * Subclasses should overwrite apply method which can access @c in field (of type ReceiverFor<PropertyT, inputSpaceType>) and has signature which depends from PropertyT type:
  * @code
- * virtual DataVector<const PropertyT::ValueT> apply(const MeshD<outputSpaceType::DIMS>& dst_mesh, PropertyT::ExtraParams, InterpolationMethod method) const;
+ * virtual DataVector<const PropertyT::ValueT> apply(const MeshD<outputSpaceType::DIM>& dst_mesh, PropertyT::ExtraParams, InterpolationMethod method) const;
  * @endcode
  *
  * @tparam PropertyT property which has type ON_MESH_PROPERTY or FIELD_PROPERTY.
@@ -266,8 +270,8 @@ struct StandardFilterImpl<PropertyT, FIELD_PROPERTY, inputSpaceType, outputSpace
 template <typename PropertyT, typename inputSpaceType, typename outputSpaceType>
 using StandardFilter = StandardFilterImpl<PropertyT, PropertyT::propertyType, inputSpaceType, outputSpaceType, typename PropertyT::ExtraParams>;
 
-/*template <int DIMS, typename typeName>
-using DataSource = std::function<DataVector<const typeName>(const MeshD<DIMS>& dst_mesh)>;*/
+/*template <int DIM, typename typeName>
+using DataSource = std::function<DataVector<const typeName>(const MeshD<DIM>& dst_mesh)>;*/
 
 
 

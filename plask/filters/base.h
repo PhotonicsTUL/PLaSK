@@ -31,18 +31,18 @@ public:
      * @param p point, in outer space coordinates
      * @return @c true only if this can provide data in given point @p p
      */
-    //virtual bool canProvide(const Vec<OutputSpaceType::DIMS, double>& p) const = 0;
+    //virtual bool canProvide(const Vec<OutputSpaceType::DIM, double>& p) const = 0;
 
     /**
      * Check if this source can provide value for given point and eventualy return this value.
      * @param p point (in outer space coordinates)
      * @return value in point @p, set only if this can provide data in given point @p p
      */
-    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-   // virtual ValueT get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+   // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         DataVector<typename PropertyT::ValueType> result(dst_mesh.size());
         for (std::size_t i = 0; i < result.size(); ++i)
             result[i] = *get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
@@ -59,8 +59,8 @@ struct DataSourceWithReceiver: public DataSource<PropertyT, OutputSpaceType> {
 
 protected:
     //in, out obj can't be hold by shared_ptr, due to memory leak (circle reference)
-    const InputGeomObj* inObj;
-    const OutputGeomObj* outObj;
+    const InputGeomObj* inputObj;
+    const OutputGeomObj* outputObj;
     boost::optional<PathHints> path;
     boost::signals2::connection geomConnectionIn;
     boost::signals2::connection geomConnectionOut;
@@ -82,7 +82,7 @@ public:
     }
 
     /**
-     * This is called before request for data, but after setup inObj, outObj and path fields.
+     * This is called before request for data, but after setup inputObj, outputObj and path fields.
      * It can calculate trasnaltion and so needed for quick operator() calculation.
      */
     virtual void calcConnectionParameters() = 0;
@@ -103,13 +103,13 @@ public:
         if (e.hasFlag(GeometryObject::Event::RESIZE)) calcConnectionParameters();
     }
 
-    void connect(InputGeomObj& inObj, OutputGeomObj& outObj, const PathHints* path = nullptr) {
+    void connect(InputGeomObj& inputObj, OutputGeomObj& outputObj, const PathHints* path = nullptr) {
         disconnect();
         this->setPath(path);
-        this->inObj = &inObj;
-        this->outObj = &outObj;
-        geomConnectionOut = outObj.changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
-        geomConnectionIn = inObj.changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
+        this->inputObj = &inputObj;
+        this->outputObj = &outputObj;
+        geomConnectionOut = outputObj.changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
+        geomConnectionIn = inputObj.changedConnectMethod(this, &DataSourceWithReceiver::inOrOutWasChanged);
         calcConnectionParameters();
     }
 };
@@ -117,8 +117,8 @@ public:
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType, InputSpaceType, OutputGeomObj, InputGeomObj> {
 
-    typedef typename Primitive<OutputSpaceType::DIMS>::Box OutBox;
-    typedef Vec<OutputSpaceType::DIMS, double> OutVec;
+    typedef typename Primitive<OutputSpaceType::DIM>::Box OutBox;
+    typedef Vec<OutputSpaceType::DIM, double> OutVec;
 
     struct Region {
 
@@ -143,21 +143,22 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
     virtual void calcConnectionParameters() {
         regions.clear();
-        std::vector<OutVec> pos = this->outObj->getObjectPositions(*this->inObj, this->getPath());
-        std::vector<OutBox> bb = this->outObj->getObjectBoundingBoxes(*this->inObj, this->getPath());
+        std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());
+        std::vector<OutBox> bb = this->outputObj->getObjectBoundingBoxes(*this->inputObj, this->getPath());
         for (std::size_t i = 0; i < pos.size(); ++i)
             regions.emplace_back(bb[i], pos[i]);
     }
 
 };
 
+/// Data source in which input object is outer and includes output object.
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType, InputSpaceType, OutputGeomObj, InputGeomObj> {
 
-    typename InputSpaceType::DVec inTranslation;
+    Vec<InputGeomObj::DIM, double> inTranslation;
 
     virtual void calcConnectionParameters() {
-        std::vector<typename OutputSpaceType::DVec> pos = this->outObj->getObjectPositions(*this->inObj, this->getPath());
+        std::vector<Vec<InputGeomObj::DIM, double>> pos = this->inputObj->getObjectPositions(*this->outputObj, this->getPath());
         if (pos.size() != 1) throw Exception("Inner output geometry object has no unambiguous position in outer input geometry object.");
         inTranslation = pos[0];
     }
@@ -180,11 +181,11 @@ public:
 
     ConstDataSourceImpl(const typename PropertyT::ValueType& value): value(value) {}
 
-    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return value;
     }
 
-    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return DataVector<typename PropertyT::ValueType>(dst_mesh.size(), value);
     }
 

@@ -76,23 +76,8 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "utils/xml.h"
 
-#include "geometry/space.h"
+//this includes all geometry stuff
 #include "geometry/geometry.h"
-#include "geometry/primitives.h"
-#include "geometry/object.h"
-#include "geometry/transform.h"
-#include "geometry/mirror.h"
-#include "geometry/container.h"
-#include "geometry/transform_space_cartesian.h"
-#include "geometry/transform_space_cylindric.h"
-#include "geometry/translation_container.h"
-#include "geometry/stack.h"
-#include "geometry/separator.h"
-#include "geometry/align_container.h"
-#include "geometry/leaf.h"
-#include "geometry/cylinder.h"
-#include "geometry/border.h"
-#include "geometry/reader.h"
 
 #include "mesh/mesh.h"
 #include "mesh/wrapped.h"

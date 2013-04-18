@@ -89,8 +89,8 @@ struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, _ExtraParams...> {
  * Property tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must be a separate class — always use different types for different properties).
  */
-template<int DIMS, typename ValueT = double, typename... _ExtraParams>
-struct VectorFieldProperty: public FieldProperty< Vec<DIMS, ValueT>, _ExtraParams... > {};
+template<int DIM, typename ValueT = double, typename... _ExtraParams>
+struct VectorFieldProperty: public FieldProperty< Vec<DIM, ValueT>, _ExtraParams... > {};
 
 /**
  * Helper class which makes it easier to define property tags classes for scalar fields (fields of doubles).
@@ -490,7 +490,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
          * @param method method which should be use to do interpolation
          * @return values in points described by mesh @a dst_mesh
          */
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = DEFAULT_INTERPOLATION) const {
             ensureHasCorrectValue();
             if (method == DEFAULT_INTERPOLATION) method = default_interpolation;
             return interpolate(*mesh_ptr, values, dst_mesh, method);
@@ -500,7 +500,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
     /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod method)> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method)> Delegate;
 
     /**
      * Return same value in all points.
@@ -528,7 +528,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
+        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
             return ProvidedType(dst_mesh.size(), value);
         }
     };
@@ -545,10 +545,10 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
          * \param root root geometry
          * \param default_value default value returned in all not-specified places
          */
-        ConstByPlace(weak_ptr<const GeometryObjectD<SpaceT::DIMS>> root=weak_ptr<const GeometryObjectD<SpaceT::DIMS>>(), const ValueT& default_value=ValueT()):
+        ConstByPlace(weak_ptr<const GeometryObjectD<SpaceT::DIM>> root=weak_ptr<const GeometryObjectD<SpaceT::DIM>>(), const ValueT& default_value=ValueT()):
             ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
 
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
+        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
             return this->get(dst_mesh);
         }
     };

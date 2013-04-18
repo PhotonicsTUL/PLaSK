@@ -432,7 +432,7 @@ struct FieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     /**
      * Call this->operator()(dst_mesh, DEFAULT).
@@ -440,7 +440,7 @@ struct FieldProvider: public Provider {
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args) const {
+    inline ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(dst_mesh, extra_args..., DEFAULT_INTERPOLATION);
     }
 
@@ -451,7 +451,7 @@ struct FieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIMS>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
         return this->operator()(*dst_mesh, extra_args..., method);
     }
 
@@ -461,7 +461,7 @@ struct FieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+    inline ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
         typedef std::tuple<ExtraArgs...> Tuple;
         return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
@@ -472,13 +472,13 @@ struct FieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIMS>> dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
         return this->operator()(*dst_mesh, extra_args, method);
     }
 
 private:
     template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
-    inline ProvidedType apply_tuple(const MeshD<SpaceT::DIMS>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) {
+    inline ProvidedType apply_tuple(const MeshD<SpaceT::DIM>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) {
       return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 

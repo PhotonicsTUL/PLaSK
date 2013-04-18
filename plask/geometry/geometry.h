@@ -204,6 +204,20 @@ Good base classes for geometries objects are, for example:
 #include "transform.h"
 #include "container.h"
 #include "translation_container.h"
+#include "space.h"
+#include "primitives.h"
+#include "object.h"
+#include "mirror.h"
+#include "transform_space_cartesian.h"
+#include "transform_space_cylindric.h"
+#include "translation_container.h"
+#include "stack.h"
+#include "separator.h"
+#include "align_container.h"
+#include "leaf.h"
+#include "cylinder.h"
+#include "border.h"
+#include "reader.h"
 
 namespace plask {
 

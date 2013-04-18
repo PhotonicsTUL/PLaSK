@@ -170,7 +170,7 @@ namespace detail {
                 conn = parent->changed.connect([&] (Provider&,bool) { this->fireChanged(); });
         }
         virtual ~ProfileProvider() { /*profile->remove(this);*/ conn.disconnect(); }
-        virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedType operator()(const MeshD<ReceiverT::SpaceType::DIMS>& mesh, ExtraParams..., InterpolationMethod) const {
+        virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedType operator()(const MeshD<ReceiverT::SpaceType::DIM>& mesh, ExtraParams..., InterpolationMethod) const {
             return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
         }
         //virtual void onChange() { this->fireChanged(); }
@@ -274,7 +274,7 @@ namespace detail {
     public RegisterReceiverBase<ReceiverT>
     {
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
-        static const int DIMS = ReceiverT::SpaceType::DIMS;
+        static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
 
         static void assign(ReceiverT& self, const py::object& obj) {
@@ -349,7 +349,7 @@ namespace detail {
     public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
-        static const int DIMS = ProviderT::SpaceType::DIMS;
+        static const int DIMS = ProviderT::SpaceType::DIM;
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
         }

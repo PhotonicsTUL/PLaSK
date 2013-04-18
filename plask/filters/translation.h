@@ -15,14 +15,14 @@ struct TranslatedInnerDataSourceImpl {
 /// Don't use this directly, use TranslatedDataSource instead.
 template <typename PropertyT, typename SpaceType, typename... ExtraArgs>
 struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
-: public InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIMS>*/, GeometryObjectD<SpaceType::DIMS>>
+: public InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIM>*/, GeometryObjectD<SpaceType::DIM>>
 {
-    using typename InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIMS>*/, GeometryObjectD<SpaceType::DIMS>>::Region;
+    using typename InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIM>*/, GeometryObjectD<SpaceType::DIM>>::Region;
 
-    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<SpaceType::DIMS, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<SpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
         if (r)
-            return this->in(OnePointMesh<SpaceType::DIMS>(p - r->inTranslation), std::forward<ExtraArgs>(extra_args)..., method)[0];
+            return this->in(OnePointMesh<SpaceType::DIM>(p - r->inTranslation), std::forward<ExtraArgs>(extra_args)..., method)[0];
         else
             return boost::optional<typename PropertyT::ValueType>();
     }
