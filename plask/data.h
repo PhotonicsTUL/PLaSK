@@ -100,7 +100,7 @@ struct DataVector {
      * Reserve memory using aligned_malloc<T>(size) call.
      * @param size total size of the data
      */
-    DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {}
+    explicit DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {}
 
     /**
      * Create data vector with given @p size and fill all its' cells with given @p value.
@@ -580,9 +580,7 @@ bool operator>= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a
 template<class T>
 std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
     out << '[';
-    std::copy(to_print.begin(), to_print.end(), std::ostream_iterator<T>(out, ", "));
-    out << ']';
-    return out;
+    return printRange(out, to_print.begin(), to_print.end()) << ']';
 }
 
 /** \relates DataVector

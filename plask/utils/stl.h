@@ -69,6 +69,22 @@ inline Iter find_nearest_binary(Iter begin, Iter end, const Val& to_find) {
 template <typename... Types>
 struct VariadicTemplateTypesHolder {};
 
+/**
+ * Print range separating elements by @p separator (which is not printed after last element).
+ * @param out stream to print to
+ * @param begin, end [begin, end) range to print
+ * @return out
+ */
+template <typename ForwadIterator>
+std::ostream& printRange(std::ostream& out, ForwadIterator begin, ForwadIterator end, const char* separator = ", ") {
+    if (begin != end) {
+        out << *begin;
+        for (++begin ; begin != end; ++begin)
+            out << separator << *begin;
+    }
+    return out;
+}
+
 /// Don't use this directly, use applyTuple instead.
 
 
