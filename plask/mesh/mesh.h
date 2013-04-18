@@ -47,15 +47,15 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
 
     // plask::MeshD<3> methods implementation:
 
-    virtual std::size_t size() const {
+    virtual std::size_t size() const override {
         return 1;
     }
 
-    virtual plask::Vec<3, double> at(std::size_t index) const {
+    virtual plask::Vec<3, double> at(std::size_t index) const override {
         return point;
     }
 
-    virtual void writeXML(XMLElement& object) const {
+    virtual void writeXML(XMLElement& object) const override {
         object.attr("type", "point3d"); // this is required attribute for the provided object
         object.addTag("point")
                .attr("c0", point.c0)
@@ -72,7 +72,7 @@ static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
     reader.requireTag("point");
     double c0 = reader.requireAttribute<double>("c0");
     double c1 = reader.requireAttribute<double>("c1");
-    double c2 = reader.requireAttribute<double>("c1");
+    double c2 = reader.requireAttribute<double>("c2");
     reader.requireTagEnd();   // this is necessary to make sure the tag <point> is closed
     // Now create the mesh into a shared pointer and return it:
     return make_shared<OnePoint3DMesh>(plask::Vec<3,double>(c0, c1, c2));

@@ -102,6 +102,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/rectilinear.h"
 #include "mesh/generator_rectilinear.h"
 #include "mesh/rectangular_spline.h"
+#include "mesh/basic.h"
 
 #include "provider/provider.h"
 #include "provider/providerfor.h"
