@@ -6,13 +6,13 @@
 
 namespace plask {
 
-/// Don't use this directly, use TranslatedDataSource instead.
+/// Don't use this directly, use TranslatedInnerDataSource instead.
 template <typename PropertyT, PropertyType propertyType, typename SpaceType, typename VariadicTemplateTypesHolder>
 struct TranslatedInnerDataSourceImpl {
-    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "TranslatedDataSource can't be used with single value properties (it can be use only with fields properties)");
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "TranslatedInnerDataSource can't be used with single value properties (it can be use only with fields properties)");
 };
 
-/// Don't use this directly, use TranslatedDataSource instead.
+/// Don't use this directly, use TranslatedInnerDataSource instead.
 template <typename PropertyT, typename SpaceType, typename... ExtraArgs>
 struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
 : public InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIM>*/, GeometryObjectD<SpaceType::DIM>>
@@ -34,6 +34,35 @@ struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, Vari
  */
 template <typename PropertyT, typename SpaceType>
 using TranslatedInnerDataSource = TranslatedInnerDataSourceImpl<PropertyT, PropertyT::propertyType, SpaceType, typename PropertyT::ExtraParams>;
+
+
+/// Don't use this directly, use TranslatedOuterDataSource instead.
+template <typename PropertyT, PropertyType propertyType, typename SpaceType, typename VariadicTemplateTypesHolder>
+struct TranslatedOuterDataSourceImpl {
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "TranslatedInnerDataSource can't be used with single value properties (it can be use only with fields properties)");
+};
+
+/// Don't use this directly, use TranslatedOuterDataSource instead.
+template <typename PropertyT, typename SpaceType, typename... ExtraArgs>
+struct TranslatedOuterDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
+: public OuterDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIM>, GeometryObjectD<SpaceType::DIM>>
+{
+
+    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<SpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return this->in(toMesh(this->inTranslation + p), std::forward<ExtraArgs>(extra_args)..., method)[0];
+    }
+
+    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<SpaceType::DIM>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return this->in(translate(requested_points, this->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);
+    }
+
+};
+
+/**
+ * Source of data in space @p SpaceType space which read it from outer space of same type.
+ */
+template <typename PropertyT, typename SpaceType>
+using TranslatedOuterDataSource = TranslatedOuterDataSourceImpl<PropertyT, PropertyT::propertyType, SpaceType, typename PropertyT::ExtraParams>;
 
 }   // namespace plask
 

@@ -140,7 +140,12 @@ using FilterBase = FilterBaseImpl<PropertyT, PropertyT::propertyType, OutputSpac
 template <typename PropertyT, typename OutputSpaceType>
 struct FilterImpl {};
 
-// filter in 3D cartesian space
+/**
+ * Filter which provides data in 3D cartesian space.
+ *
+ * It can have one or more inner (2D or 3D) inputs and one outer (3D) input or default value (which is used in all points where inner inputs don't provide data).
+ * @tparam PropertyT property which has type FIELD_PROPERTY
+ */
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3D> {
 
@@ -162,7 +167,12 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
 
 };
 
-// filter in 2D cartesian space
+/**
+ * Filter which provides data in 2D cartesian space.
+ *
+ * It can have one or more inner (2D) inputs and one outer (2D or 3D) input or default value (which is used in all points where inner inputs don't provide data).
+ * @tparam PropertyT property which has type FIELD_PROPERTY
+ */
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, Geometry2DCartesian> {
 
