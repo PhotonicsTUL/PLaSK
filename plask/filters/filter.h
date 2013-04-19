@@ -155,6 +155,16 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
 
     using FilterBase<PropertyT, Geometry3D>::appendInner;
 
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< TranslatedOuterDataSource<PropertyT, Geometry3D> > source(new TranslatedOuterDataSource<PropertyT, Geometry3D>());
+        source->connect(outerObj, *this->geometry->getChild(), path);
+        return this->setOuterRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<GeometryObjectD<3>> outerObj, const PathHints* path = nullptr) {
+        return setOuter(*outerObj, path);
+    }
+
     ReceiverFor<PropertyT, Geometry3D>& appendInner(GeometryObjectD<3>& innerObj, const PathHints* path = nullptr) {
         std::unique_ptr< TranslatedInnerDataSource<PropertyT, Geometry3D> > source(new TranslatedInnerDataSource<PropertyT, Geometry3D>());
         source->connect(innerObj, *this->geometry, path);
@@ -190,6 +200,16 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<GeometryObjectD<3>> outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
         return setOuter(*outerObj, path, pointsCount);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(GeometryObjectD<2>& outerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< TranslatedOuterDataSource<PropertyT, Geometry2DCartesian> > source(new TranslatedOuterDataSource<PropertyT, Geometry2DCartesian>());
+        source->connect(outerObj, *this->geometry->getChild(), path);
+        return this->setOuterRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(shared_ptr<GeometryObjectD<2>> outerObj, const PathHints* path = nullptr) {
+        return setOuter(*outerObj, path);
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(GeometryObjectD<2>& innerObj, const PathHints* path = nullptr) {
