@@ -136,9 +136,9 @@ struct DataFrom2Dto3DSourceImpl {
 /// Don't use this directly, use TranslatedDataSource instead.
 template <typename PropertyT, typename... ExtraArgs>
 struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
-: public InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, GeometryObjectD<3>, Extrusion>
+: public InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>
 {
-    using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, GeometryObjectD<3>, Extrusion>::Region;
+    using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>::Region;
 
     virtual boost::optional<typename PropertyT::ValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
@@ -153,7 +153,7 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
 /**
  * Source of data in 3D space which read it from inner 2D space (Extrusion).
  */
-template <typename PropertyT, typename SpaceType>
+template <typename PropertyT>
 using DataFrom2Dto3DSource = DataFrom2Dto3DSourceImpl<PropertyT, PropertyT::propertyType, typename PropertyT::ExtraParams>;
 
 

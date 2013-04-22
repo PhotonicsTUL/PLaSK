@@ -175,6 +175,24 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
         return appendInner(*innerObj, path);
     }
 
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner2D(Extrusion& innerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< DataFrom2Dto3DSource<PropertyT> > source(new DataFrom2Dto3DSource<PropertyT>());
+        source->connect(innerObj, *this->geometry, path);
+        return this->appendInnerRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner2D(shared_ptr<Extrusion> innerObj, const PathHints* path = nullptr) {
+        return appendInner2D(*innerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(Geometry2DCartesian& innerObj, const PathHints* path = nullptr) {
+        return appendInner2D(innerObj.getExtrusion(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<Geometry2DCartesian> innerObj, const PathHints* path = nullptr) {
+        return appendInner2D(innerObj->getExtrusion(), path);
+    }
+
 };
 
 /**
