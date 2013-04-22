@@ -143,7 +143,7 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     virtual boost::optional<typename PropertyT::ValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
         if (r)
-            return in(vec<2>(p - r->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);
+            return this->in(toMesh(vec<2>(p - r->inTranslation)), std::forward<ExtraArgs>(extra_args)..., method)[0];
         else
             return boost::optional<typename PropertyT::ValueType>();
     }
