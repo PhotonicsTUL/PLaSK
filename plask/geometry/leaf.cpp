@@ -3,6 +3,9 @@
 
 namespace plask {
 
+template struct Block<2>;
+template struct Block<3>;
+
 // Initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
@@ -30,9 +33,6 @@ inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
     block.size.vert() = readAlternativeAttrs(reader, "d"+reader.getAxisVertName(), "height");
     setupLeaf(reader, block);
 }
-
-template struct Block<2>;
-template struct Block<3>;
 
 shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
     shared_ptr< Block<2> > block(new Block<2>());

@@ -175,6 +175,9 @@ struct Block: public GeometryObjectLeaf<dim> {
 
 };
 
+extern template struct Block<2>;
+extern template struct Block<3>;
+
 shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
 
 typedef Block<2> Rectangle;

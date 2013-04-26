@@ -39,7 +39,7 @@ template <> struct MethodsD<2> {
     }
 
     static bool hasRoleAt(const GeometryObjectD<2>& self, const std::string& role, double c0, double c1) {
-        return self.hasRoleAt(role, Vec<2,double>(c0, c1));
+        return self.hasRoleAt(role, Vec<2,double>(c0, c1)) != nullptr;
     }
 
 };
@@ -73,7 +73,7 @@ template <> struct MethodsD<3> {
     }
 
     static bool hasRoleAt(const GeometryObjectD<3>& self, const std::string& role, double c0, double c1, double c2) {
-        return self.hasRoleAt(role, Vec<3,double>(c0, c1, c2));
+        return self.hasRoleAt(role, Vec<3,double>(c0, c1, c2)) != nullptr;
     }
 
 };
@@ -87,7 +87,7 @@ static py::list GeometryObjectD_getRolesAt(const GeometryObjectD<dim>& self, con
 
 template <int dim>
 static bool GeometryObjectD_hasRoleAt(const GeometryObjectD<dim>& self, const std::string& role, const typename GeometryObjectD<dim>::DVec& point) {
-    return self.hasRoleAt(role, point);
+    return self.hasRoleAt(role, point) != nullptr;
 }
 
 

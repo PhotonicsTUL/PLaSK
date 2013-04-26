@@ -2,6 +2,9 @@
 
 namespace plask {
 
+template struct OnePointMesh<2>;
+template struct OnePointMesh<3>;
+
 template <>
 void OnePointMesh<3>::writeXML(XMLElement& object) const {
     object.attr("type", "point3d"); // this is required attribute for the provided object
@@ -18,9 +21,6 @@ void OnePointMesh<2>::writeXML(XMLElement &object) const {
            .attr("c0", point.c0)
            .attr("c1", point.c1);
 }
-
-template struct OnePointMesh<2>;
-template struct OnePointMesh<3>;
 
 static shared_ptr<Mesh> readOnePoint3DMesh(XMLReader& reader) {
     reader.requireTag("point");

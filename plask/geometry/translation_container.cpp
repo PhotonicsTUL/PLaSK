@@ -245,6 +245,9 @@ CacheNode<DIMS>* buildCache(const typename GeometryObjectContainer<DIMS>::Transl
 
 // ---- container: ----
 
+template struct TranslationContainer<2>;
+template struct TranslationContainer<3>;
+
 template <int dim>
 TranslationContainer<dim>::~TranslationContainer() {
     delete cache.load();
@@ -319,9 +322,6 @@ shared_ptr<typename TranslationContainer<dim>::TranslationT> TranslationContaine
     aligner.align(*trans_geom);
     return trans_geom;
 }
-
-template struct TranslationContainer<2>;
-template struct TranslationContainer<3>;
 
 // ---- containers readers: ----
 

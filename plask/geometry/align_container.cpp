@@ -4,6 +4,12 @@
 
 namespace plask {
 
+template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
+template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
+template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
+template struct AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
+template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
+
 template <>
 AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::ChildAligner AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::defaultAligner() {
     return align::bottom(0.0);
@@ -62,11 +68,6 @@ void AlignContainer<dim, alignDirection>::writeXMLChildAttr(XMLWriter::Element &
     childAligners[child_index].writeToXML(dest_xml_child_tag, axes);
 }*/
 
-template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
-template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
-template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
-template struct AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
-template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
 
 // ---- containers readers: ----
 

@@ -262,6 +262,9 @@ public:
 
 };
 
+extern template struct GeometryObjectContainer<2>;
+extern template struct GeometryObjectContainer<3>;
+
 /**
  * Read children, call child_param_read if children is in \<item\> tag and without_child_param_read if there was no \<item\> tag.
  * Read "path" parameter from each \<item\> tag.

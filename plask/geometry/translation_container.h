@@ -175,6 +175,9 @@ private:
 
 };
 
+extern template struct TranslationContainer<2>;
+extern template struct TranslationContainer<3>;
+
 } // namespace plask
 
 #endif // PLASK__GEOMETRY_CONTAINER_TRANS_H

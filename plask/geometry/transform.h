@@ -319,6 +319,9 @@ struct Translation: public GeometryObjectTransform<dim> {
 
 };
 
+extern template struct Translation<2>;
+extern template struct Translation<3>;
+
 }       // namespace plask
 
 #endif // PLASK__GEOMETRY_TRANSFORM_H

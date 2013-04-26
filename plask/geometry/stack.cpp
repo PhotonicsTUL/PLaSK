@@ -7,6 +7,10 @@
 
 namespace plask {
 
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBaseHeight) {
     if (getBaseHeight() == newBaseHeight) return;
@@ -69,10 +73,6 @@ bool StackContainerBaseImpl<dim, growingDirection>::removeIfTUnsafe(const std::f
         return false;
 }
 
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
-template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
-
 /*template <int dim>    //this is fine but GeometryObjects doesn't have copy constructors at all, because signal doesn't have copy constructor
 StackContainer<dim>::StackContainer(const StackContainer& to_copy)
     : StackContainerBaseImpl<dim>(to_copy) //copy all but aligners
@@ -82,6 +82,9 @@ StackContainer<dim>::StackContainer(const StackContainer& to_copy)
     for (auto a: to_copy.aligners) aligners_copy.push_back(a->clone());
     this->aligners = aligners_copy;
 }*/
+
+template struct StackContainer<2>;
+template struct StackContainer<3>;
 
 template <>
 const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner() {
@@ -175,8 +178,6 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::v
     return result;
 }
 
-template struct StackContainer<2>;
-template struct StackContainer<3>;
 
 PathHints::Hint ShelfContainer2D::addGap(double size) {
     return addUnsafe(make_shared<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(size));

@@ -132,6 +132,12 @@ public:
 
 };
 
+extern template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
+extern template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
+extern template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
+extern template struct AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
+extern template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
+
 }   // namespace plask
 
 #endif //  PLASK__GEOMETRY_ALIGN_CONTAINER_H

@@ -4,6 +4,9 @@
 
 namespace plask {
 
+template struct Translation<2>;
+template struct Translation<3>;
+
 template <int dim>
 shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
     shared_ptr< Translation<dim> > as_translation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
@@ -76,8 +79,7 @@ void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const Axi
 //         dest.push_back(Translation<dim>::compress(const_pointer_cast<GeometryObjectD<dim>>(c), this->translation));
 // }
 
-template struct Translation<2>;
-template struct Translation<3>;
+
 
 template <typename TranslationType>
 inline static void setupTranslation2D3D(GeometryReader& reader, TranslationType& translation) {

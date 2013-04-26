@@ -39,6 +39,9 @@ inline OnePointMesh<DIM> toMesh(const plask::Vec<DIM, double>& point) {
     return OnePointMesh<DIM>(point);
 }
 
+extern template struct OnePointMesh<2>;
+extern template struct OnePointMesh<3>;
+
 /**
  * Mesh which trasnlate another mesh by given vector.
  */

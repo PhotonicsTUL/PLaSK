@@ -86,6 +86,9 @@ struct Flip: public GeometryObjectTransform<dim> {
 
 };
 
+extern template struct Flip<2>;
+extern template struct Flip<3>;
+
 /**
  * We suppose that getBoundingBoxes().upper[flipDir] > 0
  */
@@ -184,6 +187,9 @@ struct Mirror: public GeometryObjectTransform<dim> {
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
 };
+
+extern template struct Mirror<2>;
+extern template struct Mirror<3>;
 
 }   // namespace plask
 

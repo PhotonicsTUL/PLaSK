@@ -1406,7 +1406,7 @@ struct GeometryObjectD: public GeometryObject {
      * \return true only if this geometry includes the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints* path, const DVec& point) const {
-        return getMatchingAt(point, PredicateIsA(object), path);
+        return getMatchingAt(point, PredicateIsA(object), path) != nullptr;
     }
 
     /**
@@ -1474,6 +1474,9 @@ struct GeometryObjectD: public GeometryObject {
         return hasRoleAt(role_name, point, &path);
     }
 };
+
+extern template struct GeometryObjectD<2>;
+extern template struct GeometryObjectD<3>;
 
 } // namespace plask
 

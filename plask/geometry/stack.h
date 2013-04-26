@@ -157,6 +157,10 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 };
 
+extern template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+extern template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
+extern template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+
 /**
  * Horizontal stack.
  * @ingroup GEOMETRY_OBJ
@@ -492,6 +496,9 @@ protected:
     shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
 
 };
+
+extern template struct StackContainer<2>;
+extern template struct StackContainer<3>;
 
 /**
  * N-stacks
