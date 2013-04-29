@@ -146,7 +146,7 @@ if(MINGW)
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------
-option(DETECT_FORTRAN_NAME_MANGLING "Detect fortran name mangling. When OFF, the most probable version will be used." OFF)
+option(DETECT_FORTRAN_NAME_MANGLING "Detect Fortran name mangling scheme. When OFF, the most probable version will be used." OFF)
 if(DETECT_FORTRAN_NAME_MANGLING)
     include(${CMAKE_SOURCE_DIR}/cmake/CheckFortran.cmake)
     if (CMAKE_Fortran_COMPILER)
