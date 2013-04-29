@@ -146,14 +146,17 @@ if(MINGW)
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------
-include(${CMAKE_SOURCE_DIR}/cmake/CheckFortran.cmake)
-if (CMAKE_Fortran_COMPILER)
-    enable_language(Fortran)
-    include(FortranCInterface)
-    FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
-else ()
-    message("Unable to determine Fortran name mangling scheme! Using the most probable version.")
-endif()
+option(DETECT_FORTRAN_NAME_MANGLING "Detect fortran name mangling. When OFF, the most probable version will be used." OFF)
+if(DETECT_FORTRAN_NAME_MANGLING)
+    include(${CMAKE_SOURCE_DIR}/cmake/CheckFortran.cmake)
+    if (CMAKE_Fortran_COMPILER)
+        enable_language(Fortran)
+        include(FortranCInterface)
+        FortranCInterface_HEADER("${CMAKE_BINARY_DIR}/include/plask/f77.h" MACRO_NAMESPACE "F77_")
+    else ()
+        message("Unable to determine Fortran name mangling scheme! Using the most probable version.")
+    endif()
+endif(DETECT_FORTRAN_NAME_MANGLING)
 
 
 # ----------===== Build and Install =====--------------------------------------------
