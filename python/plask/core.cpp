@@ -44,17 +44,19 @@ static LoggingConfig getLoggingConfig(const Config&) {
 }
 
 std::string Config::__str__() const {
-    return  "axes:               " + axes_name()
-        + "\nlogging.coloring:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
-        + "\nlogging.output:     " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
+    return  "axes:          " + axes_name()
+          + "\nlog.color:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
+          + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLogLevel).attr("name")))
+          + "\nlog.output:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
     ;
 }
 
 std::string Config:: __repr__() const {
     return
         format("config.axes = '%s'", axes_name()) +
-            + "\nlogging.coloring = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
-            + "\nlogging.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
+            + "\nlog.color = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
+            + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLogLevel).attr("name")))
+            + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
     ;
 }
 
@@ -66,7 +68,7 @@ inline static void register_config()
         .def("__repr__", &Config::__repr__)
         .add_property("axes", &Config::axes_name, &Config::set_axes,
                       "String representing axis names")
-        .add_property("logging", &getLoggingConfig, "Settings of the logging system");
+        .add_property("log", &getLoggingConfig, "Settings of the logging system");
     py::scope().attr("config") = config;
 }
 

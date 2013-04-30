@@ -270,8 +270,9 @@ void register_python_log()
     ;
 
     py::class_<LoggingConfig>("LoggingConfig", "Settings of the logging system", py::no_init)
-        .add_property("coloring", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, "Output coloring type")
+        .add_property("color", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, "Output color type")
         .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, "Output destination")
+        .add_property("level", &LoggingConfig::getLogLevel, &LoggingConfig::setLogLevel, "Maximum log level")
     ;
 }
 

@@ -4,12 +4,6 @@
 
 namespace plask {
 
-template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
-template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
-template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
-template struct AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
-template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
-
 template <>
 AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::ChildAligner AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::defaultAligner() {
     return align::bottom(0.0);
@@ -113,5 +107,10 @@ shared_ptr<GeometryObject> read_AlignContainer3D(GeometryReader& reader) {
 static GeometryReader::RegisterObjectReader align_container2D_reader(AlignContainer<2, Primitive<2>::Direction(0)>::NAME, read_AlignContainer2D);
 static GeometryReader::RegisterObjectReader align_container3D_reader(AlignContainer<3, Primitive<3>::Direction(0)>::NAME, read_AlignContainer3D);
 
+template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
+template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
+template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
+template struct AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
+template struct AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
 
 }   // namespace plask

@@ -277,7 +277,25 @@ void Manager::load(XMLReader& reader, const MaterialsSource& materialsSource,
 {
     try {
         reader.requireTag(TAG_NAME_ROOT);
-        reader.removeAlienNamespaceAttr();  //eventual schema decl. will be removed
+        reader.removeAlienNamespaceAttr();  // possible schema decl. will be removed
+        auto logattr = reader.getAttribute("loglevel");
+        if (logattr) {
+            try {
+                maxLogLevel = LogLevel(boost::lexical_cast<unsigned>(*logattr));
+            } catch (boost::bad_lexical_cast) {
+                maxLogLevel = reader.enumAttribute<LogLevel>("loglevel")
+                    .value("critical-error", LOG_CRITICAL_ERROR) 
+                    .value("error", LOG_ERROR)
+                    .value("error-detail", LOG_ERROR_DETAIL)
+                    .value("warning", LOG_WARNING)
+                    .value("info", LOG_INFO)
+                    .value("result", LOG_RESULT)
+                    .value("data", LOG_DATA)
+                    .value("detail", LOG_DETAIL)
+                    .value("debug", LOG_DEBUG)
+                    .get(maxLogLevel);
+            }
+        }
         reader.requireTag();
 
         if (reader.getNodeName() == TAG_NAME_DEFINES) {

@@ -175,6 +175,9 @@ struct Block: public GeometryObjectLeaf<dim> {
 
 };
 
+template <> void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+template <> void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+
 extern template struct Block<2>;
 extern template struct Block<3>;
 

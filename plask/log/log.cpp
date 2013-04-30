@@ -11,6 +11,8 @@ using namespace std;
 
 namespace plask {
 
+LogLevel maxLogLevel;
+
 #ifdef _WIN32
 
     /// Class writing colorful log into stderr
@@ -140,8 +142,10 @@ namespace plask {
 shared_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
-    #pragma omp critical(writelog)
-    default_logger->writelog(level, msg);
+    if (level <= maxLogLevel) {
+        #pragma omp critical(writelog)
+        default_logger->writelog(level, msg);
+    }
 }
 
 } // namespace plask

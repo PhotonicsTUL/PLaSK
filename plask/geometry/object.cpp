@@ -201,9 +201,6 @@ void GeometryObject::forEachRealObjectInSubtree(std::function<bool (const Geomet
 
 // --- GeometryObjectD ---
 
-template struct GeometryObjectD<2>;
-template struct GeometryObjectD<3>;
-
 template <int dims>
 shared_ptr<const GeometryObject> GeometryObjectD<dims>::getMatchingAt(const DVec& point, const Predicate& predicate, const plask::PathHints* path) const {
     Subtree subtree = getPathsAt(point, false);
@@ -229,5 +226,7 @@ std::set<std::string> GeometryObjectD<dims>::getRolesAt(const DVec& point, const
     return result;
 }
 
+template struct GeometryObjectD<2>;
+template struct GeometryObjectD<3>;
 
 } // namespace plask

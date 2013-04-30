@@ -208,6 +208,9 @@ struct LoggingConfig
 
     py::object getLoggingDest() const;
     void setLoggingDest(py::object dest);
+
+    LogLevel getLogLevel() const { return maxLogLevel; }
+    void setLogLevel(LogLevel level) { maxLogLevel = level; }
 };
 
 

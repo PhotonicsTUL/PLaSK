@@ -163,7 +163,7 @@ struct PolymorphicForwardIterator:
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class> friend class PolymorphicForwardIterator;
+    template <class> friend struct PolymorphicForwardIterator;
 
     bool equal(const PolymorphicForwardIterator<ImplT>& other) const {
         return impl->equal(*other.impl);
@@ -270,7 +270,7 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class, class> friend class IndexedIterator;
+    template <class, class, class> friend struct IndexedIterator;
 
     template <typename OtherT>
     bool equal(const OtherT& other) const {
@@ -335,7 +335,7 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class, class> friend class IndexedIterator;
+    template <class, class, class> friend struct IndexedIterator;
 
     template <typename OtherT>
     bool equal(const OtherT& other) const {
@@ -395,7 +395,7 @@ struct MethodIterator: public boost::iterator_facade< MethodIterator<ContainerTy
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class, class> friend class MethodIterator;
+    template <class, class, class> friend struct MethodIterator;
 
     template <typename OtherT>
     bool equal(const OtherT& other) const {

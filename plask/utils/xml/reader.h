@@ -546,7 +546,7 @@ private:
     }
 
     /**
-     * Remove from attributes all attributes which are not in default (empty) namespace.
+     * Remove from attributes all attributes which are not in the default (empty) namespace.
      */
     void removeAlienNamespaceAttr();
 

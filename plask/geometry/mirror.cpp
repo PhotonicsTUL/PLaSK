@@ -29,9 +29,6 @@ void Flip<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisName
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
 
-template struct Flip<2>;
-template struct Flip<3>;
-
 template <int dim>
 void Mirror<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
@@ -106,9 +103,6 @@ void Mirror<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNa
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
 
-template struct Mirror<2>;
-template struct Mirror<3>;
-
 
 //--------- XML reading: Flip and Mirror ----------------
 
@@ -123,5 +117,11 @@ static GeometryReader::RegisterObjectReader flip2D_reader(Flip<2>::NAME, read_fl
 static GeometryReader::RegisterObjectReader flip3D_reader(Flip<3>::NAME, read_flip_like<Flip<3>>);
 static GeometryReader::RegisterObjectReader mirror2D_reader(Mirror<2>::NAME, read_flip_like<Mirror<2>>);
 static GeometryReader::RegisterObjectReader mirror3D_reader(Mirror<3>::NAME, read_flip_like<Mirror<3>>);
+
+template struct Flip<2>;
+template struct Flip<3>;
+
+template struct Mirror<2>;
+template struct Mirror<3>;
 
 }

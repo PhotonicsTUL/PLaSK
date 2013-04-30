@@ -39,6 +39,9 @@ inline OnePointMesh<DIM> toMesh(const plask::Vec<DIM, double>& point) {
     return OnePointMesh<DIM>(point);
 }
 
+template<> void OnePointMesh<2>::writeXML(XMLElement& object) const;
+template<> void OnePointMesh<3>::writeXML(XMLElement& object) const;
+
 extern template struct OnePointMesh<2>;
 extern template struct OnePointMesh<3>;
 

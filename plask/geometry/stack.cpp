@@ -7,10 +7,6 @@
 
 namespace plask {
 
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
-template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
-
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBaseHeight) {
     if (getBaseHeight() == newBaseHeight) return;
@@ -82,9 +78,6 @@ StackContainer<dim>::StackContainer(const StackContainer& to_copy)
     for (auto a: to_copy.aligners) aligners_copy.push_back(a->clone());
     this->aligners = aligners_copy;
 }*/
-
-template struct StackContainer<2>;
-template struct StackContainer<3>;
 
 template <>
 const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner() {
@@ -481,5 +474,12 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
 
 static GeometryReader::RegisterObjectReader horizontalstack_reader(ShelfContainer2D::NAME, read_ShelfContainer2D);
 static GeometryReader::RegisterObjectReader horizontalstack2D_reader("shelf" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
+
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
+template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+
+template struct StackContainer<2>;
+template struct StackContainer<3>;
 
 }   // namespace plask

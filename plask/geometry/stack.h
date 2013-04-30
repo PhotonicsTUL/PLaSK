@@ -497,6 +497,9 @@ protected:
 
 };
 
+template <> const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner();
+template <> const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner();
+
 extern template struct StackContainer<2>;
 extern template struct StackContainer<3>;
 

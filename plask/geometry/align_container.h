@@ -132,6 +132,12 @@ public:
 
 };
 
+template <> AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::ChildAligner AlignContainer<2, Primitive<2>::DIRECTION_TRAN>::defaultAligner();
+template <> AlignContainer<2, Primitive<2>::DIRECTION_VERT>::ChildAligner AlignContainer<2, Primitive<2>::DIRECTION_VERT>::defaultAligner();
+template <> AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::defaultAligner();
+template <> AlignContainer<3, Primitive<3>::DIRECTION_VERT>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_VERT>::defaultAligner();
+template <> AlignContainer<3, Primitive<3>::DIRECTION_LONG>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_LONG>::defaultAligner();
+
 extern template struct AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
 extern template struct AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
 extern template struct AlignContainer<3, Primitive<3>::DIRECTION_LONG>;

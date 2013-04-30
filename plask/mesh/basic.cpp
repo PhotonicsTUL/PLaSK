@@ -43,6 +43,6 @@ static shared_ptr<Mesh> readOnePoint2DMesh(XMLReader& reader) {
     return make_shared<OnePointMesh<2>>(vec(c0, c1));
 }
 
-static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint3DMesh);
+static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint2DMesh);
 
 }   // namespace plask
