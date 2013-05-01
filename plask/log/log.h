@@ -22,7 +22,8 @@ enum LogLevel {
 };
 
 /// Maximum log level
-extern LogLevel maxLogLevel;
+extern LogLevel maxLoglevel;
+extern bool forcedLoglevel;
 
 /**
  * Log a message

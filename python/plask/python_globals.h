@@ -17,7 +17,6 @@ namespace boost { namespace python {
 // Important includes
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <numpy/ndarraytypes.h>
 
 #if defined(_WIN32) && defined(hypot)
 #   undef hypot
@@ -128,27 +127,6 @@ const char* type_name() {
 
 
 // ----------------------------------------------------------------------------------------------------------------------
-// Get numpy typenums for some types
-namespace detail {
-    template <typename T> static inline constexpr int typenum();
-    template <> inline constexpr int typenum<double>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<dcomplex>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<Vec<2,double>>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<Vec<3,double>>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<const double>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<const dcomplex>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<const Vec<2,double>>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<const Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<const Vec<3,double>>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<const Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
-    template <> inline constexpr int typenum<const Tensor2<double>>() { return NPY_DOUBLE; }
-    template <> inline constexpr int typenum<const Tensor3<dcomplex>>() { return NPY_CDOUBLE; }
-}
-
-
-// ----------------------------------------------------------------------------------------------------------------------
 // Get dtype for data
 namespace detail {
     template <typename T> inline static py::handle<> dtype();
@@ -209,8 +187,8 @@ struct LoggingConfig
     py::object getLoggingDest() const;
     void setLoggingDest(py::object dest);
 
-    LogLevel getLogLevel() const { return maxLogLevel; }
-    void setLogLevel(LogLevel level) { maxLogLevel = level; }
+    LogLevel getLogLevel() const { return maxLoglevel; }
+    void setLogLevel(LogLevel level) { if (!forcedLoglevel) maxLoglevel = level; }
 };
 
 

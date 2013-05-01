@@ -167,9 +167,10 @@ int main(int argc, const char *argv[])
         SetDllDirectory(plask::exePath().c_str());
 #   endif
 
-    // Test if we want to import plask into global namespace
+    // Parse commnad line
     bool from_import = true;
     bool force_interactive = false;
+    boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
 
     std::deque<const char*> defs;
@@ -182,6 +183,30 @@ int main(int argc, const char *argv[])
         } else if (arg == "-i") {
             force_interactive = true;
             --argc; ++argv;
+        } else if (arg.substr(0,2) == "-l") {
+            const char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
+            try {
+                loglevel.reset(plask::LogLevel(boost::lexical_cast<unsigned>(level)));
+            } catch (boost::bad_lexical_cast) {
+                std::string ll = level; boost::to_lower(ll);
+                if (ll == "critical_error") loglevel.reset(plask::LogLevel(0));
+                if (ll == "critical") loglevel.reset(plask::LogLevel(0));
+                else if (ll == "error") loglevel.reset(plask::LogLevel(1));
+                else if (ll == "error_detail") loglevel.reset(plask::LogLevel(2));
+                else if (ll == "warning") loglevel.reset(plask::LogLevel(3));
+                else if (ll == "info") loglevel.reset(plask::LogLevel(4));
+                else if (ll == "result") loglevel.reset(plask::LogLevel(5));
+                else if (ll == "data") loglevel.reset(plask::LogLevel(6));
+                else if (ll == "detail") loglevel.reset(plask::LogLevel(7));
+                else if (ll == "debug") loglevel.reset(plask::LogLevel(8));
+                else {
+                    std::cerr << "Bad log level specified\n";
+                    return 4;
+                }
+            }
+            plask::forcedLoglevel = true;
+            if (level == argv[2]) { argc -= 2; argv += 2; }
+            else { --argc; ++argv; }
         } else if (arg == "-c") {
             command = argv[2];
             argv[2] = "-c";
@@ -208,6 +233,7 @@ int main(int argc, const char *argv[])
 
     // Set the Python logger
     plask::default_logger = plask::python::makePythonLogger();
+    if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Test if we should run commans specified in the command line, use the file or start an interactive mode
     if (command) { // run command specified in the command line

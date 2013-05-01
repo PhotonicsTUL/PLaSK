@@ -94,11 +94,6 @@ static py::object EffectiveFrequencyCylSolver_getDeterminantV(EffectiveFrequency
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminantV(x);}, val);
 }
 
-static inline bool plask_import_array() {
-    import_array1(false);
-    return true;
-}
-
 dcomplex EffectiveFrequencyCylSolver_getLambda0(const EffectiveFrequencyCylSolver& self) {
     return 2e3*M_PI / self.k0;
 }

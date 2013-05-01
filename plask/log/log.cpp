@@ -11,7 +11,8 @@ using namespace std;
 
 namespace plask {
 
-LogLevel maxLogLevel = LOG_DETAIL;
+LogLevel maxLoglevel = LOG_DETAIL;
+bool forcedLoglevel = false;
 
 #ifdef _WIN32
 
@@ -142,7 +143,7 @@ LogLevel maxLogLevel = LOG_DETAIL;
 shared_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
-    if (level <= maxLogLevel) {
+    if (level <= maxLoglevel) {
         #pragma omp critical(writelog)
         default_logger->writelog(level, msg);
     }

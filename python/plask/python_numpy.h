@@ -2,11 +2,34 @@
 #define PLASK__PYTHON_NUMPY_H
 
 #include "python_globals.h"
-#include <numpy/arrayobject.h>
 
+//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
 
 namespace plask { namespace python {
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Get numpy typenums for some types
+namespace detail {
+    template <typename T> static inline constexpr int typenum();
+    template <> inline constexpr int typenum<double>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<dcomplex>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<Vec<2,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<Vec<3,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const double>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const dcomplex>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Vec<2,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Vec<2,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Vec<3,double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Tensor2<double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Tensor3<dcomplex>>() { return NPY_CDOUBLE; }
+}
+
+
+// ----------------------------------------------------------------------------------------------------------------------
 /**
  * Either make sure the object statys alive as long as array, or make a copy to the desired dtype
  */
@@ -27,7 +50,7 @@ inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
 }
 
 /*
- * Import numpy (needs to be called in every cpp, which users arrays)
+ * Import numpy (needs to be called in every cpp, which uses arrays)
  */
 static inline bool plask_import_array() {
     import_array1(false);
