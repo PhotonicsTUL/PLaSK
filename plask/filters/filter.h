@@ -253,7 +253,7 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
 };
 
 /**
- * Filter is a special kind of Solver which ,,solves" the problem using another Solvers,.
+ * Filter is a special kind of Solver which "solves" the problem using another Solvers,.
  *
  * It calculates its output using input of simillar type and changing it in some way,
  * for example trasnlating it from one space to another (2D -> 3D, 3D -> 2D, etc.).

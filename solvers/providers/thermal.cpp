@@ -4,6 +4,6 @@
 
 namespace plask {
 
-FiltersFactory::RegisterStadnard<Temperature> registerTemperatureFilters;
+FiltersFactory::RegisterStandard<Temperature> registerTemperatureFilters;
 
 }   // namespace plask

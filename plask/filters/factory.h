@@ -43,8 +43,8 @@ public:
      * Creating global objects of this type allow to fill the default filters database.
      */
     template <typename PropertyTag>
-    struct RegisterStadnard {
-        RegisterStadnard() { getDefault().addStandard<PropertyTag>(); }
+    struct RegisterStandard {
+        RegisterStandard() { getDefault().addStandard<PropertyTag>(); }
     };
 
     /// Standard filter factory.
