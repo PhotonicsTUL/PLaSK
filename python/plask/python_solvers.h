@@ -99,11 +99,21 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
     }
 
     template <typename ProviderT>
-    ExportSolver& add_provider(const char* name, ProviderT Class::* field, const char* help) {
+    typename std::enable_if<std::is_base_of<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>, ProviderT>::value, ExportSolver>::type&
+    add_provider(const char* name, ProviderT Class::* field, const char* help) {
+
+        typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> Class::* BaseTypePtr;
+
+        this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field), help);
+        return *this;
+    }
+
+    template <typename ProviderT>
+    typename std::enable_if<!std::is_base_of<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>, ProviderT>::value, ExportSolver>::type&
+    add_provider(const char* name, ProviderT Class::* field, const char* help) {
 
         static_assert(std::is_base_of<Provider, ProviderT>::value, "add_provider used for non-provider type");
 
-        RegisterProvider<ProviderT>();
         this->def_readonly(name, field, help);
         return *this;
     }
@@ -114,7 +124,6 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         //TODO maybe introduce some base class for receiver?
         //static_assert(std::is_base_of<Provider::Listener, ReceiverT>::value, "add_receiver used for non-receiver type");
 
-        RegisterReceiver<ReceiverT>();
         this->add_property(name, py::make_getter(field),
                            py::make_function(detail::ReceiverSetter<Class,ReceiverT>(field),
                                              py::default_call_policies(),

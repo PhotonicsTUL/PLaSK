@@ -5,7 +5,7 @@
 #include <plask/geometry/space.h>
 #include <plask/mesh/rectilinear.h>
 #include <plask/mesh/regular.h>
-#include <providers/thermal.h>
+#include <plask/properties/thermal.h>
 
 BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
 

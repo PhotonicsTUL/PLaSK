@@ -319,14 +319,15 @@ namespace detail {
     struct RegisterProviderBase
     {
         const std::string property_name;
-        typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ProviderBase;
-        py::class_<ProviderBase, boost::noncopyable> provider_base_class;
-        py::class_<ProviderT, py::bases<ProviderBase>, boost::noncopyable> provider_class;
+//         typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ProviderBase;
+//         py::class_<ProviderBase, boost::noncopyable> provider_base_class;
+//         py::class_<ProviderT, py::bases<ProviderBase>, boost::noncopyable> provider_class;
+        py::class_<ProviderT, boost::noncopyable> provider_class;
         RegisterProviderBase(const std::string& suffix="") :
             property_name (type_name<typename ProviderT::PropertyTag>()),
-            provider_base_class(("ProviderFor" + property_name + suffix + "Base").c_str(), py::no_init),
+//             provider_base_class(("ProviderFor" + property_name + suffix + "Base").c_str(), py::no_init),
             provider_class(("ProviderFor" + property_name + suffix).c_str(), py::no_init) {
-            py::delattr(py::scope(), ("ProviderFor" + property_name+ suffix + "Base").c_str());
+//             py::delattr(py::scope(), ("ProviderFor" + property_name+ suffix + "Base").c_str());
             py::delattr(py::scope(), ("ProviderFor" + property_name + suffix).c_str());
         }
     };

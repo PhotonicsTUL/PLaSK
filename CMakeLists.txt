@@ -30,7 +30,6 @@ endif()
 
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>
 include_directories(python)     # solvers can also include <plask/python.hpp>
-include_directories(solvers)    # solvers can also include <providers/*.h>
 include_directories(extlib)     # place for local external libraries
 include_directories(${CMAKE_BINARY_DIR}/include) # for include config.h
 

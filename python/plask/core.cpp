@@ -29,6 +29,8 @@ void register_python_log();
 
 void register_step_profile();
 
+void register_standard_properties();
+
 // Hack necessary as macro import_array wants to return some value
 static inline bool plask_import_array() {
     import_array1(false);
@@ -253,4 +255,7 @@ BOOST_PYTHON_MODULE(_plask)
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();
+
+    // Properties
+    register_standard_properties();
 }

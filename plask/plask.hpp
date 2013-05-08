@@ -97,10 +97,10 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "phys/constants.h"
 #include "phys/functions.h"
 
-#include "providers/thermal.h"
-#include "providers/electrical.h"
-#include "providers/optical.h"
-#include "providers/gain.h"
+#include "properties/thermal.h"
+#include "properties/electrical.h"
+#include "properties/optical.h"
+#include "properties/gain.h"
 
 #include "filters/filter.h"
 
