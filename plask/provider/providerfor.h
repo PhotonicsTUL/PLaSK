@@ -507,7 +507,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
      *
      * Used by receivers as const value provider, see Receiver::setConst
      *
-     * It ignors extra parameters.
+     * It ignores extra parameters.
      */
     struct ConstProviderType: public ProviderFor<PropertyT, SpaceT> {
 
@@ -536,7 +536,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
     /**
      * Provider which allows to define value in each geometry place pointed as geometry object.
      *
-     * It ignors extra parameters.
+     * It ignores extra parameters.
      */
     struct ConstByPlace: public ConstByPlaceProviderImpl<PropertyT, SpaceT> {
 

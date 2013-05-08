@@ -200,12 +200,10 @@ namespace detail {
 
         RegisterReceiverBase(const std::string& suffix="") :
             property_name(type_name<typename ReceiverT::PropertyTag>()),
-            receiver_class(("ReceiverFor" + property_name + suffix).c_str(), py::no_init) {
-            receiver_class.def("__lshift__", &connect, "(DEPRECIATED) Connect provider to receiver");
+            receiver_class(("ReceiverFor" + property_name + suffix).c_str()) {
             receiver_class.def("connect", &connect, "Connect provider to receiver");
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
             receiver_class.def_readonly("changed", &ReceiverT::changed, "Indicates whether the receiver value has changed since last retrieval");
-            py::delattr(py::scope(), ("ReceiverFor" + property_name + suffix).c_str());
         }
     };
 
@@ -298,7 +296,6 @@ namespace detail {
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
-            this->receiver_class.def("__lshift__", &connectProfileProvider<ReceiverT>, "(DEPRECIATED) Connect step profile to receiver");
             this->receiver_class.def("connect", &connectProfileProvider<ReceiverT>, "Connect profile to receiver");
         }
 
@@ -313,22 +310,63 @@ namespace detail {
         friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT, ExtraParams...>;
     };
 
+}
+
 // ---------- Provider ------------
 
+template <typename ProviderT, PropertyType propertyType, typename ParamsT>
+struct PythonProviderFor;
+
+template <typename ProviderT, typename... _ExtraParams>
+struct PythonProviderFor<ProviderT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
+public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
+
+    typedef typename ProviderFor<typename ProviderT::PropertyTag>::ProvidedType ProvidedType;
+
+    PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
+        [function](_ExtraParams... params) -> ProvidedType {
+            return py::extract<ProvidedType>(function(params...));
+        }
+    ) {}
+
+};
+
+template <typename ProviderT, typename... _ExtraParams>
+struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
+public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
+
+    typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
+
+    PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
+        [function](const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
+        {
+            return py::extract<ProvidedType>(function(&dst_mesh, params..., method));
+        }
+    ) {}
+
+};
+
+template <typename ProviderT> 
+shared_ptr<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>
+PythonProviderFor__init__(const py::object& function) {
+    return make_shared<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>
+        (function);
+}
+
+namespace detail {
+
     template <typename ProviderT>
-    struct RegisterProviderBase
-    {
+    struct RegisterProviderBase {
         const std::string property_name;
-//         typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ProviderBase;
-//         py::class_<ProviderBase, boost::noncopyable> provider_base_class;
-//         py::class_<ProviderT, py::bases<ProviderBase>, boost::noncopyable> provider_class;
         py::class_<ProviderT, boost::noncopyable> provider_class;
         RegisterProviderBase(const std::string& suffix="") :
             property_name (type_name<typename ProviderT::PropertyTag>()),
-//             provider_base_class(("ProviderFor" + property_name + suffix + "Base").c_str(), py::no_init),
             provider_class(("ProviderFor" + property_name + suffix).c_str(), py::no_init) {
-//             py::delattr(py::scope(), ("ProviderFor" + property_name+ suffix + "Base").c_str());
-            py::delattr(py::scope(), ("ProviderFor" + property_name + suffix).c_str());
+            py::class_<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>,
+                       py::bases<ProviderT>, boost::noncopyable>(("ProviderFor" + property_name + suffix).c_str(),
+                       ("Provider class for " + property_name + " in Geometry" + suffix).c_str(), // TODO documentation
+                       py::no_init)
+                       .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>));
         }
     };
 

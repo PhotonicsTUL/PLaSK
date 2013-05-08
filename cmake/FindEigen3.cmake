@@ -23,7 +23,7 @@ if(NOT Eigen3_FIND_VERSION)
 endif(NOT Eigen3_FIND_VERSION)
 
 macro(_eigen3_get_version)
-  file(READ "${EIGEN3_INCLUDE_DIR}/Eigen/src/Core/util/Macros.h" _eigen3_version_header LIMIT 5000 OFFSET 1000)
+  file(READ "${EIGEN3_INCLUDE_DIR}/Eigen/src/Core/util/Macros.h" _eigen3_version_header LIMIT 6000)
 
   string(REGEX MATCH "define *EIGEN_WORLD_VERSION ([0-9]*)" _eigen3_world_version_match "${_eigen3_version_header}")
   set(EIGEN3_WORLD_VERSION "${CMAKE_MATCH_1}")
