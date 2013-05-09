@@ -201,8 +201,9 @@ namespace detail {
         RegisterReceiverBase(const std::string& suffix="") :
             property_name(type_name<typename ReceiverT::PropertyTag>()),
             receiver_class(("ReceiverFor" + property_name + suffix).c_str()) {
-            receiver_class.def("connect", &connect, "Connect provider to receiver");
+            receiver_class.def("connect", &connect, "Connect provider to receiver", py::arg("provider"));
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
+            receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::PropertyTag::ValueType&>, "Assign constant value to the receiver", py::arg("value"));
             receiver_class.def_readonly("changed", &ReceiverT::changed, "Indicates whether the receiver value has changed since last retrieval");
         }
     };
@@ -296,7 +297,7 @@ namespace detail {
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
-            this->receiver_class.def("connect", &connectProfileProvider<ReceiverT>, "Connect profile to receiver");
+            this->receiver_class.def("assign", &connectProfileProvider<ReceiverT>, "Assign profile to receiver", py::arg("profile"));
         }
 
       private:

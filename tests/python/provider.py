@@ -81,8 +81,8 @@ class PythonProviderTest(unittest.TestCase):
         def __init__(self, parent):
             self.parent = parent
             self.outGain = ProviderForGain2D(lambda *args: self.get_gain(*args))
-            self.receiver = ReceiverForGain2D()
-        inGain = property(lambda self: self.receiver, lambda self,provider: self.receiver.connect(provider))
+            self._receiver = ReceiverForGain2D()
+        inGain = property(lambda self: self._receiver, lambda self,provider: self._receiver.connect(provider))
         def get_gain(self, mesh, wavelength, interpolation):
             self.parent.assertEqual(interpolation, interpolation.SPLINE)
             return Data(wavelength * arange(len(mesh)), mesh)
@@ -92,6 +92,7 @@ class PythonProviderTest(unittest.TestCase):
         self.solver.inGain = self.solver.outGain
 
     def testAll(self):
+        self.assertEqual( type(self.solver.inGain), ReceiverForGain2D )
         msh = mesh.Regular2D((0.,1., 2), (0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
         self.assertEqual(list(res), [0., 10., 20., 30., 40., 50.])
