@@ -32,7 +32,6 @@ namespace detail {
             RegisterReceiver<ReceiverFor<PropertyT,Geometry3D>>();
         }
     };
-
 }
 
 template <typename PropertyT>

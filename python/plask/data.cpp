@@ -157,7 +157,6 @@ static PyObject* DataVectorWrap_ArrayImpl(const DataVectorWrap<T,dim>* self) {
                                 0,
                                 0,
                                 NULL);
-
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
     return arr;
 }
@@ -176,7 +175,10 @@ static py::object DataVectorWrap_Array(py::object oself) {
     if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
                                         (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
 
+    py::incref(oself.ptr());
+    PyArray_BASE(arr) = oself.ptr(); // Make sure the data vector stays alive as long as the array
     // confirm_array<T>(arr, oself, dtype);
+
     return py::object(py::handle<>(arr));
 }
 

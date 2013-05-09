@@ -331,6 +331,7 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
 };
 
+
 template <typename ProviderT, typename... _ExtraParams>
 struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
 public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
@@ -340,13 +341,14 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
         [function](const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
-            return py::extract<ProvidedType>(function(&dst_mesh, params..., method));
+            typedef DataVectorWrap<const typename ProviderT::PropertyTag::ValueType,ProviderT::SpaceType::DIM> ReturnedType;
+            ReturnedType result = py::extract<ReturnedType>(function(boost::ref(dst_mesh), params..., method));
+            return ProvidedType(result);
         }
     ) {}
-
 };
 
-template <typename ProviderT> 
+template <typename ProviderT>
 shared_ptr<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>
 PythonProviderFor__init__(const py::object& function) {
     return make_shared<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>

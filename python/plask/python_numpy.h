@@ -31,7 +31,7 @@ namespace detail {
 
 // ----------------------------------------------------------------------------------------------------------------------
 /**
- * Either make sure the object statys alive as long as array, or make a copy to the desired dtype
+ * Either make sure the object stays alive as long as array, or make a copy to the desired dtype
  */
 template <typename T>
 inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
@@ -41,8 +41,7 @@ inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
         arr = PyArray_CastToType(oarr, descr, 1);
         Py_DECREF(oarr);
         if (arr == nullptr) throw TypeError("cannot convert array to required dtype");
-    }
-    else {
+    } else {
         py::incref(self.ptr());
         PyArray_BASE(arr) = self.ptr(); // Make sure the data vector stays alive as long as the array
     }
