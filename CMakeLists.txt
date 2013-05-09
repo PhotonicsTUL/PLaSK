@@ -126,6 +126,12 @@ include_directories(${EXPAT_INCLUDE_DIR})
 # Add any boost component here that any part of the project can use ever
 set(boost_components unit_test_framework system filesystem) #thread
 
+option(USE_STATIC_BOOST "use static boost (not recommended)" OFF)
+if(USE_STATIC_BOOST)
+    add_definitions(-DBOOST_PYTHON_STATIC_LIB)  # fix linker errors to boost python
+    set(Boost_USE_STATIC_LIBS ON)
+fi(USE_STATIC_BOOST)
+
 if(BUILD_PYTHON)
     find_package(Boost QUIET COMPONENTS "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
     unset(Boost_LIBRARIES)
@@ -143,6 +149,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
 endif()
+
 
 ## ---------- Fortran name mangling --------------------------------------------
 option(DETECT_FORTRAN_NAME_MANGLING "Detect Fortran name mangling scheme. When OFF, the most probable version will be used." OFF)
@@ -220,7 +227,7 @@ if(BUILD_PYTHON)
             # stuff libplask.exe.dll.a
             set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
     endif()
-    target_link_libraries(plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask)
 
     if(BUILD_PYTHON_MODULE)
         if(WIN32)
