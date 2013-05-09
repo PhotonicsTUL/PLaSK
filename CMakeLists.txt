@@ -130,7 +130,7 @@ option(USE_STATIC_BOOST "use static boost (not recommended)" OFF)
 if(USE_STATIC_BOOST)
     add_definitions(-DBOOST_PYTHON_STATIC_LIB)  # fix linker errors to boost python
     set(Boost_USE_STATIC_LIBS ON)
-fi(USE_STATIC_BOOST)
+endif(USE_STATIC_BOOST)
 
 if(BUILD_PYTHON)
     find_package(Boost QUIET COMPONENTS "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
