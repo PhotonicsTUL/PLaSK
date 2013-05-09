@@ -21,7 +21,7 @@
 #     all the possibilities
 #  BLA_F95     if set on tries to find the f95 interfaces for BLAS/LAPACK
 ### List of vendors (BLA_VENDOR) valid in this module
-##  Intel(mkl), ACML,Apple, NAS, Generic
+##  Intel(mkl), ACML, Apple, NAS, Generic
 
 #=============================================================================
 # Copyright 2007-2009 Kitware, Inc.
@@ -153,6 +153,20 @@ if(BLAS_FOUND)
     endif(NOT BLA_VENDOR)
   endif ($ENV{BLA_VENDOR} MATCHES ".+")
 
+if (BLA_VENDOR STREQUAL "OpenBLAS" OR BLA_VENDOR STREQUAL "All")
+ if(NOT LAPACK_LIBRARIES)
+  check_lapack_libraries(
+  LAPACK_LIBRARIES
+  LAPACK
+  cheev
+  ""
+  "openblas"
+  "${BLAS_LIBRARIES}"
+  ""
+  )
+ endif(NOT LAPACK_LIBRARIES)
+endif (BLA_VENDOR STREQUAL "OpenBLAS" OR BLA_VENDOR STREQUAL "All")
+
 if (BLA_VENDOR STREQUAL "Goto" OR BLA_VENDOR STREQUAL "All")
  if(NOT LAPACK_LIBRARIES)
   check_lapack_libraries(
@@ -260,7 +274,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
         # new >= 10.3
         if (CMAKE_C_COMPILER MATCHES ".+gcc.*")
 	  set(LM "${LM};-lgomp")
-        endif()    
+        endif()
         check_lapack_libraries(
           LAPACK95_LIBRARIES
           LAPACK
@@ -288,7 +302,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
         # new >= 10.3
         if (CMAKE_C_COMPILER MATCHES ".+gcc.*")
 	  set(LM "${LM};-lgomp")
-        endif()    
+        endif()
         check_lapack_libraries(
           LAPACK_LIBRARIES
           LAPACK
