@@ -57,13 +57,14 @@ set(SOLVER_INCLUDE_DIRECTORIES ${GSL_INCLUDE_DIRS})
 #
 enable_testing()
 
-add_executable(simplegaintest tests/simplegaintest.cpp)
-target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-set(SOLVER_TEST_DEPENDS simplegaintest)
+if(BUILD_TESTING)
+    add_executable(simplegaintest tests/simplegaintest.cpp)
+    target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
+    set(SOLVER_TEST_DEPENDS simplegaintest)
 
-add_test(solvers/gain/simple ${PLASK_SOLVER_PATH}/simplegaintest)
-#add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
-
+    add_test(solvers/gain/simple ${PLASK_SOLVER_PATH}/simplegaintest)
+    #add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+endif()
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
