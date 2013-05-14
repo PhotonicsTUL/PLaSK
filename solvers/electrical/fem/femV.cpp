@@ -56,6 +56,9 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                 .value("gauss", ALGORITHM_GAUSS)
                 .value("iterative", ALGORITHM_ITERATIVE)
                 .get(mAlgorithm);
+            mIterErr = source.getAttribute<double>("itererr", mIterErr);
+            mIterLim = source.getAttribute<size_t>("iterlim", mIterLim);
+            mLogFreq = source.getAttribute<size_t>("logfreq", mLogFreq);
             source.requireTagEnd();
         }
 
@@ -185,6 +188,139 @@ inline void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setLoc
         ioK41 = r * ioK41 + tKr;
 }
 
+template<typename Geometry2DType> template <typename MatrixT>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
+                                                                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+    // boundary conditions of the first kind
+    for (auto cond: bvoltage) {
+        for (auto r: cond.place) {
+            A(r,r) = 1.;
+            register double val = B[r] = cond.value;
+            size_t start = (r > A.kd)? r-A.kd : 0;
+            size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
+            for(size_t c = start; c < r; ++c) {
+                B[c] -= A(r,c) * val;
+                A(r,c) = 0.;
+            }
+            for(size_t c = r+1; c < end; ++c) {
+                B[c] -= A(r,c) * val;
+                A(r,c) = 0.;
+            }
+        }
+    }
+}
+
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
+                                                                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+    // boundary conditions of the first kind
+    for (auto cond: bvoltage) {
+        for (auto r: cond.place) {
+            double* rdata = A.data + LDA*r;
+            *rdata = 1.;
+            register double val = B[r] = cond.value;
+            // below diagonal
+            for (register ptrdiff_t i = 4; i > 0; --i) {
+                register ptrdiff_t c = r - A.bno[i];
+                if (c >= 0) {
+                    B[c] -= A.data[LDA*c+i] * val;
+                    A.data[LDA*c+i] = 0.;
+                }
+            }
+            // above diagonal
+            for (register ptrdiff_t i = 1; i < 5; ++i) {
+                register ptrdiff_t c = r + A.bno[i];
+                if (c < A.size) {
+                    B[c] -= rdata[i] * val;
+                    rdata[i] = 0.;
+                }
+            }
+        }
+    }
+}
+
+/// Set stiffness matrix + load vector
+template<typename Geometry2DType> template <typename MatrixT>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& oA, DataVector<double>& oLoad,
+                                                                      const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst)
+{
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", oA.size, oA.kd+1, oA.ld+1);
+
+    std::fill_n(oA.data, oA.size*(oA.ld+1), 0.); // zero the matrix
+    oLoad.fill(0.);
+
+    std::vector<Box2D> tVecBox = this->geometry->getLeafsBoundingBoxes();
+
+    // Set stiffness matrix and load vector
+    for (auto tE: this->mesh->elements)
+    {
+        size_t i = tE.getIndex();
+
+        // nodes numbers for the current element
+        size_t tLoLeftNo = tE.getLoLoIndex();
+        size_t tLoRghtNo = tE.getUpLoIndex();
+        size_t tUpLeftNo = tE.getLoUpIndex();
+        size_t tUpRghtNo = tE.getUpUpIndex();
+
+        // element size
+        double tElemWidth = tE.getUpper0() - tE.getLower0();
+        double tElemHeight = tE.getUpper1() - tE.getLower1();
+
+        Vec<2,double> tMidPoint = tE.getMidpoint();
+
+        // update junction conductivities
+        if (mLoopNo != 0 && this->geometry->hasRoleAt("active", tMidPoint)) {
+            size_t tLeft = this->mesh->index0(tLoLeftNo);
+            size_t tRight = this->mesh->index0(tLoRghtNo);
+            double tJy = 0.5e6 * mCond[i].c11 *
+                abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
+                    + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
+                ) / mDact; // [j] = A/m²
+            mCond[i] = Tensor2<double>(0., 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
+        }
+        double tKx = mCond[i].c00;
+        double tKy = mCond[i].c11;
+
+        tKx *= tElemHeight; tKx /= tElemWidth;
+        tKy *= tElemWidth; tKy /= tElemHeight;
+
+        // set symmetric matrix components
+        double tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41;
+
+        tK44 = tK33 = tK22 = tK11 = (tKx + tKy) / 3.;
+        tK43 = tK21 = (-2. * tKx + tKy) / 6.;
+        tK42 = tK31 = - (tKx + tKy) / 6.;
+        tK32 = tK41 = (tKx - 2. * tKy) / 6.;
+
+        // set stiffness matrix
+        setLocalMatrix(tK44, tK33, tK22, tK11, tK43, tK21, tK42, tK31, tK32, tK41, tKy, tElemWidth, tMidPoint);
+
+        oA(tLoLeftNo, tLoLeftNo) += tK11;
+        oA(tLoRghtNo, tLoRghtNo) += tK22;
+        oA(tUpRghtNo, tUpRghtNo) += tK33;
+        oA(tUpLeftNo, tUpLeftNo) += tK44;
+
+        oA(tLoRghtNo, tLoLeftNo) += tK21;
+        oA(tUpRghtNo, tLoLeftNo) += tK31;
+        oA(tUpLeftNo, tLoLeftNo) += tK41;
+        oA(tUpRghtNo, tLoRghtNo) += tK32;
+        oA(tUpLeftNo, tLoRghtNo) += tK42;
+        oA(tUpLeftNo, tUpRghtNo) += tK43;
+    }
+
+    // boundary conditions of the first kind
+    applyBC(oA, oLoad, iVConst);
+
+#ifndef NDEBUG
+    double* tAend = oA.data + oA.size * oA.kd;
+    for (double* pa = oA.data; pa != tAend; ++pa) {
+        if (isnan(*pa) || isinf(*pa))
+            throw ComputationError(this->getId(), "Error in stiffness matrix at position %1% (%2%)", pa-oA.data, isnan(*pa)?"nan":"inf");
+    }
+#endif
+
+}
+
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 {
@@ -224,6 +360,64 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
     return 0.;
 }
 
+template<typename Geometry2DType> template <typename MatrixT>
+double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int iLoopLim)
+{
+    this->initCalculation();
+
+    mCurrentDensities.reset();
+    mHeatDensities.reset();
+
+    // Store boundary conditions for current mesh
+    auto tVConst = mVConst(this->mesh);
+
+    this->writelog(LOG_INFO, "Running electrical calculations");
+
+    int tLoop = 0;
+    MatrixT tA(mAsize, this->mesh->minorAxis().size());
+
+    double tMaxMaxAbsVCorr = 0.,
+        tMaxMaxRelVCorr = 0.;
+
+#   ifndef NDEBUG
+        if (!mPotentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
+#   endif
+    mPotentials = mPotentials.claim();
+    DataVector<double> tV(mAsize);
+
+    loadConductivities();
+
+    do {
+        setMatrix(tA, tV, tVConst);
+
+        solveMatrix(tA, tV);
+
+        savePotentials(tV);
+
+        if (mMaxAbsVCorr > tMaxMaxAbsVCorr) tMaxMaxAbsVCorr = mMaxAbsVCorr;
+
+        ++mLoopNo;
+        ++tLoop;
+
+        // show max correction
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", tLoop, mLoopNo, mDV, mMaxAbsVCorr, mMaxRelVCorr);
+
+    } while (((mCorrType == CORRECTION_ABSOLUTE)? (mMaxAbsVCorr > mVCorrLim) : (mMaxRelVCorr > mVCorrLim)) && (iLoopLim == 0 || tLoop < iLoopLim));
+
+    saveConductivities();
+
+    outPotential.fireChanged();
+    outCurrentDensity.fireChanged();
+    outHeatDensity.fireChanged();
+
+    // Make sure we store the maximum encountered values, not just the last ones
+    // (so, this will indicate if the results changed since the last run, not since the last loop iteration)
+    mMaxAbsVCorr = tMaxMaxAbsVCorr;
+    mMaxRelVCorr = tMaxMaxRelVCorr;
+
+    if (mCorrType == CORRECTION_RELATIVE) return mMaxRelVCorr;
+    else return mMaxAbsVCorr;
+}
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& iA, DataVector<double>& ioB)
 {
@@ -399,6 +593,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
     return result;
 }
 
+
 template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t iVertIndex)
 {
     if (!mPotentials) throw NoValue("Current densities");
@@ -412,6 +607,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
     }
     return result * M_PI * 0.01; // kA/cm² µm² -->  mA
 }
+
 
 template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent()
 {
@@ -428,6 +624,7 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
     if (method == DEFAULT_INTERPOLATION)  method = INTERPOLATION_LINEAR;
     return interpolate(*(this->mesh), mPotentials, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
+
 
 template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {

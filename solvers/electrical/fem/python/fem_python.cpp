@@ -108,6 +108,9 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
         solver.setattr("outVoltage", solver.attr("outPotential"));
+        solver.def_readwrite("itererr", &__Class__::mIterErr, "Allowed residual iteration for iterative method");
+        solver.def_readwrite("iterlim", &__Class__::mIterLim ,"Maximum number of iterations for iterative method");
+        solver.def_readwrite("logfreq", &__Class__::mLogFreq ,"Frequency of iteration progress reporting");
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
@@ -131,6 +134,9 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
         solver.setattr("outVoltage", solver.attr("outPotential"));
+        solver.def_readwrite("itererr", &__Class__::mIterErr, "Allowed residual iteration for iterative method");
+        solver.def_readwrite("iterlim", &__Class__::mIterLim ,"Maximum number of iterations for iterative method");
+        solver.def_readwrite("logfreq", &__Class__::mLogFreq ,"Frequency of iteration progress reporting");
     }
 
     py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");

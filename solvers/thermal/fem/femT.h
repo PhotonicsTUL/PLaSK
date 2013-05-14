@@ -3,7 +3,9 @@
 
 #include <plask/plask.hpp>
 
-#include "band_matrix.h"
+#include "block_matrix.h"
+#include "iterative_matrix.h"
+#include "gauss_matrix.h"
 
 namespace plask { namespace solvers { namespace thermal {
 
@@ -28,8 +30,9 @@ struct Radiation
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {
-    ALGORITHM_SLOW,     ///< slow algorithm using BLAS level 2
-    ALGORITHM_CHOLESKY,    ///< block algorithm (thrice faster, however a little prone to failures)
+    ALGORITHM_CHOLESKY, ///< Cholesky factorization
+    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
+    ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
 /// Type of the returned correction
@@ -47,8 +50,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   protected:
 
-    int mAsize,         ///< Number of columns in the main matrix
-        mAband;          ///< Number of non-zero rows on and below the main diagonal of the main matrix
+    int mAsize;         ///< Number of columns in the main matrix
 
 
     double mTCorrLim;     ///< Maximum temperature correction accepted as convergence
@@ -64,7 +66,8 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     DataVector<Vec<2,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
-    void setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
+    template <typename MatrixT>
+    void setMatrix(MatrixT& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
@@ -79,6 +82,12 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     /// Matrix solver
     void solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
+
+    /// Matrix solver
+    void solveMatrix(DgbMatrix& iA, DataVector<double>& ioB);
+
+    /// Matrix solver
+    void solveMatrix(SparseBandMatrix& iA, DataVector<double>& ioB);
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -103,6 +112,10 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     ReceiverFor<HeatDensity, Geometry2DType> inHeatDensity;
 
     Algorithm mAlgorithm;   ///< Factorization algorithm to use
+
+    double mIterErr;        ///< Allowed residual iteration for iterative method
+    size_t mIterLim;        ///< Maximum nunber of iterations for iterative method
+    size_t mLogFreq;        ///< Frequency of iteration progress reporting
 
     /**
      * Run temperature calculations
@@ -141,6 +154,59 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+    template <typename MatrixT>
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+        // boundary conditions of the first kind
+        for (auto cond: bvoltage) {
+            for (auto r: cond.place) {
+                A(r,r) = 1.;
+                register double val = B[r] = cond.value;
+                size_t start = (r > A.kd)? r-A.kd : 0;
+                size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
+                for(size_t c = start; c < r; ++c) {
+                    B[c] -= A(r,c) * val;
+                    A(r,c) = 0.;
+                }
+                for(size_t c = r+1; c < end; ++c) {
+                    B[c] -= A(r,c) * val;
+                    A(r,c) = 0.;
+                }
+            }
+        }
+    }
+
+    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+        // boundary conditions of the first kind
+        for (auto cond: bvoltage) {
+            for (auto r: cond.place) {
+                double* rdata = A.data + LDA*r;
+                *rdata = 1.;
+                register double val = B[r] = cond.value;
+                // below diagonal
+                for (register ptrdiff_t i = 4; i > 0; --i) {
+                    register ptrdiff_t c = r - A.bno[i];
+                    if (c >= 0) {
+                        B[c] -= A.data[LDA*c+i] * val;
+                        A.data[LDA*c+i] = 0.;
+                    }
+                }
+                // above diagonal
+                for (register ptrdiff_t i = 1; i < 5; ++i) {
+                    register ptrdiff_t c = r + A.bno[i];
+                    if (c < A.size) {
+                        B[c] -= rdata[i] * val;
+                        rdata[i] = 0.;
+                    }
+                }
+            }
+        }
+    }
+
+    /// Perform computations for particular matrix type
+    template <typename MatrixT>
+    double doCompute(int iLoopLim=1);
+
 };
 
 }} //namespaces

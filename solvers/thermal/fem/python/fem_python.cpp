@@ -41,9 +41,9 @@ namespace plask { namespace solvers { namespace thermal {
 BOOST_PYTHON_MODULE(fem)
 {
     py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
-        .value("SLOW", ALGORITHM_SLOW)
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
-        //.value("ITERATIVE", ALGORITHM_ITERATIVE)
+        .value("GAUSS", ALGORITHM_GAUSS)
+        .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
     py_enum<CorrectionType>("CorrectionType", "Types of the returned correction")
@@ -78,6 +78,9 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
+        solver.def_readwrite("itererr", &__Class__::mIterErr, "Allowed residual iteration for iterative method");
+        solver.def_readwrite("iterlim", &__Class__::mIterLim ,"Maximum number of iterations for iterative method");
+        solver.def_readwrite("logfreq", &__Class__::mLogFreq ,"Frequency of iteration progress reporting");
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
@@ -95,6 +98,9 @@ BOOST_PYTHON_MODULE(fem)
         RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
         solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
         solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
+        solver.def_readwrite("itererr", &__Class__::mIterErr, "Allowed residual iteration for iterative method");
+        solver.def_readwrite("iterlim", &__Class__::mIterLim ,"Maximum number of iterations for iterative method");
+        solver.def_readwrite("logfreq", &__Class__::mLogFreq ,"Frequency of iteration progress reporting");
     }
 
 //     // Add methods to create classes using depreciate names

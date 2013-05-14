@@ -3,6 +3,9 @@
 
 namespace plask { namespace python {
 
+template <typename PropertyT>
+void registerFilters() {
+}
 
 
 }} // namespace plask::python

@@ -100,18 +100,23 @@ struct PrecondJacobi {
 
     const SparseBandMatrix& matrix;
 
-    PrecondJacobi(const SparseBandMatrix& A): matrix(A) {}
+    DataVector<double> diag;
+
+    PrecondJacobi(const SparseBandMatrix& A): matrix(A), diag(A.size) {
+        for (double *last = matrix.data + A.size*LDA, *m = matrix.data, *d = diag.data(); m < last; m += LDA, ++d)
+            *d = 1. / *m;
+    }
 
     void operator()(double* z, double* r) const { // z = inv(M) r
-        double* m = matrix.data, *zend = z + matrix.size-4;
-        for (; z < zend; z += 4, r += 4, m += 4*LDA) {
-            z[0] = r[0] / m[0];
-            z[1] = r[1] / m[LDA];
-            z[2] = r[2] / m[2*LDA];
-            z[3] = r[3] / m[3*LDA];
+        const double* d = diag.data(), *zend = z + matrix.size-4;
+        for (; z < zend; z += 4, r += 4, d += 4) {
+            z[0] = r[0] * d[0];
+            z[1] = r[1] * d[1];
+            z[2] = r[2] * d[2];
+            z[3] = r[3] * d[3];
         }
-        for (zend += 4; z != zend; ++z, ++r, m += LDA)
-            *z = *r / *m;
+        for (zend += 4; z != zend; ++z, ++r, ++d)
+            *z = *r * *d;
     }
 };
 

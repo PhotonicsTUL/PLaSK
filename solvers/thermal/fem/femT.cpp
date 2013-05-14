@@ -10,7 +10,10 @@ template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DT
     mCorrType(CORRECTION_ABSOLUTE),
     outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes),
-    mAlgorithm(ALGORITHM_CHOLESKY)
+    mAlgorithm(ALGORITHM_CHOLESKY),
+    mIterErr(1e-8),
+    mIterLim(10000),
+    mLogFreq(500)
 {
     mTemperatures.reset();
     mHeatFluxes.reset();
@@ -53,8 +56,12 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         else if (param == "matrix") {
             mAlgorithm = source.enumAttribute<Algorithm>("algorithm")
                 .value("cholesky", ALGORITHM_CHOLESKY)
-                .value("slow", ALGORITHM_SLOW)
+                .value("gauss", ALGORITHM_GAUSS)
+                .value("iterative", ALGORITHM_ITERATIVE)
                 .get(mAlgorithm);
+            mIterErr = source.getAttribute<double>("itererr", mIterErr);
+            mIterLim = source.getAttribute<size_t>("iterlim", mIterLim);
+            mLogFreq = source.getAttribute<size_t>("logfreq", mLogFreq);
             source.requireTagEnd();
         } else
             this->parseStandardConfiguration(source, manager);
@@ -67,7 +74,6 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     if (!this->mesh) throw NoMeshException(this->getId());
     mLoopNo = 0;
     mAsize = this->mesh->size();
-    mAband = this->mesh->minorAxis().size() + 1;
     mTemperatures.reset(mAsize, mTInit);
 }
 
@@ -132,8 +138,8 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,Con
 
 
 
-template<>
-void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
+template<> template<typename MatrixT>
+void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
@@ -148,7 +154,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
     std::fill_n(oA.data, oA.size*(oA.ld+1), 0.); // zero the matrix
     oLoad.fill(0.);
 
-    std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
+    std::vector<Box2D> tVecBox = this->geometry->getLeafsBoundingBoxes();
 
     // Set stiffness matrix and load vector
     for (auto tE: this->mesh->elements)
@@ -165,14 +171,14 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
 
         // point and material in the middle of the element
         Vec<2,double> tMidPoint = tE.getMidpoint();
-        auto tMaterial = geometry->getMaterial(tMidPoint);
+        auto tMaterial = this->geometry->getMaterial(tMidPoint);
 
         // average temperature on the element
         double tTemp = 0.25 * (mTemperatures[tLoLeftNo] + mTemperatures[tLoRghtNo] + mTemperatures[tUpLeftNo] + mTemperatures[tUpRghtNo]);
 
         // thermal conductivity
         double tKx, tKy;
-        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
+        auto tLeaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(tMidPoint, &GeometryObject::PredicateIsLeaf));
         if (tLeaf)
             std::tie(tKx,tKy) = std::tuple<double,double>(tMaterial->thermk(tTemp, tLeaf->getBoundingBox().height()));
         else
@@ -250,22 +256,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
     }
 
     // boundary conditions of the first kind
-    for (auto tCond: iTConst) {
-        for (auto i: tCond.place) {
-            oA(i,i) = 1.;
-            register double val = oLoad[i] = tCond.value;
-            size_t start = (i > oA.kd)? i-oA.kd : 0;
-            size_t end = (i + oA.kd < oA.size)? i+oA.kd+1 : oA.size;
-            for(size_t j = start; j < i; ++j) {
-                oLoad[j] -= oA(i,j) * val;
-                oA(i,j) = 0.;
-            }
-            for(size_t j = i+1; j < end; ++j) {
-                oLoad[j] -= oA(i,j) * val;
-                oA(i,j) = 0.;
-            }
-        }
-    }
+    applyBC(oA, oLoad, iTConst);
 
 #ifndef NDEBUG
     double* tAend = oA.data + oA.size * oA.kd;
@@ -278,20 +269,20 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(DpbMatri
 }
 
 
-template<>
-void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMatrix& oA, DataVector<double>& oLoad,
+template<> template<typename MatrixT>
+void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& oA, DataVector<double>& oLoad,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
                    const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& iRadiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, band=%2%)", mAsize, mAband);
+    this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", oA.size, oA.kd+1, oA.ld+1);
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto tHeatDensities = inHeatDensity(iMesh);
 
-    std::fill_n(oA.data, mAband*mAsize, 0.); // zero the matrix
+    std::fill_n(oA.data, oA.size*(oA.ld+1), 0.); // zero the matrix
     oLoad.fill(0.);
 
     std::vector<Box2D> tVecBox = geometry->getLeafsBoundingBoxes();
@@ -415,22 +406,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMat
     }
 
     // boundary conditions of the first kind
-    for (auto tCond: iTConst) {
-        for (auto i: tCond.place) {
-            oA(i,i) = 1.;
-            register double val = oLoad[i] = tCond.value;
-            size_t start = (i > oA.kd)? i-oA.kd : 0;
-            size_t end = (i + oA.kd < oA.size)? i+oA.kd+1 : oA.size;
-            for(size_t j = start; j < i; ++j) {
-                oLoad[j] -= oA(i,j) * val;
-                oA(i,j) = 0.;
-            }
-            for(size_t j = i+1; j < end; ++j) {
-                oLoad[j] -= oA(i,j) * val;
-                oA(i,j) = 0.;
-            }
-        }
-    }
+    applyBC(oA, oLoad, iTConst);
 
 #ifndef NDEBUG
     double* tAend = oA.data + oA.size * oA.kd;
@@ -443,7 +419,17 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(DpbMat
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geometry2DType>::compute(int iLoopLim)
+template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geometry2DType>::compute(int loops) {
+    switch (mAlgorithm) {
+        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
+        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
+    }
+    return 0.;
+}
+
+
+template<typename Geometry2DType> template<typename MatrixT> double FiniteElementMethodThermal2DSolver<Geometry2DType>::doCompute(int iLoopLim)
 {
     this->initCalculation();
 
@@ -458,7 +444,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
     this->writelog(LOG_INFO, "Running thermal calculations");
 
     int tLoop = 0;
-    DpbMatrix tA(mAsize, mAband);
+    MatrixT tA(mAsize, this->mesh->minorAxis().size());
 
     double tMaxMaxAbsTCorr = 0.,
            tMaxMaxRelTCorr = 0.;
@@ -466,7 +452,7 @@ template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geom
 #   ifndef NDEBUG
         if (!mTemperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
 #   endif
-    mTemperatures = mTemperatures.claim(); // FIXME should we call it or not? this is safer if someone else holds our temperature, but reduces performance!
+    mTemperatures = mTemperatures.claim();
     DataVector<double> tT(mAsize);
 
     do {
@@ -507,17 +493,10 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
-    switch (mAlgorithm) {
-        case ALGORITHM_SLOW:
-            dpbtf2(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, info);
-            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtf2 has illegal value", this->getId(), -info);
-            break;
-        case ALGORITHM_CHOLESKY:
-            dpbtrf(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, info);
-            if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
-            break;
-    }
-    if (info > 0)
+    dpbtrf(UPLO, iA.size, iA.kd, iA.data, iA.ld+1, info);
+    if (info < 0)
+        throw CriticalException("%1%: Argument %2% of dpbtrf has illegal value", this->getId(), -info);
+    else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order %1% of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
@@ -525,6 +504,52 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
 
     // now iA contains factorized matrix and ioB the solutions
+}
+
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& iA, DataVector<double>& ioB)
+{
+    int info = 0;
+    this->writelog(LOG_DETAIL, "Solving matrix system");
+    int* ipiv = aligned_malloc<int>(iA.size);
+
+    iA.mirror();
+
+    // Factorize matrix
+    dgbtrf(iA.size, iA.size, iA.kd, iA.kd, iA.data, iA.ld+1, ipiv, info);
+    if (info < 0) {
+        aligned_free(ipiv);
+        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+    } else if (info > 0) {
+        aligned_free(ipiv);
+        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+    }
+
+    // Find solutions
+    dgbtrs('N', iA.size, iA.kd, iA.kd, 1, iA.data, iA.ld+1, ipiv, ioB.data(), ioB.size(), info);
+    aligned_free(ipiv);
+    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
+
+    // now iA contains factorized matrix and ioB the solutions
+}
+
+template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& ioB)
+{
+    this->writelog(LOG_DETAIL, "Solving matrix system");
+
+    PrecondJacobi precond(ioA);
+
+    DataVector<double> tX = mTemperatures.copy(); // We use previous potentials as initial solution
+    double tErr;
+    try {
+        int iter = solveDCG(ioA, precond, tX.data(), ioB.data(), tErr, mIterLim, mIterErr, mLogFreq, this->getId());
+        this->writelog(LOG_DETAIL, "Conjugate gradient converged after %1% iterations.", iter);
+    } catch (DCGError tExc) {
+        throw ComputationError(this->getId(), "Conjugate gradient failed:, %1%", tExc.what());
+    }
+
+    ioB = tX;
+
+    // now A contains factorized matrix and B the solutions
 }
 
 

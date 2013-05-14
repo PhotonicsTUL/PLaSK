@@ -15,21 +15,23 @@ namespace detail {
     template <typename PropertyT>
     struct RegisterPropertyImpl<PropertyT,SINGLE_VALUE_PROPERTY> {
         static void call() {
-            RegisterProvider<ProviderFor<PropertyT,void>>();
-            RegisterReceiver<ReceiverFor<PropertyT,void>>();
+            registerProvider<ProviderFor<PropertyT,void>>();
+            registerReceiver<ReceiverFor<PropertyT,void>>();
         }
     };
 
     template <typename PropertyT>
     struct RegisterPropertyImpl<PropertyT,FIELD_PROPERTY> {
         static void call() {
-            RegisterProvider<ProviderFor<PropertyT,Geometry2DCartesian>>();
-            RegisterProvider<ProviderFor<PropertyT,Geometry2DCylindrical>>();
-            RegisterProvider<ProviderFor<PropertyT,Geometry3D>>();
+            registerProvider<ProviderFor<PropertyT,Geometry2DCartesian>>();
+            registerProvider<ProviderFor<PropertyT,Geometry2DCylindrical>>();
+            registerProvider<ProviderFor<PropertyT,Geometry3D>>();
 
-            RegisterReceiver<ReceiverFor<PropertyT,Geometry2DCartesian>>();
-            RegisterReceiver<ReceiverFor<PropertyT,Geometry2DCylindrical>>();
-            RegisterReceiver<ReceiverFor<PropertyT,Geometry3D>>();
+            registerReceiver<ReceiverFor<PropertyT,Geometry2DCartesian>>();
+            registerReceiver<ReceiverFor<PropertyT,Geometry2DCylindrical>>();
+            registerReceiver<ReceiverFor<PropertyT,Geometry3D>>();
+
+            registerFilters<PropertyT>();
         }
     };
 }

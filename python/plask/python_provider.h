@@ -431,14 +431,14 @@ namespace detail {
 } // namespace detail
 
 template <typename ReceiverT>
-inline void RegisterReceiver() {
+inline void registerReceiver() {
     if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
         detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>();
     }
 }
 
 template <typename ProviderT>
-void RegisterProvider() {
+void registerProvider() {
     if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
         detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
     }
