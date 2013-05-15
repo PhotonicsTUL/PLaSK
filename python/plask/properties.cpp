@@ -8,36 +8,20 @@
 
 namespace plask { namespace python {
 
+void register_standard_properties_thermal();
+void register_standard_properties_electrical();
+void register_standard_properties_gain();
+void register_standard_properties_optical();
+
 /**
  * Register standard properties to Python.
- *
- * Add new properties here
  */
 void register_standard_properties()
 {
-    // Thermal
-    registerProperty<Temperature>();
-    registerProperty<HeatFlux2D>();
-    registerProperty<HeatFlux3D>();
-    registerProperty<HeatDensity>();
-
-    // Electrical
-    registerProperty<Potential>();
-    registerProperty<CurrentDensity2D>();
-    registerProperty<CurrentDensity3D>();
-    registerProperty<CarriersConcentration>();
-    registerProperty<ElectronsConcentration>();
-    registerProperty<HolesConcentration>();
-
-    // Gain
-    registerProperty<Gain>();
-
-    // Optical
-    registerProperty<OpticalIntensity>();
-    registerProperty<Wavelength>();
-    registerProperty<ModalLoss>();
-    registerProperty<PropagationConstant>();
-    registerProperty<EffectiveIndex>();
+    register_standard_properties_thermal();
+    register_standard_properties_electrical();
+    register_standard_properties_gain();
+    register_standard_properties_optical();
 }
 
 }} // namespace plask>();
