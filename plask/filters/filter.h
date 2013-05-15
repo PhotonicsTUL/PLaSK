@@ -16,9 +16,9 @@ template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
 struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
     : public Solver
 {
-    //one outer source (input)
-    //vector if inner sources (inputs)
-    //one output (provider)
+    // one outer source (input)
+    // vector of inner sources (inputs)
+    // one output (provider)
 
     typedef typename PropertyT::ValueType ValueT;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
@@ -35,7 +35,7 @@ protected:
     template <typename SourceType>
     auto setOuterRecv(std::unique_ptr<SourceType>&& outerSource) -> decltype(outerSource->in)& {
         decltype(outerSource->in)& res = outerSource->in;
-        //setOuter(std::move(outerSource)); //can't call fireChange before connect provider to returned receiver
+        // setOuter(std::move(outerSource)); //can't call fireChange before connecting provider to returned receiver
         disconnect(this->outerSource);
         this->outerSource = std::move(outerSource);
         connect(*this->outerSource);
@@ -62,12 +62,16 @@ public:
 
     virtual std::string getClassName() const override { return "Filter"; }
 
+    /// Get main filter geometry
+    /// \return filter geometry
+    shared_ptr<OutputSpaceType> getGeometry() const { return geometry; }
+
     DataVector<const ValueT> get(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         if (innerSources.empty())   //special case, for fast getting data from outer source
             return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         DataVector<ValueT> result(dst_mesh.size());
         for (std::size_t i = 0; i < result.size(); ++i) {
-            //iterate over inner sources, if inner sources don't provide data, use outer source:
+            // iterate over inner sources, if inner sources don't provide data, use outer source:
             boost::optional<ValueT> innerVal;
             for (const DataSourceTPtr& innerSource: innerSources) {
                 innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
@@ -130,7 +134,7 @@ private:
 };
 
 /**
- * Base class for filter which recalculate field from one space to another (OutputSpaceType).
+ * Base class for filters which recalculate field from one space to another (OutputSpaceType).
  * @tparam PropertyT property which has type FIELD_PROPERTY
  * @tparam OutputSpaceType space of @c out provider included in this filter
  */
@@ -253,10 +257,10 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
 };
 
 /**
- * Filter is a special kind of Solver which "solves" the problem using another Solvers,.
+ * Filter is a special kind of Solver which "solves" the problem using another Solvers.
  *
- * It calculates its output using input of simillar type and changing it in some way,
- * for example trasnlating it from one space to another (2D -> 3D, 3D -> 2D, etc.).
+ * It calculates its output using input of similar type and changing it in some way,
+ * for example translating it from one space to another (2D -> 3D, 3D -> 2D, etc.).
  *
  * Typically filter has one or more inputs (input receiver) and one output (output provider).
  *

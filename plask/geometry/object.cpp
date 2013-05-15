@@ -129,11 +129,11 @@ shared_ptr<const Geometry> GeometryObject::asGeometry() const {
     return isGeometry() ? static_pointer_cast<const Geometry>(shared_from_this()) : shared_ptr<const Geometry>();
 }
 
-bool GeometryObject::isInSubtree(const GeometryObject &el) const {
+bool GeometryObject::hasInSubtree(const GeometryObject &el) const {
     if (&el == this) return true;
     std::size_t c = getRealChildrenCount();
     for (std::size_t i = 0; i < c; ++i)
-        if (getRealChildNo(i)->isInSubtree(el))
+        if (getRealChildNo(i)->hasInSubtree(el))
             return true;
     return false;
 }
@@ -173,7 +173,7 @@ Path GeometryObject::Subtree::getLastPath() const {
 }
 
 void GeometryObject::ensureCanHasAsParent(const GeometryObject& potential_parent) const {
-    if (isInSubtree(potential_parent))
+    if (hasInSubtree(potential_parent))
         throw CyclicReferenceException();
 }
 

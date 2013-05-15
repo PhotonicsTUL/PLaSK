@@ -78,7 +78,7 @@ struct GeometryObjectSeparator: public GeometryObjectD<dim> {
         return { this->shared_from_this() };
     }
 
-    virtual bool isInSubtree(const GeometryObject& el) const {
+    virtual bool hasInSubtree(const GeometryObject& el) const {
         return &el == this;
     }
 

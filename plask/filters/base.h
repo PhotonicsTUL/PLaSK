@@ -122,7 +122,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
     struct Region {
 
-        /// Input bouding-box in output geometry.
+        /// Input bounding-box in output geometry.
         OutBox inGeomBB;
 
         /// Translation to input object (before eventual space reduction).

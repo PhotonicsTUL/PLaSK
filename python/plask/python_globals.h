@@ -117,16 +117,6 @@ inline std::string str(py::object obj) {
 
 
 // ----------------------------------------------------------------------------------------------------------------------
-// Typename
-template <typename T>
-const char* type_name() {
-    const char* s = py::type_id<T>().name();
-    for (const char* c = s; *c != 0; ++c) if (*c == ':') s = c+1;
-    return s;
-}
-
-
-// ----------------------------------------------------------------------------------------------------------------------
 // Get dtype for data
 namespace detail {
     template <typename T> inline static py::handle<> dtype();

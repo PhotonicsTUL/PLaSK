@@ -65,7 +65,7 @@ public:
     void add(const std::string typeName, FilterCreator filterCreator);
 
     template <typename PropertyTag>
-    void addStandard() { add(PropertyTag::NAME, FiltersFactory::standard<PropertyTag>); }
+    void addStandard() { add(type_name<PropertyTag>(), FiltersFactory::standard<PropertyTag>); }
 
 };
 

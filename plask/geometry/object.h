@@ -673,7 +673,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * @return @c true only if @a el is in subtree with @c this in root
      */
     //TODO ? predicate, path
-    virtual bool isInSubtree(const GeometryObject& el) const;
+    virtual bool hasInSubtree(const GeometryObject& el) const;
 
     /**
      * Find paths to @a el.
@@ -869,8 +869,8 @@ public:
      */
     virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const = 0;
 
-    bool canHasAsChild(const GeometryObject& potential_child) const { return !potential_child.isInSubtree(*this); }
-    bool canHasAsParent(const GeometryObject& potential_parent) const { return !this->isInSubtree(potential_parent); }
+    bool canHasAsChild(const GeometryObject& potential_child) const { return !potential_child.hasInSubtree(*this); }
+    bool canHasAsParent(const GeometryObject& potential_parent) const { return !this->hasInSubtree(potential_parent); }
 
     /**
      * Throw CyclicReferenceException if @p potential_parent is in subtree with this in root.

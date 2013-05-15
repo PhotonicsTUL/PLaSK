@@ -74,7 +74,7 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
         return { std::make_pair(shared_from_this(), Primitive<dim>::ZERO_VEC) };
     }*/
 
-    virtual bool isInSubtree(const GeometryObject& el) const {
+    virtual bool hasInSubtree(const GeometryObject& el) const {
         return &el == this;
     }
 

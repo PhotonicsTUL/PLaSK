@@ -158,7 +158,7 @@ public:
         return result;
     }*/
 
-    virtual bool isInSubtree(const GeometryObject& el) const;
+    virtual bool hasInSubtree(const GeometryObject& el) const;
 
     template <typename ChildIter>
     GeometryObject::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryObject& el, const PathHints* path = 0) const {

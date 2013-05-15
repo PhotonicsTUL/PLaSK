@@ -15194,7 +15194,7 @@ Solution algorithm.
 
 
 \emph on
-block
+cholesky
 \emph default
 
 \begin_inset Quotes erd
@@ -15207,21 +15207,25 @@ block
 
 
 \emph on
-block
+cholesky
 \emph default
 
 \begin_inset Quotes erd
 \end_inset
 
- or 
+, 
 \begin_inset Quotes eld
 \end_inset
 
+gauss
+\begin_inset Quotes erd
+\end_inset
 
-\emph on
-slow
-\emph default
+, or 
+\begin_inset Quotes eld
+\end_inset
 
+iterative
 \begin_inset Quotes erd
 \end_inset
 
@@ -15232,7 +15236,7 @@ slow
 \labelwidthstring 00.00.0000
 
 \family typewriter
-equil
+itererr
 \family default
  
 \begin_inset ERT
@@ -15247,15 +15251,86 @@ opt
 
 \end_inset
 
-True if the matrix should be equilibrated.
- Defaults ot no equilibration.
+Allowed residual error for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+iterlim
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of iterations for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+logfreq
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Frequency of logging iterative solver progress.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+preconditioner
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Preconditioner for the iterative (conjugate gradient) algorithm.
  (
 \begin_inset Quotes eld
 \end_inset
 
 
 \emph on
-true
+jacobi
 \emph default
 
 \begin_inset Quotes erd
@@ -15267,13 +15342,18 @@ true
 
 
 \emph on
-false
+factor
 \emph default
 
 \begin_inset Quotes erd
 \end_inset
 
 )
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_deeper
@@ -15656,6 +15736,34 @@ Maximum number of iterations for the iterative algorithm.
 \labelwidthstring 00.00.0000
 
 \family typewriter
+logfreq
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Frequency of logging iterative solver progress.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
 preconditioner
 \family default
  
@@ -15697,6 +15805,11 @@ factor
 \end_inset
 
 )
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_deeper
@@ -16048,7 +16161,7 @@ iterative
 \labelwidthstring 00.00.0000
 
 \family typewriter
-equil
+itererr
 \family default
  
 \begin_inset ERT
@@ -16063,15 +16176,86 @@ opt
 
 \end_inset
 
-True if the matrix should be equilibrated.
- Defaults ot no equilibration.
+Allowed residual error for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+iterlim
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of iterations for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+logfreq
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Frequency of logging iterative solver progress.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+preconditioner
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Preconditioner for the iterative (conjugate gradient) algorithm.
  (
 \begin_inset Quotes eld
 \end_inset
 
 
 \emph on
-true
+jacobi
 \emph default
 
 \begin_inset Quotes erd
@@ -16083,13 +16267,18 @@ true
 
 
 \emph on
-false
+factor
 \emph default
 
 \begin_inset Quotes erd
 \end_inset
 
 )
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_deeper

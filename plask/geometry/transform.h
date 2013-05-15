@@ -110,8 +110,8 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         if (!hasChild()) throw NoChildException();
     }
 
-    virtual bool isInSubtree(const GeometryObject& el) const {
-        return &el == this || (hasChild() && _child->isInSubtree(el));
+    virtual bool hasInSubtree(const GeometryObject& el) const {
+        return &el == this || (hasChild() && _child->hasInSubtree(el));
     }
 
     virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const {

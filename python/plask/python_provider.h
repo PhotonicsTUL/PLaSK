@@ -311,6 +311,23 @@ namespace detail {
         friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT, ExtraParams...>;
     };
 
+
+    template <typename Class, typename ReceiverT>
+    struct ReceiverSetter
+    {
+        typedef typename ReceiverT::PropertyTag PropertyT;
+        typedef detail::RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;
+
+        ReceiverSetter(ReceiverT Class::* field) : field(field) {}
+
+        void operator()(Class& self, py::object obj) {
+            RegisterT::assign(self.*field, obj);
+        }
+
+      private:
+        ReceiverT Class::* field;
+    };
+
 }
 
 // ---------- Provider ------------

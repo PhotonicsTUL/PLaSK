@@ -103,10 +103,10 @@ void GeometryObjectContainer<dim>::getPositionsToVec(const GeometryObject::Predi
 // }
 
 template <int dim>
-bool GeometryObjectContainer<dim>::isInSubtree(const GeometryObject& el) const {
+bool GeometryObjectContainer<dim>::hasInSubtree(const GeometryObject& el) const {
     if (&el == this) return true;
     for (auto child: children)
-        if (child->isInSubtree(el))
+        if (child->hasInSubtree(el))
             return true;
     return false;
 }

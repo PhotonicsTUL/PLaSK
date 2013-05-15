@@ -284,8 +284,8 @@ public:
      * @param el object to search for
      * @return @c true only if @a el is in subtree with child of @c this in root
      */
-    virtual bool isInSubtree(const GeometryObject& el) const {
-        return getChild()->isInSubtree(el);
+    virtual bool hasInSubtree(const GeometryObject& el) const {
+        return getChild()->hasInSubtree(el);
     }
 
     /**

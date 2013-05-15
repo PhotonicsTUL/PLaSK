@@ -12,6 +12,7 @@ This file includes string and parsers utils.
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/units/detail/utility.hpp>
 
 namespace plask {
 
@@ -19,15 +20,15 @@ namespace plask {
  * Base class / helper for printable classes with virtual print method.
  */
 struct Printable {
-    
+
     /**
      * Print this to stream @p out.
      * @param out print destination, output stream
      */
     virtual void print(std::ostream& out) const = 0;
-    
+
     virtual ~Printable();
-    
+
     /**
      * Print this to stream using print method.
      * @param out print destination, output stream
@@ -38,7 +39,7 @@ struct Printable {
         to_print.print(out);
         return out;
     }
-    
+
     /**
      * Get string representation of this using print method.
      * @return string representation of this
@@ -135,6 +136,16 @@ std::vector<std::string> splitEsc(const std::string& str, char splitter, char qu
  * @return @c true only if @p potential_id is valid C/C++/python name
  */
 bool isCid(const char* potential_id, char underline_ch = '_');
+
+
+/// Get simplified type name of given type
+template <typename T>
+std::string type_name() {
+    std::string demangled = boost::units::detail::demangle(typeid(T).name());
+    const char* s = demangled.c_str();
+    for (const char* c = s; *c != 0; ++c) if (*c == ':') s = c+1;
+    return s;
+}
 
 }       // namespace plask
 

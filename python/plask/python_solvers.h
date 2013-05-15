@@ -1,5 +1,5 @@
-#ifndef PLASK__PYTHON_MODULES_H
-#define PLASK__PYTHON_MODULES_H
+#ifndef PLASK__PYTHON_SOLVERS_H
+#define PLASK__PYTHON_SOLVERS_H
 
 #include <type_traits>
 
@@ -61,22 +61,6 @@ namespace detail {
             solver.def("setMesh", &Solver_setMesh, "Set mesh or mesh generator for the solver");
             return solver;
         }
-    };
-
-    template <typename Class, typename ReceiverT>
-    struct ReceiverSetter
-    {
-        typedef typename ReceiverT::PropertyTag PropertyT;
-        typedef detail::RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;
-
-        ReceiverSetter(ReceiverT Class::* field) : field(field) {}
-
-        void operator()(Class& self, py::object obj) {
-            RegisterT::assign(self.*field, obj);
-        }
-
-      private:
-        ReceiverT Class::* field;
     };
 
 } // namespace detail
@@ -161,4 +145,4 @@ using py::arg; // for more convenient specification of default arguments
 
 }} // namespace plask::python
 
-#endif // PLASK__PYTHON_MODULES_H
+#endif // PLASK__PYTHON_SOLVERS_H
