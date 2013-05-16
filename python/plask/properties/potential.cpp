@@ -5,10 +5,9 @@
 
 namespace plask { namespace python {
 
-void register_standard_properties_current()
+void register_standard_properties_potential()
 {
-    registerProperty<CurrentDensity2D>();
-    registerProperty<CurrentDensity3D>();
+    registerProperty<Potential>();
 }
 
 }} // namespace plask>();
