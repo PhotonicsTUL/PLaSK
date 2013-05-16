@@ -131,9 +131,12 @@ namespace detail {
                      py::init<shared_ptr<GeometryT>>()
                     );
         filter_class
-            .def_readonly("out", &Filter<PropertyT,GeometryT>::out, "Filter output provider")
-            .add_property("ins", py::make_function(&getFilterIn<PropertyT,GeometryT>,
-                                                   py::with_custodian_and_ward_postcall<0,1,py::return_value_policy<py::manage_new_object>>()),
+            .def_readonly("out",
+                          reinterpret_cast<ProviderFor<PropertyT, GeometryT> Filter<PropertyT,GeometryT>::*>(&Filter<PropertyT,GeometryT>::out),
+                          "Filter output provider")
+            .add_property("ins",
+                          py::make_function(&getFilterIn<PropertyT,GeometryT>,
+                                            py::with_custodian_and_ward_postcall<0,1,py::return_value_policy<py::manage_new_object>>()),
                           "Filter input receivers collection")
         ;
 
