@@ -5,11 +5,10 @@
 
 namespace plask { namespace python {
 
-void register_standard_properties_concentration()
+void register_standard_properties_concentration_holes()
 {
-    registerProperty<CarriersConcentration>();
-    registerProperty<ElectronsConcentration>();
     registerProperty<HolesConcentration>();
 }
 
 }} // namespace plask>();
+

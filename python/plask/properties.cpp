@@ -13,7 +13,10 @@ void register_standard_properties_temperature();
 void register_standard_properties_heatflux();
 
 void register_standard_properties_current();
-void register_standard_properties_concentration();
+
+void register_standard_properties_concentration_carriers();
+void register_standard_properties_concentration_electrons();
+void register_standard_properties_concentration_holes();
 
 
 /**
@@ -27,7 +30,9 @@ void register_standard_properties()
 
     // register_standard_properties_electrical();
     register_standard_properties_current();
-    register_standard_properties_concentration();
+    register_standard_properties_concentration_carriers();
+    register_standard_properties_concentration_electrons();
+    register_standard_properties_concentration_holes();
 
     register_standard_properties_gain();
 
