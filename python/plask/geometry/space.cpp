@@ -311,7 +311,7 @@ static BordersProxy Geometry3D_getBorders(const Geometry2DCartesian& self) {
 
 void register_calculation_spaces() {
 
-    py::class_<Geometry, shared_ptr<Geometry>, boost::noncopyable>("Geometry",
+    py::class_<Geometry, shared_ptr<Geometry>, py::bases<GeometryObject>, boost::noncopyable>("Geometry",
         "Base class for all geometries", py::no_init)
         .def("__eq__", __is__<Geometry>)
         .add_property<>("axes", Geometry_getAxes, Geometry_getAxes, "Names of axes for this geometry")

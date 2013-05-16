@@ -239,6 +239,9 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("object_includes", &MethodsD<dim>::objectIncludes2, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))),
              "Return true if the specified child includes given point")
 
+        .add_property("role", &GeometryObject_getRole, &GeometryObject_setRole, "Role of the object")
+        .add_property("roles", py::make_getter(&GeometryObject::roles), &GeometryObject_setRoles, "Roles of the object")
+
         .def("get_roles", &GeometryObjectD_getRolesAt<dim>, py::arg("point"), "Return roles of objects at specified point")
         .def("get_roles", &MethodsD<dim>::getRolesAt, GeometryObjectD_vector_args<dim>::args(), "Return roles of objects at specified point")
 
@@ -263,11 +266,9 @@ void register_geometry_object()
     py::class_<GeometryObject, shared_ptr<GeometryObject>, boost::noncopyable>("GeometryObject",
         "Base class for all geometry objects.", py::no_init)
         .add_property("type", &GeometryObject::getType)
-        .def("validate", &GeometryObject::validate, "Check if the object is compete and ready for calculations")
+        .def("validate", &GeometryObject::validate, "Check if the object is complete and ready for calculations")
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
-        .add_property("role", &GeometryObject_getRole, &GeometryObject_setRole, "Role of the object")
-        .add_property("roles", py::make_getter(&GeometryObject::roles), &GeometryObject_setRoles, "Roles of the object")
     ;
 
     py::implicitly_convertible<shared_ptr<GeometryObject>, shared_ptr<const GeometryObject>>();

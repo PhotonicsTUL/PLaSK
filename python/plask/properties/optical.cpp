@@ -1,9 +1,6 @@
-#include "python_globals.h"
-#include "python_property.h"
+#include "../python_globals.h"
+#include "../python_property.h"
 
-#include <plask/properties/thermal.h>
-#include <plask/properties/electrical.h>
-#include <plask/properties/gain.h>
 #include <plask/properties/optical.h>
 
 namespace plask { namespace python {
@@ -16,6 +13,7 @@ namespace plask { namespace python {
 void register_standard_properties_optical()
 {
     registerProperty<OpticalIntensity>();
+
     registerProperty<Wavelength>();
     registerProperty<ModalLoss>();
     registerProperty<PropagationConstant>();
