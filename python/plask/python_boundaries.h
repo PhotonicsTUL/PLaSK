@@ -5,6 +5,12 @@
 #include <plask/utils/format.h>
 #include <plask/mesh/boundary_conditions.h>
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define NEXT "__next__"
+#else
+#   define NEXT "next"
+#endif
+
 namespace plask { namespace python {
 
 namespace detail {
@@ -121,8 +127,8 @@ struct RegisterBoundaryConditions {
             py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;
 
-            py::class_<Iter>("Iter", py::no_init)
-                .def("next", &Iter::next, py::return_value_policy<py::reference_existing_object>())
+            py::class_<Iter>("Iterator", py::no_init)
+                .def(NEXT, &Iter::next, py::return_value_policy<py::reference_existing_object>())
                 .def("__iter__", pass_through)
             ;
 
@@ -134,8 +140,8 @@ struct RegisterBoundaryConditions {
             ;
 
             py::scope scope2 = cd;
-            py::class_<ConditionIter>("Iter", py::no_init)
-                .def("next", &ConditionIter::next)
+            py::class_<ConditionIter>("Iterator", py::no_init)
+                .def(NEXT, &ConditionIter::next)
                 .def("__iter__", pass_through)
             ;
         }

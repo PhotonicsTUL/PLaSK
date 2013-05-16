@@ -10,6 +10,12 @@
 #include <plask/mesh/generator_rectilinear.h>
 #include <plask/mesh/regular.h>
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define NEXT "__next__"
+#else
+#   define NEXT "next"
+#endif
+
 namespace plask { namespace python {
 
 
@@ -391,8 +397,8 @@ namespace detail {
             ;
 
             py::scope scope2 = cls;
-            py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iter", py::no_init)
-                .def("next", &Iter::next)
+            py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)
+                .def(NEXT, &Iter::next)
                 .def("__iter__", pass_through)
             ;
         }
