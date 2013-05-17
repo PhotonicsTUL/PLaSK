@@ -112,7 +112,6 @@ shared_ptr<Solver> PythonManager::loadSolver(const std::string& category, const 
 
 void PythonManager::loadConnects(XMLReader& reader)
 {
-
     while(reader.requireTagOrEnd()) {
 
         if (reader.getNodeName() != "connect" && reader.getNodeName() != "profile")

@@ -72,6 +72,7 @@ public:
 template <typename PropertyTag>
 inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& manager) {
     shared_ptr<GeometryObject> out = manager.requireGeometryObject(reader.requireAttribute("geometry"));
+    reader.requireTagEnd();
 
     shared_ptr<Geometry3D> out_as_geom3D = dynamic_pointer_cast<Geometry3D>(out);
     if (out_as_geom3D) return shared_ptr<Solver>(new Filter<PropertyTag, Geometry3D>(out_as_geom3D));
