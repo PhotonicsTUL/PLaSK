@@ -65,7 +65,7 @@ template <typename PropertyT, typename... ExtraArgs>
 struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
 : public OuterDataSource<PropertyT, Geometry2DCartesian, Geometry3D, Extrusion, GeometryObjectD<3>>
 {
-    /// Points count for avarage function
+    /// Points count for average function
     std::size_t pointsCount;
 
     explicit DataFrom3Dto2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
@@ -84,7 +84,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
         if (pointsCount == 1)
             return this->in(toMesh(getPointAtRel(p, 0.5)), std::forward<ExtraArgs>(extra_args)..., method)[0];
         const double d = this->outputObj->getLength() / pointsCount;
-        return avarage(this->in(
+        return average(this->in(
                    PointsOnLineMesh(getPointAt(p, d*0.5), this->outputObj->getLength()-d, pointsCount),
                    std::forward<ExtraArgs>(extra_args)...,
                    method
@@ -109,7 +109,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
                 lineMesh.begin.tran() = this->inTranslation.tran() + v.tran();
                 lineMesh.begin.vert() = this->inTranslation.vert() + v.vert();
                 result[src_point_nr] =
-                        avarage(this->in(
+                        average(this->in(
                             lineMesh,
                             std::forward<ExtraArgs>(extra_args)...,
                             method
@@ -120,7 +120,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
 };
 
 /**
- * Source of data in 2D space which read, and avarages data from outer 3D space.
+ * Source of data in 2D space which read, and averages data from outer 3D space.
  */
 template <typename PropertyT>
 using DataFrom3Dto2DSource = DataFrom3Dto2DSourceImpl<PropertyT, PropertyT::propertyType, typename PropertyT::ExtraParams>;

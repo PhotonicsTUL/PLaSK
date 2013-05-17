@@ -58,6 +58,7 @@ public:
         this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         };
+        setDefault(PropertyT::getDefaultValue());
     }
 
     virtual std::string getClassName() const override { return "Filter"; }

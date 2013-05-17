@@ -605,8 +605,11 @@ typename std::remove_cv<T>::type accumulate(const DataVector<T>& to_accum, typen
     return initial;
 }
 
+/**
+ * Compute data arithmetic mean
+ */
 template <class T>
-T avarage(const DataVector<T>& v) {
+T average(const DataVector<T>& v) {
     return accumulate(v) / v.size();
 }
 
