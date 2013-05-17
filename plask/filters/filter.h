@@ -134,9 +134,31 @@ public:
         out.fireChanged();
     }
 
+    /**
+     * Set outer or append inner input.
+     * @param obj
+     * @param path
+     * @return
+     */
     virtual ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) = 0;
 
+    ReceiverFor<PropertyT, Geometry3D>& input(shared_ptr<GeometryObjectD<3>> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& input(const Geometry3D& inGeom, const PathHints* path = nullptr) {
+        return input(inGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& input(shared_ptr<const Geometry3D> inGeom, const PathHints* path = nullptr) {
+        return input(inGeom->getChild(), path);
+    }
+
     virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) = 0;
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(shared_ptr<const Geometry2DCartesian> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
+    }
 
 private:
 
