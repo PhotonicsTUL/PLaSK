@@ -56,7 +56,7 @@ namespace detail {
             PathHints* path;
             filterin_parse_key(key, geom, path);
             if (auto geom2d = dynamic_pointer_cast<GeometryT>(geom)) geom = geom2d->getChild();
-            if (auto geom3d = dynamic_pointer_cast<Geometry3D>(geom)) geom = geom3d->getChild()bi;
+            if (auto geom3d = dynamic_pointer_cast<Geometry3D>(geom)) geom = geom3d->getChild();
             if (geom->hasInSubtree(*filter->getGeometry()->getChild())) { // geom is the outer object
                 if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
                     return Fun::call(self, filter->setOuter(geomd, path), value...);
