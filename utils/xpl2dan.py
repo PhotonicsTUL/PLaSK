@@ -18,7 +18,7 @@ def parse_material(mat):
     return mat[0], dp, float(dc)
 
 
-def write_dan(name, manager, allm=True):
+def write_dan(name, manager, geo, allm=True):
     '''Write dan files for given prefix
 
        'allm' indicates whether consider all materials as ones with constant values
@@ -30,8 +30,6 @@ def write_dan(name, manager, allm=True):
         ofile.write(text + ' ')
     def outl(text):
         ofile.write(text + '\n')
-
-    geo = manager.geometries.values()[0]
 
     outl(name)
     outl("All                     laser_material")
@@ -153,9 +151,10 @@ if __name__ == "__main__":
 
         manager = plask.Manager()
         manager.load(iname)
-        if len(manager.geometries) != 1:
+        geos = [g for g in manager.geometrics.values() if isinstance(g, geometry.Geometry)]
+        if len(geos) != 1:
             raise ValueError("More than one geometry defined in %s" % iname)
-        write_dan(name, manager)
+        write_dan(name, manager, geos[0])
 
         print_log(LOG_INFO, "Done!")
 

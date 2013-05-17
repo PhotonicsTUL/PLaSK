@@ -815,8 +815,8 @@ void SolverOver<SpaceT>::parseStandardConfiguration(XMLReader& reader, Manager& 
         auto name = reader.getAttribute("ref");
         if (!name) name.reset(reader.requireTextInCurrentTag());
         else reader.requireTagEnd();
-        auto found = manager.geometries.find(*name);
-        if (found == manager.geometries.end())
+        auto found = manager.geometrics.find(*name);
+        if (found == manager.geometrics.end())
             throw BadInput(this->getId(), "Geometry '%1%' not found.", *name);
         else {
             auto geometry = dynamic_pointer_cast<SpaceT>(found->second);

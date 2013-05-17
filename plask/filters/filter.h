@@ -6,6 +6,11 @@
 
 namespace plask {
 
+struct FilterCommonBase: public Solver {
+    template <typename... Args>
+    FilterCommonBase(Args... args): Solver(std::forward<Args>(args)...) {}
+};
+
 /// Don't use this directly, use StandardFilter instead.
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
 struct FilterBaseImpl {
@@ -14,7 +19,7 @@ struct FilterBaseImpl {
 
 template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
 struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >
-    : public Solver
+    : public FilterCommonBase
 {
     // one outer source (input)
     // vector of inner sources (inputs)
@@ -54,7 +59,7 @@ public:
 
     typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
 
-    FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): Solver("Filter"), geometry(geometry) {
+    FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): FilterCommonBase("Filter"), geometry(geometry) {
         this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         };

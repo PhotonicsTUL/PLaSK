@@ -413,7 +413,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
         if actlevel is not False:
             if actlevel is True:
-                out('actbox = GEO.main.get_object_bboxes(OBJ.active)[0]')
+                out('actbox = GEO.main.get_object_bboxes(GEO.active)[0]')
                 out('actlevel = 0.5 * (actbox.lower[1] + actbox.upper[1])')
             else:
                 out('actlevel = %g' % actlevel)

@@ -25,7 +25,7 @@ void Document::open(const QString &fileName) {
     undoStack.clear();
     //TODO support file names with non-asci char
     manager.loadFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance);
-    for (auto& object: manager.namedObjects) {
+    for (auto& object: manager.geometrics) {
         ext(object.second)->setName(QString(object.first.c_str()));
     }
     treeModel.refresh(manager.roots);

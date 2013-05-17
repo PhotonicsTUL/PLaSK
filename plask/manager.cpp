@@ -75,14 +75,14 @@ const PathHints& Manager::requirePathHints(const std::string& path_hints_name) c
 }
 
 shared_ptr<GeometryObject> Manager::getGeometryObject(const std::string &name) const {
-    auto result_it = namedObjects.find(name);
-    if (result_it == namedObjects.end()) return shared_ptr<GeometryObject>();
+    auto result_it = geometrics.find(name);
+    if (result_it == geometrics.end()) return shared_ptr<GeometryObject>();
     // auto result = result_it->second.lock();
-    // if (!result) const_cast<Manager*>(this)->namedObjects.erase(name);
+    // if (!result) const_cast<Manager*>(this)->geometrics.erase(name);
     // return result;
     return result_it->second;
-    /*auto result_it = namedObjects.find(name);
-    return result_it != namedObjects.end() ? result_it->second.lock() : shared_ptr<GeometryObject>();*/
+    /*auto result_it = geometrics.find(name);
+    return result_it != geometrics.end() ? result_it->second.lock() : shared_ptr<GeometryObject>();*/
 }
 
 shared_ptr<GeometryObject> Manager::requireGeometryObject(const std::string &name) const {
@@ -92,8 +92,8 @@ shared_ptr<GeometryObject> Manager::requireGeometryObject(const std::string &nam
 }
 
 shared_ptr<Geometry> Manager::getGeometry(const std::string& name) const {
-    auto result_it = geometries.find(name);
-    return result_it == geometries.end() ? shared_ptr<Geometry>() : result_it->second;
+    auto result_it = geometrics.find(name);
+    return result_it == geometrics.end() ? shared_ptr<Geometry>() : dynamic_pointer_cast<Geometry>(result_it->second);
 }
 
 shared_ptr<Mesh> Manager::getMesh(const std::string& name) const {

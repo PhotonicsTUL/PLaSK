@@ -2,6 +2,8 @@
 #include <cstring>
 #include <fstream>
 
+#include <plask/filters/filter.h>
+
 #include "python_globals.h"
 #include "python_manager.h"
 #include "python_provider.h"
@@ -117,34 +119,50 @@ void PythonManager::loadConnects(XMLReader& reader)
             throw XMLUnexpectedElementException(reader, "<connect> or <profile>", reader.getNodeName());
 
         std::string inkey = reader.requireAttribute("in");
-        auto in = splitString2(inkey, '.');
-        py::object solverin;
+        std::pair<std::string,std::string> in;
+        if (inkey.find('[') == std::string::npos) {
+            in = splitString2(inkey, '.');
+        } else if (inkey[inkey.length()-1] == ']') {
+            in = splitString2(inkey.substr(0,inkey.length()-1), '[');
+        } else
+            throw XMLBadAttrException(reader, "in", inkey);
+
+        py::object solverin, receiver;
 
         auto in_solver = solvers.find(in.first);
-        if (in_solver == solvers.end()) throw ValueError("Cannot find (in) solver with name '%1%'.", in.first);
+        if (in_solver == solvers.end()) throw XMLException(reader, format("Cannot find (in) solver with name '%1%'.", in.first));
         try { solverin = py::object(in_solver->second); }
-        catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", in.first); }
+        catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", in.first)); }
+
+        if (dynamic_pointer_cast<FilterCommonBase>(in_solver->second)) {
+            if (in.second.find('@') == std::string::npos)
+                receiver = solverin[geometrics[in.second]];
+            else {
+                auto objpth = splitString2(in.second, '@');
+                receiver = solverin[py::make_tuple(geometrics[objpth.first], pathHints[objpth.second])];
+            }
+        } else {
+            try { receiver = solverin.attr(in.second.c_str()); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", in.first, in.second)); }
+        }
 
         if (reader.getNodeName() == "connect") {
 
             auto out = splitString2(reader.requireAttribute("out"), '.');
-            py::object solverout, provider, receiver;
-
-            try { receiver = solverin.attr(in.second.c_str()); }
-            catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", in.first, in.second); }
+            py::object solverout, provider;
 
             auto out_solver = solvers.find(out.first);
-            if (out_solver == solvers.end()) throw ValueError("Cannot find (out) solver with name '%1%'.", out.first);
+            if (out_solver == solvers.end()) throw XMLException(reader, format("Cannot find (out) solver with name '%1%'.", out.first));
             try { solverout = py::object(out_solver->second); }
-            catch (py::error_already_set) { throw TypeError("Cannot convert solver '%1%' to python object.", out.first); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", out.first)); }
 
             try { provider = solverout.attr(out.second.c_str()); }
-            catch (py::error_already_set) { throw AttributeError("Solver '%1%' does not have attribute '%2%.", out.first, out.second); }
+            catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", out.first, out.second)); }
 
             try {
                 receiver.attr("connect")(provider);
             } catch (py::error_already_set) {
-                throw TypeError("Cannot connect '%1%.%2%' to '%3%.'%4%'.", out.first, out.second, in.first, in.second);
+                throw XMLException(reader, format("Cannot connect '%1%.%2%' to '%3%.'%4%'.", out.first, out.second, in.first, in.second));
             }
 
             reader.requireTagEnd();
@@ -156,7 +174,7 @@ void PythonManager::loadConnects(XMLReader& reader)
             if (defval) defaultobj = py::eval(py::str(*defval));
 
             if (profiles.has_key(inkey))
-                throw ValueError("There is already profile defined for receiver %1%", inkey);
+                throw XMLException(reader, format("There is already profile defined for receiver %1%", inkey));
 
             auto profile = make_shared<PythonProfile>(py::extract<const Geometry&>(solverin.attr("geometry")), defaultobj);
             profiles[inkey] = py::object(profile);
@@ -171,7 +189,7 @@ void PythonManager::loadConnects(XMLReader& reader)
                 profile->values.push_back(value);
             }
 
-            solverin.attr(in.second.c_str()) = profiles[inkey];
+            receiver.attr("assign")(py::object(profiles[inkey]));
 
             reader.requireTagEnd();
         }
@@ -196,7 +214,6 @@ void PythonManager::loadMaterials(XMLReader& reader, const MaterialsSource& mate
 
 
 void PythonManager::export_dict(py::object self, py::dict dict) {
-    dict["OBJ"] = self.attr("obj");
     dict["PTH"] = self.attr("pth");
     dict["GEO"] = self.attr("geo");
     dict["MSH"] = self.attr("msh");
@@ -246,7 +263,6 @@ void PythonManager::export_dict(py::object self, py::dict dict) {
 
 template <typename T> static const std::string item_name() { return ""; }
 template <> const std::string item_name<shared_ptr<GeometryObject>>() { return "geometry object"; }
-template <> const std::string item_name<shared_ptr<Geometry>>() { return "geometry"; }
 template <> const std::string item_name<PathHints>() { return "path"; }
 template <> const std::string item_name<shared_ptr<Solver>>() { return "solver"; }
 
@@ -404,11 +420,10 @@ void register_manager() {
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
         .def("load", &PythonManager_load, "Load data from source (can be a filename, file, or an XML string to read)",
              (py::arg("source"), py::arg("vars")=py::dict()))
-        .def_readonly("objects", &PythonManager::namedObjects, "Dictionary of all named geometry objects")
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
-        .def_readonly("geometries", &PythonManager::geometries, "Dictionary of all named global geometries")
+        .def_readonly("geometrics", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects")
         .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
-        .def_readonly("mesh_generators", &PythonManager::generators, "Dictionary of all named mesh generators")
+        .def_readonly("meshgens", &PythonManager::generators, "Dictionary of all named mesh generators")
         .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers")
         .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
         .def_readonly("script", &PythonManager::script, "Script read from XML file")
@@ -416,16 +431,14 @@ void register_manager() {
         .def_readwrite("defines", &PythonManager::locals, "Local defines")
         .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
     ;
-    manager.attr("obj") = manager.attr("objects");
     manager.attr("pth") = manager.attr("paths");
-    manager.attr("geo") = manager.attr("geometries");
+    manager.attr("geo") = manager.attr("geometrics");
     manager.attr("msh") = manager.attr("meshes");
-    manager.attr("msg") = manager.attr("mesh_generators");
+    manager.attr("msg") = manager.attr("meshgens");
     manager.attr("slv") = manager.attr("solvers");
     manager.attr("def") = manager.attr("defines");
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
-    register_manager_dict<shared_ptr<Geometry>>("Geometries");
     register_manager_dict<PathHints>("PathHints");
     register_manager_dict<shared_ptr<Mesh>>("Meshes");
     register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");

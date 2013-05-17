@@ -128,10 +128,15 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     Manager::SetAxisNames axis_reader(*this);   // try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
     boost::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);
-    if (name) BadId::throwIfBad("geometry", *name, '-');
-//    std::string src = source.requireAttribute("over");
+    if (name) {
+        BadId::throwIfBad("geometry", *name, '-');
+        if (manager.geometrics.find(*name) != manager.geometrics.end())
+            throw XMLDuplicatedElementException(source, "Geometry '"+*name+"'");
+    }
+
     // TODO read subspaces from XML
     shared_ptr<Geometry> result;
+
     if (nodeName == "cartesian2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         boost::optional<double> l = source.getAttribute<double>("length");
@@ -151,24 +156,27 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
                 cartesian2d->setExtrusion(make_shared<Extrusion>(child_as_2d, INFINITY));
             }
         }
+
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = make_shared<Geometry2DCylindrical>();
         result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), materialSource );
         static_pointer_cast<Geometry2DCylindrical>(result)->
             setRevolution(make_shared<Revolution>(readExactlyOneChild<GeometryObjectD<2>>()));
+
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = make_shared<Geometry3D>();
         result->setBorders([&](const std::string& s) { return source.getAttribute(s); }, getAxisNames(), materialSource );
         static_pointer_cast<Geometry3D>(result)->setChildUnsafe(
             readExactlyOneChild<GeometryObjectD<3>>());
+
     } else
         throw XMLUnexpectedElementException(source, "geometry tag (<cartesian2d>, <cartesian3d>, or <cylindrical>)");
 
     result->axisNames = getAxisNames();
 
-    if (name) manager.geometries[*name] = result;
+    if (name) manager.geometrics[*name] = result;
     return result;
 }
 
@@ -186,7 +194,7 @@ void GeometryReader::registerObjectName(const std::string &name, shared_ptr<Geom
         if (!autoNamedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
             throw NamesConflictException("Auto-named geometry object", name);
     } else {    //normal name
-        if (!manager.namedObjects.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
+        if (!manager.geometrics.insert(std::map<std::string, shared_ptr<GeometryObject> >::value_type(name, object)).second)
             throw NamesConflictException("Geometry object", name);
     }
 }

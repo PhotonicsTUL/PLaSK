@@ -127,14 +127,11 @@ private:
     /// Allow to access path hints by name.
     std::map<std::string, PathHints> pathHints;
 
-    /// Allow to access objects by name.
-    std::map<std::string, shared_ptr<GeometryObject> > namedObjects;
-
     /// Roots objects, geometries.
     std::vector< shared_ptr<Geometry> > roots;
 
-    /// Geometries (calculation spaces) by name.
-    std::map<std::string, shared_ptr<Geometry> > geometries;
+    /// Geometries and geometry objects by name.
+    std::map<std::string, shared_ptr<GeometryObject> > geometrics;
 
     /// Meshes by name.
     std::map< std::string, shared_ptr<Mesh> > meshes;

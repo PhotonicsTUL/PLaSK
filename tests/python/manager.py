@@ -48,17 +48,17 @@ class Manager(unittest.TestCase):
 
 
     def testGeometry(self):
-        self.assertEqual( len(self.manager.objects), 2 )
-        self.assertEqual( type(self.manager.objects["Block-3"]), plask.geometry.Block2D )
-        self.assertEqual( list(self.manager.objects["Stack-2"].get_leafs_bboxes()),
+        self.assertEqual( len(self.manager.geometrics), 3 )
+        self.assertEqual( type(self.manager.geometrics["Block-3"]), plask.geometry.Block2D )
+        self.assertEqual( list(self.manager.geometrics["Stack-2"].get_leafs_bboxes()),
             [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
-        self.assertEqual( type(self.manager.geometries.Space_1), plask.geometry.Cartesian2D )
+        self.assertEqual( type(self.manager.geometrics.Space_1), plask.geometry.Cartesian2D )
         self.assertEqual( len(self.manager.pth), 1 )
-        with self.assertRaises(KeyError): self.manager.objects["nonexistent"]
+        with self.assertRaises(KeyError): self.manager.geometrics["nonexistent"]
 
 
     def testDictionaries(self):
-        self.assertEqual( list(self.manager.obj), ["Block-3", "Stack-2"] )
+        self.assertEqual( list(self.manager.geo), ["Block-3", "Space-1", "Stack-2"] )
 
 
     def testExport(self):
@@ -80,7 +80,7 @@ class Manager(unittest.TestCase):
         self.assertEqual( tuple(self.manager.msg.test.postdiv), (2,3) )
         self.assertEqual( self.manager.msg.test.warn_missing, False )
 
-        mesh = self.manager.msg.refined.generate(self.manager.obj.Stack_2)
+        mesh = self.manager.msg.refined.generate(self.manager.geo.Stack_2)
         self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
         self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
 
@@ -209,12 +209,12 @@ class Manager(unittest.TestCase):
             <cartesian2d axes="xy">
               <stack>
                 <rectangle name="block1" dx="5" dy="sqrt(hh1)" material="GaAs" />
-                <rectangle name="block2" dx="self.obj.block1.dims[0]" dy="h2" material="GaAs" />
+                <rectangle name="block2" dx="self.geo.block1.dims[0]" dy="h2" material="GaAs" />
               </stack>
             </cartesian2d>
           </geometry>
         </plask>
         ''', {'hh1': 4})
-        self.assertEqual(manager.obj.block1.dims[1], 2)
-        self.assertEqual(manager.obj.block2.dims[0], 5)
-        self.assertEqual(manager.obj.block2.dims[1], 1)
+        self.assertEqual(manager.geo.block1.dims[1], 2)
+        self.assertEqual(manager.geo.block2.dims[0], 5)
+        self.assertEqual(manager.geo.block2.dims[1], 1)
