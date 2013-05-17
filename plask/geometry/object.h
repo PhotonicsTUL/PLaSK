@@ -535,14 +535,12 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     GeometryObject(const GeometryObject& to_copy) {}
 
     /**
-     * Set this to be the same as @p to_copy but doesn't changed changes observer.
+     * Set this to be the same as @p to_copy but doesn't change changes observer.
      * @param to_copy object to copy
      */
     GeometryObject& operator=(const GeometryObject& to_copy) { return *this; }
 
     GeometryObject() = default;
-
-    //TODO
 
     /**
      * Virtual destructor. Inform all change listeners.
@@ -674,6 +672,14 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      */
     //TODO ? predicate, path
     virtual bool hasInSubtree(const GeometryObject& el) const;
+
+    bool hasInSubtree(const GeometryObject& el, const PathHints* pathHints) const {
+        return !getObjects(PredicateIsA(el), pathHints).empty();
+    }
+
+    bool hasInSubtree(shared_ptr<const GeometryObject> el, const PathHints* pathHints) const {
+        return hasInSubtree(*el, pathHints);
+    }
 
     /**
      * Find paths to @a el.

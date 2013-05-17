@@ -49,7 +49,7 @@ struct Geometry: public GeometryObject {
      */
     Geometry& operator=(const Geometry& to_copy) { defaultMaterial = to_copy.defaultMaterial; return *this; }
 
-    /// Inform observators that this is deleting.
+    /// Inform observators that this is being deleted.
     virtual ~Geometry() { fireChanged(Event::DELETE); }
 
     /**
@@ -284,8 +284,12 @@ public:
      * @param el object to search for
      * @return @c true only if @a el is in subtree with child of @c this in root
      */
-    virtual bool hasInSubtree(const GeometryObject& el) const {
+    bool hasInSubtree(const GeometryObject& el) const {
         return getChild()->hasInSubtree(el);
+    }
+
+    bool hasInSubtree(shared_ptr<const GeometryObject> el, const PathHints* pathHints) const {
+        return getChild()->hasInSubtree(*el, pathHints);
     }
 
     /**
@@ -294,7 +298,7 @@ public:
      * @param pathHints (optional) path hints which limits search space
      * @return sub-tree with paths to given object (@p el is in all leafs), empty sub-tree if @p el is not in subtree with child of @c this in root
      */
-    virtual Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const {
+    Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const {
         return getChild()->getPathsTo(el, pathHints);
     }
 
@@ -304,7 +308,7 @@ public:
      * @param dest destination vector
      * @param path (optional) path hints which limits search space
      */
-    virtual void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
+    void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
         return getChild()->getObjectsToVec(predicate, dest, path);
     }
 
@@ -312,7 +316,7 @@ public:
      * Get number of children of @c this.
      * @return 1 if this has a child or 0 if it hasn't
      */
-    virtual std::size_t getChildrenCount() const {
+    std::size_t getChildrenCount() const {
         return getChildUnsafe() ? 1 : 0;
     }
 
@@ -321,7 +325,7 @@ public:
      * @param child_no must be 0
      * @return child of this
      */
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
         //if (!hasChild() || child_no > 0) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
         if (child_no >= getChildrenCount()) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
         return getChild();
@@ -756,7 +760,7 @@ public:
      * Construct geometry over given @p extrusion object.
      * @param extrusion extrusion geometry object
      */
-    Geometry2DCartesian(shared_ptr<Extrusion> extrusion = shared_ptr<Extrusion>());
+    explicit Geometry2DCartesian(shared_ptr<Extrusion> extrusion = shared_ptr<Extrusion>());
 
     /**
      * Construct geometry over extrusion object build on top of given 2D @p childGeometry and with given @p length.
@@ -883,7 +887,7 @@ public:
      * Construct geometry over given @p revolution object.
      * @param revolution revolution object
      */
-    Geometry2DCylindrical(shared_ptr<Revolution> revolution = shared_ptr<Revolution>());
+    explicit Geometry2DCylindrical(shared_ptr<Revolution> revolution = shared_ptr<Revolution>());
 
     /**
      * Construct geometry over revolution object build on top of given 2D @p childGeometry.
@@ -891,7 +895,7 @@ public:
      * It construct new plask::Revolution object internally.
      * @param childGeometry parameters which will be passed to plask::Revolution constructor
      */
-    Geometry2DCylindrical(shared_ptr<GeometryObjectD<2>> childGeometry);
+    explicit Geometry2DCylindrical(shared_ptr<GeometryObjectD<2>> childGeometry);
 
     /**
      * Get child of revolution object used by this geometry.
@@ -1046,7 +1050,7 @@ public:
      * Construct geometry over given 3D @p child object.
      * @param child child, of equal to nullptr (default) you should call setChild before use this geometry
      */
-    Geometry3D(shared_ptr<GeometryObjectD<3>> child = shared_ptr<GeometryObjectD<3>>());
+    explicit Geometry3D(shared_ptr<GeometryObjectD<3>> child = shared_ptr<GeometryObjectD<3>>());
 
     /**
      * Get child object used by this geometry.

@@ -11,7 +11,7 @@ struct FilterCommonBase: public Solver {
     FilterCommonBase(Args... args): Solver(std::forward<Args>(args)...) {}
 };
 
-/// Don't use this directly, use StandardFilter instead.
+/// Don't use this directly, use FilterBase or Filter instead.
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
 struct FilterBaseImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "Filter can't be use with single value properties (it can be use only with fields properties)");
@@ -57,8 +57,13 @@ protected:
 
 public:
 
+    /// Provider of filtered data.
     typename ProviderFor<PropertyT, OutputSpaceType>::Delegate out;
 
+    /**
+     * Construct solver with given output @p geometry.
+     * @param geometry output geometry
+     */
     FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): FilterCommonBase("Filter"), geometry(geometry) {
         this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
@@ -68,10 +73,19 @@ public:
 
     virtual std::string getClassName() const override { return "Filter"; }
 
-    /// Get main filter geometry
-    /// \return filter geometry
+    /**
+     * Get this filter output geometry.
+     * \return filter geometry
+     */
     shared_ptr<OutputSpaceType> getGeometry() const { return geometry; }
 
+    /**
+     * Get value provided by output of this solver.
+     * @param dst_mesh
+     * @param extra_args
+     * @param method
+     * @return
+     */
     DataVector<const ValueT> get(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
         if (innerSources.empty())   //special case, for fast getting data from outer source
             return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
@@ -120,6 +134,10 @@ public:
         out.fireChanged();
     }
 
+    virtual ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) = 0;
+
+    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) = 0;
+
 private:
 
     void onSourceChange(Provider&, bool isDestr) {
@@ -165,6 +183,17 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
 
     using FilterBase<PropertyT, Geometry3D>::appendInner;
 
+    ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) override {
+        if (obj.hasInSubtree(this->geometry->getChild(), path))
+            return setOuter(obj, path);
+        else
+            return appendInner(obj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& innerObj, const PathHints* path = nullptr) override {
+        return appendInner(innerObj, path);
+    }
+
     ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr) {
         std::unique_ptr< TranslatedOuterDataSource<PropertyT, Geometry3D> > source(new TranslatedOuterDataSource<PropertyT, Geometry3D>());
         source->connect(outerObj, *this->geometry->getChild(), path);
@@ -173,6 +202,14 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<GeometryObjectD<3>> outerObj, const PathHints* path = nullptr) {
         return setOuter(*outerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(const Geometry3D& outerGeom, const PathHints* path = nullptr) {
+        return setOuter(outerGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<const Geometry3D> outerGeom, const PathHints* path = nullptr) {
+        return setOuter(outerGeom->getChild(), path);
     }
 
     ReceiverFor<PropertyT, Geometry3D>& appendInner(GeometryObjectD<3>& innerObj, const PathHints* path = nullptr) {
@@ -195,11 +232,11 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
         return appendInner2D(*innerObj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(Geometry2DCartesian& innerObj, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(const Geometry2DCartesian& innerObj, const PathHints* path = nullptr) {
         return appendInner2D(innerObj.getExtrusion(), path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<Geometry2DCartesian> innerObj, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<const Geometry2DCartesian> innerObj, const PathHints* path = nullptr) {
         return appendInner2D(innerObj->getExtrusion(), path);
     }
 
@@ -219,6 +256,17 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
     using FilterBase<PropertyT, Geometry2DCartesian>::setOuter;
 
     using FilterBase<PropertyT, Geometry2DCartesian>::appendInner;
+
+    ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr) override {
+        return setOuter(outerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) override {
+        if (obj.hasInSubtree(this->geometry->getChild(), path))
+            return setOuter(obj, path);
+        else
+            return appendInner(obj, path);
+    }
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
         std::unique_ptr< DataFrom3Dto2DSource<PropertyT> > source(new DataFrom3Dto2DSource<PropertyT>(pointsCount));
@@ -240,6 +288,14 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
         return setOuter(*outerObj, path);
     }
 
+    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(const Geometry2DCartesian& outerGeom, const PathHints* path = nullptr) {
+        return setOuter(outerGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(shared_ptr<const Geometry2DCartesian> outerGeom, const PathHints* path = nullptr) {
+        return setOuter(outerGeom->getChild(), path);
+    }
+
     ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(GeometryObjectD<2>& innerObj, const PathHints* path = nullptr) {
         std::unique_ptr< TranslatedInnerDataSource<PropertyT, Geometry2DCartesian> > source(new TranslatedInnerDataSource<PropertyT, Geometry2DCartesian>());
         source->connect(innerObj, *this->geometry, path);
@@ -248,6 +304,14 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<GeometryObjectD<2>> innerObj, const PathHints* path = nullptr) {
         return this->appendInner(*innerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(const Geometry2DCartesian& innerGeom, const PathHints* path = nullptr) {
+        return appendInner(innerGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<const Geometry2DCartesian> innerGeom, const PathHints* path = nullptr) {
+        return appendInner(innerGeom->getChild(), path);
     }
 };
 
@@ -260,6 +324,14 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
     using FilterBase<PropertyT, Geometry2DCylindrical>::setOuter;
 
     using FilterBase<PropertyT, Geometry2DCylindrical>::appendInner;
+
+    virtual ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) {
+        //TODO
+    }
+
+    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) {
+        //TODO
+    }
 };
 
 /**
