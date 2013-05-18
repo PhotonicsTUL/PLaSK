@@ -2,7 +2,7 @@
 #define PLASK__AlxOy_H
 
 /** @file
-This file includes AlxOy
+This file contains AlxOy
 */
 
 #include <plask/material/material.h>

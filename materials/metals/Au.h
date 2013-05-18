@@ -2,7 +2,7 @@
 #define PLASK__Au_H
 
 /** @file
-This file includes Au
+This file contains Au
 */
 
 #include <plask/material/material.h>

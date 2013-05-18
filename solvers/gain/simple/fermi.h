@@ -10,6 +10,8 @@
 
 namespace plask { namespace solvers { namespace fermi {
 
+template <typename GeometryT> struct GainSpectrum;
+
 /**
  * Gain solver using Fermi Golden Rule
  */
@@ -52,6 +54,11 @@ struct FermiGainSolver: public SolverOver<GeometryType>
         Box2D getBoundingBox() const
             {
             return layers->getBoundingBox() + origin;
+        }
+
+        /// \return \p true if the point is in the active region
+        bool contains(const Vec<2>& point) const {
+            return getBoundingBox().contains(point);
         }
     };
 
@@ -146,7 +153,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /**
      * Method computing the gain on the mesh (called by gain provider)
      * \param dst_mesh destination mesh
-     * \param wavelenght wavelenght to compute gain for
+     * \param wavelength wavelength to compute gain for
      * \return gain distribution
      */
     const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
@@ -157,7 +164,55 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
     double getMatrixElem() const { return mMatrixElem; }
     void setMatrixElem(double iMatrixElem)  { mMatrixElem = iMatrixElem; }
+
+    /**
+     * Reg gain spectrum object for future use;
+     */
+    GainSpectrum<GeometryType> getGainSpectrum(const Vec<2>& point);
 };
+
+
+/**
+ * Cached gain spectrum
+ */
+template <typename GeometryT>
+struct GainSpectrum {
+
+    FermiGainSolver<GeometryT>* solver; ///< Source solver
+    Vec<2> point;                       ///< Point in which the gain is calculated
+
+    /// Active region containg the point
+    const typename FermiGainSolver<GeometryT>::ActiveRegionInfo* region;
+
+    double T;                           ///< Temperature
+    double n;                           ///< Carries concentration
+
+    GainSpectrum(FermiGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
+        for (const auto& reg: solver->regions) {
+            if (reg.contains(point)) {
+                region = &reg;
+                return;
+            };
+        }
+        throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
+    }
+
+    /**
+     * Get gain at given valenegth
+     * \param wavelength wavelength to get gain
+     * \return gain
+     */
+    double getGain(double wavelength) {
+        if (isnan(T) || solver->inTemperature.changed)
+            T = solver->inTemperature(OnePointMesh<2>(point))[0];
+        if (isnan(n) || solver->inCarriersConcentration.changed)
+            n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
+        solver->setParameters(wavelength, T, n, *region);
+        return solver->gainModule.Get_gain_at(solver->nm_to_eV(wavelength));
+    }
+};
+
+
 
 
 }}} // namespace

@@ -2,7 +2,7 @@
 #define PLASK__PROVIDERFOR_H
 
 /** @file
-This file includes classes and templates which allow to generate providers and receivers.
+This file contains classes and templates which allow to generate providers and receivers.
 @see @ref providers
 */
 
@@ -116,7 +116,7 @@ struct ProviderImpl {};
  * - ProviderFor<PropertyT, SpaceT>::WithDefaultValue is class inherited from ProviderFor<PropertyT, SpaceT> which stores provided value (has value field) and doesn't know if it was initialized (should always have reasonable default value).
  * @tparam PropertyT property tag class (describe physical property)
  * @tparam SpaceT type of space, required (and allowed) only for fields properties
- * @see plask::Temperature (includes example); @ref providers
+ * @see plask::Temperature (contains example); @ref providers
  */
 template <typename PropertyT, typename SpaceT = void>
 struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams> {

@@ -2,7 +2,7 @@
 #define PLASK__AuGe_H
 
 /** @file
-This file includes AuGe
+This file contains AuGe
 */
 
 #include <plask/material/material.h>

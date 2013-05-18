@@ -2,7 +2,7 @@
 #define PLASK__UTILS_INTERPOLATION_H
 
 /** @file
-This file includes interpolation utils.
+This file contains interpolation utils.
 */
 
 namespace plask { namespace interpolation {

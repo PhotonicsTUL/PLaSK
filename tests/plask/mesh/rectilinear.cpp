@@ -48,8 +48,8 @@ BOOST_AUTO_TEST_CASE(dim2boundary) {
     std::size_t expected[2] = { 2, 5 };
     BOOST_CHECK_EQUAL_COLLECTIONS(right_boundary_on_mesh.begin(), right_boundary_on_mesh.end(),
                                   std::begin(expected), std::end(expected));
-    BOOST_CHECK(right_boundary_on_mesh.includes(2));
-    BOOST_CHECK(!right_boundary_on_mesh.includes(1));
+    BOOST_CHECK(right_boundary_on_mesh.contains(2));
+    BOOST_CHECK(!right_boundary_on_mesh.contains(1));
 }
 
 BOOST_AUTO_TEST_CASE(from_geometry_2) {

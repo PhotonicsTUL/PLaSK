@@ -2,7 +2,7 @@
 #define PLASK__AlAs_C_H
 
 /** @file
-This file includes C-doped AlAs
+This file contains C-doped AlAs
 */
 
 #include <plask/material/material.h>

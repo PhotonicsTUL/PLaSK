@@ -2,7 +2,7 @@
 #define PLASK__DATA_H
 
 /** @file
-This file includes classes which can hold (or points to) datas.
+This file contains classes which can hold (or points to) datas.
 */
 
 #include <iterator>

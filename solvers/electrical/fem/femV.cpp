@@ -636,7 +636,7 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodE
     auto result = interpolate(*(this->mesh->getMidpointsMesh()), mCurrentDensities, dest_mesh, method);
     constexpr Vec<2> zero(0.,0.);
     for (size_t i = 0; i < result.size(); ++i)
-        if (!this->geometry->getChildBoundingBox().includes(dest_mesh[i])) result[i] = zero;
+        if (!this->geometry->getChildBoundingBox().contains(dest_mesh[i])) result[i] = zero;
     return result;
 }
 
@@ -649,7 +649,7 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
     auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     auto result = interpolate(*(this->mesh->getMidpointsMesh()), mHeatDensities, dest_mesh, method);
     for (size_t i = 0; i < result.size(); ++i)
-        if (!this->geometry->getChildBoundingBox().includes(dest_mesh[i])) result[i] = 0.;
+        if (!this->geometry->getChildBoundingBox().contains(dest_mesh[i])) result[i] = 0.;
     return result;
 }
 

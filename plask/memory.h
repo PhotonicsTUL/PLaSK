@@ -2,7 +2,7 @@
 #define PLASK__MEMORY_H
 
 /** @file
-This file includes utils connected with memory managment, it includes utils to operate on memory, pointers, smart pointers, etc.
+This file contains utils connected with memory managment, it contains utils to operate on memory, pointers, smart pointers, etc.
 It put smart pointers (boost or std ones - dependly of plask build configuration) in plask namespace.
 */
 

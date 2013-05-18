@@ -108,7 +108,7 @@ QModelIndex ObjectViewer::indexAt(const QPoint &point) const
     const std::size_t ch_count = e->getRealChildrenCount();
     for (std::size_t i = 0; i < ch_count; ++i) {
         plask::shared_ptr<plask::GeometryObjectD<2> > ch = e->getRealChildNo(i)->asD<2>();
-        if (ch && ch->getBoundingBox().includes(model_point))
+        if (ch && ch->getBoundingBox().contains(model_point))
             return model()->index(i, 0, rootIndex());
     }
 

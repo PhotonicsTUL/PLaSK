@@ -11,8 +11,8 @@ void Extrusion::setLength(double new_length) {
     fireChanged(Event::RESIZE);
 }
 
-bool Extrusion::includes(const DVec& p) const {
-    return canBeInside(p) && getChild()->includes(childVec(p));
+bool Extrusion::contains(const DVec& p) const {
+    return canBeInside(p) && getChild()->contains(childVec(p));
 }
 
 /*bool Extrusion::intersects(const Box& area) const {

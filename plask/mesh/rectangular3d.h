@@ -2,7 +2,7 @@
 #define PLASK__RECTANGULAR3D_H
 
 /** @file
-This file includes rectilinear mesh for 3d space.
+This file contains rectilinear mesh for 3d space.
 */
 
 #include "rectangular2d.h"
@@ -975,7 +975,7 @@ private:
 
         FixedIndex0Boundary(const RectangularMesh<3,Mesh1D>& mesh, std::size_t level_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<3,Mesh1D>>(mesh), level_axis0(level_axis0) {}
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index0(mesh_index) == level_axis0;
         }
 
@@ -1003,7 +1003,7 @@ private:
               beginAxis1(beginAxis1), endAxis1(endAxis1), beginAxis2(beginAxis2), endAxis2(endAxis2)
               {}
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index0(mesh_index) == level_axis0
                     && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1)
                     && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
@@ -1036,7 +1036,7 @@ private:
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index1(mesh_index) == level_axis1;
         }
 
@@ -1064,7 +1064,7 @@ private:
               beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis2(beginAxis2), endAxis2(endAxis2)
               {}
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index1(mesh_index) == level_axis1
                     && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
                     && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
@@ -1098,7 +1098,7 @@ private:
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index2(mesh_index) == level_axis2;
         }
 
@@ -1126,7 +1126,7 @@ private:
               beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis1(beginAxis1), endAxis1(endAxis1)
               {}
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index2(mesh_index) == level_axis2
                     && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
                     && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1);

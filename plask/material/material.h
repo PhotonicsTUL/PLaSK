@@ -2,7 +2,7 @@
 #define PLASK__MATERIAL_H
 
 /** @file
-This file includes base classes for materials and material database class.
+This file contains base classes for materials and material database class.
 */
 
 #include <string>

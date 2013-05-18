@@ -2,7 +2,7 @@
 #define PLASK__PRIMITIVES_H
 
 /** @file
-This file includes useful geometry primitives, like boxes, etc.
+This file contains useful geometry primitives, like boxes, etc.
 */
 
 #include "../vec.h"
@@ -82,7 +82,7 @@ struct Box2D {
      * @param p point
      * @return true only if point is inside this box
      */
-    bool includes(const Vec<2,double>& p) const;
+    bool contains(const Vec<2,double>& p) const;
 
     /**
      * Check if this and other boxes have common points.
@@ -301,7 +301,7 @@ struct Box3D {
      * @param p point
      * @return true only if point is inside this box
      */
-    bool includes(const Vec<3,double>& p) const;
+    bool contains(const Vec<3,double>& p) const;
 
     /**
      * Check if this and other boxes have common points.

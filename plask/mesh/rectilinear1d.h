@@ -2,7 +2,7 @@
 #define PLASK__RECTILINEAR1D_H
 
 /** @file
-This file includes rectilinear mesh for 1d space.
+This file contains rectilinear mesh for 1d space.
 */
 
 #include <vector>

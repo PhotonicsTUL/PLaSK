@@ -2,7 +2,7 @@
 #define PLASK__InAs_C_H
 
 /** @file
-This file includes C-doped InAs
+This file contains C-doped InAs
 */
 
 #include <plask/material/material.h>

@@ -210,22 +210,24 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 {
     this->initCalculation(); // This must be called before any calculation!
 
+    auto dst_mesh_geo = WrappedMesh<2>(dst_mesh, this->geometry);
+
     DataVector<const double> nOnMesh = inCarriersConcentration(dst_mesh); // carriers concentration on the mesh
     DataVector<const double> TOnMesh = inTemperature(dst_mesh); // temperature on the mesh
-    DataVector<double> gainOnMesh(dst_mesh.size(), NAN);
+    DataVector<double> gainOnMesh(dst_mesh_geo.size(), 0.);
 
     if (regions.size() == 1)
-        this->writelog(LOG_DETAIL, "Found %1% active region", regions.size());
+        this->writelog(LOG_DETAIL, "Found 1 active region");
     else
         this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
-    for (int act=0; act<regions.size(); act++)
+    for (const ActiveRegionInfo& region: regions)
     {
-        for (int i=0; i<dst_mesh.size(); i++)
+        for (int i = 0; i < dst_mesh_geo.size(); i++)
         {
-            if (!isnan(nOnMesh[i]))
+            if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))
             {
-                setParameters(wavelength, TOnMesh[i], nOnMesh[i], regions[act]);
+                setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
                 gainOnMesh[i] = gainModule.Get_gain_at(nm_to_eV(wavelength));
             }
         }
@@ -405,6 +407,12 @@ void FermiGainSolver<GeometryType>::determineLevels(double T, double n)
     }
 }
 
+template <typename GeometryType>
+GainSpectrum<GeometryType> FermiGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point)
+{
+    this->initCalculation();
+    return GainSpectrum<GeometryType>(this, point);
+}
 
 
 template <> std::string FermiGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.Fermi2D"; }

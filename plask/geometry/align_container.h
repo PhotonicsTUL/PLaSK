@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_ALIGN_CONTAINER_H
 
 /** @file
-This file includes containers of geometries objects which align all children in one direction and allow to explicitly choose coordinates in other directions.
+This file contains containers of geometries objects which align all children in one direction and allow to explicitly choose coordinates in other directions.
 */
 
 #include "container.h"

@@ -2,7 +2,7 @@
 #define PLASK__UTILS_CACHE_H
 
 /** @file
-This file includes cache map indexed by objects which can emit events, like GeometryObjects, Meshes, etc.
+This file contains cache map indexed by objects which can emit events, like GeometryObjects, Meshes, etc.
 */
 
 #include <map>

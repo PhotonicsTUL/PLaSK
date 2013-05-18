@@ -2,7 +2,7 @@
 #define PLASK__TESNOR2_H
 
 /** @file
-This file includes implementation of tensor in 2D space.
+This file contains implementation of tensor in 2D space.
 */
 
 #include <iostream>

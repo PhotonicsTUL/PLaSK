@@ -11,7 +11,7 @@ Cylinder::Box Cylinder::getBoundingBox() const {
     return Box(vec(- radius, - radius, 0.0), vec(+ radius, + radius, height));
 }
 
-bool Cylinder::includes(const Cylinder::DVec &p) const {
+bool Cylinder::contains(const Cylinder::DVec &p) const {
     return 0.0 >= p.vert() && p.vert() <= height &&
             std::fma(p.lon(), p.lon(), p.tran() * p.tran()) <= radius * radius;
 }

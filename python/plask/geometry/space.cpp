@@ -336,7 +336,7 @@ void register_calculation_spaces() {
         .def("__init__", raw_constructor(Geometry2DCartesian__init__, 1))
         .add_property("item", &Geometry2DCartesian::getChild, "GeometryObject2D at the root of the tree")
         .add_property("extrusion", &Geometry2DCartesian::getExtrusion, "Extrusion object at the very root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>, "Minimal rectangle which includes all points of the geometry object")
+        .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>, "Minimal rectangle which contains all points of the geometry object")
         .def_readwrite("default_material", &Geometry2DCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry")
         .add_property("front_material", &Geometry2DCartesian::getFrontMaterial, &Geometry2DCartesian::setFrontMaterial,
                       "Material on the positive side of the axis along the extrusion")
@@ -373,7 +373,7 @@ void register_calculation_spaces() {
         .def("__init__", raw_constructor(Geometry2DCylindrical__init__, 1))
         .add_property("item", &Geometry2DCylindrical::getChild, "GeometryObject2D at the root of the tree")
         .add_property("revolution", &Geometry2DCylindrical::getRevolution, "Revolution object at the very root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>, "Minimal rectangle which includes all points of the geometry object")
+        .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>, "Minimal rectangle which contains all points of the geometry object")
         .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial, "Material of the 'empty' regions of the geometry")
         .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
                       "Dictionary specifying the type of the surroundings around the structure")
@@ -405,7 +405,7 @@ void register_calculation_spaces() {
         py::no_init)
         .def("__init__", raw_constructor(Geometry3D__init__, 1))
         .add_property("item", &Geometry3D::getChild, "GeometryObject2D at the root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Geometry3D>, "Minimal rectangle which includes all points of the geometry object")
+        .add_property("bbox", &Space_childBoundingBox<Geometry3D>, "Minimal rectangle which contains all points of the geometry object")
         .def_readwrite("default_material", &Geometry3D::defaultMaterial, "Material of the 'empty' regions of the geometry")
         .add_property("borders", &Geometry3D_getBorders, &Space_setBorders,
                       "Dictionary specifying the type of the surroundings around the structure")

@@ -31,7 +31,7 @@ struct EmptyLeafCacheNode: public CacheNode<DIMS> {
         return shared_ptr<Material>();
     }
 
-    virtual bool includes(const Vec<DIMS>& p) const {
+    virtual bool contains(const Vec<DIMS>& p) const {
         return false;
     }
 
@@ -68,8 +68,8 @@ struct LeafCacheNode: public CacheNode<DIMS> {
         return shared_ptr<Material>();
     }
 
-    virtual bool includes(const Vec<DIMS>& p) const {
-        for (auto child: children) if (child->includes(p)) return true;
+    virtual bool contains(const Vec<DIMS>& p) const {
+        for (auto child: children) if (child->contains(p)) return true;
         return false;
     }
 
@@ -93,8 +93,8 @@ template <int DIMS, int dir>
 struct InternalCacheNode: public CacheNode<DIMS> {
 
     double offset;  ///< split coordinate
-    CacheNode<DIMS>* lo;  ///< includes all objects which has lower coordinate < offset
-    CacheNode<DIMS>* hi;  ///< includes all objects which has higher coordinate >= offset
+    CacheNode<DIMS>* lo;  ///< contains all objects which has lower coordinate < offset
+    CacheNode<DIMS>* hi;  ///< contains all objects which has higher coordinate >= offset
 
     InternalCacheNode(const double& offset, CacheNode<DIMS>* lo, CacheNode<DIMS>* hi)
         : offset(offset), lo(lo), hi(hi)
@@ -104,8 +104,8 @@ struct InternalCacheNode: public CacheNode<DIMS> {
         return p[dir] < offset ? lo->getMaterial(p) : hi->getMaterial(p);
     }
 
-    virtual bool includes(const Vec<DIMS>& p) const {
-        return p[dir] < offset ? lo->includes(p) : hi->includes(p);
+    virtual bool contains(const Vec<DIMS>& p) const {
+        return p[dir] < offset ? lo->contains(p) : hi->contains(p);
     }
 
     GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &p, bool all) const {

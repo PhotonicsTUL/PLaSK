@@ -6,7 +6,7 @@
 #include "geometry/primitives.h"
 
 /** @file
-This file includes utils connected with names of axes.
+This file contains utils connected with names of axes.
 */
 
 #include "vector/3d.h"

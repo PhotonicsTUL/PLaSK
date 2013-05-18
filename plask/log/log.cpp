@@ -11,7 +11,7 @@ using namespace std;
 
 namespace plask {
 
-LogLevel maxLoglevel = LOG_DATA;
+LogLevel maxLoglevel = LOG_DETAIL;
 bool forcedLoglevel = false;
 
 #ifdef _WIN32

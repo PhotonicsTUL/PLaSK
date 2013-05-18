@@ -2,7 +2,7 @@
 #define GUI_GEOMETRY_WRAPPER_ELEMENT_H
 
 /** @file
- * This file includes interface to plask geometry objects model extensions connected with Qt.
+ * This file contains interface to plask geometry objects model extensions connected with Qt.
  *
  * Typically you should call ext() function with pointer to your geometry object object as argument.
  * This function return ObjectWrapper which provide methods which operates on your object, knowing its type.
@@ -50,7 +50,7 @@ struct ObjectWrapper {
     /**
      * Store information about event connected with geometry object or its wrapper.
      *
-     * Subclasses of this can includes additional information about specific type of event.
+     * Subclasses of this can contains additional information about specific type of event.
      */
     struct Event: public plask::EventWithSourceAndFlags<ObjectWrapper> {
 

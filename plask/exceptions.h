@@ -2,7 +2,7 @@
 #define PLASK__EXCEPTIONS_H
 
 /** @file
-This file includes definitions of most exceptions classes which are used in PLaSK.
+This file contains definitions of most exceptions classes which are used in PLaSK.
 */
 
 #include <stdexcept>

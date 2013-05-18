@@ -3,8 +3,8 @@
 
 namespace plask {
 
-bool Revolution::includes(const GeometryObjectD< 3 >::DVec& p) const {
-    return getChild()->includes(childVec(p));
+bool Revolution::contains(const GeometryObjectD< 3 >::DVec& p) const {
+    return getChild()->contains(childVec(p));
 }
 
 

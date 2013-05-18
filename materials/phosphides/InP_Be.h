@@ -2,7 +2,7 @@
 #define PLASK__InP_Be_H
 
 /** @file
-This file includes Be-doped InP
+This file contains Be-doped InP
 */
 
 #include <plask/material/material.h>

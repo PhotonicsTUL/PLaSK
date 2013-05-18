@@ -2,7 +2,7 @@
 #define PLASK_GUI_UTILS_DRAW_H
 
 /** @file
- * This file includes utils functions and classes connected with drawing in QT.
+ * This file contains utils functions and classes connected with drawing in QT.
  */
 
 #include <QTransform>

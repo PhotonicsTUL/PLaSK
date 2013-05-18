@@ -4,7 +4,7 @@
 #define PLASK__GEOMETRY_MANAGER_H
 
 /** @file
-This file includes:
+This file contains:
 - plask::Manager class.
 */
 

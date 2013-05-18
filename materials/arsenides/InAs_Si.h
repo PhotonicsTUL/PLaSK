@@ -2,7 +2,7 @@
 #define PLASK__InAs_Si_H
 
 /** @file
-This file includes Si-doped InAs
+This file contains Si-doped InAs
 */
 
 #include <plask/material/material.h>

@@ -12,6 +12,7 @@ void register_standard_properties_optical();
 void register_standard_properties_temperature();
 void register_standard_properties_heatflux();
 
+void register_standard_properties_voltage();
 void register_standard_properties_current();
 
 void register_standard_properties_concentration_carriers();
@@ -29,6 +30,7 @@ void register_standard_properties()
     register_standard_properties_heatflux();
 
     // register_standard_properties_electrical();
+    register_standard_properties_voltage();
     register_standard_properties_current();
     register_standard_properties_concentration_carriers();
     register_standard_properties_concentration_electrons();

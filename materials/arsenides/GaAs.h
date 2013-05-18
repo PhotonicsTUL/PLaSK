@@ -2,7 +2,7 @@
 #define PLASK__GaAs_H
 
 /** @file
-This file includes undoped GaAs
+This file contains undoped GaAs
 */
 
 #include <plask/material/material.h>

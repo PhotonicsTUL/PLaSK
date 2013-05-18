@@ -2,7 +2,7 @@
 #define PLASK__GaInAs_Be_H
 
 /** @file
-This file includes Be-doped GaInAs
+This file contains Be-doped GaInAs
 */
 
 #include <plask/material/material.h>

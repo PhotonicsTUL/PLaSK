@@ -10,7 +10,7 @@ class QRectF;
 QT_END_NAMESPACE
 
 /** @file
-This file includes convneters between qt and plask primitives.
+This file contains convneters between qt and plask primitives.
 */
 
 inline QRectF toQt(const plask::Box2D& box) {

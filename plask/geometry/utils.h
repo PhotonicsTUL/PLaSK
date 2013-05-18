@@ -4,7 +4,7 @@
 #include "object.h"
 
 /** @file
-This file includes some utils usefull with geometry classes.
+This file contains some utils usefull with geometry classes.
 */
 
 namespace plask {

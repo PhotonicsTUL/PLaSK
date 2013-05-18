@@ -2,7 +2,7 @@
 #define PLASK__GaInAs_C_H
 
 /** @file
-This file includes C-doped GaInAs
+This file contains C-doped GaInAs
 */
 
 #include <plask/material/material.h>

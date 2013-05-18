@@ -2,7 +2,7 @@
 #define PLASK__AlGaN_Mg_H
 
 /** @file
-This file includes Mg-doped AlGaN
+This file contains Mg-doped AlGaN
 */
 
 #include <plask/material/material.h>

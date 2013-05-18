@@ -2,7 +2,7 @@
 #define PLASK__AlGaAs_Si_H
 
 /** @file
-This file includes Si-doped AlGaAs
+This file contains Si-doped AlGaAs
 */
 
 #include <plask/material/material.h>

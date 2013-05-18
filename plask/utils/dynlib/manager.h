@@ -11,7 +11,7 @@ namespace plask {
  *
  * Close held libraries in destructor.
  *
- * It also includes one static, singleton instance available by defaultSet().
+ * It also contains one static, singleton instance available by defaultSet().
  * This set is especially useful to load libraries which should be closed on program exit (see defaultLoad method).
  */
 class DynamicLibraries {

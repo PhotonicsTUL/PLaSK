@@ -2,7 +2,7 @@
 #define PLASK__GaP_H
 
 /** @file
-This file includes undoped GaP
+This file contains undoped GaP
 */
 
 #include <plask/material/material.h>

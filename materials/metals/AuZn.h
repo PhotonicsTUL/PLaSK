@@ -2,7 +2,7 @@
 #define PLASK__AuZn_H
 
 /** @file
-This file includes AuZn
+This file contains AuZn
 */
 
 #include <plask/material/material.h>

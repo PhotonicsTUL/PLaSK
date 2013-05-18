@@ -2,7 +2,7 @@
 #define PLASK__GaInP_H
 
 /** @file
-This file includes undoped GaInP
+This file contains undoped GaInP
 */
 
 #include <plask/material/material.h>

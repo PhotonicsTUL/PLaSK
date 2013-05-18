@@ -2,7 +2,7 @@
 #define PLASK__MATERIAL_INFO_H
 
 /** @file
-This file includes classes which stores meta-informations about materials.
+This file contains classes which stores meta-informations about materials.
 */
 
 #include <string>

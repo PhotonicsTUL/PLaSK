@@ -2,7 +2,7 @@
 #define PLASK__InN_H
 
 /** @file
-This file includes undoped InN
+This file contains undoped InN
 */
 
 #include <plask/material/material.h>

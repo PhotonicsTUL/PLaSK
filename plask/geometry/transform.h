@@ -257,8 +257,8 @@ struct Translation: public GeometryObjectTransform<dim> {
         return getChild()->getMaterial(p-translation);
     }
 
-    virtual bool includes(const DVec& p) const {
-        return getChild()->includes(p-translation);
+    virtual bool contains(const DVec& p) const {
+        return getChild()->contains(p-translation);
     }
 
     //TODO to use (impl. is good) or remove

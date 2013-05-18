@@ -2,7 +2,7 @@
 #define PLASK__BOUNDARY_H
 
 /** @file
-This file includes templates of base classes for mesh's boundaries.
+This file contains templates of base classes for mesh's boundaries.
 @see @ref meshes
 */
 
@@ -17,7 +17,7 @@ Boundaries are specific for given type of mesh.
 Class MeshType::Boundary (which in most cases is same as @ref plask::Boundary "Boundary\<MeshType\>") stores boundary for mesh of type @c MeshType.
 It has @c get method which return @ref plask::Boundary::WithMesh "MeshType::Boundary::WithMesh" instance for mesh given as parameter.
 @ref plask::Boundary::WithMesh "MeshType::Boundary::WithMesh" represent a set of points (indexes of points in given mesh) and allow for:
-- checking if it includes point with given index (@ref plask::Boundary::WithMesh::includes "includes" method),
+- checking if it contains point with given index (@ref plask::Boundary::WithMesh::contains "contains" method),
 - iterate over represented indexes (has @ref plask::Boundary::WithMesh::begin "begin" and @ref plask::Boundary::WithMesh::end "end" methods).
 
 Typically, you should call @c MeshType static methods to obtain value for @ref plask::Boundary "Boundary\<MeshType\>".
@@ -38,7 +38,7 @@ RectilinearMesh2D mesh;
 Boundary<RectilinearMesh2D>::WithMesh bwm = boundary.get(mesh); // or boundary(mesh);
 // bwm represent set of points indexes which lies on left boundary of mesh
 
-std::cout << "Does point with index 0 lies on left boundary? Answer: " << bwm.includes(0) << std::endl;
+std::cout << "Does point with index 0 lies on left boundary? Answer: " << bwm.contains(0) << std::endl;
 
 for (std::size_t index: bwm) {  // iterate over boundary points (indexes)
     std::cout << "Point with index " << index
@@ -57,12 +57,12 @@ User of solver can call this fields methods to @ref plask::BoundaryConditions::a
 See also @ref solvers_writing_details.
 
 @section boundaries_impl Boundaries implementations.
-Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which includes pointer to abstract class @ref plask::BoundaryLogicImpl.
+Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which contains pointer to abstract class @ref plask::BoundaryLogicImpl.
 It points to subclass of @ref plask::BoundaryLogicImpl which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
 
 So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryLogicImpl.
 
-PLaSK includes some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
+PLaSK contains some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
 - @ref plask::EmptyBoundaryImpl is implementation which represents empty set of indexes,
     You can construct boundary which use this logic using @ref plask::makeEmptyBoundary function,
 - @ref plask::PredicateBoundaryImpl "PredicateBoundaryImpl\<MeshType, Predicate\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary,
@@ -98,11 +98,11 @@ struct BoundaryLogicImpl {
     virtual ~BoundaryLogicImpl() {}
 
     /**
-     * Check if boundary includes point with given index.
+     * Check if boundary contains point with given index.
      * @param mesh_index valid index of point in @p mesh
      * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
      */
-    virtual bool includes(std::size_t mesh_index) const = 0;
+    virtual bool contains(std::size_t mesh_index) const = 0;
 
     /**
      * Get begin iterator over boundary points.
@@ -157,7 +157,7 @@ struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl {
         : mesh(mesh) {}
 
     /**
-     * Base class for boundary iterator implementation which includes reference to boundary.
+     * Base class for boundary iterator implementation which contains reference to boundary.
      *
      * Should not be used directly, but can save some work when implementing own BoundaryImpl and Iterator.
      */
@@ -191,12 +191,12 @@ struct BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
     virtual ~BoundaryWithMesh() {}
 
     /**
-     * Check if boundary includes point with given index.
+     * Check if boundary contains point with given index.
      * @param mesh_index valid index of point in @p mesh
      * @return @c true only if point with index @p mesh_index in @p mesh lies on boundary
      */
-    bool includes(std::size_t mesh_index) const {
-        return this->held->includes(mesh_index);
+    bool contains(std::size_t mesh_index) const {
+        return this->held->contains(mesh_index);
     }
 
     /**
@@ -235,7 +235,7 @@ struct BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
  * Instance of this class represents some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
  * This mesh must be a specific type @p MeshType.
  *
- * In fact Boundary is factory of Boundary::WithMesh which is a holder which includes pointer to abstract class @c BoundaryImpl\<MeshType\> which implements boundary logic.
+ * In fact Boundary is factory of Boundary::WithMesh which is a holder which contains pointer to abstract class @c BoundaryImpl\<MeshType\> which implements boundary logic.
  * @tparam MeshType type of mesh
  * @ref boundaries
  */
@@ -369,9 +369,9 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
     SumBoundaryImpl(Args&&... args):
         boundaries(std::forward<Args>(args)...) {   }
 
-    virtual bool includes(std::size_t mesh_index) const {
+    virtual bool contains(std::size_t mesh_index) const {
         for (auto& b: boundaries)
-            if (b.includes(mesh_index)) return true;
+            if (b.contains(mesh_index)) return true;
         return false;
     }
 
@@ -422,7 +422,7 @@ struct EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     };
 
-    virtual bool includes(std::size_t mesh_index) const { return false; }
+    virtual bool contains(std::size_t mesh_index) const { return false; }
 
     virtual typename BoundaryLogicImpl::const_iterator begin() const {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
@@ -510,7 +510,7 @@ private:
 
 public:
 
-    virtual bool includes(std::size_t mesh_index) const {
+    virtual bool contains(std::size_t mesh_index) const {
         return this->check_predicate(mesh_index);
     }
 

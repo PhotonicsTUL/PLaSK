@@ -2,7 +2,7 @@
 #define PLASK__InGaN_Si_H
 
 /** @file
-This file includes Si-doped InGaN
+This file contains Si-doped InGaN
 */
 
 #include <plask/material/material.h>

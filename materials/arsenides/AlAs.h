@@ -2,7 +2,7 @@
 #define PLASK__AlAs_H
 
 /** @file
-This file includes undoped AlAs
+This file contains undoped AlAs
 */
 
 #include <plask/material/material.h>

@@ -2,7 +2,7 @@
 #define PLASK__UTILS_STL_H
 
 /** @file
-This file includes tools which provide compability with STL containers, etc.
+This file contains tools which provide compability with STL containers, etc.
 */
 
 #include <algorithm>
@@ -176,7 +176,7 @@ inline Ret apply_tuple(Op&& op, T&& t, I<Indices...>)
 /**
  * Call @p f using arguments from tuple.
  * @param f functor to call
- * @param t tuple which includes all @p f arguments
+ * @param t tuple which contains all @p f arguments
  * @return result returned by @p f
  */
 template <typename Op, typename Tuple>

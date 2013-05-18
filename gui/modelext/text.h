@@ -2,7 +2,7 @@
 #define PLASK_GUI_MODEL_EXT_TEXT_H
 
 /** @file
- * This file includes set of functions to convert some plask types to QString text representation.
+ * This file contains set of functions to convert some plask types to QString text representation.
  */
 
 #include <plask/geometry/object.h>

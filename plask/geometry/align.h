@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_ALIGN_H
 
 /** @file
-This file includes aligners.
+This file contains aligners.
 */
 
 #include "transform.h"
@@ -692,7 +692,7 @@ namespace details {
 /**
  * Construct aligner in given direction from dictionary.
  *
- * Throw excpetion if @p dic includes information about multiple aligners in given @p direction.
+ * Throw excpetion if @p dic contains information about multiple aligners in given @p direction.
  * @param dictionary dictionary which can describe aligner
  * @param axis_name name of axis in given @p direction
  * @return parsed aligner or @c nullptr if no information about aligner was found in @p dictionary
@@ -719,7 +719,7 @@ inline Aligner<Primitive<3>::DIRECTION_VERT> fromDictionary<Primitive<3>::DIRECT
 /**
  * Construct aligner in given direction from dictionary.
  *
- * Throw exception if @p dic includes information about multiple aligners in given @p direction.
+ * Throw exception if @p dic contains information about multiple aligners in given @p direction.
  * @param dictionary dictionary which can describe aligner
  * @param axis_names names of axes
  * @return parsed aligner or @c nullptr if no information about aligner was found in @p dictionary
@@ -733,7 +733,7 @@ Aligner<direction> fromDictionary(Dictionary dic, const AxisNames& axis_names) {
 /**
  * Construct aligner in given direction from dictionary.
  *
- * Throw exception if @p dic includes information about multiple aligners in given @p direction.
+ * Throw exception if @p dic contains information about multiple aligners in given @p direction.
  * @param dictionary dictionary which can describes 2D aligner
  * @param axis_names names of axes
  * @param default_aligner default aligners, returned when there is no information about aligner in @p dictionary

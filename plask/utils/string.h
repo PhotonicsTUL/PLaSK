@@ -2,7 +2,7 @@
 #define PLASK__STRING_H
 
 /** @file
-This file includes string and parsers utils.
+This file contains string and parsers utils.
 */
 
 #include <string>
@@ -60,7 +60,7 @@ std::pair<std::string, std::string> splitString2(const std::string& to_split, ch
  * Calculate copy of string @p str without some characters.
  * @param str string to filter
  * @param pred predictad which return @c true for chars which should stay, and @c false for char which should be removed
- * @return copy of @a str wich includes only chars for which Pred is @c true
+ * @return copy of @a str wich contains only chars for which Pred is @c true
  * @tparam Pred functor which take one argument (char) and return bool
  */
 template <typename Pred>

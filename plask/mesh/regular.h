@@ -2,7 +2,7 @@
 #define PLASK__REGULAR_H
 
 /** @file
-This file includes rectilinear meshes for 1d, 2d, and 3d spaces.
+This file contains rectilinear meshes for 1d, 2d, and 3d spaces.
 */
 
 #include "regular1d.h"

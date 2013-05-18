@@ -37,12 +37,12 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
     mesh.axis0.addPointsLinear(1.0, 5.0, 5);   // 1.0, 2.0, 3.0, 4.0, 5.0
     mesh.axis1.addPointsLinear(0.0, 4.0, 5);   // 0.0, 1.0, 2.0, 3.0, 4.0
     plask::RectilinearMesh2D::Boundary::WithMesh wm = bottom_b.get(mesh);
-    for (int i = 0; i < 5; ++i) BOOST_CHECK(wm.includes(i));
-    for (int i = 5; i < 25; ++i) BOOST_CHECK(!wm.includes(i));
+    for (int i = 0; i < 5; ++i) BOOST_CHECK(wm.contains(i));
+    for (int i = 5; i < 25; ++i) BOOST_CHECK(!wm.contains(i));
     plask::RectilinearMesh2D::Boundary top_b = plask::RectilinearMesh2D::getTopOfBoundary(manager.getGeometry<plask::GeometryD<2> >("space"), manager.getGeometryObject("top"));
     wm = top_b.get(mesh);
-    for (int i = 0; i < 20; ++i) BOOST_CHECK(!wm.includes(i));
-    for (int i = 20; i < 25; ++i) BOOST_CHECK(wm.includes(i));
+    for (int i = 0; i < 20; ++i) BOOST_CHECK(!wm.contains(i));
+    for (int i = 20; i < 25; ++i) BOOST_CHECK(wm.contains(i));
 }
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {

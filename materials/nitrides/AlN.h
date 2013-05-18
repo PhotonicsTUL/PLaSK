@@ -2,7 +2,7 @@
 #define PLASK__AlN_H
 
 /** @file
-This file includes undoped AlN
+This file contains undoped AlN
 */
 
 #include <plask/material/material.h>

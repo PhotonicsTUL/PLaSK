@@ -2,7 +2,7 @@
 #define PLASK__Pt_H
 
 /** @file
-This file includes Pt
+This file contains Pt
 */
 
 #include <plask/material/material.h>

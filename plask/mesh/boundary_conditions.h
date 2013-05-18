@@ -147,27 +147,27 @@ public:
      * Check if this is empty.
      *
      * It has constant time complexity.
-     * @return @c true only if this container includes no conditions boundaries
+     * @return @c true only if this container contains no conditions boundaries
      */
     bool empty() const {
         return container.empty();
     }
 
     /**
-     * Check if any boundary includes a @p mesh_index
+     * Check if any boundary contains a @p mesh_index
      *
      * @param mesh_index index in @p mesh
-     * @return element which boundary includes @p mesh_index or @ref end() if there is no such element
+     * @return element which boundary contains @p mesh_index or @ref end() if there is no such element
      */
     const_iterator find(std::size_t mesh_index) const {
         auto i = begin();
-        while (i != end() && !i->place.includes(mesh_index)) ++i;
+        while (i != end() && !i->place.contains(mesh_index)) ++i;
         return i;
     }
 
     boost::optional<ValueType> getValue(std::size_t mesh_index) const {
         for (auto i: container)
-            if (i.place.includes(mesh_index)) return boost::optional<ValueType>(i.value);
+            if (i.place.contains(mesh_index)) return boost::optional<ValueType>(i.value);
         return boost::optional<ValueType>();
     }
 };
@@ -380,7 +380,7 @@ public:
      * Check if this is empty.
      *
      * It has constant time complexity.
-     * @return @c true only if this container includes no conditions boundaries
+     * @return @c true only if this container contains no conditions boundaries
      */
     bool empty() const {
         return container.empty();

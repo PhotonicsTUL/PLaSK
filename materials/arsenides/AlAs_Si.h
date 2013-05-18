@@ -2,7 +2,7 @@
 #define PLASK__AlAs_Si_H
 
 /** @file
-This file includes Si-doped AlAs
+This file contains Si-doped AlAs
 */
 
 #include <plask/material/material.h>

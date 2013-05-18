@@ -2,7 +2,7 @@
 #define PLASK__Cu_H
 
 /** @file
-This file includes Cu
+This file contains Cu
 */
 
 #include <plask/material/material.h>

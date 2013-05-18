@@ -28,7 +28,7 @@ void Box2D::fix() {
 }
 
 
-bool Box2D::includes(const Vec<2, double >& p) const {
+bool Box2D::contains(const Vec<2, double >& p) const {
     return lower.c0/**/ <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1;
 }
@@ -78,7 +78,7 @@ void Box3D::fix() {
 }
 
 
-bool Box3D::includes(const Vec<3, double >& p) const {
+bool Box3D::contains(const Vec<3, double >& p) const {
     return lower.c0 <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1 &&
            lower.c2 <= p.c2 && p.c2 <= upper.c2;

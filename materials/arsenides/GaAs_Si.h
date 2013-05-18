@@ -2,7 +2,7 @@
 #define PLASK__GaAs_Si_H
 
 /** @file
-This file includes Si-doped GaAs
+This file contains Si-doped GaAs
 */
 
 #include <plask/material/material.h>

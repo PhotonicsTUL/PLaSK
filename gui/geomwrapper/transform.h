@@ -2,7 +2,7 @@
 #define GUI_GEOMETRY_WRAPPER_TRANSFORM_H
 
 /** @file
- * This file includes implementation of geometry objects model extensions for transforms. Do not include it directly (see register.h).
+ * This file contains implementation of geometry objects model extensions for transforms. Do not include it directly (see register.h).
  */
 
 #include "object.h"

@@ -91,8 +91,8 @@ class GeometryPath(unittest.TestCase):
         p += self.object1
 
     def testIncludes(self):
-        self.assertTrue( self.stack1.object_includes(self.object1, 0.5, 1.0) )
-        self.assertFalse( self.stack1.object_includes(self.object1, 0.5, 3.0) )
+        self.assertTrue( self.stack1.object_contains(self.object1, 0.5, 1.0) )
+        self.assertFalse( self.stack1.object_contains(self.object1, 0.5, 3.0) )
 
 
 class Containers(unittest.TestCase):

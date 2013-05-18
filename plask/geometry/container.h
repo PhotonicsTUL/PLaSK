@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_CONTAINER_H
 
 /** @file
-This file includes containers of geometries objects.
+This file contains containers of geometries objects.
 */
 
 #include <vector>
@@ -107,8 +107,8 @@ public:
     /// @return GE_TYPE_CONTAINER
     virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_CONTAINER; }
 
-    virtual bool includes(const DVec& p) const {
-        for (auto child: children) if (child->includes(p)) return true;
+    virtual bool contains(const DVec& p) const {
+        for (auto child: children) if (child->contains(p)) return true;
         return false;
     }
 

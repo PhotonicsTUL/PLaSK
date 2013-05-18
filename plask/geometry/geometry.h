@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_H
 
 /** @file
-This file includes all plask geometry headers.
+This file contains all plask geometry headers.
 */
 
 /**
@@ -51,7 +51,7 @@ Example of XML which describes geometry:
 </geometry>
 \endcode
 
-Above XML describes 2 geometries, each is in 2D space, and each includes one container.
+Above XML describes 2 geometries, each is in 2D space, and each contains one container.
 First geometry is cartesian, has name "cartesian geometry", and length equal to 2.
 Second geometry is cylindrical and has name "cylindrical geometry".
 
@@ -112,7 +112,7 @@ assert(container->getBoundingBox() == plask::(plask::vec(0.0, 0.0), plask::vec(8
 assert(container->getMaterial(plask::vec(6.0, 6.0)) == exampleMaterial);
 assert(container->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
 @endcode
-- from XML file in Python using Geometry class, for example  (we suppose that example_file_name.xml file includes content showed in @ref geometry_XML section):
+- from XML file in Python using Geometry class, for example  (we suppose that example_file_name.xml file contains content showed in @ref geometry_XML section):
 \code{.py}
 geometry = plask.geometry.Geometry("example_file_name.xml")
 # use:

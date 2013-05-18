@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_OBJECT_H
 
 /** @file
-This file includes base class for geometries objects.
+This file contains base class for geometries objects.
 */
 
 /** @defgroup GEOMETRY_OBJ Geometries objects classes
@@ -58,7 +58,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     /**
      * Store information about event connected with geometry object.
      *
-     * Subroles of this can includes additional information about specific type of event.
+     * Subroles of this can contains additional information about specific type of event.
      *
      * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subroles of GeometryObject,
      * because source() is already partially deleted.
@@ -455,7 +455,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
 
         /**
          * Get names of path fragment from @p parent to @p child.
-         * @param[in] parent container which includes @p child
+         * @param[in] parent container which contains @p child
          * @param[in] child object from a @p parent container
          * @param[in] index_of_child_in_parent index of @p child in @p parent real childrent list
          * @return names of path fragment from @p parent to @p child (can be empty)
@@ -969,22 +969,22 @@ struct GeometryObjectD: public GeometryObject {
     virtual Subtree getPathsAt(const DVec& point, bool all=false) const = 0;
 
     /**
-     * Check if this geometry object includes point.
+     * Check if this geometry object contains point.
      * @param point point in local coordinates
-     * @return true only if this geometry includes point @a p
+     * @return true only if this geometry contains point @a p
      */
-    virtual bool includes(const DVec& point) const = 0;
+    virtual bool contains(const DVec& point) const = 0;
 
     /*
-     * Check if this geometry object includes some point from given @a area.
+     * Check if this geometry object contains some point from given @a area.
      * @param area rectangular area
-     * @return true only if this geometry includes some points from @a area
+     * @return true only if this geometry contains some points from @a area
      */
     //TODO unused - to use and implement in subclasses (most have impl.) or to remove
     //virtual bool intersects(const Box& area) const = 0;
 
     /**
-     * Calculate minimal rectangle which includes all points of geometry object.
+     * Calculate minimal rectangle which contains all points of geometry object.
      * @return calculated rectangle
      */
     virtual Box getBoundingBox() const = 0;
@@ -992,7 +992,7 @@ struct GeometryObjectD: public GeometryObject {
     virtual DVec getBoundingBoxSize() const { return getBoundingBox().size(); }
 
     /**
-     * Calculate minimal rectangle which includes all points of real geometry object.
+     * Calculate minimal rectangle which contains all points of real geometry object.
      *
      * This box can be diffrent from getBoundingBox() only for objects which have virtual children, like multple-stack.
      * Returned box is always included in (in most cases: equal to) box returned by getBoundingBox().
@@ -1005,14 +1005,14 @@ struct GeometryObjectD: public GeometryObject {
     /**
      * Return material in a given point inside the geometry object
      * @param p point
-     * @return material in given point, or @c nullptr if this GeometryObject not includes point @a p
+     * @return material in given point, or @c nullptr if this GeometryObject not contains point @a p
      */
     virtual shared_ptr<Material> getMaterial(const DVec& p) const = 0;
 
     /**
      * Return material in a given point inside the geometry object
      * @param p point
-     * @return material in given point, or Air if this GeometryObject not includes point @a p
+     * @return material in given point, or Air if this GeometryObject not contains point @a p
      */
     shared_ptr<Material> getMaterialOrAir(const DVec& p) const {
         auto real_mat = getMaterial(p);
@@ -1385,7 +1385,7 @@ struct GeometryObjectD: public GeometryObject {
     //Path getMatchingPathToObjectAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
 
     /**
-     * Get object closest to the root, which includes specific point and fulfills the predicate
+     * Get object closest to the root, which contains specific point and fulfills the predicate
      * \param point point to test
      * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
      * \param path optional path hints filtering out some objects
@@ -1394,7 +1394,7 @@ struct GeometryObjectD: public GeometryObject {
     shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
 
     /**
-     * Get object closest to the root, which includes specific point and fulfills the predicate
+     * Get object closest to the root, which contains specific point and fulfills the predicate
      * \param point point to test
      * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
      * \param path path hints filtering out some objects
@@ -1405,32 +1405,32 @@ struct GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Check if specified geometry object includes a point @a point.
+     * Check if specified geometry object contains a point @a point.
      * \param object object to test
      * \param path path hints specifying the object
      * \param point point
-     * \return true only if this geometry includes the point @a point
+     * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints* path, const DVec& point) const {
         return getMatchingAt(point, PredicateIsA(object), path) != nullptr;
     }
 
     /**
-     * Check if specified geometry object includes a point @a point.
+     * Check if specified geometry object contains a point @a point.
      * \param object object to test
      * \param path path hints specifying the object
      * \param point point
-     * \return true only if this geometry includes the point @a point
+     * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints& path, const DVec& point) const {
         return objectIncludes(object, &path, point);
     }
 
     /**
-     * Check if specified geometry object includes a point @a point.
+     * Check if specified geometry object contains a point @a point.
      * \param object object to test
      * \param point point
-     * \return true only if this geometry includes the point @a point
+     * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const DVec& point) const {
         return objectIncludes(object, nullptr, point);

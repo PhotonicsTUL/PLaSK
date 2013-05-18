@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-// Important includes
+// Important contains
 #include "python_globals.h"
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/boundary.h>
@@ -72,7 +72,7 @@ struct ExportBoundary {
         if (py::converter::registry::lookup(py::type_id<typename MeshType::Boundary::WithMesh>()).m_class_object == nullptr) {
             py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>("BoundaryInstance",
                 ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
-                .def("__contains__", &MeshType::Boundary::WithMesh::includes)
+                .def("__contains__", &MeshType::Boundary::WithMesh::contains)
                 .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
                 .def("__len__", &MeshType::Boundary::WithMesh::size)
             ;

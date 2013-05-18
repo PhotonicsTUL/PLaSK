@@ -2,7 +2,7 @@
 #define PLASK__MESH__BASIC_H
 
 /** @file
-This file includes some basic meshes.
+This file contains some basic meshes.
 @see @ref meshes
 */
 

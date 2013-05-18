@@ -2,7 +2,7 @@
 #define PLASK__Ti_H
 
 /** @file
-This file includes Ti
+This file contains Ti
 */
 
 #include <plask/material/material.h>

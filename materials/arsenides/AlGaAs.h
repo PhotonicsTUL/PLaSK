@@ -2,7 +2,7 @@
 #define PLASK__AlGaAs_H
 
 /** @file
-This file includes undoped AlGaAs
+This file contains undoped AlGaAs
 */
 
 #include <plask/material/material.h>

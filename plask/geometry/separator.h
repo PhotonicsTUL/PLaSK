@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_SEPARATOR_H
 
 /** @file
-This file includes geometry objects separators classes.
+This file contains geometry objects separators classes.
 */
 
 #include "object.h"
@@ -87,7 +87,7 @@ struct GeometryObjectSeparator: public GeometryObjectD<dim> {
     }
 
     virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const {
-        return GeometryObject::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
+        return GeometryObject::Subtree( this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
     virtual std::size_t getChildrenCount() const { return 0; }
@@ -106,7 +106,7 @@ struct GeometryObjectSeparator: public GeometryObjectD<dim> {
     //     if (predicate(*this)) dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
     // }
 
-    virtual bool includes(const DVec& p) const {
+    virtual bool contains(const DVec& p) const {
         return false;
     }
 

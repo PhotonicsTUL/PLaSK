@@ -2,7 +2,7 @@
 #define PLASK__InGaN_Mg_H
 
 /** @file
-This file includes Mg-doped InGaN
+This file contains Mg-doped InGaN
 */
 
 #include <plask/material/material.h>

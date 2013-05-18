@@ -2,7 +2,7 @@
 #define PLASK__SYSTEM_H
 
 /** @file
-This file includes portable wrappers for some functions from operating system API.
+This file contains portable wrappers for some functions from operating system API.
 */
 
 #include <string>
@@ -36,7 +36,7 @@ std::string prefixPath();
 /**
  * Get path to plask library files (shared libraries).
  *
- * This directory includes subdirectories: solvers (see @ref plaskSolversPath), materials (see @ref plaskMaterialsPath).
+ * This directory contains subdirectories: solvers (see @ref plaskSolversPath), materials (see @ref plaskMaterialsPath).
  * @return path to plask library files (with rearmost '/' or '\\')
  */
 std::string plaskLibPath();

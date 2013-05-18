@@ -2,7 +2,7 @@
 #define PLASK__GaAs_Zn_H
 
 /** @file
-This file includes Zn-doped GaAs
+This file contains Zn-doped GaAs
 */
 
 #include <plask/material/material.h>

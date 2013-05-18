@@ -2,7 +2,7 @@
 #define PLASK__UTILS_ITERATORS_H
 
 /** @file
-This file includes iterators utils.
+This file contains iterators utils.
 */
 
 //general iterators utils

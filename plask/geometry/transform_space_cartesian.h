@@ -36,7 +36,7 @@ class Extrusion: public GeometryObjectTransformSpace<3, 2> {
      */
     void setLength(double new_length);
 
-    virtual bool includes(const DVec& p) const;
+    virtual bool contains(const DVec& p) const;
 
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;

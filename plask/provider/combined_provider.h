@@ -7,7 +7,7 @@
 #include "providerfor.h"
 
 /** @file
-This file includes templates and base classes for providers which combinates (for example: sum) values from other providers.
+This file contains templates and base classes for providers which combinates (for example: sum) values from other providers.
 */
 
 
@@ -96,7 +96,7 @@ public:
 
     /**
      * Check if providers set of this is empty.
-     * @return @c true if this not includes any provider
+     * @return @c true if this not contains any provider
      */
     bool empty() const { return providers.empty(); }
 

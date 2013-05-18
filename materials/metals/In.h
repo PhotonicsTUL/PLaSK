@@ -2,7 +2,7 @@
 #define PLASK__In_H
 
 /** @file
-This file includes In
+This file contains In
 */
 
 #include <plask/material/material.h>

@@ -12,8 +12,8 @@ template <int dim> struct MethodsD;
 
 template <> struct MethodsD<2> {
 
-    static bool includes(const GeometryObjectD<2>& self, double c0, double c1) {
-        return self.includes(Vec<2,double>(c0, c1));
+    static bool contains(const GeometryObjectD<2>& self, double c0, double c1) {
+        return self.contains(Vec<2,double>(c0, c1));
     }
 
     static shared_ptr<Material> getMaterial(const GeometryObjectD<2>& self, double c0, double c1) {
@@ -46,8 +46,8 @@ template <> struct MethodsD<2> {
 
 template <> struct MethodsD<3> {
 
-    static bool includes(const GeometryObjectD<3>& self, double c0, double c1, double c2) {
-        return self.includes(Vec<3,double>(c0, c1, c2));
+    static bool contains(const GeometryObjectD<3>& self, double c0, double c1, double c2) {
+        return self.contains(Vec<3,double>(c0, c1, c2));
     }
 
     static shared_ptr<Material> getMaterial(const GeometryObjectD<3>& self, double c0, double c1, double c2) {
@@ -184,10 +184,10 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
 
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectD, GeometryObject)
 
-        .def("includes", &GeometryObjectD<dim>::includes, (py::arg("point")),
-             "Return True if the geometry object includes a point (in local coordinates)")
-        .def("includes", &MethodsD<dim>::includes, GeometryObjectD_vector_args<dim>::args(),
-             "Return True if the geometry object includes a point (in local coordinates)")
+        .def("contains", &GeometryObjectD<dim>::contains, (py::arg("point")),
+             "Return True if the geometry object contains a point (in local coordinates)")
+        .def("contains", &MethodsD<dim>::contains, GeometryObjectD_vector_args<dim>::args(),
+             "Return True if the geometry object contains a point (in local coordinates)")
 
         /*.def("intersects", &GeometryObjectD<dim>::intersects, (py::arg("area")),
              "Return True if the geometry object has common points (in local coordinates) with an area")*/  //TODO unused now, to uncomment ot remove
@@ -198,7 +198,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
              "Return material at given point, provided that it is inside the bounding box (in local coordinates) and None otherwise")
 
         .add_property("bbox", &GeometryObjectD<dim>::getBoundingBox,
-                      "Minimal rectangle which includes all points of the geometry object (in local coordinates)")
+                      "Minimal rectangle which contains all points of the geometry object (in local coordinates)")
 
         .add_property("bbox_size", &GeometryObjectD<dim>::getBoundingBoxSize,
                       "Size of the bounding box")
@@ -230,14 +230,14 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("get_paths", &MethodsD<dim>::getPathsAt, (GeometryObjectD_vector_args<dim>::args(), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
 
-        .def("object_includes", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const PathHints&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
-             (py::arg("object"), "path", "point"), "Return true if the specified object includes given point")
-        .def("object_includes", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
-             (py::arg("object"), "point"), "Return true if the specified object includes given point")
-        .def("object_includes", &MethodsD<dim>::objectIncludes1, GeometryObjectD_vector_args<dim>::args((py::arg("object"), "path")),
-             "Return true if the specified child includes given point")
-        .def("object_includes", &MethodsD<dim>::objectIncludes2, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))),
-             "Return true if the specified child includes given point")
+        .def("object_contains", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const PathHints&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
+             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+        .def("object_contains", (bool(GeometryObjectD<dim>::*)(const GeometryObject&,const DVec&)const)&GeometryObjectD<dim>::objectIncludes,
+             (py::arg("object"), "point"), "Return true if the specified object contains given point")
+        .def("object_contains", &MethodsD<dim>::objectIncludes1, GeometryObjectD_vector_args<dim>::args((py::arg("object"), "path")),
+             "Return true if the specified child contains given point")
+        .def("object_contains", &MethodsD<dim>::objectIncludes2, (GeometryObjectD_vector_args<dim>::args(py::arg("object"))),
+             "Return true if the specified child contains given point")
 
         .add_property("role", &GeometryObject_getRole, &GeometryObject_setRole, "Role of the object")
         .add_property("roles", py::make_getter(&GeometryObject::roles), &GeometryObject_setRoles, "Roles of the object")

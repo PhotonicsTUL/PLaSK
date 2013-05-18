@@ -2,7 +2,7 @@
 #define PLASK__UTILS_XML_EXCEPTIONS_H
 
 /** @file
-This file includes definitions of exceptions used by XML reader and writer.
+This file contains definitions of exceptions used by XML reader and writer.
 */
 
 #include <stdexcept>

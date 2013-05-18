@@ -2,7 +2,7 @@
 #define PLASK__VECTORCART3D_H
 
 /** @file
-This file includes implementation of vector in 3D space.
+This file contains implementation of vector in 3D space.
 */
 
 #include <iostream>

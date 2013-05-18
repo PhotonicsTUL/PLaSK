@@ -2,7 +2,7 @@
 #define PLASK__InP_Zn_H
 
 /** @file
-This file includes Zn-doped InP
+This file contains Zn-doped InP
 */
 
 #include <plask/material/material.h>

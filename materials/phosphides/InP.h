@@ -2,7 +2,7 @@
 #define PLASK__InP_H
 
 /** @file
-This file includes undoped InP
+This file contains undoped InP
 */
 
 #include <plask/material/material.h>

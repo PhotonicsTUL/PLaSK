@@ -2,7 +2,7 @@
 #define PLASK__InGaN_H
 
 /** @file
-This file includes undoped InGaN
+This file contains undoped InGaN
 */
 
 #include <plask/material/material.h>

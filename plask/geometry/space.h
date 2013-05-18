@@ -520,7 +520,7 @@ public:
     // }
 
     /**
-     * Get object closest to the root (child of this), which includes specific point and fulfills the predicate
+     * Get object closest to the root (child of this), which contains specific point and fulfills the predicate
      * \param point point to test
      * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
      * \param path optional path hints filtering out some objects
@@ -531,7 +531,7 @@ public:
     }
 
     /**
-     * Get object closest to the root (child of this), which includes specific point and fulfills the predicate
+     * Get object closest to the root (child of this), which contains specific point and fulfills the predicate
      * \param point point to test
      * \param predicate predicate required to match, called for each object on path to point, in order from root to leaf
      * \param path path hints filtering out some objects
@@ -542,32 +542,32 @@ public:
     }
 
     /**
-     * Check if specified geometry object includes a point @a point.
+     * Check if specified geometry object contains a point @a point.
      * \param object object to test
      * \param path path hints specifying the object
      * \param point point
-     * \return true only if this geometry includes the point @a point
+     * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints* path, const CoordsType& point) const {
         return getChild()->objectIncludes(object, path, point);
     }
 
     /**
-     * Check if specified geometry object includes a point @a point.
+     * Check if specified geometry object contains a point @a point.
      * \param object object to test
      * \param path path hints specifying the object
      * \param point point
-     * \return true only if this geometry includes the point @a point
+     * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints& path, const CoordsType& point) const {
         return getChild()->objectIncludes(object, path, point);
     }
 
     /**
-     * Check if specified geometry object includes a point @a point.
+     * Check if specified geometry object contains a point @a point.
      * \param object object to test
      * \param point point
-     * \return true only if this geometry includes the point @a point
+     * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const CoordsType& point) const {
         return getChild()->objectIncludes(object, point);

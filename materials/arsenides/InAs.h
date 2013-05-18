@@ -2,7 +2,7 @@
 #define PLASK__InAs_H
 
 /** @file
-This file includes undoped InAs
+This file contains undoped InAs
 */
 
 #include <plask/material/material.h>

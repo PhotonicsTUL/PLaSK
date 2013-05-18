@@ -2,7 +2,7 @@
 #define PLASK__MESH_H
 
 /** @file
-This file includes base classes for meshes.
+This file contains base classes for meshes.
 @see @ref meshes
 */
 
@@ -122,7 +122,7 @@ struct Mesh {
     /**
      * Store information about event connected with mesh.
      *
-     * Subclasses of this can includes additional information about specific type of event.
+     * Subclasses of this can contains additional information about specific type of event.
      */
     struct Event: public EventWithSourceAndFlags<Mesh> {
 

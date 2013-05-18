@@ -508,10 +508,12 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
     }
 }
 
-template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method)
+template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& dest_mesh, plask::InterpolationMethod interpolation)
 {
+    auto destination_mesh = WrappedMesh<2>(dest_mesh, this->geometry);
+
     RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
-    auto concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation_method));
+    auto concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation));
     // Make sure we have concentration only in the quantum wells
     //TODO maybe more optimal approach would be reasonable?
     size_t i = 0;
@@ -519,7 +521,7 @@ template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDi
     {
         bool inqw = false;
         for (auto QW: detected_QW)
-            if (QW.includes(point))
+            if (QW.contains(point))
             {
                 inqw = true;
                 break;

@@ -2,7 +2,7 @@
 #define PLASK__VECTOR2D_H
 
 /** @file
-This file includes implementation of vector in 2D space.
+This file contains implementation of vector in 2D space.
 */
 
 #include <iostream>

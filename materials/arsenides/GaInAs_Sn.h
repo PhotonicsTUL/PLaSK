@@ -2,7 +2,7 @@
 #define PLASK__GaInAs_Sn_H
 
 /** @file
-This file includes Sn-doped GaInAs
+This file contains Sn-doped GaInAs
 */
 
 #include <plask/material/material.h>

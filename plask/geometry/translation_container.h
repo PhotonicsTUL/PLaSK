@@ -18,7 +18,7 @@ struct CacheNode {
 
     virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const = 0;
 
-    virtual bool includes(const Vec<DIMS>& p) const = 0;
+    virtual bool contains(const Vec<DIMS>& p) const = 0;
 
     virtual GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const = 0;
 
@@ -112,8 +112,8 @@ struct TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, T
         return ensureHasCache()->getMaterial(p);
     }
 
-    virtual bool includes(const DVec& p) const {
-        return ensureHasCache()->includes(p);
+    virtual bool contains(const DVec& p) const {
+        return ensureHasCache()->contains(p);
     }
 
     virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const {

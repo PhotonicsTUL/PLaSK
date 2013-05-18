@@ -2,7 +2,7 @@
 #define PLASK__GEOMETRY_LEAF_H
 
 /** @file
-This file includes geometry objects leafs classes.
+This file contains geometry objects leafs classes.
 */
 
 #include "object.h"
@@ -34,7 +34,7 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
     virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return this->includes(p) ? material : shared_ptr<Material>();
+        return this->contains(p) ? material : shared_ptr<Material>();
     }
 
     virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const {
@@ -83,7 +83,7 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
     }
 
     virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const {
-        return GeometryObject::Subtree( this->includes(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
+        return GeometryObject::Subtree( this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
     }
 
     virtual std::size_t getChildrenCount() const { return 0; }
@@ -163,8 +163,8 @@ struct Block: public GeometryObjectLeaf<dim> {
         return Box(Primitive<dim>::ZERO_VEC, size);
     }
 
-    virtual bool includes(const DVec& p) const {
-        return this->getBoundingBox().includes(p);
+    virtual bool contains(const DVec& p) const {
+        return this->getBoundingBox().contains(p);
     }
 
     virtual bool intersects(const Box& area) const {

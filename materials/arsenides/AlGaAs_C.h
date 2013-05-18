@@ -2,7 +2,7 @@
 #define PLASK__AlGaAs_C_H
 
 /** @file
-This file includes C-doped AlGaAs
+This file contains C-doped AlGaAs
 */
 
 #include <plask/material/material.h>

@@ -137,7 +137,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
     const Region* findRegion(const OutVec& p) const {
         for (const Region& r: regions)
-            if (r.inGeomBB.includes(p)) return &r;
+            if (r.inGeomBB.contains(p)) return &r;
         return nullptr;
     }
 
@@ -151,7 +151,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
 };
 
-/// Data source in which input object is outer and includes output object.
+/// Data source in which input object is outer and contains output object.
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType, InputSpaceType, OutputGeomObj, InputGeomObj> {
 

@@ -4,7 +4,7 @@
 /** @file
 This file allows for easy include all plask features.
 
-It also includes manual main page in doxygen format.
+It also contains manual main page in doxygen format.
 
 \mainpage PLaSK developer manual
 
@@ -76,7 +76,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "utils/xml.h"
 
-//this includes all geometry stuff
+//this contains all geometry stuff
 #include "geometry/geometry.h"
 
 #include "mesh/mesh.h"

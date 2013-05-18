@@ -2,7 +2,7 @@
 #define PLASK__GaN_H
 
 /** @file
-This file includes undoped GaN
+This file contains undoped GaN
 */
 
 #include <plask/material/material.h>

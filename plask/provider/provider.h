@@ -2,7 +2,7 @@
 #define PLASK__PROVIDER_H
 
 /** @file
-This file includes base classes for providers and receivers.
+This file contains base classes for providers and receivers.
 @see @ref providers
 
 

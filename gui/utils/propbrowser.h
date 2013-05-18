@@ -2,7 +2,7 @@
 #define PLASK_GUI_UTILS_PROPBROWSER_H
 
 /** @file
- * This file includes utils functions and classes connected with QT property browser.
+ * This file contains utils functions and classes connected with QT property browser.
  */
 
 #include <QtAbstractPropertyBrowser>

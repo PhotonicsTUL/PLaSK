@@ -2,7 +2,7 @@
 #define PLASK__UTILS_METAPROG_H
 
 /** @file
-This file includes meta-programing tools.
+This file contains meta-programing tools.
 */
 
 #include <tuple>

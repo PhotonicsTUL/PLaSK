@@ -58,8 +58,8 @@ struct Flip: public GeometryObjectTransform<dim> {
         return getChild()->getMaterial(fliped(p));
     }
 
-    virtual bool includes(const DVec& p) const {
-        return getChild()->includes(fliped(p));
+    virtual bool contains(const DVec& p) const {
+        return getChild()->contains(fliped(p));
     }
 
     using GeometryObjectTransform<dim>::getPathsTo;
@@ -146,8 +146,8 @@ struct Mirror: public GeometryObjectTransform<dim> {
         return getChild()->getMaterial(flipedIfNeg(p));
     }
 
-    virtual bool includes(const DVec& p) const {
-        return getChild()->includes(flipedIfNeg(p));
+    virtual bool contains(const DVec& p) const {
+        return getChild()->contains(flipedIfNeg(p));
     }
 
     using GeometryObjectTransform<dim>::getPathsTo;

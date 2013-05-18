@@ -22,7 +22,7 @@ struct Cylinder: public GeometryObjectLeaf<3> {
 
     virtual Box getBoundingBox() const;
 
-    virtual bool includes(const DVec& p) const;
+    virtual bool contains(const DVec& p) const;
 
     //virtual bool intersects(const Box& area) const;
 

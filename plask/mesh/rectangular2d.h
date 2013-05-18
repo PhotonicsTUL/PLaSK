@@ -2,7 +2,7 @@
 #define PLASK__RECTANGULAR2D_H
 
 /** @file
-This file includes rectilinear mesh for 2d space.
+This file contains rectilinear mesh for 2d space.
 */
 
 #include <iterator>
@@ -910,7 +910,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index0(mesh_index) == line;
         }
 
@@ -939,7 +939,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index0(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
         }
 
@@ -966,7 +966,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index1(mesh_index) == line;
         }
 
@@ -993,7 +993,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
             : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
-        bool includes(std::size_t mesh_index) const {
+        bool contains(std::size_t mesh_index) const {
             return this->mesh.index1(mesh_index) == line && in_range(this->mesh.index0(mesh_index), beginInLineIndex, endInLineIndex);
         }
 
@@ -1015,7 +1015,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
 
         double height;
 
-        bool includes(const RectangularMesh &mesh, std::size_t mesh_index) const {
+        bool contains(const RectangularMesh &mesh, std::size_t mesh_index) const {
             return mesh.index1(mesh_index) == mesh.axis1.findNearestIndex(height);
         }
     };*/

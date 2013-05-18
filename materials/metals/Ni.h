@@ -2,7 +2,7 @@
 #define PLASK__Ni_H
 
 /** @file
-This file includes Ni
+This file contains Ni
 */
 
 #include <plask/material/material.h>

@@ -4,7 +4,7 @@
 #include <boost/lexical_cast.hpp>
 
 /** @file
-This file includes utils to format strings.
+This file contains utils to format strings.
 */
 
 #include <boost/format.hpp> //TODO maybe better to take simple code from http://en.wikipedia.org/wiki/Variadic_templates
