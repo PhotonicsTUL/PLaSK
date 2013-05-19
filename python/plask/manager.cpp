@@ -134,12 +134,15 @@ void PythonManager::loadConnects(XMLReader& reader)
         catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", in.first)); }
 
         if (dynamic_pointer_cast<FilterCommonBase>(in_solver->second)) {
-            if (in.second.find('@') == std::string::npos)
-                receiver = solverin[geometrics[in.second]];
-            else {
-                auto objpth = splitString2(in.second, '@');
-                receiver = solverin[py::make_tuple(geometrics[objpth.first], pathHints[objpth.second])];
-            }
+            int points = 10;
+            std::string obj, pts, pth;
+            std::tie(obj, pts) = splitString2(in.second, '#');
+            if (pts != "") points = reader.stringInterpreter.get<int>(pts);
+            std::tie(obj, pth) = splitString2(obj, '@');
+            if (pth == "")
+                receiver = solverin[py::make_tuple(geometrics[obj], points)];
+            else
+                receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
         } else {
             try { receiver = solverin.attr(in.second.c_str()); }
             catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", in.first, in.second)); }

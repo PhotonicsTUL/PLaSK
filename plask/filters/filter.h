@@ -146,17 +146,17 @@ public:
         return input(*obj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry3D>& input(const Geometry3D& inGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry3D>& input(Geometry3D& inGeom, const PathHints* path = nullptr) {
         return input(inGeom.getChild(), path);
     }
 
-    ReceiverFor<PropertyT, Geometry3D>& input(shared_ptr<const Geometry3D> inGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry3D>& input(shared_ptr<Geometry3D> inGeom, const PathHints* path = nullptr) {
         return input(inGeom->getChild(), path);
     }
 
-    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) = 0;
+    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& obj, const PathHints* path = nullptr) = 0;
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& input(shared_ptr<const Geometry2DCartesian> obj, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(shared_ptr<Geometry2DCartesian> obj, const PathHints* path = nullptr) {
         return input(*obj, path);
     }
 
@@ -212,7 +212,7 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
             return appendInner(obj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& innerObj, const PathHints* path = nullptr) override {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& innerObj, const PathHints* path = nullptr) override {
         return appendInner(innerObj, path);
     }
 
@@ -226,11 +226,11 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
         return setOuter(*outerObj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry3D>& setOuter(const Geometry3D& outerGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(Geometry3D& outerGeom, const PathHints* path = nullptr) {
         return setOuter(outerGeom.getChild(), path);
     }
 
-    ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<const Geometry3D> outerGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<Geometry3D> outerGeom, const PathHints* path = nullptr) {
         return setOuter(outerGeom->getChild(), path);
     }
 
@@ -254,11 +254,11 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
         return appendInner2D(*innerObj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(const Geometry2DCartesian& innerObj, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(Geometry2DCartesian& innerObj, const PathHints* path = nullptr) {
         return appendInner2D(innerObj.getExtrusion(), path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<const Geometry2DCartesian> innerObj, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<Geometry2DCartesian> innerObj, const PathHints* path = nullptr) {
         return appendInner2D(innerObj->getExtrusion(), path);
     }
 
@@ -283,11 +283,19 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
         return setOuter(outerObj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) override {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& obj, const PathHints* path = nullptr) override {
+        return input(obj.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {
         if (obj.hasInSubtree(this->geometry->getChild(), path))
             return setOuter(obj, path);
         else
             return appendInner(obj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(shared_ptr<GeometryObjectD<2>> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
     }
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
@@ -310,11 +318,11 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
         return setOuter(*outerObj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(const Geometry2DCartesian& outerGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(Geometry2DCartesian& outerGeom, const PathHints* path = nullptr) {
         return setOuter(outerGeom.getChild(), path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(shared_ptr<const Geometry2DCartesian> outerGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& setOuter(shared_ptr<Geometry2DCartesian> outerGeom, const PathHints* path = nullptr) {
         return setOuter(outerGeom->getChild(), path);
     }
 
@@ -328,11 +336,11 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
         return this->appendInner(*innerObj, path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(const Geometry2DCartesian& innerGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(Geometry2DCartesian& innerGeom, const PathHints* path = nullptr) {
         return appendInner(innerGeom.getChild(), path);
     }
 
-    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<const Geometry2DCartesian> innerGeom, const PathHints* path = nullptr) {
+    ReceiverFor<PropertyT, Geometry2DCartesian>& appendInner(shared_ptr<Geometry2DCartesian> innerGeom, const PathHints* path = nullptr) {
         return appendInner(innerGeom->getChild(), path);
     }
 };
@@ -351,7 +359,7 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
         //TODO
     }
 
-    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(const Geometry2DCartesian& obj, const PathHints* path = nullptr) {
+    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& obj, const PathHints* path = nullptr) {
         //TODO
     }
 };

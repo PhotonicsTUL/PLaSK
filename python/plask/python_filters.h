@@ -11,13 +11,29 @@ namespace plask { namespace python {
 
 namespace detail {
 
-    static inline void filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path) {
+    static inline void filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points) {
         py::object object;
         path = nullptr;
+        points = 10;
         if (PyTuple_Check(key.ptr())) {
-            if (py::len(key) != 2) throw KeyError(py::extract<std::string>(py::str(key)));
+            if (py::len(key) < 2 || py::len(key) > 3) throw KeyError(py::extract<std::string>(py::str(key)));
             object = key[0];
-            path = py::extract<PathHints*>(key[1]);
+            if (py::len(key) == 3) {
+                path = py::extract<PathHints*>(key[1]);
+                points = py::extract<int>(key[2]);
+            } else {
+                try {
+                    path = py::extract<PathHints*>(key[1]);
+                } catch (py::error_already_set) {
+                    PyErr_Clear();
+                    try {
+                        points = py::extract<int>(key[1]);
+                    } catch (py::error_already_set) {
+                        throw KeyError(py::extract<std::string>(py::str(key)));
+                    }
+                }
+            }
+            if (points < 0) throw KeyError(py::extract<std::string>(py::str(key)));
         } else {
             object = key;
         }
@@ -54,23 +70,20 @@ namespace detail {
             Filter<PropertyT,GeometryT>* filter = py::extract<Filter<PropertyT,GeometryT>*>(self);
             shared_ptr<GeometryObject> geom;
             PathHints* path;
-            filterin_parse_key(key, geom, path);
-            if (auto geom2d = dynamic_pointer_cast<GeometryT>(geom)) geom = geom2d->getChild();
-            if (auto geom3d = dynamic_pointer_cast<Geometry3D>(geom)) geom = geom3d->getChild();
-            if (geom->hasInSubtree(*filter->getGeometry()->getChild())) { // geom is the outer object
-                if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
-                    return Fun::call(self, filter->setOuter(geomd, path), value...);
-                if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
-                    return Fun::call(self, filter->setOuter(geomd, path), value...);
-                else
-                    throw TypeError("Expected 2D or 3D geometry object, got %1% instead", std::string(py::extract<std::string>(py::str(key))));
-            } else if (filter->getGeometry()->getChild()->hasInSubtree(*geom)) {
-                if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
-                    return Fun::call(self, filter->appendInner(geomd, path), value...);
-                else
-                    throw TypeError("Expected 2D geometry object, got %1% instead", std::string(py::extract<std::string>(py::str(key))));
-            } else
-                throw ValueError("Filter geometry and selected object are not related to each other");
+            int points;
+            filterin_parse_key(key, geom, path, points);
+
+            if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
+                return Fun::call(self, filter->input(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<GeometryT>(geom))
+                return Fun::call(self, filter->input(*geomd, path), value...);
+
+            if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
+                return Fun::call(self, filter->setOuter(*geomd, path, points), value...);
+            if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
+                return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
+
+            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key.attr("__class__")))));
             return nullptr;
         }
     };
@@ -82,32 +95,25 @@ namespace detail {
             Filter<PropertyT,Geometry3D>* filter = py::extract<Filter<PropertyT,Geometry3D>*>(self);
             shared_ptr<GeometryObject> geom;
             PathHints* path;
-            filterin_parse_key(key, geom, path);
-            if (auto geom3d = dynamic_pointer_cast<Geometry3D>(geom)) geom = geom3d->getChild();
-            if (geom->hasInSubtree(*filter->getGeometry()->getChild())) { // geom is the outer object
-                if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
-                    return Fun::call(self, filter->setOuter(geomd, path), value...);
-                else
-                    throw TypeError("Expected 3D geometry object", std::string(py::extract<std::string>(py::str(key))));
-            } else if (filter->getGeometry()->getChild()->hasInSubtree(*geom)) {
-                if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
-                    return Fun::call(self, filter->appendInner(geomd, path), value...);
-                else
-                    throw TypeError("Expected 3D geometry object or 2D geometry, got %1% instead", std::string(py::extract<std::string>(py::str(key))));
-            } else {
-                if (auto geomd = dynamic_pointer_cast<Geometry2DCartesian>(geom)) {
-                    if (filter->getGeometry()->getChild()->hasInSubtree(*geomd->getExtrusion()))
-                        return Fun::call(self, filter->appendInner(geomd, path), value...);
-                    else
-                        throw ValueError("Filter geometry and selected object are not related to each other");
-//                 } else if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom)) {
-//                     if (filter->getGeometry()->getChild()->hasInSubtree(*geomd->getRevolution()))
-//                         return Fun::call(self, filter->appendInner(geomd, path), value...);
-//                     else
-//                         throw ValueError("Filter geometry and selected object are not related to each other");
-                } else
-                    throw TypeError("Expected 3D geometry object or 2D geometry, got %1% instead", std::string(py::extract<std::string>(py::str(key))));
-            }
+            int points;
+            filterin_parse_key(key, geom, path, points);
+
+            if (auto geomd = dynamic_pointer_cast<Extrusion>(geom))
+                return Fun::call(self, filter->appendInner2D(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<Geometry2DCartesian>(geom))
+                return Fun::call(self, filter->appendInner(*geomd, path), value...);
+
+//             if (auto geomd = dynamic_pointer_cast<Revolution>(geom))
+//                 return Fun::call(self, filter->appendInner2D(*geomd, path), value...);
+//             if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom))
+//                 return Fun::call(self, filter->input(*geomd, path), value...);
+
+            if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
+                return Fun::call(self, filter->input(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
+                return Fun::call(self, filter->input(*geomd->getChild(), path), value...);
+
+            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key.attr("__class__")))));
             return nullptr;
         }
     };
@@ -143,8 +149,8 @@ namespace detail {
 template <typename PropertyT>
 void registerFilters() {
 
-    detail::registerFilterImpl<PropertyT,Geometry3D>("3D");
     detail::registerFilterImpl<PropertyT,Geometry2DCartesian>("2D");
+    detail::registerFilterImpl<PropertyT,Geometry3D>("3D");
 
 }
 
