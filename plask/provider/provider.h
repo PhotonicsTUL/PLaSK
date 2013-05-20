@@ -218,6 +218,14 @@ class Receiver: ReceiverBase {
 
     boost::signals2::connection providerConnection;
 
+    /// Is @c true only if data provides by provider was changed after previous value retrieval.
+    bool _changed;
+
+protected:
+
+    /// Is @c true only if provider is private and will be deleted by this receiver.
+    bool _hasPrivateProvider;
+
 public:
 
     typedef Receiver<ProviderT> Base;
@@ -237,23 +245,29 @@ public:
     /// Pointer to connected provider. Can be nullptr if no provider is connected.
     ProviderT* provider;
 
-    /// Is @c true only if data provides by provider was changed after previous value retrieval.
-    bool changed;
-
-    /// Is @c true only if provider is private and will be deleted by this receiver.
-    bool hasPrivateProvider;
-
     /// Construct Receiver without connected provider and with set changed flag.
-    Receiver(): provider(0), changed(true), hasPrivateProvider(false) {}
+    Receiver(): _changed(true), _hasPrivateProvider(false), provider(0) {}
+
+    /**
+     * Check if data provides by provider was changed after previous value retrieval.
+     * @return @c true only if data provides by provider was changed after previous value retrieval
+     */
+    bool changed() const { return _changed; }
+
+    /**
+     * Set change flag. This flag is set if data provides by provider was changed after previous value retrieval.
+     * @param new_value new value for changed flag
+     */
+    void changed(bool new_value) { _changed = new_value; }
 
     /// Destructor. Disconnect from provider.
     virtual ~Receiver() {
         providerConnection.disconnect();
-        if (hasPrivateProvider) delete this->provider;
+        if (_hasPrivateProvider) delete this->provider;
     }
 
     void fireChanged() {
-        changed = true;
+        _changed = true;
         providerValueChanged(*this);
     }
 
@@ -264,11 +278,11 @@ public:
      */
     void setProvider(ProviderT* provider, bool newProviderIsPrivate = false) {
         if (this->provider == provider) {
-            this->hasPrivateProvider = newProviderIsPrivate;
+            this->_hasPrivateProvider = newProviderIsPrivate;
             return;
         }
         providerConnection.disconnect();
-        if (hasPrivateProvider) delete this->provider;
+        if (_hasPrivateProvider) delete this->provider;
         if (provider) providerConnection = provider->changed.connect(
                     [&](Provider& which, bool isDeleted) {
                         if (isDeleted) {
@@ -278,7 +292,7 @@ public:
                         this->fireChanged();
                     });
         this->provider = provider;
-        this->hasPrivateProvider = newProviderIsPrivate;
+        this->_hasPrivateProvider = newProviderIsPrivate;
         this->fireChanged();
     }
 
@@ -394,7 +408,7 @@ protected:
      */
     void beforeGetValue() const {
         ensureHasProvider();
-        const_cast<Receiver*>(this)->changed = false;
+        const_cast<Receiver*>(this)->_changed = false;
     }
 
 };

@@ -221,7 +221,7 @@ void EffectiveFrequencyCylSolver::stageOne()
     }
     if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-    if (fresh || inTemperature.changed || inGain.changed || m != old_m || k0 != old_k0) { // we need to update something
+    if (fresh || inTemperature.changed() || inGain.changed() || m != old_m || k0 != old_k0) { // we need to update something
 
         old_m = m;
         old_k0 = k0;

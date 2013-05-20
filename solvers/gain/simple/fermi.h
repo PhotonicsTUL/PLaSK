@@ -203,9 +203,9 @@ struct GainSpectrum {
      * \return gain
      */
     double getGain(double wavelength) {
-        if (isnan(T) || solver->inTemperature.changed)
+        if (isnan(T) || solver->inTemperature.changed())
             T = solver->inTemperature(OnePointMesh<2>(point))[0];
-        if (isnan(n) || solver->inCarriersConcentration.changed)
+        if (isnan(n) || solver->inCarriersConcentration.changed())
             n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
         solver->setParameters(wavelength, T, n, *region);
         return solver->gainModule.Get_gain_at(solver->nm_to_eV(wavelength));

@@ -15,21 +15,21 @@ BOOST_AUTO_TEST_CASE(single_value) {
 
     BOOST_CHECK(receiver.getProvider() == nullptr);
     BOOST_CHECK_THROW(receiver(), plask::NoProvider);
-    BOOST_CHECK(receiver.changed);
+    BOOST_CHECK(receiver.changed());
 
     plask::ProviderFor<OneDouble>::WithDefaultValue provider;
     receiver.setProvider(provider);
-    BOOST_CHECK(receiver.changed);
+    BOOST_CHECK(receiver.changed());
     BOOST_CHECK_EQUAL(receiver.getProvider(), &provider);
 
     provider = 1.0;
     BOOST_CHECK_EQUAL(provider(), 1.0);
-    BOOST_CHECK(receiver.changed);
+    BOOST_CHECK(receiver.changed());
     BOOST_CHECK_EQUAL(receiver(), 1.0);
-    BOOST_CHECK(!receiver.changed);
+    BOOST_CHECK(!receiver.changed());
 
     receiver.setProvider(0);
-    BOOST_CHECK(receiver.changed);
+    BOOST_CHECK(receiver.changed());
     BOOST_CHECK_THROW(receiver(), plask::NoProvider);
 
     receiver.setConstValue(3.0);

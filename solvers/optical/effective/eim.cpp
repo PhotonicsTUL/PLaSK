@@ -286,7 +286,7 @@ void EffectiveIndex2DSolver::updateCache()
         }
     }
 
-    if (fresh || inTemperature.changed || inWavelength.changed || inGain.changed) {
+    if (fresh || inTemperature.changed() || inWavelength.changed() || inGain.changed()) {
         // we need to update something
 
         k0 = 2e3*M_PI / inWavelength();

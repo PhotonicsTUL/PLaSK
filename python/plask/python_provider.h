@@ -204,7 +204,7 @@ namespace detail {
             receiver_class.def("connect", &connect, "Connect provider to the receiver", py::arg("provider"));
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
             receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::PropertyTag::ValueType&>, "Assign constant value to the receiver", py::arg("value"));
-            receiver_class.def_readonly("changed", &ReceiverT::changed, "Indicates whether the receiver value has changed since last retrieval");
+            receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed, "Indicates whether the receiver value has changed since last retrieval");
         }
     };
 
