@@ -45,7 +45,7 @@ MI_PROPERTY(InN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 Tensor2<double> InN_Si::cond(double T) const {
-    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
+    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
 bool InN_Si::isEqual(const Material &other) const {

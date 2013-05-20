@@ -54,16 +54,15 @@ MI_PROPERTY(GaN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 Tensor2<double> GaN_Mg::cond(double T) const {
-    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
+    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(GaN_Mg, absp,
             MISeeClass<GaN>(MaterialInfo::absp)
             )
 double GaN_Mg::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - 3.42,
-           b = NA/1e18;
-    return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.000*b)) );
+    double E = phys::h_eVc1e9/wl;
+    return ( (19000.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*Dop()/1e18))+(330.+30.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*Dop()/1e18)) );
 }
 
 bool GaN_Mg::isEqual(const Material &other) const {

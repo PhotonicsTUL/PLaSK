@@ -32,33 +32,64 @@ MI_PROPERTY(AlGaN, absp,
             MIComment("no temperature dependence")
             )
 double AlGaN::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - Eg(T,0,'G');
+    double a = phys::h_eVc1e9/wl - Eg(T,0,'G');
     return 19000*exp(a/0.019) + 330*exp(a/0.07);
 }
 
 MI_PROPERTY(AlGaN, nr,
-            MISource("www.rpi.edu Educational Resources (E.F. Schubert 2004)"),
-            MIArgumentRange(MaterialInfo::wl, 355, 1240),
-            MIComment("based on data for Al = 0, 0.3, 1.0"),
-            MIComment("no temperature dependence")
+            MIComment("shift of the nR for GaN")
             )
 double AlGaN::nr(double wl, double T) const {
-    double E = 1239.84190820754/wl,
-           a =  0.073-Al*0.042-Al*Al*0.014,
-           b = -0.179-Al*0.032+Al*Al*0.174,
-           c =  2.378-Al*0.354-Al*Al*0.017;
-    return ( a*E*E + b*E + c );
+    double dEg = Eg(T,0.,'G') - mGaN.Eg(T,0.,'G'),
+           Eold = phys::h_eVc1e9 / wl,
+           Enew = Eold - dEg,
+           wlnew = phys::h_eVc1e9 / Enew;
+    if ((wlnew >= 300.) && (wlnew < 351.))
+        return (-0.72116*Enew*Enew*Enew+8.8092*Enew*Enew-35.8878*Enew+51.335);
+    else if ((wlnew >= 351.) && (wlnew < 370.))
+        return (33.63905*Enew*Enew*Enew-353.1446*Enew*Enew+1235.0168*Enew-1436.09);
+    else if ((wlnew >= 370.) && (wlnew < 392.))
+        return (18.2292*Enew*Enew*Enew-174.6974*Enew*Enew+558.535*Enew-593.164);
+    else if ((wlnew >= 392.) && (wlnew <= 580.))
+        return (0.1152*Enew*Enew*Enew-0.7955*Enew*Enew+1.959*Enew+0.68);
+    else
+        return 0.;
 }
 
 MI_PROPERTY(AlGaN, Eg,
-            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
+            MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
 double AlGaN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 6.28*Al + 3.42*Ga - 0.7*Al*Ga;
+    if (point == 'G') tEg = Al*mAlN.Eg(T,e,point) + Ga*mGaN.Eg(T,e,point) - Al*Ga*0.8;
     return (tEg);
+}
+
+MI_PROPERTY(AlGaN, Me,
+            MISource("linear interpolation: AlN, GaN")
+            )
+Tensor2<double> AlGaN::Me(double T, double e, char point) const {
+    double lMe = Al*mAlN.Me(T,e,point).c00 + Ga*mGaN.Me(T,e,point).c00,
+           vMe = Al*mAlN.Me(T,e,point).c11 + Ga*mGaN.Me(T,e,point).c11;
+    return ( Tensor2<double>(lMe,vMe) );
+}
+
+MI_PROPERTY(AlGaN, Mhh,
+            MISource("linear interpolation: AlN, GaN")
+            )
+Tensor2<double> AlGaN::Mhh(double T, double e) const {
+    double lMhh = Al*mAlN.Mhh(T,e).c00 + Ga*mGaN.Mhh(T,e).c00,
+           vMhh = Al*mAlN.Mhh(T,e).c11 + Ga*mGaN.Mhh(T,e).c11;
+    return ( Tensor2<double>(lMhh,vMhh) );
+}
+
+MI_PROPERTY(AlGaN, Mlh,
+            MISource("linear interpolation: AlN, GaN")
+            )
+Tensor2<double> AlGaN::Mlh(double T, double e) const {
+    double lMlh = Al*mAlN.Mlh(T,e).c00 + Ga*mGaN.Mlh(T,e).c00,
+           vMlh = Al*mAlN.Mlh(T,e).c11 + Ga*mGaN.Mlh(T,e).c11;
+    return ( Tensor2<double>(lMlh,vMlh) );
 }
 
 MI_PROPERTY(AlGaN, lattC,

@@ -42,7 +42,7 @@ double AlGaN_Si::Dop() const {
 }
 
 Tensor2<double> AlGaN_Si::cond(double T) const {
-    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
+    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(AlGaN_Si, thermk,
@@ -59,10 +59,8 @@ MI_PROPERTY(AlGaN_Si, absp,
             MISeeClass<AlGaN>(MaterialInfo::absp)
             )
 double AlGaN_Si::absp(double wl, double T) const {
-    double Eg = 6.28*Al + 3.42*(1-Al) - 0.7*Al*(1-Al);
-    double a = 1239.84190820754/wl - Eg,
-           b = ND/1e18;
-    return ( (19000+4000*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
+    double E = phys::h_eVc1e9/wl;
+    return ( (19000.+4000.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.001*Dop()/1e18))+(330.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.016*Dop()/1e18)) );
 }
 
 bool AlGaN_Si::isEqual(const Material &other) const {

@@ -34,18 +34,27 @@ MI_PROPERTY(GaN, absp,
             MIComment("no temperature dependence")
             )
 double GaN::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - Eg(T, 0., 'G');
+    double a = phys::h_eVc1e9/wl - Eg(T, 0., 'G');
     return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
 }
 
 MI_PROPERTY(GaN, nr,
-            MISource("www.rpi.edu Educational Resources (E.F. Schubert 2004)"),
-            MIArgumentRange(MaterialInfo::wl, 355, 1240),
+            MISource("fit - Maciej Kuc"),
+            MIArgumentRange(MaterialInfo::wl, 300, 580),
             MIComment("no temperature dependence")
             )
 double GaN::nr(double wl, double T) const {
-    double a = 1239.84190820754/wl;
-    return ( 0.0259462*pow(a,3) - 0.101517*pow(a,2) + 0.181516*a + 2.1567 );
+    double E = phys::h_eVc1e9/wl;
+    if ((wl >= 300.) && (wl < 351.))
+        return (-0.72116*E*E*E+8.8092*E*E-35.8878*E+51.335);
+    else if ((wl >= 351.) && (wl < 370.))
+        return (33.63905*E*E*E-353.1446*E*E+1235.0168*E-1436.09);
+    else if ((wl >= 370.) && (wl < 392.))
+        return (18.2292*E*E*E-174.6974*E*E+558.535*E-593.164);
+    else if ((wl >= 392.) && (wl <= 580.))
+        return (0.1152*E*E*E-0.7955*E*E+1.959*E+0.68);
+    else
+        return 0.;
 }
 
 MI_PROPERTY(GaN, lattC,
@@ -59,26 +68,23 @@ double GaN::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaN, Eg,
-            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
+            MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
 double GaN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 3.42;
+    if (point == 'G') tEg = phys::Varshni(3.510,0.914e-3,825.,T);
     return (tEg);
 }
 
 MI_PROPERTY(GaN, Me,
-            MISource("King et al., Phys. Rev. B 75 (2007) 115312"),
-            MIComment("only for Gamma point"),
+            MISource("Adachi WILEY 2009"),
             MIComment("no temperature dependence")
             )
 Tensor2<double> GaN::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
-        tMe.c00 = 0.186;
-        tMe.c11 = 0.209;
+        tMe.c00 = 0.22;
+        tMe.c11 = 0.21;
     }
     return (tMe);
 }
@@ -86,24 +92,20 @@ Tensor2<double> GaN::Me(double T, double e, char point) const {
 MI_PROPERTY(GaN, Mhh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-Tensor2<double> GaN::Mhh(double T, double e, char point) const {
+Tensor2<double> GaN::Mhh(double T, double e) const {
     Tensor2<double> tMhh(0.,0.);
-    if (point == 'G') {
-        tMhh.c00 = 1.886;
-        tMhh.c11 = 1.887;
-    }
+    tMhh.c00 = 1.67;
+    tMhh.c11 = 1.64;
     return (tMhh);
 }
 
 MI_PROPERTY(GaN, Mlh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-Tensor2<double> GaN::Mlh(double T, double e, char point) const {
+Tensor2<double> GaN::Mlh(double T, double e) const {
     Tensor2<double> tMlh(0.,0.);
-    if (point == 'G') {
-        tMlh.c00 = 1.887;
-        tMlh.c11 = 0.1086;
-    }
+    tMlh.c00 = 1.67;
+    tMlh.c11 = 0.15;
     return (tMlh);
 }
 

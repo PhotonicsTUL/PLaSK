@@ -24,7 +24,7 @@ MI_PROPERTY(AlN, absp,
             MIComment("no temperature dependence")
             )
 double AlN::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - Eg(T,0.,'G');
+    double a = phys::h_eVc1e9/wl - Eg(T,0.,'G');
     return ( 19000*exp(a/0.019) + 330*exp(a/0.07) );
 }
 
@@ -34,7 +34,7 @@ MI_PROPERTY(AlN, nr,
             MIComment("no temperature dependence")
             )
 double AlN::nr(double wl, double T) const {
-    double a = 1239.84190820754/wl;
+    double a = phys::h_eVc1e9/wl;
     return ( 0.0034417*pow(a,3) - 0.0172622*pow(a,2) + 0.0594128*a + 1.92953 );
 }
 
@@ -49,19 +49,16 @@ double AlN::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlN, Eg,
-            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
+            MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
 double AlN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 6.28;
+    if (point == 'G') tEg = phys::Varshni(6.10,2.63e-3,2082.,T);
     return (tEg);
 }
 
 MI_PROPERTY(AlN, Me,
-            MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009"),
-            MIComment("only for Gamma point"),
+            MISource("Adachi WILEY 2009"),
             MIComment("no temperature dependence")
             )
 Tensor2<double> AlN::Me(double T, double e, char point) const {
@@ -71,6 +68,26 @@ Tensor2<double> AlN::Me(double T, double e, char point) const {
         tMe.c11 = 0.29;
     }
     return (tMe);
+}
+
+MI_PROPERTY(AlN, Mhh,
+            MISeeClass<AlN>(MaterialInfo::Me)
+            )
+Tensor2<double> AlN::Mhh(double T, double e) const {
+    Tensor2<double> tMhh(0.,0.);
+    tMhh.c00 = 2.56;
+    tMhh.c11 = 4.17;
+    return (tMhh);
+}
+
+MI_PROPERTY(AlN, Mlh,
+            MISeeClass<AlN>(MaterialInfo::Me)
+            )
+Tensor2<double> AlN::Mlh(double T, double e) const {
+    Tensor2<double> tMlh(0.,0.);
+    tMlh.c00 = 2.56;
+    tMlh.c11 = 0.27;
+    return (tMlh);
 }
 
 bool AlN::isEqual(const Material &other) const {

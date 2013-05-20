@@ -322,28 +322,25 @@ struct Material {
      * Get heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mhh(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Mhh(double T, double e=0.) const;
 
     /**
      * Get light hole effective mass Mlh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
      * @return light hole effective mass Mlh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mlh(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Mlh(double T, double e=0.) const;
 
     /**
      * Get hole effective mass Mh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
      * @param T temperature [K]
      * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
      * @return hole effective mass Mh [\f$m_0\f$]
      */
-    virtual Tensor2<double> Mh(double T, double e=0., char point='s') const;
+    virtual Tensor2<double> Mh(double T, double e=0.) const;
 
     /**
      * Get hydrostatic deformation potential for the conduction band ac [eV].
@@ -698,11 +695,11 @@ struct MixedMaterial: public Material {
 
     virtual Tensor2<double> Me(double T, double e=0., char point='G') const;
 
-    virtual Tensor2<double> Mhh(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Mhh(double T, double e=0.) const;
 
-    virtual Tensor2<double> Mlh(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Mlh(double T, double e=0.) const;
 
-    virtual Tensor2<double> Mh(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Mh(double T, double e=0.) const;
 
     virtual double ac(double T) const;
 

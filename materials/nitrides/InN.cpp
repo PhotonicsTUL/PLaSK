@@ -28,26 +28,23 @@ double InN::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(InN, Eg,
-            MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
+            MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
 double InN::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G') tEg = 0.77;
+    if (point == 'G') tEg = phys::Varshni(0.69,0.414e-3,154.,T);
     return (tEg);
 }
 
 MI_PROPERTY(InN, Me,
-            MISource("King et al., Phys. Rev. B 75 (2007) 115312"),
-            MIComment("only for Gamma point"),
+            MISource("Adachi WILEY 2009"),
             MIComment("no temperature dependence")
             )
 Tensor2<double> InN::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G') {
-        tMe.c00 = 0.065;
-        tMe.c11 = 0.068;
+        tMe.c00 = 0.039;
+        tMe.c11 = 0.047;
     }
     return (tMe);
 }
@@ -55,24 +52,20 @@ Tensor2<double> InN::Me(double T, double e, char point) const {
 MI_PROPERTY(InN, Mhh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-Tensor2<double> InN::Mhh(double T, double e, char point) const {
+Tensor2<double> InN::Mhh(double T, double e) const {
     Tensor2<double> tMhh(0.,0.);
-    if (point == 'G') {
-        tMhh.c00 = 1.8116;
-        tMhh.c11 = 1.7007;
-    }
+    tMhh.c00 = 1.54;
+    tMhh.c11 = 1.41;
     return (tMhh);
 }
 
 MI_PROPERTY(InN, Mlh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-Tensor2<double> InN::Mlh(double T, double e, char point) const {
+Tensor2<double> InN::Mlh(double T, double e) const {
     Tensor2<double> tMlh(0.,0.);
-    if (point == 'G') {
-        tMlh.c00 = 1.8116;
-        tMlh.c11 = 0.0348;
-    }
+    tMlh.c00 = 1.54;
+    tMlh.c11 = 0.10;
     return (tMlh);
 }
 

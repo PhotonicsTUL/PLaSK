@@ -222,9 +222,9 @@ class PythonMaterial : public Material
     virtual double Dso(double T, double e) const { return override<double>("Dso", &Material::Dso, T, e); }
     virtual double Mso(double T, double e) const { return override<double>("Mso", &Material::Mso, T, e); }
     virtual Tensor2<double> Me(double T, double e, char point) const { return override<Tensor2<double>>("Me", &Material::Me, T, e, point); }
-    virtual Tensor2<double> Mhh(double T, double e, char point) const { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, e, point); }
-    virtual Tensor2<double> Mlh(double T, double e, char point) const { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, e, point); }
-    virtual Tensor2<double> Mh(double T, double e, char point) const { return override<Tensor2<double>>("Mh", &Material::Mh, T, e, point); }
+    virtual Tensor2<double> Mhh(double T, double e) const { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, e); }
+    virtual Tensor2<double> Mlh(double T, double e) const { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, e); }
+    virtual Tensor2<double> Mh(double T, double e) const { return override<Tensor2<double>>("Mh", &Material::Mh, T, e); }
     virtual double ac(double T) const { return override<double>("ac", &Material::ac, T); }
     virtual double av(double T) const { return override<double>("av", &Material::av, T); }
     virtual double b(double T) const { return override<double>("b", &Material::b, T); }
@@ -606,9 +606,9 @@ void initMaterials() {
         .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("e")=0), "Get split-off energy Dso [eV]")
         .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0), "Get split-off mass Mso [m0]")
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get split-off mass Mso [m0]")
-        .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get heavy hole effective mass Mhh [m0]")
-        .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get light hole effective mass Mlh [m0]")
-        .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0, py::arg("eq")/*='G'*/), "Get hole effective mass Mh [m0]")
+        .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0), "Get heavy hole effective mass Mhh [m0]")
+        .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0), "Get light hole effective mass Mlh [m0]")
+        .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0), "Get hole effective mass Mh [m0]")
         .def("ac", &Material::ac, (py::arg("T")=300.), "Get hydrostatic deformation potential for the conduction band ac [eV]")
         .def("av", &Material::av, (py::arg("T")=300.), "Get hydrostatic deformation potential for the valence band av [eV]")
         .def("b", &Material::b, (py::arg("T")=300.), "Get shear deformation potential b [eV]")

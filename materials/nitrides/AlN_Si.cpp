@@ -52,14 +52,14 @@ MI_PROPERTY(AlN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 Tensor2<double> AlN_Si::cond(double T) const {
-    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
+    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(AlN_Si, absp,
             MISeeClass<AlN>(MaterialInfo::absp)
             )
 double AlN_Si::absp(double wl, double T) const {
-    double a = 1239.84190820754/wl - 6.28,
+    double a = phys::h_eVc1e9/wl - 6.28,
            b = ND/1e18;
     return ( (19000+400*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
 }

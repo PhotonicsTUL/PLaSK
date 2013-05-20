@@ -22,7 +22,7 @@ InN_Mg::InN_Mg(DopingAmountType Type, double Val) {
         NA = Val;
     }
     mob_RT = 5.739E13*pow(Nf_RT,-0.663);
-    cond_RT = 1.602E-17*Nf_RT*mob_RT;
+    cond_RT = phys::qe*100.*Nf_RT*mob_RT;
 }
 
 MI_PROPERTY(InN_Mg, mob,

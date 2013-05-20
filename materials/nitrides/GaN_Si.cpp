@@ -53,7 +53,7 @@ MI_PROPERTY(GaN_Si, cond,
             MIArgumentRange(MaterialInfo::T, 300, 400)
             )
 Tensor2<double> GaN_Si::cond(double T) const {
-    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
+    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(GaN_Si, thermk,
@@ -77,7 +77,7 @@ MI_PROPERTY(GaN_Si, absp,
             MIComment("no temperature dependence")
             )
 double GaN_Si::absp(double wl, double T) const {
-    return ( 5.61*exp(Nf(T)/1.92e19) + 124.08 );
+    return ( (33479.3*exp(0.0804278*Nf(T)/1e18))*exp((-0.000180411*Nf(T)-0.0135216)*wl) );
 }
 
 bool GaN_Si::isEqual(const Material &other) const {

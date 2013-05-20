@@ -85,9 +85,9 @@ double Material::eps(double T) const { throwNotImplemented("eps(double T)"); ret
 double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); return 0; }
 
 Tensor2<double> Material::Me(double T, double e, char point) const { throwNotImplemented("Me(double T, double e, char point)"); return 0.; }
-Tensor2<double> Material::Mh(double T, double e, char point) const { throwNotImplemented("Mh(double T, double e, char point)"); return 0.; }
-Tensor2<double> Material::Mhh(double T, double e, char point) const { throwNotImplemented("Mhh(double T, double e, char point)"); return 0.; }
-Tensor2<double> Material::Mlh(double T, double e, char point) const { throwNotImplemented("Mlh(double T, double e, char point)"); return 0.; }
+Tensor2<double> Material::Mh(double T, double e) const { throwNotImplemented("Mh(double T, double e)"); return 0.; }
+Tensor2<double> Material::Mhh(double T, double e) const { throwNotImplemented("Mhh(double T, double e)"); return 0.; }
+Tensor2<double> Material::Mlh(double T, double e) const { throwNotImplemented("Mlh(double T, double e)"); return 0.; }
 
 double Material::ac(double T) const { throwNotImplemented("ac(double T)"); return 0; }
 double Material::av(double T) const { throwNotImplemented("av(double T)"); return 0; }
@@ -395,16 +395,16 @@ Tensor2<double> MixedMaterial::Me(double T, double e, char point) const {
     return avg_pairs([&](const Material& m) { return m.Me(T, e, point); });
 }
 
-Tensor2<double> MixedMaterial::Mh(double T, double e, char point) const {
-    return avg_pairs([&](const Material& m) { return m.Mh(T, e, point); });
+Tensor2<double> MixedMaterial::Mh(double T, double e) const {
+    return avg_pairs([&](const Material& m) { return m.Mh(T, e); });
 }
 
-Tensor2<double> MixedMaterial::Mhh(double T, double e, char point) const {
-    return avg_pairs([&](const Material& m) { return m.Mhh(T, e, point); });
+Tensor2<double> MixedMaterial::Mhh(double T, double e) const {
+    return avg_pairs([&](const Material& m) { return m.Mhh(T, e); });
 }
 
-Tensor2<double> MixedMaterial::Mlh(double T, double e, char point) const  {
-    return avg_pairs([&](const Material& m) { return m.Mlh(T, e, point); });
+Tensor2<double> MixedMaterial::Mlh(double T, double e) const  {
+    return avg_pairs([&](const Material& m) { return m.Mlh(T, e); });
 }
 
 double MixedMaterial::ac(double T) const {

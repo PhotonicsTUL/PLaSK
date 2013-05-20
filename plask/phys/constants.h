@@ -20,6 +20,7 @@ namespace phys {
     constexpr double SB = 5.670373e-8;          ///< Stefan-Boltzmann constant [W/m^2/K^4]
     constexpr double kB_J = 1.3806503e-23;      ///< Boltzmann constant [J/K]
     constexpr double kB_eV = 8.6173423e-5;      ///< Boltzmann constant [eV/K]
+    constexpr double h_eVc1e9 = 1239.84193009;  ///< h_eV*c*1e9 [eV*m]
 
 }} // namespace plask::phys
 

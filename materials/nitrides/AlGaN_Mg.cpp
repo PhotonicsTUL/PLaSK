@@ -44,17 +44,15 @@ double AlGaN_Mg::Dop() const {
 }
 
 Tensor2<double> AlGaN_Mg::cond(double T) const {
-    return (Tensor2<double>(1.602E-17*Nf(T)*mob(T).c00, 1.602E-17*Nf(T)*mob(T).c11));
+    return (Tensor2<double>(phys::qe*100.*Nf(T)*mob(T).c00, phys::qe*100.*Nf(T)*mob(T).c11));
 }
 
 MI_PROPERTY(AlGaN_Mg, absp,
             MISeeClass<AlGaN>(MaterialInfo::absp)
             )
 double AlGaN_Mg::absp(double wl, double T) const {
-    double Eg = 6.28*Al + 3.42*(1-Al) - 0.7*Al*(1-Al);
-    double a = 1239.84190820754/wl - Eg,
-           b = NA/1e18;
-    return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );
+    double E = phys::h_eVc1e9/wl;
+    return ( (19000.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*Dop()/1e18))+(330.+30.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*Dop()/1e18)) );
 }
 
 bool AlGaN_Mg::isEqual(const Material &other) const {
