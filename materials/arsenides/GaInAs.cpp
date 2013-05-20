@@ -54,18 +54,18 @@ Tensor2<double> GaInAs::Me(double T, double e, char point) const {
 MI_PROPERTY(GaInAs, Mhh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> GaInAs::Mhh(double T, double e, char point) const {
-    double lMhh = Ga*mGaAs.Mhh(T,e,point).c00 + In*mInAs.Mhh(T,e,point).c00,
-           vMhh = Ga*mGaAs.Mhh(T,e,point).c11 + In*mInAs.Mhh(T,e,point).c11;
+Tensor2<double> GaInAs::Mhh(double T, double e) const {
+    double lMhh = Ga*mGaAs.Mhh(T,e).c00 + In*mInAs.Mhh(T,e).c00,
+           vMhh = Ga*mGaAs.Mhh(T,e).c11 + In*mInAs.Mhh(T,e).c11;
     return ( Tensor2<double>(lMhh,vMhh) );
 }
 
 MI_PROPERTY(GaInAs, Mlh,
             MISource("linear interpolation: AlAs, GaAs")
             )
-Tensor2<double> GaInAs::Mlh(double T, double e, char point) const {
-    double lMlh = Ga*mGaAs.Mlh(T,e,point).c00 + In*mInAs.Mlh(T,e,point).c00,
-           vMlh = Ga*mGaAs.Mlh(T,e,point).c11 + In*mInAs.Mlh(T,e,point).c11;
+Tensor2<double> GaInAs::Mlh(double T, double e) const {
+    double lMlh = Ga*mGaAs.Mlh(T,e).c00 + In*mInAs.Mlh(T,e).c00,
+           vMlh = Ga*mGaAs.Mlh(T,e).c11 + In*mInAs.Mlh(T,e).c11;
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 

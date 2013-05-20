@@ -53,7 +53,7 @@ MI_PROPERTY(GaP, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaP::Mhh(double T, double e, char point) const {
+Tensor2<double> GaP::Mhh(double T, double e) const {
     Tensor2<double> tMhh(0.34, 0.34); // [001]
     return ( tMhh );
 }
@@ -62,7 +62,7 @@ MI_PROPERTY(GaP, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaP::Mlh(double T, double e, char point) const {
+Tensor2<double> GaP::Mlh(double T, double e) const {
     Tensor2<double> tMlh(0.20, 0.20);
     return ( tMlh );
 }

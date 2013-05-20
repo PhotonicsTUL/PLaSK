@@ -53,7 +53,7 @@ MI_PROPERTY(GaAs, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaAs::Mhh(double T, double e, char point) const {
+Tensor2<double> GaAs::Mhh(double T, double e) const {
     Tensor2<double> tMhh(0.33, 0.33); // [001]
     return ( tMhh );
 }
@@ -62,7 +62,7 @@ MI_PROPERTY(GaAs, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaAs::Mlh(double T, double e, char point) const {
+Tensor2<double> GaAs::Mlh(double T, double e) const {
     Tensor2<double> tMlh(0.090, 0.090);
     return ( tMlh );
 }

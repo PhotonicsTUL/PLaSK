@@ -53,7 +53,7 @@ MI_PROPERTY(AlAs, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlAs::Mhh(double T, double e, char point) const {
+Tensor2<double> AlAs::Mhh(double T, double e) const {
     Tensor2<double> tMhh(0.51, 0.51); // [001]
     return ( tMhh );
 }
@@ -62,7 +62,7 @@ MI_PROPERTY(AlAs, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlAs::Mlh(double T, double e, char point) const {
+Tensor2<double> AlAs::Mlh(double T, double e) const {
     Tensor2<double> tMlh(0.18, 0.18);
     return ( tMlh );
 }
