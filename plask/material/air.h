@@ -25,9 +25,9 @@ struct Air: public Material {
     virtual double Dso(double T, double e) const;
     virtual double Mso(double T, double e) const;
     virtual Tensor2<double> Me(double T, double e, char point) const;
-    virtual Tensor2<double> Mhh(double T, double e, char point) const;
-    virtual Tensor2<double> Mlh(double T, double e, char point) const;
-    virtual Tensor2<double> Mh(double T, double e, char point) const;
+    virtual Tensor2<double> Mhh(double T, double e) const;
+    virtual Tensor2<double> Mlh(double T, double e) const;
+    virtual Tensor2<double> Mh(double T, double e) const;
     virtual double eps(double T) const;
     virtual double chi(double T, double e, char point) const;
     virtual double Nc(double T, double e, char point) const;

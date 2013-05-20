@@ -43,11 +43,11 @@ double Air::lattC(double T, char x) const { throwNotApplicable("lattC(double T, 
 
 Tensor2<double> Air::Me(double T, double e, char point) const { throwNotApplicable("Me(double T, double e, char point)"); return 0.; }
 
-Tensor2<double> Air::Mh(double T, double e, char point) const { throwNotApplicable("Mh(double T, double e, char point)"); return 0.; }
+Tensor2<double> Air::Mh(double T, double e) const { throwNotApplicable("Mh(double T, double e, char point)"); return 0.; }
 
-Tensor2<double> Air::Mhh(double T, double e, char point) const { throwNotApplicable("Mhh(double T, double e, char point)"); return 0.; }
+Tensor2<double> Air::Mhh(double T, double e) const { throwNotApplicable("Mhh(double T, double e, char point)"); return 0.; }
 
-Tensor2<double> Air::Mlh(double T, double e, char point) const { throwNotApplicable("B(double T)"); return 0.; }
+Tensor2<double> Air::Mlh(double T, double e) const { throwNotApplicable("B(double T)"); return 0.; }
 
 Tensor2<double> Air::mob(double T) const { throwNotApplicable("mob(double T)"); return 0.; }
 

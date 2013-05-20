@@ -343,7 +343,7 @@ public:
     /// React on provider value changes. Set changed flag to true.
     void onChange(Provider* which, bool isDeleted) {
         if (isDeleted) provider = 0;
-        changed = true;
+        _changed = true;
         providerValueChanged(*this);
     }
 
@@ -380,7 +380,7 @@ public:
         try {
             return boost::optional<decltype((*provider)(params...))>(this->operator()(params...));
         } catch (std::exception&) {
-            const_cast<Receiver*>(this)->changed = false; // unless anything changes, next call to optional will return the same
+            const_cast<Receiver*>(this)->_changed = false; // unless anything changes, next call to optional will return the same
             return boost::optional<decltype((*provider)(params...))>();
         }
     }
