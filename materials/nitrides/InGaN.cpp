@@ -40,18 +40,22 @@ MI_PROPERTY(InGaN, nr,
             MIComment("shift of the nR for GaN")
             )
 double InGaN::nr(double wl, double T) const {
-    double dEg = Eg(T,0.,'G') - mGaN.Eg(T,0.,'G'),
+    double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
            Eold = phys::h_eVc1e9 / wl,
-           Enew = Eold - dEg,
-           wlnew = phys::h_eVc1e9 / Enew;
-    if ((wlnew >= 300.) && (wlnew < 351.))
-        return (-0.72116*Enew*Enew*Enew+8.8092*Enew*Enew-35.8878*Enew+51.335);
-    else if ((wlnew >= 351.) && (wlnew < 370.))
-        return (33.63905*Enew*Enew*Enew-353.1446*Enew*Enew+1235.0168*Enew-1436.09);
-    else if ((wlnew >= 370.) && (wlnew < 392.))
-        return (18.2292*Enew*Enew*Enew-174.6974*Enew*Enew+558.535*Enew-593.164);
-    else if ((wlnew >= 392.) && (wlnew <= 580.))
-        return (0.1152*Enew*Enew*Enew-0.7955*Enew*Enew+1.959*Enew+0.68);
+           Enew = Eold - dEg;
+
+    if (Enew > 1.000 && Enew < 2.138) // 580-1240 nm
+        return ( 0.013914*Enew*Enew*Enew*Enew - 0.096422*Enew*Enew*Enew + 0.27318*Enew*Enew - 0.27725*Enew + 2.3535 );
+    else if (Enew < 3.163) // 392-580 nm
+        return ( 0.1152*Enew*Enew*Enew - 0.7955*Enew*Enew + 1.959*Enew + 0.68 );
+    else if (Enew < 3.351) // 370-392 nm
+        return ( 18.2292*Enew*Enew*Enew - 174.6974*Enew*Enew + 558.535*Enew - 593.164 );
+    else if (Enew < 3.532) // 351-370 nm
+        return ( 33.63905*Enew*Enew*Enew - 353.1446*Enew*Enew + 1235.0168*Enew - 1436.09 );
+    else if (Enew < 4.100) // 336-351 nm
+        return ( -0.72116*Enew*Enew*Enew + 8.8092*Enew*Enew - 35.8878*Enew + 51.335 );
+    else if (Enew < 5.000) // 248-336 nm
+        return ( 0.351664*Enew*Enew*Enew*Enew - 6.06337*Enew*Enew*Enew + 39.2317*Enew*Enew - 112.865*Enew + 124.358 );
     else
         return 0.;
 }

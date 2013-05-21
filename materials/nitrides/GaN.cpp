@@ -44,17 +44,26 @@ MI_PROPERTY(GaN, nr,
             MIComment("no temperature dependence")
             )
 double GaN::nr(double wl, double T) const {
-    double E = phys::h_eVc1e9/wl;
-    if ((wl >= 300.) && (wl < 351.))
-        return (-0.72116*E*E*E+8.8092*E*E-35.8878*E+51.335);
-    else if ((wl >= 351.) && (wl < 370.))
-        return (33.63905*E*E*E-353.1446*E*E+1235.0168*E-1436.09);
-    else if ((wl >= 370.) && (wl < 392.))
-        return (18.2292*E*E*E-174.6974*E*E+558.535*E-593.164);
-    else if ((wl >= 392.) && (wl <= 580.))
-        return (0.1152*E*E*E-0.7955*E*E+1.959*E+0.68);
+    double dEg = Eg(T,0.,'G') - Eg(300.,0.,'G'),
+           Eold = phys::h_eVc1e9 / wl,
+           Enew = Eold - dEg;
+
+    if (Enew > 1.000 && Enew < 2.138) // 580-1240 nm
+        return ( 0.013914*Enew*Enew*Enew*Enew - 0.096422*Enew*Enew*Enew + 0.27318*Enew*Enew - 0.27725*Enew + 2.3535 );
+    else if (Enew < 3.163) // 392-580 nm
+        return ( 0.1152*Enew*Enew*Enew - 0.7955*Enew*Enew + 1.959*Enew + 0.68 );
+    else if (Enew < 3.351) // 370-392 nm
+        return ( 18.2292*Enew*Enew*Enew - 174.6974*Enew*Enew + 558.535*Enew - 593.164 );
+    else if (Enew < 3.532) // 351-370 nm
+        return ( 33.63905*Enew*Enew*Enew - 353.1446*Enew*Enew + 1235.0168*Enew - 1436.09 );
+    else if (Enew < 4.100) // 336-351 nm
+        return ( -0.72116*Enew*Enew*Enew + 8.8092*Enew*Enew - 35.8878*Enew + 51.335 );
+    else if (Enew < 5.000) // 248-336 nm
+        return ( 0.351664*Enew*Enew*Enew*Enew - 6.06337*Enew*Enew*Enew + 39.2317*Enew*Enew - 112.865*Enew + 124.358 );
     else
         return 0.;
+    /*if (dopant == "Si" || dopant == "O") nR = nR*(1 - 1.05e-28*free_carrier_concentration(T,N,dopant));
+    for GaN only!!!!*/
 }
 
 MI_PROPERTY(GaN, lattC,
