@@ -231,7 +231,7 @@ void LoggingConfig::setLoggingDest(py::object dest) {
         catch (py::error_already_set) { PyErr_Clear(); }
         if (dest == sys.attr("stderr") || dst == "stderr" || dst == "sys.stderr")
             logger->dest = PythonSysLogger::DEST_STDERR;
-        if (dest == sys.attr("stdout") || dst == "stdout" || dst == "sys.stdout")
+        else if (dest == sys.attr("stdout") || dst == "stdout" || dst == "sys.stdout")
             logger->dest = PythonSysLogger::DEST_STDOUT;
         else
             throw ValueError("Logging output can only be sys.stderr or sys.stdout.");

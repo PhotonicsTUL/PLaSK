@@ -4124,7 +4124,7 @@ XPL
 
  files follow XML
 \begin_inset Index idx
-status collapsed
+status open
 
 \begin_layout Plain Layout
 XML
@@ -5335,7 +5335,7 @@ e
 \family typewriter
 point
 \family default
- -- point in the Brillouin zone [-].
+ -- point in the irreducible Brillouin zone [-].
 \end_layout
 
 \begin_layout Labeling
@@ -5376,11 +5376,7 @@ T
 \family typewriter
 e
 \family default
- -- lateral strain [-], 
-\family typewriter
-point
-\family default
- -- point in the Brillouin zone [-].
+ -- lateral strain [-]
 \end_layout
 
 \begin_layout Labeling
@@ -5421,11 +5417,7 @@ T
 \family typewriter
 e
 \family default
- -- lateral strain [-], 
-\family typewriter
-point
-\family default
- -- point in the Brillouin zone [-].
+ -- lateral strain [-].
 \end_layout
 
 \begin_layout Labeling
@@ -5466,11 +5458,7 @@ T
 \family typewriter
 e
 \family default
- -- lateral strain [-], 
-\family typewriter
-point
-\family default
- -- point in the Brillouin zone [-].
+ -- lateral strain [-].
 \end_layout
 
 \begin_layout Labeling
