@@ -14,7 +14,7 @@ copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photo
 import sys as _sys
 import os as _os
 
-_os.environ["PLASK_PREFIX_PATH"] = _os.path.join(*__file__.split(_os.sep)[:-5])
+_os.environ["PLASK_PREFIX_PATH"] = _os.sep + _os.path.join(*__file__.split(_os.sep)[:-5])
 
 from ._plask import *
 from ._plask import _print_exception
@@ -169,6 +169,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
     Implementation of showwarnings which redirects to PLaSK logs
     """
     try: lineno += __globals['__manager__'].scriptline
+    except NameError: pass
     except KeyError: pass
     print_log(LOG_WARNING, "%s, line %s: %s: %s" % (filename, lineno, category.__name__, message))
 
