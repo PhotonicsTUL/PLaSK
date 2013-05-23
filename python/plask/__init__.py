@@ -118,7 +118,7 @@ del Stack3D
 
 ## ## plask.manager ## ##
 
-def loadxpl(source, vars={}, destination=None):
+def loadxpl(source, vars={}, sections=None, destination=None):
     #TODO documentation
 
     if destination is None:
@@ -132,7 +132,7 @@ def loadxpl(source, vars={}, destination=None):
     except KeyError:
         manager = Manager()
         destination['__manager__'] = manager
-    manager.load(source, vars)
+    manager.load(source, vars, sections)
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
     # Set default axes if all loaded geometries share the same
@@ -148,7 +148,7 @@ def runxpl(source, vars={}):
     '''
     env = globals().copy()
     env['plask'] = _sys.modules["plask"]
-    loadxpl(source, env)
+    loadxpl(source, vars, env)
     if type(source) == str:
         filename = source
     else:

@@ -58,7 +58,6 @@ namespace detail {
         static auto init(PySolver& solver) -> PySolver& {
             solver.add_property("geometry", &SolverT::getGeometry, &SolverT::setGeometry, "Geometry provided to the solver");
             solver.add_property("mesh", &SolverT::getMesh, &Solver_setMesh, "Mesh provided to the solver");
-            solver.def("setMesh", &Solver_setMesh, "Set mesh or mesh generator for the solver");
             return solver;
         }
     };

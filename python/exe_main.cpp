@@ -45,7 +45,7 @@ namespace plask { namespace python {
 
     int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
 
-    void PythonManager_load(py::object self, py::object src, py::dict vars);
+    void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
     shared_ptr<Logger> makePythonLogger();
 

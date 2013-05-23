@@ -4242,7 +4242,7 @@ First of all each XML document must have a parent tag.
 \family default
  section can take an optional attribute 
 \family typewriter
-log-level
+loglevel
 \family default
 , which value is the name of any valid log level.
  Any log message with its priority lower than the specified value will not
@@ -4263,28 +4263,14 @@ detail
 \end_layout
 
 \begin_layout Standard
-\begin_inset Note Comment
-status open
-
-\begin_layout Plain Layout
 Instead of the section content, it is possible to use it as a single tag
  with the attribute 
 \family typewriter
 external
 \family default
-, which has a name of some XML file as its value.
+, which has a name of some XPL file as its value.
  In such a case, the content of the relevant section is read from this external
  file.
- Its main tag should match the tag from the XPL file, in which the 
-\family typewriter
-from
-\family default
- attribute is used.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section

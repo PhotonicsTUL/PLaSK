@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include <plask/filters/filter.h>
+#include <plask/manager.h>
 
 #include "python_globals.h"
 #include "python_manager.h"
@@ -45,24 +46,34 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
 /**
  * Load data from XML
  */
-void PythonManager_load(py::object self, py::object src, py::dict vars)
+void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object())
 {
     PythonManager* manager = py::extract<PythonManager*>(self);
 
     XMLReader::DataSource* source;
 
+    boost::filesystem::path filename;
+
     std::string str;
     try {
         str = py::extract<std::string>(src);
-        if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) // str is not XML (a filename probably)
+        if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
             source = new XMLReader::StreamDataSource(new std::ifstream(str));
-        else
+            filename = str;
+        } else
             source = new XMLReader::StreamDataSource(new std::istringstream(str));
     } catch (py::error_already_set) {
         PyErr_Clear();
         if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
+        try {
+            std::string name = py::extract<std::string>(src.attr("name"));
+            if (name[0] != '<') filename = name;
+        } catch(...) {
+            PyErr_Clear();
+        }
         source = new XMLPythonDataSource(src);
     }
+
     XMLReader reader(source);
 
     // Variables
@@ -81,7 +92,15 @@ void PythonManager_load(py::object self, py::object src, py::dict vars)
         [manager](const std::string& str) -> unsigned long { return py::extract<unsigned long>(py::eval(py::str(str), xml_globals, manager->locals)); }
     );
 
-    manager->loadFromReader(reader);
+    if (filter == py::object()) {
+        manager->load(reader, MaterialsDB::getDefault().toSource(), Manager::ExternalSourcesFromFile(filename));
+    } else {
+        py::list sections = py::list(filter);
+        auto filterfun = [sections](const std::string& section) -> bool {
+            return py::extract<bool>(sections.contains(section));
+        };
+        manager->load(reader, MaterialsDB::getDefault().toSource(), Manager::ExternalSourcesFromFile(filename), filterfun);
+    }
 }
 
 
@@ -421,7 +440,7 @@ void register_manager() {
         "    Create manager with specified material database (if None, use default database)\n\n",
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
         .def("load", &PythonManager_load, "Load data from source (can be a filename, file, or an XML string to read)",
-             (py::arg("source"), py::arg("vars")=py::dict()))
+             (py::arg("source"), py::arg("vars")=py::dict(), py::arg("sections")=py::object()))
         .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
         .def_readonly("geometrics", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects")
         .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
