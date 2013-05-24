@@ -17,7 +17,7 @@ import os as _os
 _os.environ["PLASK_PREFIX_PATH"] = _os.sep + _os.path.join(*__file__.split(_os.sep)[:-5])
 
 from ._plask import *
-from ._plask import _print_exception
+from ._plask import _print_exception, __globals
 
 banner = '''\
 PLaSK %s --- Photonic Laser Simulation Kit
