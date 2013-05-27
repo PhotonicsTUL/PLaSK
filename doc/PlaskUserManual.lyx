@@ -3017,7 +3017,7 @@ DETAIL        : interpolate: Running LINEAR interpolation
 \begin_layout Plain Layout
 
 DETAIL        : electr:electrical.Beta2D: Setting up matrix system (size=1675,
- band=27)
+ bands=27{28})
 \end_layout
 
 \begin_layout Plain Layout
@@ -3027,8 +3027,8 @@ DETAIL        : electr:electrical.Beta2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : electr:electrical.Beta2D: Loop 1(41): DeltaV=1.123V, update=0.000V(
-0.173%)
+RESULT        : electr:electrical.Beta2D: Loop 1(47): DeltaV=1.131V, update=0.000V(
+8.451%)
 \end_layout
 
 \begin_layout Plain Layout
@@ -3039,7 +3039,7 @@ INFO          : therm:thermal.Static2D: Running thermal calculations
 \begin_layout Plain Layout
 
 DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675,
- band=27)
+ bands=27{28})
 \end_layout
 
 \begin_layout Plain Layout
@@ -3064,8 +3064,8 @@ DETAIL        : therm:thermal.Static2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : therm:thermal.Static2D: Loop 1(21): max(T)=369.853K, update=0.045K(
-0.012%)
+RESULT        : therm:thermal.Static2D: Loop 1(27): max(T)=345.828K, update=0.049K(
+0.014%)
 \end_layout
 
 \begin_layout Plain Layout

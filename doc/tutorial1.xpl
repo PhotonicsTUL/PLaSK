@@ -33,6 +33,7 @@
   <electrical solver="Beta2D" name="electr">
     <geometry ref="main"/>
     <mesh ref="default"/>
+    <junction beta="19" js="1"/>
     <voltage>
       <condition value="1.0"><place object="top-layer" side="top"/></condition>
       <condition value="0.0"><place object="substrate" side="bottom"/></condition>
@@ -66,7 +67,7 @@ figure()
 plot_geometry(GEO["main"], set_limits=True)
 plot_mesh(electr.mesh)
 
-pos = GEO["main"].get_object_positions(OBJ["junction"])[0]
+pos = GEO["main"].get_object_positions(GEO["junction"])[0]
 junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
 current = electr.outCurrentDensity(junction_mesh)
 curry = [ abs(j.y) for j in current ]
