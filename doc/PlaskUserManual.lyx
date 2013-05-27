@@ -3218,8 +3218,8 @@ In the second line above, there is a global dictionary
 \family typewriter
 GEO
 \family default
-, which contains all geometries defined in the XPL file, with keys matching
- the value of the attribute `name' of each geometry.
+, which contains all geometries and geometry objects defined in the XPL
+ file, with keys matching the value of the attribute `name' of each geometry.
  Hence, 
 \family typewriter
 GEO["main"]
@@ -3404,19 +3404,11 @@ Before concluding this tutorial, let us make a second figure.
 junction
 \emph default
  to the active layer.
- In Python script we can refer to it as 
+ In Python script we can refer to it as GEO
 \family typewriter
-OBJ[''junction'']
+[''junction'']
 \family default
-, so 
-\family typewriter
-OBJ
-\family default
- is a dictionary similar to 
-\family typewriter
-GEO
-\family default
-, which holds all the named objects.
+.
  We can obtain the position of the bottom left corner of this block by adding
  command (put it directly before the 
 \family typewriter
@@ -3429,7 +3421,7 @@ status open
 
 \begin_layout Plain Layout
 
-pos = GEO["main"].get_object_positions(OBJ["junction"])[0]
+pos = GEO["main"].get_object_positions(GEO["junction"])[0]
 \end_layout
 
 \end_inset
@@ -3790,7 +3782,7 @@ plot_mesh(electr.mesh)
 
 \begin_layout Plain Layout
 
-pos = GEO["main"].get_object_positions(OBJ["junction"])[0]
+pos = GEO["main"].get_object_positions(GEO["junction"])[0]
 \end_layout
 
 \begin_layout Plain Layout
