@@ -46,7 +46,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
             root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
             root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
-            root.maxiter = reader.getAttribute<int>("maxiter", root.maxstep);
+            root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
             reader.requireTagEnd();
         } else if (param == "stripe-root") {
             stripe_root.tolx = reader.getAttribute<double>("tolx", stripe_root.tolx);
