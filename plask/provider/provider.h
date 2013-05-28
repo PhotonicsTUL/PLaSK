@@ -195,8 +195,8 @@ struct Provider {
  * Common non-template base for all receivers.
  * This class is usefult for metaprogramming and also can be used for holding pointers to receivers.
  */
-class ReceiverBase {
-    // virtual ~ReceiverBase() {}
+struct ReceiverBase {
+    virtual ~ReceiverBase() {}
 };
 
 /**
@@ -213,7 +213,7 @@ class ReceiverBase {
  * @see @ref providers
  */
 template <typename ProviderT>
-class Receiver: ReceiverBase {
+class Receiver: public ReceiverBase {
 
     boost::signals2::connection providerConnection;
 

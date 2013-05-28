@@ -16,13 +16,22 @@ namespace plask {
 /**
  * Template of base class of combine provider.
  *
- * Subclass should define operator() which should combine values from providers (which are available by begin() and end() iterators).
+ * Subclass should define operator() which should combine values from providers
+ * (which are available by begin() and end() iterators).
  */
 template <typename BaseProviderClass>
-class CombinedProviderBase: public BaseProviderClass, public Receiver<BaseProviderClass> {
+class CombinedProviderBase: public BaseProviderClass {
 
-    /// Set of private providers which should be delete by this.
+    /// Set of private providers which should be deleted by this.
     std::set<BaseProviderClass*> private_providers;
+
+    void onChange(Provider& which, bool isDeleted) {
+        if (isDeleted) {
+            private_providers.erase(static_cast<BaseProviderClass*>(&which));
+            providers.erase(static_cast<BaseProviderClass*>(&which));
+        }
+        this->fireChanged();
+    }
 
 protected:
     /// Set of providers which values are combinating.
@@ -48,19 +57,6 @@ public:
     /// @return const past-the-end iterator over BaseProviderClass
     const_iterator end() const { return providers.end(); }
 
-    /// Receiver implementation, call fireChanged()
-    virtual void onChange() { BaseProviderClass::fireChanged(); }
-
-    /// Receiver implementation, delete from_where if it is private, remove it from providers sets and call fireChanged()
-    virtual void onDisconnect(BaseProviderClass* from_where) {
-        if (private_providers.find(from_where) != private_providers.end()) {
-            delete from_where;
-            private_providers.erase(from_where);
-        }
-        providers.erase(from_where);
-        BaseProviderClass::fireChanged();
-    }
-
     /**
      * Append new provider to set of the held providers.
      * @param to_add provider to append, can't be @c nullptr
@@ -69,13 +65,13 @@ public:
     void add(BaseProviderClass* to_add, bool providerIsPrivate = false) {
         providers.insert(to_add);
         if (providerIsPrivate) private_providers.insert(to_add);
-        to_add->add(*this);
-        BaseProviderClass::fireChanged();
+        to_add->changed.connect(boost::bind(&CombinedProviderBase::onChange, this, _1, _2));
+        this->fireChanged();
     }
 
     /**
      * Append new provider to the set of the held providers.
-     * @param to_add provider to append, can't be @c nullptr,  will be deleted by destructor of this
+     * @param to_add provider to append, can't be @c nullptr, will be deleted by destructor of this
      */
     void add(std::unique_ptr<BaseProviderClass>&& to_add) {
         add(to_add->release(), true);
@@ -83,17 +79,20 @@ public:
 
     /**
      * Remove specified provider from the set of the held providers.
-     * @param to_remove provider to remove, will be delete if it is private
+     * @param to_remove provider to remove, it will be deleted if it is private
      */
     void remove(BaseProviderClass* to_remove) {
-        //to_remove->disconnect(this);    // onDisconnect callback does the rest
+        to_remove->changed.disconnect(boost::bind(&CombinedProviderBase::onChange, this, _1, _2));
+        if (private_providers.erase(to_remove) > 0) delete to_remove;
+        providers.erase(to_remove);
     }
 
     /**
-     * Remove all providers from the set of the held providers
+     * Remove all providers from the set of the held providers.
+     * Delete private providers.
      */
     void clear() {
-        for (auto p: providers) remove(p);
+        while (!providers.empty()) remove(*providers.begin());
     }
 
     /// Delete all private providers.
@@ -117,8 +116,10 @@ public:
      * Throw exception if the providers set of this is empty.
      */
     void ensureHasProviders() const {
-        //if (providers.empty())
+        if (providers.empty())
+            //TODO why this cause linker error?
         //    throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
+                throw Exception("Combine provider has empty set of providers but some are required.");
     }
 
 };
@@ -130,7 +131,7 @@ public:
 template <typename, typename, typename> struct FieldSumProviderImpl;
 
 template <typename PropertyT, typename SpaceT, typename... ExtraArgs>
-struct FieldSumProviderImpl<PropertyT,SpaceT,VariadicTemplateTypesHolder<ExtraArgs...>>: public CombinedProviderBase<ProviderFor<PropertyT, SpaceT>> {
+struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>: public CombinedProviderBase<ProviderFor<PropertyT, SpaceT>> {
 
     typedef typename ProviderFor<PropertyT,SpaceT>::ProvidedType ProvidedType;
 
