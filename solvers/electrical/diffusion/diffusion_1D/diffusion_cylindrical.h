@@ -11,7 +11,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             FEM_PARABOLIC
         };
 
-        plask::ReceiverFor<plask::CurrentDensity2D, Geometry2DType> inCurrentDensity;
+        plask::ReceiverFor<plask::CurrentDensity<2>, Geometry2DType> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;

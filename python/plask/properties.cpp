@@ -10,6 +10,7 @@ void register_standard_properties_optical();
 
 
 void register_standard_properties_temperature();
+void register_standard_properties_heatdensity();
 void register_standard_properties_heatflux();
 
 void register_standard_properties_voltage();
@@ -27,6 +28,7 @@ void register_standard_properties()
 {
     // register_standard_properties_thermal();
     register_standard_properties_temperature();
+    register_standard_properties_heatdensity();
     register_standard_properties_heatflux();
 
     // register_standard_properties_electrical();

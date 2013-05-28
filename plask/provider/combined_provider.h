@@ -7,7 +7,7 @@
 #include "providerfor.h"
 
 /** @file
-This file contains templates and base classes for providers which combinates (for example: sum) values from other providers.
+This file contains templates and base classes for providers which combines (for example: sum) values from other providers.
 */
 
 
@@ -19,7 +19,7 @@ namespace plask {
  * Subclass should define operator() which should combine values from providers (which are available by begin() and end() iterators).
  */
 template <typename BaseProviderClass>
-class CombinedProviderBase: public BaseProviderClass, public BaseProviderClass::Listener {
+class CombinedProviderBase: public BaseProviderClass, public Receiver<BaseProviderClass> {
 
     /// Set of private providers which should be delete by this.
     std::set<BaseProviderClass*> private_providers;
@@ -48,68 +48,75 @@ public:
     /// @return const past-the-end iterator over BaseProviderClass
     const_iterator end() const { return providers.end(); }
 
-    /// BaseProviderClass::Listener implementation, call fireChanged()
-    virtual void onChange() { this->fireChanged(); }
+    /// Receiver implementation, call fireChanged()
+    virtual void onChange() { BaseProviderClass::fireChanged(); }
 
-    /// BaseProviderClass::Listener implementation, delete from_where if it is private, remove it from providers sets and call fireChanged()
-    virtual void onDisconnect(Provider* from_where) {
+    /// Receiver implementation, delete from_where if it is private, remove it from providers sets and call fireChanged()
+    virtual void onDisconnect(BaseProviderClass* from_where) {
         if (private_providers.find(from_where) != private_providers.end()) {
             delete from_where;
             private_providers.erase(from_where);
         }
         providers.erase(from_where);
-        this->fireChanged();
+        BaseProviderClass::fireChanged();
     }
 
     /**
-     * Append new provider to set of held providers.
+     * Append new provider to set of the held providers.
      * @param to_add provider to append, can't be @c nullptr
      * @param providerIsPrivate @c true only if @p provider is private for this and will be deleted by destructor of this
      */
-    void connect(BaseProviderClass* to_add, bool providerIsPrivate = false) {
+    void add(BaseProviderClass* to_add, bool providerIsPrivate = false) {
         providers.insert(to_add);
         if (providerIsPrivate) private_providers.insert(to_add);
         to_add->add(*this);
-        this->fireChanged();
+        BaseProviderClass::fireChanged();
     }
 
     /**
-     * Append new provider to set of held providers.
+     * Append new provider to the set of the held providers.
      * @param to_add provider to append, can't be @c nullptr,  will be deleted by destructor of this
      */
-    void connect(std::unique_ptr<BaseProviderClass>&& to_add) {
-        connect(to_add->release(), true);
+    void add(std::unique_ptr<BaseProviderClass>&& to_add) {
+        add(to_add->release(), true);
     }
 
     /**
-     * Remove provider from set of held providers.
+     * Remove specified provider from the set of the held providers.
      * @param to_remove provider to remove, will be delete if it is private
      */
-    void disconnect(BaseProviderClass* to_remove) {
-        to_remove->remove(to_remove);    // onDisconnect callback does the rest
+    void remove(BaseProviderClass* to_remove) {
+        to_remove->disconnect(this);    // onDisconnect callback does the rest
+    }
+
+    /**
+     * Remove all providers from the set of the held providers
+     */
+    void clear() {
+        for (auto p: providers) remove(p);
     }
 
     /// Delete all private providers.
     ~CombinedProviderBase() {
-        for (auto p: providers) disconnect(p);
+        clear();
     }
 
     /**
-     * Check if providers set of this is empty.
+     * Check if the providers set of this is empty.
      * @return @c true if this not contains any provider
      */
     bool empty() const { return providers.empty(); }
 
     /**
-     * Get number of providers in set.
+     * Get number of providers in the set.
      * @return number of providers
      */
     std::size_t size() const { return providers.size(); }
 
     /**
-     * Throw exception if providers set of this is empty.
+     * Throw exception if the providers set of this is empty.
      */
-    void ensureHasProviders() {
+    void ensureHasProviders() const {
         if (providers.empty()) throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
     }
 
@@ -126,19 +133,18 @@ struct FieldSumProviderImpl<PropertyT,SpaceT,VariadicTemplateTypesHolder<ExtraAr
 
     typedef typename ProviderFor<PropertyT,SpaceT>::ProvidedType ProvidedType;
 
-
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIMS>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
         this->ensureHasProviders();
         auto p = this->begin();
         ProvidedType result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         ++p;
         if (p == this->end()) return result;    // has one element
-        result = result.claim();    // ensure has own memory
+        auto rwresult = result.claim();    // ensure has own memory
         do {
-            result += (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            rwresult += (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
             ++p;
         } while (p != this->end());
-        return result;
+        return rwresult;
     }
 };
 

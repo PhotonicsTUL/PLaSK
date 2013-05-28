@@ -373,6 +373,26 @@ PythonProviderFor__init__(const py::object& function) {
         (function);
 }
 
+
+// ---------- Combined Provider ------------
+template <typename ProviderT>
+struct RegisterCombinedProvider {
+
+    typedef py::class_<ProviderT, py::bases<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>>, boost::noncopyable> Class;
+
+    const std::string property_name;
+    Class pyclass;
+
+    RegisterCombinedProvider(const std::string& name): pyclass(name.c_str(), "Combined provider for ") {
+//         pyclass.
+
+    }
+
+};
+
+
+
+
 namespace detail {
 
     template <typename ProviderT>

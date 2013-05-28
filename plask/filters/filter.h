@@ -357,10 +357,14 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
 
     virtual ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) {
         //TODO
+        ReceiverFor<PropertyT, Geometry3D>* dupa = nullptr;
+        return *dupa;
     }
 
     virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& obj, const PathHints* path = nullptr) {
         //TODO
+        ReceiverFor<PropertyT, Geometry2DCartesian>* dupa = nullptr;
+        return *dupa;
     }
 };
 

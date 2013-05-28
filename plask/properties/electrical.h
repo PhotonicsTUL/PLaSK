@@ -16,15 +16,9 @@ struct Potential: public ScalarFieldProperty {
  * Electric current density [kA/cm^2]
  * This is 2D vector for two-dimensional sovers
  */
-struct CurrentDensity2D: public VectorFieldProperty<2> {
-    static constexpr const char* NAME = "current density 2D";
-};
-
-/**
- * Electric current density [kA/cm^2]
- */
-struct CurrentDensity3D: public VectorFieldProperty<3> {
-    static constexpr const char* NAME = "current density 3D";
+template <int dim>
+struct CurrentDensity: public VectorFieldProperty<dim> {
+    static constexpr const char* NAME = "current density";
 };
 
 /**

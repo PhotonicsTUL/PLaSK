@@ -7,8 +7,12 @@ namespace plask { namespace python {
 
 void register_standard_properties_current()
 {
-    registerProperty<CurrentDensity2D>();
-    registerProperty<CurrentDensity3D>();
+    //TODO registerProperty<CurrentDensity<2>>();
+    //TODO registerProperty<CurrentDensity<3>>();
+    registerProvider<ProviderFor<CurrentDensity<2>,Geometry2DCartesian>>();
+    registerProvider<ProviderFor<CurrentDensity<2>,Geometry2DCylindrical>>();
+    registerProvider<ProviderFor<CurrentDensity<3>,Geometry3D>>();
+
 }
 
 }} // namespace plask>();

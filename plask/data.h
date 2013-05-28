@@ -591,7 +591,7 @@ std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
  * @return @c *this
  */
 template<class T>
-DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
+DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<const T> inc_val) {
     std::size_t min_size = std::min(to_inc.size(), inc_val.size());
     for (std::size_t i = 0; i < min_size; ++i)
         to_inc[i] += inc_val[i];
@@ -599,7 +599,7 @@ DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<T> inc_val) {
 }
 
 template <class T>
-typename std::remove_cv<T>::type accumulate(const DataVector<T>& to_accum, typename std::remove_cv<T>::type initial = typename std::remove_cv<T>::type()) {
+typename std::remove_cv<T>::type accumulate(const DataVector<const T>& to_accum, typename std::remove_cv<T>::type initial=typename std::remove_cv<T>::type()) {
     for (std::size_t i = 0; i < to_accum.size(); ++i)
         initial += to_accum[i];
     return initial;

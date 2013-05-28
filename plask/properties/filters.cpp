@@ -9,14 +9,14 @@ namespace plask {
 
 // Thermal
 FiltersFactory::RegisterStandard<Temperature> registerTemperatureFilters;
-FiltersFactory::RegisterStandard<HeatFlux2D> registerHeatFlux2DFilters;
-FiltersFactory::RegisterStandard<HeatFlux3D> registerHeatFlux3DFilters;
+//TODO FiltersFactory::RegisterStandard<HeatFlux<2>> registerHeatFlux<2>Filters;
+//TODO FiltersFactory::RegisterStandard<HeatFlux<3>> registerHeatFlux<3>Filters;
 FiltersFactory::RegisterStandard<HeatDensity> registerHeatDensityFilters;
 
 // Electrical
 FiltersFactory::RegisterStandard<Potential> registerPotentialFilters;
-FiltersFactory::RegisterStandard<CurrentDensity2D> registerCurrentDensity2DFilters;
-FiltersFactory::RegisterStandard<CurrentDensity3D> registerCurrentDensity3DFilters;
+//TODO FiltersFactory::RegisterStandard<CurrentDensity<2>> registerCurrentDensity<2>Filters;
+//TODO FiltersFactory::RegisterStandard<CurrentDensity<3>> registerCurrentDensity<3>Filters;
 FiltersFactory::RegisterStandard<CarriersConcentration> registerCarriersConcentrationFilters;
 FiltersFactory::RegisterStandard<ElectronsConcentration> registerElectronsConcentrationFilters;
 FiltersFactory::RegisterStandard<HolesConcentration> registerHolesConcentrationFilters;

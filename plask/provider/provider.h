@@ -15,8 +15,7 @@ Provider is an object which has type derived from plask::Provider and provide so
 (has operator() which return provided value(s)).
 It also has set of listeners which are inform about changes of provided data.
 
-Receiver is an object of class derived from plask::Provider::Listener, which is typically connected
-with provider and allow for reading value(s) provided by it
+Receiver is an object of class, which is typically connected with provider and allow for reading value(s)provided by it
 (has operator() which return provided value(s)).
 
 Each type of provider has corresponding type of receiver (see plask::Receiver),

@@ -7,7 +7,8 @@ namespace plask { namespace python {
 
 void register_standard_properties_temperature()
 {
-    registerProperty<Temperature>();
+    registerProperty<HeatDensity>();
+    RegisterCombinedProvider<HeatDensitySumProvider<Geometry2DCartesian>>("SumHeatDensity");
 }
 
 }} // namespace plask>();
