@@ -44,36 +44,6 @@ class ReceiverTest(unittest.TestCase):
         self.assertEqual( sys.getrefcount(v), 2 )
 
 
-    def testStepProfile(self):
-        r1 = plask.geometry.Rectangle(4, 1, None)
-        r2 = plask.geometry.Rectangle(4, 2, None)
-        stack = plask.geometry.Stack2D()
-        h = stack.append(r1)
-        stack.append(r2)
-        stack.append(r1)
-        geom = plask.geometry.Cartesian2D(stack)
-        grid = plask.mesh.Rectilinear2D([2.], [0.5, 2.0,  3.5])
-
-        step = plask.StepProfile(geom)
-        self.solver.inTemperature = step
-
-        step[r1] = 100.
-        self.assertEqual( step[r1], 100. )
-        self.assertTrue( self.solver.inTemperature.changed )
-        self.assertEqual( list(self.solver.inTemperature(grid)), [100., 300., 100.])
-        self.assertFalse( self.solver.inTemperature.changed )
-
-        step[r2] = 400.
-        step[r1, h] = 200.
-        self.assertTrue( self.solver.inTemperature.changed )
-        self.assertEqual( list(self.solver.inTemperature(grid)), [200., 400., 100.])
-
-        del step[r1]
-        self.assertEqual( list(self.solver.inTemperature(grid)), [200., 400., 300.])
-
-        self.assertEqual( step.values(), [400., 200.] )
-
-
 
 class PythonProviderTest(unittest.TestCase):
 

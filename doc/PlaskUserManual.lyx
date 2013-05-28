@@ -17987,8 +17987,7 @@ The purpose of this section is to define the relations between solvers i.
 
 e.
  the connections of providers and receivers.
- In addition, you can attach a constant step-profile field here.
- This can be achieved with two tags allowed in this section:
+ There is only one type of tags allowed in this section:
 \end_layout
 
 \begin_layout Labeling
@@ -18043,27 +18042,6 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-in
-\family default
- Receiver to connect in the format 
-\begin_inset Quotes eld
-\end_inset
-
-
-\emph on
-solver_name.inReceiverName
-\emph default
-
-\begin_inset Quotes erd
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
 out
 \family default
  Provider to connect in the format 
@@ -18081,45 +18059,6 @@ solver_name.outProviderName
 .
 \end_layout
 
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<profile>
-\family default
-\series default
- Connect set of step profiles
-\begin_inset Index idx
-status collapsed
-
-\begin_layout Plain Layout
-step profile
-\end_layout
-
-\end_inset
-
- to receiver.
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-Attributes
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
@@ -18139,119 +18078,61 @@ solver_name.inReceiverName
 \end_inset
 
 .
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-default
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Default value of the field provided as step profile.
-\end_layout
-
-\begin_layout Standard
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-Contents
-\end_layout
-
+ If 
+\emph on
+solver_name
+\emph default
+ is a filter, this attribute should have form 
+\begin_inset Quotes eld
 \end_inset
 
 
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-\series bold
-<step>
-\family default
-\series default
- Declaration of a single step in the profile.
-\end_layout
-
-\begin_deeper
-\begin_layout Standard
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-Attributes
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
+\emph on
+solver_name
+\emph default
+[
+\emph on
 object
-\family default
- Name of the geometry object to set the field step value at.
-\end_layout
+\emph default
+]
+\begin_inset Quotes erd
+\end_inset
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
+ or 
+\begin_inset Quotes eld
+\end_inset
 
-\family typewriter
+
+\emph on
+solver_name
+\emph default
+[
+\emph on
+geometry
+\emph default
+@
+\emph on
 path
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
+\emph default
+]
+\begin_inset Quotes erd
 \end_inset
 
-Path name, specifying particular instance of the object given in the 
-\family typewriter
+, where 
+\emph on
 object
-\family default
- attribute.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
+\emph default
+ (optionally specified by 
+\emph on
+path
+\emph default
+) is the geometry in which the provider specified in 
 \family typewriter
-value
+out
 \family default
- Value of the field at the specified object.
+ attribute provides data.
 \end_layout
 
-\end_deeper
 \end_deeper
 \begin_layout Section
 Section <script>

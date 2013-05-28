@@ -2,6 +2,8 @@
 #include <cstring>
 #include <fstream>
 
+#include <boost/tokenizer.hpp>
+
 #include <plask/filters/filter.h>
 #include <plask/manager.h>
 
@@ -133,10 +135,11 @@ void PythonManager::loadConnects(XMLReader& reader)
 {
     while(reader.requireTagOrEnd()) {
 
-        if (reader.getNodeName() != "connect" && reader.getNodeName() != "profile")
-            throw XMLUnexpectedElementException(reader, "<connect> or <profile>", reader.getNodeName());
+        if (reader.getNodeName() != "connect")
+            throw XMLUnexpectedElementException(reader, "<connect>", reader.getNodeName());
 
         std::string inkey = reader.requireAttribute("in");
+
         std::pair<std::string,std::string> in;
         if (inkey.find('[') == std::string::npos) {
             in = splitString2(inkey, '.');
@@ -167,54 +170,34 @@ void PythonManager::loadConnects(XMLReader& reader)
             catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", in.first, in.second)); }
         }
 
-        if (reader.getNodeName() == "connect") {
+        std::string outkey = reader.requireAttribute("out");
 
-            auto out = splitString2(reader.requireAttribute("out"), '.');
-            py::object solverout, provider;
+        py::object provider;
+
+        for (auto item: boost::tokenizer<boost::char_separator<char>>(reader.requireAttribute("out"), boost::char_separator<char>("+"))) {
+
+            auto out = splitString2(outkey, '.');
+            py::object solverout, prov;
 
             auto out_solver = solvers.find(out.first);
             if (out_solver == solvers.end()) throw XMLException(reader, format("Cannot find (out) solver with name '%1%'.", out.first));
             try { solverout = py::object(out_solver->second); }
             catch (py::error_already_set) { throw XMLException(reader, format("Cannot convert solver '%1%' to python object.", out.first)); }
 
-            try { provider = solverout.attr(out.second.c_str()); }
+            try { prov = solverout.attr(out.second.c_str()); }
             catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", out.first, out.second)); }
 
-            try {
-                receiver.attr("connect")(provider);
-            } catch (py::error_already_set) {
-                throw XMLException(reader, format("Cannot connect '%1%.%2%' to '%3%.'%4%'.", out.first, out.second, in.first, in.second));
-            }
-
-            reader.requireTagEnd();
-
-        } else if (reader.getNodeName() == "profile") {
-
-            auto defval = reader.getAttribute("default");
-            py::object defaultobj;
-            if (defval) defaultobj = py::eval(py::str(*defval));
-
-            if (profiles.has_key(inkey))
-                throw XMLException(reader, format("There is already profile defined for receiver %1%", inkey));
-
-            auto profile = make_shared<PythonProfile>(py::extract<const Geometry&>(solverin.attr("geometry")), defaultobj);
-            profiles[inkey] = py::object(profile);
-
-            while (reader.requireTagOrEnd("step")) {
-                GeometryObject* object = requireGeometryObject(reader.requireAttribute("object")).get();
-                PathHints path;
-                auto hints = reader.getAttribute("path");
-                if (hints) path = requirePathHints(*hints);
-                py::object value = py::eval(py::str(reader.requireAttribute("value")));
-                profile->places.emplace_back(PythonProfile::Place(*object, path));
-                profile->values.push_back(value);
-            }
-
-            receiver.attr("assign")(py::object(profiles[inkey]));
-
-            reader.requireTagEnd();
+            if (provider == py::object()) provider = prov;
+            else provider = provider + prov;
         }
 
+        try {
+            receiver.attr("connect")(provider);
+        } catch (py::error_already_set) {
+            throw XMLException(reader, format("Cannot connect '%1%' to '%2%'.", outkey, inkey));
+        }
+
+        reader.requireTagEnd();
     }
 }
 

@@ -12,7 +12,9 @@ void register_standard_properties_current()
     registerProvider<ProviderFor<CurrentDensity<2>,Geometry2DCartesian>>();
     registerProvider<ProviderFor<CurrentDensity<2>,Geometry2DCylindrical>>();
     registerProvider<ProviderFor<CurrentDensity<3>,Geometry3D>>();
-
+    registerReceiver<ReceiverFor<CurrentDensity<2>,Geometry2DCartesian>>();
+    registerReceiver<ReceiverFor<CurrentDensity<2>,Geometry2DCylindrical>>();
+    registerReceiver<ReceiverFor<CurrentDensity<3>,Geometry3D>>();
 }
 
 }} // namespace plask>();

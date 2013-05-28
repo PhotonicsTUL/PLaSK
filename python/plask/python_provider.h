@@ -43,146 +43,9 @@ struct DataVectorWrap : public DataVector<T> {
     void onMeshChanged(const typename MeshD<dim>::Event& event) { mesh_changed = true; }
 };
 
-// ---------- Step Profile ------------
-
-struct PythonProfile: public Provider {
-
-    struct Place
-    {
-        /// Object for which we specify the value
-        weak_ptr<GeometryObject> object;
-
-        /// Hints specifying pointed object
-        PathHints hints;
-
-        /**
-         * Create place
-         * \param object geometry object of the place
-         * \param hints path hints further specifying the place
-         */
-        Place(GeometryObject& object, const PathHints& hints=PathHints())
-            : object(object.shared_from_this()), hints(hints) {}
-
-        /**
-         * Create place
-         * \param src python tuple holding object and hints
-         */
-        Place(py::object src);
-
-        /// Comparison operator for std::find
-        inline bool operator==(const Place& other) const {
-            return !(object < other.object || other.object < object ||
-                     hints  < other.hints  || other.hints  < hints);
-        }
-    };
-
-    /// Object for which coordinates we specify the values
-    weak_ptr<const Geometry> root_geometry;
-
-    /// Values for places.
-    std::deque<Place> places;
-    std::deque<py::object> values;
-
-    /// Default value, provided for places where there is no other value
-    py::object custom_default_value;
-
-    /**
-     * Create step profile
-     * \param geometry root geometry
-     * \param default_value default value
-     */
-    PythonProfile(const Geometry& geometry, py::object default_value=py::object()):
-        root_geometry(dynamic_pointer_cast<const Geometry>(geometry.shared_from_this())), custom_default_value(default_value) {}
-
-    /// Get value for place
-    py::object __getitem__(py::object key);
-
-    /// Set value for place
-    void __setitem__(py::object key, py::object value);
-
-    /// Delete place
-    void __delitem__(py::object key);
-
-    /// Clear all the values
-    void clear();
-
-    /// Return number of defined places
-    size_t size() const { return places.size(); }
-
-    /// Return list of all places
-    py::list keys() const;
-
-    /// Return list of all values
-    py::list pyvalues() const;
-
-    /// Return values for specified mesh
-    template <typename ValueT, int DIMS>
-    DataVector<ValueT> get(const plask::MeshD<DIMS>& dst_mesh, ValueT default_value) const {
-        if (custom_default_value != py::object()) default_value = py::extract<ValueT>(custom_default_value);
-
-        auto geometry = dynamic_pointer_cast<const GeometryD<DIMS>>(root_geometry.lock());
-        if (!geometry) return DataVector<ValueT>(dst_mesh.size(), default_value);
-        auto root = geometry->getChild();
-        if (!root) throw DataVector<ValueT>(dst_mesh.size(), default_value);
-
-        std::vector<ValueT> vals; vals.reserve(values.size());
-        for (auto val: values) vals.push_back(py::extract<ValueT>(val));
-
-        DataVector<ValueT> result(dst_mesh.size());
-
-        size_t i = 0;
-        for (Vec<DIMS, double> point: dst_mesh) {
-            bool assigned = false;
-            for (auto place = places.begin(); place != places.end(); ++place) {
-                auto object = place->object.lock();
-                if (!object) continue;
-                if (root->objectIncludes(*object, place->hints, point)) {
-                    result[i] = vals[place-places.begin()];
-                    assigned = true;
-                    break;
-                }
-            }
-            if (!assigned) result[i] = default_value;
-            ++i;
-        }
-
-        return result;
-    }
-
-};
-
+// ---------- Receiver ------------
 
 namespace detail {
-
-// ---------- Profile ------------
-
-    template <typename, PropertyType, typename> class ProfileProvider;
-
-    template <typename ReceiverT, typename... ExtraParams>
-    class ProfileProvider<ReceiverT,FIELD_PROPERTY,VariadicTemplateTypesHolder<ExtraParams...>>:
-    public ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>/*, public Provider::Listener*/
-    {
-        boost::signals2::connection conn;
-    public:
-        shared_ptr<PythonProfile> profile;
-        ProfileProvider(const shared_ptr<PythonProfile>& parent): profile(parent) {
-                //parent->add(this);
-                conn = parent->changed.connect([&] (Provider&,bool) { this->fireChanged(); });
-        }
-        virtual ~ProfileProvider() { /*profile->remove(this);*/ conn.disconnect(); }
-        virtual typename ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType>::ProvidedType operator()(const MeshD<ReceiverT::SpaceType::DIM>& mesh, ExtraParams..., InterpolationMethod) const {
-            return profile->get<typename ReceiverT::PropertyTag::ValueType>(mesh, ReceiverT::PropertyTag::getDefaultValue());
-        }
-        //virtual void onChange() { this->fireChanged(); }
-    };
-
-    template <typename ReceiverT>
-    void connectProfileProvider(ReceiverT& receiver, shared_ptr<PythonProfile> profile) {
-        typedef ProfileProvider<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams> ProviderT;
-        receiver.setProvider(new ProviderT(profile), true);
-    }
-
-// ---------- Receiver ------------
 
     template <typename ReceiverT>
     struct RegisterReceiverBase
@@ -230,18 +93,6 @@ namespace detail {
         return false;
     }
 
-    template <typename ReceiverT>
-    static bool assignProfile(ReceiverT& receiver, const py::object& obj) {
-        typedef ProfileProvider<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams> StepProviderT;
-        try {
-            shared_ptr<PythonProfile> profile = py::extract<shared_ptr<PythonProfile>>(obj);
-            receiver.setProvider(new StepProviderT(profile), true);
-            return true;
-        } catch (py::error_already_set) { PyErr_Clear(); }
-        return false;
-    }
-
-
     template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
 
     template <typename ReceiverT, typename... ExtraParams>
@@ -279,13 +130,12 @@ namespace detail {
         static void assign(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
-            if (assignProfile(self, obj)) return;
             if (assignValue(self, obj)) return;
             try {
                 DataT data = py::extract<DataT>(obj);
                 ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, data);
             } catch (py::error_already_set) {
-                throw TypeError("You can only assign %1% provider, profile, data, or constant of type '%2%'",
+                throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
                                 type_name<typename ReceiverT::PropertyTag>(),
                                 std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
             }
@@ -297,7 +147,6 @@ namespace detail {
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
-            this->receiver_class.def("assign", &connectProfileProvider<ReceiverT>, "Assign profile to the receiver", py::arg("profile"));
         }
 
       private:
@@ -375,22 +224,56 @@ PythonProviderFor__init__(const py::object& function) {
 
 
 // ---------- Combined Provider ------------
-template <typename ProviderT>
+template <typename CombinedProviderT>
 struct RegisterCombinedProvider {
 
-    typedef py::class_<ProviderT, py::bases<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>>, boost::noncopyable> Class;
+    typedef py::class_<CombinedProviderT, py::bases<ProviderFor<typename CombinedProviderT::PropertyTag, typename CombinedProviderT::SpaceType>>, boost::noncopyable> Class;
 
-    const std::string property_name;
-    Class pyclass;
+    static py::object __add__(py::object pyself, typename CombinedProviderT::BaseProviderClass* provider) {
+        CombinedProviderT* self = py::extract<CombinedProviderT*>(pyself);
+        self->add(provider);
+        return pyself;
+    }
 
-    RegisterCombinedProvider(const std::string& name): pyclass(name.c_str(), "Combined provider for ") {
-//         pyclass.
+    static void __iadd__(py::object pyself, typename CombinedProviderT::BaseProviderClass* provider) {
+        __add__(pyself, provider);
+    }
 
+    static CombinedProviderT* add(typename CombinedProviderT::BaseProviderClass* provider1, typename CombinedProviderT::BaseProviderClass* provider2) {
+        auto self = new CombinedProviderT;
+        self->add(provider1);
+        self->add(provider2);
+        return self;
+    }
+
+    RegisterCombinedProvider(const std::string& name)  {
+        Class pyclass(name.c_str(), (std::string("Combined provider for ") + CombinedProviderT::NAME).c_str());
+        pyclass.def("__iadd__", &__iadd__, py::with_custodian_and_ward<1,2>())
+               .def("__len__", &CombinedProviderT::size)
+               .def("add", &__iadd__, "Add another provider to the combination", py::with_custodian_and_ward_postcall<0,2>())
+               .def("remove", &CombinedProviderT::remove, "Remove provider from the combination")
+               .def("clear", &CombinedProviderT::clear, "Clear all elements of combined provider")
+               .def("__add__", &__add__, py::with_custodian_and_ward_postcall<0,2>())
+        ;
+
+        py::scope scope;
+        boost::optional<py::object> oldadd;
+        try { oldadd.reset(scope.attr("__add__")); }
+        catch (py::error_already_set) { PyErr_Clear(); }
+        py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
+                              py::with_custodian_and_ward_postcall<0,2,
+                              py::return_value_policy<py::manage_new_object>>>());
+        py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
+            py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseProviderClass>()).m_class_object
+        )));
+        if (cls) py::object(cls).attr("__add__") = scope.attr("__add__");
+        if (oldadd)
+            scope.attr("__add__") = *oldadd;
+        else
+            py::delattr(scope, "__add__");
     }
 
 };
-
-
 
 
 namespace detail {
@@ -398,7 +281,7 @@ namespace detail {
     template <typename ProviderT>
     struct RegisterProviderBase {
         const std::string property_name;
-        py::class_<ProviderT, boost::noncopyable> provider_class;
+        py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable> provider_class;
         RegisterProviderBase(const std::string& suffix="") :
             property_name (type_name<typename ProviderT::PropertyTag>()),
             provider_class(("ProviderFor" + property_name + suffix).c_str(), py::no_init) {
@@ -480,7 +363,6 @@ void registerProvider() {
         detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
     }
 }
-
 
 }} // namespace plask::python
 

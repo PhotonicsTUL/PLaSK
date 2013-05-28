@@ -142,9 +142,9 @@ bool isCid(const char* potential_id, char underline_ch = '_');
 template <typename T>
 std::string type_name() {
     std::string demangled = boost::units::detail::demangle(typeid(T).name());
-    const char* s = demangled.c_str();
-    for (const char* c = s; *c != 0; ++c) if (*c == ':') s = c+1;
-    return s;
+    size_t s = demangled.rfind(':');
+    if (s == std::string::npos) s = 0; else ++s;
+    return demangled.substr(s, demangled.find('<')-s);
 }
 
 }       // namespace plask

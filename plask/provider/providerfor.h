@@ -8,7 +8,6 @@ This file contains classes and templates which allow to generate providers and r
 
 #include "provider.h"
 #include "../utils/stl.h"   // VariadicTemplateTypesHolder
-#include "const_providers.h"
 
 namespace plask {
 
@@ -534,27 +533,6 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
             return ProvidedType(dst_mesh.size(), value);
         }
     };
-
-    /**
-     * Provider which allows to define value in each geometry place pointed as geometry object.
-     *
-     * It ignores extra parameters.
-     */
-    struct ConstByPlace: public ConstByPlaceProviderImpl<PropertyT, SpaceT> {
-
-        /**
-         * Create the provider
-         * \param root root geometry
-         * \param default_value default value returned in all not-specified places
-         */
-        ConstByPlace(weak_ptr<const GeometryObjectD<SpaceT::DIM>> root=weak_ptr<const GeometryObjectD<SpaceT::DIM>>(), const ValueT& default_value=ValueT()):
-            ConstByPlaceProviderImpl<PropertyT, SpaceT>(root, default_value) {}
-
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
-            return this->get(dst_mesh);
-        }
-    };
-
 };
 
 }   // namespace plask

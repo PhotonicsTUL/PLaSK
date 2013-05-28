@@ -27,8 +27,6 @@ void register_data_vectors();
 
 void register_python_log();
 
-void register_step_profile();
-
 void register_standard_properties();
 
 // Hack necessary as macro import_array wants to return some value
@@ -198,9 +196,6 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Data vector
     register_data_vectors();
-
-    // Additional providers
-    register_step_profile();
 
     // Solvers
     py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>("Solver", "Base class for all solvers", py::no_init)

@@ -19,42 +19,46 @@ namespace plask {
  * Subclass should define operator() which should combine values from providers
  * (which are available by begin() and end() iterators).
  */
-template <typename BaseProviderClass>
-class CombinedProviderBase: public BaseProviderClass {
+template <typename BaseProviderT>
+struct CombinedProviderBase: public BaseProviderT {
+
+    typedef BaseProviderT BaseProviderClass;
+
+  private:
 
     /// Set of private providers which should be deleted by this.
-    std::set<BaseProviderClass*> private_providers;
+    std::set<BaseProviderT*> private_providers;
 
     void onChange(Provider& which, bool isDeleted) {
         if (isDeleted) {
-            private_providers.erase(static_cast<BaseProviderClass*>(&which));
-            providers.erase(static_cast<BaseProviderClass*>(&which));
+            private_providers.erase(static_cast<BaseProviderT*>(&which));
+            providers.erase(static_cast<BaseProviderT*>(&which));
         }
         this->fireChanged();
     }
 
-protected:
+  protected:
     /// Set of providers which values are combinating.
-    std::set<BaseProviderClass*> providers;
+    std::set<BaseProviderT*> providers;
 
-public:
+  public:
 
-    /// Type of iterator over BaseProviderClass
-    typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::iterator> iterator;
+    /// Type of iterator over BaseProviderT
+    typedef boost::indirect_iterator<typename std::set<BaseProviderT*>::iterator> iterator;
 
-    /// Type of const iterator over BaseProviderClass
-    typedef boost::indirect_iterator<typename std::set<BaseProviderClass*>::const_iterator> const_iterator;
+    /// Type of const iterator over BaseProviderT
+    typedef boost::indirect_iterator<typename std::set<BaseProviderT*>::const_iterator> const_iterator;
 
-    /// @return begin iterator over BaseProviderClass
+    /// @return begin iterator over BaseProviderT
     iterator begin() { return providers.begin(); }
 
-    /// @return past-the-end iterator over BaseProviderClass
+    /// @return past-the-end iterator over BaseProviderT
     iterator end() { return providers.end(); }
 
-    /// @return const begin iterator over BaseProviderClass
+    /// @return const begin iterator over BaseProviderT
     const_iterator begin() const { return providers.begin(); }
 
-    /// @return const past-the-end iterator over BaseProviderClass
+    /// @return const past-the-end iterator over BaseProviderT
     const_iterator end() const { return providers.end(); }
 
     /**
@@ -62,7 +66,7 @@ public:
      * @param to_add provider to append, can't be @c nullptr
      * @param providerIsPrivate @c true only if @p provider is private for this and will be deleted by destructor of this
      */
-    void add(BaseProviderClass* to_add, bool providerIsPrivate = false) {
+    void add(BaseProviderT* to_add, bool providerIsPrivate = false) {
         providers.insert(to_add);
         if (providerIsPrivate) private_providers.insert(to_add);
         to_add->changed.connect(boost::bind(&CombinedProviderBase::onChange, this, _1, _2));
@@ -73,7 +77,7 @@ public:
      * Append new provider to the set of the held providers.
      * @param to_add provider to append, can't be @c nullptr, will be deleted by destructor of this
      */
-    void add(std::unique_ptr<BaseProviderClass>&& to_add) {
+    void add(std::unique_ptr<BaseProviderT>&& to_add) {
         add(to_add->release(), true);
     }
 
@@ -81,7 +85,7 @@ public:
      * Remove specified provider from the set of the held providers.
      * @param to_remove provider to remove, it will be deleted if it is private
      */
-    void remove(BaseProviderClass* to_remove) {
+    void remove(BaseProviderT* to_remove) {
         to_remove->changed.disconnect(boost::bind(&CombinedProviderBase::onChange, this, _1, _2));
         if (private_providers.erase(to_remove) > 0) delete to_remove;
         providers.erase(to_remove);
@@ -117,7 +121,7 @@ public:
      */
     void ensureHasProviders() const {
         if (providers.empty())
-            throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", this->name());
+            throw Exception("Combined %1% provider has no components", this->name());
     }
 
 };
