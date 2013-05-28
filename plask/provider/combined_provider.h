@@ -117,9 +117,7 @@ public:
      */
     void ensureHasProviders() const {
         if (providers.empty())
-            //TODO why this cause linker error?
-        //    throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
-                throw Exception("Combine provider has empty set of providers but some are required.");
+            throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", this->name());
     }
 
 };

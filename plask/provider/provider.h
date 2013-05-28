@@ -165,6 +165,7 @@ namespace plask {
 struct Provider {
 
     static constexpr const char* NAME = "undefined";
+    virtual const char* name() const { return NAME; }
 
     Provider & operator=(const Provider&) = delete;
     Provider(const Provider&) = delete;
@@ -231,6 +232,7 @@ public:
 
     /// Name of provider.
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
+    virtual const char* providerName() const { return PROVIDER_NAME; }
 
     /// Signal called when provider value or provider was changed (called by onChange)
     boost::signals2::signal<void(Receiver& src)> providerValueChanged;
@@ -354,7 +356,7 @@ public:
     /// @throw NoProvider when provider is not available
     void ensureHasProvider() const {
         if (provider == nullptr)
-            throw NoProvider(PROVIDER_NAME);
+            throw NoProvider(providerName());
     }
 
     /**
@@ -421,6 +423,7 @@ template <typename ValueT, typename... ArgsT>
 struct SingleValueProvider: public Provider {
 
     static constexpr const char* NAME = "undefined value";
+    virtual const char* name() const { return NAME; }
 
     /// Type of provided value.
     typedef ValueT ProvidedType;
@@ -443,6 +446,7 @@ template <typename ValueT, typename SpaceT, typename... ExtraArgs>
 struct FieldProvider: public Provider {
 
     static constexpr const char* NAME = "undefined field";
+    virtual const char* name() const { return NAME; }
 
     /// Type of value provided by this (returned by operator()).
     typedef DataVector<const ValueT> ProvidedType;

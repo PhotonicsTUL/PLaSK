@@ -213,6 +213,7 @@ template <typename PropertyT, typename ValueT, typename SpaceT, typename... _Ext
 struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<ValueT, _ExtraParams...> {
 
     static constexpr const char* NAME = PropertyT::NAME;
+    virtual const char* name() const { return NAME; }
 
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
@@ -347,6 +348,7 @@ template <typename PropertyT, typename ValueT, typename SpaceT, typename... _Ext
 struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<ValueT, SpaceT, _ExtraParams...> {
 
     static constexpr const char* NAME = PropertyT::NAME;
+    virtual const char* name() const { return NAME; }
 
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
@@ -417,7 +419,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
 
         /// Throw NoValue exception if value is not initialized
         void ensureHasValue() const {
-            if (!hasValue()) throw NoValue(NAME);
+            if (!hasValue()) throw NoValue(name());
         }
 
         /**
@@ -428,7 +430,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
 
         /// Throw NoValue exception if value is not initialized and BadMesh exception if the mesh and values sizes mismatch
         void ensureHasCorrectValue() const {
-            if (!hasValue()) throw NoValue(NAME);
+            if (!hasValue()) throw NoValue(name());
             if (values.size() != mesh_ptr->size())
                 throw BadMesh("Provider::WithValue", "Mesh size (%2%) and values size (%1%) do not match", values.size(), mesh_ptr->size());
         }
