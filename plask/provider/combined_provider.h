@@ -86,7 +86,7 @@ public:
      * @param to_remove provider to remove, will be delete if it is private
      */
     void remove(BaseProviderClass* to_remove) {
-        to_remove->disconnect(this);    // onDisconnect callback does the rest
+        //to_remove->disconnect(this);    // onDisconnect callback does the rest
     }
 
     /**
@@ -117,7 +117,8 @@ public:
      * Throw exception if the providers set of this is empty.
      */
     void ensureHasProviders() const {
-        if (providers.empty()) throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
+        //if (providers.empty())
+        //    throw Exception("Combine \"%1%\" provider has empty set of providers but some are required.", BaseProviderClass::NAME);
     }
 
 };
@@ -129,7 +130,7 @@ public:
 template <typename, typename, typename> struct FieldSumProviderImpl;
 
 template <typename PropertyT, typename SpaceT, typename... ExtraArgs>
-struct FieldSumProviderImpl<PropertyT,SpaceT,VariadicTemplateTypesHolder<ExtraArgs...>>: public CombinedProviderBase<ProviderFor<PropertyT,SpaceT>> {
+struct FieldSumProviderImpl<PropertyT,SpaceT,VariadicTemplateTypesHolder<ExtraArgs...>>: public CombinedProviderBase<ProviderFor<PropertyT, SpaceT>> {
 
     typedef typename ProviderFor<PropertyT,SpaceT>::ProvidedType ProvidedType;
 
@@ -152,7 +153,7 @@ struct FieldSumProviderImpl<PropertyT,SpaceT,VariadicTemplateTypesHolder<ExtraAr
  * Template of class of sum provider for providers with interpolation.
  */
 template <typename PropertyT, typename SpaceT>
-struct FieldSumProvider: public FieldSumProviderImpl<PropertyT,SpaceT,typename PropertyT::ExtraParams> {};
+struct FieldSumProvider: public FieldSumProviderImpl<PropertyT, SpaceT, typename PropertyT::ExtraParams> {};
 
 
 }   // namespace plask

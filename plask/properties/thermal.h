@@ -82,7 +82,7 @@ struct HeatDensity: public ScalarFieldProperty {
  * Provider which sum heat densities from one or more source.
  */
 template <typename SpaceT>
-struct HeatDensitySumProvider: public FieldSumProvider<HeatDensity,SpaceT> {};
+struct HeatDensitySumProvider: public FieldSumProvider<HeatDensity, SpaceT> {};
 
 } // namespace plask
 

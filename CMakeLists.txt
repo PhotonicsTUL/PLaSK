@@ -150,7 +150,6 @@ if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
 endif()
 
-
 ## ---------- Fortran name mangling --------------------------------------------
 option(DETECT_FORTRAN_NAME_MANGLING "Detect Fortran name mangling scheme. When OFF, the most probable version will be used." OFF)
 if(DETECT_FORTRAN_NAME_MANGLING)
