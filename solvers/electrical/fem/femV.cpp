@@ -10,9 +10,6 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     mCondNcontact(50.),
     mVCorrLim(1e-3),
     mLoopNo(0),
-    mActLo(0),
-    mActHi(0),
-    mDact(0.),
     mCorrType(CORRECTION_ABSOLUTE),
     mHeatMethod(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
@@ -91,57 +88,69 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry2DType>::~FiniteElementMethodElectrical2DSolver() {
 }
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegion()
+template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 {
     if (!this->geometry || !this->mesh) return;
 
-    mActLo = mActHi = 0;
-    mDact = 0.;
+    mActLo.clear();
+    mActHi.clear();
+    mDact.clear();
 
-    // Scan for active region
-    bool tHadActive = false;
-    auto tMidMesh = this->mesh->getMidpointsMesh();
-    for (size_t tX = 0; tX != tMidMesh->axis0.size(); ++tX) {
-        bool tActive = false;
-        for (size_t tY = 0; tY != tMidMesh->axis1.size(); ++tY) {
-            if (this->geometry->hasRoleAt("active", tMidMesh->at(tX, tY))) {
-                if (!tActive) {
-                    if (tHadActive && mActLo != tY)
-                        throw BadInput(this->getId(), "Only single flat active region allowed");
-                    mActLo = tY;
-                    tActive = true;
-                }
+    shared_ptr<RectilinearMesh2D> points = this->mesh->getMidpointsMesh();
+
+    size_t ileft = 0, iright = points->axis0.size();
+    bool in_active = false;
+
+    for (size_t r = 0; r < points->axis1.size(); ++r) {
+        bool had_active = false; // indicates if we had active region in this layer
+        shared_ptr<Material> layer_material;
+
+        for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
+            auto point = points->at(c,r);
+            bool active = this->geometry->hasRoleAt("active", point);
+
+            if (c < ileft) {
+                if (active)
+                    throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
+            } else if (c >= iright) {
+                if (active)
+                    throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
             } else {
-                if (tActive) {
-                    if (tHadActive && mActHi != tY)
-                        throw BadInput(this->getId(), "Only single flat active region allowed");
-                    mActHi = tY;
-                    tActive = false;
-                    tHadActive = true;
+                // Here we are inside potential active region
+                if (active) {
+                    if (!had_active) {
+                        if (!in_active) { // active region is starting set-up new region info
+                            ileft = c;
+                            mActLo.push_back(r);
+                        }
+                    }
+                } else if (had_active) {
+                    if (!in_active) {
+                        iright = c;
+                    } else
+                        throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
                 }
+                had_active |= active;
             }
         }
-        if (tActive) {
-            if (tHadActive && mActHi != tMidMesh->axis1.size())
-                throw BadInput(this->getId(), "Only single flat active region allowed");
-            mActHi = tMidMesh->axis1.size();
-            tHadActive = true;
+        in_active = had_active;
+
+        // Test if the active region has finished
+        if (!in_active && mActLo.size() != mActHi.size()) {
+            mActHi.push_back(r);
+            mDact.push_back(this->mesh->axis1[mActHi.back()] - this->mesh->axis1[mActLo.back()]);
+            this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * mDact.back(), mDact.size()-1);
         }
     }
-    if (tHadActive) {
-        mDact = this->mesh->axis1[mActHi] - this->mesh->axis1[mActLo];
-#ifndef NDEBUG
-        this->writelog(LOG_DEBUG, "Active layer thickness = %1%nm", 1e3 * mDact);
-#endif
-    }
 
-    if (mCondJunc.size() != this->mesh->axis0.size()-1) {
+    assert(mActHi.size() == mActLo.size());
+
+    if (mCondJunc.size() != mActLo.size() * (this->mesh->axis0.size()-1) ) {
         double tCondY = 0.;
         for (auto cond: mCondJunc) tCondY += cond;
-        mCondJunc.reset(this->mesh->axis0.size()-1, tCondY / mCondJunc.size());
+        mCondJunc.reset(mActLo.size() * (this->mesh->axis0.size()-1), tCondY / mCondJunc.size());
     }
 }
-
 
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
@@ -272,11 +281,13 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& o
         if (mLoopNo != 0 && this->geometry->hasRoleAt("active", tMidPoint)) {
             size_t tLeft = this->mesh->index0(tLoLeftNo);
             size_t tRight = this->mesh->index0(tLoRghtNo);
+            size_t tNact = std::upper_bound(mActHi.begin(), mActHi.end(), this->mesh->index1(tLoLeftNo)) - mActHi.begin();
+            assert(tNact < mActHi.size());
             double tJy = 0.5e6 * mCond[i].c11 *
-                abs( - mPotentials[this->mesh->index(tLeft, mActLo)] - mPotentials[this->mesh->index(tRight, mActLo)]
-                    + mPotentials[this->mesh->index(tLeft, mActHi)] + mPotentials[this->mesh->index(tRight, mActHi)]
-                ) / mDact; // [j] = A/m²
-            mCond[i] = Tensor2<double>(0., 1e-6 * mBeta * tJy * mDact / log(tJy / mJs + 1.));
+                abs( - mPotentials[this->mesh->index(tLeft, mActLo[tNact])] - mPotentials[this->mesh->index(tRight, mActLo[tNact])]
+                    + mPotentials[this->mesh->index(tLeft, mActHi[tNact])] + mPotentials[this->mesh->index(tRight, mActHi[tNact])]
+                ) / mDact[tNact]; // [j] = A/m²
+            mCond[i] = Tensor2<double>(0., 1e-6 * mBeta * tJy * mDact[tNact] / log(tJy / mJs + 1.));
         }
         double tKx = mCond[i].c00;
         double tKy = mCond[i].c11;
@@ -334,7 +345,9 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
         auto tRoles = this->geometry->getRolesAt(tMidPoint);
         if (tRoles.find("active") != tRoles.end()) {
-            mCond[i] = Tensor2<double>(0., mCondJunc[tE.getIndex0()]);
+            size_t n = std::upper_bound(mActHi.begin(), mActHi.end(), this->mesh->index1(i)) - mActHi.begin();
+            assert(n < mActHi.size());
+            mCond[i] = Tensor2<double>(0., mCondJunc[n * (this->mesh->axis0.size()-1) + tE.getIndex0()]);
         } else if (tRoles.find("p-contact") != tRoles.end()) {
             mCond[i] = Tensor2<double>(mCondPcontact, mCondPcontact);
         } else if (tRoles.find("n-contact") != tRoles.end()) {
@@ -346,8 +359,9 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
 {
-    for (size_t i = 0, j = (mActLo+mActHi)/2; i != this->mesh->axis0.size()-1; ++i)
-        mCondJunc[i] = mCond[this->mesh->elements(i,j).getIndex()].c11;
+    for (size_t n = 0; n < getActNo(); ++n)
+        for (size_t i = 0, j = (mActLo[n]+mActHi[n])/2; i != this->mesh->axis0.size()-1; ++i)
+            mCondJunc[n * (this->mesh->axis0.size()-1) + i] = mCond[this->mesh->elements(i,j).getIndex()].c11;
 }
 
 
@@ -553,7 +567,6 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             }
         }
     } else {
-        double tHeatFact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength()) * mDact);
         for (auto tE: this->mesh->elements) {
             size_t i = tE.getIndex();
             size_t tLoLeftNo = tE.getLoLoIndex();
@@ -567,6 +580,9 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             auto tMidPoint = tE.getMidpoint();
             auto tRoles = this->geometry->getRolesAt(tMidPoint);
             if (tRoles.find("active") != tRoles.end()) {
+                size_t tNact = std::upper_bound(mActHi.begin(), mActHi.end(), this->mesh->index1(i)) - mActHi.begin();
+                assert(tNact < mActHi.size());
+                double tHeatFact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength()) * mDact[tNact]);
                 double tJy = mCond[i].c11 * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = tHeatFact * tJy ;
             } else if (this->geometry->getMaterial(tMidPoint)->kind() == Material::NONE || tRoles.find("noheat") != tRoles.end())
@@ -609,10 +625,11 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent()
+template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(size_t iNact)
 {
+    if (iNact >= mActLo.size()) throw BadInput(this->getId(), "Wrong active region number");
     // Find the average of the active region
-    size_t level = (mActLo + mActHi) / 2;
+    size_t level = (mActLo[iNact] + mActHi[iNact]) / 2;
     return integrateCurrent(level);
 }
 

@@ -18,7 +18,8 @@ template <typename Cls>
 static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
     auto midmesh = self->getMesh()->getMidpointsMesh();
     RectilinearMesh1D line1;
-    line1.addPoint(self->getMesh()->axis1[(self->getActLo()+self->getActHi())/2]);
+    for (size_t n = 0; n < self->getActNo(); ++n)
+        line1.addPoint(self->getMesh()->axis1[(self->getActLo(n)+self->getActHi(n))/2]);
     auto mesh = make_shared<RectilinearMesh2D>(midmesh->axis0, line1);
     return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
 }
@@ -35,31 +36,29 @@ static void setCondJunc(Cls* self, py::object value) {
     }
     try {
         const DataVectorWrap<const double,2>& val = py::extract<DataVectorWrap<const double,2>&>(value);
-        double ylo = self->getMesh()->axis1[self->getActLo()], yhi = self->getMesh()->axis1[self->getActHi()];
         {
             auto mesh = dynamic_pointer_cast<RectilinearMesh2D>(val.mesh);
-            if (mesh && mesh->axis1.size() == 1 && ylo <= mesh->axis1[0] && mesh->axis1[0] <= yhi && val.size() == len) {
+            if (mesh && mesh->axis1.size() == self->getActNo() && val.size() == len) {
                 self->setCondJunc(val);
                 return;
             }
         }{
             auto mesh = dynamic_pointer_cast<RegularMesh2D>(val.mesh);
-            if (mesh && mesh->axis1.size() == 1 && ylo <= mesh->axis1[0] && mesh->axis1[0] <= yhi && val.size() == len) {
+            if (mesh && mesh->axis1.size() == self->getActNo() && val.size() == len) {
                 self->setCondJunc(val);
                 return;
             }
         }
-        throw ValueError("pnjcond can be set either to float, sequence of %1% floats or data read from it", len);
     } catch (py::error_already_set) {
-        PyErr_Clear();
-    }
-    try {
-        if (py::len(value) != len) throw py::error_already_set();
-        DataVector<double> data(len);
-        for (size_t i = 0; i != len; ++i) data[i] = py::extract<double>(value[i]);
-        self->setCondJunc(DataVector<const double>(std::move(data)));
-    } catch (py::error_already_set) {
-        throw ValueError("pnjcond can be set either to float, sequence of %1% floats or data read from it", len);
+    //    PyErr_Clear();
+    //}
+    //try {
+    //    if (py::len(value) != len) throw py::error_already_set();
+    //    DataVector<double> data(len);
+    //    for (size_t i = 0; i != len; ++i) data[i] = py::extract<double>(value[i]);
+    //    self->setCondJunc(DataVector<const double>(std::move(data)));
+    //} catch (py::error_already_set) {
+        throw ValueError("pnjcond can be set either to float or data read from it", len);
     }
 }
 
@@ -89,7 +88,7 @@ BOOST_PYTHON_MODULE(fem)
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Beta2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]");
+        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
         RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
@@ -115,7 +114,7 @@ BOOST_PYTHON_MODULE(fem)
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]");
+        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
         RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");

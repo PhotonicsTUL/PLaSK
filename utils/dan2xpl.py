@@ -360,7 +360,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('  <electrical solver="Beta%s" name="ELECTRICAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             if pnjcond is not None:
-                out('    <junction pnjcond="%g,%g" heat="wavelength"/>' % tuple(pnjcond))
+                out('    <junction pnjcond="%g" heat="wavelength"/>' % pnjcond[1])
             save_boundaries('voltage')
             out('  </electrical>')
         out('</solvers>\n')
@@ -473,7 +473,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('    gcf().canvas.set_window_title("Electric potential")')
             if actlevel is not False:
                 out('\n    figure()')
-                out('    plot(actgrid.axis0, abs(acurrent.array[0,:,1]))')
+                out('    plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
                 out('    xlabel(u"%s [\\xb5m]")' % axes[0])
                 out('    ylabel("current density [kA/cm$^2$]")')
                 out('    simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.item)')

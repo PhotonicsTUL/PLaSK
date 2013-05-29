@@ -58,9 +58,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     DataVector<Vec<2,double>> mCurrentDensities;    ///< Computed current densities
     DataVector<double> mHeatDensities;              ///< Computed and cached heat source densities
 
-    size_t mActLo,  ///< Vertical index of the lower side fo the active region
-           mActHi;  ///< Vertical index of the higher side fo the active region
-    double mDact;   ///< Active region thickness
+    std::vector<size_t>
+        mActLo,                ///< Vertical index of the lower side of the active regions
+        mActHi;                ///< Vertical index of the higher side of the active regions
+    std::vector<double> mDact; ///< Active regions thickness
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& ioK44, double& ioK33, double& ioK22, double& ioK11,
@@ -98,16 +99,16 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     virtual void onInvalidate() override;
 
     /// Get info on active region
-    void setActiveRegion();
+    void setActiveRegions();
 
     virtual void onMeshChange(const typename RectilinearMesh2D::Event& evt) override {
         this->invalidate();
-        setActiveRegion();
+        setActiveRegions();
     }
 
     virtual void onGeometryChange(const Geometry::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectilinearMesh2D>::onGeometryChange(evt);
-        setActiveRegion();
+        setActiveRegions();
     }
 
     template <typename MatrixT>
@@ -163,9 +164,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     /**
      * Integrate vertical total current flowing vertically through active region
+     * \param iNact number of the active region
      * \return computed total current
      */
-    double getTotalCurrent();
+    double getTotalCurrent(size_t iNact=0);
 
     /// \return max absolute correction for potential
     double getMaxAbsVCorr() const { return mMaxAbsVCorr; } // result in [K]
@@ -191,13 +193,14 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     DataVector<const double> getCondJunc() const { return mCondJunc; }
     void setCondJunc(double iCond)  { mCondJunc.reset(mCondJunc.size(), iCond); }
     void setCondJunc(const DataVector<const double>& iCond)  {
-        if (!this->mesh || iCond.size() != this->mesh->axis0.size()-1)
+        if (!this->mesh || iCond.size() != (this->mesh->axis0.size()-1) * getActNo())
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         mCondJunc = iCond.claim();
     }
 
-    double getActLo() const { return mActLo; }
-    double getActHi() const { return mActHi; }
+    double getActLo(size_t iActN) const { return mActLo[iActN]; }
+    double getActHi(size_t iActN) const { return mActHi[iActN]; }
+    size_t getActNo() const { return mDact.size(); }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
