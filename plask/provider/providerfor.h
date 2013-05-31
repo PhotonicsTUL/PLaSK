@@ -101,6 +101,20 @@ struct Property<_propertyType, _ValueType, _ValueType, _ExtraParams...> {
 
     /// @c true only if property use same value type in 2D and 3D space
     static constexpr bool hasUniqueValueType = true;
+
+    /**
+     * Convert value in 3D space to 2D space
+     * @param v value in 3D space
+     * @return @p p converted to 2D space
+     */
+    static const ValueType2D& value3Dto2D(const ValueType3D& v) { return v; }
+
+    /**
+     * Convert value in 2D space to 2D space
+     * @param v value in 2D space
+     * @return @p p converted to 3D space
+     */
+    static const ValueType3D& value2Dto3D(const ValueType2D& v) { return v; }
 };
 
 /// Describe property in given space. Don't use it directly, but use PropertyAt.
@@ -147,6 +161,14 @@ struct PropertyAtImpl<PropertyTag, 3, false> {
 template <typename PropertyTag, int dim>
 using PropertyAt = PropertyAtImpl<PropertyTag, dim, PropertyTag::hasUniqueValueType>;
 
+template <typename PropertyTag, typename Space>
+struct PropertyAtSpace: public PropertyAt<PropertyTag, Space::DIM> {};
+
+template <typename PropertyTag>
+struct PropertyAtSpace<PropertyTag, void>: public PropertyAt<PropertyTag, 2> {
+    static_assert(PropertyTag::hasUniqueValueType, "Space was not given in PropertyAtSpace for property which has different types of values in 2D and 3D.");
+};
+
 
 /**
  * Helper class which makes it easier to define property tags class for single value (double type by default) properties.
@@ -188,7 +210,7 @@ typedef FieldProperty<double> ScalarFieldProperty;
  *
  * Don't use this class directly. Use plask::Provider class or plask::ProviderFor template.
  */
-template <typename PropertyT, typename ValueT, PropertyType propertyType, typename spaceType, typename VariadicTemplateTypesHolder>
+template <typename PropertyT, PropertyType propertyType, typename spaceType, typename VariadicTemplateTypesHolder>
 struct ProviderImpl {};
 
 /**
@@ -202,7 +224,7 @@ struct ProviderImpl {};
  * @see plask::Temperature (contains example); @ref providers
  */
 template <typename PropertyT, typename SpaceT = void>
-struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams> {
+struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams> {
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
@@ -210,7 +232,7 @@ struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType
     /// Delegate all constructors to parent class.
     template<typename ...Args>
     ProviderFor(Args&&... params)
-    : ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>(std::forward<Args>(params)...) {
+    : ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>(std::forward<Args>(params)...) {
     }
 
 };
@@ -227,13 +249,14 @@ struct ProviderFor: public ProviderImpl<PropertyT, typename PropertyT::ValueType
  * @tparam SpaceT type of space, required (and allowed) only for fields properties
  */
 template <typename PropertyT, typename SpaceT = void>
-struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>> {
+struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>> {
     ReceiverFor & operator=(const ReceiverFor&) = delete;
     ReceiverFor(const ReceiverFor&) = delete;
     ReceiverFor() = default;
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
+    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType PropertyValueType;
 
     /**
      * Set provider for this to provider of constant.
@@ -242,7 +265,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
      * @param v value which should be provided for this receiver
      * @return *this
      */
-    ReceiverFor<PropertyT, SpaceT>& operator=(const typename PropertyT::ValueType& v) {
+    ReceiverFor<PropertyT, SpaceT>& operator=(const PropertyValueType& v) {
         this->setConstValue(v);
         return *this;
     }
@@ -292,8 +315,8 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, typename PropertyT::
  * @tparam ValueT type of provided value
  * @tparam SpaceT ignored
  */
-template <typename PropertyT, typename ValueT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<ValueT, _ExtraParams...> {
+template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
+struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
 
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
@@ -301,8 +324,10 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
 
+    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType PropertyValueType;
+
     /// Type of provided value.
-    typedef typename SingleValueProvider<ValueT>::ProvidedType ProvidedType;
+    typedef typename SingleValueProvider<PropertyValueType>::ProvidedType ProvidedType;
 
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() returns its held value.
@@ -313,7 +338,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
     struct WithDefaultValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of provided value.
-        typedef ValueT ProvidedType;
+        typedef PropertyValueType ProvidedType;
 
         /// Provided value.
         ProvidedType value;
@@ -327,7 +352,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
          * @param v new value
          * @return *this
          */
-        WithDefaultValue& operator=(const ValueT& v) {
+        WithDefaultValue& operator=(const PropertyValueType& v) {
             value = v;
             return *this;
         }
@@ -355,7 +380,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of provided value.
-        typedef ValueT ProvidedType;
+        typedef PropertyValueType ProvidedType;
 
         /// Provided value.
         boost::optional<ProvidedType> value;
@@ -388,7 +413,7 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
          * @param v new value
          * @return *this
          */
-        WithValue& operator=(const ValueT& v) {
+        WithValue& operator=(const PropertyValueType& v) {
             value.reset(v);
             return *this;
         }
@@ -427,8 +452,8 @@ struct ProviderImpl<PropertyT, ValueT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTe
 /**
  * Specialization which implements provider class which provides values in mesh points and uses interpolation.
  */
-template <typename PropertyT, typename ValueT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<ValueT, SpaceT, _ExtraParams...> {
+template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
+struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
 
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
@@ -436,8 +461,10 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
+    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType PropertyValueType;
+
     /// Type of provided value.
-    typedef typename FieldProvider<ValueT, SpaceT>::ProvidedType ProvidedType;
+    typedef typename FieldProvider<PropertyValueType, SpaceT>::ProvidedType ProvidedType;
 
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
@@ -451,7 +478,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
         typedef MeshPtrType MeshPointerType;
 
         /// Type of provided value.
-        typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
+        typedef ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
 
         /// Provided value. Values in points described by this->mesh.
         ProvidedType values;
@@ -483,9 +510,9 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
          * \param mesh_p pointer to the new mesh
          */
         void setMesh(MeshPtrType mesh_p) {
-            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
             mesh_ptr = mesh_p;
-            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
         }
 
         /// Reset values to uninitialized state (nullptr data).
@@ -535,7 +562,7 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
          */
         explicit WithValue(ProvidedType values, const MeshPtrType& mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
             : values(values), mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
         }
 
         /**
@@ -544,11 +571,11 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
          */
         explicit WithValue(MeshPtrType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
             : mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
         }
 
         ~WithValue() {
-            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
         }
 
         /**
@@ -596,10 +623,10 @@ struct ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateT
      */
     struct ConstProviderType: public ProviderFor<PropertyT, SpaceT> {
 
-        typedef ProviderImpl<PropertyT, ValueT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
+        typedef ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
 
         /// Provided value
-        ValueT value;
+        PropertyValueType value;
 
         //ConstProviderType(const ValueT& value): value(value) {}
 
