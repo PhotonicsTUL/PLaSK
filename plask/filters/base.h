@@ -33,17 +33,20 @@ public:
      */
     //virtual bool canProvide(const Vec<OutputSpaceType::DIM, double>& p) const = 0;
 
+    /// Type of property value in output space
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType PropertyValueType;
+
     /**
      * Check if this source can provide value for given point and eventualy return this value.
      * @param p point (in outer space coordinates)
      * @return value in point @p, set only if this can provide data in given point @p p
      */
-    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual boost::optional<PropertyValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
    // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
-        DataVector<typename PropertyT::ValueType> result(dst_mesh.size());
+    virtual DataVector<const PropertyValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        DataVector<PropertyValueType> result(dst_mesh.size());
         for (std::size_t i = 0; i < result.size(); ++i)
             result[i] = *get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
         return result;
@@ -177,16 +180,19 @@ struct ConstDataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicT
 
 public:
 
-    typename PropertyT::ValueType value;
+    /// Type of property value in output space
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType PropertyValueType;
 
-    ConstDataSourceImpl(const typename PropertyT::ValueType& value): value(value) {}
+    PropertyValueType value;
 
-    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    ConstDataSourceImpl(const PropertyValueType& value): value(value) {}
+
+    virtual boost::optional<PropertyValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return value;
     }
 
-    virtual DataVector<const typename PropertyT::ValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
-        return DataVector<typename PropertyT::ValueType>(dst_mesh.size(), value);
+    virtual DataVector<const PropertyValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return DataVector<PropertyValueType>(dst_mesh.size(), value);
     }
 
 };

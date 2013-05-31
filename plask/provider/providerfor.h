@@ -117,6 +117,55 @@ struct Property<_propertyType, _ValueType, _ValueType, _ExtraParams...> {
     static const ValueType3D& value2Dto3D(const ValueType2D& v) { return v; }
 };
 
+template <typename PropertyTag, bool hasUniqueValueType>
+struct PropertyVecConverterImpl {};
+
+template <typename PropertyTag>
+struct PropertyVecConverterImpl<PropertyTag, true> {
+    static const DataVector<const typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
+        return datavec;
+    }
+    static const DataVector<typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<typename PropertyTag::ValueType3D>& datavec) {
+        return datavec;
+    }
+    static const DataVector<const typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
+        return datavec;
+    }
+    static const DataVector<typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<typename PropertyTag::ValueType2D>& datavec) {
+        return datavec;
+    }
+};
+
+
+template <typename PropertyTag>
+struct PropertyVecConverterImpl<PropertyTag, false> {
+    static DataVector<typename PropertyTag::ValueType2D> from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
+        DataVector<typename PropertyTag::ValueType2D> result(datavec.size());
+        for (std::size_t i = 0; i < datavec.size(); ++i)
+            result[i] = PropertyTag::value3Dto2D(datavec[i]);
+        return datavec;
+    }
+    static DataVector<typename PropertyTag::ValueType3D> from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
+        DataVector<typename PropertyTag::ValueType3D> result(datavec.size());
+        for (std::size_t i = 0; i < datavec.size(); ++i)
+            result[i] = PropertyTag::value2Dto3D(datavec[i]);
+        return datavec;
+    }
+};
+
+/**
+ * Convert data vector from type of proprty in 3D to 2D space.
+ */
+template <typename PropertyTag, typename VectorType>
+inline auto PropertyVec3Dto2D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec)) {
+    return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec);
+}
+
+template <typename PropertyTag, typename VectorType>
+inline auto PropertyVec2Dto3D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec)) {
+    return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec);
+}
+
 /// Describe property in given space. Don't use it directly, but use PropertyAt.
 template <typename PropertyTag, int DIM, bool hasUniqueValueType>
 struct PropertyAtImpl {};
@@ -238,7 +287,7 @@ struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, Spac
 };
 //TODO redefine ProviderFor using template aliases (require gcc 4.7), and than fix ReceiverFor
 //template <typename PropertyT, typename SpaceT = void>
-//using ProviderFor = ProviderImpl<PropertyT, typename PropertyT::ValueType, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
+//using ProviderFor = ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
 
 
 
