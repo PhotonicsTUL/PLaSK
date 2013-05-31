@@ -143,12 +143,15 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
 {
     using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>::Region;
 
-    virtual boost::optional<typename PropertyT::ValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
+    /// Type of property value in output space
+    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType PropertyValueType;
+
+    virtual boost::optional<PropertyValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
         if (r)
-            return this->in(toMesh(vec<2>(p - r->inTranslation)), std::forward<ExtraArgs>(extra_args)..., method)[0];
+            return PropertyT::value2Dto3D(this->in(toMesh(vec<2>(p - r->inTranslation)), std::forward<ExtraArgs>(extra_args)..., method)[0]);
         else
-            return boost::optional<typename PropertyT::ValueType>();
+            return boost::optional<PropertyValueType>();
     }
 
 };

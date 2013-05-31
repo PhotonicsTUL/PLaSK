@@ -25,7 +25,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
     // vector of inner sources (inputs)
     // one output (provider)
 
-    typedef typename PropertyT::ValueType ValueT;
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueT;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
 
