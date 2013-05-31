@@ -38,22 +38,57 @@ struct PropertyTypeToProviderName<FIELD_PROPERTY> {
 /**
  * Helper class which makes it easier to define property tags class.
  *
- * Property tags class are used for ProviderFor and ReceiverFor templates instantiations.,
+ * Property tags class are used for ProviderFor and ReceiverFor templates instantiations.
  *
  * Properties tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must by separate class - always use different types for different properties).
  *
  * @tparam _propertyType type of property
- * @tparam _ValueType type of value (or part of this type) which will be provided
+ * @tparam _ValueType2D type of value (or part of this type) which will be provided in 2D space
+ * @tparam _ValueType3D type of value (or part of this type) which will be provided in 3D space
  * @tparam _ExtraParams type of extra parameters passed to provider
  */
-template <PropertyType _propertyType, typename _ValueType, typename... _ExtraParams>
+template <PropertyType _propertyType, typename _ValueType2D, typename _ValueType3D, typename... _ExtraParams>
 struct Property {
+    /// Type of property.
+    static const PropertyType propertyType = _propertyType;
+
+    /// Type of provided value in 2D space.
+    typedef _ValueType2D ValueType2D;
+
+    /// Type of provided value in 3D space.
+    typedef _ValueType3D ValueType3D;
+
+    /// Name of the property
+    static constexpr const char* NAME = PropertyTypeToProviderName<_propertyType>::value;
+
+    /// Return default value of the property (usually zero) in 2D space
+    static inline ValueType2D getDefaultValue2D() { return ValueType2D(); }
+
+    /// Return default value of the property (usually zero) in 3D space
+    static inline ValueType3D getDefaultValue3D() { return ValueType3D(); }
+
+    /// Extra parameters passed as arguments to provider to get value
+    typedef VariadicTemplateTypesHolder<_ExtraParams...> ExtraParams;
+
+    /// @c true only if property use same value type in 2D and 3D space
+    static constexpr bool hasUniqueValueType = false;
+
+};
+
+template <PropertyType _propertyType, typename _ValueType, typename... _ExtraParams>
+struct Property<_propertyType, _ValueType, _ValueType, _ExtraParams...> {
     /// Type of property.
     static const PropertyType propertyType = _propertyType;
 
     /// Type of provided value.
     typedef _ValueType ValueType;
+
+    /// Type of provided value in 2D space.
+    typedef _ValueType ValueType2D;
+
+    /// Type of provided value in 3D space.
+    typedef _ValueType ValueType3D;
 
     /// Name of the property
     static constexpr const char* NAME = PropertyTypeToProviderName<_propertyType>::value;
@@ -61,8 +96,57 @@ struct Property {
     /// Return default value of the property (usually zero)
     static inline ValueType getDefaultValue() { return ValueType(); }
 
+    /// Extra parameters passed as arguments to provider to get value
     typedef VariadicTemplateTypesHolder<_ExtraParams...> ExtraParams;
+
+    /// @c true only if property use same value type in 2D and 3D space
+    static constexpr bool hasUniqueValueType = true;
 };
+
+/// Describe property in given space. Don't use it directly, but use PropertyAt.
+template <typename PropertyTag, int DIM, bool hasUniqueValueType>
+struct PropertyAtImpl {};
+
+/// Describe property in 2D space. Don't use it directly, but use PropertyAt.
+template <typename PropertyTag>
+struct PropertyAtImpl<PropertyTag, 2, true> {
+    typedef typename PropertyTag::ValueType2D ValueType;
+
+    static ValueType getDefaultValue() { return PropertyTag::getDefaultValue(); }
+};
+
+template <typename PropertyTag>
+struct PropertyAtImpl<PropertyTag, 2, false> {
+    typedef typename PropertyTag::ValueType2D ValueType;
+
+    static ValueType getDefaultValue() { return PropertyTag::getDefaultValue2D(); }
+};
+
+/// Describe property in 3D space. Don't use it directly, but use PropertyAt.
+template <typename PropertyTag>
+struct PropertyAtImpl<PropertyTag, 3, true> {
+    typedef typename PropertyTag::ValueType3D ValueType;
+
+    static ValueType getDefaultValue() { return PropertyTag::getDefaultValue(); }
+};
+
+template <typename PropertyTag>
+struct PropertyAtImpl<PropertyTag, 3, false> {
+    typedef typename PropertyTag::ValueType3D ValueType;
+
+    static ValueType getDefaultValue() { return PropertyTag::getDefaultValue2D(); }
+};
+
+/**
+ * Describe property type in given space.
+ *
+ * Includes:
+ * - ValueType - typedef to value provided by tag in given space.
+ * - getDefaultValue() - static method which returns default value in given space.
+ */
+template <typename PropertyTag, int dim>
+using PropertyAt = PropertyAtImpl<PropertyTag, dim, PropertyTag::hasUniqueValueType>;
+
 
 /**
  * Helper class which makes it easier to define property tags class for single value (double type by default) properties.
@@ -71,7 +155,7 @@ struct Property {
  * (tag class for each property must by separate class - always use different types for different properties).
  */
 template<typename ValueT = double, typename... _ExtraParams>
-struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT, _ExtraParams...> {};
+struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT, ValueT, _ExtraParams...> {};
 
 /**
  * Helper class which makes it easier to define property tags class for possible to interpolate fields.
@@ -80,7 +164,7 @@ struct SingleValueProperty: public Property<SINGLE_VALUE_PROPERTY, ValueT, _Extr
  * (tag class for each property must by separate class - always use different types for different properties).
  */
 template<typename ValueT = double, typename... _ExtraParams>
-struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, _ExtraParams...> {};
+struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, ValueT, _ExtraParams...> {};
 
 /**
  * Helper class which makes it easier to define property tags classes for vectorial fields that can be  interpolated.
