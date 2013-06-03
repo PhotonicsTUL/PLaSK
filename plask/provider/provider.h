@@ -37,12 +37,13 @@ An example of using providers and receivers in solvers can be found in descripti
 The easiest way to create new provider and corresponding receiver types is to write physical property
 tag class and use it to specialize plask::ProviderFor and plask::ReceiverFor templates.
 
-Physical property tag class is an class which only has static fields and typedefs which describe
+Physical property tag class is an class which only has static fields and methods and typedefs which describe
 physical property. It can be easy obtain by subclass instantiation of one of templates:
 - plask::Property — allows to obtain all possible physical properties tags classes, but require many parameters (not recommended);
 - plask::SingleValueProperty — allows to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
-- plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh and use interpolation, require only one parameter - type of provided value;
-- plask::ScalarFieldProperty — equals to plask::FieldProperty\<double\>, doesn't require any parameters.
+- plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh, require only one parameter - type of provided value;
+- plask::ScalarFieldProperty — equals to plask::FieldProperty\<double\>, doesn't require any parameters,
+- plask::VectorFieldProperty — allows to obtain tags for properties described by values in points described by mesh and allows to points two types of provided values (first is used in 2D space and second is used in 3D spaces).
 
 Extra templates parameters can be passed to each property tag class template described above.
 This parameters are types of extra arguments required by provider to obtain value.
