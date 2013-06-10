@@ -197,7 +197,7 @@ template <typename PropertyTag>
 struct PropertyAtImpl<PropertyTag, 3, false> {
     typedef typename PropertyTag::ValueType3D ValueType;
 
-    static ValueType getDefaultValue() { return PropertyTag::getDefaultValue2D(); }
+    static ValueType getDefaultValue() { return PropertyTag::getDefaultValue3D(); }
 };
 
 /**
