@@ -107,7 +107,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
 
-    typename ProviderFor<HeatFlux<2>, Geometry2DType>::Delegate outHeatFlux;
+    typename ProviderFor<HeatFlux, Geometry2DType>::Delegate outHeatFlux;
 
     ReceiverFor<HeatDensity, Geometry2DType> inHeatDensity;
 

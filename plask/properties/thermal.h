@@ -66,8 +66,7 @@ struct Temperature: public ScalarFieldProperty {
 /**
  * Heat flux in 2D or 3D space [W/m] or [W/m²].
  */
-template <int dim>
-struct HeatFlux: public VectorFieldProperty<dim> {
+struct HeatFlux: public VectorFieldProperty<> {
     static constexpr const char* NAME = "heat flux";
 };
 

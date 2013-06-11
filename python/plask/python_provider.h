@@ -84,7 +84,7 @@ namespace detail {
 
     template <typename ReceiverT>
     static bool assignValue(ReceiverT& receiver, const py::object& obj) {
-        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+        typedef typename ReceiverT::PropertyValueType ValueT;
         try {
             ValueT value = py::extract<ValueT>(obj);
             receiver = value;
@@ -123,7 +123,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterReceiverBase<ReceiverT>
     {
-        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+        typedef typename ReceiverT::PropertyValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
 
@@ -208,7 +208,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
         [function](const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
-            typedef DataVectorWrap<const typename ProviderT::PropertyTag::ValueType,ProviderT::SpaceType::DIM> ReturnedType;
+            typedef DataVectorWrap<const typename ProviderT::PropertyValueType, ProviderT::SpaceType::DIM> ReturnedType;
             ReturnedType result = py::extract<ReturnedType>(function(boost::ref(dst_mesh), params..., method));
             return ProvidedType(result);
         }
@@ -310,8 +310,9 @@ namespace detail {
     struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterProviderBase<ProviderT>
     {
-        typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static const int DIMS = ProviderT::SpaceType::DIM;
+        typedef typename ProviderT::PropertyValueType ValueT;
+
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
         }

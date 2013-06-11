@@ -123,7 +123,7 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
 
     typename ProviderFor<Temperature,Geometry3D>::Delegate outTemperature;
 
-    typename ProviderFor<HeatFlux<3>,Geometry3D>::Delegate outHeatFlux;
+    typename ProviderFor<HeatFlux,Geometry3D>::Delegate outHeatFlux;
 
     ReceiverFor<HeatDensity,Geometry3D> inHeatDensity;
 

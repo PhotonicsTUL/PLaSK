@@ -9,12 +9,9 @@ void register_standard_properties_heatflux()
 {
     //TODO registerProperty<HeatFlux<2>>();
     //TODO registerProperty<HeatFlux<3>>();
-    registerProvider<ProviderFor<HeatFlux<2>,Geometry2DCartesian>>();
-    registerProvider<ProviderFor<HeatFlux<2>,Geometry2DCylindrical>>();
-    registerProvider<ProviderFor<HeatFlux<3>,Geometry3D>>();
-    registerReceiver<ReceiverFor<HeatFlux<2>,Geometry2DCartesian>>();
-    registerReceiver<ReceiverFor<HeatFlux<2>,Geometry2DCylindrical>>();
-    registerReceiver<ReceiverFor<HeatFlux<3>,Geometry3D>>();
+    registerProvider<ProviderFor<HeatFlux, Geometry2DCartesian>>();
+    registerProvider<ProviderFor<HeatFlux, Geometry2DCylindrical>>();
+    registerProvider<ProviderFor<HeatFlux, Geometry3D>>();
 
 }
 

@@ -135,7 +135,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
-    typename ProviderFor<CurrentDensity<2>, Geometry2DType>::Delegate outCurrentDensity;
+    typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
 
     typename ProviderFor<HeatDensity, Geometry2DType>::Delegate outHeatDensity;
 

@@ -240,15 +240,6 @@ struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, ValueT, _ExtraPara
 /**
  * Helper class which makes it easier to define property tags classes for vectorial fields that can be interpolated.
  *
- * Property tag class can be subclass of this, but never should be typedefs to this
- * (tag class for each property must be a separate class — always use different types for different properties).
- */
-template<int DIM, typename ValueT = double, typename... _ExtraParams>
-struct VectorFieldProperty: public FieldProperty< Vec<DIM, ValueT>, _ExtraParams... > {};
-
-/**
- * Helper class which makes it easier to define property tags classes for vectorial fields that can be interpolated.
- *
  * Properties defined with this tag has another type of value in 2D and 3D space:
  * - Vec<2, ValueT> in 2D space,
  * - Vec<3, ValueT> in 3D space.
@@ -256,9 +247,8 @@ struct VectorFieldProperty: public FieldProperty< Vec<DIM, ValueT>, _ExtraParams
  * Property tag class can be subclass of this, but never should be typedefs to this
  * (tag class for each property must be a separate class — always use different types for different properties).
  */
-//TODO rename to VectorFieldProperty, python support
 template<typename ValueT = double, typename... _ExtraParams>
-struct VectorsFieldProperty: public Property<FIELD_PROPERTY, Vec<2, ValueT>, Vec<3, ValueT>, _ExtraParams...> {
+struct VectorFieldProperty: public Property<FIELD_PROPERTY, Vec<2, ValueT>, Vec<3, ValueT>, _ExtraParams...> {
 
     /**
      * Convert value in 3D space to 2D space by removing component.

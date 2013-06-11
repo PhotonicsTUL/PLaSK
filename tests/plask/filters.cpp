@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_SUITE(filters) // MUST be the same as the file name
     }
 
     BOOST_AUTO_TEST_CASE(cartesian3Dvectorfields) {
-        struct VectorField: public plask::VectorsFieldProperty<> {};
+        struct VectorField: public plask::VectorFieldProperty<> {};
 
         TestEnvGeom3D e;
 
