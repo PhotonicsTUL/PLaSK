@@ -143,13 +143,13 @@ struct PropertyVecConverterImpl<PropertyTag, false> {
         DataVector<typename PropertyTag::ValueType2D> result(datavec.size());
         for (std::size_t i = 0; i < datavec.size(); ++i)
             result[i] = PropertyTag::value3Dto2D(datavec[i]);
-        return datavec;
+        return result;
     }
     static DataVector<typename PropertyTag::ValueType3D> from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
         DataVector<typename PropertyTag::ValueType3D> result(datavec.size());
         for (std::size_t i = 0; i < datavec.size(); ++i)
             result[i] = PropertyTag::value2Dto3D(datavec[i]);
-        return datavec;
+        return result;
     }
 };
 
