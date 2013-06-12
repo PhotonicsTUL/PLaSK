@@ -366,24 +366,29 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('</solvers>\n')
 
     # connections
-    if (therm and electr) or heats:
+    if (therm and electr):
         out('<connects>')
-        if (therm and electr):
-            out('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>')
-        if heats:
-            out('  <profile in="THERMAL.inHeatDensity">')
-            for heat in heats.items():
-                out('    <step object="%s" value="%s"/>' % heat)
-            out('  </profile>')
-            if electr:
-                # TODO use sum provider when it gets fully supported in PLaSK
-                print("WARNING: Electrical model present, but only manually specified heats are provided to thermal model!")
-        elif electr:
+        out('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>')
+        if not heats:
             out('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>')
+        else:
+            out('  <!-- heats are attached in the script -->')
         out('</connects>\n')
 
     ## script
     out('<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
+
+
+    if heats:
+        out('heat_profile = StepProfile(GEO.main)')
+        for heat in heats.items():
+            out('heat_profile[GEO.%s] = %s' % heat)
+        out('fixed_heat = ProviderForHeatDensity%s(heat_profile)' % suffix)
+
+        if electr:
+            out('THERMAL.inHeatDensity = ELECTRICAL.outHeatDensity + fixed_heat\n')
+        else:
+            out('THERMAL.inHeatDensity = fixed_heat\n')
 
     if electr:
         out('# Adjust the values below!')

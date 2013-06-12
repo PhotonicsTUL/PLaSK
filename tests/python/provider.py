@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 import sys
 import unittest
+import numpy
 
+import plask
 import plask.mesh
 import plasktest
 
@@ -50,19 +52,19 @@ class PythonProviderTest(unittest.TestCase):
     class CustomSolver(object):
         def __init__(self, parent):
             self.parent = parent
-            self.outGain = ProviderForGain2D(lambda *args: self.get_gain(*args))
-            self._receiver = ReceiverForGain2D()
+            self.outGain = plask.ProviderForGain2D(lambda *args: self.get_gain(*args))
+            self._receiver = plask.ReceiverForGain2D()
         inGain = property(lambda self: self._receiver, lambda self,provider: self._receiver.connect(provider))
-        def get_gain(self, mesh, wavelength, interpolation):
-            self.parent.assertEqual(interpolation, interpolation.SPLINE)
-            return Data(wavelength * arange(len(mesh)), mesh)
+        def get_gain(self, mesh, wavelength, interp):
+            self.parent.assertEqual(interp, plask.interpolation.SPLINE)
+            return wavelength * numpy.arange(len(mesh))
 
     def setUp(self):
         self.solver = PythonProviderTest.CustomSolver(self)
         self.solver.inGain = self.solver.outGain
 
     def testAll(self):
-        self.assertEqual( type(self.solver.inGain), ReceiverForGain2D )
-        msh = mesh.Regular2D((0.,1., 2), (0.,1., 3))
+        self.assertEqual( type(self.solver.inGain), plask.ReceiverForGain2D )
+        msh = plask.mesh.Regular2D((0.,1., 2), (0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
         self.assertEqual(list(res), [0., 10., 20., 30., 40., 50.])

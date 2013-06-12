@@ -14,6 +14,8 @@ copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photo
 import sys as _sys
 import os as _os
 
+_any = any # this buit-in is overriden by numpy
+
 _os.environ["PLASK_PREFIX_PATH"] = _os.sep + _os.path.join(*__file__.split(_os.sep)[:-5])
 
 from ._plask import *
@@ -176,6 +178,35 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
 import warnings
 warnings.showwarning = _showwarning
 del warnings
+
+
+## ##  ## ##
+
+class StepProfile(object):
+    """
+    Helper callable class for creating any step profile for use in custom providers
+    """
+
+    def __init__(self, geometry, dtype=float, default=0.):
+        self.steps = {}
+        self.geometry = geometry
+        self.default = default
+        self.dtype = dtype
+
+    def __getitem__(self, key):
+        return self.steps[key]
+
+    def __setitem__(self, key, val):
+        self.steps[key] = val
+
+    def __delitem__(self, key):
+        del self.steps[key]
+
+    def __call__(self, mesh, *args):
+        result = ones(len(mesh), self.dtype) * self.default
+        for obj,val in self.steps.items():
+            result[fromiter( (_any(p in box for box in self.geometry.get_object_bboxes(obj)) for p in mesh), bool, len(mesh) )] = val
+        return result
 
 
 ## ##  ## ##

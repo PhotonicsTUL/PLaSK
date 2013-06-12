@@ -76,7 +76,7 @@ namespace detail {
         typedef ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType> ProviderT;
         try {
             ProviderT* provider = py::extract<ProviderT*>(obj);
-            receiver.setProvider(provider);
+            RegisterReceiverBase<ReceiverT>::connect(receiver, provider);
             return true;
         } catch (py::error_already_set) { PyErr_Clear(); }
         return false;
@@ -198,6 +198,7 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
 };
 
+py::object Data(PyObject* obj, py::object omesh);
 
 template <typename ProviderT, typename... _ExtraParams>
 struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
@@ -209,8 +210,14 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
         [function](const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
             typedef DataVectorWrap<const typename ProviderT::PropertyValueType, ProviderT::SpaceType::DIM> ReturnedType;
-            ReturnedType result = py::extract<ReturnedType>(function(boost::ref(dst_mesh), params..., method));
-            return ProvidedType(result);
+            py::object omesh(boost::ref(dst_mesh));
+            py::object result = function(omesh, params..., method);
+            try {
+                return py::extract<ReturnedType>(result);
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                return py::extract<ReturnedType>(Data(result.ptr(), omesh));
+            }
         }
     ) {}
 };
