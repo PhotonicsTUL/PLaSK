@@ -383,12 +383,11 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('heat_profile = StepProfile(GEO.main)')
         for heat in heats.items():
             out('heat_profile[GEO.%s] = %s' % heat)
-        out('fixed_heat = ProviderForHeatDensity%s(heat_profile)' % suffix)
 
         if electr:
-            out('THERMAL.inHeatDensity = ELECTRICAL.outHeatDensity + fixed_heat\n')
+            out('THERMAL.inHeatDensity = ELECTRICAL.outHeatDensity + ProviderForHeatDensity%s(heat_profile)\n' % suffix)
         else:
-            out('THERMAL.inHeatDensity = fixed_heat\n')
+            out('THERMAL.inHeatDensity = ProviderForHeatDensity%s(heat_profile)\n' % suffix)
 
     if electr:
         out('# Adjust the values below!')

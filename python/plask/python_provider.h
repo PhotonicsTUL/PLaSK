@@ -55,8 +55,20 @@ namespace detail {
         const std::string property_name;
         py::class_<ReceiverT, boost::noncopyable> receiver_class;
 
-        static void connect(ReceiverT& receiver, ProviderT* provider) {
+        static void connect(ReceiverT& receiver, py::object oprovider) {
+            ProviderT* provider = py::extract<ProviderT*>(oprovider);
             receiver.setProvider(provider);
+            // Make sure that provider stays alive as long as it is connected
+            PyObject* obj = oprovider.ptr();
+            py::incref(obj);
+            receiver.providerValueChanged.connect_extended(
+                [obj](const boost::signals2::connection& conn, typename ReceiverT::Base&, typename ReceiverT::ChangeReason reason) -> void {
+                    if (reason == ReceiverT::ChangeReason::PROVIDER || reason == ReceiverT::ChangeReason::DELETE) {
+                        conn.disconnect();
+                        py::decref(obj);
+                    }
+                }
+            );
         }
 
         static void disconnect(ReceiverT& receiver) { receiver.setProvider(nullptr); }
@@ -75,8 +87,7 @@ namespace detail {
     static bool assignProvider(ReceiverT& receiver, const py::object& obj) {
         typedef ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType> ProviderT;
         try {
-            ProviderT* provider = py::extract<ProviderT*>(obj);
-            RegisterReceiverBase<ReceiverT>::connect(receiver, provider);
+            RegisterReceiverBase<ReceiverT>::connect(receiver, obj);
             return true;
         } catch (py::error_already_set) { PyErr_Clear(); }
         return false;

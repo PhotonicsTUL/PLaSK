@@ -237,7 +237,7 @@ public:
 
     /// The reason of change of provider value
     enum class ChangeReason {
-        DELETE,     ///< this receiver is deleting
+        DELETE,     ///< this receiver is being deleted
         VALUE,      ///< value of provider has just been changed
         PROVIDER    ///< provider has just been exchanged to another one
     };
@@ -245,7 +245,7 @@ public:
     /// Signal called when provider value or provider was changed (called by onChange)
     boost::signals2::signal<void(Receiver& src, ChangeReason reason)> providerValueChanged;
 
-    Receiver & operator=(const Receiver&) = delete;
+    Receiver& operator=(const Receiver&) = delete;
     Receiver(const Receiver&) = delete;
 
     /// Type of the corresponding provider
