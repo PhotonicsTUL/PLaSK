@@ -235,8 +235,15 @@ public:
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
     virtual const char* providerName() const { return PROVIDER_NAME; }
 
+    /// The reason of change of provider value
+    enum class ChangeReason {
+        DELETE,     ///< this receiver is deleting
+        VALUE,      ///< value of provider has just been changed
+        PROVIDER    ///< provider has just been exchanged to another one
+    };
+
     /// Signal called when provider value or provider was changed (called by onChange)
-    boost::signals2::signal<void(Receiver& src)> providerValueChanged;
+    boost::signals2::signal<void(Receiver& src, ChangeReason reason)> providerValueChanged;
 
     Receiver & operator=(const Receiver&) = delete;
     Receiver(const Receiver&) = delete;
@@ -265,12 +272,20 @@ public:
     /// Destructor. Disconnect from provider.
     virtual ~Receiver() {
         providerConnection.disconnect();
-        if (_hasPrivateProvider) delete this->provider;
+        if (_hasPrivateProvider) {
+            delete this->provider;
+            this->provider = nullptr;
+        }
+        fireChanged(ChangeReason::DELETE);
     }
 
-    void fireChanged() {
+    /**
+     * Set change flag and call providerValueChanged with given @p reason.
+     * @param reason passed to providerValueChanged signal
+     */
+    void fireChanged(ChangeReason reason) {
         _changed = true;
-        providerValueChanged(*this);
+        providerValueChanged(*this, reason);
     }
 
     /**
@@ -288,14 +303,14 @@ public:
         if (provider) providerConnection = provider->changed.connect(
                     [&](Provider& which, bool isDeleted) {
                         if (isDeleted) {
-                            providerConnection.disconnect();
+                            providerConnection.disconnect();    //TODO do we need this line?
                             this->provider = 0;
                         }
-                        this->fireChanged();
+                        this->fireChanged(isDeleted ? ChangeReason::PROVIDER : ChangeReason::VALUE);
                     });
         this->provider = provider;
         this->_hasPrivateProvider = newProviderIsPrivate;
-        this->fireChanged();
+        this->fireChanged(ChangeReason::PROVIDER);
     }
 
     /**
@@ -343,11 +358,10 @@ public:
     const ProviderT* getProvider() const { return provider; }
 
     /// React on provider value changes. Set changed flag to true.
-    void onChange(Provider* which, bool isDeleted) {
+    /*void onChange(Provider* which, bool isDeleted) {
         if (isDeleted) provider = 0;
-        _changed = true;
-        providerValueChanged(*this);
-    }
+        fireChanged(isDeleted ? ChangeReason::PROVIDER : ChangeReason::VALUE);
+    }*/
 
     /// \return true if there is any provider connected
     bool hasProvider() {
