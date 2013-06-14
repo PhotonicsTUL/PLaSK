@@ -43,14 +43,25 @@ physical property. It can be easy obtain by subclass instantiation of one of tem
 - plask::SingleValueProperty — allows to obtain tags for properties described by one value (typically one scalar), require only one parameter - type of provided value;
 - plask::FieldProperty — allows to obtain tags for properties described by values in points described by mesh, require only one parameter - type of provided value;
 - plask::ScalarFieldProperty — equals to plask::FieldProperty\<double\>, doesn't require any parameters,
-- plask::VectorFieldProperty — allows to obtain tags for properties described by values in points described by mesh and allows to points two types of provided values (first is used in 2D space and second is used in 3D spaces).
+- plask::CustomFieldProperty - allows to obtain tags for properties described by values in points described by mesh and allows to points two types of provided values (first is used in 2D space and second is used in 3D spaces),
+- plask::VectorFieldProperty — allows to obtain tags for properties described by values in points described by mesh uses two types of provided values: Vec<2, X> in 2D and Vec<3, X> in 3D, where X is given type.
+
+This subclass can include static field and methods:
+- <code>static constexpr const char* NAME = "(lowercase) name of the property"</code>,
+- <code>static inline ValueType getDefaultValue() { return ...; }</code> -
+  construct and return initial/default instance of varible with provided type (default implementation returns <code>ValueType()</code>),
+- <code>static inline ValueType2D getDefaultValue2D() { return ...; }</code> and <code>static inline ValueType3D getDefaultValue3D() { return ...; }</code> -
+  like above for properties which uses different types in 2D and 3D spaces (e.g. plask::VectorFieldProperty),
+- <code>static const ValueType2D& value3Dto2D(const ValueType3D& v) { return ...; }</code> (convert v to 2D) and
+  <code>static const ValueType3D& value2Dto3D(const ValueType2D& v) { return ...; }</code> (convert v to 3D) -
+  convert values between 2D and 3D spaces, only for properties which uses different types in 2D and 3D spaces, used by filters.
 
 Extra templates parameters can be passed to each property tag class template described above.
 This parameters are types of extra arguments required by provider to obtain value.
 
 Both templates plask::ProviderFor and plask::ReceiverFor may take two parameters:
 - first is physical property tag and it's required,
-- second is type of space (see ) and it's required (and allowed) only for fields properties.
+- second is type of space and it's required (and allowed) only for fields properties.
 
 plask::ProviderFor class cannot be used directly, but one must declare it using some specialized class within the plask::ProviderFor namespace.
 E.g. \b plask::ProviderFor<MyProperty>::WithValue. The specialized class \b WithValue specifies how the provided values can be obtained.

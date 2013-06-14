@@ -241,6 +241,19 @@ struct FieldProperty: public Property<FIELD_PROPERTY, ValueT, ValueT, _ExtraPara
  * Helper class which makes it easier to define property tags classes for vectorial fields that can be interpolated.
  *
  * Properties defined with this tag has another type of value in 2D and 3D space:
+ * - ValueT_2D in 2D space,
+ * - ValueT_3D in 3D space.
+ *
+ * Property tag class can be subclass of this, but never should be typedefs to this
+ * (tag class for each property must be a separate class — always use different types for different properties).
+ */
+template<typename ValueT_2D, typename ValueT_3D, typename... _ExtraParams>
+struct CustomFieldProperty: public Property<FIELD_PROPERTY, ValueT_2D, ValueT_3D, _ExtraParams...> {};
+
+/**
+ * Helper class which makes it easier to define property tags classes for vectorial fields that can be interpolated.
+ *
+ * Properties defined with this tag has another type of value in 2D and 3D space:
  * - Vec<2, ValueT> in 2D space,
  * - Vec<3, ValueT> in 3D space.
  *
