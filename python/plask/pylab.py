@@ -211,17 +211,29 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
 
         #TODO other shapes than rectangles (use collection of _draw_outline functions)
         def add_path(bottom):
-            lefts = [box.lower[ax[0]]]
+            lefts = []
             if hmirror:
-                lefts.append(-box.upper[ax[0]])
+                if box.lower[ax[0]] == 0.:
+                    box.lower[ax[0]] = -box.upper[ax[0]]
+                elif box.upper[ax[0]] == 0.:
+                    box.upper[ax[0]] = -box.lower[ax[0]]
+                else:
+                    lefts.append(-box.upper[ax[0]])
+            lefts.append(box.lower[ax[0]])
             for left in lefts:
                 patches.append(matplotlib.patches.Rectangle([left, bottom],
                                                             box.upper[ax[0]]-box.lower[ax[0]], box.upper[ax[1]]-box.lower[ax[1]],
                                                             ec=color, lw=width, fill=False, zorder=zorder))
+        if vmirror:
+            if box.lower[ax[1]] == 0.:
+                box.lower[ax[1]] = -box.upper[ax[1]]
+            elif box.upper[ax[1]] == 0.:
+                box.upper[ax[1]] = -box.lower[ax[1]]
+            else:
+                add_path(-box.upper[ax[1]])
 
         add_path(box.lower[ax[1]])
-        if vmirror:
-            add_path(-box.upper[ax[1]])
+
     for patch in patches:
         axes.add_patch(patch)
     if set_limits:
