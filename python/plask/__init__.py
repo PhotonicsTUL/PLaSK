@@ -150,7 +150,7 @@ def runxpl(source, vars={}):
     '''
     env = globals().copy()
     env['plask'] = _sys.modules["plask"]
-    loadxpl(source, vars, env)
+    loadxpl(source, vars, destination=env)
     if type(source) == str:
         filename = source
     else:

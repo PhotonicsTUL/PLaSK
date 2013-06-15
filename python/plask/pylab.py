@@ -177,12 +177,30 @@ def plot_field(field, levels=16, fill=True, antialiased=False, **kwargs):
     return result
 
 
-def plot_vectors(field, color='w', angles='xy', scale_units='xy', **kwargs):
+def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
     '''Plot vector field'''
     #TODO documentation
     m = field.mesh
-    quiver(m.axis0, m.axis1, field.array[:,:,0], field.array[:,:,1],
-           color=color, angles=angles, scale_units=scale_units, **kwargs)
+    quiver(array(m.axis0), array(m.axis1), field.array[:,:,0], field.array[:,:,1],
+           angles=angles, scale_units=scale_units, **kwargs)
+
+
+def plot_stream(field, scale=8.0, color='k', **kwargs):
+    '''Plot vector field as a streamlines'''
+    #TODO documentation
+    m = field.mesh
+    m0, m1 = meshgrid(array(m.axis0), array(m.axis1))
+    arr = field.array.transpose((1,0,2))
+    if scale or color == 'norm':
+        norm = sum(arr**2, 2)
+        norm /= norm.max()
+    if color == 'norm':
+        color = norm
+    if scale:
+        streamplot(m0, m1, arr[:,:,0], arr[:,:,1], linewidth=scale*norm, color=color, **kwargs)
+    else:
+        streamplot(m0, m1, arr[:,:,0], arr[:,:,1], color=color, **kwargs)
+
 
 
 def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
