@@ -90,7 +90,14 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 {
-    if (!this->geometry || !this->mesh) return;
+    if (!this->geometry || !this->mesh) {
+        if (mCondJunc.size() != 1) {
+            double tCondY = 0.;
+            for (auto cond: mCondJunc) tCondY += cond;
+            mCondJunc.reset(1, tCondY / mCondJunc.size());
+        }
+        return;
+    }
 
     mActLo.clear();
     mActHi.clear();
@@ -145,10 +152,12 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
     assert(mActHi.size() == mActLo.size());
 
-    if (mCondJunc.size() != mActLo.size() * (this->mesh->axis0.size()-1) ) {
+    size_t tCondSize = max(mActLo.size() * (this->mesh->axis0.size()-1), size_t(1));
+
+    if (mCondJunc.size() != tCondSize) {
         double tCondY = 0.;
         for (auto cond: mCondJunc) tCondY += cond;
-        mCondJunc.reset(mActLo.size() * (this->mesh->axis0.size()-1), tCondY / mCondJunc.size());
+        mCondJunc.reset(tCondSize, tCondY / mCondJunc.size());
     }
 }
 

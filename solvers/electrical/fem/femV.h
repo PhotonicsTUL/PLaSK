@@ -191,7 +191,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     void setCondNcontact(double iCondNcontact)  { mCondNcontact = iCondNcontact; }
 
     DataVector<const double> getCondJunc() const { return mCondJunc; }
-    void setCondJunc(double iCond)  { mCondJunc.reset(mCondJunc.size(), iCond); }
+    void setCondJunc(double iCond)  { mCondJunc.reset(max(mCondJunc.size(), size_t(1)), iCond); }
     void setCondJunc(const DataVector<const double>& iCond)  {
         if (!this->mesh || iCond.size() != (this->mesh->axis0.size()-1) * getActNo())
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");

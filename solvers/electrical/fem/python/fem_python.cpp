@@ -16,17 +16,21 @@ static shared_ptr<SolverOver<Geometry2DCylindrical>> DriftDiffusionCyl(const std
 
 template <typename Cls>
 static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
-    auto midmesh = self->getMesh()->getMidpointsMesh();
-    RectilinearMesh1D line1;
-    for (size_t n = 0; n < self->getActNo(); ++n)
-        line1.addPoint(self->getMesh()->axis1[(self->getActLo(n)+self->getActHi(n))/2]);
-    auto mesh = make_shared<RectilinearMesh2D>(midmesh->axis0, line1);
-    return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
+    if (self->getMesh() && self->getGeometry()) {
+        auto midmesh = self->getMesh()->getMidpointsMesh();
+        RectilinearMesh1D line1;
+        for (size_t n = 0; n < self->getActNo(); ++n)
+            line1.addPoint(self->getMesh()->axis1[(self->getActLo(n)+self->getActHi(n))/2]);
+        auto mesh = make_shared<RectilinearMesh2D>(midmesh->axis0, line1);
+        return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
+    } else {
+        auto mesh = make_shared<RectilinearMesh2D>(RectilinearMesh1D({NAN}), RectilinearMesh1D({NAN}));
+        return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
+    }
 }
 
 template <typename Cls>
 static void setCondJunc(Cls* self, py::object value) {
-    size_t len = self->getMesh()->axis0.size()-1;
     try {
         double val = py::extract<double>(value);
         self->setCondJunc(val);
@@ -34,6 +38,8 @@ static void setCondJunc(Cls* self, py::object value) {
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
+    if (!self->getMesh()) throw NoMeshException(self->getId());
+    size_t len = self->getMesh()->axis0.size()-1;
     try {
         const DataVectorWrap<const double,2>& val = py::extract<DataVectorWrap<const double,2>&>(value);
         {

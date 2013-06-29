@@ -617,10 +617,16 @@ The alternative method of running PLaSK will be by using launcher system
 \end_layout
 
 \begin_layout Chapter
-Tutorials and examples
+Tutorials and Examples
 \end_layout
 
 \begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Thermo-electrical-modeling-of-simple-ee-laser"
+
+\end_inset
+
 Thermo-electrical modeling of simple edge-emitting diode
 \end_layout
 
@@ -914,7 +920,7 @@ status open
 \begin_layout Plain Layout
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:Tutorial1-geometry"
+name "fig:tutorial1-geometry"
 
 \end_inset
 
@@ -953,7 +959,7 @@ simple gallium arsenide edge-emitting diode, presented in Figure
 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "fig:Tutorial1-geometry"
+reference "fig:tutorial1-geometry"
 
 \end_inset
 
@@ -3844,20 +3850,1138 @@ name "sec:Optical-analysis-of-VCSEL"
 Optical analysis of a step-profile VCSEL
 \end_layout
 
-\begin_layout Standard
-multistack
+\begin_layout Subsection*
+Analyzed structure
 \end_layout
 
 \begin_layout Standard
-py file separately
+In this section we will perform a simple purely optical analysis of an arsenide
+ oxide confined Vertical-Cavity Surface-Emitting Laser (VCSEL) with an arbitrary
+ step-profile gain.
+ We will look for its resonant wavelength and the threshold gain using the
+ popular effective frequency method.
+ The schematic diagram of the VCSEL is shown in Figure
+\begin_inset space ~
+\end_inset
+
+#.
+ It consists of...
 \end_layout
 
 \begin_layout Standard
-EFM
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename tutorial2-geometry.svg
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:tutorial2-geometry"
+
+\end_inset
+
+Geometry of VCSEL modeled in section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Optical-analysis-of-VCSEL"
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-step-profile
+Because of the axial symmetry of the device, the natural coordinate system
+ used in the simulations is the two-dimensional cylindrical one.
+ Hence, we start the 
+\family typewriter
+tutorial2.xpl
+\family default
+ file with our geometry specification:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<plask>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+<materials>
+\end_layout
+
+\begin_layout Plain Layout
+
+</materials>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+<geometry>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
+\end_layout
+
+\end_inset
+
+The empty 
+\family typewriter
+<materials>
+\family default
+ section will be discussed and expanded later.
+ Geometry of the type 
+\family typewriter
+cylindrical2d
+\family default
+ means a set of axi-symmetrical disk created by rotating all two-dimensional
+ objects around the vertical axis (
+\begin_inset Formula $z$
+\end_inset
+
+ in this case).
+ Its attributes 
+\family typewriter
+top
+\family default
+ and 
+\family typewriter
+bottom
+\family default
+ specify materials directly below and above the defined structure.
+ 
+\family typewriter
+outer="extend"
+\family default
+ tells PLaSK that all the outermost objects in the defined cylinder should
+ be extended to infinity.
+ This way we are able to simulate infinite lateral layers with only an oxide
+ aperture located at the origin having some finite radius of 8
+\begin_inset space \thinspace{}
+\end_inset
+
+µm.
+ The objects outside of this aperture need to have some dimension defined,
+ but it will be ignored as long as the outer radius of each layer is equal
+ (we set it to 10
+\begin_inset space \thinspace{}
+\end_inset
+
+µm).
+\end_layout
+
+\begin_layout Standard
+Again, the most convenient way of defining the geometry is creating the
+ stack and specifying the consecutive layers starting from the top.
+ First we need to define 24 pairs of identical quarter-wavelength layers
+ of DBR.
+ As doing it by hand would be a tedious task, we may create another stack
+ (within the original one) and tell PLaSK to repeat its contents 24 times:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+    <stack>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <stack name="top-DBR" repeat="24">
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="10" dz="###" material="GaAs"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="10" dz="###" material="Al(0.##)GaAs/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      </stack>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Next, according to Figure
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:tutorial2-geometry"
+
+\end_inset
+
+ we complete the definition of the geometry by specifying the cavity with
+ the oxide and the active region, followed by the bottom DBR.
+ 
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+      <shelf>
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="4" dz="###" material="Al(0.##)GaAs/>
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="6" dz="###" material="AlxOy/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      </shelf>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block dr="10" dz="###" material="Al(0.##)GaAs/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block dr="10" dz="###" material="GaAs"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <shelf>
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="4" dz="###" material="active" name="gain-region"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="6" dz="###" material="inactive"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      </shelf>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <block dr="10" dz="###" material="GaAs"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      <stack name="bottom-DBR" repeat="29">
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="10" dz="###" material="Al(0.##)GaAs/>
+\end_layout
+
+\begin_layout Plain Layout
+
+        <block dr="10" dz="###" material="GaAs"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+      </stack>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </cylindrical2d>
+\end_layout
+
+\begin_layout Plain Layout
+
+</geometry>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Note that there are no materials named 
+\emph on
+active
+\emph default
+ and 
+\emph on
+inactive
+\emph default
+ in the materials database.
+ We may define these materials ourselves and set its refractive index and
+ absorption to some arbitrary value.
+ This way PLaSK offers big flexibility in analysis of new systems, where,
+ for example, some unknown materials parameters need to be fitted to the
+ experimental data.
+ This is what the mysterious 
+\family typewriter
+<materials>
+\family default
+ section is used for.
+ Please move back to this section and fill it with the following content:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<materials>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <material name="active" kind="semiconductor">
+\end_layout
+
+\begin_layout Plain Layout
+
+    <nr>3.6</nr>
+\end_layout
+
+\begin_layout Plain Layout
+
+    <absp>0.</absp>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </material>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <material name="inactive" base="active">
+\end_layout
+
+\begin_layout Plain Layout
+
+    <absp>1000.</absp>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </material>
+\end_layout
+
+\begin_layout Plain Layout
+
+</materials>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This defines two materials with names given in 
+\family typewriter
+name
+\family default
+ attribute of the 
+\family typewriter
+material
+\family default
+ tags.
+ These tags must also have the second attribute which is either 
+\family typewriter
+kind
+\family default
+ or 
+\family typewriter
+base
+\family default
+.
+ The former one is used for creating completely new materials and specifies
+ to which group it belongs.
+ Allowed values are 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+semiconductor
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+dielectric
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+oxide
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+metal
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+liquid crystal
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The in the following internal tags you have to specify all the material
+ properties used in the simulation (see chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "chap:Materials"
+
+\end_inset
+
+ for the complete list).
+ In our case, we will perform only optical simulations, so the refractive
+ index and the absorption are sufficient.
+\end_layout
+
+\begin_layout Standard
+The second defined material has the 
+\family typewriter
+base
+\family default
+ attribute instead of 
+\family typewriter
+kind
+\family default
+.
+ This tells PLaSK that we want to define the modification of the existing
+ material.
+ The base value must be a proper material specification, as used e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ in the geometry section.
+ In this case every undefined property, will be looked up in the base material.
+ Hence, in this example, the 
+\emph on
+inactive
+\emph default
+ material will have exactly the same refractive index as the 
+\emph on
+active
+\emph default
+ one.
+\end_layout
+
+\begin_layout Standard
+The whole XPL file with VCSEL geometry specification is presented in Listing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Listing-of-tutorial2.xpl"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "float=hbp,language=XML"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Listing-of-tutorial2.xpl"
+
+\end_inset
+
+Listing of 
+\family typewriter
+tutorial2.xpl
+\family default
+.
+\end_layout
+
+\end_inset
+
+<plask>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+<materials>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <material name="active" kind="semiconductor">
+\end_layout
+
+\begin_layout Plain Layout
+
+    <nr>3.6</nr>
+\end_layout
+
+\begin_layout Plain Layout
+
+    <absp>0.</absp>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </material>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <material name="inactive" base="active">
+\end_layout
+
+\begin_layout Plain Layout
+
+    <absp>1000.</absp>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </material>
+\end_layout
+
+\begin_layout Plain Layout
+
+</materials>
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+<geometry>
+\end_layout
+
+\begin_layout Plain Layout
+
+  <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend"></
+geometry>
+\end_layout
+
+\begin_layout Plain Layout
+
+  </cylindrical2d>
+\end_layout
+
+\begin_layout Plain Layout
+
+</plask>
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Organization of the computations
+\end_layout
+
+\begin_layout Standard
+In the section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Thermo-electrical-modeling-of-simple-ee-laser"
+
+\end_inset
+
+ you have learned how to create an XPL file defining a basic structure and
+ two solvers exchanging data with each other.
+ Also you have written a simple Python script controlling the computations
+ flow in the last XPL section.
+ However, in many cases it is common to perform exactly the same computations
+ for different structures.
+ In such a case it would be convenient to be able to write the definition
+ of the solvers and the computation script separately from the geometry
+ definition.
+\end_layout
+
+\begin_layout Standard
+In order to facilitate such use-case, 
+\family typewriter
+plask
+\family default
+ program can run with an arbitrary Python script, which will read the XPL
+ file with the geometry definition in the next stage.
+ By general, Python scripts have a default extension 
+\family typewriter
+.py
+\family default
+, so create the file 
+\family typewriter
+tutorial2.py
+\family default
+ with the following content:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import sys
+\end_layout
+
+\begin_layout Plain Layout
+
+filename = sys.argv[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+loadxpl(filename)
+\end_layout
+
+\end_inset
+
+The first line of this file is a Python command telling it to import the
+ standard module 
+\family typewriter
+sys
+\family default
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+In Python modules are some external libraries that extend its functionality.
+ The 
+\family typewriter
+sys
+\family default
+ module give access to many system function and objects.
+\end_layout
+
+\end_inset
+
+.
+ In the next line we read the first command-line argument provided while
+ running the program and assign it to the variable 
+\family typewriter
+filename
+\family default
+.
+ Finally, we read the XPL file with the given filename.
+ As we extract this name from the command line parameters, which we will
+ provide on the program invocation, we will be able to use the same script
+ for many different geometries.
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+loadxpl
+\family default
+ does not execute the script present in the 
+\family typewriter
+<script>
+\family default
+ section of the XPL file.
+ Instead, we should put all the commands in the rest of the 
+\family typewriter
+tutorial2.py
+\family default
+ file.
+ On the other hand, this function reads and creates all solvers specified
+ in the XPL.
+ However, in this tutorial, we will create the solver in the Python script.
+ In order to do this, continue writing 
+\family typewriter
+tutorial2.py
+\family default
+:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+efm = optical.EffectiveFrequencyCyl("efm")
+\end_layout
+
+\begin_layout Plain Layout
+
+efm.geometry = GEO.main
+\end_layout
+
+\end_inset
+
+This two commands are equivalent to the following definition in the 
+\family typewriter
+<solvers>
+\family default
+ section of the XPL file:
+\begin_inset listings
+lstparams "language=XML"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+<optical solver="EffectiveFrequencyCyl" name="efm">
+\end_layout
+
+\begin_layout Plain Layout
+
+  <geometry ref="main"/>
+\end_layout
+
+\begin_layout Plain Layout
+
+</optical>
+\end_layout
+
+\end_inset
+
+Mind that, while defining a solver in the Python script, we should put its
+ name (
+\family typewriter
+"efm"
+\family default
+ in this case) as an argument of the solver constructor.
+ It does not need to match the variable name, but it is a good idea to keep
+ them consistent.
+ Otherwise any logs and error messages might be hard to read.
+\end_layout
+
+\begin_layout Standard
+The next line assigns the geometry named 
+\begin_inset Quotes eld
+\end_inset
+
+main
+\begin_inset Quotes erd
+\end_inset
+
+ present in the XPL file to the solver.
+ This time we refer to it trough attribute access of the global dictionary
+ 
+\family typewriter
+GEO
+\family default
+, which is simply a shorter form of 
+\family typewriter
+GEO["main"]
+\family default
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Both these forms can be used simultaneously.
+ However, with the attribute access you must replace any hyphens in the
+ name (-) with the underscore (_).
+ So 
+\family typewriter
+GEO["the-geometry"]
+\family default
+ is equivalent to 
+\family typewriter
+GEO.the_geometry
+\family default
+.
+\end_layout
+
+\end_inset
+
+.
+ Naturally, we have assumed here that the XPL file has the geometry 
+\begin_inset Quotes eld
+\end_inset
+
+main
+\begin_inset Quotes erd
+\end_inset
+
+ defined.
+ Luckily this is the case with our file 
+\family typewriter
+tutorial2.xpl
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+Effective frequency solver does not need to have a mesh defined, as it will
+ come out with a sensible default.
+ So, in the next step, we must specify a step-profile gain as an input to
+ the 
+\family typewriter
+inGain
+\family default
+ receiver of the 
+\emph on
+efm
+\emph default
+ solver.
+ To do this, we will use a 
+\family typewriter
+StepProfile
+\family default
+ Python class, conveniently provided by PLaSK and create a custom gain:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+profile = StepProfile(GEO.main)
+\end_layout
+
+\begin_layout Plain Layout
+
+profile[GEO.gain_region] = 500.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+efm.inGain = ProviderForGain(profile)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The first line of the above snippet creates the 
+\emph on
+profile
+\emph default
+ object.
+ 
+\family typewriter
+StepProfile
+\family default
+ class takes a geometry in which the profile is defined as an argument.
+ In the next line, we specify that there is a step gain of 500
+\begin_inset space \thinspace{}
+\end_inset
+
+cm
+\begin_inset Formula $^{-1}$
+\end_inset
+
+ (default units for the gain in PLaSK) at the object named 
+\emph on
+gain-region
+\emph default
+ in the XPL file ('-' in names is replaced with '_' when using the attribute
+ access to geometry objects).
+ Finally we create the temporary custom gain provider and connect it to
+ the 
+\family typewriter
+efm.inGain
+\family default
+ receiver.
+\end_layout
+
+\begin_layout Standard
+Now we can perform the computations.
+ First we set the reference wavelength to 980
+\begin_inset space \thinspace{}
+\end_inset
+
+nm (i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ the effective frequency will be expanded around this wavelength) and then
+ we look for the mode with the wavelength closest to 981
+\begin_inset space \thinspace{}
+\end_inset
+
+nm, storing the result in the variable 
+\emph on
+lam
+\emph default
+ and then writing it to the log.
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+efm.lam0 = 980.
+\end_layout
+
+\begin_layout Plain Layout
+
+lam = efm.compute(981.)
+\end_layout
+
+\begin_layout Plain Layout
+
+print_log(LOG_INFO, "Found resonant wavelength " + str(lam))
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The complete Python script from this tutorial is presented in Listing
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Listing-of-tutorial2.py"
+
+\end_inset
+
+.
+ We may run it from the system shell (Command Prompt in Windows) by typing:
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+plask tutorial2.py tutorial2.xpl
+\end_layout
+
+\begin_layout Standard
+In this case the string 
+\family typewriter
+tutorial2.xpl
+\family default
+ is the program argument that will be read with 
+\family typewriter
+sys.argv[1]
+\family default
+ and which, as you remember, specifies the name od the XPL file to read.
+ When run, the program will compute the resonant wavelength of the fundamental
+ mode of the VCSEL and print it to the screen.
+ It will be a complex value with negative imaginary part, which means that
+ the mode is still below threshold.
+ We will see below, how to find the proper threshold gain value.
+ By now, you may try to extend this script with the plot of the light intensity,
+ which can be obtained using the 
+\family typewriter
+efm.outLightIntensity
+\family default
+ provider.
+ Consider this as a homework exercise.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "float=hpb,language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Listing-of-tutorial2.py"
+
+\end_inset
+
+Content of the file 
+\family typewriter
+tutorial2.py
+\family default
+.
+\end_layout
+
+\end_inset
+
+import sys
+\end_layout
+
+\begin_layout Plain Layout
+
+filename = sys.argv[1]
+\end_layout
+
+\begin_layout Plain Layout
+
+loadxpl(filename)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+efm = optical.EffectiveFrequencyCyl("efm")
+\end_layout
+
+\begin_layout Plain Layout
+
+efm.geometry = GEO.main
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+profile = StepProfile(GEO.main)
+\end_layout
+
+\begin_layout Plain Layout
+
+profile[GEO.gain_region] = 500.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+efm.inGain = ProviderForGain(profile)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+efm.lam0 = 980.
+\end_layout
+
+\begin_layout Plain Layout
+
+lam = efm.compute(981.)
+\end_layout
+
+\begin_layout Plain Layout
+
+print_log(LOG_INFO, "Found resonant wavelength " + str(lam))
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Searching for the threshold gain using Scipy
 \end_layout
 
 \begin_layout Standard
@@ -3913,6 +5037,10 @@ Optical analysis of photonic crystal slab waveguide
 \end_layout
 
 \begin_layout Standard
+variables in XPL file
+\end_layout
+
+\begin_layout Standard
 lattice
 \end_layout
 
@@ -3925,7 +5053,7 @@ combining 2D and 3D geometries with filters
 \end_layout
 
 \begin_layout Chapter
-General concepts of PLaSK
+General Concepts of PLaSK
 \end_layout
 
 \begin_layout Section
@@ -3933,7 +5061,13 @@ Definitions
 \end_layout
 
 \begin_layout Chapter
-Geometry specification
+\begin_inset CommandInset label
+LatexCommand label
+name "chap:Geometry"
+
+\end_inset
+
+Geometry Specification
 \end_layout
 
 \begin_layout Section
@@ -3985,7 +5119,7 @@ name "chap:Meshes"
 
 \end_inset
 
-Specifying meshes
+Specifying Meshes
 \end_layout
 
 \begin_layout Section
@@ -4011,7 +5145,7 @@ name "chap:Solvers"
 
 \end_inset
 
-Computational solvers
+Computational Solvers
 \end_layout
 
 \begin_layout Section
@@ -4031,7 +5165,7 @@ Running computations
 \end_layout
 
 \begin_layout Chapter
-Other useful utilities
+Other Useful Utilities
 \end_layout
 
 \begin_layout Section
@@ -4047,7 +5181,7 @@ Graphical User Interface
 \end_layout
 
 \begin_layout Chapter
-Available solvers
+Available Solvers
 \end_layout
 
 \begin_layout Section
@@ -4100,7 +5234,7 @@ Units in PLaSK
 \end_layout
 
 \begin_layout Chapter
-XPL file reference
+XPL File Reference
 \end_layout
 
 \begin_layout Standard
@@ -18204,7 +19338,7 @@ if 42 <= 6*9:
 \end_layout
 
 \begin_layout Chapter
-Reference of the Python library
+Reference of the Python Library
 \end_layout
 
 \begin_layout Standard
