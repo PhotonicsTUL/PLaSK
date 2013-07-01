@@ -148,8 +148,11 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
-    # list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
+    list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
+    set(plask_manifest "mingw/msvcrc.o")
     # TODO link all targets to: msvcr90
+else()
+    set(plask_manifest "")
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------
@@ -221,7 +224,7 @@ if(BUILD_PYTHON)
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-    add_executable(plask python/exe_main.cpp ${python_plask_src})
+    add_executable(plask python/exe_main.cpp ${python_plask_src} ${plask_manifest})
     if(WIN32)
             # For some reason MinGW wants to create import library for executable,
             # which overwrites libplask.dll.a. With this hack we name this useless
@@ -232,12 +235,12 @@ if(BUILD_PYTHON)
 
     if(BUILD_PYTHON_MODULE)
         if(WIN32)
-            add_library(_plask SHARED ${python_plask_src})
+            add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
             set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
             #install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
             #                       LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
         else()
-            add_library(_plask MODULE ${python_plask_src})
+            add_library(_plask MODULE ${python_plask_src} ${plask_manifest})
             #install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
         endif()
         target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
