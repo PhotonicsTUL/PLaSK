@@ -148,6 +148,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
+    # list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
+    # TODO link all targets to: msvcr90
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------

@@ -219,7 +219,7 @@ struct Box2D {
     /**
      * Get vector similar to this but with changed i-th coordinate to oposite.
      * WARNING This function does not check if it is valid (for efficiency reasons)
-     * @param flipDir number of coordinate
+     * @param i number of coordinate
      * @return box similar to this but with mirrored i-th coordinate
      */
     inline Box2D fliped(size_t i) {
@@ -439,7 +439,7 @@ struct Box3D {
     /**
      * Get vector similar to this but with changed i-th coordinate to oposite.
      * WARNING This function does not check if it is valid (for efficiency reasons)
-     * @param flipDir number of coordinate
+     * @param i number of coordinate
      * @return box similar to this but with mirrored i-th coordinate
      */
     inline Box3D fliped(size_t i) {

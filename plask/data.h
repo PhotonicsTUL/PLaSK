@@ -269,7 +269,6 @@ struct DataVector {
      * Change data of this data vector. Same as: DataVector(existing_data, size).swap(*this);
      * @param size  total size of the existing data
      * @param existing_data pointer to existing data
-     * @param manage indicates whether the data vector should manage the data and garbage-collect it (with delete[] operator)
      */
     template <typename TS>
     void reset(TS* existing_data, std::size_t size) {
@@ -281,9 +280,9 @@ struct DataVector {
 
     /**
      * Change data of this data vector. Same as: DataVector(existing_data, size, deleter).swap(*this);
-     * \param size  total size of the existing data
      * \param existing_data pointer to existing data
-     * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
+     * \param size total size of the existing data
+     * \param deleter used to free data memory
      */
     template <typename TS>
     void reset(TS* existing_data, std::size_t size, const std::function<void(void*)>& deleter) {
@@ -295,9 +294,9 @@ struct DataVector {
 
     /**
      * Change data of this data vector. Same as: DataVector(existing_data, size, deleter).swap(*this);
-     * \param size  total size of the existing data
      * \param existing_data pointer to existing data
-     * \param guardian pointer to the data guardian object created on the heap (it will be deleted automatically)
+     * \param size  total size of the existing data
+     * \param deleter used to free data memory
      */
     template <typename TS>
     void reset(TS* existing_data, std::size_t size, std::function<void(void*)>&& deleter) {

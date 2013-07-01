@@ -61,10 +61,10 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
      * Set stiffness matrix and load vector
      * \param[out] A matrix to fill-in
      * \param[out] B load vector
-     * \param constT boundary conditions: constant temperature
-     * \param constHF boundary conditions: constant heat flux
-     * \param convection boundary conditions: convention
-     * \param radiation boundary conditions: radiation
+     * \param btemperature boundary conditions: constant temperature
+     * \param bheatflux boundary conditions: constant heat flux
+     * \param bconvection boundary conditions: convention
+     * \param bradiation boundary conditions: radiation
      **/
     template <typename MatrixT>
     void setMatrix(MatrixT& A, DataVector<double>& B,
@@ -129,7 +129,7 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
 
     /**
      * Run temperature calculations
-     * \param looplim maximum number of loops to run
+     * \param loops maximum number of loops to run
      * \return max correction of temperature against the last call
      **/
     double compute(int loops=1);

@@ -77,7 +77,7 @@ inline void* aligned_malloc(std::size_t size)
 
 /**
  * Free memory allocated with aligned_malloc.
- * \param prt pointer to free
+ * \param ptr pointer to free
  */
 inline void aligned_free(void *ptr)
 {
@@ -112,10 +112,10 @@ inline void* aligned_realloc(void *ptr, std::size_t new_size, std::size_t old_si
 }
 
 /**
- * Create new data with aligned allocation
+ * Create new data with aligned allocation.
  * \tparam T object type
  * \param num number of array elements
- * \param args arguments forwarded to object constructor
+ * \return pointer to reserved memory
  */
 template <typename T>
 inline T* aligned_malloc(std::size_t num=1) {
@@ -126,7 +126,6 @@ inline T* aligned_malloc(std::size_t num=1) {
 /**
  * Delete data with aligned allocation
  * \param ptr pointer of object to delete
- * \param num number of array elements
  * \tparam T object type
  */
 template <typename T>
@@ -152,6 +151,7 @@ struct aligned_deleter {
  * Create new object with aligned allocation
  * \tparam T object type
  * \param args arguments forwarded to object constructor
+ * \return pointer to reserved memory
  */
 template <typename T, typename... Args>
 inline T* aligned_new(Args&&... args) {

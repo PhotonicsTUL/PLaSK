@@ -37,8 +37,8 @@ struct SparseBandMatrix {
     static constexpr size_t ld = LDA-1;
 
     /**
-     * Create matrix
-     * \param rank size of the matrix
+     * Create matrix.
+     * \param size size of the matrix
      * \param major shift of nodes to the next major row (mesh[x,y,z+1])
      * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
      */
@@ -57,9 +57,10 @@ struct SparseBandMatrix {
     }
 
     /**
-     * Return reference to array element
-     * \param r index of the element row
-     * \param c index of the element column
+     * Return reference to array element.
+     * @param r index of the element row
+     * @param c index of the element column
+     * @return reference to array element
      **/
     double& operator()(size_t r, size_t c) {
         if (r < c) std::swap(r, c);

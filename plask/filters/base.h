@@ -39,6 +39,8 @@ public:
     /**
      * Check if this source can provide value for given point and eventualy return this value.
      * @param p point (in outer space coordinates)
+     * @param extra_args
+     * @param method interpolation method to use
      * @return value in point @p, set only if this can provide data in given point @p p
      */
     virtual boost::optional<PropertyValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;

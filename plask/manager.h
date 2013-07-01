@@ -65,6 +65,8 @@ struct Manager {
         /**
          * Create ExternalSourcesFromFile which support relative file names.
          * @param originalFileName name of file from which XML is read now
+         * @param currentSection name of currenct section
+         * @param prev previous source (needed to cycle detection)
          */
         ExternalSourcesFromFile(const boost::filesystem::path& originalFileName,
                                 const std::string& currentSection = std::string(),
@@ -107,6 +109,7 @@ private:
     /**
      * Load solver from file.
      * @param category, lib, solver_name solver parameters
+     * @param name solver name
      * @return loaded solver
      */
     virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);
@@ -118,7 +121,7 @@ private:
     static constexpr const char* TAG_NAME_MATERIALS = "materials";  ///< name of XML tag of section with materials
     static constexpr const char* TAG_NAME_GEOMETRY = "geometry";    ///< name of XML tag of section with geometry
     static constexpr const char* TAG_NAME_GRIDS = "grids";          ///< name of XML tag of section with grids (meshes and generators)
-    static constexpr const char* TAG_NAME_SOLVERS = "solvers";       ///< name of XML tag of section with solvers
+    static constexpr const char* TAG_NAME_SOLVERS = "solvers";      ///< name of XML tag of section with solvers
     static constexpr const char* TAG_NAME_CONNECTS = "connects";    ///< name of XML tag of section with provides-receiver connections
     static constexpr const char* TAG_NAME_SCRIPT = "script";        ///< name of XML tag of section with (python) script
 
@@ -348,7 +351,7 @@ private:
      * Load solvers using reader.
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
-    void loadSolvers(XMLReader& greader);
+    void loadSolvers(XMLReader& reader);
 
     /**
      * Load solvers intrconnects from the @p reader.

@@ -91,7 +91,7 @@ inline Vec<3, T> vec(const Vec<2, T>& src, T lon) {
 
 /** @relates Vec
  * Rotate @p v over up axis to lie on tran-vert plane.
- * @param r vector in 3D space
+ * @param v vector in 3D space
  * @return vector in 2D space, after rotation, with tran()>=0 and vert()==v.vert()
  */
 inline Vec<2, double> rotateToLonTranAbs(const Vec<3, double>& v) {
@@ -100,7 +100,7 @@ inline Vec<2, double> rotateToLonTranAbs(const Vec<3, double>& v) {
 
 /** @relates Vec
  * Rotate @p v over up axis to lie on tran-vert plane.
- * @param r vector in 3D space
+ * @param v vector in 3D space
  * @return vector in 2D space, after rotation, with sign of tran() same as v.tran() and vert()==v.vert()
  */
 inline Vec<2, double> rotateToLonTranSgn(const Vec<3, double>& v) {

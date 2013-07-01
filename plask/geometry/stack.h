@@ -563,8 +563,10 @@ class MultiStackContainer: public StackContainer<dim> {
     unsigned repeat_count;
 
     /**
+     * Constructor.
      * @param repeat_count how many times stack should be repeated, must be 1 or more
      * @param baseHeight height where the first object should start
+     * @param aligner default stack aligner
      */
     explicit MultiStackContainer(unsigned repeat_count=1, const double baseHeight=0.0,
                                  const typename StackContainer<dim>::ChildAligner& aligner=StackContainer<dim>::DefaultAligner()):

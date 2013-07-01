@@ -73,6 +73,7 @@ struct VariadicTemplateTypesHolder {};
  * Print range separating elements by @p separator (which is not printed after last element).
  * @param out stream to print to
  * @param begin, end [begin, end) range to print
+ * @param separator string placed between each pair of adjacent elements
  * @return out
  */
 template <typename ForwadIterator>
@@ -175,7 +176,7 @@ inline Ret apply_tuple(Op&& op, T&& t, I<Indices...>)
 
 /**
  * Call @p f using arguments from tuple.
- * @param f functor to call
+ * @param op functor to call
  * @param t tuple which contains all @p f arguments
  * @return result returned by @p f
  */

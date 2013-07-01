@@ -38,7 +38,7 @@ struct SparseBandMatrix {
 
     /**
      * Create matrix
-     * \param rank size of the matrix
+     * \param size size of the matrix
      * \param major shift of nodes to the next row (mesh[x,y+1])
      */
     SparseBandMatrix(size_t size, size_t major): size(size) {

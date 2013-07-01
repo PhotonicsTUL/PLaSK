@@ -56,6 +56,7 @@ public:
      *
      * Throw exception if reader points to filter tag, but this tag can't be parsed.
      * @param reader source of filter configuration, should point to begin of tag
+     * @param manager
      * @return One of:
      * - filter - in such case reader point to end of filter tag,
      * - nullptr - if reader doesn't point to filter tag, in such case, reader is not changed.

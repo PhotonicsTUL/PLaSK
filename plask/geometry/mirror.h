@@ -33,6 +33,8 @@ struct Flip: public GeometryObjectTransform<dim> {
     using GeometryObjectTransform<dim>::getChild;
 
     /**
+     * Constructor.
+     * @param flipDir flip direction, 2D or 3D axis number
      * @param child child geometry object, object to reflect
      */
     explicit Flip(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
@@ -113,6 +115,7 @@ struct Mirror: public GeometryObjectTransform<dim> {
     using GeometryObjectTransform<dim>::getChild;
 
     /**
+     * @param flipDir
      * @param child child geometry object, object to reflect
      */
     explicit Mirror(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())

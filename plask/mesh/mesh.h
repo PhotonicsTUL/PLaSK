@@ -21,9 +21,8 @@ storing the data value for the i-th point in the mesh under the i-th index.
 @see @ref interpolation @ref boundaries
 
 @section meshes_write How to implement a new mesh?
-There are two typical approaches to implementing new types of meshes:
-- @ref meshes_write_adapters using adapter over container of points [deprecated],
-- @ref meshes_write_direct "direct" (this approach is more flexible).
+Typical approaches to implementing new types of meshes:
+- @ref meshes_write_direct (this approach is the most flexible).
 
 @see @ref interpolation_write @ref boundaries_impl
 
@@ -32,7 +31,7 @@ To implement a new mesh directly you have to write class inherited from the \c p
 
 You are required to:
 - implement the @ref plask::Mesh::size size and @ref plask::MeshD::at at methods which allow to access to mesh points;
-- implement the \ref plask::MeshD::writeXML method, which writes the mesh to XML;
+- implement the @ref plask::MeshD::writeXML method, which writes the mesh to XML;
 - write and register the reading function which reads the mesh from XML.
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3D space):
@@ -60,7 +59,7 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
         object.addTag("point")
                .attr("c0", point.c0)
                .attr("c1", point.c1)
-               .attr("c2", point.c2)     // store this point coordinates in attributes of the tag <point>
+               .attr("c2", point.c2);   // store this point coordinates in attributes of the tag <point>
         ;
     }
 

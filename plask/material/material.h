@@ -289,6 +289,7 @@ struct Material {
      * Get valence band offset VBO[eV].
      * @param T temperature [K]
      * @param e lateral strain [-]
+     * @param point point in Brillouin zone [-]
      * @return valence band offset VBO[eV]
      */
     virtual double VBO(double T, double e=0., char point='G') const;
@@ -406,6 +407,7 @@ struct Material {
      * Get effective density of states in the valance band Nv [cm^(-3)].
      * @param T temperature [K]
      * @param e lateral strain [-]
+     * @param point point in Brillouin zone [-]
      * @return effective density of states in the valance band Nv [cm^(-3)]
      */
     virtual double Nv(double T, double e=0., char point='G') const;
@@ -413,7 +415,6 @@ struct Material {
     /**
      * Get intrinsic carrier concentration Ni [cm^(-3)].
      * @param T temperature [K]
-     * @param e lateral strain [-]
      * @return intrinsic carrier concentration Ni [cm^(-3)]
      */
     virtual double Ni(double T) const;
@@ -421,7 +422,6 @@ struct Material {
     /**
      * Get free carrier concentration N [cm^(-3)].
      * @param T temperature [K]
-     * @param e lateral strain [-]
      * @return free carrier concentration N [cm^(-3)]
      */
     virtual double Nf(double T) const;
