@@ -187,11 +187,11 @@ class StepProfile(object):
     Helper callable class for creating any step profile for use in custom providers
     """
 
-    def __init__(self, geometry, dtype=float, default=0.):
+    def __init__(self, geometry, default=0., dtype=None):
         self.steps = {}
         self.geometry = geometry
         self.default = default
-        self.dtype = dtype
+        self.dtype = dtype if dtype is not None else type(default)
 
     def __getitem__(self, key):
         return self.steps[key]
