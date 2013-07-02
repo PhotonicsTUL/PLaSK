@@ -38,8 +38,14 @@ fout = open("msvcrt.manifest", "w")
 fout.write(template)
 fout.close()
 
-fout = open("msvcr.rc", "w")
+fout = open("msvcr_exe.rc", "w")
 fout.write("""#include "winuser.h"
 1 RT_MANIFEST  msvcrt.manifest
+""")
+fout.close()
+
+fout = open("msvcr_dll.rc", "w")
+fout.write("""#include "winuser.h"
+2 RT_MANIFEST  msvcrt.manifest
 """)
 fout.close()
