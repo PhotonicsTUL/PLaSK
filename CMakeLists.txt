@@ -148,9 +148,13 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
     add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
-    list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
-    set(plask_manifest "mingw/msvcrc.o")
+    #list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
+    #set(plask_manifest "mingw/msvcrc.o")
     # TODO link all targets to: msvcr90
+   # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
+   # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
+   # set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
+    set(plask_manifest "")  #TODO remove plask_manifest
 else()
     set(plask_manifest "")
 endif()
