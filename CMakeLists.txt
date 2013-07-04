@@ -124,7 +124,10 @@ include_directories(${EXPAT_INCLUDE_DIR})
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
-set(boost_components unit_test_framework system filesystem) #thread
+set(boost_components system filesystem) #thread
+if(BUILD_TESTING)
+    set(boost_components ${boost_components} unit_test_framework)
+endif(BUILD_TESTING)
 
 option(USE_STATIC_BOOST "use static boost (not recommended)" OFF)
 if(USE_STATIC_BOOST)
