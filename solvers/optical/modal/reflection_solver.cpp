@@ -1,6 +1,6 @@
 #include "reflection_solver.h"
 
-namespace plask { namespace solvers { namespace vslab {
+namespace plask { namespace solvers { namespace modal {
 
 // ReflectionSolver::ReflectionSolver(const std::string& name=""): SolverWithMesh<ForExample_Geometry2DCartesian, ForExample_RectilinearMesh2D>(name),
 //     outSomeField(this, &ReflectionSolver::getDelegated) // getDelegated will be called whether provider value is requested

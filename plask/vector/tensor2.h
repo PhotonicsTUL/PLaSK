@@ -181,6 +181,18 @@ struct Tensor2 {
 };
 
 /**
+ * Calculate this tensor multiplied by scalar \p scale.
+ * \param scale scalar
+ * \param tensor tensor
+ * \return this tensor multiplied by scalar
+ */
+template <typename T, typename OtherT>
+auto operator*(const OtherT scale, const Tensor2<T>& tensor) -> decltype(tensor*scale) {
+    return tensor * scale;
+}
+
+
+/**
  * Calculate tensor conjugate.
  * @param v a tensor
  * @return conjugate tensor

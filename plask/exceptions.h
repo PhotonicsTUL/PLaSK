@@ -94,7 +94,22 @@ struct BadInput: public Exception {
 };
 
 /**
- * This exception shoulb be thrown by solvers in case of error in computations.
+ * This exception is called when operation on data vectors cannot be performed
+ */
+struct DataError: public Exception {
+
+    /**
+     * @param msg error message (format)
+     * @param params formating parmeters for msg
+     */
+    template <typename... Params>
+    DataError(const std::string& msg, Params... params)
+        : Exception("%1%", format(msg, params...)) {};
+};
+
+
+/**
+ * This exception should be thrown by solvers in case of error in computations.
  */
 struct ComputationError: public Exception {
 

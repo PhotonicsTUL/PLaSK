@@ -68,3 +68,11 @@ class PythonProviderTest(unittest.TestCase):
         msh = plask.mesh.Regular2D((0.,1., 2), (0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
         self.assertEqual(list(res), [0., 10., 20., 30., 40., 50.])
+
+
+class DataTest(unittest.TestCase):
+
+    def testOperations(self):
+        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]]).transpose((1,0,2))
+        data = plask.Data(v, plask.mesh.Regular2D((0., 4., 3), (0., 20., 3)).get_midpoints())
+        self.assertEqual( data + data, 2 * data )

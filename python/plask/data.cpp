@@ -16,6 +16,11 @@ namespace plask { namespace python {
  */
 namespace detail {
 
+    template <typename T> struct basetype { typedef T type; };
+    template <typename T, int dim> struct basetype<const Vec<dim,T>> { typedef T type; };
+    template <typename T> struct basetype<const Tensor2<T>> { typedef T type; };
+    template <typename T> struct basetype<const Tensor3<T>> { typedef T type; };
+
     template <typename T> constexpr inline static npy_intp type_dim() { return 1; }
     template <> constexpr inline npy_intp type_dim<Vec<2,double>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<Vec<2,dcomplex>>() { return 2; }
@@ -285,6 +290,66 @@ py::object Data(PyObject* obj, py::object omesh) {
     return py::object();
 }
 
+template <typename T, int dim>
+static DataVectorWrap<T,dim> DataVectorWrap__add__(const DataVectorWrap<T,dim>& vec1, const DataVectorWrap<T,dim>& vec2) {
+    if (vec1.mesh != vec2.mesh)
+        throw ValueError("You may only add data on the same mesh");
+    return DataVectorWrap<T,dim>(vec1 + vec2, vec1.mesh);
+}
+
+template <typename T, int dim>
+static DataVectorWrap<T,dim> DataVectorWrap__sub__(const DataVectorWrap<T,dim>& vec1, const DataVectorWrap<T,dim>& vec2) {
+    if (vec1.mesh != vec2.mesh)
+        throw ValueError("You may only subtract data on the same mesh");
+    return DataVectorWrap<T,dim>(vec1 + vec2, vec1.mesh);
+}
+
+// template <typename T, int dim>
+// static void DataVectorWrap__iadd__(const DataVectorWrap<T,dim>& vec1, const DataVectorWrap<T,dim>& vec2) {
+//     if (vec1.mesh != vec2.mesh)
+//         throw ValueError("You may only add data on the same mesh");
+//     vec1 += vec2;
+// }
+//
+// template <typename T, int dim>
+// static void DataVectorWrap__isub__(const DataVectorWrap<T,dim>& vec1, const DataVectorWrap<T,dim>& vec2) {
+//     if (vec1.mesh != vec2.mesh)
+//         throw ValueError("You may only subtract data on the same mesh");
+//     vec1 -= vec2;
+// }
+
+template <typename T, int dim>
+static DataVectorWrap<T,dim> DataVectorWrap__neg__(const DataVectorWrap<T,dim>& vec) {
+    return DataVectorWrap<T,dim>(-vec, vec.mesh);
+}
+
+template <typename T, int dim>
+static DataVectorWrap<T,dim> DataVectorWrap__mul__(const DataVectorWrap<T,dim>& vec, typename detail::basetype<T>::type a) {
+    return DataVectorWrap<T,dim>(vec * a, vec.mesh);
+}
+
+template <typename T, int dim>
+static DataVectorWrap<T,dim> DataVectorWrap__div__(const DataVectorWrap<T,dim>& vec, typename detail::basetype<T>::type a) {
+    return DataVectorWrap<T,dim>(vec / a, vec.mesh);
+}
+
+// template <typename T, int dim>
+// static void DataVectorWrap__imul__(const DataVectorWrap<T,dim>& vec, typename detail::basetype<T>::type a) {
+//     vec *= a;
+// }
+//
+// template <typename T, int dim>
+// void DataVectorWrap__idiv__(const DataVectorWrap<T,dim>& vec, typename detail::basetype<T>::type a) {
+//     vec /= a;
+// }
+
+template <typename T, int dim>
+static bool DataVectorWrap__eq__(const DataVectorWrap<T,dim>& vec1, const DataVectorWrap<T,dim>& vec2) {
+    if (vec1.mesh != vec2.mesh) return false;
+    for (size_t i = 0; i < vec1.size(); ++i)
+        if (vec1[i] != vec2[i]) return false;
+    return true;
+}
 
 template <typename T, int dim>
 void register_data_vector() {
@@ -299,6 +364,18 @@ void register_data_vector() {
         .def("__array__", &DataVectorWrap__array__<const T,dim>, py::arg("dtype")=py::object())
         .add_property("array", &DataVectorWrap_Array<const T,dim>, "Array formatted by the mesh")
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values")
+        .def("__add__", &DataVectorWrap__add__<const T,dim>)
+        .def("__sub__", &DataVectorWrap__sub__<const T,dim>)
+        .def("__mul__", &DataVectorWrap__mul__<const T,dim>)
+        .def("__rmul__", &DataVectorWrap__mul__<const T,dim>)
+        .def("__div__", &DataVectorWrap__div__<const T,dim>)
+        .def("__truediv__", &DataVectorWrap__div__<const T,dim>)
+        // .def("__iadd__", &DataVectorWrap__iadd__<const T,dim>)
+        // .def("__isub__", &DataVectorWrap__isub__<const T,dim>)
+        // .def("__imul__", &DataVectorWrap__imul__<const T,dim>)
+        // .def("__idiv__", &DataVectorWrap__idiv__<const T,dim>)
+        // .def("__itruediv__", &DataVectorWrap__idiv__<const T,dim>)
+        .def("__eq__", &DataVectorWrap__eq__<const T,dim>)
     ;
 }
 

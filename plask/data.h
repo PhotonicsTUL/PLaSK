@@ -15,6 +15,7 @@ This file contains classes which can hold (or points to) datas.
 #include <cassert>
 
 #include "memalloc.h"
+#include "exceptions.h"
 
 namespace plask {
 
@@ -584,21 +585,160 @@ std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
 }
 
 /** \relates DataVector
- * Calculate: to_inc[i] += inc_val[i] for each i = 0, ..., min(to_inc.size(), inc_val.size()).
+ * Calculate: to_inc[i] += inc_val[i] for all vector elements.
  * @param to_inc vector to increase
- * @param inc_val
+ * @param inc_val increase value (must have the same size as to_inc)
  * @return @c *this
  */
-template<class T>
-DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<const T> inc_val) {
-    std::size_t min_size = std::min(to_inc.size(), inc_val.size());
-    for (std::size_t i = 0; i < min_size; ++i)
+template<class T, class S>
+DataVector<T>& operator+=(DataVector<T>& to_inc, DataVector<S> const& inc_val) {
+    if (to_inc.size() != inc_val.size())
+        throw DataError("Data vectors sizes differ ([%1%] += [%2])", to_inc.size(), inc_val.size());
+    for (std::size_t i = 0; i < to_inc.size(); ++i)
         to_inc[i] += inc_val[i];
     return to_inc;
 }
 
+/** \relates DataVector
+ * Calculate: to_dec[i] -= dec_val[i] for all vector elements.
+ * @param to_dec vector to decrease
+ * @param dec_val decrease value (must have the same size as to_dec)
+ * @return @c *this
+ */
+template<class T, class S>
+DataVector<T>& operator-=(DataVector<T>& to_dec, DataVector<S> const& dec_val) {
+    if (to_dec.size() != dec_val.size())
+        throw DataError("Data vectors sizes differ ([%1%] -= [%2])", to_dec.size(), dec_val.size());
+    for (std::size_t i = 0; i < to_dec.size(); ++i)
+        to_dec[i] -= dec_val[i];
+    return to_dec;
+}
+
+/** \relates DataVector
+ * Multiply each element of \c vec by \c a
+ * @param vec vector to multiply
+ * @param a multiply factor
+ * @return @c *this
+ */
+template<typename T, typename S>
+DataVector<T>& operator*=(DataVector<T>& vec, S a) {
+    for (std::size_t i = 0; i < vec.size(); ++i)
+        vec[i] *= a;
+    return vec;
+}
+
+/** \relates DataVector
+ * Divide each element of \c vec by \c a
+ * @param vec vector to multiply
+ * @param a multiply factor
+ * @return @c *this
+ */
+template<typename T, typename S>
+DataVector<T>& operator/=(DataVector<T>& vec, S a) {
+    auto ia = 1. / a;
+    for (std::size_t i = 0; i < vec.size(); ++i)
+        vec[i] *= ia;
+    return vec;
+}
+
+/** \relates DataVector
+ * Calculate sum of two data vectors
+ * \param vec1 first component
+ * \param vec2 second component
+ * @return \c vec1 + \c vec2
+ */
+template<typename T1, typename T2>
+DataVector<typename std::remove_cv<decltype(T1()+T2())>::type> operator+(DataVector<T1> const& vec1, DataVector<T2> const& vec2) {
+    if (vec1.size() != vec2.size())
+        throw DataError("Data vectors sizes differ ([%1%] + [%2])", vec1.size(), vec2.size());
+    DataVector<typename std::remove_cv<decltype(T1()+T2())>::type> result(vec1.size());
+    for (std::size_t i = 0; i < vec1.size(); ++i)
+        result[i] = vec1[i] + vec2[i];
+    return result;
+}
+
+/** \relates DataVector
+ * Calculate difference of two data vectors
+ * \param vec1 first component
+ * \param vec2 second component
+ * @return \c vec1 - \c vec2
+ */
+template<typename T1, typename T2>
+DataVector<typename std::remove_cv<decltype(T1()-T2())>::type> operator-(DataVector<T1> const& vec1, DataVector<T2> const& vec2) {
+    if (vec1.size() != vec2.size())
+        throw DataError("Data vectors sizes differ ([%1%] - [%2])", vec1.size(), vec2.size());
+    DataVector<typename std::remove_cv<decltype(T1()-T2())>::type> result(vec1.size());
+    for (std::size_t i = 0; i < vec1.size(); ++i)
+        result [i] = vec1[i] - vec2[i];
+    return result;
+}
+
+/** \relates DataVector
+ * Negate the data vector
+ * \param vec vector to negate
+ * @return -\c vec1
+ */
+template<class T>
+DataVector<typename std::remove_cv<T>::type> operator-(DataVector<T> const& vec) {
+    DataVector<typename std::remove_cv<T>::type> result(vec.size());
+    for (std::size_t i = 0; i < vec.size(); ++i)
+        result [i] = -vec[i];
+    return result;
+}
+
+/** \relates DataVector
+ * Compute factor of \c vec and \a
+ * @param vec vector to multiply
+ * @param a multiply factor
+ * @return \c vec * \c a
+ */
+template<typename T, typename S>
+DataVector<typename std::remove_cv<decltype(T()*S())>::type> operator*(DataVector<T> const& vec, S a) {
+    DataVector<typename std::remove_cv<decltype(T()*S())>::type> result(vec.size());
+    for (std::size_t i = 0; i < vec.size(); ++i)
+        result[i] = vec[i] * a;
+    return result;
+}
+
+/** \relates DataVector
+ * Compute factor of \c a and \c vec
+ * @param a multiply factor
+ * @param vec vector to multiply
+ * @return \c a * \c vec
+ */
+template<typename T, typename S>
+DataVector<typename std::remove_cv<decltype(S()*T())>::type> operator*(S a, DataVector<T> const& vec) {
+    DataVector<typename std::remove_cv<decltype(S()*T())>::type> result(vec.size());
+    for (std::size_t i = 0; i < vec.size(); ++i)
+        result[i] = a * vec[i];
+    return result;
+}
+
+/** \relates DataVector
+ * Divide \c vec by \c a
+ * @param vec vector to divide
+ * @param a divide factor
+ * @return \c vec / \c a
+ */
+template<typename T, typename S>
+DataVector<typename std::remove_cv<decltype(T()*(1./S()))>::type> operator/(DataVector<T> const& vec, S a) {
+    auto ia = 1. / a;
+    DataVector<typename std::remove_cv<decltype(T()*(1./S()))>::type> result(vec.size());
+    for (std::size_t i = 0; i < vec.size(); ++i)
+        result[i] = vec[i] * ia;
+    return result;
+}
+
+
+
+/** \relates DataVector
+ * Sum all elements in the vector.
+ * @param to_accum vector to accumulate
+ * @param initial
+ * @return @c *this
+ */
 template <class T>
-typename std::remove_cv<T>::type accumulate(const DataVector<const T>& to_accum, typename std::remove_cv<T>::type initial=typename std::remove_cv<T>::type()) {
+typename std::remove_cv<T>::type accumulate(const DataVector<T>& to_accum, typename std::remove_cv<T>::type initial=typename std::remove_cv<T>::type()) {
     for (std::size_t i = 0; i < to_accum.size(); ++i)
         initial += to_accum[i];
     return initial;
@@ -606,6 +746,7 @@ typename std::remove_cv<T>::type accumulate(const DataVector<const T>& to_accum,
 
 /**
  * Compute data arithmetic mean
+ * \param v source data
  */
 template <class T>
 T average(const DataVector<T>& v) {

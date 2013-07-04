@@ -1,20 +1,33 @@
-/**
- * \file
- * Sample solver header for your solver
- */
-#ifndef PLASK__SOLVER_YOUR_SOLVER_H
-#define PLASK__SOLVER_YOUR_SOLVER_H
+#ifndef PLASK__SOLVER_REFLECTION_SOLVER_H
+#define PLASK__SOLVER_REFLECTION_SOLVER_H
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace vslab {
+namespace plask { namespace solvers { namespace modal {
 
-// /**
-//  * This is Doxygen documentation of your solver.
-//  * Write a brief description of it.
-//  */
-// struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExample_RectilinearMesh2D> {
-//
+/**
+ * Reflection transformation solver in Cartesian 2D geometry.
+ */
+struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
+
+    /// Receiver of the wavelength
+    ReceiverFor<Wavelength> inWavelength;
+
+    /// Receiver for the temperature
+    ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
+
+    /// Receiver for the gain
+    ReceiverFor<Gain, Geometry2DCartesian> inGain;
+
+    /// Provider for computed effective index
+    ProviderFor<EffectiveIndex>::WithValue outNeff;
+
+    /// Provider of optical field
+    ProviderFor<OpticalIntensity, Geometry2DCartesian>::Delegate outIntensity;
+
+
+
+
 //     /// Sample receiver for temperature.
 //     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
 //
@@ -90,7 +103,7 @@ namespace plask { namespace solvers { namespace vslab {
     // }
 
 
-// };
+};
 
 
 }}} // namespace

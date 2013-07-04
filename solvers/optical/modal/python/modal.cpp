@@ -7,9 +7,9 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../reflection_solver.h"
-using namespace plask::solvers::vslab;
+using namespace plask::solvers::modal;
 
-BOOST_PYTHON_MODULE(vslab)
+BOOST_PYTHON_MODULE(modal)
 {
 //     {CLASS(Class_Name, "YourSolver", "Short solver description.")
 //         METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);

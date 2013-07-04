@@ -9,13 +9,13 @@ key     = "1fc8b3b9a1e18e3b"
 
 try:
     import msvcrt
-
+except:
+    pass
+else:
     name    = msvcrt.LIBRARIES_ASSEMBLY_NAME_PREFIX
     version = msvcrt.CRT_ASSEMBLY_VERSION
     key     = msvcrt.VC_ASSEMBLY_PUBLICKEYTOKEN
 
-except:
-    pass
 
 template = '''\
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
