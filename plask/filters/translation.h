@@ -20,14 +20,14 @@ struct TranslatedInnerDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, Vari
     using typename InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIM>*/, GeometryObjectD<SpaceType::DIM>>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
 
-    virtual boost::optional<PropertyValueType> get(const Vec<SpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
+    virtual boost::optional<ValueType> get(const Vec<SpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
         if (r)
             return this->in(OnePointMesh<SpaceType::DIM>(p - r->inTranslation), std::forward<ExtraArgs>(extra_args)..., method)[0];
         else
-            return boost::optional<PropertyValueType>();
+            return boost::optional<ValueType>();
     }
 
 };
@@ -51,13 +51,13 @@ struct TranslatedOuterDataSourceImpl< PropertyT, FIELD_PROPERTY, SpaceType, Vari
 : public OuterDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIM>, GeometryObjectD<SpaceType::DIM>>
 {
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
 
-    virtual boost::optional<PropertyValueType> get(const Vec<SpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    virtual boost::optional<ValueType> get(const Vec<SpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return this->in(toMesh(this->inTranslation + p), std::forward<ExtraArgs>(extra_args)..., method)[0];
     }
 
-    virtual DataVector<const PropertyValueType> operator()(const MeshD<SpaceType::DIM>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    virtual DataVector<const ValueType> operator()(const MeshD<SpaceType::DIM>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return this->in(translate(requested_points, this->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);
     }
 

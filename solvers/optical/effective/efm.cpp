@@ -10,6 +10,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_value(dataLog<dcomplex, dcomplex>("freq", "v", "det")),
     have_fields(false),
+    emission(TOP),
     m(0),
     k0(NAN),
     outdist(0.1),
@@ -40,6 +41,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
                 if (ak0) throw XMLConflictingAttributesException(reader, "k0", "lam0");
                 k0 = 2e3*M_PI / *alam0;
             } else if (ak0) k0 = *ak0;
+            emission = reader.enumAttribute<Emission>("emission").value("top", TOP).value("bottom", BOTTOM).get(emission);
             reader.requireTagEnd();
         } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
@@ -61,6 +63,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
     }
+    have_fields = false;
 }
 
 
@@ -499,6 +502,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
 
     }
 
+    // Normalize fields, so the lateral integral is one
     if (scale) {
         double f = 1. / abs(rfields[0].J);
         for (size_t r = 0; r != rsize; ++r) rfields[r] *= f;
@@ -518,9 +522,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
     if (!outWavelength.hasValue() || k0 != old_k0 || m != old_m) throw NoValue(OpticalIntensity::NAME);
 
     if (!have_fields) {
-
         detS(freqv, true);
-
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
@@ -528,7 +530,6 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
-
         stripe = 0;
         // Look for the innermost stripe with not constant refractive index
         bool all_the_same = true;
@@ -537,7 +538,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(c
             dcomplex same_ng = ngCache[stripe].front();
             for (auto nr = nrCache[stripe].begin(), ng = ngCache[stripe].begin(); nr != nrCache[stripe].end(); ++nr, ++ng)
                 if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
-            if (all_the_same) ++ stripe;
+            if (all_the_same) ++stripe;
         }
         writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
 

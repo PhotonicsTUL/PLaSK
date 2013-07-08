@@ -78,7 +78,7 @@ namespace detail {
             receiver_class(("ReceiverFor" + property_name + suffix).c_str()) {
             receiver_class.def("connect", &connect, "Connect provider to the receiver", py::arg("provider"));
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
-            receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::PropertyValueType&>, "Assign constant value to the receiver", py::arg("value"));
+            receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>, "Assign constant value to the receiver", py::arg("value"));
             receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed, "Indicates whether the receiver value has changed since last retrieval");
         }
     };
@@ -95,7 +95,7 @@ namespace detail {
 
     template <typename ReceiverT>
     static bool assignValue(ReceiverT& receiver, const py::object& obj) {
-        typedef typename ReceiverT::PropertyValueType ValueT;
+        typedef typename ReceiverT::ValueType ValueT;
         try {
             ValueT value = py::extract<ValueT>(obj);
             receiver = value;
@@ -134,7 +134,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterReceiverBase<ReceiverT>
     {
-        typedef typename ReceiverT::PropertyValueType ValueT;
+        typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
 
@@ -220,7 +220,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
         [function](const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
-            typedef DataVectorWrap<const typename ProviderT::PropertyValueType, ProviderT::SpaceType::DIM> ReturnedType;
+            typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
             py::object omesh(boost::ref(dst_mesh));
             py::object result = function(omesh, params..., method);
             try {
@@ -239,6 +239,48 @@ PythonProviderFor__init__(const py::object& function) {
     return make_shared<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>>
         (function);
 }
+
+// ---------- Scaled Provider ------------
+template <typename ScaledProviderT>
+struct RegisterScaledProvider {
+
+    typedef py::class_<ScaledProviderT, py::bases<ProviderFor<typename ScaledProviderT::PropertyTag, typename ScaledProviderT::SpaceType>>, boost::noncopyable> Class;
+
+    static void __imul__(ScaledProviderT* self, typename ScaledProviderT::ScaleType factor) {
+        self->scale *= factor;
+    }
+
+    static void __idiv__(ScaledProviderT* self, typename ScaledProviderT::ScaleType factor) {
+        self->scale /= factor;
+    }
+
+    RegisterScaledProvider(const std::string& name)  {
+        Class pyclass(name.c_str(), (std::string("Scaled provider for ") + ScaledProviderT::NAME).c_str());
+        pyclass.def("__imul__", &__imul__)
+               .def("__idiv__", &__idiv__)
+               .def("__itruediv__", &__idiv__)
+               .def_rw("scale", &ScaledProviderT::scale)
+        ;
+/*
+        py::scope scope;
+        boost::optional<py::object> oldadd;
+        try { oldadd.reset(scope.attr("__add__")); }
+        catch (py::error_already_set) { PyErr_Clear(); }
+        py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
+                              py::with_custodian_and_ward_postcall<0,2,
+                              py::return_value_policy<py::manage_new_object>>>());
+        py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
+            py::converter::registry::lookup(py::type_id<typename ScaledProviderT::BaseProviderClass>()).m_class_object
+        )));
+        if (cls) py::object(cls).attr("__add__") = scope.attr("__add__");
+        if (oldadd)
+            scope.attr("__add__") = *oldadd;
+        else
+            py::delattr(scope, "__add__");
+*/
+    }
+};
+
 
 
 // ---------- Combined Provider ------------
@@ -329,7 +371,7 @@ namespace detail {
     public RegisterProviderBase<ProviderT>
     {
         static const int DIMS = ProviderT::SpaceType::DIM;
-        typedef typename ProviderT::PropertyValueType ValueT;
+        typedef typename ProviderT::ValueType ValueT;
 
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);

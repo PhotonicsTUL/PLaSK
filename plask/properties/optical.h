@@ -3,18 +3,45 @@
 
 #include <plask/math.h>
 #include <plask/provider/providerfor.h>
+#include <plask/provider/scaled_provider.h>
+#include <plask/provider/combined_provider.h>
 
 namespace plask {
 
 /**
- * Intensity of optical E field (a.u.). It is calculated as abs(E), providing that E is electric field vector.
+ * Profile of the optical E field per unit power [kΩ/m²].
+ *
+ * This quantity that may be multiplied by the actual emitted power [mW] allows to determine
+ * the actual electric field [V/m] inside the laser.
  *
  * This property should be provided by every optical solver as it has a nice advantage that does not depend on
  * the internal representation of the field (whether it is scalar or vectorial one).
  */
 struct OpticalIntensity: public ScalarFieldProperty {
+    static constexpr const char* NAME = "intensity profile";
+};
+
+/**
+ * Profile of the optical E field [V²/m²].
+ *
+ * This property may be obtained by scaling the OpticalIntensity by the emitted power.
+ */
+struct LightIntensity: public ScalarFieldProperty {
     static constexpr const char* NAME = "light intensity";
 };
+
+/**
+ * Provider which scales intensity profile to get light intensity
+ */
+template <typename SpaceT>
+struct LightIntensityProvider: public ScaledFieldProvider<LightIntensity, OpticalIntensity, SpaceT> {};
+
+/**
+ * Provider which sums light intensities from one or more sources.
+ */
+template <typename SpaceT>
+struct LightIntensitySumProvider: public FieldSumProvider<LightIntensity, SpaceT> {};
+
 
 /**
  * Wavelength [nm]. It can be either computed by some optical solvers or set by the user.

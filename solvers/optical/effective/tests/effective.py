@@ -32,7 +32,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
             self.solver.inWavelength()
         with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
             self.solver.outNeff()
-        with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
+        with self.assertRaisesRegexp(ValueError, r"^Intensity profile cannot be provided now$"):
             self.solver.outIntensity(mesh.Rectilinear2D([1,2],[3,4]))
 
     def testSymmetry(self):

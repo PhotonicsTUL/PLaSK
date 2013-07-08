@@ -78,7 +78,7 @@ struct HeatDensity: public ScalarFieldProperty {
 };
 
 /**
- * Provider which sum heat densities from one or more source.
+ * Provider which sums heat densities from one or more sources.
  */
 template <typename SpaceT>
 struct HeatDensitySumProvider: public FieldSumProvider<HeatDensity, SpaceT> {};

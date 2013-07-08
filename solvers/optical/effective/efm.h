@@ -44,6 +44,14 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         }
     };
 
+    /**
+     * Direction of the possible emission
+     */
+    enum Emission {
+        TOP,        ///< Top emission
+        BOTTOM      ///< Bottom emission
+    };
+
   protected:
 
     friend struct RootDigger;
@@ -88,6 +96,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Stored frequency parameter for field calculations
     dcomplex freqv;
 
+    /// Direction of laser emission
+    Emission emission;
+
   public:
 
     /// Number of the LP_lm mode describing angular dependence
@@ -96,7 +107,8 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Current value of reference normalized frequency
     dcomplex k0;
 
-    double outdist; ///< Distance outside outer borders where material is sampled
+    /// Distance outside outer borders where material is sampled
+    double outdist;
 
     // Parameters for rootdigger
     RootDigger::Params root;
@@ -112,6 +124,18 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     }
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
+
+
+    /// Get emission direction
+    ///\return emission direction
+    Emission getEmission() const { return emission; }
+
+    /// Set emission direction
+    /// \param emis new emissjon direction
+    void setEmission(Emission emis) {
+        emission = emis;
+        have_fields = false;
+    }
 
     /**
      * Set the simple mesh based on the geometry bounding boxes.

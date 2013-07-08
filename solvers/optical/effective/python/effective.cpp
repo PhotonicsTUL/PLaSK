@@ -166,6 +166,11 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
     }
 
+    py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction")
+        .value("TOP", EffectiveFrequencyCylSolver::TOP)
+        .value("BOTTOM", EffectiveFrequencyCylSolver::BOTTOM)
+    ;
+
     {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
         "Calculate optical modes and optical field distribution using the effective frequency\n"
         "method in two-dimensional cylindrical space.")
@@ -175,6 +180,7 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
+        RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(compute, computeMode, "Compute the mode near the specified wavelength", "wavelength");

@@ -337,7 +337,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
 
     /**
      * Set provider for this to provider of constant.
@@ -346,7 +346,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
      * @param v value which should be provided for this receiver
      * @return *this
      */
-    ReceiverFor<PropertyT, SpaceT>& operator=(const PropertyValueType& v) {
+    ReceiverFor<PropertyT, SpaceT>& operator=(const ValueType& v) {
         this->setConstValue(v);
         return *this;
     }
@@ -405,10 +405,10 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
 
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
-    typedef typename SingleValueProvider<PropertyValueType>::ProvidedType ProvidedType;
+    typedef typename SingleValueProvider<ValueType>::ProvidedType ProvidedType;
 
     /**
      * Implementation of one value provider class which holds value inside (in value field) and operator() returns its held value.
@@ -419,7 +419,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     struct WithDefaultValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of provided value.
-        typedef PropertyValueType ProvidedType;
+        typedef ValueType ProvidedType;
 
         /// Provided value.
         ProvidedType value;
@@ -433,7 +433,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * @param v new value
          * @return *this
          */
-        WithDefaultValue& operator=(const PropertyValueType& v) {
+        WithDefaultValue& operator=(const ValueType& v) {
             value = v;
             return *this;
         }
@@ -461,7 +461,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of provided value.
-        typedef PropertyValueType ProvidedType;
+        typedef ValueType ProvidedType;
 
         /// Provided value.
         boost::optional<ProvidedType> value;
@@ -494,7 +494,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * @param v new value
          * @return *this
          */
-        WithValue& operator=(const PropertyValueType& v) {
+        WithValue& operator=(const ValueType& v) {
             value.reset(v);
             return *this;
         }
@@ -542,10 +542,10 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
-    typedef typename FieldProvider<PropertyValueType, SpaceT>::ProvidedType ProvidedType;
+    typedef typename FieldProvider<ValueType, SpaceT>::ProvidedType ProvidedType;
 
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
@@ -707,7 +707,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
         typedef ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::ProvidedType ProvidedType;
 
         /// Provided value
-        PropertyValueType value;
+        ValueType value;
 
         //ConstProviderType(const ValueT& value): value(value) {}
 

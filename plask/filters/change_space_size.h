@@ -71,7 +71,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     explicit DataFrom3Dto2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType ValueType;
 
     //inLinePos in 0, inputObj->getLength()
     Vec<3, double> getPointAt(const Vec<2, double>& p, double lon) const {
@@ -83,7 +83,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
         return getPointAt(p, this->outputObj->getLength() * inLineRelPos);
     }
 
-    virtual boost::optional<PropertyValueType> get(const Vec<2, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    virtual boost::optional<ValueType> get(const Vec<2, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount == 1)
             return PropertyT::value3Dto2D(this->in(toMesh(getPointAtRel(p, 0.5)), std::forward<ExtraArgs>(extra_args)..., method)[0]);
         const double d = this->outputObj->getLength() / pointsCount;
@@ -94,14 +94,14 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
                )));
     }
 
-    virtual DataVector<const PropertyValueType> operator()(const MeshD<2>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    virtual DataVector<const ValueType> operator()(const MeshD<2>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount == 1)
             return PropertyVec3Dto2D<PropertyT>(this->in(
                  CartesianMesh2DTo3D(this->inTranslation, requested_points, this->outputObj->getLength() * 0.5),
                  std::forward<ExtraArgs>(extra_args)...,
                  method
              ));
-        DataVector<PropertyValueType> result(requested_points.size());
+        DataVector<ValueType> result(requested_points.size());
         PointsOnLineMesh lineMesh;
             const double d = this->outputObj->getLength() / this->pointsCount;
             lineMesh.lastPointNr = this->pointsCount - 1;
@@ -144,14 +144,14 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType PropertyValueType;
+    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
 
-    virtual boost::optional<PropertyValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
+    virtual boost::optional<ValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
         const Region* r = this->findRegion(p);
         if (r)
             return PropertyT::value2Dto3D(this->in(toMesh(vec<2>(p - r->inTranslation)), std::forward<ExtraArgs>(extra_args)..., method)[0]);
         else
-            return boost::optional<PropertyValueType>();
+            return boost::optional<ValueType>();
     }
 
 };
