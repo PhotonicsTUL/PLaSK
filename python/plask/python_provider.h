@@ -240,66 +240,23 @@ PythonProviderFor__init__(const py::object& function) {
         (function);
 }
 
-// ---------- Scaled Provider ------------
-template <typename ScaledProviderT>
-struct RegisterScaledProvider {
-
-    typedef py::class_<ScaledProviderT, py::bases<ProviderFor<typename ScaledProviderT::PropertyTag, typename ScaledProviderT::SpaceType>>, boost::noncopyable> Class;
-
-    static void __imul__(ScaledProviderT* self, typename ScaledProviderT::ScaleType factor) {
-        self->scale *= factor;
-    }
-
-    static void __idiv__(ScaledProviderT* self, typename ScaledProviderT::ScaleType factor) {
-        self->scale /= factor;
-    }
-
-    RegisterScaledProvider(const std::string& name)  {
-        Class pyclass(name.c_str(), (std::string("Scaled provider for ") + ScaledProviderT::NAME).c_str());
-        pyclass.def("__imul__", &__imul__)
-               .def("__idiv__", &__idiv__)
-               .def("__itruediv__", &__idiv__)
-               .def_rw("scale", &ScaledProviderT::scale)
-        ;
-/*
-        py::scope scope;
-        boost::optional<py::object> oldadd;
-        try { oldadd.reset(scope.attr("__add__")); }
-        catch (py::error_already_set) { PyErr_Clear(); }
-        py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
-                              py::with_custodian_and_ward_postcall<0,2,
-                              py::return_value_policy<py::manage_new_object>>>());
-        py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
-            py::converter::registry::lookup(py::type_id<typename ScaledProviderT::BaseProviderClass>()).m_class_object
-        )));
-        if (cls) py::object(cls).attr("__add__") = scope.attr("__add__");
-        if (oldadd)
-            scope.attr("__add__") = *oldadd;
-        else
-            py::delattr(scope, "__add__");
-*/
-    }
-};
-
-
-
 // ---------- Combined Provider ------------
 template <typename CombinedProviderT>
 struct RegisterCombinedProvider {
 
     typedef py::class_<CombinedProviderT, py::bases<ProviderFor<typename CombinedProviderT::PropertyTag, typename CombinedProviderT::SpaceType>>, boost::noncopyable> Class;
 
-    static py::object __add__(py::object pyself, typename CombinedProviderT::BaseProviderClass* provider) {
+    static py::object __add__(py::object pyself, typename CombinedProviderT::BaseType* provider) {
         CombinedProviderT* self = py::extract<CombinedProviderT*>(pyself);
         self->add(provider);
         return pyself;
     }
 
-    static void __iadd__(py::object pyself, typename CombinedProviderT::BaseProviderClass* provider) {
+    static void __iadd__(py::object pyself, typename CombinedProviderT::BaseType* provider) {
         __add__(pyself, provider);
     }
 
-    static CombinedProviderT* add(typename CombinedProviderT::BaseProviderClass* provider1, typename CombinedProviderT::BaseProviderClass* provider2) {
+    static CombinedProviderT* add(typename CombinedProviderT::BaseType* provider1, typename CombinedProviderT::BaseType* provider2) {
         auto self = new CombinedProviderT;
         self->add(provider1);
         self->add(provider2);
@@ -324,7 +281,7 @@ struct RegisterCombinedProvider {
                               py::with_custodian_and_ward_postcall<0,2,
                               py::return_value_policy<py::manage_new_object>>>());
         py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
-            py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseProviderClass>()).m_class_object
+            py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseType>()).m_class_object
         )));
         if (cls) py::object(cls).attr("__add__") = scope.attr("__add__");
         if (oldadd)
@@ -334,6 +291,74 @@ struct RegisterCombinedProvider {
     }
 
 };
+
+
+// ---------- Scaled Provider ------------
+template <typename ScaledProviderT>
+struct RegisterScaledProvider {
+
+    py::handle<> cls;
+
+    typedef py::class_<ScaledProviderT, py::bases<ProviderFor<typename ScaledProviderT::PropertyTag, typename ScaledProviderT::SpaceType>>, boost::noncopyable> Class;
+
+    static void __imul__(ScaledProviderT* self, typename ScaledProviderT::ScaleType factor) {
+        self->scale *= factor;
+    }
+
+    static void __idiv__(ScaledProviderT* self, typename ScaledProviderT::ScaleType factor) {
+        self->scale /= factor;
+    }
+
+    static ScaledProviderT* mul(typename ScaledProviderT::SourceType* source, typename ScaledProviderT::ScaleType scale) {
+        auto self = new ScaledProviderT;
+        self->set(source);
+        self->scale = scale;
+        return self;
+    }
+
+    static ScaledProviderT* div(typename ScaledProviderT::SourceType* source, typename ScaledProviderT::ScaleType scale) {
+        auto self = new ScaledProviderT;
+        self->set(source);
+        self->scale = 1./scale;
+        return self;
+    }
+
+    RegisterScaledProvider(const std::string& name)  {
+        Class pyclass(name.c_str(), (std::string("Scaled provider for ") + ScaledProviderT::NAME).c_str(),
+                      py::init<typename ScaledProviderT::ScaleType>(py::arg("scale")=1.)
+        );
+        pyclass.def("__imul__", &__imul__)
+               .def("__idiv__", &__idiv__)
+               .def("__itruediv__", &__idiv__)
+               .def_readwrite("scale", &ScaledProviderT::scale)
+        ;
+
+        cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
+            py::converter::registry::lookup(py::type_id<typename ScaledProviderT::SourceType>()).m_class_object
+        )));
+
+        registerOperator("__mul__", mul);
+        registerOperator("__rmul__", mul);
+        registerOperator("__div__", div);
+        registerOperator("__truediv__", div);
+    }
+
+  private:
+
+    template <typename F>
+    void registerOperator(const char* name, F func) {
+        py::scope scope;
+        boost::optional<py::object> old;
+        try { old.reset(scope.attr(name)); }
+        catch (py::error_already_set) { PyErr_Clear(); }
+        py::def(name, func, py::with_custodian_and_ward_postcall<0,1,
+                            py::return_value_policy<py::manage_new_object>>());
+        if (cls) py::object(cls).attr(name) = scope.attr(name);
+        if (old) scope.attr(name) = *old;
+        else py::delattr(scope, name);
+    }
+};
+
 
 
 namespace detail {

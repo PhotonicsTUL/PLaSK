@@ -13,6 +13,9 @@ namespace plask { namespace python {
 void register_standard_properties_optical()
 {
     registerProperty<OpticalIntensity>();
+    registerProperty<LightIntensity>();
+    RegisterScaledProvider<ScaledFieldProvider<LightIntensity,OpticalIntensity,Geometry2DCartesian>>("LightIntensityAutoscaled");
+    RegisterCombinedProvider<LightIntensitySumProvider<Geometry2DCartesian>>("SumOfLightIntensity");
 
     registerProperty<Wavelength>();
     registerProperty<ModalLoss>();

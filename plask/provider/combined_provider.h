@@ -22,7 +22,7 @@ namespace plask {
 template <typename BaseProviderT>
 struct CombinedProviderBase: public BaseProviderT {
 
-    typedef BaseProviderT BaseProviderClass;
+    typedef BaseProviderT BaseType;
 
   private:
 

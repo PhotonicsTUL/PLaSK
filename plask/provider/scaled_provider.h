@@ -124,8 +124,8 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, Varia
  * Template of class of scaled provider for providers with interpolation.
  */
 template <typename DstPropertyT, typename SrcPropertyT, typename SpaceT, typename ScaleT=double>
-    struct ScaledFieldProvider: public ScaledFieldProviderImpl<SrcPropertyT, DstPropertyT, SpaceT, ScaleT, typename DstPropertyT::ExtraParams> {
-    ScaledFieldProvider(double scale=1.): ScaledFieldProviderImpl<SrcPropertyT, DstPropertyT, SpaceT, ScaleT, typename DstPropertyT::ExtraParams>(scale) {}
+    struct ScaledFieldProvider: public ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, typename DstPropertyT::ExtraParams> {
+    ScaledFieldProvider(double scale=1.): ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, typename DstPropertyT::ExtraParams>(scale) {}
 };
 
 
