@@ -278,16 +278,14 @@ struct RegisterCombinedProvider {
         try { oldadd.reset(scope.attr("__add__")); }
         catch (py::error_already_set) { PyErr_Clear(); }
         py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
-                              py::with_custodian_and_ward_postcall<0,2,
-                              py::return_value_policy<py::manage_new_object>>>());
+                                 py::with_custodian_and_ward_postcall<0,2,
+                                 py::return_value_policy<py::manage_new_object>>>());
         py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
             py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseType>()).m_class_object
         )));
         if (cls) py::object(cls).attr("__add__") = scope.attr("__add__");
-        if (oldadd)
-            scope.attr("__add__") = *oldadd;
-        else
-            py::delattr(scope, "__add__");
+        if (oldadd) scope.attr("__add__") = *oldadd;
+        else py::delattr(scope, "__add__");
     }
 
 };
@@ -337,10 +335,10 @@ struct RegisterScaledProvider {
             py::converter::registry::lookup(py::type_id<typename ScaledProviderT::SourceType>()).m_class_object
         )));
 
-        registerOperator("__mul__", mul);
-        registerOperator("__rmul__", mul);
-        registerOperator("__div__", div);
-        registerOperator("__truediv__", div);
+        registerOperator("__mul__", &mul);
+        registerOperator("__rmul__", &mul);
+        registerOperator("__div__", &div);
+        registerOperator("__truediv__", &div);
     }
 
   private:

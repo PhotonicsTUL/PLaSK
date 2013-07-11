@@ -16,7 +16,6 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     outdist(0.1),
     outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
     inTemperature = 300.;
-    inGain = NAN;
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;
     root.tolf_max = 1.0e-6;
@@ -246,14 +245,9 @@ void EffectiveFrequencyCylSolver::stageOne()
             midmesh.axis1.addPoint(mesh->axis1[mesh->axis1.size()-1] + outdist);
 
         auto temp = inTemperature(midmesh);
-        auto gain = inGain(midmesh, lam1);
-        auto gain_slope = inGain(midmesh, lam2).claim();
-        {
-            auto g1 = gain_slope.begin();
-            auto g2 = gain.begin();
-            for (; g1 != gain_slope.end(); ++g1, ++g2) *g1 = (*g2 - *g1) * ih2;
-        }
-        gain = inGain(midmesh, lam);
+        bool need_gain = true;
+        DataVector<const double> gain;
+        DataVector<double> gain_slope;
 
         for (size_t ir = 0; ir != rsize; ++ir) {
             for (size_t iz = zbegin; iz < zsize; ++iz) {
@@ -269,6 +263,15 @@ void EffectiveFrequencyCylSolver::stageOne()
                     nrCache[ir][iz] = material->Nr(lam, T);
                     ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
                 } else { // we ignore the material absorption as it should be considered in the gain already
+                    if (need_gain) {
+                        gain = inGain(midmesh, lam1);
+                        gain_slope = inGain(midmesh, lam2).claim();
+                        auto g1 = gain_slope.begin();
+                        auto g2 = gain.begin();
+                        for (; g1 != gain_slope.end(); ++g1, ++g2) *g1 = (*g2 - *g1) * ih2;
+                        gain = inGain(midmesh, lam);
+                        need_gain = false;
+                    }
                     double g = gain[idx];
                     double gs = gain_slope[idx];
                     double nr = real(material->Nr(lam, T));
@@ -332,7 +335,6 @@ void EffectiveFrequencyCylSolver::stageOne()
 dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
                                             const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, bool save)
 {
-    double maxff = 0.;
     if (save) zfields[zbegin] = FieldZ(0., 1.);
 
     std::vector<dcomplex> kz(zsize);
@@ -373,15 +375,15 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
             // zero very small fields to avoid errors in plotting for long layers
             if (aF < 1e-8 * aB) F = 0.;
             if (aB < 1e-8 * aF) B = 0.;
-            maxff = max(maxff, aF + aB);
             zfields[i] = FieldZ(F, B);
         }
     }
 
     if (save) {
         zfields[zsize-1].B = 0.;
-        maxff = 1. / sqrt(maxff);
-        for (size_t i = zbegin; i < zsize; ++i) zfields[i] *= maxff;
+
+        dcomplex f = 1. / ((emission == TOP)? zfields[zsize-1].F : zfields[0].B);
+        for (size_t i = zbegin; i < zsize; ++i) zfields[i] *= f;
 // #ifndef NDEBUG
 //         {
 //             std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
@@ -457,6 +459,41 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     }
 }
 
+void EffectiveFrequencyCylSolver::besselIntegrals(double r, dcomplex k, dcomplex& JJ, dcomplex& HH, dcomplex& JH)
+{
+    double fr[3], fi[3];
+    dcomplex Jm, Jmn, Jmp;
+    dcomplex Hm, Hmn, Hmp;
+    dcomplex x = k * r;
+    long nz, ierr;
+    if (m == 0) {
+        zbesj(x.real(), x.imag(), 0, 1, 2, fr, fi+1, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
+        Jm  = dcomplex(fr[0], fi[0]);
+        Jmp = dcomplex(fr[1], fi[1]);
+        Jmn = -Jmp;
+        zbesh(x.real(), x.imag(), 0, 1, mh, 2, fr, fi+1, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
+        Hm  = dcomplex(fr[0], fi[0]);
+        Hmp = dcomplex(fr[1], fi[1]);
+        Hmn = -Hmp;
+    } else {
+        zbesj(x.real(), x.imag(), m-1, 1, 3, fr, fi, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
+        Jmn = dcomplex(fr[0], fi[0]);
+        Jm  = dcomplex(fr[1], fi[1]);
+        Jmp = dcomplex(fr[2], fi[2]);
+        zbesh(x.real(), x.imag(), m-1, 1, mh, 3, fr, fi, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
+        Hmn = dcomplex(fr[0], fi[0]);
+        Hm  = dcomplex(fr[1], fi[1]);
+        Hmp = dcomplex(fr[2], fi[2]);
+    }
+    double f = 0.5*r*r;
+    JJ = f * (Jm*Jm - Jmn*Jmp);
+    HH = f * (-Hm*Hm - 2.*Jm*Hm + Hmn*Hmp - Jmp*Hmn - Jmn*Hmp);
+    JH = 0.5 * f * (2.*Jm*Hm - Jmn*Hmp - Jmp*Hmn);
+}
 
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
 {
@@ -504,7 +541,27 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
 
     // Normalize fields, so the lateral integral is one
     if (scale) {
-        double f = 1. / abs(rfields[0].J);
+        dcomplex JJ, HH, JH;
+        // Integrate inner layer
+        dcomplex k = k0 * sqrt(nng[0] * (veffs[0]-v));
+        if (real(k) < 0.) k = -k;
+        besselIntegrals(mesh->axis0[1], k, JJ, HH, JH);
+        dcomplex S = abs2(rfields[0].J) * JJ;
+        // Integrate other layers
+        for (size_t i = 1; i < rsize; ++i) {
+            dcomplex k = k0 * sqrt(nng[i] * (veffs[i]-v));
+            if (real(k) < 0.) k = -k;
+            besselIntegrals(mesh->axis0[i], k, JJ, HH, JH);
+            S -= (abs2(rfields[i].J) + 2.*rfields[i].J*conj(rfields[i].H)) * JJ +
+                 abs2(rfields[i].H) * HH + (conj(rfields[i].J)*rfields[i].H + rfields[i].J*conj(rfields[i].H)) * JH;
+            besselIntegrals((i!=rsize-1)? mesh->axis0[i+1] : 2*mesh->axis0[i], k, JJ, HH, JH);
+            S += (abs2(rfields[i].J) + 2.*rfields[i].J*conj(rfields[i].H)) * JJ +
+                 abs2(rfields[i].H) * HH + (conj(rfields[i].J)*rfields[i].H + rfields[i].J*conj(rfields[i].H)) * JH;
+        }
+
+        // Ensure that OpticalIntensity multiplied by emitted power in mW gives averaged squared field intensity in (V/m)².
+        register dcomplex f = sqrt(0.5e9 / M_PI * phys::mu0 * phys::c / S);
+
         for (size_t r = 0; r != rsize; ++r) rfields[r] *= f;
     }
 

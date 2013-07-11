@@ -15,15 +15,23 @@ namespace plask { namespace solvers { namespace effective {
  */
 struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
 
+    /// Mode symmetry in horizontal axis
     enum Symmetry {
         NO_SYMMETRY,
         SYMMETRY_POSITIVE,
         SYMMETRY_NEGATIVE
     };
 
+    /// Mode polarization
     enum Polarization {
         TE,
         TM,
+    };
+
+    /// Direction of the possible emission
+    enum Emission {
+        FRONT,
+        BACK
     };
 
     struct Field {
@@ -88,6 +96,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     Symmetry symmetry;          ///< Symmetry of the searched modes
 
+    Emission emission;          ///< Direction of laser emission
+
   public:
 
     dcomplex vneff;             ///< Vertical effective index of the main stripe
@@ -113,6 +123,17 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     }
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
+
+    /// Get emission direction
+    ///\return emission direction
+    Emission getEmission() const { return emission; }
+
+    /// Set emission direction
+    /// \param emis new emissjon direction
+    void setEmission(Emission emis) {
+        emission = emis;
+        have_fields = false;
+    }
 
     /// \return position of the main stripe
     double getStripeX() const { return stripex; }
@@ -260,7 +281,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /// Invalidate the data
     virtual void onInvalidate();
 
-    dcomplex k0;        ///< Cache of the normalized frequency
+    dcomplex k0;        ///< Cache of the normalized frequency [1/µm]
 
     /// Compute mirror losses for specified effective index
     double getMirrorLosses() {
@@ -294,6 +315,12 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param stripe main stripe number
      */
     void computeWeights(size_t stripe);
+
+    /**
+     * Normalize horizontal fields, so multiplying OpticalIntensity by power gives proper LightIntensity in (V/m)²
+     * \param kx computed horizontal propagation constants
+     */
+    void normalizeFields(const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
 
     /**
      * Compute S matrix determinant for one stripe

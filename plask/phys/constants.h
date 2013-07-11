@@ -6,6 +6,8 @@
  * This file contains basic physical constants
  */
 
+#include <cmath>
+
 namespace plask {
 
 /**
@@ -13,8 +15,10 @@ namespace plask {
  */
 namespace phys {
 
-    constexpr double qe = 1.60217733e-19;       ///< elementary charge [C]
-    constexpr double c = 299792458.;            ///< speed of light [m/s]
+    constexpr double qe = 1.60217733e-19;       ///< Elementary charge [C]
+    constexpr double c = 299792458.;            ///< Speed of light [m/s]
+    constexpr double mu0 = 4e-7 * M_PI;         ///< Vacuum permeability [V*s/A/m]
+    constexpr double epsilon0 = 1./mu0/c/c;     ///< Vacuum permittivity [F/m]
     constexpr double h_J = 6.62606957e-34;      ///< Planck's constant [J*s]
     constexpr double h_eV = 4.135667516e-15;    ///< Planck's constant [eV*s]
     constexpr double SB = 5.670373e-8;          ///< Stefan-Boltzmann constant [W/m^2/K^4]

@@ -144,6 +144,7 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
+        RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(find_vneffs, findVeffs, "Find the effective index in the vertical direction within the specified range using global method",
@@ -164,12 +165,13 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "Optical gain in the active region");
         PROVIDER(outNeff, "Effective index of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
-    }
 
-    py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction")
-        .value("TOP", EffectiveFrequencyCylSolver::TOP)
-        .value("BOTTOM", EffectiveFrequencyCylSolver::BOTTOM)
-    ;
+        py::scope scope = solver;
+        py_enum<EffectiveIndex2DSolver::Emission>("Emission", "Emission direction for Cartesian structure")
+            .value("FRONT", EffectiveIndex2DSolver::FRONT)
+            .value("BACK", EffectiveIndex2DSolver::BACK)
+        ;
+    }
 
     {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
         "Calculate optical modes and optical field distribution using the effective frequency\n"
@@ -199,6 +201,12 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "Optical gain distribution in the active region");
         PROVIDER(outWavelength, "Wavelength of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
+
+        py::scope scope = solver;
+        py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction for cylindrical structure")
+            .value("TOP", EffectiveFrequencyCylSolver::TOP)
+            .value("BOTTOM", EffectiveFrequencyCylSolver::BOTTOM)
+        ;
     }
 
     py::class_<RootDigger::Params, boost::noncopyable>("RootdiggerParams", py::no_init)

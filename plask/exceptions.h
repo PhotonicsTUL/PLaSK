@@ -151,7 +151,7 @@ struct BadId: public Exception {
  */
 struct NoProvider: public Exception {
     NoProvider(): Exception("No provider") {}
-    NoProvider(const char* provider_name): Exception("No %1% set nor its provider connected", provider_name) {}
+    NoProvider(const char* provider_name): Exception("No provider nor value for %1%", provider_name) {}
 };
 
 struct NoValue: public Exception {

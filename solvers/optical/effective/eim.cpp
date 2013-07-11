@@ -128,16 +128,18 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex
 
     auto results = findZeros(this, [&](const dcomplex& z){return this->detS1(z,nrCache[stripe]);}, neff1, neff2, resteps, imsteps, eps);
 
-    if (results.size() != 0) {
-        Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
-        std::string msg = "Found vertical effective indices at: ";
-        for (auto z: results) {
-            msg += str(z) + ", ";
-            logger(z, detS1(z,nrCache[stripe]));
-        }
-        writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
-    } else
-        writelog(LOG_RESULT, "Did not find any vertical effective indices");
+    if (maxLoglevel >= LOG_RESULT) {
+        if (results.size() != 0) {
+            Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
+            std::string msg = "Found vertical effective indices at: ";
+            for (auto z: results) {
+                msg += str(z) + ", ";
+                logger(z, detS1(z,nrCache[stripe]));
+            }
+            writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
+        } else
+            writelog(LOG_RESULT, "Did not find any vertical effective indices");
+    }
 
     return results;
 }
@@ -306,7 +308,8 @@ void EffectiveIndex2DSolver::updateCache()
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(midmesh);
-        auto gain = inGain(midmesh, w);
+        bool need_gain = true;
+        DataVector<const double> gain;
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
             for (size_t iy = ybegin; iy < yend; ++iy) {
@@ -317,6 +320,10 @@ void EffectiveIndex2DSolver::updateCache()
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end())
                     nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
                 else {  // we ignore the material absorption as it should be considered in the gain already
+                    if (need_gain) {
+                        gain = inGain(midmesh, w);
+                        need_gain = false;
+                    }
                     double g = gain[idx];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
                                                 w * g * 7.95774715459e-09 );
@@ -381,7 +388,6 @@ void EffectiveIndex2DSolver::stageOne()
 
 dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save)
 {
-    double maxff = 0.;
     if (save) yfields[ybegin] = Field(0., 1.);
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
@@ -423,15 +429,11 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
             // zero very small fields to avoid errors in plotting for long layers
             if (aF < 1e-8 * aB) F = 0.;
             if (aB < 1e-8 * aF) B = 0.;
-            maxff = max(maxff, aF + aB);
             yfields[i] = Field(F, B);
         }
     }
 
-    if (save) {
-        yfields[yend-1].B = 0.;
-        maxff = 1. / maxff;
-        for (size_t i = ybegin; i < yend; ++i) yfields[i] *= maxff;
+    if (save) yfields[yend-1].B = 0.;
 // #ifndef NDEBUG
 //         {
 //             std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i)
@@ -439,7 +441,6 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
 //             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
 //         }
 // #endif
-    }
 
     return s1*s4 - s2*s3;
 }
@@ -453,8 +454,7 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     weights.resize(yend);
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
-        dcomplex B = yfields[ybegin].B;
-        weights[ybegin] = (B.real()*B.real() + B.imag()*B.imag()) * 0.5 / ky;
+        weights[ybegin] = abs2(yfields[ybegin].B) * 0.5 / ky;
     }
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
@@ -490,8 +490,10 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     }
 
     sum = 1. / sum;
+    double fact = sqrt(sum);
     for (size_t i = ybegin; i < yend; ++i) {
         weights[i] *= sum;
+        yfields[i] *= fact;
     }
 // #ifndef NDEBUG
 //     {
@@ -501,6 +503,55 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 // #endif
 }
 
+void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx) {
+
+    double sum =
+        abs2(xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin])) +
+        abs2(xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]))
+    ;
+
+    for (size_t i = xbegin+1; i < xend-1; ++i) {
+        double d = mesh->axis1[i]-mesh->axis1[i-1];
+        dcomplex w_ff, w_bb, w_fb, w_bf;
+        if (d != 0.) {
+            if (abs(imag(kx[i])) > SMALL) {
+                dcomplex kk = kx[i] - conj(kx[i]);
+                w_ff =   (exp(-I*d*kk) - 1.) / kk;
+                w_bb = - (exp(+I*d*kk) - 1.) / kk;
+            } else
+                w_ff = w_bb = dcomplex(0., -d);
+            if (abs(real(kx[i])) > SMALL) {
+                dcomplex kk = kx[i] + conj(kx[i]);
+                w_fb =   (exp(-I*d*kk) - 1.) / kk;
+                w_bf = - (exp(+I*d*kk) - 1.) / kk;
+            } else
+                w_ff = w_bb = dcomplex(0., -d);
+            sum -= imag(xfields[i].F * conj(xfields[i].F) * w_ff +
+                        xfields[i].F * conj(xfields[i].B) * w_fb +
+                        xfields[i].B * conj(xfields[i].F) * w_bf +
+                        xfields[i].B * conj(xfields[i].B) * w_bb
+                       );
+        }
+    }
+
+//     // Consider loss on the mirror
+//     double R1, R2;
+//     if (mirrors) {
+//         std::tie(R1,R2) = *mirrors;
+//     } else {
+//         const double n = real(vneff);
+//         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
+//                         n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
+//         R1 = abs((n-n1) / (n+n1));
+//         R2 = abs((n-n2) / (n+n2));
+//     }
+
+
+    register dcomplex f = sqrt(1e9 * phys::mu0 * phys::c / sum); // 1e9 because power in mW and integral computed in µm
+    for (size_t i = xbegin; i < xend; ++i) {
+        xfields[i] *= f;
+    }
+}
 
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
@@ -535,14 +586,11 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     }
 
     if (save) {
-        double maxf = 1.;
         xfields[xend-1] = Field(1., 0.);
         for (size_t i = xend-1; i != xbegin; --i) {
             xfields[i-1] = matrices[i-1].solve(xfields[i]);
-            maxf = max(maxf, abs(xfields[i-1].F) + abs(xfields[i-1].B));
         }
-        maxf = 1. / maxf;
-        for (size_t i = xbegin; i != xend; ++i) xfields[i] *= maxf;
+        normalizeFields(kx);
         have_fields = true;
 #ifndef NDEBUG
         {
@@ -568,7 +616,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
 
     dcomplex neff = outNeff();
 
-    if (!have_fields) std::cerr << detS(neff, true) << "\n";
+    if (!have_fields) detS(neff, true);
 
     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
 
@@ -623,10 +671,6 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             results[idx] = real(abs2(val));
         }
     }
-
-    // Normalize results to make maximum value equal to one
-    double factor = 1. / *std::max_element(results.begin(), results.end());
-    for (double& val: results) val *= factor;
 
     return results;
 }

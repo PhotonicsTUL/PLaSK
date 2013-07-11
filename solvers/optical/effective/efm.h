@@ -44,9 +44,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         }
     };
 
-    /**
-     * Direction of the possible emission
-     */
+    /// Direction of the possible emission
     enum Emission {
         TOP,        ///< Top emission
         BOTTOM      ///< Bottom emission
@@ -104,7 +102,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Number of the LP_lm mode describing angular dependence
     int m;
 
-    /// Current value of reference normalized frequency
+    /// Current value of reference normalized frequency [1/µm]
     dcomplex k0;
 
     /// Distance outside outer borders where material is sampled
@@ -124,7 +122,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     }
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
-
 
     /// Get emission direction
     ///\return emission direction
@@ -277,6 +274,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Return S matrix determinant for one stripe
     void computeStripeNNg(std::size_t stripe);
+
+    /// Compute integral r J(ar) J(ar)
+    void besselIntegrals(double r, dcomplex a, dcomplex& JJ, dcomplex& HH, dcomplex& JH);
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const dcomplex& v, bool scale=false);
