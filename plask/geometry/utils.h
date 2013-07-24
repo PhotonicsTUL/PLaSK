@@ -31,7 +31,7 @@ private:
 
     void connect() {
         if (this->object)
-            connection_with_object = this->object.changed.at_front(boost::bind(&BoundingBoxCache<dims>::onObjectChanged, this, _1));
+            connection_with_object = this->object.changed.connect(boost::bind(&BoundingBoxCache<dims>::onObjectChanged, this, _1), boost::signals2::at_front);
     }
 
 public:
