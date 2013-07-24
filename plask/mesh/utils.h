@@ -74,10 +74,6 @@ public:
      */
     SameMeshChecker(): mesh(nullptr) {}
 
-    ~SameMeshChecker() {
-        connection_with_mesh.disconnect();
-    }
-
 };
 
 
