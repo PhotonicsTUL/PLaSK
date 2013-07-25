@@ -48,6 +48,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width = 0.0;
     minor_concentration = 5.0e+15;
     iterations = 0;
+    wavelength = 0;
 
     detected_QW = detectQuantumWells();
     z = getZQWCoordinate();
@@ -59,10 +60,11 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 //    // body
 //}
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(bool initial, bool threshold)
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(bool initial, bool threshold, bool overthreshold)
 {
     initial_computation = initial;
     threshold_computation = threshold;
+    overthreshold_computation = overthreshold;
 
     this->initCalculation();
     determineQwWidth();
@@ -75,6 +77,10 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
+    if (overthreshold_computation)
+    {
+        g_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain vector provided by inGain reciever
+    }
 
     n_present.reset(mesh.size(), 0.0);
     n_previous.reset(mesh.size(), 0.0);
@@ -95,6 +101,10 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             mesh2.axis0 = mesh;
             T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
+            if (overthreshold_computation)
+            {
+                g_on_the_mesh = inGain(mesh2, wavelength, interpolation_method);   // data gain vector provided by inGain reciever
+            }
             n_present.reset(mesh.size(), 0.0);
             n_previous.reset(mesh.size(), 0.0);
         }
@@ -110,8 +120,14 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             convergence = MatrixFEM();
             if (convergence) threshold_computation = false;
         }
+        if (overthreshold_computation)
+        {
+            this->writelog(LOG_DETAIL, "Conducting overthreshold computations");
+            convergence = MatrixFEM();
+            if (convergence) overthreshold_computation = false;
+        }
     }
-    while(initial_computation || threshold_computation);
+    while(initial_computation || threshold_computation || overthreshold_computation);
 
     this->writelog(LOG_DETAIL, "Converged after %1% mesh refinements and %2% computational loops", mesh_changes, iterations);
 
@@ -127,9 +143,6 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
     // LAPACK factorization (dpbtrf) and equation solver (dpbtrs) info variables:
     int info_f = 0;
     int info_s = 0;
-
-    double T = 0.0;
-    double n0 = 0.0;
 
     double A = 0.0;
     double B = 0.0;
@@ -164,6 +177,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 
         if (initial_computation)
         {
+            double T = 0.0;
+
             for (int i = 0; i < mesh.size(); i++)
             {
 
@@ -233,7 +248,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 
             double absolute_error = 0.0;
             double relative_error = 0.0;
-            double absolute_concentration_error =  abs(this->QW_material->A(T) * minor_concentration + this->QW_material->B(T) * minor_concentration*minor_concentration+ this->QW_material->C(T) * minor_concentration*minor_concentration*minor_concentration);
+            double absolute_concentration_error =  abs(this->QW_material->A(300.0) * minor_concentration + this->QW_material->B(300.0) * minor_concentration*minor_concentration+ this->QW_material->C(300.0) * minor_concentration*minor_concentration*minor_concentration);
 
             /****************** RPSFEM: ******************/
             // double tolerance = 5e+15;
@@ -246,9 +261,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                 _convergence = true;
                 for (int i = 0; i < mesh.size(); i++)
                 {
-                    n0 = n_present[i];
-                    T = T_on_the_mesh[i];
-                    L = leftSide(i, T, n0);
+                    L = leftSide(i);
                     R = rightSide(i);
 
                     absolute_error = L - R;
@@ -267,9 +280,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                 _convergence = true;
                 for (int i = 0; i < (mesh.size() - 1)/2 ; i++)
                 {
-                    n0 = n_present[2*i + 1];
-                    T = T_on_the_mesh[2*i + 1];
-                    L = leftSide(2*i + 1, T, n0);
+                    L = leftSide(2*i + 1);
                     R = rightSide(2*i + 1);
 
                     absolute_error = abs(L - R);
@@ -307,9 +318,6 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
 
     // parabolic FEM elements variables:
 
-    double T = 0.0;
-    double n0 = 0.0;
-
     double K = 0.0;
     double E = 0.0;
     double F = 0.0;
@@ -321,19 +329,15 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
 
         for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
         {
-
-            T = T_on_the_mesh[i+1];
-            n0 = n_previous[i+1];
-
             r1 = mesh[i]*1e-4;
             r2 = mesh[i+1]*1e-4;
 
             j1 = abs(j_on_the_mesh[i][1]*1e+3);
             j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
 
-            K = this->K(T);
-            F = this->F(i, T, n0);
-            E = this->E(T, n0);
+            K = this->K(i);
+            F = this->F(i);
+            E = this->E(i);
 
             k11e = K/(r2-r1) + E*(r2-r1)/3;
             k12e = -K/(r2-r1) + E*(r2-r1)/6;
@@ -359,15 +363,12 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
 
         for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
         {
-            T = T_on_the_mesh[2*i + 1];              // value in the middle node
-            n0 = n_previous[2*i + 1];                // value in the middle node
-
             r1 = mesh[2*i]*1e-4;
             r3 = mesh[2*i + 2]*1e-4;
 
-            K = this->K(T);
-            F = this->F(2*i + 1, T, n0);
-            E = this->E(T, n0);
+            K = this->K(2*i + 1);
+            F = this->F(2*i + 1);
+            E = this->E(2*i + 1);
 
             K = K/((r3-r1)*(r3-r1));
             double Cnst = (r3-r1)/30;
@@ -412,9 +413,6 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
 
     // parabolic FEM elements variables:
 
-    double T = 0.0;
-    double n0 = 0.0;
-
     double K = 0.0;
     double E = 0.0;
     double F = 0.0;
@@ -426,19 +424,15 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
 
         for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
         {
-
-            T = T_on_the_mesh[i+1];
-            n0 = n_previous[i+1];
-
             r1 = mesh[i]*1e-4;
             r2 = mesh[i+1]*1e-4;
 
             j1 = abs(j_on_the_mesh[i][1]*1e+3);
             j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
 
-            K = this->K(T);
-            F = this->F(i, T, n0);
-            E = this->E(T, n0);
+            K = this->K(i);
+            F = this->F(i);
+            E = this->E(i);
 
             K = 4*K/((r2-r1)*(r2-r1));
 
@@ -466,15 +460,12 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
 
         for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
         {
-            T = T_on_the_mesh[2*i + 1];              // value in the middle node
-            n0 = n_previous[2*i + 1];                // value in the middle node
-
             r1 = mesh[2*i]*1e-4;
             r3 = mesh[2*i + 2]*1e-4;
 
-            K = this->K(T);
-            F = this->F(2*i + 1, T, n0);
-            E = this->E(T, n0);
+            K = this->K(2*i + 1);
+            F = this->F(2*i + 1);
+            E = this->E(2*i + 1);
 
 
             double Cnst = M_PI*(r3-r1)/30;
@@ -532,22 +523,29 @@ template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDi
     return concentration;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(double T)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(int i)
 {
+    double T = T_on_the_mesh[i];
     double product = 0.0;
     if (threshold_computation)
         product += this->QW_material->D(T);
     return product;        // for initial distribution there is no diffusion
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(double T, double n0)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(int i)
 {
+    double T = T_on_the_mesh[i];
+    double n0 = n_previous[i];
+
     return (this->QW_material->A(T) + 2*this->QW_material->B(T)*n0 + 3*this->QW_material->C(T)*n0*n0);
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(int i, double T, double n0)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(int i)
 {
+    double T = T_on_the_mesh[i];
+    double n0 = n_previous[i];
+
     if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
         return (+ abs(j_on_the_mesh[i][1]*1e+3)/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
     else if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
@@ -611,8 +609,11 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(int i, double T, double n)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(int i)
 {
+    double T = T_on_the_mesh[i];
+    double n = n_present[i];
+
     double product = -( this->QW_material->A(T) * n + this->QW_material->B(T) * n*n + this->QW_material->C(T) * n*n*n);
 
     if (threshold_computation)

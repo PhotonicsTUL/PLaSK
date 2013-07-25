@@ -23,7 +23,7 @@ BOOST_PYTHON_MODULE(diffusion)
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC);
 
-        METHOD(compute, compute, "Perform the computation", arg("initial")=true, arg("threshold")=true);
+        METHOD(compute, compute, "Perform the computation", arg("initial")=true, arg("threshold")=true, arg("overthreshold")=false);
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
@@ -33,6 +33,7 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
         RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
         RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
+        RECEIVER(inGain, "Gain distribution"); // receiver in the solver
         PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
@@ -45,7 +46,7 @@ BOOST_PYTHON_MODULE(diffusion)
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC);
 
-        METHOD(compute, compute, "Perform the computation", arg("initial")=true, arg("threshold")=true);
+        METHOD(compute, compute, "Perform the computation", arg("initial")=true, arg("threshold")=true, arg("overthreshold")=false);
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
@@ -55,6 +56,7 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
         RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
         RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
+        RECEIVER(inGain, "Gain distribution"); // receiver in the solver
         PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property

@@ -13,6 +13,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         plask::ReceiverFor<plask::CurrentDensity, Geometry2DType> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
+        plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
@@ -35,7 +36,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         virtual void loadConfiguration(XMLReader&, Manager&);
 
-        void compute(bool initial, bool threshold);
+        void compute(bool initial, bool threshold, bool overthreshold);
 
 
     protected:
@@ -51,6 +52,9 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         bool initial_computation;
         bool threshold_computation;
+        bool overthreshold_computation;
+
+        double wavelength;      // wavelength of mode in overthreshold computations
 
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
         int iterations;
@@ -59,6 +63,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         plask::DataVector<const Vec<2>> j_on_the_mesh;    // current density vector provided by inCurrentDensity reciever
         plask::DataVector<const double> T_on_the_mesh;    // temperature vector provided by inTemperature reciever
+        plask::DataVector<const double> g_on_the_mesh;    // temperature vector provided by inTemperature reciever
 
         plask::DataVector<double> n_previous;       // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;        // concentration computed in n -th step vector
@@ -80,16 +85,16 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         void createMatrices(plask::DataVector<double> A_matrix, plask::DataVector<double> RHS_vector);
 
-        double K(double T);
+        double K(int i);
 //        double KInitial(size_t i, double T, double n0);	// K dla rozkladu poczatkowego
 //        double KThreshold(size_t i, double T, double n0);    // K postaci D(T)
-        double E(double T, double n0);        // E dla rozkladu poczatkowego i progowego
-        double F(int i, double T, double n0);        // F dla rozkladu poczatkowego i progowego
+        double E(int i);        // E dla rozkladu poczatkowego i progowego
+        double F(int i);        // F dla rozkladu poczatkowego i progowego
 
 //        double Enprog(size_t i, double T, double n0);   // E dla rozkladu nadprogowego
 //        double Fnprog(size_t i, double T, double n0);	// F dla rozkladu nadprogowego
 
-        double leftSide(int i, double T, double n);		// lewa strona rownania dla rozkladu poczatkowego
+        double leftSide(int i);		// lewa strona rownania dla rozkladu poczatkowego
 //        double leftSideInitial(size_t i, double T, double n);		// lewa strona rownania dla rozkladu poczatkowego
 //        double leftSideThreshold(size_t i, double T, double n);		// lewa strona rownania dla rozkladu progowego
 //        double Lnprog(size_t i, double T, double n);	// lewa strona rownania dla rozkladu nadprogowego

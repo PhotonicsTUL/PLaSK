@@ -481,6 +481,7 @@ ldouble gain::qFlc() /// poziomy na podstawie gdzieqflc
   ldouble e1=-el.gleb/10;
   ldouble k=el.gleb/100;
   ldouble stare=e1;
+
   while(gdzieqflc(e1,NULL)>0)
     {
       stare=e1;

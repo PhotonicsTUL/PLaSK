@@ -101,6 +101,9 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Provider for gain distribution
     typename ProviderFor<Gain, GeometryType>::Delegate outGain;
 
+    /// Provider for gain over carriers concentration derivative distribution
+    typename ProviderFor<dGaindCarriersConcentration, GeometryType>::Delegate outdGaindCarriersConcentration;
+
     FermiGainSolver(const std::string& name="");
 
     virtual std::string getClassName() const;
@@ -111,6 +114,9 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     //  TODO: it should return computed levels
     void determineLevels(double T, double n);
 
+    /// Function which checks if current mesh is identical to previously used
+    plask::SameMeshChecker meshChecker;
+
   public:
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;
@@ -119,13 +125,17 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     double vale_waveguide_depth;///< waveguide valence band depth [eV]
     double mLifeTime;///< stimulated emission lifetime [ps]
     double mMatrixElem;///< optical matrix element [m0*eV]
+    double differenceQuotient;///< difference quotient of dG_dn derivative
 
+    DataVector<const double> nOnMesh; // carriers concentration on the mesh
+    DataVector<const double> TOnMesh;
 
 //    double lambda_start;
 //    double lambda_stop;
 //    double lambda;
 
     void setParameters(double wavelength, double T, double n, const ActiveRegionInfo& active);
+    void getParameters();
     double nm_to_eV(double wavelength);
 
     /// Initialize the solver
@@ -157,6 +167,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
      * \return gain distribution
      */
     const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
+    const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
 
   public:
     double getLifeTime() const { return mLifeTime; }

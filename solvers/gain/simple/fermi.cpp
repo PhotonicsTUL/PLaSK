@@ -5,14 +5,15 @@ namespace plask { namespace solvers { namespace fermi {
 template <typename GeometryType>
 FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverOver<GeometryType>(name),
     inTemperature(this), inCarriersConcentration(this),
-    outGain(this, &FermiGainSolver<GeometryType>::getGain) // getDelegated will be called whether provider value is requested
+    outGain(this, &FermiGainSolver<GeometryType>::getGain),
+    outdGaindCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     mLifeTime = 0.1; // [ps]
     mMatrixElem = 10.0;
     cond_waveguide_depth = 0.26; // [eV]
-    vale_waveguide_depth = 0.13; //[eV]
-//    lambda = 0.98;
+    vale_waveguide_depth = 0.13; // [eV]
+    differenceQuotient = 0.01;  // [%]
 }
 
 
@@ -223,6 +224,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
+        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
         for (int i = 0; i < dst_mesh_geo.size(); i++)
         {
             if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))
@@ -235,6 +237,46 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     }
 
     return gainOnMesh;
+}
+
+
+template <typename GeometryType>
+const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
+{
+    this->initCalculation(); // This must be called before any calculation!
+
+    auto dst_mesh_geo = WrappedMesh<2>(dst_mesh, this->geometry);
+
+    DataVector<const double> nOnMesh = inCarriersConcentration(dst_mesh); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(dst_mesh); // temperature on the mesh
+    double gainOnMesh1 = 0.0;
+    double gainOnMesh2 = 0.0;
+    DataVector<double> dGdn(dst_mesh_geo.size(), 0.);
+
+    if (regions.size() == 1)
+        this->writelog(LOG_DETAIL, "Found 1 active region");
+    else
+        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
+
+    for (const ActiveRegionInfo& region: regions)
+    {
+        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
+        for (int i = 0; i < dst_mesh_geo.size(); i++)
+        {
+            if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))
+            {
+                setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
+                gainOnMesh1 = gainModule.Get_gain_at(nm_to_eV(wavelength));
+                setParameters(wavelength, TOnMesh[i], nOnMesh[i] + differenceQuotient*nOnMesh[i], region);
+                gainOnMesh2 = gainModule.Get_gain_at(nm_to_eV(wavelength));
+
+                dGdn[i] = (gainOnMesh2 - gainOnMesh1)/differenceQuotient;
+            }
+        }
+//        gainModule.Set_momentum_matrix_element(gainModule.element());
+    }
+
+    return dGdn;
 }
 
 
@@ -295,6 +337,7 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 
     gainModule.Set_split_off(QW_material->Dso(T));
     gainModule.Set_bandgap(QW_material->Eg(T));
+
     gainModule.Set_conduction_depth(Bar_material->CBO(T) - QW_material->CBO(T));
     gainModule.Set_valence_depth(QW_material->VBO(T) - Bar_material->VBO(T));
 
@@ -304,36 +347,41 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
     gainModule.Set_lifetime(mLifeTime); //gainModule.Set_lifetime(0.5);
     gainModule.Set_momentum_matrix_element(mMatrixElem); //gainModule.Set_momentum_matrix_element(8.0);
 
-//    std::cout<<gainModule.Get_temperature()<<std::endl;
-//    std::cout<<gainModule.Get_koncentr()<<std::endl;
-//
-//    std::cout<<gainModule.Get_refr_index()<<std::endl;
-//
-//    std::cout<<gainModule.Get_electron_mass_in_plain()<<std::endl;
-//    std::cout<<gainModule.Get_electron_mass_transverse()<<std::endl;
-//    std::cout<<gainModule.Get_heavy_hole_mass_in_plain()<<std::endl;
-//    std::cout<<gainModule.Get_heavy_hole_mass_transverse()<<std::endl;
-//    std::cout<<gainModule.Get_light_hole_mass_in_plain()<<std::endl;
-//    std::cout<<gainModule.Get_light_hole_mass_transverse()<<std::endl;
-//
-//    std::cout<<gainModule.Get_electron_mass_in_barrier()<<std::endl;
-//    std::cout<<gainModule.Get_heavy_hole_mass_in_barrier()<<std::endl;
-//    std::cout<<gainModule.Get_light_hole_mass_in_barrier()<<std::endl;
-////    gainModule.Set_barrier_width(15);
-//
-//    std::cout<<gainModule.Get_well_width()<<std::endl;
-//    std::cout<<gainModule.Get_waveguide_width()<<std::endl;
-//
-//    std::cout<<gainModule.Get_split_off()<<std::endl;
-//    std::cout<<gainModule.Get_bandgap()<<std::endl;
-//    std::cout<<gainModule.Get_conduction_depth()<<std::endl;
-//    std::cout<<gainModule.Get_valence_depth()<<std::endl;
-//
-//    std::cout<<gainModule.Get_cond_waveguide_depth()<<std::endl;
-//    std::cout<<gainModule.Get_vale_waveguide_depth()<<std::endl;
-//
-//    std::cout<<gainModule.Get_lifetime()<<std::endl;
-//    std::cout<<gainModule.Get_momentum_matrix_element()<<std::endl;
+}
+
+
+template <typename GeometryType>
+void FermiGainSolver<GeometryType>::getParameters()
+{
+    std::cout<<"T = "<<gainModule.Get_temperature()<<std::endl;
+    std::cout<<"n = "<<gainModule.Get_koncentr()<<std::endl;
+
+    std::cout<<"nR = "<<gainModule.Get_refr_index()<<std::endl;
+
+    std::cout<<"m_e_plane = "<<gainModule.Get_electron_mass_in_plain()<<std::endl;
+    std::cout<<"m_e_trans = "<<gainModule.Get_electron_mass_transverse()<<std::endl;
+    std::cout<<"m_hh_plane = "<<gainModule.Get_heavy_hole_mass_in_plain()<<std::endl;
+    std::cout<<"m_hh_trans = "<<gainModule.Get_heavy_hole_mass_transverse()<<std::endl;
+    std::cout<<"m_lh_plane = "<<gainModule.Get_light_hole_mass_in_plain()<<std::endl;
+    std::cout<<"m_lh_trans = "<<gainModule.Get_light_hole_mass_transverse()<<std::endl;
+
+    std::cout<<"m_e_bar = "<<gainModule.Get_electron_mass_in_barrier()<<std::endl;
+    std::cout<<"m_hh_bar = "<<gainModule.Get_heavy_hole_mass_in_barrier()<<std::endl;
+    std::cout<<"m_lh_bar = "<<gainModule.Get_light_hole_mass_in_barrier()<<std::endl;
+
+    std::cout<<"QW_width = "<<gainModule.Get_well_width()<<std::endl;
+    std::cout<<"waveguide_width = "<<gainModule.Get_waveguide_width()<<std::endl;
+
+    std::cout<<"SO = "<<gainModule.Get_split_off()<<std::endl;
+    std::cout<<"Eg = "<<gainModule.Get_bandgap()<<std::endl;
+    std::cout<<"QW_Qc = "<<gainModule.Get_conduction_depth()<<std::endl;
+    std::cout<<"QW_Qv = "<<gainModule.Get_valence_depth()<<std::endl;
+
+    std::cout<<"waveguide_Qc = "<<gainModule.Get_cond_waveguide_depth()<<std::endl;
+    std::cout<<"waveguide_Qv = "<<gainModule.Get_vale_waveguide_depth()<<std::endl;
+
+    std::cout<<"tau = "<<gainModule.Get_lifetime()<<std::endl;
+    std::cout<<"M = "<<gainModule.Get_momentum_matrix_element()<<std::endl;
 
 
 //    gainModule.Set_first_point(1.19);
