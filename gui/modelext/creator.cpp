@@ -1,5 +1,8 @@
 #include "creator.h"
 
+#include <QDataStream>
+#include <QIODevice>
+
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/stack.h>
 

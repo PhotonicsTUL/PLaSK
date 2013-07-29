@@ -280,19 +280,24 @@ if(BUILD_GUI)
     #set(PLASK_GUI_UIS ./src/ui/Dialog1.ui)
     set(PLASK_GUI_RCS gui/plaskgui.qrc)
 
-    find_package(Qt4 4.7 REQUIRED QtCore QtGui)
-    include(${QT_USE_FILE})
+     # Find includes in corresponding build directories
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+    find_package(Qt5Widgets)
+    include_directories(${Qt5Widgets_INCLUDE_DIRS})
+    add_definitions(${Qt5Widgets_DEFINITIONS} "-DQT_DISABLE_DEPRECATED_BEFORE=0x000000")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
     # this directory contains prop. brow. src + our CMakeLists.txt based on https://github.com/commontk/QtPropertyBrowser/blob/master/src/CMakeLists.txt
     add_subdirectory(extlib/qtpropertybrowser)  #this build qtpropertybrowser
 
     include_directories(extlib/qtpropertybrowser)   # allow for finding qtpropertybrowser headers
 
-    qt4_add_resources(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
-    #qt4_wrap_ui(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
-    qt4_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS})
+    qt5_add_resources(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
+    #qt5_wrap_ui(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
+    qt5_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS})
     add_executable(plaskgui ${plaskgui_src} ${property_browser_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS} ) # ${PLASK_GUI_UI_HDRS}
-    target_link_libraries(plaskgui libplask ${QT_LIBRARIES} qtpropertybrowser)
+    target_link_libraries(plaskgui libplask ${Qt5Widgets_LIBRARIES} qtpropertybrowser)
 
     install(TARGETS plaskgui RUNTIME DESTINATION bin COMPONENT GUI)
 

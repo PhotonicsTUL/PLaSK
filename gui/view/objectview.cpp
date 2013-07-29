@@ -1,5 +1,6 @@
 #include <math.h>
 #include <QtGui>
+#include <QScrollBar>
 
 #include "objectview.h"
 

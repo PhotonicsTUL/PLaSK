@@ -73,7 +73,7 @@ bool Geometry2DCartesianWrapper::canInsert(plask::shared_ptr<plask::GeometryObje
 bool Geometry2DCartesianWrapper::canInsert(const GeometryObjectCreator &to_insert, std::size_t index) const  {
     if (index != 0) return false;
     if (to_insert.supportDimensionsCount(2)) return true;
-    return plask::dynamic_pointer_cast<plask::Extrusion>(to_insert.getObject(3));  //if is 3d must allow to create extrusion
+    return to_insert.getObject(3) != nullptr;  //if is 3d must allow to create extrusion
 }
 
 bool Geometry2DCartesianWrapper::tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) {
@@ -125,7 +125,7 @@ bool Geometry2DCylindricalWrapper::canInsert(plask::shared_ptr<plask::GeometryOb
 bool Geometry2DCylindricalWrapper::canInsert(const GeometryObjectCreator &to_insert, std::size_t index) const  {
     if (index != 0) return false;
     if (to_insert.supportDimensionsCount(2)) return true;
-    return plask::dynamic_pointer_cast<plask::Revolution>(to_insert.getObject(3));  //if is 3d must allow to create extrusion
+    return to_insert.getObject(3) != nullptr;  //if is 3d must allow to create extrusion
 }
 
 bool Geometry2DCylindricalWrapper::tryInsert(plask::shared_ptr<plask::GeometryObject> to_insert, std::size_t index) {
