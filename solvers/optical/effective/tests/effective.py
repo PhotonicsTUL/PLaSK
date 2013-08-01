@@ -60,6 +60,8 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testField(self):
         self.solver.inWavelength = 1000.
         self.solver.symmetry = "+"
+        #self.solver.symmetry = "0"
+        #self.solver.set_horizontal_mesh([-0.75, 0.00, 0.75])
         self.solver.polarization = "TE"
         self.solver.compute(1.15)
         axis0 = linspace(-2.75, 2.75, 2000)
@@ -69,7 +71,8 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         dy = (axis1[1] - axis1[0]) * 1e-6
         field = self.solver.outIntensity(msh).array
         integral = sum(field) * dx*dy
-        print 1e3 * Z0 * integral
+        power = 1e3 * Z0 * integral # 1e3: W -> mW
+        self.assertAlmostEqual(power, 1., 4)
 
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):

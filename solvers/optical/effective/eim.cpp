@@ -516,7 +516,7 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
     }
 
     for (size_t i = start; i < xend-1; ++i) {
-        double d = mesh->axis1[i] - ((i == 0)? 0. : mesh->axis1[i-1]);
+        double d = mesh->axis0[i] - ((i == 0)? 0. : mesh->axis0[i-1]);
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
             if (abs(imag(kx[i])) > SMALL) {
@@ -539,6 +539,8 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
         }
     }
 
+    if (symmetry != NO_SYMMETRY) sum *= 2.;
+
 //     // Consider loss on the mirror
 //     double R1, R2;
 //     if (mirrors) {
@@ -550,7 +552,6 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
 //         R1 = abs((n-n1) / (n+n1));
 //         R2 = abs((n-n2) / (n+n2));
 //     }
-
 
     register dcomplex f = sqrt(1e9 / phys::mu0 / phys::c / sum);  // 1e9 because power in mW and integral computed in µm
     for (size_t i = xbegin; i < xend; ++i) {
