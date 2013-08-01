@@ -6,7 +6,7 @@ template <typename GeometryType>
 FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverOver<GeometryType>(name),
     inTemperature(this), inCarriersConcentration(this),
     outGain(this, &FermiGainSolver<GeometryType>::getGain),
-    outdGaindCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
+    outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     mLifeTime = 0.1; // [ps]

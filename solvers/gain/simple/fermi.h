@@ -102,7 +102,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     typename ProviderFor<Gain, GeometryType>::Delegate outGain;
 
     /// Provider for gain over carriers concentration derivative distribution
-    typename ProviderFor<dGaindCarriersConcentration, GeometryType>::Delegate outdGaindCarriersConcentration;
+    typename ProviderFor<GainOverCarriersConcentration, GeometryType>::Delegate outGainOverCarriersConcentration;
 
     FermiGainSolver(const std::string& name="");
 

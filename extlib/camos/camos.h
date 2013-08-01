@@ -215,8 +215,8 @@ extern "C" void zbesy(const double& zr, const double& zi, const double& fnu, con
  *                             cy(i)=H(fnu+i-1,z)exp(-abs(y)), i=1,...,n
  * \param[in] n      number of members of the sequence, n >= 1
  * \param[in] m      type of the Hankel function
- *                   m = 1  H(z) = J(z) + j(Hz)
- *                   m = 2  H(z) = J(z) - j(Hz)
+ *                   m = 1  H(z) = J(z) + j H(z)
+ *                   m = 2  H(z) = J(z) - j H(z)
  * \param[out] cyr,cyi double precision vectors whose first n components
  *                     contain real and imaginary parts for the sequence
  *                     cy(i)=H(fnu+i-1,z)  or

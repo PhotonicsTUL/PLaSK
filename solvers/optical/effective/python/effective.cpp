@@ -70,15 +70,6 @@ py::object EffectiveIndex2DSolver_getStripeDeterminant(EffectiveIndex2DSolver& s
     return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
 }
 
-py::object EffectiveFrequencyCylSolver_getStripeDeterminantV(EffectiveFrequencyCylSolver& self, int stripe, py::object val)
-{
-    if (!self.getMesh()) self.setSimpleMesh();
-    if (stripe < 0) stripe = self.getMesh()->tran().size() + stripe;
-    if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size()) throw IndexError("wrong stripe number");
-
-    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminantV(stripe, x);}, val);
-}
-
 static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& self, py::object val)
 {
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
@@ -192,8 +183,6 @@ BOOST_PYTHON_MODULE(effective)
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", py::arg("lam"));
         solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(double,double))&EffectiveFrequencyCylSolver::setMode,
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), "ext"));
-        solver.def("get_stripe_determinant_v", &EffectiveFrequencyCylSolver_getStripeDeterminantV, "Get single stripe modal determinant for debugging purposes",
-                   (py::arg("stripe"), "veff"));
         solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",
                    py::arg("v"));
         solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));

@@ -9,7 +9,7 @@
 namespace plask {
 
 /**
- * Profile of the optical E field per unit power [kΩ/m²].
+ * Profile of the optical field 1/2 E × conj(E) per unit power [kΩ/m²].
  *
  * This quantity that may be multiplied by the actual emitted power [mW] allows to determine
  * the actual electric field [Vm] inside the laser.
@@ -22,7 +22,7 @@ struct OpticalIntensity: public ScalarFieldProperty {
 };
 
 /**
- * Profile of the optical E field [V²/m²].
+ * Profile of the optical field 1/2 E × conj(E) [V²/m²].
  *
  * This property may be obtained by scaling the OpticalIntensity by the emitted power.
  */

@@ -149,7 +149,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
 
     if (na == 2) geometry = args[1];
     else if (na == 1 && kwargs.has_key("geometry")) geometry = kwargs["geometry"];
-    else throw TypeError("__init__() takes 1 or 2 non-keyword arguments (%1%) given", na);
+    else throw TypeError("__init__() takes 1 or 2 non-keyword arguments (%1% given)", na);
 
     try {
         shared_ptr<Revolution> revolution = py::extract<shared_ptr<Revolution>>(geometry);

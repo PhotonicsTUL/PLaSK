@@ -34,10 +34,9 @@ struct Gain : public FieldProperty<double, double> {
  * Providers of material gain derivative should accept additional parameter,
  * which is the wavelength for which the derivative should be computed.
  */
-
-struct dGaindCarriersConcentration : public FieldProperty<double, double> {
+struct GainOverCarriersConcentration : public FieldProperty<double, double> {
     static constexpr const char* NAME = "material gain over carriers concentration derivative";
-    static inline double getDefaultValue() { return NAN; }
+    static inline double getDefaultValue() { return 0.; }
 
 };
 

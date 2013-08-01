@@ -4,11 +4,14 @@
 #include <limits>
 
 #include <plask/plask.hpp>
+#include <camos/camos.h>
 
 #include "broyden.h"
 #include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
+
+static constexpr int MH = 2; // Hankel function type (1 or 2)
 
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
@@ -109,8 +112,11 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     double outdist;
 
     // Parameters for rootdigger
-    RootDigger::Params root;
-    RootDigger::Params stripe_root;
+    RootDigger::Params root;        ///< Parameters for horizontal root digger
+    RootDigger::Params stripe_root; ///< Parameters for vertical root diggers
+
+    /// Allowed relative power integral precision
+    double perr;
 
     EffectiveFrequencyCylSolver(const std::string& name="");
 
@@ -199,18 +205,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     }
 
     /**
-     * Compute determinant for a single stripe
-     * \param stripe index of stripe
-     * \param veff stripe effective frequency to use
-     */
-    dcomplex getStripeDeterminantV(size_t stripe, dcomplex veff) {
-        bool invalid = !initCalculation();
-        dcomplex result = detS1(veff, nrCache[stripe], ngCache[stripe]);
-        if (invalid) invalidate();
-        return result;
-    }
-
-    /**
      * Compute modal determinant for the whole matrix
      * \param v frequency parameter
      */
@@ -275,14 +269,34 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Return S matrix determinant for one stripe
     void computeStripeNNg(std::size_t stripe);
 
-    /// Compute integral r J(ar) J(ar)
-    void besselIntegrals(double r, dcomplex a, dcomplex& JJ, dcomplex& HH, dcomplex& JH);
+    /// Integrate horizontal field
+    double integrateBessel();
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const dcomplex& v, bool scale=false);
 
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+
+    /// Compute horizontal part of the field
+    dcomplex rField(double r) {
+        double Jr, Ji, Hr, Hi;
+        long nz, ierr;
+        size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
+        dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-freqv));
+        if (real(x) < 0.) x = -x;
+        zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
+        if (ierr != 0)
+            throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
+        if (ir == 0) {
+            Hr = Hi = 0.;
+        } else {
+            zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
+            if (ierr != 0)
+                throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
+        }
+        return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
+    }
 
   private:
     template <typename MeshT>

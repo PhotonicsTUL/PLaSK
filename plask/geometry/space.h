@@ -163,7 +163,7 @@ protected:
     /// \return alternative direction name
     /// \param ax axis
     /// \param orient orientation
-    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) {
+    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) const {
         const char* directions[3][2] = { {"back", "front"}, {"left", "right"}, {"bottom", "top"} };
         return directions[ax][orient];
     }
@@ -954,7 +954,7 @@ public:
 
   protected:
 
-    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) {
+    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) const {
         const char* directions[3][2] = { {"cw", "ccw"}, {"inner", "outer"}, {"bottom", "top"} };
         return directions[ax][orient];
     }

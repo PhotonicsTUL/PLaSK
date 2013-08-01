@@ -10,9 +10,9 @@ namespace plask { namespace python {
  *
  * Add new gain properties here
  */
-void register_standard_properties_dGaindCarriersConcentration()
+void register_standard_properties_GainOverCarriersConcentration()
 {
-    registerProperty<dGaindCarriersConcentration>();
+    registerProperty<GainOverCarriersConcentration>();
 }
 
 }} // namespace plask>();

@@ -36,7 +36,7 @@ BOOST_PYTHON_MODULE(simple)
                             reinterpret_cast<ReceiverFor<CarriersConcentration,Geometry2DCartesian>__Class__::*>(&__Class__::inCarriersConcentration),
                             "Carrier pairs concentration");
         PROVIDER(outGain, "Optical gain in the active region");
-        PROVIDER(outdGaindCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
+        PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
@@ -58,7 +58,7 @@ BOOST_PYTHON_MODULE(simple)
         RECEIVER(inTemperature, "Temperature distribution");
         RECEIVER(inCarriersConcentration, "Carrier pairs concentration");
         PROVIDER(outGain, "Optical gain in the active region");
-        PROVIDER(outdGaindCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
+        PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");

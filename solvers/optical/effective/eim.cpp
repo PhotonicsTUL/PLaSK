@@ -505,13 +505,18 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 
 void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx) {
 
-    double sum =
-        abs2(xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin])) +
-        abs2(xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]))
-    ;
+    size_t start;
 
-    for (size_t i = xbegin+1; i < xend-1; ++i) {
-        double d = mesh->axis1[i]-mesh->axis1[i-1];
+    double sum = abs2(xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
+    if (symmetry == NO_SYMMETRY) {
+        sum += abs2(xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
+        start = xbegin+1;
+    } else {
+        start = xbegin;
+    }
+
+    for (size_t i = start; i < xend-1; ++i) {
+        double d = mesh->axis1[i] - ((i == 0)? 0. : mesh->axis1[i-1]);
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
             if (abs(imag(kx[i])) > SMALL) {
@@ -547,7 +552,7 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
 //     }
 
 
-    register dcomplex f = sqrt(1e9 * phys::mu0 * phys::c / sum); // 1e9 because power in mW and integral computed in µm
+    register dcomplex f = sqrt(1e9 / phys::mu0 / phys::c / sum);  // 1e9 because power in mW and integral computed in µm
     for (size_t i = xbegin; i < xend; ++i) {
         xfields[i] *= f;
     }
@@ -668,7 +673,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
             dcomplex phasy = exp(- I * ky[iy] * y);
             val *= yfields[iy].F * phasy + yfields[iy].B / phasy;
 
-            results[idx] = real(abs2(val));
+            results[idx] = abs2(val);
         }
     }
 
