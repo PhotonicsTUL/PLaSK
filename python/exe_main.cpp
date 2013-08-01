@@ -17,9 +17,9 @@ namespace py = boost::python;
 #include <plask/utils/string.h>
 
 #ifdef _WIN32
-    #ifndef _WIN32_WINNT
+//    #ifndef _WIN32_WINNT
         #define _WIN32_WINNT 0x502
-    #endif
+//    #endif
     #include <windows.h>
 #endif
 
