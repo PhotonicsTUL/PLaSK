@@ -72,7 +72,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         field = self.solver.outIntensity(msh).array
         integral = sum(field) * dx*dy
         power = 1e3 * Z0 * integral # 1e3: W -> mW
-        self.assertAlmostEqual(power, 1., 4)
+        self.assertAlmostEqual(power, 14.65, 2)
 
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):

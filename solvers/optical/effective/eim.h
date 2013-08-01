@@ -284,13 +284,12 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     dcomplex k0;        ///< Cache of the normalized frequency [1/µm]
 
     /// Compute mirror losses for specified effective index
-    double getMirrorLosses() {
+    double getMirrorLosses(double n) {
         const double lambda = inWavelength();
         double R1, R2;
         if (mirrors) {
             std::tie(R1,R2) = *mirrors;
         } else {
-            const double n = real(vneff);
             const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                          n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
             R1 = abs((n-n1) / (n+n1));

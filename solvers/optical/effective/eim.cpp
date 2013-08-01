@@ -538,22 +538,25 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
                        );
         }
     }
-
     if (symmetry != NO_SYMMETRY) sum *= 2.;
 
-//     // Consider loss on the mirror
-//     double R1, R2;
-//     if (mirrors) {
-//         std::tie(R1,R2) = *mirrors;
-//     } else {
-//         const double n = real(vneff);
-//         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
-//                         n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
-//         R1 = abs((n-n1) / (n+n1));
-//         R2 = abs((n-n2) / (n+n2));
-//     }
+    // Consider loss on the mirror
+    double R1, R2;
+    if (mirrors) {
+        std::tie(R1,R2) = *mirrors;
+    } else {
+        const double lambda = inWavelength();
+        const double n = real(outNeff());
+        const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
+                     n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
+        R1 = abs((n-n1) / (n+n1));
+        R2 = abs((n-n2) / (n+n2));
+    }
+    if (emission == FRONT) sum *= R1;
+    else sum *= R2;
 
     register dcomplex f = sqrt(1e9 / phys::mu0 / phys::c / sum);  // 1e9 because power in mW and integral computed in µm
+
     for (size_t i = xbegin; i < xend; ++i) {
         xfields[i] *= f;
     }
@@ -562,7 +565,7 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 {
     // Adjust for mirror losses
-    dcomplex neff2 = dcomplex(real(x), imag(x)-getMirrorLosses()); neff2 *= neff2;
+    dcomplex neff2 = dcomplex(real(x), imag(x)-getMirrorLosses(real(x))); neff2 *= neff2;
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {
@@ -627,7 +630,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const 
     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
-    dcomplex neff2 = dcomplex(real(neff), imag(neff)-getMirrorLosses()); neff2 *= neff2;
+    dcomplex neff2 = dcomplex(real(neff), imag(neff)-getMirrorLosses(real(neff))); neff2 *= neff2;
     for (size_t i = 0; i < xend; ++i) {
         kx[i] = k0 * sqrt(epsilons[i] - neff2);
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
