@@ -8,7 +8,7 @@ This file contains Si-doped GaN
 #include <plask/material/material.h>
 #include "GaN.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped GaN, its physical properties.
@@ -39,6 +39,6 @@ private:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaN_Si_H

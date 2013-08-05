@@ -9,7 +9,7 @@ This file contains undoped InGaN
 #include "GaN.h"
 #include "InN.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped InGaN, its physical properties.
@@ -43,6 +43,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InGaN_H

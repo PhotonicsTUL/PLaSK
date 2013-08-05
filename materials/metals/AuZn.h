@@ -7,7 +7,7 @@ This file contains AuZn
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent AuZn, its physical properties.
@@ -27,6 +27,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AuZn_H

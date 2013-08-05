@@ -26,7 +26,7 @@ shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
  */
 class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
-    /// Should we add horizontal line at zero
+    /// Should we add line at horizontal zero
     bool extend_to_zero;
 
   public:

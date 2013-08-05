@@ -8,7 +8,7 @@ This file contains Si-doped AlAs
 #include <plask/material/material.h>
 #include "AlAs.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped AlAs, its physical properties.
@@ -35,6 +35,6 @@ private:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlAs_Si_H

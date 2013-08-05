@@ -1016,7 +1016,7 @@ struct GeometryObjectD: public GeometryObject {
      */
     shared_ptr<Material> getMaterialOrAir(const DVec& p) const {
         auto real_mat = getMaterial(p);
-        return real_mat ? real_mat : make_shared<Air>();
+        return real_mat ? real_mat : make_shared<materials::Air>();
     }
 
     /**

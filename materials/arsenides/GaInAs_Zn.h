@@ -10,7 +10,7 @@ This file contains Zn-doped GaInAs
 //#include "GaAs_Zn.h"
 //#include "InAs_Zn.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Zn-doped GaInAs, its physical properties.
@@ -40,6 +40,6 @@ private:
     //InAs_Zn mInAs_Zn;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaInAs_Zn_H

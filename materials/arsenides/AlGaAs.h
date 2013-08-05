@@ -9,7 +9,7 @@ This file contains undoped AlGaAs
 #include "GaAs.h"
 #include "AlAs.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped AlGaAs, its physical properties.
@@ -48,6 +48,6 @@ protected:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlGaAs_H

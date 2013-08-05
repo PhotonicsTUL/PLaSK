@@ -7,7 +7,7 @@ This file contains undoped AlN
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped AlN, its physical properties.
@@ -40,6 +40,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlN_H

@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 std::string AuZn::name() const { return NAME; }
 
@@ -48,4 +48,4 @@ double AuZn::nr(double wl, double T) const {
 
 static MaterialsDB::Register<AuZn> materialDB_register_AuZn;
 
-}       // namespace plask
+}}       // namespace plask::materials

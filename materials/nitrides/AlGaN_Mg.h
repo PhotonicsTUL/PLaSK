@@ -10,7 +10,7 @@ This file contains Mg-doped AlGaN
 #include "GaN_Mg.h"
 #include "AlN_Mg.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Mg-doped AlGaN, its physical properties.
@@ -39,6 +39,6 @@ private:
     AlN_Mg mAlN_Mg;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlGaN_Mg_H

@@ -10,7 +10,7 @@ This file contains Si-doped AlGaAs
 #include "GaAs_Si.h"
 #include "AlAs_Si.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped AlGaAs, its physical properties.
@@ -39,6 +39,6 @@ private:
     AlAs_Si mAlAs_Si;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlGaAs_Si_H

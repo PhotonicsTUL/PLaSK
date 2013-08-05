@@ -9,7 +9,7 @@ This file contains undoped GaInP
 #include "GaP.h"
 #include "InP.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped GaInP, its physical properties.
@@ -52,6 +52,6 @@ protected:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaInP_H

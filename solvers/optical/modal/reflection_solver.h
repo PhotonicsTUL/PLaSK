@@ -10,6 +10,30 @@ namespace plask { namespace solvers { namespace modal {
  */
 struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
 
+  protected:
+
+    /// Layer boundaries
+    RectilinearMesh1D layers;
+
+    /// Position of the matching interface
+    size_t interface;
+
+    /// Maximum order of orthogonal base
+    size_t order;
+
+    /// Mesh multiplier for finer computation of the refractive indices
+    size_t refine;
+
+    /// Set layer boundaries
+    void setLayerMesh();
+
+    virtual void onGeometryChange(const Geometry::Event& evt) {
+        this->invalidate();
+        if (!layers.empty()) setLayerMesh(); // update layers
+    }
+
+  public:
+
     /// Receiver of the wavelength
     ReceiverFor<Wavelength> inWavelength;
 
@@ -25,83 +49,47 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
     /// Provider of optical field
     ProviderFor<OpticalIntensity, Geometry2DCartesian>::Delegate outIntensity;
 
+    FourierReflection2D(const std::string& name="");
 
+    void loadConfiguration(XMLReader& reader, Manager& manager);
 
+    /**
+     * Get the position of the matching interface.
+     * \return index of the vertical mesh, where interface is set
+     */
+    inline size_t getInterface() { return interface; }
 
-//     /// Sample receiver for temperature.
-//     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
-//
-//     /// Sample provider for simple value.
-//     ProviderFor<SomeSingleValueProperty>::WithValue outSingleValue;
-//
-//     /// Sample provider for field (it's better to use delegate here).
-//     ProviderFor<SomeFieldProperty, Geometry2DCartesian>::Delegate outSomeField;
-//
-//     YourSolver(const std::string& name="");
-//
-//     virtual std::string getClassName() const { return "NameOfYourSolver"; }
-//
-//     virtual std::string getClassDescription() const {
-//         return "This solver does this and that. And this description can be e.g. shown as a hint in GUI.";
-//     }
-//
-//     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
-//
-//     /**
-//      * This method performs the main computations.
-//      * Add short description of every method in a comment like this.
-//      * \param parameter some value to be provided by the user for computationsś
-//      **/
-//     void compute(double parameter);
-//
-//   protected:
-//
-//     /// This is field data computed by this solver on its own mesh
-//     DataVector<double> my_data;
-//
-//     /// Initialize the solver
-//     virtual void onInitialize();
-//
-//     /// Invalidate the data
-//     virtual void onInvalidate();
-//
-//     /// Method computing the value for the delegate provider
-//     const DataVector<const double> getDelegated(const MeshD<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
-//
-    // /*
-    //  * Get the position of the matching interface.
-    //  *
-    //  * \return index of the vertical mesh, where interface is set
-    //  */
-    // inline size_t getInterface() { return interface; }
-    //
-    // /*
-    //  * Set the position of the matching interface.
-    //  *
-    //  * \param index index of the vertical mesh, where interface is set
-    //  */
-    // inline void setInterface(size_t index) {
-    //     if (!mesh) setSimpleMesh();
-    //     if (index < 0 || index >= mesh->vert().size())
-    //         throw BadInput(getId(), "wrong interface position");
-    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[index], index);
-    //     interface = index;
-    // }
-    //
-    // /*
-    //  * Set the position of the matching interface at the top of the provided geometry object
-    //  *
-    //  * \param path path to the object in the geometry
-    //  */
-    // void setInterfaceOn(const PathHints& path) {
-    //     if (!mesh) setSimpleMesh();
-    //     auto boxes = geometry->getLeafsBoundingBoxes(path);
-    //     if (boxes.size() != 1) throw NotUniqueObjectException();
-    //     interface = std::lower_bound(mesh->vert().begin(), mesh->vert().end(), boxes[0].upper.vert()) - mesh->vert().begin();
-    //     if (interface >= mesh->vert().size()) interface = mesh->vert().size() - 1;
-    //     log(LOG_DEBUG, "Setting interface at postion %g (mesh index: %d)",  mesh->vert()[interface], interface);
-    // }
+    /**
+     * Set the position of the matching interface.
+     * \param index index of the vertical mesh, where interface is set
+     */
+    inline void setInterface(size_t index) {
+        if (layers.empty()) setLayerMesh();
+        if (index >= layers.size())
+            throw BadInput(getId(), "wrong interface position");
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  layers[index], index);
+        interface = index;
+    }
 
+    /**
+     * Set the position of the matching interface at the top of the provided geometry object
+     * \param path path to the object in the geometry
+     */
+    void setInterfaceOn(const PathHints& path) {
+        if (layers.empty()) setLayerMesh();
+        auto boxes = geometry->getLeafsBoundingBoxes(path);
+        if (boxes.size() != 1) throw NotUniqueObjectException();
+        interface = std::lower_bound(layers.begin(), layers.end(), boxes[0].upper.vert()) - layers.begin();
+        if (interface >= layers.size()) interface = layers.size() - 1;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  layers[interface], interface);
+    }
+
+  protected:
+
+    /**
+     * Compute normalized electric field intensity 1/2 E conj(E) / P
+     */
+    const DataVector<const double> getIntensity(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };
 

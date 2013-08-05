@@ -8,7 +8,7 @@ This file contains Zn-doped GaAs
 #include <plask/material/material.h>
 #include "GaAs.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Zn-doped GaAs, its physical properties.
@@ -36,6 +36,6 @@ private:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaAs_Zn_H

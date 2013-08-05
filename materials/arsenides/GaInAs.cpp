@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 GaInAs::GaInAs(const Material::Composition& Comp) {
     Ga = Comp.find("Ga")->second;
@@ -134,4 +134,4 @@ bool GaInAs::isEqual(const Material &other) const {
 
 static MaterialsDB::Register<GaInAs> materialDB_register_GaInAs;
 
-} // namespace plask
+}} // namespace plask::materials

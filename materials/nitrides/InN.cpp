@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-namespace plask {
+namespace plask { namespace materials {
 
 std::string InN::name() const { return NAME; }
 
@@ -75,4 +75,4 @@ bool InN::isEqual(const Material &other) const {
 
 MaterialsDB::Register<InN> materialDB_register_InN;
 
-}       // namespace plask
+}}       // namespace plask::materials

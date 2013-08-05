@@ -10,7 +10,7 @@ This file contains Sn-doped GaInAs
 //#include "GaAs_Sn.h"
 //#include "InAs_Sn.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Sn-doped GaInAs, its physical properties.
@@ -40,6 +40,6 @@ private:
     //InAs_Sn mInAs_Sn;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaInAs_Sn_H

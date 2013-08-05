@@ -7,7 +7,7 @@ This file contains Au
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Au, its physical properties.
@@ -26,6 +26,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__Au_H

@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 std::string GaAs::name() const { return NAME; }
 
@@ -149,4 +149,4 @@ double GaAs::absp(double wl, double T) const {
 
 static MaterialsDB::Register<GaAs> materialDB_register_GaAs;
 
-} // namespace plask
+}} // namespace plask::materials

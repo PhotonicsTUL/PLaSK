@@ -7,7 +7,7 @@ This file contains AlxOy
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent AlxOy, its physical properties.
@@ -28,6 +28,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlxOy_H

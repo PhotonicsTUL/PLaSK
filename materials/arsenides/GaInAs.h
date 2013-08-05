@@ -9,7 +9,7 @@ This file contains undoped GaInAs
 #include "GaAs.h"
 #include "InAs.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped GaInAs, its physical properties.
@@ -48,6 +48,6 @@ protected:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaInAs_H

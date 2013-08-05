@@ -9,7 +9,7 @@ This file contains undoped AlGaN
 #include "GaN.h"
 #include "AlN.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped AlGaN, its physical properties.
@@ -43,6 +43,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlGaN_H

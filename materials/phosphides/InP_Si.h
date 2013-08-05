@@ -8,7 +8,7 @@ This file contains Si-doped InP
 #include <plask/material/material.h>
 #include "InP.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped InP, its physical properties.
@@ -36,6 +36,6 @@ private:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InP_Si_H

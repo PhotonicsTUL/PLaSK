@@ -7,7 +7,7 @@ This file contains In
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent In, its physical properties.
@@ -27,6 +27,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__In_H

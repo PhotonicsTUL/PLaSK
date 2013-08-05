@@ -10,7 +10,7 @@ This file contains Mg-doped InGaN
 #include "GaN_Mg.h"
 #include "InN_Mg.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Mg-doped InGaN, its physical properties.
@@ -41,6 +41,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InGaN_Mg_H

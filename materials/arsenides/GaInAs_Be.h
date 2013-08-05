@@ -10,7 +10,7 @@ This file contains Be-doped GaInAs
 //#include "GaAs_Be.h"
 //#include "InAs_Be.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Be-doped GaInAs, its physical properties.
@@ -40,6 +40,6 @@ private:
     //InAs_Be mInAs_Be;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaInAs_Be_H

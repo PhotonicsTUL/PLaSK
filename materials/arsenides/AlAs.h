@@ -7,7 +7,7 @@ This file contains undoped AlAs
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped AlAs, its physical properties.
@@ -33,6 +33,6 @@ protected:
     virtual bool isEqual(const Material& other) const;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlAs_H

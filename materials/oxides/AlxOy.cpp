@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 std::string AlxOy::name() const { return NAME; }
 
@@ -48,4 +48,4 @@ double AlxOy::nr(double wl, double T) const {
 
 static MaterialsDB::Register<AlxOy> materialDB_register_AlxOy;
 
-}       // namespace plask
+}}       // namespace plask::materials

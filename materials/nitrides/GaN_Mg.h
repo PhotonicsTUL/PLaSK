@@ -8,7 +8,7 @@ This file contains Mg-doped GaN
 #include <plask/material/material.h>
 #include "GaN.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Mg-doped GaN, its physical properties.
@@ -38,6 +38,6 @@ private:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaN_Mg_H

@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 std::string AlN_Mg::name() const { return NAME; }
 
@@ -59,4 +59,4 @@ bool AlN_Mg::isEqual(const Material &other) const {
 
 static MaterialsDB::Register<AlN_Mg> materialDB_register_AlN_Mg;
 
-}       // namespace plask
+}}       // namespace plask::materials

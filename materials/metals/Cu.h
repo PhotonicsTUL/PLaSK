@@ -7,7 +7,7 @@ This file contains Cu
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Cu, its physical properties.
@@ -27,6 +27,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__Cu_H

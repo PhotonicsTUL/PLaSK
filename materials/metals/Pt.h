@@ -7,7 +7,7 @@ This file contains Pt
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Pt, its physical properties.
@@ -27,6 +27,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__Pt_H

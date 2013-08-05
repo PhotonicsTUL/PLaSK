@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 MI_PARENT(InN_Mg, InN)
 
@@ -59,4 +59,4 @@ bool InN_Mg::isEqual(const Material &other) const {
 
 MaterialsDB::Register<InN_Mg> materialDB_register_InN_Mg;
 
-}       // namespace plask
+}}       // namespace plask::materials

@@ -8,7 +8,7 @@ This file contains Si-doped AlN
 #include <plask/material/material.h>
 #include "AlN.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped AlN, its physical properties.
@@ -37,6 +37,6 @@ private:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlN_Si_H

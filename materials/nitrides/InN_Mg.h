@@ -8,7 +8,7 @@ This file contains Mg-doped InN
 #include <plask/material/material.h>
 #include "InN.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Mg-doped InN, its physical properties.
@@ -37,6 +37,6 @@ private:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InN_Mg_H

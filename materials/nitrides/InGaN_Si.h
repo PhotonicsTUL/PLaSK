@@ -10,7 +10,7 @@ This file contains Si-doped InGaN
 #include "GaN_Si.h"
 #include "InN_Si.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped InGaN, its physical properties.
@@ -42,6 +42,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InGaN_Si_H

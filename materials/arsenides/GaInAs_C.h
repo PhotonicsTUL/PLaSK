@@ -10,7 +10,7 @@ This file contains C-doped GaInAs
 //#include "GaAs_C.h"
 //#include "InAs_C.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent C-doped GaInAs, its physical properties.
@@ -40,6 +40,6 @@ private:
     //InAs_C mInAs_C;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaInAs_C_H

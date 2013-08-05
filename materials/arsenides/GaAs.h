@@ -7,7 +7,7 @@ This file contains undoped GaAs
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped GaAs, its physical properties.
@@ -37,6 +37,6 @@ protected:
     virtual bool isEqual(const Material& other) const;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__GaAs_H

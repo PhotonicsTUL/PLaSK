@@ -8,7 +8,7 @@ This file contains Si-doped InAs
 #include <plask/material/material.h>
 #include "InAs.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped InAs, its physical properties.
@@ -35,6 +35,6 @@ private:
 
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InAs_Si_H

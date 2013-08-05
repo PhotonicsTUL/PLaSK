@@ -4,7 +4,7 @@
 #include <plask/material/db.h>  //MaterialsDB::Register
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
-namespace plask {
+namespace plask { namespace materials {
 
 std::string GaP::name() const { return NAME; }
 
@@ -139,4 +139,4 @@ bool GaP::isEqual(const Material &other) const {
 
 static MaterialsDB::Register<GaP> materialDB_register_GaP;
 
-} // namespace plask
+}} // namespace plask::materials

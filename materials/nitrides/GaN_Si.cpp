@@ -5,7 +5,7 @@
 #include <plask/material/info.h>    //MaterialInfo::DB::Register
 
 
-namespace plask {
+namespace plask { namespace materials {
 
 MI_PARENT(GaN_Si, GaN)
 
@@ -97,4 +97,4 @@ double GaN_Si::nr(double wl, double T) const {
 
 MaterialsDB::Register<GaN_Si> materialDB_register_GaN_Si;
 
-}       // namespace plask
+}}       // namespace plask::materials

@@ -7,7 +7,7 @@ This file contains undoped InAs
 
 #include <plask/material/material.h>
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent undoped InAs, its physical properties.
@@ -36,6 +36,6 @@ protected:
 };
 
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__InAs_H

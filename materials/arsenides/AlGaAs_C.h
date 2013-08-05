@@ -10,7 +10,7 @@ This file contains C-doped AlGaAs
 #include "GaAs_C.h"
 #include "AlAs_C.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent C-doped AlGaAs, its physical properties.
@@ -39,6 +39,6 @@ private:
     AlAs_C mAlAs_C;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlGaAs_C_H

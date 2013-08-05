@@ -28,7 +28,7 @@ in order to get familiar with the PLaSK architecture and the way the computation
 PLaSK is designed using modern programming technologies. The core and computational solvers are written in C++ language using its latest 2011 standard. It means that it can be compiled
 only with compilers supporting this standard. The encouraged choices are GCC (ver. 4.6 and above) or ICC. However other compilers migh work as well.
 The also requires the Boost C++ library and the solvers might need some other libraries to be installed as well (eg. BLAS and LAPACK). The user interface is provided through Python
-bindings and the communication between C++ and Python parts require the Boost Python library. The graphical experiment designer is written in Python and uses the Qt graphics library
+bindings and the communication between C++ and Python parts requires the Boost Python library. The graphical experiment designer is written in Python and uses the Qt graphics library
 (with PySide bindings) and Matplotlib for presenting the calculation results in attractive form. You should get familiar with all these technologies if you want to make modifications to PLaSK.
 
 \remarks Although it is possible to compile and use PLaSK without Python, it is strongly discouraged, as all the simulation logic would have to be written in C++ and compiled for every

@@ -10,7 +10,7 @@ This file contains Si-doped AlGaN
 #include "GaN_Si.h"
 #include "AlN_Si.h"
 
-namespace plask {
+namespace plask { namespace materials {
 
 /**
  * Represent Si-doped AlGaN, its physical properties.
@@ -40,6 +40,6 @@ private:
     AlN_Si mAlN_Si;
 };
 
-} // namespace plask
+}} // namespace plask::materials
 
 #endif	//PLASK__AlGaN_Si_H
