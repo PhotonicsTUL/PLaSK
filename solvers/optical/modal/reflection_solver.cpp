@@ -5,6 +5,7 @@ namespace plask { namespace solvers { namespace modal {
 FourierReflection2D::FourierReflection2D(const std::string& name): SolverOver<Geometry2DCartesian>(name),
     order(5),
     refine(8),
+    outdist(0.1),
     outIntensity(this, &FourierReflection2D::getIntensity)
 {
     inTemperature = 300.; // temperature receiver has some sensible value
@@ -29,14 +30,63 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 }
 
 
-void FourierReflection2D::setLayerMesh()
+void FourierReflection2D::setupLayers()
 {
     auto mesh = RectilinearMesh2DSimpleGenerator()(geometry->getChild());
-    layers = mesh->axis1;
+    vbounds = mesh->axis1;
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
+
+    auto points = mesh->getMidpointsMesh();
+
+    struct LayerItem {
+        shared_ptr<Material> material;
+        std::set<std::string> roles;
+        bool operator!=(const LayerItem& other) { return *material != *other.material || roles != other.roles; }
+    };
+
+    std::vector<std::vector<LayerItem>> layers;
+
+    // Add layers below bottom boundary and above top one
+    points->axis1.addPoint(vbounds[0] - outdist);
+    points->axis1.addPoint(vbounds[vbounds.size()-1] + outdist);
+
+    lverts.clear();
+    stack.clear();
+    stack.reserve(points->axis1.size());
+
+    for (auto v: points->axis1) {
+        std::vector<LayerItem> layer(points->axis0.size());
+        for (size_t i = 0; i != points->axis0.size(); ++i) {
+            Vec<2> p(points->axis0[i],v);
+            layer[i].material = this->geometry->getMaterial(p);
+            for (const std::string& role: this->geometry->getRolesAt(p))
+                if (role.substr(0,3) == "opt" || role == "QW" || role == "QD" || role == "gain") layer[i].roles.insert(role);
+        }
+
+        bool unique;
+        for (size_t i = 0; i != layers.size(); ++i) {
+            unique = false;
+            for (size_t j = 0; j != layers[i].size(); ++j) {
+                if (layers[i][j] != layer[j]) {
+                    unique = true;
+                    break;
+                }
+            }
+            if (!unique) {
+                lverts[i].addPoint(v);
+                stack.push_back(i);
+                break;
+            }
+        }
+        if (unique) {
+            layers.emplace_back(std::move(layer));
+            stack.push_back(lverts.size());
+            lverts.emplace_back<std::initializer_list<double>>({v});
+        }
+    }
+
+    writelog(LOG_INFO, "Detected %1% distinct layers", lverts.size());
 }
-
-
 
 
 

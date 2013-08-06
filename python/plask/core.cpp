@@ -182,6 +182,8 @@ BOOST_PYTHON_MODULE(_plask)
     // Vectors
     register_vectors();
 
+    register_vector_of<size_t>("unsigned_int");
+    register_vector_of<int>("int");
     register_vector_of<double>("float");
     register_vector_of<std::complex<double>>("complex");
 

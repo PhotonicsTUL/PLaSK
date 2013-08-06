@@ -11,16 +11,28 @@ using namespace plask::solvers::modal;
 
 BOOST_PYTHON_MODULE(modal)
 {
-//     {CLASS(Class_Name, "YourSolver", "Short solver description.")
-//         METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
-//         RO_FIELD(field_name, "Short documentation"); // read-only field
-//         RW_FIELD(field_name, "Short documentation"); // read-write field
-//         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
-//         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
-//         RECEIVER(inReceiver, "Short documentation"); // receiver in the solver
-//         PROVIDER(outProvider, "Short documentation"); // provider in the solver
-//         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
-//     }
-
+    {CLASS(FourierReflection2D, "FourierReflection2D",
+        "Calculate optical modes and optical field distribution using Fourier modal method\n"
+        " and reflection transfer in two-dimensional Cartesian space.")
+        RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
+        //RO_FIELD(root, "Configuration of the global rootdigger");
+        //RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
+        //METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
+        //METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
+        //       arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
+        //METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
+        //solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
+        RECEIVER(inWavelength, "Wavelength of the light");
+        RECEIVER(inTemperature, "Temperature distribution in the structure");
+        RECEIVER(inGain, "Optical gain in the active region");
+        PROVIDER(outNeff, "Effective index of the last computed mode");
+        PROVIDER(outIntensity, "Light intensity of the last computed mode");
+        RW_PROPERTY(interface, getInterface, setInterface, "Matching interface position");
+        solver.def("set_interface", &FourierReflection2D::setInterfaceOn, "Set interface on object pointed by path", py::arg("path"));
+        solver.def("set_interface", &FourierReflection2D::setInterfaceAt, "Set interface around position pos", py::arg("pos"));
+        solver.add_property("stack", py::make_function<>(&FourierReflection2D::getStack, py::return_internal_reference<>()), "Stack of distinct layers");
+        solver.add_property("layer_sets", py::make_function<>(&FourierReflection2D::getLayersPoints, py::return_internal_reference<>()), "Vertical positions of layers in each layer set");
+        //BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
+    }
 }
 

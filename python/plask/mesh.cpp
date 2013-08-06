@@ -38,6 +38,7 @@ void register_mesh()
 
     register_mesh_rectangular();
 
+    register_vector_of<RectilinearMesh1D>("Rectilinear1D");
 }
 
 }} // namespace plask::python

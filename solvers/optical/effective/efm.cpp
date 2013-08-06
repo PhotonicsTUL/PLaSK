@@ -512,7 +512,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
 
     if (scale) {
         // Ensure that OpticalIntensity multiplied by emitted power in mW gives averaged squared field intensity in (V/m)².
-        register dcomplex f = sqrt(1e9 / phys::mu0 / phys::c / integrateBessel());
+        register dcomplex f = sqrt(1e9 * phys::mu0 * phys::c / integrateBessel());
         for (size_t r = 0; r != rsize; ++r) rfields[r] *= f;
     }
 

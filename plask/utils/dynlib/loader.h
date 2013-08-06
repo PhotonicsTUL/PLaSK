@@ -205,7 +205,7 @@ inline void swap(plask::DynamicLibrary& a, plask::DynamicLibrary& b) { a.swap(b)
 
 /// hash method, allow to store dynamic libraries in hash maps
 template<>
-class hash<plask::DynamicLibrary> {
+struct hash<plask::DynamicLibrary> {
     std::hash<plask::DynamicLibrary::handler_t> h;
 public:
     size_t operator()(const plask::DynamicLibrary &s) const {

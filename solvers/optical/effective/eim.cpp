@@ -555,7 +555,7 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
     if (emission == FRONT) sum *= R1;
     else sum *= R2;
 
-    register dcomplex f = sqrt(1e9 / phys::mu0 / phys::c / sum);  // 1e9 because power in mW and integral computed in µm
+    register dcomplex f = sqrt(1e9 * phys::mu0 * phys::c / sum);  // 1e9 because power in mW and integral computed in µm
 
     for (size_t i = xbegin; i < xend; ++i) {
         xfields[i] *= f;

@@ -10,10 +10,26 @@ namespace plask { namespace solvers { namespace modal {
  */
 struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
 
+    std::string getClassName() const { return "modal.FourierReflection2D"; }
+
+    /// Information about lateral PMLs
+    struct PML {
+        double extinction;  ///< Extinction of the PMLs
+        double size;        ///< Size of the PMLs
+        double shift;       ///< Distance of the PMLs from defined computational domain
+        double order;       ///< Order of the PMLs
+    };
+
   protected:
 
     /// Layer boundaries
-    RectilinearMesh1D layers;
+    RectilinearMesh1D vbounds;
+
+    /// Vertical positions of elements in each layer set
+    std::vector<RectilinearMesh1D> lverts;
+
+    /// Organization of layers in the stack
+    std::vector<std::size_t> stack;
 
     /// Position of the matching interface
     size_t interface;
@@ -24,15 +40,21 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
 
-    /// Set layer boundaries
-    void setLayerMesh();
+    /// Lateral PMLs
+    PML pml;
 
-    virtual void onGeometryChange(const Geometry::Event& evt) {
+    void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
-        if (!layers.empty()) setLayerMesh(); // update layers
+        if (!vbounds.empty()) setupLayers(); // update layers
     }
 
+    /// Prepare set of layers and their organization
+    void setupLayers();
+
   public:
+
+    /// Distance outside outer borders where material is sampled
+    double outdist;
 
     /// Receiver of the wavelength
     ReceiverFor<Wavelength> inWavelength;
@@ -64,11 +86,22 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
      * \param index index of the vertical mesh, where interface is set
      */
     inline void setInterface(size_t index) {
-        if (layers.empty()) setLayerMesh();
-        if (index >= layers.size())
+        if (vbounds.empty()) setupLayers();
+        if (index >= vbounds.size())
             throw BadInput(getId(), "wrong interface position");
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  layers[index], index);
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[index], index);
         interface = index;
+    }
+
+    /**
+     * Set the position of the matching interface.
+     * \param pos vertical position close to the point where interface will be set
+     */
+    inline void setInterfaceAt(double pos) {
+        if (vbounds.empty()) setupLayers();
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos) - vbounds.begin();
+        if (interface >= vbounds.size()) interface = vbounds.size() - 1;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
     }
 
     /**
@@ -76,13 +109,21 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
      * \param path path to the object in the geometry
      */
     void setInterfaceOn(const PathHints& path) {
-        if (layers.empty()) setLayerMesh();
+        if (vbounds.empty()) setupLayers();
         auto boxes = geometry->getLeafsBoundingBoxes(path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(layers.begin(), layers.end(), boxes[0].upper.vert()) - layers.begin();
-        if (interface >= layers.size()) interface = layers.size() - 1;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  layers[interface], interface);
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].upper.vert()) - vbounds.begin();
+        if (interface >= vbounds.size()) interface = vbounds.size() - 1;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
     }
+
+    /// Get stack
+    /// \return layers stack
+    const std::vector<std::size_t>& getStack() const { return stack; }
+
+    /// Get list of vertical positions of layers in each set
+    /// \return layer sets
+    const std::vector<RectilinearMesh1D>& getLayersPoints() const { return lverts; }
 
   protected:
 
