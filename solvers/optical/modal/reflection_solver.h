@@ -45,10 +45,13 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
 
     void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
-        if (!vbounds.empty()) setupLayers(); // update layers
+        if (!vbounds.empty()) prepareLayers(); // update layers
     }
 
-    /// Prepare set of layers and their organization
+    /// Compute layer boundaries
+    void prepareLayers();
+
+    /// Detect layer sets and set them up
     void setupLayers();
 
   public:
@@ -86,7 +89,7 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
      * \param index index of the vertical mesh, where interface is set
      */
     inline void setInterface(size_t index) {
-        if (vbounds.empty()) setupLayers();
+        if (vbounds.empty()) prepareLayers();
         if (index >= vbounds.size())
             throw BadInput(getId(), "wrong interface position");
         this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[index], index);
@@ -98,7 +101,7 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
      * \param pos vertical position close to the point where interface will be set
      */
     inline void setInterfaceAt(double pos) {
-        if (vbounds.empty()) setupLayers();
+        if (vbounds.empty()) prepareLayers();
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos) - vbounds.begin();
         if (interface >= vbounds.size()) interface = vbounds.size() - 1;
         this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
@@ -109,7 +112,7 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
      * \param path path to the object in the geometry
      */
     void setInterfaceOn(const PathHints& path) {
-        if (vbounds.empty()) setupLayers();
+        if (vbounds.empty()) prepareLayers();
         auto boxes = geometry->getLeafsBoundingBoxes(path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].upper.vert()) - vbounds.begin();

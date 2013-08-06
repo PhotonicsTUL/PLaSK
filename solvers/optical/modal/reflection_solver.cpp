@@ -30,13 +30,17 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 }
 
 
+void FourierReflection2D::prepareLayers()
+{
+    vbounds = RectilinearMesh2DSimpleGenerator()(geometry->getChild())->axis1;
+    //TODO consider geometry objects non-uniform in vertical direction (step approximation)
+}
+
 void FourierReflection2D::setupLayers()
 {
-    auto mesh = RectilinearMesh2DSimpleGenerator()(geometry->getChild());
-    vbounds = mesh->axis1;
-    //TODO consider geometry objects non-uniform in vertical direction (step approximation)
+    if (vbounds.empty()) prepareLayers();
 
-    auto points = mesh->getMidpointsMesh();
+    auto points = RectilinearMesh2DSimpleGenerator()(geometry->getChild())->getMidpointsMesh();
 
     struct LayerItem {
         shared_ptr<Material> material;
