@@ -80,7 +80,10 @@ class LayerSet_Test(unittest.TestCase):
             print("%d: %s" % i)
         print(stack)
         self.assertEqual( layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlxOy', 'air/air'] )
-        self.assertEqual( stack, map(int,list(
-            '5010101010101010101010101010101010101010101010101014232101010101010101010101010101010101010101010101010101010101010'
-        )) )
+        self.assertEqual( stack,
+            [5] +           # air
+            25 * [0,1] +    # top DBR
+            [4,2,3,2] +     # cavity
+            30 * [1,0]      # bottom DBR
+        )
 
