@@ -572,7 +572,7 @@ void register_mesh_rectangular()
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    py::class_<RectilinearMesh1D, shared_ptr<RectilinearMesh1D>, boost::noncopyable>("Rectilinear1D",
+    py::class_<RectilinearMesh1D, shared_ptr<RectilinearMesh1D>>("Rectilinear1D",
         "Rectilinear mesh axis\n\n"
         "Rectilinear1D()\n    create empty mesh\n\n"
         "Rectilinear1D(points)\n    create mesh filled with points provides in sequence type"
@@ -701,7 +701,7 @@ void register_mesh_rectangular()
     ;
     ExportBoundary<RectilinearMesh3D> { rectilinear3d };
 
-    py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>, boost::noncopyable>("Regular1D",
+    py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>>("Regular1D",
         "Regular mesh axis\n\n"
         "Regular1D()\n    create empty mesh\n\n"
         "Regular1D(start, stop, num)\n    create mesh of count points equally distributed between start and stop"

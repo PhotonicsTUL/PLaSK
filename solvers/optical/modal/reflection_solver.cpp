@@ -32,6 +32,8 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 
 void FourierReflection2D::prepareLayers()
 {
+    if (!geometry) throw NoGeometryException(getId());
+
     vbounds = RectilinearMesh2DSimpleGenerator()(geometry->getChild())->axis1;
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
@@ -55,19 +57,24 @@ void FourierReflection2D::setupLayers()
     points->axis1.addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lverts.clear();
+    lgained.clear();
     stack.clear();
     stack.reserve(points->axis1.size());
 
     for (auto v: points->axis1) {
+        bool gain = false;
+
         std::vector<LayerItem> layer(points->axis0.size());
         for (size_t i = 0; i != points->axis0.size(); ++i) {
             Vec<2> p(points->axis0[i],v);
             layer[i].material = this->geometry->getMaterial(p);
-            for (const std::string& role: this->geometry->getRolesAt(p))
-                if (role.substr(0,3) == "opt" || role == "QW" || role == "QD" || role == "gain") layer[i].roles.insert(role);
+            for (const std::string& role: this->geometry->getRolesAt(p)) {
+                if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
+                if (role == "QW" || role == "QD" || role == "gain") { layer[i].roles.insert(role); gain = true; }
+            }
         }
 
-        bool unique;
+        bool unique = true;
         for (size_t i = 0; i != layers.size(); ++i) {
             unique = false;
             for (size_t j = 0; j != layers[i].size(); ++j) {
@@ -86,22 +93,19 @@ void FourierReflection2D::setupLayers()
             layers.emplace_back(std::move(layer));
             stack.push_back(lverts.size());
             lverts.emplace_back<std::initializer_list<double>>({v});
+            lgained.push_back(gain);
         }
     }
 
-    writelog(LOG_INFO, "Detected %1% distinct layers", lverts.size());
+    writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
 
 
 
-
-
-// void FourierReflection2D::onInitialize() // In this function check if geometry and mesh are set
-// {
-//     if (!geometry) throw NoGeometryException(getId());
-//     if (!mesh) throw NoMeshException(getId());
-//     my_data.reset(mesh->size()); // and e.g. allocate memory
-// }
+void FourierReflection2D::onInitialize()
+{
+    setupLayers();
+}
 //
 //
 // void FourierReflection2D::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
@@ -113,12 +117,17 @@ void FourierReflection2D::setupLayers()
 // }
 
 
+double FourierReflection2D::computeMode(dcomplex neff) {
+    initCalculation();
+    return NAN;
+}
 
 
 const DataVector<const double> FourierReflection2D::getIntensity(const MeshD<2>& dst_mesh, InterpolationMethod method) {
 //     if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
 //         throw NoValue(SomeSingleValueProperty::NAME);
 //     return interpolate(*mesh, my_data, dst_mesh, defInterpolation<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh
+    return DataVector<const double>(dst_mesh.size(), 0.);
 }
 
 

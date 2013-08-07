@@ -28,6 +28,9 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
     /// Vertical positions of elements in each layer set
     std::vector<RectilinearMesh1D> lverts;
 
+    /// Information if the layer has gain
+    std::vector<bool> lgained;
+
     /// Organization of layers in the stack
     std::vector<std::size_t> stack;
 
@@ -42,6 +45,8 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
 
     /// Lateral PMLs
     PML pml;
+
+    void onInitialize();
 
     void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
@@ -102,18 +107,20 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
      */
     inline void setInterfaceAt(double pos) {
         if (vbounds.empty()) prepareLayers();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos) - vbounds.begin();
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin(); // -1e-12 to compensate for truncation errors
         if (interface >= vbounds.size()) interface = vbounds.size() - 1;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
+        pos = vbounds[interface]; if (abs(pos) < 1e12) pos = 0.;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  pos, interface);
     }
 
     /**
      * Set the position of the matching interface at the top of the provided geometry object
-     * \param path path to the object in the geometry
+     * \param object where the interface should  be set on
+     * \param path path specyfing object in the geometry
      */
-    void setInterfaceOn(const PathHints& path) {
+    void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints* path=nullptr) {
         if (vbounds.empty()) prepareLayers();
-        auto boxes = geometry->getLeafsBoundingBoxes(path);
+        auto boxes = geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].upper.vert()) - vbounds.begin();
         if (interface >= vbounds.size()) interface = vbounds.size() - 1;
@@ -127,6 +134,15 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
     /// Get list of vertical positions of layers in each set
     /// \return layer sets
     const std::vector<RectilinearMesh1D>& getLayersPoints() const { return lverts; }
+
+
+    /**
+     * Find the mode around the specified effective index.
+     * This method remembers the determined mode, for retrieval of the field profiles.
+     * \param neff initial effective index to search the mode around
+     * \return determined effective index
+     */
+    double computeMode(dcomplex neff);
 
   protected:
 

@@ -17,7 +17,7 @@ BOOST_PYTHON_MODULE(modal)
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         //RO_FIELD(root, "Configuration of the global rootdigger");
         //RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
-        //METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
+        METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
         //METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
         //       arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         //METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
@@ -28,8 +28,8 @@ BOOST_PYTHON_MODULE(modal)
         PROVIDER(outNeff, "Effective index of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
         RW_PROPERTY(interface, getInterface, setInterface, "Matching interface position");
-        solver.def("set_interface", &FourierReflection2D::setInterfaceOn, "Set interface on object pointed by path", py::arg("path"));
-        solver.def("set_interface", &FourierReflection2D::setInterfaceAt, "Set interface around position pos", py::arg("pos"));
+        METHOD(set_interface, setInterfaceOn, "Set interface on object pointed by path", "object", py::arg("path")=py::object());
+        METHOD(set_interface, setInterfaceAt, "Set interface around position pos", "pos");
         solver.add_property("stack", py::make_function<>(&FourierReflection2D::getStack, py::return_internal_reference<>()), "Stack of distinct layers");
         solver.add_property("layer_sets", py::make_function<>(&FourierReflection2D::getLayersPoints, py::return_internal_reference<>()), "Vertical positions of layers in each layer set");
         //BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions

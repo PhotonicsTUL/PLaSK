@@ -11,7 +11,12 @@ using namespace std;
 
 namespace plask {
 
+#ifdef NDEBUG
 LogLevel maxLoglevel = LOG_DETAIL;
+#else
+LogLevel maxLoglevel = LOG_DEBUG;
+#endif
+
 bool forcedLoglevel = false;
 
 #ifdef _WIN32
