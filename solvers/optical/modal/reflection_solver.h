@@ -3,12 +3,14 @@
 
 #include <plask/plask.hpp>
 
+#include "modal.h"
+
 namespace plask { namespace solvers { namespace modal {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
+struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
 
     std::string getClassName() const { return "modal.FourierReflection2D"; }
 
@@ -22,21 +24,6 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
 
   protected:
 
-    /// Layer boundaries
-    RectilinearMesh1D vbounds;
-
-    /// Vertical positions of elements in each layer set
-    std::vector<RectilinearMesh1D> lverts;
-
-    /// Information if the layer has gain
-    std::vector<bool> lgained;
-
-    /// Organization of layers in the stack
-    std::vector<std::size_t> stack;
-
-    /// Position of the matching interface
-    size_t interface;
-
     /// Maximum order of orthogonal base
     size_t order;
 
@@ -48,92 +35,17 @@ struct FourierReflection2D: public SolverOver<Geometry2DCartesian> {
 
     void onInitialize();
 
-    void onGeometryChange(const Geometry::Event& evt) {
-        this->invalidate();
-        if (!vbounds.empty()) prepareLayers(); // update layers
-    }
-
-    /// Compute layer boundaries
-    void prepareLayers();
-
-    /// Detect layer sets and set them up
-    void setupLayers();
-
   public:
-
-    /// Distance outside outer borders where material is sampled
-    double outdist;
 
     /// Receiver of the wavelength
     ReceiverFor<Wavelength> inWavelength;
 
-    /// Receiver for the temperature
-    ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
-
-    /// Receiver for the gain
-    ReceiverFor<Gain, Geometry2DCartesian> inGain;
-
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::WithValue outNeff;
-
-    /// Provider of optical field
-    ProviderFor<OpticalIntensity, Geometry2DCartesian>::Delegate outIntensity;
 
     FourierReflection2D(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
-
-    /**
-     * Get the position of the matching interface.
-     * \return index of the vertical mesh, where interface is set
-     */
-    inline size_t getInterface() { return interface; }
-
-    /**
-     * Set the position of the matching interface.
-     * \param index index of the vertical mesh, where interface is set
-     */
-    inline void setInterface(size_t index) {
-        if (vbounds.empty()) prepareLayers();
-        if (index >= vbounds.size())
-            throw BadInput(getId(), "wrong interface position");
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[index], index);
-        interface = index;
-    }
-
-    /**
-     * Set the position of the matching interface.
-     * \param pos vertical position close to the point where interface will be set
-     */
-    inline void setInterfaceAt(double pos) {
-        if (vbounds.empty()) prepareLayers();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin(); // -1e-12 to compensate for truncation errors
-        if (interface >= vbounds.size()) interface = vbounds.size() - 1;
-        pos = vbounds[interface]; if (abs(pos) < 1e12) pos = 0.;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  pos, interface);
-    }
-
-    /**
-     * Set the position of the matching interface at the top of the provided geometry object
-     * \param object where the interface should  be set on
-     * \param path path specyfing object in the geometry
-     */
-    void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints* path=nullptr) {
-        if (vbounds.empty()) prepareLayers();
-        auto boxes = geometry->getObjectBoundingBoxes(object, path);
-        if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].upper.vert()) - vbounds.begin();
-        if (interface >= vbounds.size()) interface = vbounds.size() - 1;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
-    }
-
-    /// Get stack
-    /// \return layers stack
-    const std::vector<std::size_t>& getStack() const { return stack; }
-
-    /// Get list of vertical positions of layers in each set
-    /// \return layer sets
-    const std::vector<RectilinearMesh1D>& getLayersPoints() const { return lverts; }
 
 
     /**

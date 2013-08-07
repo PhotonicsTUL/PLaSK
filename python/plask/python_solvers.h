@@ -81,19 +81,19 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         detail::ExportedSolverDefaultDefs<SolverT>::init(*this);
     }
 
-    template <typename ProviderT>
+    template <typename ProviderT, typename ClassT>
     typename std::enable_if<std::is_base_of<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>, ProviderT>::value, ExportSolver>::type&
-    add_provider(const char* name, ProviderT Class::* field, const char* help) {
+    add_provider(const char* name, ProviderT ClassT::* field, const char* help) {
 
-        typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> Class::* BaseTypePtr;
+        typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ClassT::* BaseTypePtr;
 
         this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field), help);
         return *this;
     }
 
-    template <typename ProviderT>
+    template <typename ProviderT, typename ClassT>
     typename std::enable_if<!std::is_base_of<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>, ProviderT>::value, ExportSolver>::type&
-    add_provider(const char* name, ProviderT Class::* field, const char* help) {
+    add_provider(const char* name, ProviderT ClassT::* field, const char* help) {
 
         static_assert(std::is_base_of<Provider, ProviderT>::value, "add_provider used for non-provider type");
 
@@ -101,14 +101,14 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         return *this;
     }
 
-    template <typename ReceiverT>
-    ExportSolver& add_receiver(const char* name, ReceiverT Class::* field, const char* help) {
+    template <typename ReceiverT, typename ClassT>
+    ExportSolver& add_receiver(const char* name, ReceiverT ClassT::* field, const char* help) {
 
         //TODO maybe introduce some base class for receiver?
         static_assert(std::is_base_of<ReceiverBase, ReceiverT>::value, "add_receiver used for non-receiver type");
 
         this->add_property(name, py::make_getter(field),
-                           py::make_function(detail::ReceiverSetter<Class,ReceiverT>(field),
+                           py::make_function(detail::ReceiverSetter<Class,ClassT,ReceiverT>(field),
                                              py::default_call_policies(),
                                              boost::mpl::vector3<void, Class&, py::object>()
                                             ),
