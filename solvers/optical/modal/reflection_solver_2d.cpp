@@ -1,4 +1,4 @@
-#include "reflection_solver.h"
+#include "reflection_solver_2d.h"
 
 namespace plask { namespace solvers { namespace modal {
 
