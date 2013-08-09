@@ -8,7 +8,7 @@ using namespace plask::python;
 
 #include "../reflection_solver_2d.h"
 #include "../reflection_solver_cyl.h"
-using namespace plask::solvers::modal;
+using namespace plask::solvers::slab;
 
 template <typename SolverT>
 static const std::vector<std::size_t>& ModalSolver_getStack(const SolverT& self) { return self.getStack(); }
@@ -32,10 +32,10 @@ inline void export_base(Class solver) {
 
 
 
-BOOST_PYTHON_MODULE(modal)
+BOOST_PYTHON_MODULE(slab)
 {
     {CLASS(FourierReflection2D, "FourierReflection2D",
-        "Calculate optical modes and optical field distribution using Fourier modal method\n"
+        "Calculate optical modes and optical field distribution using Fourier slab method\n"
         " and reflection transfer in two-dimensional Cartesian space.")
         export_base(solver);
         RECEIVER(inWavelength, "Wavelength of the light");
@@ -46,12 +46,12 @@ BOOST_PYTHON_MODULE(modal)
         //METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
         //       arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6,1e-9));
         //METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
-        //solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
+        //solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get slab determinant", (py::arg("neff")));
         //BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
     }
 
     {CLASS(FourierReflectionCyl, "FourierReflectionCyl",
-        "Calculate optical modes and optical field distribution using Fourier modal method\n"
+        "Calculate optical modes and optical field distribution using Fourier slab method\n"
         " and reflection transfer in two-dimensional cylindrical geometry.")
         export_base(solver);
         RECEIVER(inWavelength, "Wavelength of the light");

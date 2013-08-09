@@ -3,10 +3,10 @@
 
 #include "python_globals.h"
 
-#define NPY_NO_DEPRECATED_API
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-#ifndef NPY_1_7_API_VERSION
+#if NPY_API_VERSION < NPY_1_7_API_VERSION
 inline static void PyArray_SetBaseObject(PyArrayObject* arr, PyObject* obj) {
     PyArray_BASE(arr) = obj;
 }

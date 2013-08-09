@@ -4,7 +4,7 @@
 #/// In most cases you should be able to use it only setting the project name
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/optical/modal)
+project(plask/optical/slab)
 
 
 # Do not change thew following two lines
@@ -19,7 +19,7 @@ find_package(PLaSK)
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
 
-find_package(LAPACK)
+find_package(LAPACK REQUIRED)
 
 set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
@@ -28,9 +28,9 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
 
-find_package(Eigen3)
+#find_package(Eigen3)
 
-set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
+#set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 
 option(USE_FFTW "Use FFTW library (impossible for published app)" OFF)
 if(USE_FFTW)
@@ -71,7 +71,7 @@ enable_testing()
 #set(SOLVER_TEST_DEPENDS mytest)
 #add_test(solvers/foo/bar ${PLASK_SOLVER_PATH}/mytest)
 #add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
-add_python_test(solvers/optical/modal ${CMAKE_CURRENT_SOURCE_DIR}/tests/modal.py)
+add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
 
 
 # Build everything the default way.

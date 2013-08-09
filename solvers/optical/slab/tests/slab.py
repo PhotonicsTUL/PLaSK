@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.modal import FourierReflectionCyl
+from optical.slab import FourierReflectionCyl
 
 
 class LayerSet_Test(unittest.TestCase):

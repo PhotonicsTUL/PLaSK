@@ -1,15 +1,15 @@
-#include "reflection_solver_cyl.h"
+#include "reflection_solver_2d.h"
 
-namespace plask { namespace solvers { namespace modal {
+namespace plask { namespace solvers { namespace slab {
 
-FourierReflectionCyl::FourierReflectionCyl(const std::string& name): ModalSolver<Geometry2DCylindrical>(name),
+FourierReflection2D::FourierReflection2D(const std::string& name): ModalSolver<Geometry2DCartesian>(name),
     order(5),
     refine(8)
 {
 }
 
 
-void FourierReflectionCyl::loadConfiguration(XMLReader& reader, Manager& manager)
+void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd()) {
 //         std::string param = reader.getNodeName();
@@ -28,13 +28,13 @@ void FourierReflectionCyl::loadConfiguration(XMLReader& reader, Manager& manager
 
 
 
-void FourierReflectionCyl::onInitialize()
+void FourierReflection2D::onInitialize()
 {
     setupLayers();
 }
 //
 //
-// void FourierReflectionCyl::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
+// void FourierReflection2D::onInvalidate() // This will be called when e.g. geometry or mesh changes and your results become outdated
 // {
 //     outSingleValue.invalidate(); // clear the value
 //     my_data.reset();
@@ -43,13 +43,13 @@ void FourierReflectionCyl::onInitialize()
 // }
 
 
-double FourierReflectionCyl::computeMode(dcomplex neff) {
+double FourierReflection2D::computeMode(dcomplex neff) {
     initCalculation();
     return NAN;
 }
 
 
-const DataVector<const double> FourierReflectionCyl::getIntensity(const MeshD<2>& dst_mesh, InterpolationMethod method) {
+const DataVector<const double> FourierReflection2D::getIntensity(const MeshD<2>& dst_mesh, InterpolationMethod method) {
 //     if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
 //         throw NoValue(SomeSingleValueProperty::NAME);
 //     return interpolate(*mesh, my_data, dst_mesh, defInterpolation<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh

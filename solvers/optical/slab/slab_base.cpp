@@ -1,6 +1,6 @@
-#include "modal.h"
+#include "slab_base.h"
 
-namespace plask { namespace solvers { namespace modal {
+namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
 ModalSolver<GeometryT>::ModalSolver(const std::string& name): SolverOver<GeometryT>(name),

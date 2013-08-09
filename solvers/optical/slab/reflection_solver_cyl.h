@@ -1,26 +1,18 @@
-#ifndef PLASK__SOLVER_REFLECTION_SOLVER_2D_H
-#define PLASK__SOLVER_REFLECTION_SOLVER_2D_H
+#ifndef PLASK__SOLVER_SLAB_REFLECTION_CYL_H
+#define PLASK__SOLVER_SLAB_REFLECTION_CYL_H
 
 #include <plask/plask.hpp>
 
-#include "modal.h"
+#include "slab_base.h"
 
-namespace plask { namespace solvers { namespace modal {
+namespace plask { namespace solvers { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
+struct FourierReflectionCyl: public ModalSolver<Geometry2DCylindrical> {
 
-    std::string getClassName() const { return "modal.FourierReflection2D"; }
-
-    /// Information about lateral PMLs
-    struct PML {
-        double extinction;  ///< Extinction of the PMLs
-        double size;        ///< Size of the PMLs
-        double shift;       ///< Distance of the PMLs from defined computational domain
-        double order;       ///< Order of the PMLs
-    };
+    std::string getClassName() const { return "slab.FourierReflectionCyl"; }
 
   protected:
 
@@ -29,9 +21,6 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
 
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
-
-    /// Lateral PMLs
-    PML pml;
 
     void onInitialize();
 
@@ -43,7 +32,7 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::WithValue outNeff;
 
-    FourierReflection2D(const std::string& name="");
+    FourierReflectionCyl(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
 

@@ -3,10 +3,10 @@
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace modal {
+namespace plask { namespace solvers { namespace slab {
 
 /**
- * Base class for all modal solvers
+ * Base class for all slab solvers
  */
 template <typename GeometryT>
 struct ModalSolver: public SolverOver<GeometryT> {

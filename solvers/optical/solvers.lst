@@ -1,5 +1,5 @@
 effective.EffectiveIndex2D
 effective.EffectiveFrequencyCyl
 
-modal.FourierReflection2D
-modal.FourierReflectionCyl
+slab.FourierReflection2D
+slab.FourierReflectionCyl
