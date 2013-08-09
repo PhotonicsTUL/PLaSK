@@ -224,7 +224,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
-        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
+//        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
         for (int i = 0; i < dst_mesh_geo.size(); i++)
         {
             if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))
@@ -243,6 +243,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 template <typename GeometryType>
 const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
 {
+    this->writelog(LOG_INFO, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
     auto dst_mesh_geo = WrappedMesh<2>(dst_mesh, this->geometry);
@@ -260,7 +261,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
-        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
+//        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
         for (int i = 0; i < dst_mesh_geo.size(); i++)
         {
             if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))

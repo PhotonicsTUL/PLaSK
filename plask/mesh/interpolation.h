@@ -187,7 +187,6 @@ template <typename SrcMeshT, typename SrcT, typename DstT=SrcT>
 DataVector<DstT> interpolate(const SrcMeshT& src_mesh, const DataVector<SrcT>& src_vec,
                              const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
 {
-    if (!src_vec.data()) throw NoValue(); // throw if we have been called with uninitialized data
     if (src_mesh.size() != src_vec.size())
         throw BadMesh("interpolate", "Mesh size (%2%) and values size (%1%) do not match", src_vec.size(), src_mesh.size());
 

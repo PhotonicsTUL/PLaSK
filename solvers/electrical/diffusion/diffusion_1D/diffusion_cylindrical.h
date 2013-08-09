@@ -14,6 +14,9 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         plask::ReceiverFor<plask::CurrentDensity, Geometry2DType> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
+        plask::ReceiverFor<plask::GainOverCarriersConcentration, Geometry2DType> inGainOverCarriersConcentration;
+        plask::ReceiverFor<plask::Wavelength> inWavelength;
+        plask::ReceiverFor<plask::LightIntensity, Geometry2DType> inLightIntensity;
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
@@ -63,7 +66,9 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         plask::DataVector<const Vec<2>> j_on_the_mesh;    // current density vector provided by inCurrentDensity reciever
         plask::DataVector<const double> T_on_the_mesh;    // temperature vector provided by inTemperature reciever
-        plask::DataVector<const double> g_on_the_mesh;    // temperature vector provided by inTemperature reciever
+        plask::DataVector<const double> g_on_the_mesh;    // gain vector provided by inGain reciever
+        plask::DataVector<const double> dgdn_on_the_mesh; // gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
+        plask::DataVector<const double> Li_on_the_mesh;   // light intensity vector provided by inLightIntensity reciever
 
         plask::DataVector<double> n_previous;       // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;        // concentration computed in n -th step vector

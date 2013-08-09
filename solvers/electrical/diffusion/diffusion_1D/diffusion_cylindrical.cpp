@@ -48,7 +48,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width = 0.0;
     minor_concentration = 5.0e+15;
     iterations = 0;
-    wavelength = 0;
+    wavelength = 0.0;
 
     detected_QW = detectQuantumWells();
     z = getZQWCoordinate();
@@ -77,9 +77,12 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
-    if (overthreshold_computation)
+
+    if (overthreshold_computation && (threshold_computation == false))
     {
         g_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain vector provided by inGain reciever
+        dgdn_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
+        Li_on_the_mesh = inLightIntensity(mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
     }
 
     n_present.reset(mesh.size(), 0.0);
@@ -103,7 +106,10 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
             if (overthreshold_computation)
             {
+//                wavelength = inWavelength;
                 g_on_the_mesh = inGain(mesh2, wavelength, interpolation_method);   // data gain vector provided by inGain reciever
+                dgdn_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
+                Li_on_the_mesh = inLightIntensity(mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
             }
             n_present.reset(mesh.size(), 0.0);
             n_previous.reset(mesh.size(), 0.0);
@@ -504,6 +510,7 @@ template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDi
     auto destination_mesh = WrappedMesh<2>(dest_mesh, this->geometry);
 
     RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
+    if (!n_present.data()) throw NoValue("carriers concentration");
     auto concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation));
     // Make sure we have concentration only in the quantum wells
     //TODO maybe more optimal approach would be reasonable?
@@ -527,7 +534,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 {
     double T = T_on_the_mesh[i];
     double product = 0.0;
-    if (threshold_computation)
+    if (threshold_computation || overthreshold_computation)
         product += this->QW_material->D(T);
     return product;        // for initial distribution there is no diffusion
 }
@@ -536,8 +543,20 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 {
     double T = T_on_the_mesh[i];
     double n0 = n_previous[i];
+    double product = 0.0;
 
-    return (this->QW_material->A(T) + 2*this->QW_material->B(T)*n0 + 3*this->QW_material->C(T)*n0*n0);
+    product = (this->QW_material->A(T) + 2*this->QW_material->B(T)*n0 + 3*this->QW_material->C(T)*n0*n0);
+
+    if (overthreshold_computation)
+    {
+        double g = g_on_the_mesh[i];
+        double dgdn = dgdn_on_the_mesh[i];
+        double Li = Li_on_the_mesh[i];
+
+        product += (1.0/(plask::phys::c * plask::phys::h_J)) * (g * this->QW_material->nr(wavelength, T) * wavelength * 1.0e-9 * Li) * dgdn;
+    }
+
+    return product;
 }
 
 
@@ -545,13 +564,23 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 {
     double T = T_on_the_mesh[i];
     double n0 = n_previous[i];
+    double product = 0.0;
+
+    product = (this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
 
     if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
-        return (+ abs(j_on_the_mesh[i][1]*1e+3)/(plask::phys::qe*global_QW_width) + this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
-    else if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
-        return (this->QW_material->B(T)*n0*n0 + 2*this->QW_material->C(T)*n0*n0*n0);
-    else
-        throw Exception("Wrong diffusion equation RHS!");
+        product += abs(j_on_the_mesh[i][1]*1e+3)/(plask::phys::qe*global_QW_width);
+
+    if (overthreshold_computation)
+    {
+        double g = g_on_the_mesh[i];
+        double dgdn = dgdn_on_the_mesh[i];
+        double Li = Li_on_the_mesh[i];
+
+        product += (1.0/(plask::phys::c * plask::phys::h_J)) * (g * this->QW_material->nr(wavelength, T) * wavelength * 1.0e-9 * Li) * (dgdn * n0 - g);
+    }
+
+    return product;
 }
 
 
@@ -616,8 +645,16 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     double product = -( this->QW_material->A(T) * n + this->QW_material->B(T) * n*n + this->QW_material->C(T) * n*n*n);
 
-    if (threshold_computation)
+    if (threshold_computation || overthreshold_computation)
         product += this->QW_material->D(T)*nSecondDeriv(i);
+
+    if (overthreshold_computation)
+    {
+        double g = g_on_the_mesh[i];
+        double Li = Li_on_the_mesh[i];
+
+        product -= (1.0/(plask::phys::c * plask::phys::h_J)) * (g * this->QW_material->nr(wavelength, T) * wavelength * 1.0e-9 * Li);
+    }
 
     return product;
 }

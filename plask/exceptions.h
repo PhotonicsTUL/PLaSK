@@ -150,12 +150,10 @@ struct BadId: public Exception {
  * @see @ref providers
  */
 struct NoProvider: public Exception {
-    NoProvider(): Exception("No provider") {}
     NoProvider(const char* provider_name): Exception("No provider nor value for %1%", provider_name) {}
 };
 
 struct NoValue: public Exception {
-    NoValue(): Exception("No value") {}
     NoValue(const char* provider_name): Exception("%1% cannot be provided now", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
 };
 

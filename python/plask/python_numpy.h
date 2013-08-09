@@ -3,8 +3,14 @@
 
 #include "python_globals.h"
 
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API
 #include <numpy/arrayobject.h>
+
+#ifndef NPY_1_7_API_VERSION
+inline static void PyArray_SetBaseObject(PyArrayObject* arr, PyObject* obj) {
+    PyArray_BASE(arr) = obj;
+}
+#endif
 
 namespace plask { namespace python {
 
