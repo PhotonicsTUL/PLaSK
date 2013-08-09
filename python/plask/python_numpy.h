@@ -3,7 +3,7 @@
 
 #include "python_globals.h"
 
-//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 namespace plask { namespace python {
@@ -43,7 +43,7 @@ inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
         if (arr == nullptr) throw TypeError("cannot convert array to required dtype");
     } else {
         py::incref(self.ptr());
-        PyArray_BASE(arr) = self.ptr(); // Make sure the data vector stays alive as long as the array
+        PyArray_SetBaseObject((PyArrayObject*)arr, self.ptr()); // Make sure the data vector stays alive as long as the array
     }
     Py_XDECREF(descr);
 }

@@ -39,7 +39,6 @@ void ModalSolver<GeometryT>::setupLayers()
     struct LayerItem {
         shared_ptr<Material> material;
         std::set<std::string> roles;
-        bool operator!=(const LayerItem& other) { return *material != *other.material || roles != other.roles; }
     };
 
     std::vector<std::vector<LayerItem>> layers;
@@ -70,7 +69,7 @@ void ModalSolver<GeometryT>::setupLayers()
         for (size_t i = 0; i != layers.size(); ++i) {
             unique = false;
             for (size_t j = 0; j != layers[i].size(); ++j) {
-                if (layers[i][j] != layer[j]) {
+                if (*layers[i][j].material != *layer[j].material || layers[i][j].roles != layer[j].roles) {
                     unique = true;
                     break;
                 }
@@ -136,7 +135,7 @@ void ModalSolver<Geometry3D>::setupLayers()
         for (size_t i = 0; i != layers.size(); ++i) {
             unique = false;
             for (size_t j = 0; j != layers[i].size(); ++j) {
-                if (layers[i][j] != layer[j]) {
+                if (*layers[i][j].material != *layer[j].material || layers[i][j].roles != layer[j].roles) {
                     unique = true;
                     break;
                 }

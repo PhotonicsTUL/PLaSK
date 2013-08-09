@@ -108,7 +108,7 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
 
     npy_intp dims[] = { to-from, detail::type_dim<T>() };
     PyObject* arr = PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, detail::typenum<T>());
-    typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA(arr));
+    typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA((PyArrayObject*)arr));
     for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
         *arr_data = *i;
     return py::object(py::handle<>(arr));
@@ -181,7 +181,7 @@ static py::object DataVectorWrap_Array(py::object oself) {
                                         (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
 
     py::incref(oself.ptr());
-    PyArray_BASE(arr) = oself.ptr(); // Make sure the data vector stays alive as long as the array
+    PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr()); // Make sure the data vector stays alive as long as the array
     // confirm_array<T>(arr, oself, dtype);
 
     return py::object(py::handle<>(arr));

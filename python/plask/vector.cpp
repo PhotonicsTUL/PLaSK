@@ -24,10 +24,10 @@ namespace detail {
 
     template <int dim> struct MakeVecFromNumpyImpl<dim,double> {
         static inline void call(void* storage, PyObject* obj) {
-            if (PyArray_DESCR(obj)->type_num == NPY_LONG) {
-                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<long*>(PyArray_DATA(obj))));
-            } else if (PyArray_DESCR(obj)->type_num == NPY_DOUBLE)
-                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<double*>(PyArray_DATA(obj))));
+            if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
+                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj))));
+            } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
+                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
             else
                 throw py::error_already_set();
         }
@@ -35,12 +35,12 @@ namespace detail {
 
     template <int dim> struct MakeVecFromNumpyImpl<dim,dcomplex> {
         static inline void call(void* storage, PyObject* obj) {
-            if (PyArray_DESCR(obj)->type_num == NPY_LONG) {
-                Vec<dim,dcomplex> *vec = new(storage) Vec<dim,dcomplex>; for (int i = 0; i < dim; ++i) (*vec)[i] = double( *(static_cast<long*>(PyArray_DATA(obj)) + i) );
-            } else if (PyArray_DESCR(obj)->type_num == NPY_DOUBLE)
-                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<double*>(PyArray_DATA(obj))));
-            else if (PyArray_DESCR(obj)->type_num == NPY_CDOUBLE)
-                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<dcomplex*>(PyArray_DATA(obj))));
+            if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
+                Vec<dim,dcomplex> *vec = new(storage) Vec<dim,dcomplex>; for (int i = 0; i < dim; ++i) (*vec)[i] = double( *(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj)) + i) );
+            } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
+                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
+            else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_CDOUBLE)
+                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<dcomplex*>(PyArray_DATA((PyArrayObject*)obj))));
             else
                 throw py::error_already_set();
         }
@@ -62,11 +62,11 @@ namespace detail {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<Vec<dim,T>>*)data)->storage.bytes;
             try {
                 if (PyArray_Check(obj)) {
-                    if (PyArray_NDIM(obj) != 1 || PyArray_DIMS(obj)[0] != dim) throw py::error_already_set();
+                    if (PyArray_NDIM((PyArrayObject*)obj) != 1 || PyArray_DIMS((PyArrayObject*)obj)[0] != dim) throw py::error_already_set();
                     MakeVecFromNumpyImpl<dim,T>::call(storage, obj);
                 } else {
                     auto seq = py::object(py::handle<>(py::borrowed(obj)));
-                    if (py::len(seq) != dim || (PyArray_Check(obj) && PyArray_NDIM(obj) != 1)) throw py::error_already_set();
+                    if (py::len(seq) != dim || (PyArray_Check(obj) && PyArray_NDIM((PyArrayObject*)obj) != 1)) throw py::error_already_set();
                     py::stl_input_iterator<T> begin(seq);
                     new(storage) Vec<dim,T>(Vec<dim,T>::fromIterator(begin));
                 }
