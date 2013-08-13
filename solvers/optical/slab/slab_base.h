@@ -55,7 +55,7 @@ struct ModalSolver: public SolverOver<GeometryT> {
     ReceiverFor<Gain, GeometryT> inGain;
 
     /// Provider of optical field
-    typename ProviderFor<OpticalIntensity, GeometryT>::Delegate outIntensity;
+    typename ProviderFor<LightIntensity, GeometryT>::Delegate outIntensity;
 
     ModalSolver(const std::string& name="");
 
@@ -116,7 +116,7 @@ struct ModalSolver: public SolverOver<GeometryT> {
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
      */
-    virtual const DataVector<const double> getIntensity(const MeshD<2>& dst_mesh, InterpolationMethod method) = 0;
+    virtual const DataVector<const double> getIntensity(const MeshD<2>& dst_mesh, int num, InterpolationMethod method) = 0;
 
 };
 

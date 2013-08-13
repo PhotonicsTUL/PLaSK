@@ -128,7 +128,7 @@ Hence, we declare the following \link providers providers, receivers\endlink and
 
     plask::ProviderFor<plask::EffectiveIndex>::WithValue outNeff;
 
-    plask::ProviderFor<plask::OpticalIntensity, plask::Geometry2DCartesian>::Delegate outIntensity;
+    plask::ProviderFor<plask::LightIntensity, plask::Geometry2DCartesian>::Delegate outIntensity;
 
     plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnField;
 \endcode
@@ -256,7 +256,7 @@ For interpolated fields they will look like in the following example:
   protected:
 
     DataVector<const double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION) {
-        if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME); // this is one possible indication that the solver is in invalidated state
+        if (!outNeff.hasValue()) throw NoValue(LightIntensity::NAME); // this is one possible indication that the solver is in invalidated state
 
         if (computed_light_intensity.size() == 0)    // we need to compute the light intensity
         {

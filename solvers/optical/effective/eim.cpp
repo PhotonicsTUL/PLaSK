@@ -15,7 +15,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     symmetry(NO_SYMMETRY),
     vneff(0.),
     outdist(0.1),
-    outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty) {
+    outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, [](){return 1;}) {
     inTemperature = 300.;
     inGain = NAN;
     root.tolx = 1.0e-8;
@@ -150,7 +150,7 @@ dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
     dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)(neff);
-    outNeff = result;
+    outNeff.invalidate(); outNeff.push_back(result);
     outNeff.fireChanged();
     outIntensity.fireChanged();
     have_fields = false;
@@ -221,7 +221,7 @@ void EffectiveIndex2DSolver::setMode(dcomplex neff)
     if (det > root.tolf_max)
         writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(neff));
-    outNeff = neff;
+    outNeff.invalidate(); outNeff.push_back(neff);
     outNeff.fireChanged();
     outIntensity.fireChanged();
 }
@@ -291,8 +291,8 @@ void EffectiveIndex2DSolver::updateCache()
     if (fresh || inTemperature.changed() || inWavelength.changed() || inGain.changed()) {
         // we need to update something
 
-        k0 = 2e3*M_PI / inWavelength();
-        double w = inWavelength();
+        double w = inWavelength(0);
+        k0 = 2e3*M_PI / w;
 
         RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
         if (xbegin == 0) {
@@ -545,8 +545,8 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
     if (mirrors) {
         std::tie(R1,R2) = *mirrors;
     } else {
-        const double lambda = inWavelength();
-        const double n = real(outNeff());
+        const double lambda = inWavelength(0);
+        const double n = real(outNeff(0));
         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                      n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
         R1 = abs((n-n1) / (n+n1));
@@ -555,7 +555,7 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
     if (emission == FRONT) sum *= R1;
     else sum *= R2;
 
-    register dcomplex f = sqrt(1e9 * phys::mu0 * phys::c / sum);  // 1e9 because power in mW and integral computed in µm
+    register dcomplex f = sqrt(1e12 / sum);  // 1e12 because intensity in W/m² and integral computed in µm
 
     for (size_t i = xbegin; i < xend; ++i) {
         xfields[i] *= f;
@@ -617,13 +617,13 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
 }
 
 
-plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
+plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (!outNeff.hasValue()) throw NoValue(OpticalIntensity::NAME);
+    if (outNeff.size() <= num) throw NoValue(LightIntensity::NAME);
 
-    dcomplex neff = outNeff();
+    dcomplex neff = outNeff(0);
 
     if (!have_fields) detS(neff, true);
 

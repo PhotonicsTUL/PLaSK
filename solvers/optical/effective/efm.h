@@ -240,7 +240,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     ProviderFor<ModalLoss>::WithValue outModalLoss;
 
     /// Provider of optical field
-    ProviderFor<OpticalIntensity, Geometry2DCylindrical>::Delegate outIntensity;
+    ProviderFor<LightIntensity, Geometry2DCylindrical>::Delegate outIntensity;
 
   protected:
 
@@ -276,7 +276,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     dcomplex detS(const dcomplex& v, bool scale=false);
 
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+    DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
     /// Compute horizontal part of the field
     dcomplex rField(double r) {

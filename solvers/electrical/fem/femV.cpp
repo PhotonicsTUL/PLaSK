@@ -591,7 +591,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             if (tRoles.find("active") != tRoles.end()) {
                 size_t tNact = std::upper_bound(mActHi.begin(), mActHi.end(), this->mesh->index1(i)) - mActHi.begin();
                 assert(tNact < mActHi.size());
-                double tHeatFact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength()) * mDact[tNact]);
+                double tHeatFact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * mDact[tNact]);
                 double tJy = mCond[i].c11 * fabs(tDVy); // [j] = A/m²
                 mHeatDensities[i] = tHeatFact * tJy ;
             } else if (this->geometry->getMaterial(tMidPoint)->kind() == Material::NONE || tRoles.find("noheat") != tRoles.end())

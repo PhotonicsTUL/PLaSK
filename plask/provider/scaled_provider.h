@@ -104,10 +104,10 @@ struct ScaledProviderBase: public DstProviderT {
 /**
  * Template of base class of scaled provider for providers with interpolation.
  */
-template <typename, typename, typename, typename, typename> struct ScaledFieldProviderImpl;
+template <typename, typename, PropertyType, typename, typename, typename> struct ScaledFieldProviderImpl;
 
-template <typename DstPropertyT, typename SrcPropertyT, typename SpaceT, typename ScaleT, typename... ExtraArgs>
-struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, VariadicTemplateTypesHolder<ExtraArgs...>>:
+template <typename DstPropertyT, typename SrcPropertyT, PropertyType propertyType, typename SpaceT, typename ScaleT, typename... ExtraArgs>
+struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, propertyType, SpaceT, ScaleT, VariadicTemplateTypesHolder<ExtraArgs...>>:
     public ScaledProviderBase<ProviderFor<DstPropertyT,SpaceT>, ProviderFor<SrcPropertyT,SpaceT>, ScaleT> {
 
     ScaledFieldProviderImpl(double scale=1.): ScaledProviderBase<ProviderFor<DstPropertyT,SpaceT>, ProviderFor<SrcPropertyT,SpaceT>, ScaleT>(scale) {}
@@ -120,12 +120,33 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, Varia
     }
 };
 
+template <typename DstPropertyT, typename SrcPropertyT, typename SpaceT, typename ScaleT, typename... ExtraArgs>
+struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, MULTI_FIELD_PROPERTY, SpaceT, ScaleT, VariadicTemplateTypesHolder<ExtraArgs...>>:
+    public ScaledProviderBase<ProviderFor<DstPropertyT,SpaceT>, ProviderFor<SrcPropertyT,SpaceT>, ScaleT> {
+
+    ScaledFieldProviderImpl(double scale=1.): ScaledProviderBase<ProviderFor<DstPropertyT,SpaceT>, ProviderFor<SrcPropertyT,SpaceT>, ScaleT>(scale) {}
+
+    typedef typename ProviderFor<DstPropertyT,SpaceT>::ProvidedType ProvidedType;
+
+    virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+        this->ensureHasProvider();
+        return (*this->source)(n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
+    }
+    
+    virtual size_t size() const {
+        this->ensureHasProvider();
+        return this->source->size();
+    }
+};
+
 /**
  * Template of class of scaled provider for providers with interpolation.
  */
 template <typename DstPropertyT, typename SrcPropertyT, typename SpaceT, typename ScaleT=double>
-    struct ScaledFieldProvider: public ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, typename DstPropertyT::ExtraParams> {
-    ScaledFieldProvider(double scale=1.): ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, SpaceT, ScaleT, typename DstPropertyT::ExtraParams>(scale) {}
+struct ScaledFieldProvider: public ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, DstPropertyT::propertyType, SpaceT, ScaleT, typename DstPropertyT::ExtraParams> {
+    static_assert(DstPropertyT::propertyType == SrcPropertyT::propertyType, "Source and destination property types do not match");
+    static_assert(std::is_same<typename DstPropertyT::ExtraParams, typename SrcPropertyT::ExtraParams>::value, "Source and destination extra arguments do not match");
+    ScaledFieldProvider(double scale=1.): ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, DstPropertyT::propertyType, SpaceT, ScaleT, typename DstPropertyT::ExtraParams>(scale) {}
 };
 
 

@@ -25,7 +25,7 @@ FiltersFactory::RegisterStandard<HolesConcentration> registerHolesConcentrationF
 FiltersFactory::RegisterStandard<Gain> registerGainFilters;
 
 // Optical
-FiltersFactory::RegisterStandard<OpticalIntensity> registerOpticalIntensityFilters;
+//TODO FiltersFactory::RegisterStandard<LightIntensity> registerLightIntensityFilters;
 
 
 }   // namespace plask

@@ -131,7 +131,9 @@ struct SimpleSolver : plask::Solver {
 
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
 
-    plask::ProviderFor<plask::OpticalIntensity, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RegularMesh2D>> outIntensity;
+    plask::ReceiverFor<plask::LightIntensity, plask::Geometry2DCartesian> inIntensity;
+
+    plask::ProviderFor<plask::LightIntensity, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RegularMesh2D>> outIntensity;
 
     plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
 
@@ -152,7 +154,7 @@ struct SimpleSolver : plask::Solver {
         data[0] = 100.; data[1] = 100.; data[2] = 100.;
         data[3] = 300.; data[4] = 300.; data[5] = 300.;
         data[6] = 500.; data[7] = 500.; data[8] = 500.;
-        outIntensity.values = data;
+        outIntensity.push_back(data);
     }
 };
 
@@ -166,7 +168,7 @@ struct InOutSolver : plask::Solver {
 
     InOutSolver(const std::string& name="") : Solver(name) {
         inWavelength = 2.;
-        outWavelength = 5.;
+        outWavelength.push_back(5.);
     }
 };
 
@@ -249,6 +251,7 @@ BOOST_PYTHON_MODULE(plasktest)
 
     plask::python::ExportSolver<SimpleSolver>("SimpleSolver")
         .add_receiver("inTemperature", &SimpleSolver::inTemperature, "Test receiver")
+        .add_receiver("inIntensity", &SimpleSolver::inIntensity, "Test multiple receiver")
         .add_provider("outIntensity", &SimpleSolver::outIntensity, "Test provider")
         .add_receiver("inVectors", &SimpleSolver::inVectors, "Test provider")
         .def("show_vectors", &SimpleSolver::showVectors)

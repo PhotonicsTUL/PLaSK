@@ -9,24 +9,11 @@
 namespace plask {
 
 /**
- * Profile of the optical field 1/2 E × conj(E) per unit power [kΩ/m²].
+ * Profile of the optical field 1/2 E × conj(E) / Z0 [W/m²].
  *
- * This quantity that may be multiplied by the actual emitted power [mW] allows to determine
- * the actual electric field [V/m] inside the laser.
- *
- * This property should be provided by every optical solver as it has a nice advantage that does not depend on
- * the internal representation of the field (whether it is scalar or vectorial one).
+ * Additional integer parameter is mode number.
  */
-struct OpticalIntensity: public ScalarFieldProperty {
-    static constexpr const char* NAME = "intensity profile";
-};
-
-/**
- * Profile of the optical field 1/2 E × conj(E) [(V/m)²].
- *
- * This property may be obtained by scaling the OpticalIntensity by the emitted power.
- */
-struct LightIntensity: public ScalarFieldProperty {
+struct LightIntensity: public MultiFieldProperty<double> {
     static constexpr const char* NAME = "light intensity";
 };
 
@@ -34,7 +21,7 @@ struct LightIntensity: public ScalarFieldProperty {
  * Provider which scales intensity profile to get light intensity
  */
 template <typename SpaceT>
-struct LightIntensityProvider: public ScaledFieldProvider<LightIntensity, OpticalIntensity, SpaceT> {};
+struct LightIntensityProvider: public ScaledFieldProvider<LightIntensity, LightIntensity, SpaceT> {};
 
 /**
  * Provider which sums light intensities from one or more sources.
@@ -48,15 +35,19 @@ struct LightIntensitySumProvider: public FieldSumProvider<LightIntensity, SpaceT
  *
  * It is a complex number, so it can contain information about both the wavelength and losses.
  * Its imaginary part is defined as \f$ \Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega) \f$.
+ *
+ * Additional integer parameter is mode number.
  */
-struct Wavelength: public SingleValueProperty<double> {
+struct Wavelength: public MultiValueProperty<double> {
     static constexpr const char* NAME = "wavelength";
 };
 
 /**
  * Modal loss [1/cm].
+ *
+ * Additional integer parameter is mode number.
  */
-struct ModalLoss: public SingleValueProperty<double> {
+struct ModalLoss: public MultiValueProperty<double> {
     static constexpr const char* NAME = "modal extinction";
 };
 
@@ -64,8 +55,10 @@ struct ModalLoss: public SingleValueProperty<double> {
  * Propagation constant [1/µm]. It can be either computed by some optical solvers or set by the user.
  *
  * It is a complex number, so it can contain information about both the propagation and losses.
+ *
+ * Additional integer parameter is mode number.
  */
-struct PropagationConstant: public SingleValueProperty<dcomplex> {
+struct PropagationConstant: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "propagation constant";
 };
 
@@ -73,8 +66,10 @@ struct PropagationConstant: public SingleValueProperty<dcomplex> {
  * Effective index. It can be either computed by some optical solvers or set by the user.
  *
  * It is a complex number, so it can contain information about both the propagation and losses.
+ *
+ * Additional integer parameter is mode number.
  */
-struct EffectiveIndex: public SingleValueProperty<dcomplex> {
+struct EffectiveIndex: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "effective index";
 };
 

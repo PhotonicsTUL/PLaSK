@@ -154,8 +154,8 @@ class Manager(unittest.TestCase):
             </connects>
         </plask>
         ''')
-        self.assertEqual( manager.solvers.output.inWavelength(), 2 )
-        self.assertEqual( manager.solvers.input.inWavelength(), 5 )
+        self.assertEqual( manager.solvers.output.inWavelength(0), 2 )
+        self.assertEqual( manager.solvers.input.inWavelength(0), 5 )
 
 
     def testMaterials(self):

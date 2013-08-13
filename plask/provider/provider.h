@@ -169,7 +169,7 @@ namespace plask {
  *
  * It implements listener (observer) pattern (can be observed by Receiver).
  *
- * Subclasses should only have implemented operator()(...) which return provided value, or throw NoValue exception.
+ * Subclasses should only implement operator()(...) which returns provided value, or throw NoValue exception.
  * Receiver (for given provider type) can be easy implemented by inherit Receiver class template.
  *
  * @see @ref providers
@@ -462,6 +462,34 @@ struct SingleValueProvider: public Provider {
 
 };
 
+/**
+ * Instantiation of this template is abstract base class for provider which provide multiple values (for example one double).
+ * @tparam ValueT type of provided value
+ * @tparam ArgsT type of arguments required by provider (optional)
+ */
+template <typename ValueT, typename... ArgsT>
+struct MultiValueProvider: public Provider {
+
+    static constexpr const char* NAME = "undefined value";
+    virtual const char* name() const { return NAME; }
+
+    /// Type of provided value.
+    typedef ValueT ProvidedType;
+
+    /**
+     * Provided value getter.
+     * @return provided value
+     */
+    virtual ProvidedType operator()(size_t num, ArgsT...) const = 0;
+
+    /**
+     * Get number of values
+     * \return number of values
+     */
+    virtual size_t size() const = 0;
+    
+};
+
 //TODO typedef for SingleValueReceiver (GCC 4.7 needed)
 
 /**
@@ -535,7 +563,88 @@ private:
 
 };
 
-//TODO typedef for OnMeshReceiverWithInterpolation (GCC 4.7 needed)
+/**
+ * Instantiation of this template is abstract base class for provider class which provide values in points described by mesh
+ * and use interpolation.
+ */
+template <typename ValueT, typename SpaceT, typename... ExtraArgs>
+struct MultiFieldProvider: public Provider {
+
+    static constexpr const char* NAME = "undefined field";
+    virtual const char* name() const { return NAME; }
+
+    /// Type of value provided by this (returned by operator()).
+    typedef DataVector<const ValueT> ProvidedType;
+
+    /**
+     * Get number of values
+     * \return number of values
+     */
+    virtual size_t size() const = 0;
+    
+    /**
+     * @param num number of the value
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    virtual ProvidedType operator()(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    /**
+     * Call this->operator()(dst_mesh, DEFAULT).
+     * @param num number of the value
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args) const {
+        return this->operator()(num, dst_mesh, extra_args..., DEFAULT_INTERPOLATION);
+    }
+
+    /**
+     * Call this->operator()(*dst_mesh, extra_args..., method).
+     * @param num number of the value
+     * @param dst_mesh set of requested points, given in shared_ptr
+     * @param extra_args additional provider arguments
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        return this->operator()(num, *dst_mesh, extra_args..., method);
+    }
+
+    /**
+     * @param num number of the value
+     * @param dst_mesh set of requested points
+     * @param extra_args additional provider arguments, given in tuple
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        typedef std::tuple<ExtraArgs...> Tuple;
+        return apply_tuple(num, dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
+    }
+
+    /**
+     * @param num number of the value
+     * @param dst_mesh set of requested points, given in shared_ptr
+     * @param extra_args additional provider arguments, given in tuple
+     * @param method method which should be use to do interpolation
+     * @return values in points describe by mesh @a dst_mesh
+     */
+    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        return this->operator()(num, *dst_mesh, extra_args, method);
+    }
+
+private:
+    template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
+    inline ProvidedType apply_tuple(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) {
+      return this->operator()(num, dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
+    }
+
+};
+
 
 template<typename _Signature> struct DelegateProvider;
 

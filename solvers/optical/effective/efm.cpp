@@ -14,7 +14,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     k0(NAN),
     outdist(0.1),
     perr(1e-3),
-    outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty) {
+    outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty, [](){return 1;}) {
     inTemperature = 300.;
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;
@@ -74,8 +74,8 @@ dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
     freqv = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)(0.);
     dcomplex k = k0 * (1. - freqv/2.); // get modal frequency back from frequency parameter
     dcomplex lam = 2e3*M_PI / k;
-    outWavelength = real(lam);
-    outModalLoss = 1e7 * imag(k);
+    outWavelength.invalidate(); outWavelength.push_back(real(lam));
+    outModalLoss.invalidate(); outModalLoss.push_back(1e7 * imag(k));
     outWavelength.fireChanged();
     outModalLoss.fireChanged();
     outIntensity.fireChanged();
@@ -158,8 +158,8 @@ void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
     double det = abs(detS(freqv));
     if (det > root.tolf_max) writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting current mode to %1%", str(clambda));
-    outWavelength = real(clambda);
-    outModalLoss = 1e7 * imag(2e3*M_PI/clambda);
+    outWavelength.invalidate(); outWavelength.push_back(real(clambda));
+    outModalLoss.invalidate(); outModalLoss .push_back(1e7 * imag(2e3*M_PI/clambda));
     outWavelength.fireChanged();
     outModalLoss.fireChanged();
     outIntensity.fireChanged();
@@ -511,8 +511,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
     }
 
     if (scale) {
-        // Ensure that OpticalIntensity multiplied by emitted power in mW gives averaged squared field intensity in (V/m)².
-        register dcomplex f = sqrt(1e9 * phys::mu0 * phys::c / integrateBessel());
+        register dcomplex f = sqrt(1e12 / integrateBessel());
         for (size_t r = 0; r != rsize; ++r) rfields[r] *= f;
     }
 
@@ -523,11 +522,11 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
 
 
 
-plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
+plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (!outWavelength.hasValue() || k0 != old_k0 || m != old_m) throw NoValue(OpticalIntensity::NAME);
+    if (outWavelength.size() == 0 || k0 != old_k0 || m != old_m) throw NoValue(LightIntensity::NAME);
 
     if (!have_fields) {
         detS(freqv, true);

@@ -271,7 +271,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     ProviderFor<EffectiveIndex>::WithValue outNeff;
 
     /// Provider of optical field
-    ProviderFor<OpticalIntensity, Geometry2DCartesian>::Delegate outIntensity;
+    ProviderFor<LightIntensity, Geometry2DCartesian>::Delegate outIntensity;
 
   protected:
 
@@ -285,7 +285,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Compute mirror losses for specified effective index
     double getMirrorLosses(double n) {
-        const double lambda = inWavelength();
+        const double lambda = inWavelength(0);
         double R1, R2;
         if (mirrors) {
             std::tie(R1,R2) = *mirrors;
@@ -316,7 +316,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     void computeWeights(size_t stripe);
 
     /**
-     * Normalize horizontal fields, so multiplying OpticalIntensity by power gives proper LightIntensity in (V/m)²
+     * Normalize horizontal fields, so multiplying LightIntensity by power gives proper LightIntensity in (V/m)²
      * \param kx computed horizontal propagation constants
      */
     void normalizeFields(const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
@@ -337,7 +337,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     dcomplex detS(const dcomplex& x, bool save=false);
 
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightIntenisty(const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+    DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
   private:
     template <typename MeshT>

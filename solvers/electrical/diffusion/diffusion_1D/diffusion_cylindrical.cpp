@@ -82,7 +82,8 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     {
         g_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain vector provided by inGain reciever
         dgdn_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
-        Li_on_the_mesh = inLightIntensity(mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
+        Li_on_the_mesh = inLightIntensity(0, mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
+        //TODO use other modes
     }
 
     n_present.reset(mesh.size(), 0.0);
@@ -109,7 +110,8 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 //                wavelength = inWavelength;
                 g_on_the_mesh = inGain(mesh2, wavelength, interpolation_method);   // data gain vector provided by inGain reciever
                 dgdn_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
-                Li_on_the_mesh = inLightIntensity(mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
+                Li_on_the_mesh = inLightIntensity(0, mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
+                //TODO add other modes
             }
             n_present.reset(mesh.size(), 0.0);
             n_previous.reset(mesh.size(), 0.0);

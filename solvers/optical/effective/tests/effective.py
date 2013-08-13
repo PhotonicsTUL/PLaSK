@@ -16,8 +16,6 @@ class Glass(material.Material):
 class Cladding(material.Material):
     def Nr(self, wl, T): return 1.28
 
-Z0 = 119.9169832*pi # free space impedance
-
 class EffectiveIndex2D_Test(unittest.TestCase):
 
     def setUp(self):
@@ -31,11 +29,11 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def testExceptions(self):
         with self.assertRaisesRegexp(TypeError, r"^No provider nor value for wavelength$"):
-            self.solver.inWavelength()
+            self.solver.inWavelength(0)
         with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
-            self.solver.outNeff()
-        with self.assertRaisesRegexp(ValueError, r"^Intensity profile cannot be provided now$"):
-            self.solver.outIntensity(mesh.Rectilinear2D([1,2],[3,4]))
+            self.solver.outNeff(0)
+        with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
+            self.solver.outIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
 
     def testSymmetry(self):
         self.assertIsNone( self.solver.symmetry )
@@ -44,7 +42,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def testReceivers(self):
         self.solver.inWavelength = 850.
-        self.assertEqual( self.solver.inWavelength(), 850. )
+        self.assertEqual( self.solver.inWavelength(0), 850. )
 
     def testComputations(self):
         self.solver.inWavelength = 1000.
@@ -69,10 +67,9 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         msh = mesh.Rectilinear2D(axis0, axis1).get_midpoints()
         dx = (axis0[1] - axis0[0]) * 1e-6
         dy = (axis1[1] - axis1[0]) * 1e-6
-        field = self.solver.outIntensity(msh).array
+        field = self.solver.outIntensity(0,msh).array
         integral = sum(field) * dx*dy
-        power = 1e3 / Z0 * integral # 1e3: W -> mW
-        self.assertAlmostEqual(power, 14.65, 2)
+        self.assertAlmostEqual(integral, 14.65, 2)
 
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):
@@ -142,9 +139,8 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         dr = axis0[1]-axis0[0]
         msh = mesh.Rectilinear2D(axis0, axis1)
         self.solver.compute(980.)
-        field = self.solver.outIntensity(msh).array[:,-1]
+        field = self.solver.outIntensity(0,msh).array[:,-1]
         integral = 2e-12 * pi * sum(field * msh.axis0) * dr
-        power = 1e3 / Z0 * integral # 1e3: W -> mW
-        self.assertAlmostEqual(power, 1., 4)
+        self.assertAlmostEqual(integral, 1., 4)
 
 

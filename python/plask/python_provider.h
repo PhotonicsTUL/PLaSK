@@ -104,6 +104,18 @@ namespace detail {
         return false;
     }
 
+    template <typename ReceiverT>
+    static bool assignMultipleValues(ReceiverT& receiver, const py::object& obj) {
+        if (!PySequence_Check(obj.ptr())) return false;
+        typedef typename ReceiverT::ValueType ValueT;
+        try {
+            py::stl_input_iterator<ValueT> begin(obj), end;
+            receiver.setValues(begin, end);
+            return true;
+        } catch (py::error_already_set) { PyErr_Clear(); }
+        return false;
+    }
+
     template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
 
     template <typename ReceiverT, typename... ExtraParams>
@@ -128,6 +140,30 @@ namespace detail {
         }
     };
 
+    template <typename ReceiverT, typename... ExtraParams>
+    struct RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    public RegisterReceiverBase<ReceiverT>
+    {
+        typedef typename ReceiverT::PropertyTag::ValueType ValueT;
+
+        static void assign(ReceiverT& self, const py::object& obj) {
+            if (obj == py::object()) { self.setProvider(nullptr); return; }
+            if (assignProvider(self, obj)) return;
+            if (assignMultipleValues(self, obj)) return;
+            if (assignValue(self, obj)) return;
+            throw TypeError("You can only assign %1% provider, or sequence of values of type '%2%'",
+                            type_name<typename ReceiverT::PropertyTag>(),
+                            std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
+        }
+
+        static ValueT __call__(ReceiverT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+
+        RegisterReceiverImpl() {
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
+            this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
+        }
+    };
+
     template <int DIMS, typename ReceiverT, typename... ExtraParams> struct ReceiverSetValueForMeshes;
 
     template <typename ReceiverT, typename... ExtraParams>
@@ -144,7 +180,7 @@ namespace detail {
             if (assignValue(self, obj)) return;
             try {
                 DataT data = py::extract<DataT>(obj);
-                ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, data);
+                ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, data.mesh, data);
             } catch (py::error_already_set) {
                 throw TypeError("You can only assign %1% provider, data, or constant of type '%2%'",
                                 type_name<typename ReceiverT::PropertyTag>(),
@@ -163,8 +199,65 @@ namespace detail {
       private:
 
         template <typename MeshT>
-        static inline bool setValueForMesh(ReceiverT& self, const DataT& data) {
-            shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(data.mesh);
+        static inline bool setValueForMesh(ReceiverT& self, const shared_ptr<Mesh>& msh, const DataT& data) {
+            shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(msh);
+            if (mesh) { self.setValue(data, mesh); return true; }
+            return false;
+        }
+        friend struct ReceiverSetValueForMeshes<DIMS, ReceiverT, ExtraParams...>;
+    };
+
+    template <typename ReceiverT, typename... ExtraParams>
+    struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    public RegisterReceiverBase<ReceiverT>
+    {
+        typedef typename ReceiverT::ValueType ValueT;
+        static const int DIMS = ReceiverT::SpaceType::DIM;
+        typedef DataVectorWrap<const ValueT, DIMS> DataT;
+
+        static void assign(ReceiverT& self, const py::object& obj) {
+            if (obj == py::object()) { self.setProvider(nullptr); return; }
+            if (assignProvider(self, obj)) return;
+            if (assignValue(self, obj)) return;
+            try {
+                if (!PySequence_Check(obj.ptr())) throw py::error_already_set();
+                typedef typename ReceiverT::ValueType ValueT;
+                try {
+                    py::extract<DataT> extr(obj);
+                    DataT data = py::extract<DataT>(obj);
+                    ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, data.mesh, data);
+                    return;
+                } catch (py::error_already_set) { PyErr_Clear(); }
+                py::stl_input_iterator<DataT> begin(obj), end;
+                if (begin != end) {
+                    std::vector<typename ReceiverT::ProviderType::ProvidedType> datas;
+                    for (auto it = begin; it != end; ++it) {
+                        if (it->mesh != begin->mesh) throw ValueError("All data in the sequence must have the same mesh");
+                        datas.push_back(*it);
+                    }
+                    ReceiverSetValueForMeshes<DIMS,ReceiverT,ExtraParams...>::call(self, begin->mesh, datas);
+                }
+            } catch (py::error_already_set) {
+                throw TypeError("You can only assign %1% provider, sequence of data, or constant of type '%2%'",
+                                type_name<typename ReceiverT::PropertyTag>(),
+                                std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
+            }
+        }
+
+        static DataT __call__(ReceiverT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            return DataT(self(n, *mesh, params..., method), mesh);
+        }
+
+        RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
+            this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
+        }
+
+      private:
+
+        template <typename MeshT, typename DataT>
+        static inline bool setValueForMesh(ReceiverT& self, const shared_ptr<Mesh>& msh, const DataT& data) {
+            shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(msh);
             if (mesh) { self.setValue(data, mesh); return true; }
             return false;
         }
@@ -209,6 +302,23 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
 };
 
+template <typename ProviderT, typename... _ExtraParams>
+struct PythonProviderFor<ProviderT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
+public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
+
+    typedef typename ProviderFor<typename ProviderT::PropertyTag>::ProvidedType ProvidedType;
+
+    PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
+        [function](size_t n, _ExtraParams... params) -> ProvidedType {
+            return py::extract<ProvidedType>(function(n, params...));
+        },
+        [function]() -> size_t {
+            return py::extract<size_t>(function.attr("__len__")());
+        }
+    ) {}
+
+};
+
 py::object Data(PyObject* obj, py::object omesh);
 
 template <typename ProviderT, typename... _ExtraParams>
@@ -229,6 +339,31 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                 PyErr_Clear();
                 return py::extract<ReturnedType>(Data(result.ptr(), omesh));
             }
+        }
+    ) {}
+};
+
+template <typename ProviderT, typename... _ExtraParams>
+struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<_ExtraParams...>>:
+public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
+
+    typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
+
+    PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
+        [function](size_t n, const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
+        {
+            typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
+            py::object omesh(boost::ref(dst_mesh));
+            py::object result = function(n, omesh, params..., method);
+            try {
+                return py::extract<ReturnedType>(result);
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                return py::extract<ReturnedType>(Data(result.ptr(), omesh));
+            }
+        },
+        [function]() -> size_t {
+            return py::extract<size_t>(function.attr("__len__")());
         }
     ) {}
 };
@@ -390,6 +525,18 @@ namespace detail {
     };
 
     template <typename ProviderT, typename... ExtraParams>
+    struct RegisterProviderImpl<ProviderT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    public RegisterProviderBase<ProviderT>
+    {
+        typedef typename ProviderT::PropertyTag::ValueType ValueT;
+        static ValueT __call__(ProviderT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+        RegisterProviderImpl() {
+            this->provider_class.def("__call__", &__call__, "Get value from the provider");
+            this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
+        }
+    };
+
+    template <typename ProviderT, typename... ExtraParams>
     struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterProviderBase<ProviderT>
     {
@@ -404,16 +551,33 @@ namespace detail {
         }
     };
 
+    template <typename ProviderT, typename... ExtraParams>
+    struct RegisterProviderImpl<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
+    public RegisterProviderBase<ProviderT>
+    {
+        static const int DIMS = ProviderT::SpaceType::DIM;
+        typedef typename ProviderT::ValueType ValueT;
+
+        static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            return DataVectorWrap<const ValueT,DIMS>(self(n, *mesh, params..., method), mesh);
+        }
+        RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
+            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
+            this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
+        }
+    };
+
     // Here add new mesh types that should be able to be provided in DataVector to receivers:
 
     // 2D meshes:
     template <typename ReceiverT, typename... ExtraParams>
     struct ReceiverSetValueForMeshes<2, ReceiverT, ExtraParams...> {
-        typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
-        static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
+        typedef RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
+        template <typename DataT>
+        static void call(ReceiverT& self, const shared_ptr<Mesh>& mesh, const DataT& data) {
 
-            if (RegisterT::template setValueForMesh< RectilinearMesh2D >(self, data)) return;
-            if (RegisterT::template setValueForMesh< RegularMesh2D >(self, data)) return;
+            if (RegisterT::template setValueForMesh< RectilinearMesh2D >(self, mesh, data)) return;
+            if (RegisterT::template setValueForMesh< RegularMesh2D >(self, mesh, data)) return;
 
             throw TypeError("Data on wrong mesh type for this operation");
         }
@@ -422,11 +586,12 @@ namespace detail {
     // 3D meshes:
     template <typename ReceiverT, typename... ExtraParams>
     struct ReceiverSetValueForMeshes<3, ReceiverT, ExtraParams...> {
-        typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
-        static void call(ReceiverT& self, const typename RegisterT::DataT& data) {
+        typedef RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, VariadicTemplateTypesHolder<ExtraParams...> > RegisterT;
+        template <typename DataT>
+        static void call(ReceiverT& self, const shared_ptr<Mesh>& mesh, const DataT& data) {
 
-            if (RegisterT::template setValueForMesh<RectilinearMesh3D>(self, data)) return;
-            if (RegisterT::template setValueForMesh<RegularMesh3D>(self, data)) return;
+            if (RegisterT::template setValueForMesh< RectilinearMesh3D >(self, mesh, data)) return;
+            if (RegisterT::template setValueForMesh< RegularMesh3D >(self, mesh, data)) return;
 
             throw TypeError("Data on wrong mesh type for this operation");
         }
