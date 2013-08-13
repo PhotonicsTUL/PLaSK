@@ -6,7 +6,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-#if NPY_API_VERSION < NPY_1_7_API_VERSION
+#if NPY_API_VERSION < 0x00000007
 inline static void PyArray_SetBaseObject(PyArrayObject* arr, PyObject* obj) {
     PyArray_BASE(arr) = obj;
 }
