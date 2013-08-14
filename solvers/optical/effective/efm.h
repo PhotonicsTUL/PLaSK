@@ -53,6 +53,44 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         BOTTOM      ///< Bottom emission
     };
 
+    /// Details of the computed mode
+    struct Mode {
+        EffectiveFrequencyCylSolver* solver;///< Solver this mode belongs to
+        int m;                              ///< Number of the LP_mn mode describing angular dependence
+        bool have_fields;                   ///< Did we compute fields for current state?
+        std::vector<FieldR> rfields;        ///< Computed horizontal fields
+        dcomplex freqv;                     ///< Stored frequency parameter
+        double power;                       ///< Mode power [mW]
+        
+        Mode(EffectiveFrequencyCylSolver* solver): solver(solver), m(0), have_fields(false), rfields(solver->rsize), power(1.) {}
+        
+        Mode(EffectiveFrequencyCylSolver* solver, int m): solver(solver), m(m), have_fields(false), rfields(solver->rsize), power(1.) {}
+        
+        bool operator==(const Mode& other) {
+            return m == other.m && is_zero(freqv - other.freqv);
+        }
+        
+        /// Compute horizontal part of the field
+        dcomplex rField(double r) const {
+            double Jr, Ji, Hr, Hi;
+            long nz, ierr;
+            size_t ir = solver->mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
+            dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir]-freqv));
+            if (real(x) < 0.) x = -x;
+            zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
+            if (ierr != 0)
+                throw ComputationError(solver->getId(), "Could not compute J(%1%, %2%)", m, str(x));
+            if (ir == 0) {
+                Hr = Hi = 0.;
+            } else {
+                zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
+                if (ierr != 0)
+                    throw ComputationError(solver->getId(), "Could not compute H(%1%, %2%)", m, str(x));
+            }
+            return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
+        }
+    };
+    
   protected:
 
     friend struct RootDigger;
@@ -70,9 +108,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Cached group indices
     std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> ngCache;
 
-    /// Computed horizontal fields
-    std::vector<FieldR> rfields;
-
     /// Computed vertical fields
     std::vector<FieldZ> zfields;
 
@@ -88,25 +123,13 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed weighted indices for each stripe
     std::vector<dcomplex,aligned_allocator<dcomplex>> nng;
 
-    /// Old value of the l number (to detect changes)
-    int old_m;
-
     /// Old value of k0 to detect changes
     dcomplex old_k0;
-
-    /// Stored frequency parameter for field calculations
-    dcomplex freqv;
 
     /// Direction of laser emission
     Emission emission;
 
   public:
-
-    /// Number of the LP_lm mode describing angular dependence
-    int m;
-
-    /// Current value of reference normalized frequency [1/µm]
-    dcomplex k0;
 
     /// Distance outside outer borders where material is sampled
     double outdist;
@@ -117,6 +140,12 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Allowed relative power integral precision
     double perr;
+
+    /// Current value of reference normalized frequency [1/µm]
+    dcomplex k0;
+
+    /// Computed modes
+    std::vector<Mode> modes;
 
     EffectiveFrequencyCylSolver(const std::string& name="");
 
@@ -167,9 +196,10 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * This method remembers the determined mode, for retrieval of the field profiles.
      *
      * \param lambda0 initial wavelength close to the solution
-     * \return determined effective index
+     * \param m number of the LP_mn mode describing angular dependence
+     * \return index of the found mode
      */
-    dcomplex computeMode(dcomplex lambda0);
+    size_t findMode(dcomplex lambda0, int m=0);
 
     /**
      * Find the modes within the specified range
@@ -178,50 +208,36 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      *
      * \param lambda1 one corner of the range to browse
      * \param lambda2 another corner of the range to browse
+     * \param m number of the LP_mn mode describing angular dependence
      * \param resteps minimum number of steps to check function value on real contour
      * \param imsteps minimum number of steps to check function value on imaginary contour
      * \param eps approximate error for integrals
-     * \return vector of determined effective indices
+     * \return vector of indices of determined modes
      */
-    std::vector<dcomplex> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
-
-    /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw.
-     *
-     * \param clambda complex wavelength of the mode
-     */
-    void setMode(dcomplex clambda);
-
-    /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw.
-     *
-     * \param lambda wavelength of the mode
-     * \param extinction
-     */
-    inline void setMode(double lambda, double extinction) {
-        setMode(dcomplex(lambda, - lambda*lambda / (2*M_PI) * extinction));
-    }
+    std::vector<size_t> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., int m=0, size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
      * Compute modal determinant for the whole matrix
      * \param v frequency parameter
+     * \param m number of the LP_mn mode describing angular dependence
      */
-    dcomplex getDeterminantV(dcomplex v) {
+    dcomplex getDeterminantV(dcomplex v, int m=0) {
         stageOne();
-        return detS(v);
+        Mode mode(this, m);
+        return detS(v, mode);
     }
 
     /**
      * Compute modal determinant for the whole matrix
+     * \param m number of the LP_mn mode describing angular dependence
      * \param lambda wavelength
      */
-    dcomplex getDeterminant(dcomplex lambda) {
+    dcomplex getDeterminant(dcomplex lambda, int m=0) {
         if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
-        freqv =  2. - 4e3*M_PI / lambda / k0;
+        dcomplex v =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
-        dcomplex det = detS(freqv);
+        Mode mode(this,m);
+        dcomplex det = detS(v, mode);
         // log_value(v, det);
         return det;
     }
@@ -234,16 +250,19 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     ReceiverFor<Gain, Geometry2DCylindrical> inGain;
 
     /// Provider for computed resonant wavelength
-    ProviderFor<Wavelength>::WithValue outWavelength;
+    ProviderFor<Wavelength>::Delegate outWavelength;
 
     /// Provider for computed modal extinction
-    ProviderFor<ModalLoss>::WithValue outModalLoss;
+    ProviderFor<ModalLoss>::Delegate outLoss;
 
     /// Provider of optical field
     ProviderFor<LightIntensity, Geometry2DCylindrical>::Delegate outIntensity;
 
   protected:
 
+    /// Do we need to compute gain
+    bool need_gain;
+    
     /// Initialize the solver
     virtual void onInitialize();
 
@@ -267,40 +286,56 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     std::vector<double,aligned_allocator<double>> computeWeights(size_t stripe);
 
     /// Return S matrix determinant for one stripe
-    void computeStripeNNg(std::size_t stripe);
+    void computeStripeNNg(size_t stripe);
 
-    /// Integrate horizontal field
-    double integrateBessel();
+    /** Integrate horizontal field
+     * \param mode mode to integrate
+     */
+    double integrateBessel(const Mode& mode) const;
 
     /// Return S matrix determinant for the whole structure
-    dcomplex detS(const dcomplex& v, bool scale=false);
+    dcomplex detS(const plask::dcomplex& v, Mode& mode, bool save=false);
 
-    /// Method computing the distribution of light intensity
-    DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
-
-    /// Compute horizontal part of the field
-    dcomplex rField(double r) {
-        double Jr, Ji, Hr, Hi;
-        long nz, ierr;
-        size_t ir = mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
-        dcomplex x = r * k0 * sqrt(nng[ir] * (veffs[ir]-freqv));
-        if (real(x) < 0.) x = -x;
-        zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
-        if (ierr != 0)
-            throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x));
-        if (ir == 0) {
-            Hr = Hi = 0.;
-        } else {
-            zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
-            if (ierr != 0)
-                throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x));
-        }
-        return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
+    /// Insert mode to the list or return the index of the exiting one
+    size_t insertMode(const Mode& mode) {
+        for (size_t i = 0; i != modes.size(); ++i)
+            if (modes[i] == mode) return i;
+        modes.push_back(mode);
+        outWavelength.fireChanged();
+        outLoss.fireChanged();
+        outIntensity.fireChanged();
+        return modes.size()-1;
     }
 
+    /// Return number of found modes
+    size_t nmodes() const {
+        return modes.size();
+    }
+    
+    /**
+     * Return mode wavelength
+     * \param n mode number
+     */
+    double getWavelength(size_t n) {
+        if (n >= modes.size()) throw NoValue(Wavelength::NAME);
+        return real(2e3*M_PI / (k0 * (1. - modes[n].freqv/2.)));
+    }
+    
+    /**
+     * Return mode modal loss
+     * \param n mode number
+     */
+    double getModalLoss(size_t n) {
+        if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
+        return imag(1e7 * k0 * (1. - modes[n].freqv/2.));
+    }
+    
+    /// Method computing the distribution of light intensity
+    DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+    
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(const MeshD<2>& dst_mesh, DataVector<double>& results);
+    bool getLightIntenisty_Efficient(size_t num, const plask::MeshD< 2 >& dst_mesh, plask::DataVector< double >& results);
 };
 
 

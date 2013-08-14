@@ -118,6 +118,23 @@ void EffectiveIndex2DSolver_setMirrors(EffectiveIndex2DSolver& self, py::object 
 }
 
 /**
+    * Return mode wavelength
+    * \param n mode number
+    */
+double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {
+    return real(2e3*M_PI / (mode.solver->k0 * (1. - mode.freqv/2.)));
+}
+
+/**
+    * Return mode modal loss
+    * \param n mode number
+    */
+double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSolver::Mode& mode) {
+    return imag(1e7 * mode.solver->k0 * (1. - mode.freqv/2.));
+}
+
+
+/**
  * Initialization of your solver to Python
  *
  * The \a solver_name should be changed to match the name of the directory with our solver
@@ -167,7 +184,6 @@ BOOST_PYTHON_MODULE(effective)
     {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
         "Calculate optical modes and optical field distribution using the effective frequency\n"
         "method in two-dimensional cylindrical space.")
-        RW_FIELD(m, "Angular mode number");
         RW_FIELD(k0, "Reference normalized frequency");
         solver.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
@@ -176,22 +192,30 @@ BOOST_PYTHON_MODULE(effective)
         RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
-        METHOD(compute, computeMode, "Compute the mode near the specified wavelength", "wavelength");
+        METHOD(find_mode, findMode, "Compute the mode near the specified wavelength", "wavelength", arg("m")=0);
         METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
-               arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
-        solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(dcomplex))&EffectiveFrequencyCylSolver::setMode,
-                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", py::arg("lam"));
-        solver.def("set_mode", (void (EffectiveFrequencyCylSolver::*)(double,double))&EffectiveFrequencyCylSolver::setMode,
-                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), "ext"));
+               arg("start")=0., arg("end")=0., arg("m")=0, arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",
-                   py::arg("v"));
-        solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", py::arg("lam"));
+                   py::arg("v"), arg("m")=0);
+        solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", arg("lam"), arg("m")=0);
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain distribution in the active region");
-        PROVIDER(outWavelength, "Wavelength of the last computed mode");
+        PROVIDER(outWavelength, "Wavelength of the computed mode [nm]");
+        PROVIDER(outLoss, "Modal loss of the computed mode [1/cm]");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
-
+        RO_FIELD(modes, "Computed modes");
+        
         py::scope scope = solver;
+        
+        register_vector_of<EffectiveFrequencyCylSolver::Mode>("Modes");
+        
+        py::class_<EffectiveFrequencyCylSolver::Mode>("Mode", "Detailed information about the mode", py::no_init)
+            .def_readonly("m", &EffectiveFrequencyCylSolver::Mode::m, "LP_mn mode parameter describing angular dependence")
+            .add_property("wavelength", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm]")
+            .add_property("loss", &EffectiveFrequencyCylSolver_Mode_ModalLoss, "Mode loss [1/cm]")
+            .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode")
+        ;
+        
         py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction for cylindrical structure")
             .value("TOP", EffectiveFrequencyCylSolver::TOP)
             .value("BOTTOM", EffectiveFrequencyCylSolver::BOTTOM)

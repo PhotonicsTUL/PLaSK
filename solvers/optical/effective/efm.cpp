@@ -10,20 +10,21 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     log_value(dataLog<dcomplex, dcomplex>("freq", "v", "det")),
     have_fields(false),
     emission(TOP),
-    m(0),
-    k0(NAN),
     outdist(0.1),
     perr(1e-3),
-    outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty, [](){return 1;}) {
+    k0(NAN),
+    outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
+    outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
+    outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes) {
     inTemperature = 300.;
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;
-    root.tolf_max = 1.0e-6;
+    root.tolf_max = 2.0e-5;
     root.maxstep = 0.1;
     root.maxiter = 500;
     stripe_root.tolx = 1.0e-8;
     stripe_root.tolf_min = 1.0e-10;
-    stripe_root.tolf_max = 1.0e-6;
+    stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxstep = 0.05;
     stripe_root.maxiter = 500;
 }
@@ -33,7 +34,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "mode") {
-            m = reader.getAttribute<unsigned short>("m", m);
+            // m = reader.getAttribute<unsigned short>("m", m);
             auto alam0 = reader.getAttribute<double>("lam0");
             auto ak0 = reader.getAttribute<double>("k0");
             if (alam0) {
@@ -66,28 +67,20 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
 }
 
 
-dcomplex EffectiveFrequencyCylSolver::computeMode(dcomplex lambda)
+size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
-    freqv = RootDigger(*this, [this](const dcomplex& v){return this->detS(v);}, log_value, root)(0.);
-    dcomplex k = k0 * (1. - freqv/2.); // get modal frequency back from frequency parameter
-    dcomplex lam = 2e3*M_PI / k;
-    outWavelength.invalidate(); outWavelength.push_back(real(lam));
-    outModalLoss.invalidate(); outModalLoss.push_back(1e7 * imag(k));
-    outWavelength.fireChanged();
-    outModalLoss.fireChanged();
-    outIntensity.fireChanged();
-    have_fields = false;
-    return lam;
+    Mode mode(this, m);
+    mode.freqv = RootDigger(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, log_value, root)(0.);
+    return insertMode(mode);
 }
 
 
-std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
     stageOne();
-    outWavelength.invalidate();
     if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
 
     if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
@@ -127,42 +120,32 @@ std::vector<dcomplex> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, d
     v0 = dcomplex(re0,im0);
     v1 = dcomplex(re1,im1);
 
-    auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, v0, v1, resteps, imsteps, eps);
+    Mode mode(this, m);
+    auto results = findZeros(this, [this,&mode](dcomplex v){return this->detS(v,mode);}, v0, v1, resteps, imsteps, eps);
 
+    std::vector<size_t> idx(results.size());
+    
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "freq", "v", "det");
+        RootDigger refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
         std::string msg = "Found modes at: ";
         for (auto& z: results) {
-            dcomplex k = k0 * (1. - freqv/2.); // get modal frequency back from frequency parameter
+            try {
+                z = refine(z);
+            } catch (ComputationError) {
+                continue;
+            }
+            mode.freqv = z;
+            idx.push_back(insertMode(mode));
+            dcomplex k = k0 * (1. - z/2.); // get modal frequency back from frequency parameter
             dcomplex lam = 2e3*M_PI / k;
             msg += str(lam) + ", ";
-            logger(lam, detS(z));
-            z = lam;
         }
         writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
     } else
         writelog(LOG_RESULT, "Did not find any modes");
 
-    return results;
-}
-
-
-void EffectiveFrequencyCylSolver::setMode(dcomplex clambda)
-{
-    if (isnan(k0.real())) k0 = 2e3*M_PI / clambda;
-    if (!initialized) {
-        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
-        stageOne();
-    }
-    freqv =  2. - 4e3*M_PI / clambda / k0;
-    double det = abs(detS(freqv));
-    if (det > root.tolf_max) writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
-    writelog(LOG_INFO, "Setting current mode to %1%", str(clambda));
-    outWavelength.invalidate(); outWavelength.push_back(real(clambda));
-    outModalLoss.invalidate(); outModalLoss .push_back(1e7 * imag(2e3*M_PI/clambda));
-    outWavelength.fireChanged();
-    outModalLoss.fireChanged();
-    outIntensity.fireChanged();
+    return idx;
 }
 
 
@@ -193,18 +176,19 @@ void EffectiveFrequencyCylSolver::onInitialize()
     veffs.resize(rsize);
     nng.resize(rsize);
 
-    rfields.resize(rsize);
     zfields.resize(zsize);
+    
+    need_gain = false;
 }
 
 
 void EffectiveFrequencyCylSolver::onInvalidate()
 {
-    outWavelength.invalidate();
-    outModalLoss.invalidate();
+    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+    modes.clear();
     have_fields = false;
     outWavelength.fireChanged();
-    outModalLoss.fireChanged();
+    outLoss.fireChanged();
     outIntensity.fireChanged();
 }
 
@@ -212,6 +196,8 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 void EffectiveFrequencyCylSolver::stageOne()
 {
+    static RectilinearMesh2D zero_mesh({0.}, {0.});
+    
     bool fresh = !initCalculation();
 
     // Some additional checks
@@ -220,9 +206,11 @@ void EffectiveFrequencyCylSolver::stageOne()
     }
     if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-    if (fresh || inTemperature.changed() || inGain.changed() || m != old_m || k0 != old_k0) { // we need to update something
+    if (fresh || inTemperature.changed() || (need_gain && inGain.changed()) || k0 != old_k0) { // we need to update something
 
-        old_m = m;
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        modes.clear();
+        
         old_k0 = k0;
 
         double lam = real(2e3*M_PI / k0);
@@ -242,7 +230,7 @@ void EffectiveFrequencyCylSolver::stageOne()
             midmesh.axis1.addPoint(mesh->axis1[mesh->axis1.size()-1] + outdist);
 
         auto temp = inTemperature(midmesh);
-        bool need_gain = true;
+        bool have_gain = false;
         DataVector<const double> gain;
         DataVector<double> gain_slope;
 
@@ -260,14 +248,15 @@ void EffectiveFrequencyCylSolver::stageOne()
                     nrCache[ir][iz] = material->Nr(lam, T);
                     ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
                 } else { // we ignore the material absorption as it should be considered in the gain already
-                    if (need_gain) {
+                    need_gain = true;
+                    if (!have_gain) {
                         gain = inGain(midmesh, lam1);
                         gain_slope = inGain(midmesh, lam2).claim();
                         auto g1 = gain_slope.begin();
                         auto g2 = gain.begin();
                         for (; g1 != gain_slope.end(); ++g1, ++g2) *g1 = (*g2 - *g1) * ih2;
                         gain = inGain(midmesh, lam);
-                        need_gain = false;
+                        have_gain = true;
                     }
                     double g = gain[idx];
                     double gs = gain_slope[idx];
@@ -460,17 +449,17 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     }
 }
 
-double EffectiveFrequencyCylSolver::integrateBessel()
+double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode) const
 {
     double err = perr;
-    double intr = patterson<double>([this](double r){return r * abs2(this->rField(r));}, 0., 2.*mesh->axis0[rsize-1], err);
+    double intr = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, 0., 2.*mesh->axis0[rsize-1], err);
     return 2*M_PI * intr; //TODO consider m <> 0
 }
 
-dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
+dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
 {
     // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
-    rfields[rsize-1] = FieldR(0., 1.);
+    mode.rfields[rsize-1] = FieldR(0., 1.);
 
     for (size_t i = rsize-1; i > 0; --i) {
 
@@ -488,36 +477,36 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, bool scale)
         double Jr[2], Ji[2], Hr[2], Hi[2];
         long nz, ierr;
 
-        zbesj(x1.real(), x1.imag(), m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x1));
-        zbesh(x1.real(), x1.imag(), m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x1));
+        zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", mode.m, str(x1));
+        zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", mode.m, str(x1));
         for (int i = 0; i < 2; ++i) { J1[i] = dcomplex(Jr[i], Ji[i]); H1[i] = dcomplex(Hr[i], Hi[i]); }
 
-        zbesj(x2.real(), x2.imag(), m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", m, str(x2));
-        zbesh(x2.real(), x2.imag(), m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", m, str(x2));
+        zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", mode.m, str(x2));
+        zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", mode.m, str(x2));
         for (int i = 0; i < 2; ++i) { J2[i] = dcomplex(Jr[i], Ji[i]); H2[i] = dcomplex(Hr[i], Hi[i]); }
 
-        MatrixR A(  J1[0],                 H1[0],
-                  m*J1[0] - x1*J1[1],    m*H1[0] - x1*H1[1]);
+        MatrixR A(       J1[0],                   H1[0],
+                  mode.m*J1[0] - x1*J1[1], mode.m*H1[0] - x1*H1[1]);
 
-        MatrixR B(  J2[0],                 H2[0],
-                  m*J2[0] - x2*J2[1],    m*H2[0] - x2*H2[1]);
+        MatrixR B(       J2[0],                   H2[0],
+                  mode.m*J2[0] - x2*J2[1], mode.m*H2[0] - x2*H2[1]);
 
-        rfields[i-1] = A.solve(B * rfields[i]);
+        mode.rfields[i-1] = A.solve(B * mode.rfields[i]);
 
     }
 
-    if (scale) {
-        register dcomplex f = sqrt(1e12 / integrateBessel());
-        for (size_t r = 0; r != rsize; ++r) rfields[r] *= f;
+    if (save) {
+        register dcomplex f = sqrt(1e12 / integrateBessel(mode));
+        for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
     //return rfields[0].H / rfields[0].J; // to stress the difference between J and H
-    return rfields[0].H;
+    return mode.rfields[0].H;
 }
 
 
@@ -526,14 +515,14 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (outWavelength.size() == 0 || k0 != old_k0 || m != old_m) throw NoValue(LightIntensity::NAME);
+    if (modes.size() <= num || k0 != old_k0) throw NoValue(LightIntensity::NAME);
 
-    if (!have_fields) {
-        detS(freqv, true);
+    if (!modes[num].have_fields) {
+        detS(modes[num].freqv, modes[num], true);
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
-                nrs << "), (" << str(rfields[i].J) << ":" << str(rfields[i].H);
+                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
@@ -557,11 +546,13 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results)) {
+    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(num, dst_mesh, results) &&
+        !getLightIntenisty_Efficient<RegularMesh2D>(num, dst_mesh, results)) {
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
+        double power = 1e-3 * modes[num].power; // 1e-3 mW->W
+        
         #pragma omp parallel for schedule(static,1024)
         for (size_t id = 0; id < dst_mesh.size(); ++id) {
             if (error) continue;
@@ -573,7 +564,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 
             dcomplex val;
             try {
-                val = rField(r);
+                val = modes[num].rField(r);
             } catch (...) {
                 #pragma omp critical
                 error = std::current_exception();
@@ -588,7 +579,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
             dcomplex phasz = exp(- I * kz * z);
             val *= zfields[iz].F * phasz + zfields[iz].B / phasz;
 
-            results[id] = abs2(val);
+            results[id] = power * abs2(val);
         }
 
         if (error) std::rethrow_exception(error);
@@ -598,7 +589,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 }
 
 template <typename MeshT>
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results)
+bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
 
@@ -617,7 +608,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                 double r = rect_mesh.axis0[idr];
                 if (r < 0.) r = -r;
                 try {
-                    valr[idr] = rField(r);
+                    valr[idr] = modes[num].rField(r);
                 } catch (...) {
                     #pragma omp critical
                     error = std::current_exception();
@@ -638,13 +629,15 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                     valz[idz] = zfields[iz].F * phasz + zfields[iz].B / phasz;
                 }
 
+                double power = 1e-3 * modes[num].power; // 1e-3 mW->W
+                
                 if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
                     #pragma omp for
                     for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                         double* data = results.data() + i1 * rect_mesh.axis0.size();
                         for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                             dcomplex f = valr[i0] * valz[i1];
-                            data[i0] = abs2(f);
+                            data[i0] = power * abs2(f);
                         }
                     }
                 } else {
@@ -653,7 +646,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(const plask::MeshD
                         double* data = results.data() + i0 * rect_mesh.axis1.size();
                         for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                             dcomplex f = valr[i0] * valz[i1];
-                            data[i1] = abs2(f);
+                            data[i1] = power * abs2(f);
                         }
                     }
                 }
