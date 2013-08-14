@@ -166,40 +166,40 @@ void MainWindow::createActions()
     newDocumentAct = new QAction(QIcon::fromTheme("document-new"), tr("&New"), this);
     newDocumentAct->setShortcuts(QKeySequence::New);
     newDocumentAct->setStatusTip(tr("Create a new document"));
-    connect(newDocumentAct, SIGNAL(triggered()), this, SLOT(newDocument()));
+    connect(newDocumentAct, &QAction::triggered, this, &MainWindow::newDocument);
 
     openAct = new QAction(QIcon::fromTheme("document-open"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open experiment file"));
-    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    connect(openAct, &QAction::triggered, this, &MainWindow::open);
 
     saveAct = new QAction(QIcon::fromTheme("document-save"), tr("&Save..."), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the current form letter"));
-    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+    connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
     printAct = new QAction(QIcon::fromTheme("document-print"), tr("&Print..."), this);
     printAct->setShortcuts(QKeySequence::Print);
     printAct->setStatusTip(tr("Print the current form letter"));
-    connect(printAct, SIGNAL(triggered()), this, SLOT(print()));
+    connect(printAct, &QAction::triggered, this, &MainWindow::print);
 
     undoAct = new QAction(QIcon::fromTheme("edit-undo"), tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
     undoAct->setStatusTip(tr("Undo the last editing action"));
-    connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
+    connect(undoAct, &QAction::triggered, this, &MainWindow::undo);
 
     editSelectedAct = new QAction(QIcon::fromTheme("media-record"), tr("&Edit selected"), this);
     editSelectedAct->setStatusTip(tr("Edit selected object"));
-    connect(editSelectedAct, SIGNAL(triggered()), this, SLOT(editSelected()));
+    connect(editSelectedAct, &QAction::triggered, this, &MainWindow::editSelected);
 
     quitAct = new QAction(tr("&Quit"), this);
     quitAct->setShortcuts(QKeySequence::Quit);
     quitAct->setStatusTip(tr("Quit the application"));
-    connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
+    connect(quitAct, &QAction::triggered, this, &MainWindow::close);
 
     aboutAct = new QAction(tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
     aboutQtAct = new QAction(tr("About &Qt"), this);
     aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
@@ -209,30 +209,30 @@ void MainWindow::createActions()
     
     treeRemoveAct = new QAction(tr("&Remove"), this);
     treeRemoveAct->setToolTip(tr("Remove selected object from geometry tree"));
-    connect(treeRemoveAct, SIGNAL(triggered()), this, SLOT(treeRemoveSelected()));
+    connect(treeRemoveAct, &QAction::triggered, this, &MainWindow::treeRemoveSelected);
     
     treeAddCartesian2dAct = new QAction(tr("&New 2D cartesian geometry"), this);
     treeAddCartesian2dAct->setToolTip(tr("Create new, top-level, 2D cartesian geometry"));
-    connect(treeAddCartesian2dAct, SIGNAL(triggered()), this, SLOT(treeAddCartesian2d()));
+    connect(treeAddCartesian2dAct, &QAction::triggered, this, &MainWindow::treeAddCartesian2d);
     
     treeAddCartesian3dAct = new QAction(tr("&New 3D cartesian geometry"), this);
     treeAddCartesian3dAct->setToolTip(tr("Create new, top-level, 3D cartesian geometry"));
-    connect(treeAddCartesian3dAct, SIGNAL(triggered()), this, SLOT(treeAddCartesian3d()));
+    connect(treeAddCartesian3dAct, &QAction::triggered, this, &MainWindow::treeAddCartesian3d);
 
     treeAddCylindricAct = new QAction(tr("&New 2D cylindrical geometry"), this);
     treeAddCylindricAct->setToolTip(tr("Create new, top-level, 2D cylindric geometry"));
-    connect(treeAddCylindricAct, SIGNAL(triggered()), this, SLOT(treeAddCylindric()));
+    connect(treeAddCylindricAct, &QAction::triggered, this, &MainWindow::treeAddCylindric);
     
     treeAddBlockAct = new QAction(tr("Add &Block2D"), this);
-    connect(treeAddBlockAct, SIGNAL(triggered()), this, SLOT(treeAddBlock2D()));
+    connect(treeAddBlockAct, &QAction::triggered, this, &MainWindow::treeAddBlock2D);
 
     zoomInAct = new QAction(QIcon::fromTheme("zoom-in"), tr("Zoom &in"), this);
     zoomInAct->setToolTip(tr("Increase view zoom"));
-    connect(zoomInAct, SIGNAL(triggered()), view, SLOT(zoomIn()));
+    connect(zoomInAct, &QAction::triggered, view, &ObjectViewer::zoomIn);
 
     zoomOutAct = new QAction(QIcon::fromTheme("zoom-out"), tr("Zoom &out"), this);
     zoomOutAct->setToolTip(tr("Decrease view zoom"));
-    connect(zoomOutAct, SIGNAL(triggered()), view, SLOT(zoomOut()));
+    connect(zoomOutAct, &QAction::triggered, view, &ObjectViewer::zoomOut);
 }
 
 void MainWindow::createMenus()
