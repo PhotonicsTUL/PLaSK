@@ -16,60 +16,45 @@ class Glass(material.Material):
 class Cladding(material.Material):
     def Nr(self, wl, T): return 1.28
 
-#class EffectiveIndex2D_Test(unittest.TestCase):
+class EffectiveIndex2D_Test(unittest.TestCase):
 
-    #def setUp(self):
-        #self.solver = EffectiveIndex2D("eim")
-        #rect = geometry.Rectangle(0.75, 0.5, Glass())
-        #space = geometry.Cartesian2D(rect, left="mirror")
-        #self.solver.geometry = space
+    def setUp(self):
+        self.solver = EffectiveIndex2D("eim")
+        rect = geometry.Rectangle(0.75, 0.5, Glass())
+        space = geometry.Cartesian2D(rect, left="mirror")
+        self.solver.geometry = space
 
-    #def testBasic(self):
-        #self.assertEqual( self.solver.id, "eim:optical.EffectiveIndex2D" )
+    def testBasic(self):
+        self.assertEqual( self.solver.id, "eim:optical.EffectiveIndex2D" )
 
-    #def testExceptions(self):
-        #with self.assertRaisesRegexp(TypeError, r"^No provider nor value for wavelength$"):
-            #self.solver.inWavelength(0)
-        #with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
-            #self.solver.outNeff(0)
-        #with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
-            #self.solver.outIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
+    def testExceptions(self):
+        with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
+            self.solver.outNeff(0)
+        with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
+            self.solver.outIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
 
-    #def testSymmetry(self):
-        #self.assertIsNone( self.solver.symmetry )
-        #self.solver.symmetry = "-"
-        #self.assertEqual( self.solver.symmetry, "negative" )
+    def testComputations(self):
+        self.solver.wavelength = 1000.
+        self.solver.polarization = "TE"
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.147, 3 )
+        self.solver.polarization = "TM"
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.11, '+')].neff, 1.111, 3)
 
-    #def testReceivers(self):
-        #self.solver.inWavelength = 850.
-        #self.assertEqual( self.solver.inWavelength(0), 850. )
+    def testMesh(self):
+        mesh = self.solver.mesh
 
-    #def testComputations(self):
-        #self.solver.inWavelength = 1000.
-        #self.solver.symmetry = "+"
-        #self.solver.polarization = "TE"
-        #self.assertAlmostEqual( self.solver.compute(1.15), 1.147, 3)
-        #self.solver.polarization = "TM"
-        #self.assertAlmostEqual( self.solver.compute(1.11), 1.111, 3)
-
-    #def testMesh(self):
-        #mesh = self.solver.mesh
-
-    #def testField(self):
-        #self.solver.inWavelength = 1000.
-        #self.solver.symmetry = "+"
-        ##self.solver.symmetry = "0"
-        ##self.solver.set_horizontal_mesh([-0.75, 0.00, 0.75])
-        #self.solver.polarization = "TE"
-        #self.solver.compute(1.15)
-        #axis0 = linspace(-2.75, 2.75, 2000)
-        #axis1 = linspace(-2., 2.5, 1000)
-        #msh = mesh.Rectilinear2D(axis0, axis1).get_midpoints()
-        #dx = (axis0[1] - axis0[0]) * 1e-6
-        #dy = (axis1[1] - axis1[0]) * 1e-6
-        #field = self.solver.outIntensity(0,msh).array
-        #integral = sum(field) * dx*dy
-        #self.assertAlmostEqual(integral, 14.65, 2)
+    def testField(self):
+        self.solver.wavelength = 1000.
+        self.solver.polarization = "TE"
+        self.solver.find_mode(1.15)
+        axis0 = linspace(-2.75, 2.75, 2000)
+        axis1 = linspace(-2., 2.5, 1000)
+        msh = mesh.Rectilinear2D(axis0, axis1).get_midpoints()
+        dx = (axis0[1] - axis0[0]) * 1e-6
+        dy = (axis1[1] - axis1[0]) * 1e-6
+        field = self.solver.outIntensity(0,msh).array
+        integral = sum(field) * dx*dy
+        self.assertAlmostEqual(integral, 14.65, 2)
 
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):

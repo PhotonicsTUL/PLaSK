@@ -124,7 +124,7 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
     auto results = findZeros(this, [this,&mode](dcomplex v){return this->detS(v,mode);}, v0, v1, resteps, imsteps, eps);
 
     std::vector<size_t> idx(results.size());
-    
+
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "freq", "v", "det");
         RootDigger refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
@@ -177,7 +177,7 @@ void EffectiveFrequencyCylSolver::onInitialize()
     nng.resize(rsize);
 
     zfields.resize(zsize);
-    
+
     need_gain = false;
 }
 
@@ -197,7 +197,7 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 void EffectiveFrequencyCylSolver::stageOne()
 {
     static RectilinearMesh2D zero_mesh({0.}, {0.});
-    
+
     bool fresh = !initCalculation();
 
     // Some additional checks
@@ -210,7 +210,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
         modes.clear();
-        
+
         old_k0 = k0;
 
         double lam = real(2e3*M_PI / k0);
@@ -552,7 +552,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
         double power = 1e-3 * modes[num].power; // 1e-3 mW->W
-        
+
         #pragma omp parallel for schedule(static,1024)
         for (size_t id = 0; id < dst_mesh.size(); ++id) {
             if (error) continue;
@@ -630,7 +630,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const 
                 }
 
                 double power = 1e-3 * modes[num].power; // 1e-3 mW->W
-                
+
                 if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
                     #pragma omp for
                     for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {

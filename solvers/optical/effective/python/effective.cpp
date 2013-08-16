@@ -11,36 +11,36 @@ using namespace plask::python;
 #include "../efm.h"
 using namespace plask::solvers::effective;
 
-static py::object EffectiveIndex2DSolver_getSymmetry(const EffectiveIndex2DSolver& self) {
-    switch (self.getSymmetry()) {
+static py::object EffectiveIndex2DSolver_getSymmetry(const EffectiveIndex2DSolver::Mode& self) {
+    switch (self.symmetry) {
         case EffectiveIndex2DSolver::SYMMETRY_POSITIVE: return py::object("positive");
         case EffectiveIndex2DSolver::SYMMETRY_NEGATIVE: return py::object("negative");
-        case EffectiveIndex2DSolver::NO_SYMMETRY: return py::object();
+        default: return py::object();
     }
     return py::object();
 }
 
-static void EffectiveIndex2DSolver_setSymmetry(EffectiveIndex2DSolver& self, py::object symmetry) {
-    if (symmetry == py::object()) { self.setSymmetry(EffectiveIndex2DSolver::NO_SYMMETRY); return; }
+static EffectiveIndex2DSolver::Symmetry parseSymmetry(py::object symmetry) {
+    if (symmetry == py::object()) { return EffectiveIndex2DSolver::SYMMETRY_DEFAULT; }
     try {
         std::string sym = py::extract<std::string>(symmetry);
         if (sym == "0" || sym == "none" ) {
-            self.setSymmetry(EffectiveIndex2DSolver::NO_SYMMETRY); return;
+            return EffectiveIndex2DSolver::SYMMETRY_NONE;
         }
         else if (sym == "positive" || sym == "pos" || sym == "symmeric" || sym == "+" || sym == "+1") {
-            self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_POSITIVE); return;
+            return EffectiveIndex2DSolver::SYMMETRY_POSITIVE;
         }
         else if (sym == "negative" || sym == "neg" || sym == "anti-symmeric" || sym == "antisymmeric" || sym == "-" || sym == "-1") {
-            self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_NEGATIVE); return;
+            return EffectiveIndex2DSolver::SYMMETRY_NEGATIVE;
         }
         throw py::error_already_set();
     } catch (py::error_already_set) {
         PyErr_Clear();
         try {
             int sym = py::extract<int>(symmetry);
-            if (sym ==  0) { self.setSymmetry(EffectiveIndex2DSolver::NO_SYMMETRY); return; }
-            else if (sym == +1) { self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_POSITIVE); return; }
-            else if (sym == -1) { self.setSymmetry(EffectiveIndex2DSolver::SYMMETRY_NEGATIVE); return; }
+            if (sym ==  0) { return EffectiveIndex2DSolver::SYMMETRY_NONE; }
+            else if (sym == +1) { return EffectiveIndex2DSolver::SYMMETRY_POSITIVE; }
+            else if (sym == -1) { return EffectiveIndex2DSolver::SYMMETRY_NEGATIVE; }
             throw py::error_already_set();
         } catch (py::error_already_set) {
             throw ValueError("Wrong symmetry specification.");
@@ -117,18 +117,18 @@ void EffectiveIndex2DSolver_setMirrors(EffectiveIndex2DSolver& self, py::object 
     }
 }
 
-/**
-    * Return mode wavelength
-    * \param n mode number
-    */
+size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, dcomplex neff, py::object symmetry) {
+    return self.findMode(neff, parseSymmetry(symmetry));
+}
+
+std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& self, dcomplex neff1, dcomplex neff2, py::object symmetry, size_t resteps, size_t imsteps, dcomplex eps) {
+    return self.findModes(neff1, neff2, parseSymmetry(symmetry), resteps, imsteps, eps);
+}
+
 double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {
     return real(2e3*M_PI / (mode.solver->k0 * (1. - mode.freqv/2.)));
 }
 
-/**
-    * Return mode modal loss
-    * \param n mode number
-    */
 double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSolver::Mode& mode) {
     return imag(1e7 * mode.solver->k0 * (1. - mode.freqv/2.));
 }
@@ -147,34 +147,42 @@ BOOST_PYTHON_MODULE(effective)
     {CLASS(EffectiveIndex2DSolver, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in two-dimensional Cartesian space.")
-        solver.add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, &EffectiveIndex2DSolver_setSymmetry, "Symmetry of the searched modes");
         solver.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
-        RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
+        RW_FIELD(emission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
-        METHOD(find_vneffs, findVeffs, "Find the effective index in the vertical direction within the specified range using global method",
+        METHOD(search_vneffs, searchVeffs, "Find the effective index in the vertical direction within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
-        METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
-        METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
-               arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
-        METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
+        solver.def("find_mode", &EffectiveIndex2DSolver_findMode, "Compute the mode near the specified effective index", (arg("neff"), arg("symmetry")=py::object()));
+        solver.def("find_modes", &EffectiveIndex2DSolver_findModes, "Find the modes within the specified range using global method",
+               (arg("start")=0., arg("end")=0., arg("symmetry")=py::object(), arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9)));
         RW_PROPERTY(stripex, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominat mode)");
         RW_FIELD(vneff, "Effective index in the vertical direction");
         solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
                     "Mirror reflectivities. If None then they are automatically estimated from Fresenel equations");
         solver.def("get_stripe_determinant", EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
                        (py::arg("stripe"), "neff"));
-        solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff")));
-        RECEIVER(inWavelength, "Wavelength of the light");
+        solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff") , py::arg("polarization")=py::object()));
+        RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
         PROVIDER(outNeff, "Effective index of the last computed mode");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
+        RO_FIELD(modes, "Computed modes");
 
         py::scope scope = solver;
+
+        register_vector_of<EffectiveIndex2DSolver::Mode>("Modes");
+
+        py::class_<EffectiveIndex2DSolver::Mode>("Mode", "Detailed information about the mode", py::no_init)
+            .def_readonly("neff", &EffectiveIndex2DSolver::Mode::neff, "Mode effective index")
+            .add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, "Mode wavelength [nm]")
+            .def_readwrite("power", &EffectiveIndex2DSolver::Mode::power, "Total power emitted into the mode")
+        ;
+
         py_enum<EffectiveIndex2DSolver::Emission>("Emission", "Emission direction for Cartesian structure")
             .value("FRONT", EffectiveIndex2DSolver::FRONT)
             .value("BACK", EffectiveIndex2DSolver::BACK)
@@ -204,18 +212,18 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outLoss, "Modal loss of the computed mode [1/cm]");
         PROVIDER(outIntensity, "Light intensity of the last computed mode");
         RO_FIELD(modes, "Computed modes");
-        
+
         py::scope scope = solver;
-        
+
         register_vector_of<EffectiveFrequencyCylSolver::Mode>("Modes");
-        
+
         py::class_<EffectiveFrequencyCylSolver::Mode>("Mode", "Detailed information about the mode", py::no_init)
             .def_readonly("m", &EffectiveFrequencyCylSolver::Mode::m, "LP_mn mode parameter describing angular dependence")
             .add_property("wavelength", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm]")
             .add_property("loss", &EffectiveFrequencyCylSolver_Mode_ModalLoss, "Mode loss [1/cm]")
             .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode")
         ;
-        
+
         py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction for cylindrical structure")
             .value("TOP", EffectiveFrequencyCylSolver::TOP)
             .value("BOTTOM", EffectiveFrequencyCylSolver::BOTTOM)

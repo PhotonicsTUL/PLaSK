@@ -8,14 +8,14 @@ namespace plask { namespace solvers { namespace effective {
 EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
     log_value(dataLog<dcomplex, dcomplex>("Neff", "Neff", "det")),
-    have_fields(false),
     recompute_neffs(true),
     stripex(0.),
     polarization(TE),
-    symmetry(NO_SYMMETRY),
     vneff(0.),
     outdist(0.1),
-    outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, [](){return 1;}) {
+    outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
+    outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
+    k0(2e3*M_PI/980) {
     inTemperature = 300.;
     inGain = NAN;
     root.tolx = 1.0e-8;
@@ -41,20 +41,19 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
                 else if (*pol == "TM") polarization = TM;
                 else throw BadInput(getId(), "Wrong polarization specification '%1%' in XML", *pol);
             }
-            auto sym = reader.getAttribute("symmetry");
-            if (sym) {
-                if (*sym == "0" || *sym == "none" ) {
-                    symmetry = NO_SYMMETRY;
-                }
-                else if (*sym == "positive" || *sym == "pos" || *sym == "symmeric" || *sym == "+" || *sym == "+1") {
-                    symmetry = SYMMETRY_POSITIVE;;
-                }
-                else if (*sym == "negative" || *sym == "neg" || *sym == "anti-symmeric" || *sym == "antisymmeric" || *sym == "-" || *sym == "-1") {
-                    symmetry = SYMMETRY_NEGATIVE;
-                } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
-            }
-            auto wavelength = reader.getAttribute<double>("wavelength");
-            if (wavelength) inWavelength.setValue(*wavelength);
+            // auto sym = reader.getAttribute("symmetry");
+            // if (sym) {
+            //     if (*sym == "0" || *sym == "none" ) {
+            //         symmetry = SYMMETRY_NONE;
+            //     }
+            //     else if (*sym == "positive" || *sym == "pos" || *sym == "symmeric" || *sym == "+" || *sym == "+1") {
+            //         symmetry = SYMMETRY_POSITIVE;
+            //     }
+            //     else if (*sym == "negative" || *sym == "neg" || *sym == "anti-symmeric" || *sym == "antisymmeric" || *sym == "-" || *sym == "-1") {
+            //         symmetry = SYMMETRY_NEGATIVE;
+            //     } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
+            // }
+            k0 = 2e3*M_PI / reader.getAttribute<double>("wavelength",  real(2e3*M_PI / k0));
             stripex = reader.getAttribute<double>("stripex", stripex);
             vneff = reader.getAttribute<dcomplex>("vneff", vneff);
             reader.requireTagEnd();
@@ -86,7 +85,7 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
 }
 
 
-std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<dcomplex> EffectiveIndex2DSolver::searchVeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
 {
     updateCache();
 
@@ -145,20 +144,17 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findVeffs(dcomplex neff1, dcomplex
 }
 
 
-dcomplex EffectiveIndex2DSolver::computeMode(dcomplex neff)
+size_t EffectiveIndex2DSolver::findMode(dcomplex neff, Symmetry symmetry)
 {
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
-    dcomplex result = RootDigger(*this, [this](const dcomplex& x){return this->detS(x);}, log_value, root)(neff);
-    outNeff.invalidate(); outNeff.push_back(result);
-    outNeff.fireChanged();
-    outIntensity.fireChanged();
-    have_fields = false;
-    return result;
+    Mode mode(this, symmetry);
+    mode.neff = RootDigger(*this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)(neff);
+    return insertMode(mode);
 }
 
 
-std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<size_t> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex neff2, Symmetry symmetry, size_t resteps, size_t imsteps, dcomplex eps)
 {
     stageOne();
 
@@ -194,36 +190,30 @@ std::vector<dcomplex> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex
     neff1 = dcomplex(re0,im0);
     neff2 = dcomplex(re1,im1);
 
-    auto results = findZeros(this, [this](dcomplex z){return this->detS(z);}, neff1, neff2, resteps, imsteps, eps);
+    Mode mode(this, symmetry);
+    auto results = findZeros(this, [this,&mode](dcomplex z){return this->detS(z,mode);}, neff1, neff2, resteps, imsteps, eps);
+
+    std::vector<size_t> idx(results.size());
 
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
+        RootDigger refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
         std::string msg = "Found modes at: ";
         for (auto z: results) {
+            try {
+                z = refine(z);
+            } catch (ComputationError) {
+                continue;
+            }
+            mode.neff = z;
+            idx.push_back(insertMode(mode));
             msg += str(z) + ", ";
-            logger(z, detS(z));
         }
         writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
     } else
         writelog(LOG_RESULT, "Did not find any modes");
 
-    return results;
-}
-
-
-void EffectiveIndex2DSolver::setMode(dcomplex neff)
-{
-    if (!initialized) {
-        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
-        stageOne();
-    }
-    double det = abs(detS(neff));
-    if (det > root.tolf_max)
-        writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = %1%)", det);
-    writelog(LOG_INFO, "Setting current mode to %1%", str(neff));
-    outNeff.invalidate(); outNeff.push_back(neff);
-    outNeff.fireChanged();
-    outIntensity.fireChanged();
+    return idx;
 }
 
 
@@ -256,15 +246,16 @@ void EffectiveIndex2DSolver::onInitialize()
     nrCache.assign(xend, std::vector<dcomplex,aligned_allocator<dcomplex>>(yend));
     epsilons.resize(xend);
 
-    xfields.resize(xend);
     yfields.resize(yend);
+
+    need_gain = false;
 }
 
 
 void EffectiveIndex2DSolver::onInvalidate()
 {
-    outNeff.invalidate();
-    have_fields = false;
+    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+    modes.clear();
     outNeff.fireChanged();
     outIntensity.fireChanged();
 }
@@ -276,27 +267,23 @@ void EffectiveIndex2DSolver::updateCache()
 {
     bool fresh = !initCalculation();
 
-    // Some additional checks
-    if (symmetry == SYMMETRY_POSITIVE || symmetry == SYMMETRY_NEGATIVE) {
-        if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
-            if (fresh) // Make sure we have only positive points
-                for (auto x: mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
-            if (mesh->axis0[0] == 0.) xbegin = 1;
-        } else {
-            writelog(LOG_WARNING, "Symmetry reset to NO_SYMMETRY for non-symmetric geometry.");
-            symmetry = NO_SYMMETRY;
-        }
+    if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
+        if (fresh) // Make sure we have only positive points
+            for (auto x: mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
+        if (mesh->axis0[0] == 0.) xbegin = 1;
     }
 
-    if (fresh || inTemperature.changed() || inWavelength.changed() || inGain.changed()) {
+    if (fresh || inTemperature.changed() || (need_gain && inGain.changed())) {
         // we need to update something
 
-        double w = inWavelength(0);
-        k0 = 2e3*M_PI / w;
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        modes.clear();
+
+        double w = real(2e3*M_PI / k0);
 
         RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
         if (xbegin == 0) {
-            if (symmetry != NO_SYMMETRY) midmesh.axis0.addPoint(0.5 * mesh->axis0[0]);
+            if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) midmesh.axis0.addPoint(0.5 * mesh->axis0[0]);
             else midmesh.axis0.addPoint(mesh->axis0[0] - outdist);
         }
         if (xend == mesh->axis0.size()+1)
@@ -308,7 +295,7 @@ void EffectiveIndex2DSolver::updateCache()
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto temp = inTemperature(midmesh);
-        bool need_gain = true;
+        bool have_gain = false;
         DataVector<const double> gain;
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
@@ -320,9 +307,10 @@ void EffectiveIndex2DSolver::updateCache()
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end())
                     nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
                 else {  // we ignore the material absorption as it should be considered in the gain already
-                    if (need_gain) {
+                    need_gain = true;
+                    if (!have_gain) {
                         gain = inGain(midmesh, w);
-                        need_gain = false;
+                        have_gain = false;
                     }
                     double g = gain[idx];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
@@ -340,8 +328,6 @@ void EffectiveIndex2DSolver::stageOne()
     updateCache();
 
     if (recompute_neffs) {
-
-        outNeff.invalidate();
 
         // Compute effective index of the main stripe
         size_t stripe = mesh->tran().findIndex(stripex);
@@ -503,13 +489,13 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
 // #endif
 }
 
-void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx) {
+void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx) {
 
     size_t start;
 
-    double sum = abs2(xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
-    if (symmetry == NO_SYMMETRY) {
-        sum += abs2(xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
+    double sum = abs2(mode.xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
+    if (mode.symmetry == SYMMETRY_NONE) {
+        sum += abs2(mode.xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
         start = xbegin+1;
     } else {
         start = xbegin;
@@ -531,22 +517,22 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            sum -= imag(xfields[i].F * conj(xfields[i].F) * w_ff +
-                        xfields[i].F * conj(xfields[i].B) * w_fb +
-                        xfields[i].B * conj(xfields[i].F) * w_bf +
-                        xfields[i].B * conj(xfields[i].B) * w_bb
+            sum -= imag(mode.xfields[i].F * conj(mode.xfields[i].F) * w_ff +
+                        mode.xfields[i].F * conj(mode.xfields[i].B) * w_fb +
+                        mode.xfields[i].B * conj(mode.xfields[i].F) * w_bf +
+                        mode.xfields[i].B * conj(mode.xfields[i].B) * w_bb
                        );
         }
     }
-    if (symmetry != NO_SYMMETRY) sum *= 2.;
+    if (mode.symmetry != SYMMETRY_NONE) sum *= 2.;
 
     // Consider loss on the mirror
     double R1, R2;
     if (mirrors) {
         std::tie(R1,R2) = *mirrors;
     } else {
-        const double lambda = inWavelength(0);
-        const double n = real(outNeff(0));
+        const double lambda = real(2e3*M_PI / k0);
+        const double n = real(mode.neff);
         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                      n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
         R1 = abs((n-n1) / (n+n1));
@@ -558,14 +544,14 @@ void EffectiveIndex2DSolver::normalizeFields(const std::vector<dcomplex,aligned_
     register dcomplex f = sqrt(1e12 / sum);  // 1e12 because intensity in W/m² and integral computed in µm
 
     for (size_t i = xbegin; i < xend; ++i) {
-        xfields[i] *= f;
+        mode.xfields[i] *= f;
     }
 }
 
-dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
+dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver::Mode& mode, bool save)
 {
     // Adjust for mirror losses
-    dcomplex neff2 = dcomplex(real(x), imag(x)-getMirrorLosses(real(x))); neff2 *= neff2;
+    dcomplex neff2 = dcomplex(real(x), imag(x)-getMirrorLosses(x)); neff2 *= neff2;
 
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx(xend);
     for (size_t i = xbegin; i < xend; ++i) {
@@ -580,7 +566,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     for (size_t i = xbegin; i < xend-1; ++i) {
         double d;
         if (i != xbegin) d = mesh->axis0[i] - mesh->axis0[i-1];
-        else if (symmetry != NO_SYMMETRY) d = mesh->axis0[i];     // we have symmetry, so beginning of the transfer matrix is at the axis
+        else if (mode.symmetry != SYMMETRY_NONE) d = mesh->axis0[i];     // we have symmetry, so beginning of the transfer matrix is at the axis
         else d = 0.;
         dcomplex phas = exp(- I * kx[i] * d);
         // Transfer through boundary
@@ -595,25 +581,27 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, bool save)
     }
 
     if (save) {
-        xfields[xend-1] = Field(1., 0.);
+        mode.neff = x;
+
+        mode.xfields[xend-1] = Field(1., 0.);
         for (size_t i = xend-1; i != xbegin; --i) {
-            xfields[i-1] = matrices[i-1].solve(xfields[i]);
+            mode.xfields[i-1] = matrices[i-1].solve(mode.xfields[i]);
         }
-        normalizeFields(kx);
-        have_fields = true;
+        normalizeFields(mode, kx);
+        mode.have_fields = true;
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = xbegin; i < xend; ++i)
-                nrs << "), (" << str(xfields[i].F) << ":" << str(xfields[i].B);
+                nrs << "), (" << str(mode.xfields[i].F) << ":" << str(mode.xfields[i].B);
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
         aligned_free(matrices);
     }
 
-    if (symmetry == SYMMETRY_POSITIVE) return T.bf + T.bb;      // B0 = F0   Bn = 0
-    else if (symmetry == SYMMETRY_NEGATIVE) return T.bf - T.bb; // B0 = -F0  Bn = 0
-    else return T.bb;                                           // F0 = 0    Bn = 0
+    if (mode.symmetry == SYMMETRY_POSITIVE) return T.bf + T.bb;      // B0 = F0   Bn = 0
+    else if (mode.symmetry == SYMMETRY_NEGATIVE) return T.bf - T.bb; // B0 = -F0  Bn = 0
+    else return T.bb;                                                // F0 = 0    Bn = 0
 }
 
 
@@ -623,9 +611,9 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 
     if (outNeff.size() <= num) throw NoValue(LightIntensity::NAME);
 
-    dcomplex neff = outNeff(0);
+    dcomplex neff = modes[num].neff;
 
-    if (!have_fields) detS(neff, true);
+    if (!modes[num].have_fields) detS(neff, modes[num], true);
 
     writelog(LOG_INFO, "Computing field distribution for Neff = %1%", str(neff));
 
@@ -648,8 +636,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(dst_mesh, results, kx, ky) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(dst_mesh, results, kx, ky)) {
+    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(num, dst_mesh, results, kx, ky) &&
+        !getLightIntenisty_Efficient<RegularMesh2D>(num, dst_mesh, results, kx, ky)) {
 
         #pragma omp parallel for
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
@@ -658,16 +646,16 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
             double y = point.vert();
 
             bool negate = false;
-            if (x < 0. && symmetry != NO_SYMMETRY) {
-                x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
+            if (x < 0. && modes[num].symmetry != SYMMETRY_NONE) {
+                x = -x; if (modes[num].symmetry == SYMMETRY_NEGATIVE) negate = true;
             }
             size_t ix = mesh->tran().findIndex(x);
             if (ix >= xend) ix = xend-1;
             if (ix < xbegin) ix = xbegin;
             if (ix != 0) x -= mesh->tran()[ix-1];
-            else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
+            else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()[0];
             dcomplex phasx = exp(- I * kx[ix] * x);
-            dcomplex val = xfields[ix].F * phasx + xfields[ix].B / phasx;
+            dcomplex val = modes[num].xfields[ix].F * phasx + modes[num].xfields[ix].B / phasx;
             if (negate) val = - val;
 
             size_t iy = mesh->vert().findIndex(y);
@@ -685,7 +673,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 }
 
 template <typename MeshT>
-bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
+bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky)
 {
@@ -702,16 +690,16 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(const plask::MeshD<2>& 
             for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
                 double x = rect_mesh.tran()[idx];
                 bool negate = false;
-                if (x < 0. && symmetry != NO_SYMMETRY) {
-                    x = -x; if (symmetry == SYMMETRY_NEGATIVE) negate = true;
+                if (x < 0. && modes[num].symmetry != SYMMETRY_NONE) {
+                    x = -x; if (modes[num].symmetry == SYMMETRY_NEGATIVE) negate = true;
                 }
                 size_t ix = mesh->tran().findIndex(x);
                 if (ix >= xend) ix = xend-1;
                 if (ix < xbegin) ix = xbegin;
                 if (ix != 0) x -= mesh->tran()[ix-1];
-                else if (symmetry == NO_SYMMETRY) x -= mesh->tran()[0];
+                else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()[0];
                 dcomplex phasx = exp(- I * kx[ix] * x);
-                dcomplex val = xfields[ix].F * phasx + xfields[ix].B / phasx;
+                dcomplex val = modes[num].xfields[ix].F * phasx + modes[num].xfields[ix].B / phasx;
                 if (negate) val = - val;
                 valx[idx] = val;
             }

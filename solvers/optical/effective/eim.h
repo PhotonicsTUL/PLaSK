@@ -17,9 +17,10 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Mode symmetry in horizontal axis
     enum Symmetry {
-        NO_SYMMETRY,
+        SYMMETRY_DEFAULT,
         SYMMETRY_POSITIVE,
-        SYMMETRY_NEGATIVE
+        SYMMETRY_NEGATIVE,
+        SYMMETRY_NONE
     };
 
     /// Mode polarization
@@ -59,6 +60,39 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         }
     };
 
+    /// Details of the computed mode
+    struct Mode {
+        EffectiveIndex2DSolver* solver; ///< Solver this mode belongs to
+        Symmetry symmetry;              ///< Horizontal symmetry of the modes
+        dcomplex neff;                  ///< Stored mode effective index
+        bool have_fields;               ///< Did we compute fields for current state?
+        std::vector<Field,aligned_allocator<Field>> xfields; ///< Computed horizontal fields
+        double power;                   ///< Mode power [mW]
+
+        Mode(EffectiveIndex2DSolver* solver, Symmetry sym): solver(solver), have_fields(false), xfields(solver->xend), power(1.) {
+            setSymmetry(sym);
+        }
+
+        void setSymmetry(Symmetry sym) {
+            if (solver->geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
+                if (sym == SYMMETRY_DEFAULT)
+                    sym = SYMMETRY_POSITIVE;
+                else if (sym == SYMMETRY_NONE)
+                    throw BadInput(solver->getId(), "For symmetric geometry specify positive or negative symmetry");
+            } else {
+                if (sym == SYMMETRY_DEFAULT)
+                    sym = SYMMETRY_NONE;
+                else if (sym != SYMMETRY_NONE)
+                    throw BadInput(solver->getId(), "For non-symmetric geometry no symmetry may be specified");
+            }
+            symmetry = sym;
+        }
+
+        bool operator==(const Mode& other) {
+            return symmetry == other.symmetry && is_zero( neff - other.neff );
+        }
+    };
+
 
   protected:
 
@@ -66,7 +100,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     size_t xbegin,  ///< First element of horizontal mesh to consider
            xend,    ///< Last element of horizontal mesh to consider
-           ybegin,  ///<First element of vertical mesh to consider
+           ybegin,  ///< First element of vertical mesh to consider
            yend;    ///< Last element of vertical mesh to consider
 
     /// Logger for determinant
@@ -76,15 +110,12 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache;
 
     /// Computed horizontal and vertical fields
-    std::vector<Field,aligned_allocator<Field>> xfields, yfields;
+    std::vector<Field,aligned_allocator<Field>> yfields;
 
     /// Field confinement weights in stripes
     std::vector<double,aligned_allocator<double>> weights;
 
-    /// Did we compute fields for current Neff?
-    bool have_fields;
-
-    /// Computed effective indices for each stripe
+    /// Computed effective epsilons for each stripe
     std::vector<dcomplex,aligned_allocator<dcomplex>> epsilons;
 
     /// Should stripe indices be recomputed
@@ -94,11 +125,9 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     Polarization polarization;  ///< Chosen light polarization
 
-    Symmetry symmetry;          ///< Symmetry of the searched modes
+  public:
 
     Emission emission;          ///< Direction of laser emission
-
-  public:
 
     dcomplex vneff;             ///< Vertical effective index of the main stripe
 
@@ -113,6 +142,9 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /// Parameters for sripe rootdigger
     RootDigger::Params stripe_root;
 
+    /// Computed modes
+    std::vector<Mode> modes;
+
     EffectiveIndex2DSolver(const std::string& name="");
 
     virtual std::string getClassName() const { return "optical.EffectiveIndex2D"; }
@@ -123,17 +155,6 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     }
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
-
-    /// Get emission direction
-    ///\return emission direction
-    Emission getEmission() const { return emission; }
-
-    /// Set emission direction
-    /// \param emis new emissjon direction
-    void setEmission(Emission emis) {
-        emission = emis;
-        have_fields = false;
-    }
 
     /// \return position of the main stripe
     double getStripeX() const { return stripex; }
@@ -146,6 +167,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         stripex = x;
         recompute_neffs = true;
         vneff = 0.;
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        modes.clear();
     }
 
     /// \return current polarization
@@ -159,17 +182,23 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         polarization = polar;
         recompute_neffs = true;
         vneff = 0.;
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        modes.clear();
     }
 
-    /// \return current polarization
-    Symmetry getSymmetry() const { return symmetry; }
+    /// \return current wavelength
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
 
     /**
-     * Set new symmetry
-     * \param sym new symmetry
+     * Set new polarization
+     * \param polar new polarization
      */
-    void setSymmetry(Symmetry sym) {
-        symmetry = sym;
+    void setWavelength(dcomplex wavelength) {
+        k0 = 2e3*M_PI / wavelength;
+        recompute_neffs = true;
+        vneff = 0.;
+        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        modes.clear();
     }
 
     /**
@@ -194,10 +223,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     }
 
     /**
-     * Find the vertical effective indices within the specified range
-     *
+     * Look for the vertical effective indices within the specified range
      * This method \b does \b not remember the determined modes!
-     *
      * \param neff1 one corner of the range to browse
      * \param neff2 another corner of the range to browse
      * \param resteps minimum number of steps to check function value on real contour
@@ -205,39 +232,27 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> findVeffs(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
+    std::vector<dcomplex> searchVeffs(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
      * Find the mode around the specified effective index.
-     *
-     * This method remembers the determined mode, for retrieval of the field profiles.
-     *
      * \param neff initial effective index to search the mode around
+     * \param symmetry mode symmetry
      * \return determined effective index
      */
-    dcomplex computeMode(dcomplex neff);
+    size_t findMode(dcomplex neff, Symmetry symmetry=SYMMETRY_DEFAULT);
 
     /**
      * Find the modes within the specified range
-     *
-     * This method \b does \b not remember the determined modes!
-     *
      * \param neff1 one corner of the range to browse
      * \param neff2 another corner of the range to browse
+     * \param symmetry mode symmetry
      * \param resteps minimum number of steps to check function value on real contour
      * \param imsteps minimum number of steps to check function value on imaginary contour
      * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> findModes(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
-
-    /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw
-     *
-     * \param neff effective index of the mode
-     */
-    void setMode(dcomplex neff);
+    std::vector<size_t> findModes(dcomplex neff1=0., dcomplex neff2=0., Symmetry symmetry=SYMMETRY_DEFAULT, size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
      * Compute determinant for a single stripe
@@ -250,16 +265,13 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * Compute modal determinant for the whole matrix
      * \param neff effective index to use
      */
-    dcomplex getDeterminant(dcomplex neff) {
+    dcomplex getDeterminant(dcomplex neff, Symmetry sym=SYMMETRY_DEFAULT) {
         stageOne();
-        dcomplex det = detS(neff);
-        // log_value(neff, det);
+        Mode mode(this,sym);
+        dcomplex det = detS(neff, mode);
         return det;
     }
 
-
-    /// Receiver of the wavelength
-    ReceiverFor<Wavelength> inWavelength;
 
     /// Receiver for the temperature
     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;
@@ -268,7 +280,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     ReceiverFor<Gain, Geometry2DCartesian> inGain;
 
     /// Provider for computed effective index
-    ProviderFor<EffectiveIndex>::WithValue outNeff;
+    ProviderFor<EffectiveIndex>::Delegate outNeff;
 
     /// Provider of optical field
     ProviderFor<LightIntensity, Geometry2DCartesian>::Delegate outIntensity;
@@ -281,11 +293,15 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /// Invalidate the data
     virtual void onInvalidate();
 
-    dcomplex k0;        ///< Cache of the normalized frequency [1/µm]
+    /// Cache of the normalized frequency [1/µm]
+    dcomplex k0;
 
-    /// Compute mirror losses for specified effective index
-    double getMirrorLosses(double n) {
-        const double lambda = inWavelength(0);
+    /// Do we need to have gain
+    bool need_gain;
+
+    /// Compute mirror losses for specified effective mode
+    double getMirrorLosses(dcomplex n) {
+        const double lambda = real(2e3*M_PI / k0);
         double R1, R2;
         if (mirrors) {
             std::tie(R1,R2) = *mirrors;
@@ -319,7 +335,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * Normalize horizontal fields, so multiplying LightIntensity by power gives proper LightIntensity in (V/m)²
      * \param kx computed horizontal propagation constants
      */
-    void normalizeFields(const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
+    void normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
 
     /**
      * Compute S matrix determinant for one stripe
@@ -334,14 +350,38 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param x effective index
      * \param save if \c true, the fields are saved to xfields
      */
-    dcomplex detS(const dcomplex& x, bool save=false);
+    dcomplex detS(const dcomplex& x, Mode& mode, bool save=false);
+
+    /// Insert mode to the list or return the index of the exiting one
+    size_t insertMode(const Mode& mode) {
+        for (size_t i = 0; i != modes.size(); ++i)
+            if (modes[i] == mode) return i;
+        modes.push_back(mode);
+        outNeff.fireChanged();
+        outIntensity.fireChanged();
+        return modes.size()-1;
+    }
+
+    /// Return number of found modes
+    size_t nmodes() const {
+        return modes.size();
+    }
+
+    /**
+     * Return mode effective index
+     * \param n mode number
+     */
+    dcomplex getEffectiveIndex(size_t n) {
+        if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
+        return modes[n].neff;
+    }
 
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
 
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
+    bool getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
                                      const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                      const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky);
 
