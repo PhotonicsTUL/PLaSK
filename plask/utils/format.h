@@ -35,7 +35,7 @@ inline void format_add_args(boost::format& format, firstT&& first_arg, restT&&..
  * @see http://www.boost.org/doc/libs/1_48_0/libs/format/
  */
 template <typename... T>
-std::string format(const std::string& msg, T&&... args) {
+inline std::string format(const std::string& msg, T&&... args) {
     boost::format format(msg);
     format_add_args(format, std::forward<T>(args)...);
     return format.str();
