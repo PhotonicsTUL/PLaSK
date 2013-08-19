@@ -5,7 +5,7 @@ namespace plask { namespace solvers { namespace slab {
 template <typename GeometryT>
 ModalSolver<GeometryT>::ModalSolver(const std::string& name): SolverOver<GeometryT>(name),
     outdist(0.1),
-    outIntensity(this, &ModalSolver<GeometryT>::getIntensity)
+    outIntensity(this, &ModalSolver<GeometryT>::getIntensity, &ModalSolver<GeometryT>::nummodes)
 {
     inTemperature = 300.; // temperature receiver has some sensible value
 }

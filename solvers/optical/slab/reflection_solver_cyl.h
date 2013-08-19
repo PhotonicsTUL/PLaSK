@@ -50,7 +50,7 @@ struct FourierReflectionCyl: public ModalSolver<Geometry2DCylindrical> {
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
      */
-    const DataVector<const double> getIntensity(const MeshD<2>& dst_mesh, int num, InterpolationMethod method);
+    const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };
 

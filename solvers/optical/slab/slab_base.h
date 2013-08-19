@@ -114,9 +114,16 @@ struct ModalSolver: public SolverOver<GeometryT> {
   protected:
 
     /**
+     * Return number of determined modes
+     */
+    size_t nummodes() const {
+        return 1; //TODO
+    }
+      
+    /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
      */
-    virtual const DataVector<const double> getIntensity(const MeshD<2>& dst_mesh, int num, InterpolationMethod method) = 0;
+    virtual const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method) = 0;
 
 };
 

@@ -49,7 +49,7 @@ double FourierReflection2D::computeMode(dcomplex neff) {
 }
 
 
-const DataVector<const double> FourierReflection2D::getIntensity(const MeshD<2>& dst_mesh, int num, InterpolationMethod method) {
+const DataVector<const double> FourierReflection2D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method) {
 //     if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
 //         throw NoValue(SomeSingleValueProperty::NAME);
 //     return interpolate(*mesh, my_data, dst_mesh, defInterpolation<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh
