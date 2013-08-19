@@ -48,7 +48,6 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width = 0.0;
     minor_concentration = 5.0e+15;
     iterations = 0;
-    wavelength = 0.0;
 
     detected_QW = detectQuantumWells();
     z = getZQWCoordinate();
@@ -78,14 +77,6 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
 
-    if (overthreshold_computation && (threshold_computation == false))
-    {
-        g_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain vector provided by inGain reciever
-        dgdn_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
-        Li_on_the_mesh = inLightIntensity(0, mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
-        //TODO use other modes
-    }
-
     n_present.reset(mesh.size(), 0.0);
     n_previous.reset(mesh.size(), 0.0);
 
@@ -107,11 +98,28 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
             if (overthreshold_computation)
             {
-//                wavelength = inWavelength;
-                g_on_the_mesh = inGain(mesh2, wavelength, interpolation_method);   // data gain vector provided by inGain reciever
-                dgdn_on_the_mesh = inGain(mesh2, interpolation_method);   // data gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
-                Li_on_the_mesh = inLightIntensity(0, mesh2, interpolation_method);   // data light intensity vector provided by inLightIntensity reciever
-                //TODO add other modes
+                // Compute E and F components for overthreshold computations
+                if (inWavelength.size() != inLightIntensity.size())
+                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightIntensity differ");
+                // Sum all modes
+                overthreshold_left = DataVector<double>(mesh2.size(), 0.);
+                overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
+                overthreshold_g = DataVector<double>(mesh.size(), 0.);
+                double inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
+                // Sum all modes
+                for (size_t n = 0; n != inWavelength.size(); ++n) {
+                    double wavelength = real(inWavelength(n));
+                    auto g = inGain(mesh2, wavelength, interpolation_method);
+                    auto dgdn = inGainOverCarriersConcentration(mesh2, interpolation_method);
+                    auto Li = inLightIntensity(n, mesh2, interpolation_method);
+                    double factor = inv_hc * wavelength;
+                    for (size_t i = 0; i != mesh2.size(); ++i) {
+                        register auto common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * g[i] * Li[i];
+                        overthreshold_left[i] += common;
+                        overthreshold_dgdn[i] += common * dgdn[i];
+                        overthreshold_g[i] += common * g[i];
+                    }
+                }
             }
             n_present.reset(mesh.size(), 0.0);
             n_previous.reset(mesh.size(), 0.0);
@@ -551,11 +559,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        double g = g_on_the_mesh[i];
-        double dgdn = dgdn_on_the_mesh[i];
-        double Li = Li_on_the_mesh[i];
-
-        product += (1.0/(plask::phys::c * plask::phys::h_J)) * (g * this->QW_material->nr(wavelength, T) * wavelength * 1.0e-9 * Li) * dgdn;
+        product += overthreshold_dgdn;
     }
 
     return product;
@@ -575,11 +579,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        double g = g_on_the_mesh[i];
-        double dgdn = dgdn_on_the_mesh[i];
-        double Li = Li_on_the_mesh[i];
-
-        product += (1.0/(plask::phys::c * plask::phys::h_J)) * (g * this->QW_material->nr(wavelength, T) * wavelength * 1.0e-9 * Li) * (dgdn * n0 - g);
+        product += overthreshold_dgdn * n0 - overthreshold_g;
     }
 
     return product;
@@ -652,10 +652,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        double g = g_on_the_mesh[i];
-        double Li = Li_on_the_mesh[i];
-
-        product -= (1.0/(plask::phys::c * plask::phys::h_J)) * (g * this->QW_material->nr(wavelength, T) * wavelength * 1.0e-9 * Li);
+        product -= overthreshold_left[i];
     }
 
     return product;

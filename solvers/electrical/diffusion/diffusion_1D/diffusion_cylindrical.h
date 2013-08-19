@@ -57,21 +57,20 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         bool threshold_computation;
         bool overthreshold_computation;
 
-        double wavelength;      // wavelength of mode in overthreshold computations
-
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
         int iterations;
 
         std::vector<Box2D> detected_QW;
 
-        plask::DataVector<const Vec<2>> j_on_the_mesh;    // current density vector provided by inCurrentDensity reciever
-        plask::DataVector<const double> T_on_the_mesh;    // temperature vector provided by inTemperature reciever
-        plask::DataVector<const double> g_on_the_mesh;    // gain vector provided by inGain reciever
-        plask::DataVector<const double> dgdn_on_the_mesh; // gain over carriers concentration vector provided by inGainOverCarriersConcentration reciever
-        plask::DataVector<const double> Li_on_the_mesh;   // light intensity vector provided by inLightIntensity reciever
+        plask::DataVector<const Vec<2>> j_on_the_mesh;  // current density vector provided by inCurrentDensity reciever
+        plask::DataVector<const double> T_on_the_mesh;  // temperature vector provided by inTemperature reciever
+        
+        plask::DataVector<double> overthreshold_left;   // Factor for overthreshold computations summed for all modes
+        plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
+        plask::DataVector<double> overthreshold_g;      // Factor for overthreshold computations summed for all modes
 
-        plask::DataVector<double> n_previous;       // concentration computed in n-1 -th step vector
-        plask::DataVector<double> n_present;        // concentration computed in n -th step vector
+        plask::DataVector<double> n_previous;           // concentration computed in n-1 -th step vector
+        plask::DataVector<double> n_present;            // concentration computed in n -th step vector
 //        plask::DataVector<double> j_on_the_mesh;    // current density on internal computation mesh
 //        plask::DataVector<double> T_on_the_mesh;    // temperature on internal computation mesh
 //        bool daneWczytane;        // Czy dane zostaly wczytane
