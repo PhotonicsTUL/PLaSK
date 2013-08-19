@@ -111,9 +111,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed vertical fields
     std::vector<FieldZ> zfields;
 
-    /// Did we compute fields for current state?
-    bool have_fields;
-
     /// Stripe to take vertical fields from
     size_t stripe;
 
@@ -166,7 +163,8 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// \param emis new emissjon direction
     void setEmission(Emission emis) {
         emission = emis;
-        have_fields = false;
+        for (auto& mode: modes) 
+            mode.have_fields = false;
     }
 
     /**
@@ -327,15 +325,15 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      */
     double getModalLoss(size_t n) {
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
-        return imag(1e7 * k0 * (1. - modes[n].freqv/2.));
+        return imag(2e7 * k0 * (1. - modes[n].freqv/2.));
     }
     
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=DEFAULT_INTERPOLATION);
+    DataVector<const double> getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod=DEFAULT_INTERPOLATION);
     
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(size_t num, const plask::MeshD< 2 >& dst_mesh, plask::DataVector< double >& results);
+    bool getLightIntenisty_Efficient(size_t num, const MeshD<2>& dst_mesh, DataVector<double>& results);
 };
 
 

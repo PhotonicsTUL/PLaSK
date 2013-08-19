@@ -8,7 +8,6 @@ namespace plask { namespace solvers { namespace effective {
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_value(dataLog<dcomplex, dcomplex>("freq", "v", "det")),
-    have_fields(false),
     emission(TOP),
     outdist(0.1),
     perr(1e-3),
@@ -63,7 +62,6 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
     }
-    have_fields = false;
 }
 
 
@@ -186,7 +184,6 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 {
     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
     modes.clear();
-    have_fields = false;
     outWavelength.fireChanged();
     outLoss.fireChanged();
     outIntensity.fireChanged();
@@ -511,7 +508,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, plask::solvers::ef
 
 
 
-plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
+plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -541,7 +538,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
         // Compute vertical part
         detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], true);
 
-        have_fields = true;
+        modes[num].have_fields = true;
     }
 
     DataVector<double> results(dst_mesh.size());
@@ -589,7 +586,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 }
 
 template <typename MeshT>
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, plask::DataVector<double>& results)
+bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const MeshD<2>& dst_mesh, DataVector<double>& results)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
 

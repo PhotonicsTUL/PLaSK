@@ -195,16 +195,16 @@ int main(int argc, const char *argv[])
                 loglevel.reset(plask::LogLevel(boost::lexical_cast<unsigned>(level)));
             } catch (boost::bad_lexical_cast) {
                 std::string ll = level; boost::to_lower(ll);
-                if (ll == "critical_error") loglevel.reset(plask::LogLevel(0));
-                if (ll == "critical") loglevel.reset(plask::LogLevel(0));
-                else if (ll == "error") loglevel.reset(plask::LogLevel(1));
-                else if (ll == "error_detail") loglevel.reset(plask::LogLevel(2));
-                else if (ll == "warning") loglevel.reset(plask::LogLevel(3));
-                else if (ll == "info") loglevel.reset(plask::LogLevel(4));
-                else if (ll == "result") loglevel.reset(plask::LogLevel(5));
-                else if (ll == "data") loglevel.reset(plask::LogLevel(6));
-                else if (ll == "detail") loglevel.reset(plask::LogLevel(7));
-                else if (ll == "debug") loglevel.reset(plask::LogLevel(8));
+                if (ll == "critical_error") loglevel.reset(plask::LOG_CRITICAL_ERROR);
+                if (ll == "critical") loglevel.reset(plask::LOG_CRITICAL_ERROR);
+                else if (ll == "error") loglevel.reset(plask::LOG_ERROR);
+                else if (ll == "error_detail") loglevel.reset(plask::LOG_ERROR_DETAIL);
+                else if (ll == "warning") loglevel.reset(plask::LOG_WARNING);
+                else if (ll == "info") loglevel.reset(plask::LOG_INFO);
+                else if (ll == "result") loglevel.reset(plask::LOG_RESULT);
+                else if (ll == "data") loglevel.reset(plask::LOG_DATA);
+                else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
+                else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
                 else {
                     std::cerr << "Bad log level specified\n";
                     return 4;

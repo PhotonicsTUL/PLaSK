@@ -85,7 +85,6 @@ namespace detail {
 
     template <typename ReceiverT>
     static bool assignProvider(ReceiverT& receiver, const py::object& obj) {
-        typedef ProviderFor<typename ReceiverT::PropertyTag, typename ReceiverT::SpaceType> ProviderT;
         try {
             RegisterReceiverBase<ReceiverT>::connect(receiver, obj);
             return true;
@@ -221,7 +220,6 @@ namespace detail {
             if (assignValue(self, obj)) return;
             try {
                 if (!PySequence_Check(obj.ptr())) throw py::error_already_set();
-                typedef typename ReceiverT::ValueType ValueT;
                 try {
                     py::extract<DataT> extr(obj);
                     DataT data = py::extract<DataT>(obj);
