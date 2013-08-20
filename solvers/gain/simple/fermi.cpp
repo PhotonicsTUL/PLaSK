@@ -4,7 +4,6 @@ namespace plask { namespace solvers { namespace fermi {
 
 template <typename GeometryType>
 FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverOver<GeometryType>(name),
-    inTemperature(this), inCarriersConcentration(this),
     outGain(this, &FermiGainSolver<GeometryType>::getGain),
     outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
@@ -14,6 +13,14 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverO
     cond_waveguide_depth = 0.26; // [eV]
     vale_waveguide_depth = 0.13; // [eV]
     differenceQuotient = 0.01;  // [%]
+    inTemperature.changedConnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
+    inCarriersConcentration.changedConnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
+}
+
+template <typename GeometryType>
+FermiGainSolver<GeometryType>::~FermiGainSolver() {
+    inTemperature.changedDisconnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
+    inCarriersConcentration.changedDisconnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
 }
 
 

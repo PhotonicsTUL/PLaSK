@@ -209,6 +209,14 @@ struct Provider {
  * This class is usefult for metaprogramming and also can be used for holding pointers to receivers.
  */
 struct ReceiverBase {
+
+    /// The reason of change of provider value
+    enum class ChangeReason {
+        DELETE,     ///< this receiver is being deleted
+        VALUE,      ///< value of provider has just been changed
+        PROVIDER    ///< provider has just been exchanged to another one
+    };
+
     virtual ~ReceiverBase() {}
 };
 
@@ -246,15 +254,8 @@ public:
     static constexpr const char* PROVIDER_NAME = ProviderT::NAME;
     virtual const char* providerName() const { return PROVIDER_NAME; }
 
-    /// The reason of change of provider value
-    enum class ChangeReason {
-        DELETE,     ///< this receiver is being deleted
-        VALUE,      ///< value of provider has just been changed
-        PROVIDER    ///< provider has just been exchanged to another one
-    };
-
     /// Signal called when provider value or provider was changed (called by onChange)
-    boost::signals2::signal<void(Receiver& src, ChangeReason reason)> providerValueChanged;
+    boost::signals2::signal<void(ReceiverBase& src, ChangeReason reason)> providerValueChanged;
 
     Receiver& operator=(const Receiver&) = delete;
     Receiver(const Receiver&) = delete;
@@ -368,12 +369,6 @@ public:
      */
     const ProviderT* getProvider() const { return provider; }
 
-    /// React on provider value changes. Set changed flag to true.
-    /*void onChange(Provider* which, bool isDeleted) {
-        if (isDeleted) provider = 0;
-        fireChanged(isDeleted ? ChangeReason::PROVIDER : ChangeReason::VALUE);
-    }*/
-
     /// \return true if there is any provider connected
     bool hasProvider() {
         return provider;
@@ -421,6 +416,24 @@ public:
     template <typename ...ConstProviderConstructorArgs>
     void setConstValue(ConstProviderConstructorArgs&&... constProviderConstructorArgs) {
         setProvider(new typename ProviderT::ConstProviderType(std::forward<ConstProviderConstructorArgs>(constProviderConstructorArgs)...), true);
+    }
+
+    /**
+     * Connect a method to changed signal.
+     * @param obj, method slot to connect, object and it's method
+     * @param at specifies where the slot should be connected:
+     *  - boost::signals2::at_front indicates that the slot will be connected at the front of the list or group of slots
+     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
+     */
+    template <typename ClassT, typename methodT>
+    boost::signals2::connection changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at=boost::signals2::at_back) {
+        return providerValueChanged.connect(boost::bind(method, obj, _1, _2), at);
+    }
+
+    /// Disconnect a method from changed signal
+    template <typename ClassT, typename methodT>
+    void changedDisconnectMethod(ClassT* obj, methodT method) {
+        providerValueChanged.disconnect(boost::bind(method, obj, _1, _2));
     }
 
 protected:

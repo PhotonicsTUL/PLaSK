@@ -62,7 +62,7 @@ namespace detail {
             PyObject* obj = oprovider.ptr();
             py::incref(obj);
             receiver.providerValueChanged.connect_extended(
-                [obj](const boost::signals2::connection& conn, typename ReceiverT::Base&, typename ReceiverT::ChangeReason reason) -> void {
+                [obj](const boost::signals2::connection& conn, ReceiverBase&, ReceiverBase::ChangeReason reason) -> void {
                     if (reason == ReceiverT::ChangeReason::PROVIDER || reason == ReceiverT::ChangeReason::DELETE) {
                         conn.disconnect();
                         py::decref(obj);

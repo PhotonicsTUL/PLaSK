@@ -74,10 +74,11 @@ public:
     ReceiverFor<PropertyT, InputSpaceType> in;
 
     DataSourceWithReceiver() {
-        in.providerValueChanged.connect([&] (typename ReceiverFor<PropertyT, InputSpaceType>::Base&,
-                                             typename ReceiverFor<PropertyT, InputSpaceType>::ChangeReason reason) {
-                                                if (reason != ReceiverFor<PropertyT, InputSpaceType>::ChangeReason::DELETE) this->fireChanged();
-                                             });
+        in.providerValueChanged.connect(
+            [&] (ReceiverBase&, ReceiverBase::ChangeReason reason) {
+                if (reason != ReceiverBase::ChangeReason::DELETE) this->fireChanged();
+            }
+        );
     }
 
     ~DataSourceWithReceiver() {

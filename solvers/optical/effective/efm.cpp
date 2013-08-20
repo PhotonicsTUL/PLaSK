@@ -210,8 +210,6 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 void EffectiveFrequencyCylSolver::stageOne()
 {
-    static RectilinearMesh2D zero_mesh({0.}, {0.});
-
     bool fresh = !initCalculation();
 
     // Some additional checks
@@ -275,7 +273,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                     double g = gain[idx];
                     double gs = gain_slope[idx];
                     double nr = real(material->Nr(lam, T));
-                    double ng = real(nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2);
+                    double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2);
                     nrCache[ir][iz] = dcomplex(nr, 7.95774715459e-09 * lam * g);
                     ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
                 }

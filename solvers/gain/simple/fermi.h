@@ -64,47 +64,21 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
     std::vector<ActiveRegionInfo> regions;  ///< List of active regions
 
-    /**
-     * Our own implementation of receivers.
-     * As this solver does not have explicit compute function, we must trigger outGain change
-     * when any input changes. Receivers of this class do it automatically.
-     */
-    template <typename Property>
-    struct MyReceiverFor: ReceiverFor<Property, GeometryType>
-    {
-        FermiGainSolver<GeometryType>* parent;
-
-        MyReceiverFor(FermiGainSolver<GeometryType>* par): parent(par) {}
-
-        template <typename T> MyReceiverFor& operator=(const T& rhs)
-        {
-            ReceiverFor<Property, GeometryType>::operator=(rhs); return *this;
-        }
-
-        template <typename T> MyReceiverFor& operator=(T&& rhs)
-        {
-            ReceiverFor<Property, GeometryType>::operator=(std::forward<T>(rhs)); return *this;
-        }
-
-        virtual void onChange()
-        {
-            parent->outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain
-        }
-    };
-
     /// Receiver for temperature.
-    MyReceiverFor<Temperature> inTemperature;
+    ReceiverFor<Temperature,GeometryType> inTemperature;
 
     /// Receiver for carriers concentration in the active region
-    MyReceiverFor<CarriersConcentration> inCarriersConcentration;
+    ReceiverFor<CarriersConcentration,GeometryType> inCarriersConcentration;
 
     /// Provider for gain distribution
-    typename ProviderFor<Gain, GeometryType>::Delegate outGain;
+    typename ProviderFor<Gain,GeometryType>::Delegate outGain;
 
     /// Provider for gain over carriers concentration derivative distribution
     typename ProviderFor<GainOverCarriersConcentration, GeometryType>::Delegate outGainOverCarriersConcentration;
 
     FermiGainSolver(const std::string& name="");
+
+    virtual ~FermiGainSolver();
 
     virtual std::string getClassName() const;
 
@@ -117,7 +91,11 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Function which checks if current mesh is identical to previously used
     plask::SameMeshChecker meshChecker;
 
-  public:
+  protected:
+
+    friend struct GainSpectrum<GeometryType>;
+    friend struct QW::gain;
+
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;
 
@@ -143,6 +121,12 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
     /// Invalidate the gain
     virtual void onInvalidate();
+
+    /// Notify that gain was chaged
+    void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason)
+    {
+        outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain
+    }
 
     /**
      * Detect active regions.
