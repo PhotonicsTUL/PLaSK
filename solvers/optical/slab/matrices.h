@@ -20,8 +20,8 @@ class Matrix {
     int r, c;
 
   public:
-    int* gc;                //< the reference count for the garbage collector
     T* data;                //< The data of the matrix
+    int* gc;                //< the reference count for the garbage collector
 
 
     Matrix() : gc(NULL) {};

@@ -130,7 +130,7 @@ double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSo
 }
 
 double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSolver::Mode& mode) {
-    return imag(1e7 * mode.solver->k0 * (1. - mode.freqv/2.));
+    return imag(2e4 * mode.solver->k0 * (1. - mode.freqv/2.));
 }
 
 

@@ -10,6 +10,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     mCondNcontact(50.),
     mVCorrLim(1e-3),
     mLoopNo(0),
+    mDefCondJunc(5.),
     mCorrType(CORRECTION_ABSOLUTE),
     mHeatMethod(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
@@ -177,7 +178,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     mPotentials.reset();
     mCurrentDensities.reset();
     mHeatDensities.reset();
-    mCondJunc.reset(1, 5.);
+    mCondJunc.reset(1, mDefCondJunc);
 }
 
 
@@ -528,7 +529,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     }
     mDV = tMaxV - tMinV;
     mMaxRelVCorr *= 100.; // %
-    if (mLoopNo == 0) mMaxRelVCorr = 1.;
+    if (mLoopNo == 0) mMaxRelVCorr = 100.;
     std::swap(mPotentials, iV);
 }
 
