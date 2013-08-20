@@ -147,6 +147,23 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
 }
 
 
+size_t EffectiveFrequencyCylSolver::setMode(dcomplex clambda, int m)
+{
+    if (isnan(k0.real())) k0 = 2e3*M_PI / clambda;
+    if (!initialized) {
+        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
+        stageOne();
+    }
+    Mode mode(this, m);
+    mode.freqv = 2. - 4e3*M_PI / clambda / k0;
+    double det = abs(detS(mode.freqv, mode));
+    if (det > root.tolf_max)
+        writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
+    writelog(LOG_INFO, "Setting mode at %1%", str(clambda));
+    return insertMode(mode);
+}
+
+
 void EffectiveFrequencyCylSolver::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());

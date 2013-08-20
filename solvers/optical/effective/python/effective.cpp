@@ -159,6 +159,7 @@ BOOST_PYTHON_MODULE(effective)
         solver.def("find_mode", &EffectiveIndex2DSolver_findMode, "Compute the mode near the specified effective index", (arg("neff"), arg("symmetry")=py::object()));
         solver.def("find_modes", &EffectiveIndex2DSolver_findModes, "Find the modes within the specified range using global method",
                (arg("start")=0., arg("end")=0., arg("symmetry")=py::object(), arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9)));
+        METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff", arg("symmetry")=py::object());
         RW_PROPERTY(stripex, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominat mode)");
         RW_FIELD(vneff, "Effective index in the vertical direction");
         solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
@@ -206,6 +207,10 @@ BOOST_PYTHON_MODULE(effective)
         solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",
                    py::arg("v"), arg("m")=0);
         solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", arg("lam"), arg("m")=0);
+        solver.def("set_mode", (size_t (EffectiveFrequencyCylSolver::*)(dcomplex,int))&EffectiveFrequencyCylSolver::setMode,
+                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), py::arg("m")=0));
+        solver.def("set_mode", (size_t (EffectiveFrequencyCylSolver::*)(double,double,int))&EffectiveFrequencyCylSolver::setMode,
+                   "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), "loss", py::arg("m")=0));
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain distribution in the active region");
         PROVIDER(outWavelength, "Wavelength of the computed mode [nm]");

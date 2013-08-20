@@ -20,12 +20,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     mIterLim(10000),
     mLogFreq(500)
 {
-    mCond.reset();
-    mPotentials.reset();
-    mCurrentDensities.reset();
-    mHeatDensities.reset();
-    mCondJunc.reset(1, 5.);
-
+    onInvalidate();
     inTemperature = 300.;
 }
 
@@ -170,6 +165,10 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     mAsize = this->mesh->size();
     mPotentials.reset(mAsize, 0.);
     mCond.reset(this->mesh->elements.size());
+    if (mCondJunc.size() == 1) {
+        size_t tCondSize = max(mActLo.size() * (this->mesh->axis0.size()-1), size_t(1));
+        mCondJunc.reset(tCondSize, mCondJunc[0]);
+    }
 }
 
 
@@ -178,6 +177,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     mPotentials.reset();
     mCurrentDensities.reset();
     mHeatDensities.reset();
+    mCondJunc.reset(1, 5.);
 }
 
 
@@ -400,7 +400,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int iLoo
     MatrixT tA(mAsize, this->mesh->minorAxis().size());
 
     double tMaxMaxAbsVCorr = 0.,
-        tMaxMaxRelVCorr = 0.;
+           tMaxMaxRelVCorr = 0.;
 
 #   ifndef NDEBUG
         if (!mPotentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
@@ -418,6 +418,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int iLoo
         savePotentials(tV);
 
         if (mMaxAbsVCorr > tMaxMaxAbsVCorr) tMaxMaxAbsVCorr = mMaxAbsVCorr;
+        if (mMaxRelVCorr > tMaxMaxRelVCorr) tMaxMaxRelVCorr = mMaxRelVCorr;
 
         ++mLoopNo;
         ++tLoop;

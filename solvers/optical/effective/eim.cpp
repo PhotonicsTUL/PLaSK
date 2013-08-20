@@ -217,6 +217,21 @@ std::vector<size_t> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex n
 }
 
 
+size_t EffectiveIndex2DSolver::setMode(dcomplex neff, Symmetry sym)
+{
+    if (!initialized) {
+        writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
+        stageOne();
+    }
+    Mode mode(this, sym);
+    mode.neff = neff;
+    double det = abs(detS(neff, mode));
+    if (det > root.tolf_max)
+        writelog(LOG_WARNING, "Provided effective index does not correspond to any mode (det = %1%)", det);
+    writelog(LOG_INFO, "Setting mode at %1%", str(neff));
+    return insertMode(mode);
+}
+
 void EffectiveIndex2DSolver::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());

@@ -33,7 +33,13 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             plask::SolverOver<Geometry2DType> (name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_SPLINE)
-            {}
+        {
+            relative_accuracy = 0.01;
+            max_mesh_changes = 5;
+            max_iterations = 20;
+            minor_concentration = 5.0e+15;
+            inTemperature = 300.;
+        }
 
         virtual std::string getClassName() const;
 
@@ -111,7 +117,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         std::vector<Box2D> detectQuantumWells();
         double getZQWCoordinate();
         virtual void onInitialize();
-        //virtual void onInvalidate();
+        virtual void onInvalidate();
 
         const DataVector<double> getConcentration(const plask::MeshD<2>& dest_mesh, plask::InterpolationMethod interpolation=DEFAULT_INTERPOLATION ); // method providing concentration from inside to the provider (outConcentration)
 

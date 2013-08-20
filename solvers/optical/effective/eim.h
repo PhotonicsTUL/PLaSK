@@ -238,7 +238,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * Find the mode around the specified effective index.
      * \param neff initial effective index to search the mode around
      * \param symmetry mode symmetry
-     * \return determined effective index
+     * \return index of found mode
      */
     size_t findMode(dcomplex neff, Symmetry symmetry=SYMMETRY_DEFAULT);
 
@@ -250,7 +250,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param resteps minimum number of steps to check function value on real contour
      * \param imsteps minimum number of steps to check function value on imaginary contour
      * \param eps approximate error for integrals
-     * \return vector of determined effective indices
+     * \return vector of indices of found modes
      */
     std::vector<size_t> findModes(dcomplex neff1=0., dcomplex neff2=0., Symmetry symmetry=SYMMETRY_DEFAULT, size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
@@ -264,6 +264,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /**
      * Compute modal determinant for the whole matrix
      * \param neff effective index to use
+     * \param symmetry mode symmetry
      */
     dcomplex getDeterminant(dcomplex neff, Symmetry sym=SYMMETRY_DEFAULT) {
         stageOne();
@@ -272,6 +273,14 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         return det;
     }
 
+    /**
+     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * If it is not proper mode, exception is throw
+     * \param neff effective index of the mode
+     * \param symmetry mode symmetry
+     * \return index of set mode
+     */
+    size_t setMode(dcomplex neff, Symmetry sym=SYMMETRY_DEFAULT);
 
     /// Receiver for the temperature
     ReceiverFor<Temperature, Geometry2DCartesian> inTemperature;

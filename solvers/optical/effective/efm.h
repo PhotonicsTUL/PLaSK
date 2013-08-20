@@ -227,8 +227,8 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /**
      * Compute modal determinant for the whole matrix
-     * \param m number of the LP_mn mode describing angular dependence
      * \param lambda wavelength
+     * \param m number of the LP_mn mode describing angular dependence
      */
     dcomplex getDeterminant(dcomplex lambda, int m=0) {
         if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
@@ -240,7 +240,26 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         return det;
     }
 
-
+    /**
+     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * If it is not proper mode, exception is throw.
+     * \param clambda complex wavelength of the mode
+     * \return index of the set mode
+     */
+    size_t setMode(plask::dcomplex clambda, int m = 0);
+    
+    /**
+     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * If it is not proper mode, exception is throw.
+     * \param lambda wavelength of the mode
+     * \param loss modal loss (as returned by outLoss)
+     * \param m number of the LP_mn mode describing angular dependence
+     * \return index of the set mode
+     */
+    inline size_t setMode(double lambda, double loss, int m=0) {
+        return setMode(dcomplex(lambda, -lambda*lambda / (2e7*M_PI) * loss));
+    }
+    
     /// Receiver for the temperature
     ReceiverFor<Temperature, Geometry2DCylindrical> inTemperature;
 
@@ -318,14 +337,14 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         if (n >= modes.size()) throw NoValue(Wavelength::NAME);
         return real(2e3*M_PI / (k0 * (1. - modes[n].freqv/2.)));
     }
-    
+
     /**
      * Return mode modal loss
      * \param n mode number
      */
     double getModalLoss(size_t n) {
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
-        return imag(2e7 * k0 * (1. - modes[n].freqv/2.));
+        return imag(2e4 * k0 * (1. - modes[n].freqv/2.));  // 2e4  2/µm -> 2/cm
     }
     
     /// Method computing the distribution of light intensity

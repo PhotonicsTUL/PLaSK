@@ -42,22 +42,26 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onInitialize()
 {
-    relative_accuracy = 0.01;
-    max_mesh_changes = 5;
-    max_iterations = 20;
-    global_QW_width = 0.0;
-    minor_concentration = 5.0e+15;
     iterations = 0;
-
     detected_QW = detectQuantumWells();
+    determineQwWidth();
     z = getZQWCoordinate();
-
 }
 
-//virtual void DiffusionCylindricalSolver::onInvalidate()
-//{
-//    // body
-//}
+
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onInvalidate()
+{
+    j_on_the_mesh.reset();
+    T_on_the_mesh.reset();
+    
+    overthreshold_left.reset();   
+    overthreshold_dgdn.reset();   
+    overthreshold_g.reset();      
+
+    n_previous.reset();           
+    n_present.reset();            
+}
+
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(bool initial, bool threshold, bool overthreshold)
 {
@@ -66,7 +70,6 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     overthreshold_computation = overthreshold;
 
     this->initCalculation();
-    determineQwWidth();
 
     this->writelog(LOG_INFO, "Computing lateral carriers diffusion using %1% FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
 
@@ -758,6 +761,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::determineQwWidth()
 {
+    global_QW_width = 0.;
     for (int i = 0; i< detected_QW.size(); i++)
     {
         global_QW_width += ( this->detected_QW[i].upper[1] - this->detected_QW[i].lower[1] );

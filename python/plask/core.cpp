@@ -1,7 +1,7 @@
 #include <complex>
 
 #include "python_globals.h"
-#include <numpy/arrayobject.h>
+#include "python_numpy.h"
 #include <frameobject.h> // for Python traceback
 
 #include <plask/version.h>
@@ -28,12 +28,6 @@ void register_data_vectors();
 void register_python_log();
 
 void register_standard_properties();
-
-// Hack necessary as macro import_array wants to return some value
-static inline bool plask_import_array() {
-    import_array1(false);
-    return true;
-}
 
 // Config
 Config config;
