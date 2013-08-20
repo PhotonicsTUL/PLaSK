@@ -224,6 +224,7 @@ BOOST_PYTHON_MODULE(effective)
 
         py::class_<EffectiveFrequencyCylSolver::Mode>("Mode", "Detailed information about the mode", py::no_init)
             .def_readonly("m", &EffectiveFrequencyCylSolver::Mode::m, "LP_mn mode parameter describing angular dependence")
+            .add_property("lam", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm]")
             .add_property("wavelength", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm]")
             .add_property("loss", &EffectiveFrequencyCylSolver_Mode_ModalLoss, "Mode loss [1/cm]")
             .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode")
