@@ -2,8 +2,6 @@
 
 namespace plask { namespace  solvers { namespace slab {
 
-//**************************************************************************
-/// multiply inv(A)*B the A and B matrices are overwritten
 cmatrix invmult(cmatrix& A, cmatrix& B)
 {
     // Check if the A is a square matrix
@@ -18,15 +16,14 @@ cmatrix invmult(cmatrix& A, cmatrix& B)
     int* ipiv = new int[N];
     int info;
     // Perform the calculation
-    F(zgesv)(N, nrhs, A.data, N, ipiv, B.data, N, info);
+    F(zgesv)(N, nrhs, A.data(), N, ipiv, B.data(), N, info);
     delete[] ipiv;
     // Return the result
     if (info > 0) throw "invmult: matrix is singular";
     return B;
 }
 
-//**************************************************************************
-/// multiply inv(A)*b the A matrix and b vectors
+
 cvector invmult(cmatrix& A, cvector& B)
 {
     // Check if the A is a square matrix
@@ -40,15 +37,14 @@ cvector invmult(cmatrix& A, cvector& B)
     int* ipiv = new int[N];
     int info;
     // Perform the calculation
-    F(zgesv)(N, 1, A.data, N, ipiv, B.data(), N, info);
+    F(zgesv)(N, 1, A.data(), N, ipiv, B.data(), N, info);
     delete[] ipiv;
     // Return the result
     if (info > 0) throw "invmult: matrix is singular";
     return B;
 }
 
-//****************************************************************************
-/// Invert matrix
+
 cmatrix inv(cmatrix& A)
 {
     // Check if the A is a square matrix
@@ -65,8 +61,7 @@ cmatrix inv(cmatrix& A)
     return result;
 }
 
-//****************************************************************************
-/// Find a determinant of the matrix
+
 dcomplex det(cmatrix& A)
 {
     // Check if the A is a square matrix
@@ -77,7 +72,7 @@ dcomplex det(cmatrix& A)
     int* ipiv = new int[N];
     int info;
     // Find the LU factorization
-    F(zgetrf)(N, N, A.data, N, ipiv, info);
+    F(zgetrf)(N, N, A.data(), N, ipiv, info);
     // Ok, now compute the determinant
     dcomplex det = 1.; int p = 1;
     for (int i = 0; i < N; i++) {
@@ -90,7 +85,7 @@ dcomplex det(cmatrix& A)
 }
 
 
-//****************************************************************************
+
 int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
 {
     // Check the validity of the matrices
@@ -109,8 +104,8 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
     char jobvr = (rightv==NULL)? 'N' : 'V';
 
     // Determine the storage place for eigenvectors
-    dcomplex* vl = (leftv==NULL)? NULL : leftv->data;
-    dcomplex* vr = (rightv==NULL)? NULL : rightv->data;
+    dcomplex* vl = (leftv==NULL)? NULL : leftv->data();
+    dcomplex* vr = (rightv==NULL)? NULL : rightv->data();
 
     // Create the workplace
     int lwork = 2*N+1;
@@ -120,7 +115,7 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
 
     // Call the lapack subroutine
     int info;
-    F(zgeev)(jobvl, jobvr, N, A.data, N, vals.data, vl, N, vr, N, work, lwork, rwork, info);
+    F(zgeev)(jobvl, jobvr, N, A.data(), N, vals.data(), vl, N, vr, N, work, lwork, rwork, info);
 
     delete[] work;
     delete[] rwork;

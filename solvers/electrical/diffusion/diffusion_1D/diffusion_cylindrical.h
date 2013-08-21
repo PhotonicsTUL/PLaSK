@@ -11,6 +11,12 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             FEM_PARABOLIC
         };
 
+        enum ComputationType {
+            COMPUTATION_INITIAL,
+            COMPUTATION_THRESHOLD,
+            COMPUTATION_OVERTHRESHOLD
+        };
+        
         plask::ReceiverFor<plask::CurrentDensity, Geometry2DType> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
@@ -28,11 +34,13 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
         FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
         double minor_concentration;
-
+        bool do_initial;                            ///< Should we start from initial computations
+        
         FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
             plask::SolverOver<Geometry2DType> (name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
-            interpolation_method(INTERPOLATION_SPLINE)
+            interpolation_method(INTERPOLATION_SPLINE),
+            do_initial(false)
         {
             relative_accuracy = 0.01;
             max_mesh_changes = 5;
@@ -45,7 +53,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         virtual void loadConfiguration(XMLReader&, Manager&);
 
-        void compute(bool initial, bool threshold, bool overthreshold);
+        void compute(ComputationType type);
 
 
     protected:

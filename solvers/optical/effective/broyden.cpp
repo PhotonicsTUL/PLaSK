@@ -8,10 +8,10 @@ namespace plask { namespace solvers { namespace effective {
 /// Search for a single mode starting from the given point: point
 dcomplex RootDigger::operator()(dcomplex point) const
 {
-    writelog(LOG_DETAIL, "Searching for the solution with Broyden method starting from " + str(point));
+    writelog(LOG_DETAIL, "Searching for the root with Broyden method starting from " + str(point));
     log_value.resetCounter();
     dcomplex x = Broyden(point);
-    writelog(LOG_RESULT, "Found solution at " + str(x));
+    writelog(LOG_RESULT, "Found root at " + str(x));
     return x;
 }
 

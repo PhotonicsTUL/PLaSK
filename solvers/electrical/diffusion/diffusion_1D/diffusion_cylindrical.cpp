@@ -22,6 +22,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             interpolation_method = reader.getAttribute<InterpolationMethod>("interpolation", interpolation_method);
             max_mesh_changes = reader.getAttribute<int>("maxrefines", max_mesh_changes);
             max_iterations = reader.getAttribute<int>("maxiters", max_iterations);
+            do_initial = reader.getAttribute<bool>("initial", do_initial);
 
             reader.requireTagEnd();
         }
@@ -46,6 +47,9 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     detected_QW = detectQuantumWells();
     determineQwWidth();
     z = getZQWCoordinate();
+    
+    n_present.reset(mesh.size(), 0.0);
+    n_previous.reset(mesh.size(), 0.0);
 }
 
 
@@ -62,14 +66,11 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     n_present.reset();            
 }
 
-
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(bool initial, bool threshold, bool overthreshold)
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(ComputationType type)
 {
-    initial_computation = initial;
-    threshold_computation = threshold;
-    overthreshold_computation = overthreshold;
-
-    this->initCalculation();
+    initial_computation = type == COMPUTATION_INITIAL || (!this->initCalculation() && do_initial);
+    threshold_computation = type == COMPUTATION_THRESHOLD;
+    overthreshold_computation = type == COMPUTATION_OVERTHRESHOLD;
 
     this->writelog(LOG_INFO, "Computing lateral carriers diffusion using %1% FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
 
@@ -79,9 +80,6 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
-
-    n_present.reset(mesh.size(), 0.0);
-    n_previous.reset(mesh.size(), 0.0);
 
     int mesh_changes = 0;
     bool convergence = true;
@@ -93,7 +91,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
                 throw ComputationError(this->getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
-            size_t new_size = 2.0 * mesh.size() + 1;
+            size_t new_size = 2.0 * mesh.size() - 1;
             writelog(LOG_DETAIL, "Refining mesh (new mesh size: %1%)", new_size);
             mesh.reset(mesh.first(), mesh.last(), new_size);
             mesh2.axis0 = mesh;
@@ -668,8 +666,8 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::detectQuantumWells()
 {
-    shared_ptr<RectilinearMesh2D> mesh = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild());
-    shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
+    shared_ptr<RectilinearMesh2D> grid = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild());
+    shared_ptr<RectilinearMesh2D> points = grid->getMidpointsMesh();
 
     std::vector<Box2D> results;
 
@@ -693,7 +691,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             {
                 if (foundQW)
                 {
-                    if (left != mesh->axis0[c])
+                    if (left != grid->axis0[c])
                         throw Exception("%1%: Left edge of quantum wells not vertically aligned.", this->getId());
                     if (*this->geometry->getMaterial(point) != *QW_material)
                         throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
@@ -702,15 +700,15 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
                 {
                     QW_material = this->geometry->getMaterial(point);
                 }
-                left = mesh->axis0[c];
+                left = grid->axis0[c];
                 inQW = true;
             }
             if (!QW && inQW)        // QW end
             {
-                if (foundQW && right != mesh->axis0[c])
+                if (foundQW && right != grid->axis0[c])
                     throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
-                right = mesh->axis0[c];
-                results.push_back(Box2D(left, mesh->axis1[r], right, mesh->axis1[r+1]));
+                right = grid->axis0[c];
+                results.push_back(Box2D(left, grid->axis1[r], right, grid->axis1[r+1]));
                 foundQW = true;
                 inQW = false;
             }
@@ -721,10 +719,10 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
         }
         if (inQW)
         { // handle situation when QW spans to the end of the structure
-            if (foundQW && right != mesh->axis0[points->axis0.size()])
+            if (foundQW && right != grid->axis0[points->axis0.size()])
                 throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
-            right = mesh->axis0[points->axis0.size()];
-            results.push_back(Box2D(left, mesh->axis1[r], right, mesh->axis1[r+1]));
+            right = grid->axis0[points->axis0.size()];
+            results.push_back(Box2D(left, grid->axis1[r], right, grid->axis1[r+1]));
             foundQW = true;
             inQW = false;
         }

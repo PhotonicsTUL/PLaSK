@@ -157,7 +157,6 @@ void ModalSolver<Geometry3D>::setupLayers()
     this->writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
 
-
 template struct ModalSolver<Geometry2DCartesian>;
 template struct ModalSolver<Geometry2DCylindrical>;
 

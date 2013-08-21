@@ -19,11 +19,8 @@ BOOST_PYTHON_MODULE(diffusion)
 {
     {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>, "DiffusionCyl", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
 
-        py_enum<__Class__::FemMethod>("FemMethod")
-            .value("LINEAR", __Class__::FEM_LINEAR)
-            .value("PARABOLIC", __Class__::FEM_PARABOLIC);
-
-        METHOD(compute, compute, "Perform the computation", arg("initial")=false, arg("threshold")=true, arg("overthreshold")=false);
+        METHOD(compute, compute, "Perform the computation", arg("type"));
+        solver.def_readwrite("initial", &__Class__::do_initial, "True if we start from initial computations");
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
@@ -41,14 +38,25 @@ BOOST_PYTHON_MODULE(diffusion)
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
+
+        py::scope scope = solver;
+
+        py_enum<__Class__::FemMethod>("Method")
+            .value("LINEAR", __Class__::FEM_LINEAR)
+            .value("PARABOLIC", __Class__::FEM_PARABOLIC)
+        ;
+            
+        py_enum<__Class__::ComputationType>("Computation")
+            .value("INITIAL", __Class__::COMPUTATION_INITIAL)
+            .value("THRESHOLD", __Class__::COMPUTATION_THRESHOLD)
+            .value("OVERTHRESHOLD", __Class__::COMPUTATION_OVERTHRESHOLD)
+        ;
+
      }
      {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>, "Diffusion2D", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
 
-        py_enum<__Class__::FemMethod>("FemMethod")
-            .value("LINEAR", __Class__::FEM_LINEAR)
-            .value("PARABOLIC", __Class__::FEM_PARABOLIC);
-
-        METHOD(compute, compute, "Perform the computation", arg("initial")=false, arg("threshold")=true, arg("overthreshold")=false);
+        METHOD(compute, compute, "Perform the computation", arg("type"));
+        solver.def_readwrite("initial", &__Class__::do_initial, "True if we start from initial computations");
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         RW_FIELD(mesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
@@ -66,6 +74,19 @@ BOOST_PYTHON_MODULE(diffusion)
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
+
+        py::scope scope = solver;
+
+        py_enum<__Class__::FemMethod>("Method")
+            .value("LINEAR", __Class__::FEM_LINEAR)
+            .value("PARABOLIC", __Class__::FEM_PARABOLIC)
+        ;
+            
+        py_enum<__Class__::ComputationType>("Computation")
+            .value("INITIAL", __Class__::COMPUTATION_INITIAL)
+            .value("THRESHOLD", __Class__::COMPUTATION_THRESHOLD)
+            .value("OVERTHRESHOLD", __Class__::COMPUTATION_OVERTHRESHOLD)
+        ;
      }
 
 }

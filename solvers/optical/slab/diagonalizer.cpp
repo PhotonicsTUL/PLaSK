@@ -1,5 +1,3 @@
-
-//**************************************************************************
 #include "diagonalizer.h"
 
 #include <plask/plask.hpp>
@@ -9,8 +7,8 @@
 
 namespace plask { namespace  solvers { namespace slab {
 
-//**************************************************************************
-SimpleDiagonalizer::SimpleDiagonalizer(GridBase& g) :
+
+    SimpleDiagonalizer::SimpleDiagonalizer(GridBase& g) :
     DiagonalizerBase(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
 {
     int N = grid.matrixSize();         // Size of each matrix
@@ -29,13 +27,12 @@ SimpleDiagonalizer::SimpleDiagonalizer(GridBase& g) :
     tmp = cmatrix(N,N);
 }
 
-//**************************************************************************
+
 SimpleDiagonalizer::~SimpleDiagonalizer()
 {
 }
 
-//**************************************************************************
-// Calculate diagonalization of one layer
+
 void SimpleDiagonalizer::diagonalizeLayer(int layer)
 {
     // If diagonalization already done, do not repeat it
@@ -56,7 +53,7 @@ void SimpleDiagonalizer::diagonalizeLayer(int layer)
         for (int ie = 0, ih = 0; ie < N; ie++, ih += N) {
             gamma[layer][ie] = 0;
             for (int jh = 0, je = 0; jh < N; jh++, je += N)
-                gamma[layer][ie] += RH.data[ie+je] * RE.data[ih+jh];
+                gamma[layer][ie] += RH[ie+je] * RE[ih+jh];
         }
 
         // Eigenvector matrix is simply a unity matrix
@@ -73,24 +70,24 @@ void SimpleDiagonalizer::diagonalizeLayer(int layer)
         // This is probably expensive but necessary check to avoid hangs
         int NN = N*N;
         for (int i = 0; i < NN; i++) {
-            if (isnan(real(QE.data[i])) || isnan(imag(QE.data[i])))
+            if (isnan(real(QE[i])) || isnan(imag(QE[i])))
                 throw "SimpleDiagonalizer::diagonalizeLayer: NaN in Q matrix";
         }
 
         // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
         // we use Te as work and Te1 as rwork (as N >= 2, their sizes are ok)
         int info;
-        F(zgeev)('N', 'V', N, QE.data, N, gamma[layer].data, NULL, N,  tmp.data, N,
-                 Te[layer].data, NN, reinterpret_cast<double*>(Te1[layer].data), info);
+        F(zgeev)('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  tmp.data(), N,
+                 Te[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
 
         // ...and rewrite the eigenvectors to their final locations
-        memcpy(Te[layer].data, tmp.data, NN*sizeof(dcomplex));
+        memcpy(Te[layer].data(), tmp.data(), NN*sizeof(dcomplex));
 
         // Find the inverse of Th in the classical way (maybe to be optimized in future)
         // TODO: eigenvectors should be built by hand based on Schur vectors
-        memset(Te1[layer].data, 0., NN*sizeof(dcomplex));
+        memset(Te1[layer].data(), 0., NN*sizeof(dcomplex));
         for (int i = 0; i < NN; i += (N+1))
-            Te1[layer].data[i] = 1.;
+            Te1[layer][i] = 1.;
         invmult(tmp, Te1[layer]);
     }
 
@@ -106,7 +103,7 @@ void SimpleDiagonalizer::diagonalizeLayer(int layer)
 
     // So now there is the time to find TH = Re * Te * Gamma^(-1)
     mult_matrix_by_matrix(RE, Te[layer], Th[layer]);
-    dcomplex* th = Th[layer].data;
+    dcomplex* th = Th[layer].data();
     for (int j = 0; j < N; j++) {
         dcomplex g = 1. / gam[j];
         for (int i = 0; i < N; i++) *(th+i) *= g;
@@ -122,9 +119,9 @@ void SimpleDiagonalizer::diagonalizeLayer(int layer)
     // LU factorization of RE
     int ierr;
     int* ipiv = new int[N];
-    F(zgetrf)(N, N, RE.data, N, ipiv, ierr);
+    F(zgetrf)(N, N, RE.data(), N, ipiv, ierr);
     // the RH will contain inv(RE)^T * Te1^T
-    F(zgetrs)('t', N, N, RE.data, N, ipiv, RH.data, N, ierr);
+    F(zgetrs)('t', N, N, RE.data(), N, ipiv, RH.data(), N, ierr);
     // compute RH^T and store it in Th1
     for (int j = 0; j < N; j++) {
         dcomplex g = gam[j];

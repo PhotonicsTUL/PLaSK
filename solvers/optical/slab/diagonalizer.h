@@ -21,14 +21,15 @@ struct GridBase {
     template <typename... Cls> cmatrix getRH(Cls...) {}
 };
 
-/// Base for the class determining and holding the necessary matrices
-/** This is the abstract base class for all diagonalizers (multi-threaded,
-    disk-storage, MPI-using etc.
-
-    This class should compute gamma, Te and Th matrices for each layer and
-    store it until the next initDiagonalization(...) is called or the
-    object is destroyed (this is necessary for computation of the fields
-    after the convergence). */
+/** 
+ * Base for the class determining and holding the necessary matrices
+ * This is the abstract base class for all diagonalizers (multi-threaded,
+ * disk-storage, MPI-using etc.
+ * This class should compute gamma, Te and Th matrices for each layer and
+ * store it until the next initDiagonalization(...) is called or the
+ * object is destroyed (this is necessary for computation of the fields
+ * after the convergence).
+ */
 class DiagonalizerBase
 {
   protected:
@@ -66,10 +67,12 @@ class DiagonalizerBase
 //     virtual dcomplex smallest_eigevalue(const cmatrix& M) = 0;
 };
 
-//**************************************************************************
-/// Simple diagonalizer
-/** This class is a simple diagonalizer. It calculates all its results
-    immidiatelly and stores them in the memory. */
+
+/** 
+ * Simple diagonalizer
+ * This class is a simple diagonalizer. It calculates all its results
+ * immidiatelly and stores them in the memory.
+ */
 class SimpleDiagonalizer : public DiagonalizerBase
 {
   protected:
