@@ -66,7 +66,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         
         Mode(EffectiveFrequencyCylSolver* solver, int m): solver(solver), m(m), have_fields(false), rfields(solver->rsize), power(1.) {}
         
-        bool operator==(const Mode& other) {
+        bool operator==(const Mode& other) const {
             return m == other.m && is_zero(freqv - other.freqv);
         }
         

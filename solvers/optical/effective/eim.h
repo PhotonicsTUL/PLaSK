@@ -88,7 +88,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
             symmetry = sym;
         }
 
-        bool operator==(const Mode& other) {
+        bool operator==(const Mode& other) const {
             return symmetry == other.symmetry && is_zero( neff - other.neff );
         }
     };
