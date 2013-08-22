@@ -5,11 +5,11 @@ import os
 
 from plask import *
 
-def pad(val, l=11):
+def _pad(val, l=11):
     s = str(val)
     return s + ''.join([' ']*max(l-len(s), 0))
 
-def parse_material(mat):
+def _parse_material(mat):
     mat = str(mat).split(':')
     if len(mat) == 1:
         return mat[0], 'ST', 0.
@@ -45,7 +45,7 @@ def write_dan(name, manager, geo, allm=True):
     leafs = geo.get_leafs()
     boxes = geo.get_leafs_bboxes()
 
-    outl("%s 1e-6        number_or_regions_and_dimension_scale" % pad(len(leafs)))
+    outl("%s 1e-6        number_or_regions_and_dimension_scale" % _pad(len(leafs)))
 
     if len(manager.profiles) != 0:
         print_log(LOG_WARNING, "Cannot determine where constant profiles defined in the XPL file are used.")
@@ -62,11 +62,11 @@ def write_dan(name, manager, geo, allm=True):
 
     for i,(obj,box) in enumerate(zip(leafs, boxes)):
         # first line
-        out("\n" + pad(i+1))
-        out(pad(box.lower[0])); out(pad(box.lower[1])); out(pad(box.upper[0])); out(pad(box.upper[1]));
+        out("\n" + _pad(i+1))
+        out(_pad(box.lower[0])); out(_pad(box.lower[1])); out(_pad(box.upper[0])); out(_pad(box.upper[1]));
         point = vec(0.5*(box.lower[0]+box.upper[0]), 0.5*(box.lower[1]+box.upper[1]))
         mat = geo.get_material(point)
-        mn, dp, dc = parse_material(mat)
+        mn, dp, dc = _parse_material(mat)
         outl(mn)
         noheat = geo.item.has_role('noheat', point)
         # second line
@@ -85,9 +85,9 @@ def write_dan(name, manager, geo, allm=True):
                 noheat = True
         else:
             raise NotImplementedError("Allowing not constant maters is not implemented")
-        outl( "%s %s %s           electrical_conductivity" % (pad(cx,23), pad(cy,23), mt) )
+        outl( "%s %s %s           electrical_conductivity" % (_pad(cx,23), _pad(cy,23), mt) )
         # third line
-        outl( "%s %s doping_concentration" % (pad(dc,47), pad(dp)) )
+        outl( "%s %s doping_concentration" % (_pad(dc,47), _pad(dp)) )
         # fourth line
         if allm or mat.thermk(300.) == material.thermk(400.):
             mt = 'm'
@@ -98,7 +98,7 @@ def write_dan(name, manager, geo, allm=True):
                 noheat = True
         else:
             raise NotImplementedError("Allowing not constant materials is not implemented")
-        outl( "%s %s %s           thermal_conductivity" % (pad(kx,23), pad(ky,23), mt) )
+        outl( "%s %s %s           thermal_conductivity" % (_pad(kx,23), _pad(ky,23), mt) )
         # fifth line
         if noheat:
             outl("0                                               0.0         no_heat_sources")
@@ -122,8 +122,8 @@ def write_dan(name, manager, geo, allm=True):
                     if not (samex or samey):
                         print_log(LOG_WARNING, "Boundary no %d for %s is not straight line. Skipping it. Add it manually." % (i,name))
                     else:
-                        lines.append("%s %s %s %s %s %s_boundary" % (pad(min(xx)), pad(min(yy)), pad(max(xx)), pad(max(yy)), pad(value), name))
-        outl("%s boundary_conditions_%s" % (pad(len(lines),59),name))
+                        lines.append("%s %s %s %s %s %s_boundary" % (_pad(min(xx)), _pad(min(yy)), _pad(max(xx)), _pad(max(yy)), _pad(value), name))
+        outl("%s boundary_conditions_%s" % (_pad(len(lines),59),name))
         for line in lines:
             outl(line)
 

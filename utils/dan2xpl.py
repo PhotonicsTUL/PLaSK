@@ -506,7 +506,7 @@ if __name__ == "__main__":
 
         try:
             read = read_dan(iname)
-            name = os.path.join(dest_dir, iname[:-9])
+            name = os.path.join(dest_dir, os.path.basename(iname)[:-9])
             write_xpl(name, *read[1:])
         except Exception as err:
             import traceback as tb

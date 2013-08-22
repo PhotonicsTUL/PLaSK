@@ -22,7 +22,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -
 if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GNUCXX_VERSION)
     if(WIN32)
-        add_definitions("-fno-strict-aliasing")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-aliasing")
     else()
         if ((GNUCXX_VERSION VERSION_GREATER 4.7 OR GNUCXX_VERSION VERSION_EQUAL 4.7))
             set(no_strict_aliasing_flag "-fno-strict-aliasing")
@@ -118,7 +118,8 @@ if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
         set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
         if(USE_GLIBCXX_PARALLEL)
-            add_definitions(-D_GLIBCXX_PARALLEL -march=native)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+            add_definitions("-D_GLIBCXX_PARALLEL")
         endif(USE_GLIBCXX_PARALLEL)
     endif()
 endif()
@@ -135,7 +136,7 @@ endif(BUILD_TESTING)
 
 option(USE_STATIC_BOOST "use static boost (not recommended)" OFF)
 if(USE_STATIC_BOOST)
-    add_definitions(-DBOOST_PYTHON_STATIC_LIB)  # fix linker errors to boost python
+    add_definitions("-DBOOST_PYTHON_STATIC_LIB")  # fix linker errors to boost python
     set(Boost_USE_STATIC_LIBS ON)
 endif(USE_STATIC_BOOST)
 
@@ -154,13 +155,13 @@ find_package(Boost REQUIRED COMPONENTS ${boost_components})
 include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
-    add_definitions(-Wno-attributes) # get rid of annoying warnings in Boost
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes") # get rid of annoying warnings in Boost
     #list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
     #set(plask_manifest "mingw/msvcrc.o")
     # TODO link all targets to: msvcr90
-   # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
-   # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
-   # set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
+    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
+    # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
+    # set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
     set(plask_manifest "")  #TODO remove plask_manifest
 else()
     set(plask_manifest "")
@@ -482,10 +483,24 @@ endif(BUILD_DOCUMENTATION)
 
 set(script_permissions "OWNER_WRITE;OWNER_READ;OWNER_EXECUTE;GROUP_READ;GROUP_EXECUTE;WORLD_READ;WORLD_EXECUTE")
 
-install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
-install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
-install(FILES utils/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME qtplask)
-# TODO Make it better for windows (e.g. compile exes)
+if(WIN32)
+    macro(compile_python_script script)
+        set(script_rc "${CMAKE_BINARY_DIR}/CMakeFiles/${script}.rc")
+        file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n101 256 \"${CMAKE_SOURCE_DIR}/utils/${script}.py\"\n")
+        add_executable(${script} toolset/run_python.cpp ${script_rc})
+        set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS "${CMAKE_SOURCE_DIR}/utils/${script}.py")
+        target_link_libraries(${script} ${PYTHON_LIBRARIES})
+        set_target_properties(${script} PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing" LINK_FLAGS "-mconsole")
+        install(TARGETS ${script} DESTINATION bin COMPONENT utils)
+    endmacro()
+    compile_python_script(dan2xpl)
+    install(FILES utils/xpl2dan.bat DESTINATION bin COMPONENT utils)
+    install(FILES utils/xpl2dan.py DESTINATION lib/plask/python/plask COMPONENT utils)
+else()
+    install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
+    install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
+    install(FILES utils/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME qtplask)
+endif()
 
 # ----------===== Packaging =====--------------------------------------------
 
@@ -493,18 +508,41 @@ install(FILES utils/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions}
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Photonic LAser Simulation Kit")
 set(CPACK_PACKAGE_VENDOR "Photonics Group, Lodz University of Technology")
+set(CPACK_PACKAGE_DESCRIPTION_FILE  "${CMAKE_SOURCE_DIR}/ABOUT")
 file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_PACKAGE_DESCRIPTION)
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
 
-set(CPACK_GENERATOR "DEB;NSIS")
+set(CPACK_STRIP_FILES ON)
 
-# set(CPACK_PACKAGE_FILE_NAME "plask" CACHE STRING "Package basename")
-# mark_as_advanced(CPACK_PACKAGE_FILE_NAME)
+set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils")
+set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK core")
+set(CPACK_COMPONENT_CORE_REQUIRED ON)
+set(CPACK_COMPONENT_SOLVERS_DISPLAY_NAME "Computational solvers")
+set(CPACK_COMPONENT_GUI_DISPLAY_NAME "Graphical User Interface")
+set(CPACK_COMPONENT_UTILS_DISPLAY_NAME "Command-line utilities (e.g. dan2xpl)")
 
+# Settings for NSIS generator
+if(WIN32)
+    set(CPACK_GENERATOR "NSIS")
+    file(GLOB dlls "${CMAKE_SOURCE_DIR}/../mingw/dlls/*")
+    install(FILES ${dlls} DESTINATION bin COMPONENT core)
+    set(CPACK_PACKAGE_NAME "PLaSK")
+    set(CPACK_PACKAGE_EXECUTABLES "plask;PLaSK console")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "PLaSK")
+    set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "plask")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/ABOUT")
+    set(CPACK_NSIS_DISPLAY_NAME "PLaSK ${VERSION}")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+    set(CPACK_NSIS_COMPRESSOR "lzma\n\n  ;Default start menu folder\n  !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"") # very ugly hack!
+endif()
+
+# Settings for DEB generator
 if(UNIX)
+    set(CPACK_GENERATOR "DEB")
     file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_PREFIX}/usr/lib/plask")
     file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_PREFIX}/usr/lib/plask -type f -name \"*.pyc\" -delete")
 
@@ -521,8 +559,6 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
 endif()
-
-
 
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "plask-${VERSION}" CACHE INTERNAL "tarball basename")
 set(CPACK_SOURCE_GENERATOR "TBZ2")
