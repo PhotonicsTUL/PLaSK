@@ -35,7 +35,7 @@ class Matrix {
         *gc = 1;
     }
 
-    Matrix(const Matrix<T>& M) : r(M.r), c(M.c), data_(M.data), gc(M.gc) {
+    Matrix(const Matrix<T>& M) : r(M.r), c(M.c), data_(M.data_), gc(M.gc) {
         if (gc) (*gc)++;
     }
 
@@ -49,7 +49,7 @@ class Matrix {
 #endif
             }
         }
-        r = M.r; c = M.c; data_ = M.data; gc = M.gc; if (gc) (*gc)++;
+        r = M.r; c = M.c; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
         return *this;
     }
 
@@ -148,7 +148,7 @@ class MatrixDiagonal {
 #endif
             }
         }
-        siz = M.siz; data_ = M.data; gc = M.gc; if (gc) (*gc)++;
+        siz = M.siz; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
         return *this;
     }
 

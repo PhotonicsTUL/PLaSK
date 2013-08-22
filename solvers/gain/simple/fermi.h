@@ -94,7 +94,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
   protected:
 
     friend struct GainSpectrum<GeometryType>;
-    friend struct QW::gain;
+    friend class QW::gain;
 
     /// External gain module (Michal Wasiak)
     QW::gain gainModule;

@@ -193,7 +193,7 @@ inline T* aligned_new_array(std::size_t num, Args&&... args) {
 template <typename T>
 inline void aligned_delete_array(std::size_t num, T* ptr) {
     while (num)
-        ptr[--num]->~T();
+        ptr[--num].~T();
     aligned_free(ptr);
 }
 

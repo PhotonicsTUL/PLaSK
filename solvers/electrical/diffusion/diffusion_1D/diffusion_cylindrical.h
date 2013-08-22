@@ -26,8 +26,6 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
-        plask::RegularMesh1D mesh;                  ///< Radial mesh
-
         double relative_accuracy;                   ///< Relative accuracy
         InterpolationMethod interpolation_method;   ///< Selected interpolation method
         int max_mesh_changes;                  // maksymalna liczba zmian dr
@@ -40,26 +38,52 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             plask::SolverOver<Geometry2DType> (name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_SPLINE),
-            do_initial(false)
+            do_initial(false),
+            internal_mesh_update(false)
         {
             relative_accuracy = 0.01;
             max_mesh_changes = 5;
             max_iterations = 20;
             minor_concentration = 5.0e+15;
             inTemperature = 300.;
+            mesh2.changedConnectMethod(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onMeshChange);
         }
 
+        virtual ~FiniteElementMethodDiffusion2DSolver<Geometry2DType>()
+        {
+            mesh2.changedDisconnectMethod(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onMeshChange);
+        }
+        
         virtual std::string getClassName() const;
 
         virtual void loadConfiguration(XMLReader&, Manager&);
 
         void compute(ComputationType type);
 
+        plask::RegularMesh1D& mesh()
+        {
+            return mesh2.axis0;
+        }
+        
+        void setMesh(plask::RegularMesh1D mesh)
+        {
+            mesh2.axis0.reset(mesh.first(), mesh.last(), mesh.size());
+        }
+        
+    private:
+        bool internal_mesh_update;
+
+        void onMeshChange(const Mesh::Event&) {
+            if (!internal_mesh_update) {
+                original_mesh = mesh2.axis0;
+                this->invalidate();
+            }
+        }
 
     protected:
-//        plask::DataVector<double> ?; // some internal vector used in calculations
 
-/************************************************************************************************/
+        plask::RegularMesh1D original_mesh; ///< Original radial mesh
+        plask::RegularMesh2D mesh2;         ///< Computational mesh
 
         static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi
 

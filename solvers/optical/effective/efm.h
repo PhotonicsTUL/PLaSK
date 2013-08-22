@@ -294,13 +294,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Return S matrix determinant for one stripe
     dcomplex detS1(const dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
-                   const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, bool save=false);
-
-    /**
-     * Compute field weights basing on solution for given stripe. Also compute data for determining vertical fields
-     * \param stripe main stripe number
-     */
-    std::vector<double,aligned_allocator<double>> computeWeights(size_t stripe);
+                   const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, std::vector<FieldZ>* saveto=nullptr);
 
     /// Return S matrix determinant for one stripe
     void computeStripeNNg(size_t stripe);

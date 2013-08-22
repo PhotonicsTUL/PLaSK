@@ -22,7 +22,7 @@ BOOST_PYTHON_MODULE(diffusion)
         METHOD(compute, compute, "Perform the computation", arg("type"));
         solver.def_readwrite("initial", &__Class__::do_initial, "True if we start from initial computations");
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
-        RW_FIELD(mesh, "Horizontal adaptative mesh)");
+        solver.add_property("mesh", py::make_function(&__Class__::mesh, py::return_internal_reference<>()), &__Class__::setMesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
         solver.def_readwrite("abs_accuracy", &__Class__::minor_concentration, "Required absolute minimal concentration accuracy");
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");
@@ -58,7 +58,7 @@ BOOST_PYTHON_MODULE(diffusion)
         METHOD(compute, compute, "Perform the computation", arg("type"));
         solver.def_readwrite("initial", &__Class__::do_initial, "True if we start from initial computations");
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
-        RW_FIELD(mesh, "Horizontal adaptative mesh)");
+        solver.add_property("mesh", py::make_function(&__Class__::mesh, py::return_internal_reference<>()), &__Class__::setMesh, "Horizontal adaptative mesh)");
         solver.def_readwrite("accuracy", &__Class__::relative_accuracy, "Required relative accuracy");
         solver.def_readwrite("abs_accuracy", &__Class__::minor_concentration, "Required absolute minimal concentration accuracy");
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");

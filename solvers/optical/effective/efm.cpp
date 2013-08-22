@@ -296,7 +296,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                         --nr; --ng;
                         nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
                     }
-                    writelog(LOG_DEBUG, "Nr/nG[%1%] = [%2% ]", i, nrgs.str().substr(1));
+                    writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", i, nrgs.str().substr(1));
 #               endif
 
                 dcomplex same_nr = nrCache[i].front();
@@ -331,9 +331,9 @@ void EffectiveFrequencyCylSolver::stageOne()
 
 
 dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
-                                            const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, bool save)
+                                            const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, std::vector<FieldZ>* saveto)
 {
-    if (save) zfields[zbegin] = FieldZ(0., 1.);
+    if (saveto) (*saveto)[zbegin] = FieldZ(0., 1.);
 
     std::vector<dcomplex> kz(zsize);
     for (size_t i = zbegin; i < zsize; ++i) {
@@ -367,29 +367,29 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
             phas = exp(I * kz[i] * (mesh->axis1[i]-mesh->axis1[i-1]));
 
         // Compute fields
-        if (save) {
+        if (saveto) {
             dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
             double aF = abs(F), aB = abs(B);
             // zero very small fields to avoid errors in plotting for long layers
             if (aF < 1e-8 * aB) F = 0.;
             if (aB < 1e-8 * aF) B = 0.;
-            zfields[i] = FieldZ(F, B);
+            (*saveto)[i] = FieldZ(F, B);
         }
     }
 
-    if (save) {
+    if (saveto) {
         if (emission == TOP) {
-            dcomplex f = 1. / zfields[zsize-1].F;
-            zfields[zsize-1] = FieldZ(1., 0.);
-            for (size_t i = zbegin; i < zsize-1; ++i) zfields[i] *= f;
+            dcomplex f = 1. / (*saveto)[zsize-1].F;
+            (*saveto)[zsize-1] = FieldZ(1., 0.);
+            for (size_t i = zbegin; i < zsize-1; ++i) (*saveto)[i] *= f;
         } else {
-            zfields[zsize-1].B = 0.;
-            // we dont have to scale fields as we have already set zfields[zbegin] = FieldZ(0., 1.)
+            (*saveto)[zsize-1].B = 0.;
+            // we dont have to scale fields as we have already set (*saveto)[zbegin] = FieldZ(0., 1.)
         }
 // #ifndef NDEBUG
 //         {
 //             std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
-//                 nrs << "), (" << str(zfields[i].F) << ":" << str(zfields[i].B);
+//                 nrs << "), (" << str((*saveto)[i].F) << ":" << str((*saveto)[i].B);
 //             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
 //         }
 // #endif
@@ -398,20 +398,22 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
     return s4 - s2*s3/s1;
 }
 
-std::vector<double,aligned_allocator<double>> EffectiveFrequencyCylSolver::computeWeights(size_t stripe)
+void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 {
+    nng[stripe] = 0.;
+
+    std::vector<FieldZ> zfield(zsize);
+    
     dcomplex veff = veffs[stripe];
 
     // Compute fields
-    detS1(veff, nrCache[stripe], ngCache[stripe], true);
+    detS1(veff, nrCache[stripe], ngCache[stripe], &zfield);
 
-    std::vector<double,aligned_allocator<double>> weights(zsize);
-    weights[zbegin] = 0.;
-    weights[zsize-1] = 0.;
-    double sum = weights[zbegin] + weights[zsize-1];
+    double sum = 0.;
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
+        double weight = 0.;
         dcomplex kz = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - veff * nrCache[stripe][i]*ngCache[stripe][i]);
         if (real(kz) < 0.) kz = -kz;
         dcomplex w_ff, w_bb, w_fb, w_bf;
@@ -428,37 +430,16 @@ std::vector<double,aligned_allocator<double>> EffectiveFrequencyCylSolver::compu
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            dcomplex weight = zfields[i].F * conj(zfields[i].F) * w_ff +
-                              zfields[i].F * conj(zfields[i].B) * w_fb +
-                              zfields[i].B * conj(zfields[i].F) * w_bf +
-                              zfields[i].B * conj(zfields[i].B) * w_bb;
-            weights[i] = -imag(weight);
-        } else
-            weights[i] = 0.;
-        sum += weights[i];
+            weight -= imag(zfield[i].F * conj(zfield[i].F) * w_ff +
+                           zfield[i].F * conj(zfield[i].B) * w_fb +
+                           zfield[i].B * conj(zfield[i].F) * w_bf +
+                           zfield[i].B * conj(zfield[i].B) * w_bb);
+        }
+        sum += weight;
+        nng[stripe] += weight * nrCache[stripe][i] * ngCache[stripe][i];
     }
 
-    sum = 1. / sum;
-    for (size_t i = zbegin; i < zsize; ++i) {
-        weights[i] *= sum;
-    }
-// #ifndef NDEBUG
-//     {
-//         std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i) nrs << ", " << str(weights[i]);
-//         writelog(LOG_DEBUG, "vertical weights = [%1%) ]", nrs.str().substr(2));
-//     }
-// #endif
-
-    return std::move(weights);
-}
-
-void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
-{
-    std::vector<double,aligned_allocator<double>> weight = computeWeights(stripe);
-    nng[stripe] = 0.;
-    for (size_t i = zbegin; i < zsize; ++i) {
-        nng[stripe] += weight[i] * nrCache[stripe][i] * ngCache[stripe][i];
-    }
+    nng[stripe] /= sum;
 }
 
 double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode) const
@@ -551,7 +532,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
         writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
 
         // Compute vertical part
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], true);
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
 
         modes[num].have_fields = true;
     }

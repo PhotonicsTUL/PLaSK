@@ -15,7 +15,7 @@ struct RootDigger {
             tolf_min,       ///< Sufficient tolerance on the function value
             tolf_max,       ///< Required tolerance on the function value
             maxstep;        ///< Maximum step in one iteration
-        int maxiter;  ///< Maximum number of iterations
+        int maxiter;        ///< Maximum number of iterations
         double alpha,       ///< Ensures sufficient decrease of charval in each step
             lambda_min;     ///< Minimum decreased ratio of the step (lambda)
 

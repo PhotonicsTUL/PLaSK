@@ -28,10 +28,13 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         }
         else if (param == "mesh")
         {
-            double r_min = reader.getAttribute<double>("start", mesh.first());
-            double r_max = reader.getAttribute<double>("stop", mesh.last());
-            size_t no_points = reader.getAttribute<size_t>("num", mesh.size());
-            mesh.reset(r_min, r_max, no_points);
+            double r_min = reader.getAttribute<double>("start", mesh().first());
+            double r_max = reader.getAttribute<double>("stop", mesh().last());
+            size_t no_points = reader.getAttribute<size_t>("num", mesh().size());
+            internal_mesh_update = true;
+            mesh().reset(r_min, r_max, no_points);
+            original_mesh = mesh();
+            internal_mesh_update = false;
             reader.requireTagEnd();
         }
         else
@@ -46,10 +49,16 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     iterations = 0;
     detected_QW = detectQuantumWells();
     determineQwWidth();
-    z = getZQWCoordinate();
     
-    n_present.reset(mesh.size(), 0.0);
-    n_previous.reset(mesh.size(), 0.0);
+    // reset mesh to original value
+    internal_mesh_update = true;
+    mesh() = original_mesh;
+    z = getZQWCoordinate();
+    mesh2.axis1 = plask::RegularMesh1D(z, z, 1);
+    if (mesh().size() % 2 == 0) mesh().reset(mesh().first(), mesh().last(), mesh().size()+1);
+    internal_mesh_update = false;
+    
+    n_present.reset(mesh().size(), 0.0);
 }
 
 
@@ -62,8 +71,8 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     overthreshold_dgdn.reset();   
     overthreshold_g.reset();      
 
-    n_previous.reset();           
     n_present.reset();            
+    n_previous.reset();           
 }
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(ComputationType type)
@@ -73,10 +82,6 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     overthreshold_computation = type == COMPUTATION_OVERTHRESHOLD;
 
     this->writelog(LOG_INFO, "Computing lateral carriers diffusion using %1% FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
-
-    if (mesh.size() % 2 == 0) mesh.reset(mesh.first(), mesh.last(), mesh.size()+1);
-
-    plask::RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
 
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
@@ -90,11 +95,12 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         {
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
-                throw ComputationError(this->getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
-            size_t new_size = 2.0 * mesh.size() - 1;
-            writelog(LOG_DETAIL, "Refining mesh (new mesh size: %1%)", new_size);
-            mesh.reset(mesh.first(), mesh.last(), new_size);
-            mesh2.axis0 = mesh;
+                throw ComputationError(this->getId(), "Maximum number of mesh() refinements (%1%) reached", max_mesh_changes);
+            size_t new_size = 2.0 * mesh().size() - 1;
+            writelog(LOG_DETAIL, "Refining mesh() (new mesh() size: %1%)", new_size);
+            internal_mesh_update = true;
+            mesh().reset(mesh().first(), mesh().last(), new_size);
+            internal_mesh_update = false;
             T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
             if (overthreshold_computation)
@@ -105,7 +111,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
                 // Sum all modes
                 overthreshold_left = DataVector<double>(mesh2.size(), 0.);
                 overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
-                overthreshold_g = DataVector<double>(mesh.size(), 0.);
+                overthreshold_g = DataVector<double>(mesh2.size(), 0.);
                 double inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
                 // Sum all modes
                 for (size_t n = 0; n != inWavelength.size(); ++n) {
@@ -122,8 +128,15 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
                     }
                 }
             }
-            n_present.reset(mesh.size(), 0.0);
-            n_previous.reset(mesh.size(), 0.0);
+            auto old_n = n_present;
+            size_t nm = old_n.size()-1;
+            n_present.reset(mesh().size(), 0.0);
+            // n in new points is average of the surrounding ones
+            for (size_t i = 0; i != nm; ++i) {
+                n_present[2*i] = old_n[i];
+                n_present[2*i+1] = 0.5 * (old_n[i] + old_n[i+1]);
+            }
+            n_present[2*nm] = old_n[nm];
         }
         if (initial_computation)
         {
@@ -179,16 +192,16 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
         if (fem_method == FEM_LINEAR)
         {
             A_matrix.reset();
-            A_matrix.reset(2*mesh.size(), 0.0);
+            A_matrix.reset(2*mesh().size(), 0.0);
         }
         else if (fem_method == FEM_PARABOLIC)
         {
             A_matrix.reset();
-            A_matrix.reset(3*mesh.size(), 0.0);
+            A_matrix.reset(3*mesh().size(), 0.0);
         }
 
-        RHS_vector.reset(mesh.size(), 0.0);
-        X_vector.reset(mesh.size(), 0.0);
+        RHS_vector.reset(mesh().size(), 0.0);
+        X_vector.reset(mesh().size(), 0.0);
 
         n_previous = n_present.copy();
 
@@ -196,7 +209,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
         {
             double T = 0.0;
 
-            for (int i = 0; i < mesh.size(); i++)
+            for (int i = 0; i < mesh().size(); i++)
             {
 
                 T = T_on_the_mesh[i];
@@ -236,7 +249,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             {
                 FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
-                lapack_n = lapack_ldb = (int)mesh.size();
+                lapack_n = lapack_ldb = (int)mesh().size();
                 lapack_kd = 1;
                 lapack_ldab = 2;
                 lapack_nrhs = 1;
@@ -250,7 +263,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             {
                 FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
-                lapack_n = lapack_ldb = (int)mesh.size();
+                lapack_n = lapack_ldb = (int)mesh().size();
                 lapack_kd = 2;
                 lapack_ldab = 3;
                 lapack_nrhs = 1;
@@ -276,7 +289,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
             {
                 _convergence = true;
-                for (int i = 0; i < mesh.size(); i++)
+                for (int i = 0; i < mesh().size(); i++)
                 {
                     L = leftSide(i);
                     R = rightSide(i);
@@ -295,7 +308,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 //                double max_error_R = 0.0;
 
                 _convergence = true;
-                for (int i = 0; i < (mesh.size() - 1)/2 ; i++)
+                for (int i = 0; i < (mesh().size() - 1)/2 ; i++)
                 {
                     L = leftSide(2*i + 1);
                     R = rightSide(2*i + 1);
@@ -306,7 +319,7 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
 //                        max_error_absolute = absolute_error;
-//                        max_error_point = mesh[2*i + 1];
+//                        max_error_point = mesh()[2*i + 1];
 //                        max_error_R = R;
 
                     if ( (relative_accuracy < relative_error) && (absolute_concentration_error < absolute_error) ) // (n_tolerance < absolute_error)
@@ -344,10 +357,10 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double j1 = 0.0;
         double j2 = 0.0;
 
-        for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
+        for (int i = 0; i < mesh().size() - 1; i++) // loop over all elements
         {
-            r1 = mesh[i]*1e-4;
-            r2 = mesh[i+1]*1e-4;
+            r1 = mesh()[i]*1e-4;
+            r2 = mesh()[i+1]*1e-4;
 
             j1 = abs(j_on_the_mesh[i][1]*1e+3);
             j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
@@ -378,10 +391,10 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
         double p3e = 0.0;
 
-        for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
+        for (int i = 0; i < (mesh().size() - 1)/2; i++) // loop over all elements
         {
-            r1 = mesh[2*i]*1e-4;
-            r3 = mesh[2*i + 2]*1e-4;
+            r1 = mesh()[2*i]*1e-4;
+            r3 = mesh()[2*i + 2]*1e-4;
 
             K = this->K(2*i + 1);
             F = this->F(2*i + 1);
@@ -439,10 +452,10 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double j1 = 0.0;
         double j2 = 0.0;
 
-        for (int i = 0; i < mesh.size() - 1; i++) // loop over all elements
+        for (int i = 0; i < mesh().size() - 1; i++) // loop over all elements
         {
-            r1 = mesh[i]*1e-4;
-            r2 = mesh[i+1]*1e-4;
+            r1 = mesh()[i]*1e-4;
+            r2 = mesh()[i+1]*1e-4;
 
             j1 = abs(j_on_the_mesh[i][1]*1e+3);
             j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
@@ -475,10 +488,10 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
         double p3e = 0.0;
 
-        for (int i = 0; i < (mesh.size() - 1)/2; i++) // loop over all elements
+        for (int i = 0; i < (mesh().size() - 1)/2; i++) // loop over all elements
         {
-            r1 = mesh[2*i]*1e-4;
-            r3 = mesh[2*i + 2]*1e-4;
+            r1 = mesh()[2*i]*1e-4;
+            r3 = mesh()[2*i + 2]*1e-4;
 
             K = this->K(2*i + 1);
             F = this->F(2*i + 1);
@@ -520,7 +533,7 @@ template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDi
 {
     auto destination_mesh = WrappedMesh<2>(dest_mesh, this->geometry);
 
-    RegularMesh2D mesh2(mesh, plask::RegularMesh1D(z, z, 1));
+    RegularMesh2D mesh2(mesh(), plask::RegularMesh1D(z, z, 1));
     if (!n_present.data()) throw NoValue("carriers concentration");
     auto concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation));
     // Make sure we have concentration only in the quantum wells
@@ -594,19 +607,19 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (fem_method != FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
-        dr = (mesh.last() - mesh.first())*1e-4/(double)mesh.size();
+        dr = (mesh().last() - mesh().first())*1e-4/(double)mesh().size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
 
-        if ( (i > 0) && (i <  mesh.size() - 1) )     // middle of the range
+        if ( (i > 0) && (i <  mesh().size() - 1) )     // middle of the range
         {
             n_right = n_present[i+1];
             n_left = n_present[i-1];
             n_central = n_present[i];
 
-            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(mesh[i]*1e-4);
+            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(mesh()[i]*1e-4);
 
             if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh()[i]*1e-4) * (n_right - n_left) / (2*dr);
         }
         else if (i == 0)     // punkt r = 0
         {
@@ -622,19 +635,19 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_left = n_present[i-1];    // podobnie jak we wczesniejszym warunku
             n_central = n_present[i];
 
-            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(mesh[i]*1e-4);
+            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(mesh()[i]*1e-4);
 
             if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(mesh()[i]*1e-4) * (n_right - n_left) / (2*dr);
         }
     }
     else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
-        dr = (mesh[i+1] - mesh[i-1])*1e-4;
+        dr = (mesh()[i+1] - mesh()[i-1])*1e-4;
         n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/(dr*dr));
 
         if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
-            n_second_deriv += (1.0/(mesh[i]*1e-4)) * (1.0/dr) * (n_present[i+1] - n_present[i-1]); // adding cylindrical component of laplace operator
+            n_second_deriv += (1.0/(mesh()[i]*1e-4)) * (1.0/dr) * (n_present[i+1] - n_present[i-1]); // adding cylindrical component of laplace operator
     }
 
     return n_second_deriv;

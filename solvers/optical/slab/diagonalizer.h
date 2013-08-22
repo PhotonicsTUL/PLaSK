@@ -40,7 +40,7 @@ class DiagonalizerBase
     const int lcount;                // number of layers
 
     DiagonalizerBase(GridBase& g) :
-        grid(g), lcount(g.lcount), diagonalized(g.lcount, false) {}
+        grid(g), diagonalized(g.lcount, false), lcount(g.lcount) {}
 
     virtual ~DiagonalizerBase() {}
 
