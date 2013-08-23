@@ -1,129 +1,288 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-version = '0.1'
-
-copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
 
 import sys
 import os
-import signal
-import atexit
+import base64
 import subprocess
 
-from IPython.frontend.qt.kernelmanager import QtKernelManager
-from IPython.frontend.qt.console.qtconsoleapp import IPythonQtConsoleApp
-from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
-from IPython.utils.traitlets import TraitError
 from PySide import QtCore, QtGui
 
-preexec_lines = [
-'from __future__ import division',
-'from numpy import *',
-'import plask',
-'plask.config.logging.output = "stdout"',
-'plask.config.logging.coloring = "ansi"',
-'plask.__globals = globals()',
-'from plask import *', #TODO rely on command-line option
-]
+tr = lambda txt: QtGui.QApplication.translate("self", txt, None, QtGui.QApplication.UnicodeUTF8)
 
-import IPython.core.usage
-banner_tpl = '''\
-PLaSK %s --- Photonic Laser Simulation Kit
-(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group
-
-Package 'plask' is already imported into global namespace.
+ICON = '''
+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
+yU/85en/BUFo1JV1G1EMAAAAAElFTkSuQmCC
 '''
 
-#def show_widget():
-    #app = QtGui.QApplication([])
+try:
+    last_dir = os.environ['HOME']
+except:
+    last_dir = ""
 
-    #executable = os.path.join(os.path.dirname(sys.argv[0]), "plask")
+class MainWindow(QtGui.QMainWindow):
+    '''Main Qt window class'''
+    
+    def setupUi(self):
+        self.setObjectName("self")
+        self.resize(800, 600)
 
-    #kernel = QtKernelManager()
-    #kernel.start_kernel(executable=executable, extra_arguments=['--pylab=qt', '--profile=plask'])
-    #kernel.start_channels()
+        icon_pixmap = QtGui.QPixmap()
+        icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(ICON))
+        icon = QtGui.QIcon()
+        icon.addPixmap(icon_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowIcon(icon)
 
-    #try: # Ipython v0.13
-        #widget = RichIPythonWidget(gui_completion='droplist')
-    #except TraitError:  # IPython v0.12
-        #widget = RichIPythonWidget(gui_completion=True)
-    #widget.kernel_manager = kernel
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setEnabled(True)
 
-    #for line in preexec_lines:
-        #widget.execute(line, hidden=True)
+        layout = QtGui.QVBoxLayout()
+        self.tabWidget = QtGui.QTabWidget()
+        layout.addWidget(self.tabWidget)
+        self.centralwidget.setLayout(layout)
+        self.setCentralWidget(self.centralwidget)
 
-    #widget.setWindowTitle("PLaSK")
-    #widget.show()
-    #app.exec_()
+        self.menubar = QtGui.QMenuBar(self)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 20))
+        self.menuFile = QtGui.QMenu(self.menubar)
+        self.menuView = QtGui.QMenu(self.menubar)
+        self.actionRun = QtGui.QAction(self)
+        self.actionQuit = QtGui.QAction(self)
+        self.actionError = QtGui.QAction(self)
+        self.actionError.setCheckable(True)
+        self.actionError.setChecked(True)
+        self.actionWarning = QtGui.QAction(self)
+        self.actionWarning.setCheckable(True)
+        self.actionWarning.setChecked(True)
+        self.actionInfo = QtGui.QAction(self)
+        self.actionInfo.setCheckable(True)
+        self.actionInfo.setChecked(True)
+        self.actionResult = QtGui.QAction(self)
+        self.actionResult.setCheckable(True)
+        self.actionResult.setChecked(True)
+        self.actionData = QtGui.QAction(self)
+        self.actionData.setCheckable(True)
+        self.actionData.setChecked(True)
+        self.actionDetail = QtGui.QAction(self)
+        self.actionDetail.setCheckable(True)
+        self.actionDetail.setChecked(True)
+        self.actionDebug = QtGui.QAction(self)
+        self.actionDebug.setCheckable(True)
+        self.actionDebug.setChecked(False)
+        self.menuFile.addAction(self.actionRun)
+        self.menuFile.addAction(self.actionQuit)
+        self.menuView.addAction(self.actionError)
+        self.menuView.addAction(self.actionWarning)
+        self.menuView.addAction(self.actionInfo)
+        self.menuView.addAction(self.actionResult)
+        self.menuView.addAction(self.actionData)
+        self.menuView.addAction(self.actionDetail)
+        self.menuView.addAction(self.actionDebug)
+        self.menubar.addAction(self.menuFile.menuAction())
+        #self.menubar.addAction(self.menuView.menuAction())
+        self.setMenuBar(self.menubar)
 
-class PlaskQtConsoleApp(IPythonQtConsoleApp):
+        self.statusbar = QtGui.QStatusBar(self)
+        self.setStatusBar(self.statusbar)
 
-    def init_kernel_manager(self):
-        # Don't let Qt or ZMQ swallow KeyboardInterupts.
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        self.retranslateUi()
 
-        # Create a KernelManager and start a kernel.
-        self.kernel_manager = self.kernel_manager_class(
-                                ip=self.ip,
-                                shell_port=self.shell_port,
-                                iopub_port=self.iopub_port,
-                                stdin_port=self.stdin_port,
-                                hb_port=self.hb_port,
-                                connection_file=self.connection_file,
-                                config=self.config,
-        )
-        # start the kernel
-        if not self.existing:
-            self.kernel_manager.start_kernel(executable=self.executable, extra_arguments=self.kernel_argv)
-        elif self.sshserver:
-            # ssh, write new connection file
-            self.kernel_manager.write_connection_file()
-        atexit.register(self.kernel_manager.cleanup_connection_file)
-        self.kernel_manager.start_channels()
+    def retranslateUi(self):
+        self.setWindowTitle(tr("PLaSK"))
+        self.menuFile.setTitle(tr("&File"))
+        self.menuView.setTitle(tr("&View"))
+        self.actionRun.setText(tr("&Run..."))
+        self.actionQuit.setText(tr("&Quit"))
+        self.actionError.setText(tr("&Error"))
+        self.actionWarning.setText(tr("&Warning"))
+        self.actionInfo.setText(tr("&Info"))
+        self.actionResult.setText(tr("&Result"))
+        self.actionData.setText(tr("&Data"))
+        self.actionDetail.setText(tr("De&tail"))
+        self.actionDebug.setText(tr("De&bug"))
 
 
-    def new_frontend_master(self):
-        """ Create and return new frontend attached to new kernel, launched on localhost.
-        """
-        kernel_manager = self.kernel_manager_class(
-                                ip=self.ip,
-                                connection_file=self._new_connection_file(),
-                                config=self.config,
-        )
+    def __init__(self):
+        self.texts = []
+        self.outputs = []
+        self.threads = []
+        self.lens = []
+        
+        super(MainWindow, self).__init__()
+        self.setupUi()
+        
+        self.actionQuit.triggered.connect(QtCore.QCoreApplication.instance().quit)
+        self.actionRun.triggered.connect(self.runFile)
 
-        # start the kernel
-        kernel_manager.start_kernel(executable=self.executable, extra_arguments=self.kernel_argv)
-        kernel_manager.start_channels()
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
-        widget = self.widget_factory(config=self.config, local_kernel=True)
-        self.init_colors(widget)
-        widget.kernel_manager = kernel_manager
-        widget._existing = False
-        widget._may_close = True
-        widget._confirm_exit = self.confirm_exit
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.update_outputs)
+        self.timer.start(1000)
 
-        self.init_widget(widget)
+    def add_tab(self, name):
+        tab = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
+        output = QtGui.QTextEdit(tab)
+        output.setReadOnly(True)
+        output.setAcceptRichText(True)
+        layout.addWidget(output)
+        tab.setLayout(layout)
+        self.tabWidget.addTab(tab, name)
+        self.tabWidget.setCurrentIndex(len(self.texts)-1)
+        return output
 
-        return widget
 
-    def init_widget(self, widget):
-        for line in preexec_lines:
-            widget.execute(line, hidden=True)
+    def runFile(self):
+        '''Load and run XPL script in an external program'''
+        global last_dir
+        fname, _ = QtGui.QFileDialog.getOpenFileName(self, tr("Choose file to run"), last_dir, tr("PLaSK files (*.xpl *.py)"))
+        last_dir = os.path.dirname(fname)
+        self.outputs.append(self.add_tab(os.path.basename(fname)))
+        self.texts.append([])
+        self.lens.append(0)
 
-def get_version(executable):
-    pipe = subprocess.Popen([executable, "-version"], stdout=subprocess.PIPE).stdout
-    return pipe.read().strip()
+        thread = PlaskThread(fname, self.texts[-1])
+        self.threads.append(thread)
+        thread.start()
 
-def main():
-    app = PlaskQtConsoleApp()
-    app.executable = os.path.join(os.path.dirname(sys.argv[0]), "plask")
-    IPython.core.usage.default_gui_banner = banner_tpl % get_version(app.executable)
-    app.initialize(['--pylab=qt', '--profile=plask'])
-    app.init_widget(app.widget)
-    app.window.setWindowTitle("PLaSK")
-    app.start()
+        
+    def update_outputs(self):
+        for i,output in enumerate(self.outputs):
+            ll = len(self.texts[i])
+            if self.lens[i] != ll:
+                output.append("<br/>".join(self.texts[i][self.lens[i]:ll]))
+                output.moveCursor(QtGui.QTextCursor.End)
+                self.lens[i] = ll
 
-# Application entry point.
-if __name__ == '__main__':
-    main()
+        
+    def quitting(self):
+        for thread in self.threads:
+            if thread.isRunning():
+                thread.terminate()
+
+
+class PlaskThread(QtCore.QThread):
+    
+    def __init__(self, fname, lines):
+        super(PlaskThread, self).__init__()
+        self.proc = subprocess.Popen(['plask', fname], cwd=os.path.dirname(fname), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        self.lines = lines
+        self.terminated.connect(self.kill_process)
+    
+    def run(self):
+        while self.proc.poll() is None:
+            line = self.proc.stdout.readline().rstrip()
+            if not line: continue
+            cat = line[:14]
+            if   cat == "CRITICAL ERROR": color = "red"
+            elif cat == "ERROR         ": color = "red"
+            elif cat == "WARNING       ": color = "brown"
+            elif cat == "INFO          ": color = "blue"
+            elif cat == "RESULT        ": color = "green"
+            elif cat == "DATA          ": color = "#006060"
+            elif cat == "DETAIL        ": color = "black"
+            elif cat == "ERROR DETAIL  ": color = "#800000"
+            elif cat == "DEBUG         ": color = "gray"        
+            else: color = "black; font-weight:bold"
+            self.lines.append('<tt style="color:%s;">%s</tt>' % (color, line.replace(' ', '&nbsp;')))
+
+    def kill_process(self):
+        self.proc.terminate()
+
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    mainwindow = MainWindow()
+    app.aboutToQuit.connect(mainwindow.quitting)
+    mainwindow.show()
+    sys.exit(app.exec_())

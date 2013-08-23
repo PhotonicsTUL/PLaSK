@@ -1,6 +1,6 @@
 [Desktop Entry]
 Comment=
-Exec=qtplask
+Exec=plask-qtconsole
 GenericName=Photonic Laser Simulation Kit — QtConsole
 Icon=plask
 MimeType=application/plask
