@@ -208,7 +208,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_outputs)
-        self.timer.start(1000)
+        self.timer.start(250)
 
     def add_tab(self, name):
         tab = QtGui.QWidget()
@@ -256,7 +256,18 @@ class PlaskThread(QtCore.QThread):
     
     def __init__(self, fname, lines):
         super(PlaskThread, self).__init__()
-        self.proc = subprocess.Popen(['plask', fname], cwd=os.path.dirname(fname), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        
+        try:
+            si = subprocess.STARTUPINFO()
+            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+        except AttributeError:
+            kwargs= {}
+        else:
+            kwargs = {'startupinfo': si}
+
+        self.proc = subprocess.Popen(['plask', '-u', fname], cwd=os.path.dirname(fname), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
+
         self.lines = lines
         self.terminated.connect(self.kill_process)
     

@@ -1,33 +1,31 @@
 #include <windows.h>
+
 #include <Python.h>
+#include <marshal.h>
 
 #define IDR_MYTEXTFILE 101
 #define TEXTFILE 256
 
-void LoadFileInResource(int name, int type, DWORD& size, const char*& data)
+void LoadFileInResource(int name, int type, DWORD& size, char*& data)
 {
     HMODULE handle = ::GetModuleHandle(NULL);
     HRSRC rc = ::FindResource(handle, MAKEINTRESOURCE(name), MAKEINTRESOURCE(type));
     HGLOBAL rcData = ::LoadResource(handle, rc);
     size = ::SizeofResource(handle, rc);
-    data = static_cast<const char*>(::LockResource(rcData));
+    data = static_cast<char*>(::LockResource(rcData));
 }
 
 // Usage example
 int main(int argc, char** argv)
 {
     DWORD size = 0;
-    const char* data = NULL;
+    char* data = NULL;
     LoadFileInResource(IDR_MYTEXTFILE, TEXTFILE, size, data);
-    // The text stored in the resource might not be NULL terminated.
-    char* buffer = new char[size+1];
-    ::memcpy(buffer, data, size);
-    buffer[size] = 0; // NULL terminator
-    
+
     Py_Initialize();
     PySys_SetArgvEx(argc, argv, 0);
-    PyObject* code = Py_CompileString(buffer, argv[0], Py_file_input);
-    delete[] buffer;
+
+    PyObject* code = PyMarshal_ReadObjectFromString(data+8, size-8);
 
     int ok = 0;
 

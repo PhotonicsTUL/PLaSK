@@ -259,7 +259,7 @@ if(BUILD_PYTHON)
         set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
     endif()
 
-    if (DEFINED no_strict_aliasing_flag)
+    if(DEFINED no_strict_aliasing_flag)
         set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
     endif()
 
@@ -269,8 +269,18 @@ if(BUILD_PYTHON)
         add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_base}
                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_base}
                            DEPENDS ${py_file})
+        list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_base}c)
+        list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_base}o)
     endforeach()
+
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
+    
+    if(WIN32)
+        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall ${PLASK_PYTHON_PATH})
+        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall ${PLASK_PYTHON_PATH})
+        install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
+        install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
+    endif()
 
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
@@ -484,35 +494,43 @@ endif(BUILD_DOCUMENTATION)
 set(script_permissions "OWNER_WRITE;OWNER_READ;OWNER_EXECUTE;GROUP_READ;GROUP_EXECUTE;WORLD_READ;WORLD_EXECUTE")
 
 if(WIN32)
-    macro(compile_python_script script)
-        set(script_rc "${CMAKE_BINARY_DIR}/CMakeFiles/${script}.rc")
-        file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n101 256 \"${CMAKE_SOURCE_DIR}/utils/${script}.py\"\n")
+
+    set(UTILS_BINARY_DIR "${CMAKE_BINARY_DIR}/CMakeFiles/utils")
+    file(MAKE_DIRECTORY ${UTILS_BINARY_DIR})
+    function(compile_python_script script_path)
+        get_filename_component(script ${script_path} NAME)
+        set(script_rc "${UTILS_BINARY_DIR}/${script}.rc")
+        set(script_pyc "${UTILS_BINARY_DIR}/${script}.pyc")
+        if(DEFINED ARGV1)
+            file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n2 ICON \"${ARGV1}\"\n101 256 \"${script_pyc}\"\n")
+            set(exe_type windows)
+        else()
+            file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n101 256 \"${script_pyc}\"\n")
+            set(exe_type console)
+        endif()
+        add_custom_command(OUTPUT ${script_pyc}
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
+                           COMMAND ${PYTHON_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\'\\)"
+                           DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
         add_executable(${script} toolset/run_python.cpp ${script_rc})
-        set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS "${CMAKE_SOURCE_DIR}/utils/${script}.py")
+        set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS ${script_pyc})
         set_source_files_properties(toolset/run_python.cpp PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
         target_link_libraries(${script} ${PYTHON_LIBRARIES})
-        set_target_properties(${script} PROPERTIES LINK_FLAGS "-mconsole")
+        set_target_properties(${script} PROPERTIES LINK_FLAGS "-m${exe_type}")
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
-    endmacro()
+    endfunction()
+
     compile_python_script(dan2xpl)
+    compile_python_script(qtplask/qtplask ${CMAKE_SOURCE_DIR}/utils/qtplask/qtplask.ico)
     install(FILES utils/xpl2dan.bat DESTINATION bin COMPONENT utils)
     install(FILES utils/xpl2dan.py DESTINATION lib/plask/python/plask COMPONENT utils)
 
-    #TODO tidy
-    set(script_rc "${CMAKE_BINARY_DIR}/CMakeFiles/qtplask.rc")
-    file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n2 ICON \"${CMAKE_SOURCE_DIR}/utils/qtplask.ico\"\n101 256 \"${CMAKE_SOURCE_DIR}/utils/qtplask.py\"\n")
-    add_executable(qtplask toolset/run_python.cpp ${script_rc})
-    set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS "${CMAKE_SOURCE_DIR}/utils/qtplask.py")
-    set_source_files_properties(toolset/run_python.cpp PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
-    target_link_libraries(qtplask ${PYTHON_LIBRARIES})
-    set_target_properties(qtplask PROPERTIES LINK_FLAGS "-mwindows")
-    install(TARGETS qtplask DESTINATION bin COMPONENT core)
-
-    
 else()
-    install(FILES utils/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME qtplask)
+
+    install(FILES utils/qtplask/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME qtplask)
     install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
     install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
+
 endif()
 
 # ----------===== Packaging =====--------------------------------------------

@@ -3,7 +3,7 @@
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
 
-#include <iostream>
+#include <cstdio>
 #include <vector>
 #include <string>
 #include <stack>
@@ -165,7 +165,7 @@ void endPlask() {
 int main(int argc, const char *argv[])
 {
     if (argc > 1 && std::string(argv[1]) == "-version") {
-        std::cout << PLASK_VERSION << std::endl;
+        printf(PLASK_VERSION "\n");
         return 0;
     }
 
@@ -206,7 +206,7 @@ int main(int argc, const char *argv[])
                 else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
                 else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
                 else {
-                    std::cerr << "Bad log level specified\n";
+                    fprintf(stderr, "Bad log level specified\n");
                     return 4;
                 }
             }
@@ -218,6 +218,10 @@ int main(int argc, const char *argv[])
             argv[2] = "-c";
             --argc; ++argv;
             break;
+        } else if (arg == "-u") {
+            setbuf(stdout, NULL);
+            setbuf(stderr, NULL);
+            --argc; ++argv;
         } else if (arg.find('=') != std::string::npos) {
             defs.push_back(argv[1]);
             --argc; ++argv;

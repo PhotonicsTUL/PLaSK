@@ -1,5 +1,8 @@
 #include <complex>
 
+#include <boost/algorithm/string.hpp>
+
+
 #include "python_globals.h"
 #include "python_numpy.h"
 #include <frameobject.h> // for Python traceback
@@ -96,7 +99,8 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
     }
 
     PyObject* pmessage = PyObject_Str(value);
-    const char* message = py::extract<const char*>(pmessage);
+    std::string message = py::extract<std::string>(pmessage);
+    boost::replace_all(message, "\n", " ");
 
     std::string error_name = type->tp_name;
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
