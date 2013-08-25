@@ -1,9 +1,11 @@
 #!/usr/bin/python
+#coding: utf8
 
 import sys
 import os
 import base64
 import subprocess
+from time import localtime, strftime
 
 from PySide import QtCore, QtGui
 
@@ -102,17 +104,17 @@ XtPg0Wh0ybuFfxdE3/ep1+t/pz4X07b/UJKg4zivXVpME9u2f6j/VJ7n32f89xqslCIIgjd/Dniz
 yU/85en/BUFo1JV1G1EMAAAAAElFTkSuQmCC
 '''
 
-try:
-    last_dir = os.environ['HOME']
-except:
-    last_dir = ""
-
 class MainWindow(QtGui.QMainWindow):
     '''Main Qt window class'''
-    
+
     def setupUi(self):
-        self.setObjectName("self")
-        self.resize(800, 600)
+        self.setObjectName("PLaSK")
+
+        space = QtGui.QDesktopWidget().availableGeometry(self)
+        self.resize(self.settings.value("window/size", QtCore.QSize(int(0.8*space.width()), int(0.9*space.height()))))
+        qr = self.frameGeometry()
+        qr.moveCenter(QtGui.QDesktopWidget().screenGeometry(self).center())
+        self.move(self.settings.value("window/pos", QtCore.QPoint(qr.topLeft())))
 
         icon_pixmap = QtGui.QPixmap()
         icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(ICON))
@@ -124,8 +126,30 @@ class MainWindow(QtGui.QMainWindow):
         self.centralwidget.setEnabled(True)
 
         layout = QtGui.QVBoxLayout()
-        self.tabWidget = QtGui.QTabWidget()
-        layout.addWidget(self.tabWidget)
+
+        self.tabBar = QtGui.QTabBar()
+        layout.addWidget(self.tabBar)
+
+        #splitter =  QtGui.QSplitter()
+        #splitter.setOrientation(QtCore.Qt.Vertical)
+        #layout.addWidget(splitter)
+
+        font = QtGui.QFont()
+        font.setFamily("Monospace")
+        font.setPointSize(10)
+        #self.outputView = QtGui.QTextEdit()
+        #self.outputView.setReadOnly(True)
+        #self.outputView.setAcceptRichText(False)
+        #self.outputView.setFont(font)
+        #splitter.addWidget(self.outputView)
+        self.messagesView = QtGui.QTextEdit()
+        self.messagesView.setReadOnly(True)
+        self.messagesView.setAcceptRichText(True)
+        self.messagesView.setFont(font)
+        self.messagesView.append(tr("Press F5 to start computations..."))
+        #splitter.addWidget(self.messagesView)
+        layout.addWidget(self.messagesView)
+
         self.centralwidget.setLayout(layout)
         self.setCentralWidget(self.centralwidget)
 
@@ -134,28 +158,30 @@ class MainWindow(QtGui.QMainWindow):
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuView = QtGui.QMenu(self.menubar)
         self.actionRun = QtGui.QAction(self)
+        self.actionRun.setShortcut("F5")
         self.actionQuit = QtGui.QAction(self)
+        self.actionQuit.setShortcut("Ctrl+Q")
         self.actionError = QtGui.QAction(self)
         self.actionError.setCheckable(True)
-        self.actionError.setChecked(True)
+        self.actionError.setChecked(self.settings.value('view/error', True)=='true')
         self.actionWarning = QtGui.QAction(self)
         self.actionWarning.setCheckable(True)
-        self.actionWarning.setChecked(True)
+        self.actionWarning.setChecked(self.settings.value('view/warning', True)=='true')
         self.actionInfo = QtGui.QAction(self)
         self.actionInfo.setCheckable(True)
-        self.actionInfo.setChecked(True)
+        self.actionInfo.setChecked(self.settings.value('view/info', True)=='true')
         self.actionResult = QtGui.QAction(self)
         self.actionResult.setCheckable(True)
-        self.actionResult.setChecked(True)
+        self.actionResult.setChecked(self.settings.value('view/result', True)=='true')
         self.actionData = QtGui.QAction(self)
         self.actionData.setCheckable(True)
-        self.actionData.setChecked(True)
+        self.actionData.setChecked(self.settings.value('view/data', True)=='true')
         self.actionDetail = QtGui.QAction(self)
         self.actionDetail.setCheckable(True)
-        self.actionDetail.setChecked(True)
+        self.actionDetail.setChecked(self.settings.value('view/detail', True)=='true')
         self.actionDebug = QtGui.QAction(self)
         self.actionDebug.setCheckable(True)
-        self.actionDebug.setChecked(False)
+        self.actionDebug.setChecked(self.settings.value('view/debug', False)=='true')
         self.menuFile.addAction(self.actionRun)
         self.menuFile.addAction(self.actionQuit)
         self.menuView.addAction(self.actionError)
@@ -166,7 +192,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menuView.addAction(self.actionDetail)
         self.menuView.addAction(self.actionDebug)
         self.menubar.addAction(self.menuFile.menuAction())
-        #self.menubar.addAction(self.menuView.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
         self.setMenuBar(self.menubar)
 
         self.statusbar = QtGui.QStatusBar(self)
@@ -190,73 +216,102 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def __init__(self):
-        self.texts = []
-        self.outputs = []
+        #self.outputs = []
+        self.messages = []
         self.threads = []
-        self.lens = []
-        
+
+        self.settings = QtCore.QSettings("PLaSK", "qtplask")
+
+        try:
+            self.last_dir = os.environ['HOME']
+        except:
+            self.last_dir = ""
+
         super(MainWindow, self).__init__()
+
         self.setupUi()
-        
+
         self.actionQuit.triggered.connect(QtCore.QCoreApplication.instance().quit)
         self.actionRun.triggered.connect(self.runFile)
+        self.tabBar.currentChanged.connect(self.switch_tab)
 
-        qr = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        self.actionError.triggered.connect(self.switch_tab)
+        self.actionWarning.triggered.connect(self.switch_tab)
+        self.actionInfo.triggered.connect(self.switch_tab)
+        self.actionResult.triggered.connect(self.switch_tab)
+        self.actionData.triggered.connect(self.switch_tab)
+        self.actionDetail.triggered.connect(self.switch_tab)
+        self.actionDebug.triggered.connect(self.switch_tab)
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_outputs)
         self.timer.start(250)
 
-    def add_tab(self, name):
-        tab = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
-        output = QtGui.QTextEdit(tab)
-        output.setReadOnly(True)
-        output.setAcceptRichText(True)
-        layout.addWidget(output)
-        tab.setLayout(layout)
-        self.tabWidget.addTab(tab, name)
-        self.tabWidget.setCurrentIndex(len(self.texts)-1)
-        return output
-
 
     def runFile(self):
         '''Load and run XPL script in an external program'''
-        global last_dir
-        fname, _ = QtGui.QFileDialog.getOpenFileName(self, tr("Choose file to run"), last_dir, tr("PLaSK files (*.xpl *.py)"))
-        last_dir = os.path.dirname(fname)
-        self.outputs.append(self.add_tab(os.path.basename(fname)))
-        self.texts.append([])
-        self.lens.append(0)
+        fname, _ = QtGui.QFileDialog.getOpenFileName(self, tr("Choose file to run"), self.last_dir, tr("PLaSK files (*.xpl *.py)"))
+        if not fname: return
 
-        thread = PlaskThread(fname, self.texts[-1])
+        self.last_dir = os.path.dirname(fname)
+
+        #self.outputs.append([])
+        self.messages.append([])
+        self.tabBar.addTab("%s @ %s" % (os.path.basename(fname), strftime('%X')))
+        self.tabBar.setCurrentIndex(-1)
+
+        thread = PlaskThread(fname, self.messages[-1])
         self.threads.append(thread)
         thread.start()
 
-        
-    def update_outputs(self):
-        for i,output in enumerate(self.outputs):
-            ll = len(self.texts[i])
-            if self.lens[i] != ll:
-                output.append("<br/>".join(self.texts[i][self.lens[i]:ll]))
-                output.moveCursor(QtGui.QTextCursor.End)
-                self.lens[i] = ll
 
-        
+    def switch_tab(self):
+        self.messagesView.clear()
+        self.message_lines = 0
+        self.update_outputs()
+
+
+    def update_outputs(self):
+        n = self.tabBar.currentIndex()
+        if n == -1: return
+        total_lines = len(self.messages[n])
+        if self.message_lines != total_lines:
+            for line in self.messages[n][self.message_lines:total_lines]:
+                cat = line[19:26].rstrip()
+                if cat in ('red', '#800000') and not self.actionError.isChecked(): continue
+                if cat == 'brown' and not self.actionWarning.isChecked(): continue
+                if cat == 'blue' and not self.actionInfo.isChecked(): continue
+                if cat == 'green' and not self.actionResult.isChecked(): continue
+                if cat == '#006060' and not self.actionData.isChecked(): continue
+                if cat == 'black' and not self.actionDetail.isChecked(): continue
+                if cat == 'gray' and not self.actionDebug.isChecked(): continue
+                self.messagesView.append(line)
+            self.messagesView.moveCursor(QtGui.QTextCursor.End)
+            self.message_lines = total_lines
+
+
     def quitting(self):
+
+        self.settings.setValue("window/size", self.size())
+        self.settings.setValue("window/pos", self.pos())
+        self.settings.setValue('view/error', self.actionError.isChecked())
+        self.settings.setValue('view/warning', self.actionWarning.isChecked())
+        self.settings.setValue('view/info', self.actionInfo.isChecked())
+        self.settings.setValue('view/result', self.actionResult.isChecked())
+        self.settings.setValue('view/data', self.actionData.isChecked())
+        self.settings.setValue('view/detail', self.actionDetail.isChecked())
+        self.settings.setValue('view/debug', self.actionDebug.isChecked())
+
         for thread in self.threads:
             if thread.isRunning():
                 thread.terminate()
 
 
 class PlaskThread(QtCore.QThread):
-    
+
     def __init__(self, fname, lines):
         super(PlaskThread, self).__init__()
-        
+
         try:
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
@@ -270,23 +325,25 @@ class PlaskThread(QtCore.QThread):
 
         self.lines = lines
         self.terminated.connect(self.kill_process)
-    
+
     def run(self):
         while self.proc.poll() is None:
             line = self.proc.stdout.readline().rstrip()
             if not line: continue
-            cat = line[:14]
-            if   cat == "CRITICAL ERROR": color = "red"
-            elif cat == "ERROR         ": color = "red"
-            elif cat == "WARNING       ": color = "brown"
-            elif cat == "INFO          ": color = "blue"
-            elif cat == "RESULT        ": color = "green"
-            elif cat == "DATA          ": color = "#006060"
-            elif cat == "DETAIL        ": color = "black"
-            elif cat == "ERROR DETAIL  ": color = "#800000"
-            elif cat == "DEBUG         ": color = "gray"        
+            cat = line[:15]
+            line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            if   cat == "CRITICAL ERROR:": color = "red    "
+            elif cat == "ERROR         :": color = "red    "
+            elif cat == "WARNING       :": color = "brown  "
+            elif cat == "INFO          :": color = "blue   "
+            elif cat == "RESULT        :": color = "green  "
+            elif cat == "DATA          :": color = "#006060"
+            elif cat == "DETAIL        :": color = "black  "
+            elif cat == "ERROR DETAIL  :": color = "#800000"
+            elif cat == "DEBUG         :": color = "gray   "
             else: color = "black; font-weight:bold"
-            self.lines.append('<tt style="color:%s;">%s</tt>' % (color, line.replace(' ', '&nbsp;')))
+            line = line.replace(' ', '&nbsp;')
+            self.lines.append('<span style="color:%s;">%s</span>' % (color, line))
 
     def kill_process(self):
         self.proc.terminate()
