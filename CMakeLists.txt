@@ -16,7 +16,7 @@ if(MINGW)
 else()
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-maybe-uninitialized")
 
 # Turn-off strict aliasing for Python code
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -520,10 +520,10 @@ if(WIN32)
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
     endfunction()
 
+    compile_python_script(qtplask ${CMAKE_SOURCE_DIR}/utils/qtplask.ico)
     compile_python_script(dan2xpl)
-    compile_python_script(qtplask/qtplask ${CMAKE_SOURCE_DIR}/utils/qtplask/qtplask.ico)
-    install(FILES utils/xpl2dan.bat DESTINATION bin COMPONENT utils)
-    install(FILES utils/xpl2dan.py DESTINATION lib/plask/python/plask COMPONENT utils)
+    install(FILES utils/dan2xpl.py DESTINATION bin COMPONENT utils)
+    install(FILES utils/xpl2dan.py DESTINATION bin COMPONENT utils)
 
 else()
 
