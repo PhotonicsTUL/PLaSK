@@ -5,7 +5,7 @@ import sys
 import os
 import base64
 import subprocess
-from time import localtime, strftime
+from time import localtime, strftime, sleep
 
 from PySide import QtCore, QtGui
 
@@ -107,14 +107,14 @@ yU/85en/BUFo1JV1G1EMAAAAAElFTkSuQmCC
 class MainWindow(QtGui.QMainWindow):
     '''Main Qt window class'''
 
-    def setupUi(self):
+    def setupUi(self, config):
         self.setObjectName("PLaSK")
 
         space = QtGui.QDesktopWidget().availableGeometry(self)
-        self.resize(self.settings.value("window/size", QtCore.QSize(int(0.8*space.width()), int(0.9*space.height()))))
+        self.resize(config.value("window/size", QtCore.QSize(int(0.8*space.width()), int(0.9*space.height()))))
         qr = self.frameGeometry()
         qr.moveCenter(QtGui.QDesktopWidget().screenGeometry(self).center())
-        self.move(self.settings.value("window/pos", QtCore.QPoint(qr.topLeft())))
+        self.move(config.value("window/pos", QtCore.QPoint(qr.topLeft())))
 
         icon_pixmap = QtGui.QPixmap()
         icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(ICON))
@@ -136,6 +136,7 @@ class MainWindow(QtGui.QMainWindow):
 
         font = QtGui.QFont()
         font.setFamily("Monospace")
+        font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setPointSize(10)
         #self.outputView = QtGui.QTextEdit()
         #self.outputView.setReadOnly(True)
@@ -163,25 +164,25 @@ class MainWindow(QtGui.QMainWindow):
         self.actionQuit.setShortcut("Ctrl+Q")
         self.actionError = QtGui.QAction(self)
         self.actionError.setCheckable(True)
-        self.actionError.setChecked(self.settings.value('view/error', True)=='true')
+        self.actionError.setChecked(config.value('view/error', 'true')=='true')
         self.actionWarning = QtGui.QAction(self)
         self.actionWarning.setCheckable(True)
-        self.actionWarning.setChecked(self.settings.value('view/warning', True)=='true')
+        self.actionWarning.setChecked(config.value('view/warning', 'true')=='true')
         self.actionInfo = QtGui.QAction(self)
         self.actionInfo.setCheckable(True)
-        self.actionInfo.setChecked(self.settings.value('view/info', True)=='true')
+        self.actionInfo.setChecked(config.value('view/info', 'true')=='true')
         self.actionResult = QtGui.QAction(self)
         self.actionResult.setCheckable(True)
-        self.actionResult.setChecked(self.settings.value('view/result', True)=='true')
+        self.actionResult.setChecked(config.value('view/result', 'true')=='true')
         self.actionData = QtGui.QAction(self)
         self.actionData.setCheckable(True)
-        self.actionData.setChecked(self.settings.value('view/data', True)=='true')
+        self.actionData.setChecked(config.value('view/data', 'true')=='true')
         self.actionDetail = QtGui.QAction(self)
         self.actionDetail.setCheckable(True)
-        self.actionDetail.setChecked(self.settings.value('view/detail', True)=='true')
+        self.actionDetail.setChecked(config.value('view/detail', 'true')=='true')
         self.actionDebug = QtGui.QAction(self)
         self.actionDebug.setCheckable(True)
-        self.actionDebug.setChecked(self.settings.value('view/debug', False)=='true')
+        self.actionDebug.setChecked(config.value('view/debug', 'false')=='true')
         self.menuFile.addAction(self.actionRun)
         self.menuFile.addAction(self.actionQuit)
         self.menuView.addAction(self.actionError)
@@ -220,16 +221,17 @@ class MainWindow(QtGui.QMainWindow):
         self.messages = []
         self.threads = []
 
-        self.settings = QtCore.QSettings("PLaSK", "qtplask")
+        config = QtCore.QSettings("PLaSK", "qtplask")
 
         try:
             self.last_dir = os.environ['HOME']
         except:
             self.last_dir = ""
+        self.last_dir = config.value('recentdir', self.last_dir)
 
         super(MainWindow, self).__init__()
 
-        self.setupUi()
+        self.setupUi(config)
 
         self.actionQuit.triggered.connect(QtCore.QCoreApplication.instance().quit)
         self.actionRun.triggered.connect(self.runFile)
@@ -291,20 +293,23 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def quitting(self):
-
-        self.settings.setValue("window/size", self.size())
-        self.settings.setValue("window/pos", self.pos())
-        self.settings.setValue('view/error', self.actionError.isChecked())
-        self.settings.setValue('view/warning', self.actionWarning.isChecked())
-        self.settings.setValue('view/info', self.actionInfo.isChecked())
-        self.settings.setValue('view/result', self.actionResult.isChecked())
-        self.settings.setValue('view/data', self.actionData.isChecked())
-        self.settings.setValue('view/detail', self.actionDetail.isChecked())
-        self.settings.setValue('view/debug', self.actionDebug.isChecked())
+        config = QtCore.QSettings("PLaSK", "qtplask")
+        config.setValue("recentdir", self.last_dir)
+        config.setValue("window/size", self.size())
+        config.setValue("window/pos", self.pos())
+        config.setValue('view/error', self.actionError.isChecked())
+        config.setValue('view/warning', self.actionWarning.isChecked())
+        config.setValue('view/info', self.actionInfo.isChecked())
+        config.setValue('view/result', self.actionResult.isChecked())
+        config.setValue('view/data', self.actionData.isChecked())
+        config.setValue('view/detail', self.actionDetail.isChecked())
+        config.setValue('view/debug', self.actionDebug.isChecked())
 
         for thread in self.threads:
             if thread.isRunning():
                 thread.terminate()
+
+        sleep(0.2)
 
 
 class PlaskThread(QtCore.QThread):
@@ -312,15 +317,15 @@ class PlaskThread(QtCore.QThread):
     def __init__(self, fname, lines):
         super(PlaskThread, self).__init__()
 
-        try:
-            si = subprocess.STARTUPINFO()
-            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-            si.wShowWindow = subprocess.SW_HIDE
-        except AttributeError:
-            kwargs= {}
-        else:
-            kwargs = {'startupinfo': si}
-
+        kwargs= {}
+        #try:
+            #si = subprocess.STARTUPINFO()
+            #si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+            #si.wShowWindow = subprocess.SW_HIDE
+        #except AttributeError:
+            #pass
+        #else:
+            #kwargs = {'startupinfo': si}
         self.proc = subprocess.Popen(['plask', '-u', fname], cwd=os.path.dirname(fname), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
 
         self.lines = lines
