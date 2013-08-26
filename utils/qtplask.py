@@ -222,7 +222,7 @@ class MainWindow(QtGui.QMainWindow):
             if xpl2dan:
                 self.actionXplDan = QtGui.QAction(self)
                 self.actionXplDan.setText(tr("Convert XPL to &DAN..."))
-                self.actionXplDan.triggered.connect(lambda: self.runConvert(xpl2dan, 'PLaSK files (*.xpl)'))
+                self.actionXplDan.triggered.connect(lambda: self.runConvert(xpl2dan, 'XPL files (*.xpl)'))
                 self.menuTools.addAction(self.actionXplDan)
             self.menubar.addAction(self.menuTools.menuAction())
 
@@ -295,13 +295,20 @@ class MainWindow(QtGui.QMainWindow):
     def start_plask(self, fname, *args):
         #self.outputs.append([])
         self.messages.append([])
-        self.tabBar.addTab("%s @ %s" % (os.path.basename(fname), strftime('%X')))
-        self.tabBar.setCurrentIndex(len(self.messages)-1)
+        label = "%s @ %s" % (os.path.basename(fname), strftime('%X'))
+        self.tabBar.addTab(label + tr(" (running)"))
+        idx = len(self.messages)-1
+        self.tabBar.setCurrentIndex(idx)
 
         thread = PlaskThread(fname, self.last_dir, self.messages[-1], *args)
+        thread.finished.connect(lambda: self.set_finished(idx, label))
         self.threads.append(thread)
         thread.start()
 
+
+    def set_finished(self, idx, label):
+        self.tabBar.setTabText(idx, label + "(%s)" % strftime('%X'))
+    
 
     def switch_tab(self):
         self.messagesView.clear()
@@ -353,17 +360,8 @@ class PlaskThread(QtCore.QThread):
     def __init__(self, fname, dirname, lines, *args):
         super(PlaskThread, self).__init__()
 
-        #kwargs= {}
-        #try:
-        #    si = subprocess.STARTUPINFO()
-        #    si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-        #    si.wShowWindow = 4
-        #except AttributeError:
-        #    pass
-        #else:
-        #    kwargs = {'startupinfo': si}
-        self.proc = subprocess.Popen(['plask', '-ldebug', '-u', fname] + list(args),
-                                     cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
+        self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-w', fname] + list(args),
+                                     cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         self.lines = lines
         self.terminated.connect(self.kill_process)

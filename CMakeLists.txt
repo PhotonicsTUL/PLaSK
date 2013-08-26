@@ -276,8 +276,8 @@ if(BUILD_PYTHON)
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
     
     if(WIN32)
-        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall ${PLASK_PYTHON_PATH})
-        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall ${PLASK_PYTHON_PATH})
+        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
+        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
         install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
         install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
     endif()
@@ -510,7 +510,7 @@ if(WIN32)
         endif()
         add_custom_command(OUTPUT ${script_pyc}
                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
-                           COMMAND ${PYTHON_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\'\\)"
+                           COMMAND ${PYTHON_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\', quiet=True\\)"
                            DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
         add_executable(${script} toolset/run_python.cpp ${script_rc})
         set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS ${script_pyc})
@@ -527,7 +527,7 @@ if(WIN32)
 
 else()
 
-    install(FILES utils/qtplask/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME qtplask)
+    install(FILES utils/qtplask.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME qtplask)
     install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
     install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
 

@@ -118,7 +118,7 @@ static py::object initPlask(int argc, const char* argv[])
 // This functions closes all matplotlib windows in order to avoid the annoying
 // 'Fatal Python error: PyEval_RestoreThread: NULL tstate' bug on Windows.
 static inline void fixMatplotlibBug() {
-#if defined(_WIN32)
+#ifdef _WIN32
     py::object modules = py::import("sys").attr("modules");
     if (py::dict(modules).has_key("matplotlib")) {
         try {
@@ -169,9 +169,9 @@ int main(int argc, const char *argv[])
         return 0;
     }
 
-#   ifdef _WIN32
-        SetDllDirectory(plask::exePath().c_str());
-#   endif
+#ifdef _WIN32
+    SetDllDirectory(plask::exePath().c_str());
+#endif
 
     // Parse commnad line
     bool import_plask = true;
@@ -221,6 +221,11 @@ int main(int argc, const char *argv[])
         } else if (arg == "-u") {
             setbuf(stdout, NULL);
             setbuf(stderr, NULL);
+            --argc; ++argv;
+        } else if (arg == "-w") {
+#ifdef _WIN32
+            FreeConsole();
+#endif
             --argc; ++argv;
         } else if (arg.find('=') != std::string::npos) {
             defs.push_back(argv[1]);
