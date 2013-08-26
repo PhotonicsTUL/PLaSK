@@ -24,7 +24,7 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
 
   protected:
 
-    /// Maximum order of orthogonal base
+    /// Maximum order of the orthogonal base
     size_t order;
 
     /// Mesh multiplier for finer computation of the refractive indices
@@ -32,6 +32,9 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
 
     /// Lateral PMLs
     PML pml;
+
+    /// Cache of the normalized frequency [1/µm]
+    dcomplex k0;
 
     void onInitialize();
 
@@ -54,7 +57,7 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
      * \param neff initial effective index to search the mode around
      * \return determined effective index
      */
-    double computeMode(dcomplex neff);
+    size_t findMode(dcomplex neff);
 
   protected:
 

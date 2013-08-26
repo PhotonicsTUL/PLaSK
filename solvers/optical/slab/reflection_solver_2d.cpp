@@ -43,7 +43,7 @@ void FourierReflection2D::onInitialize()
 // }
 
 
-double FourierReflection2D::computeMode(dcomplex neff) {
+size_t FourierReflection2D::findMode(dcomplex neff) {
     initCalculation();
     return NAN;
 }

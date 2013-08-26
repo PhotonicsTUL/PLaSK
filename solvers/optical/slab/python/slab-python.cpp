@@ -40,7 +40,7 @@ BOOST_PYTHON_MODULE(slab)
         export_base(solver);
         RECEIVER(inWavelength, "Wavelength of the light");
         PROVIDER(outNeff, "Effective index of the last computed mode");
-        METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
+        METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
         //RO_FIELD(root, "Configuration of the global rootdigger");
         //RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
         //METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
@@ -56,7 +56,7 @@ BOOST_PYTHON_MODULE(slab)
         export_base(solver);
         RECEIVER(inWavelength, "Wavelength of the light");
         PROVIDER(outNeff, "Effective index of the last computed mode");
-        METHOD(compute, computeMode, "Compute the mode near the specified effective index", "neff");
+        //METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
     }
 
 }

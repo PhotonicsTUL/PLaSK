@@ -307,7 +307,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def set_finished(self, idx, label):
-        self.tabBar.setTabText(idx, label + "(%s)" % strftime('%X'))
+        self.tabBar.setTabText(idx, label + " (%s)" % strftime('%X'))
     
 
     def switch_tab(self):
@@ -360,8 +360,12 @@ class PlaskThread(QtCore.QThread):
     def __init__(self, fname, dirname, lines, *args):
         super(PlaskThread, self).__init__()
 
-        self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-w', fname] + list(args),
-                                     cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if sys.platform == 'win32':
+            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-mw', fname] + list(args),
+                                         cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        else:
+            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', fname] + list(args),
+                                         cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         self.lines = lines
         self.terminated.connect(self.kill_process)

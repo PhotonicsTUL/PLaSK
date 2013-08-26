@@ -222,11 +222,12 @@ int main(int argc, const char *argv[])
             setbuf(stdout, NULL);
             setbuf(stderr, NULL);
             --argc; ++argv;
-        } else if (arg == "-w") {
 #ifdef _WIN32
-            FreeConsole();
-#endif
+        } else if (arg == "-mw") {
+            HWND hwnd = GetConsoleWindow();
+            ShowWindow(hwnd, SW_SHOWMINNOACTIVE);
             --argc; ++argv;
+#endif
         } else if (arg.find('=') != std::string::npos) {
             defs.push_back(argv[1]);
             --argc; ++argv;
