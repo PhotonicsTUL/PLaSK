@@ -13,7 +13,7 @@ from PySide import QtCore, QtGui
 
 tr = lambda txt: QtGui.QApplication.translate("self", txt, None, QtGui.QApplication.UnicodeUTF8)
 
-ICON = '''
+APP_ICON = '''
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBI
 WXMAADddAAA3XQEZgEZdAAAAB3RJTUUH3QMDEwoeKeG4rwAAE3lJREFUeNrlm2uQZVd1mL+9z/u+
 7+3u2++e98jSDBKjx9hYNgIsCilGJZUisJwUlfygiJWglOMUduKQAj/KqYqNX1ESDJRMOQURRsDE
@@ -106,6 +106,20 @@ XtPg0Wh0ybuFfxdE3/ep1+t/pz4X07b/UJKg4zivXVpME9u2f6j/VJ7n32f89xqslCIIgjd/Dniz
 yU/85en/BUFo1JV1G1EMAAAAAElFTkSuQmCC
 '''
 
+STOP_ICON = '''
+iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABF1BMVEX///+AAACoAACtAACHAACK
+AACRAACYAACcAACqAACAAACoAACvBAScAACHDg6OAABuAABtAABqAACiAACWKyt/HhaCJBvSeHXD
+SknJYF2dHxy/NCrFRz+kHxOkHxWkIRqkIx6lHhKmHhCrJBevJxuzMSazKx++Sj/DSkDITEPKVkyA
+IyGBIyGhPjSyQzpqIx9qIyB7PDJZIRxbIRu9AAC+AAC/OTPBEQrCMzPCTUjDOjrFOTLGEgzHEgzJ
+Pj7LRD/LTkrMRkbQAADQEgzTVlbTV1TTZWDUYl7WYF3XY2HbExDbFBHfEw/fFBLfaGHjAADlLyrl
+MCzlMi3lMi7lc3HmbW3mdnXpjYnvFBLvFRPviYfwjYr1AABjjkEhAAAANHRSTlMAMjIySEhISEhI
+SUlJSktPUFFS0Nfd3uTm6vL09fr6+vr6+vr6+vv7+/v7/Pz8/P39/f7+1W7eYgAAAKNJREFUeNqN
+jMUWglAABR8ggoqKYGJidyt2AHZgYfL/3+HhcVjrbO6ZWVzwF1iI0ocKYIaj4XfRBoCj8ImgMLBH
+9Z53uqs39cHCQGYX8qbSWMnrHAkgRHo6mfXnywxhvlpTw96gm7QCE5wX2h2Bx023RCVxNBalmMVw
+e3yvbFvNnXJIuGDwnbRnjWbqL+3shQHhLiUaAKZ85RBgFL9HHyYI/SdfQ7MTa6WMvbgAAAAASUVO
+RK5CYII=
+'''
+
 class MainWindow(QtGui.QMainWindow):
     '''Main Qt window class'''
 
@@ -120,7 +134,7 @@ class MainWindow(QtGui.QMainWindow):
         self.move(config.value("window/pos", QtCore.QPoint(qr.topLeft())))
 
         icon_pixmap = QtGui.QPixmap()
-        icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(ICON))
+        icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(APP_ICON))
         icon = QtGui.QIcon()
         icon.addPixmap(icon_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.setWindowIcon(icon)
@@ -231,7 +245,10 @@ class MainWindow(QtGui.QMainWindow):
         self.statusbar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusbar)
 
-        self.stopicon = QtGui.QIcon.fromTheme("edit-delete")
+        stop_pixmap = QtGui.QPixmap()
+        stop_pixmap.loadFromData(QtCore.QByteArray.fromBase64(STOP_ICON))
+        self.stopicon = QtGui.QIcon()
+        self.stopicon.addPixmap(stop_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
 
     def __init__(self):
