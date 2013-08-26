@@ -231,6 +231,7 @@ class MainWindow(QtGui.QMainWindow):
         self.statusbar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusbar)
 
+        self.stopicon = QtGui.QIcon.fromTheme("edit-delete")
 
 
     def __init__(self):
@@ -295,20 +296,25 @@ class MainWindow(QtGui.QMainWindow):
     def start_plask(self, fname, *args):
         #self.outputs.append([])
         self.messages.append([])
-        label = "%s @ %s" % (os.path.basename(fname), strftime('%X'))
-        self.tabBar.addTab(label + tr(" (running)"))
         idx = len(self.messages)-1
+        self.tabBar.addTab("%s @ %s" % (os.path.basename(fname), strftime('%X')))
+        button = QtGui.QPushButton(self)
+        button.setIcon(self.stopicon)
+        button.setFixedSize(16, 16)
+        self.tabBar.setTabButton(idx, QtGui.QTabBar.RightSide, button)
         self.tabBar.setCurrentIndex(idx)
 
         thread = PlaskThread(fname, self.last_dir, self.messages[-1], *args)
-        thread.finished.connect(lambda: self.set_finished(idx, label))
+        thread.finished.connect(lambda: self.set_finished(idx))
         self.threads.append(thread)
+        button.clicked.connect(thread.kill_process)
         thread.start()
 
 
-    def set_finished(self, idx, label):
-        self.tabBar.setTabText(idx, label + " (%s)" % strftime('%X'))
-    
+    def set_finished(self, idx):
+        self.tabBar.setTabButton(idx, QtGui.QTabBar.RightSide, None)
+        self.tabBar.setTabText(idx, self.tabBar.tabText(idx) + " (%s)" % strftime('%X'))
+
 
     def switch_tab(self):
         self.messagesView.clear()
@@ -352,7 +358,7 @@ class MainWindow(QtGui.QMainWindow):
             if thread.isRunning():
                 thread.terminate()
 
-        sleep(0.2)
+        sleep(1)
 
 
 class PlaskThread(QtCore.QThread):
@@ -360,11 +366,15 @@ class PlaskThread(QtCore.QThread):
     def __init__(self, fname, dirname, lines, *args):
         super(PlaskThread, self).__init__()
 
-        if sys.platform == 'win32':
-            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-mw', fname] + list(args),
+        try:
+            si = subprocess.STARTUPINFO()
+            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+        except AttributeError:
+            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         else:
-            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', fname] + list(args),
+            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-mw', fname] + list(args), startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         self.lines = lines
