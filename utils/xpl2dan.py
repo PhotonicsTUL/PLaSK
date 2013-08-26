@@ -13,8 +13,10 @@ def _parse_material(mat):
     mat = str(mat).split(':')
     if len(mat) == 1:
         return mat[0], 'ST', 0.
-    dp, dc = mat[i].split('=')
-    if dp[-2] == ' ': dp = dp[:-2] # there is no common way to get dopant concentration from carriers concentration
+    dp, dc = mat[1].split('=')
+    print dp, dc
+    if len(dp) > 1 and dp[-2] == ' ':
+        dp = dp[:-2] # there is no common way to get dopant concentration from carriers concentration
     return mat[0], dp, float(dc)
 
 
@@ -73,9 +75,10 @@ def write_dan(name, manager, geo, allm=True):
         if geo.item.has_role('active', point):
             mt = 'j'
             if electrical is not None:
-                cx, cy = electrical.pnjcond
+                cy = electrical.pnjcond
             else:
-                cx, cy = 1e-6, 0.2
+                cy = 0.2
+            cx = 1e-6
         elif allm or mat.cond(300.) == mat.cond(400.):
             mt = 'm'
             try:
