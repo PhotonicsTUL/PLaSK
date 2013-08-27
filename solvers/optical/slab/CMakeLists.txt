@@ -30,9 +30,9 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 #find_package(Eigen3)
 
-#set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
+set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/include)
 
-option(USE_FFTW "Use FFTW library (impossible for published app)" OFF)
+option(USE_FFTW "Use FFTW library (impossible for published app)" ON)
 if(USE_FFTW)
     find_package(FFTW3)
     list(APPEND SOLVER_LINK_LIBRARIES ${FFTW3_THREADS_LIBRARY})
@@ -40,6 +40,9 @@ if(USE_FFTW)
 else()
     # TODO
 endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/optical/slab/config.h)
+
 
 
 # Uncomment and edit the line below if you need some special linker flags.

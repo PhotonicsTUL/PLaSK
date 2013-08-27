@@ -5264,7 +5264,7 @@ XML
  Please refer to the external documentation for information on XML syntax
  and grammar
 \begin_inset Foot
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Good resources are 
@@ -5469,8 +5469,17 @@ value
 
 \end_deeper
 \begin_layout Standard
-Defined parameters can be used in the rest of the XPL file instead of numbers
- that supplied as any attribute values.
+Defined parameters can be used in the rest of the XPL inside any attribute
+ value preceded by the `$` sign (e.
+\begin_inset space \thinspace{}
+\end_inset
+
+g.
+ 
+\family typewriter
+$param
+\family default
+).
 \end_layout
 
 \begin_layout Section

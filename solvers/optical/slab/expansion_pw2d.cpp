@@ -1,5 +1,7 @@
 #include "expansion_pw2d.h"
 
+#include "fft.h"
+
 namespace plask { namespace solvers { namespace slab {
 
     

@@ -340,6 +340,7 @@ int main(int argc, const char *argv[])
                 scriptline = manager->scriptline;
                 // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
+                py::delitem(manager->locals, py::str("self"));
 
                 // Set default axes if all loaded geometries share the same
                 boost::optional<plask::AxisNames> axes;

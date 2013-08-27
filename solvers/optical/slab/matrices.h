@@ -198,7 +198,7 @@ typedef MatrixDiagonal<dcomplex> cdiagonal;
 //**************************************************************************
 /// Multiplication operator of the matrices (using BLAS level3)
 inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
-    if (A.cols() != B.rows()) throw "operator*<cmatrix,cmatrix>: cannot multiply: A.cols != B.rows";
+    if (A.cols() != B.rows()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot multiply: A.cols != B.rows");
     cmatrix C(A.rows(), B.cols());
     F(zgemm)('n', 'n', A.rows(), B.cols(), A.cols(), 1., A.data(), A.rows(), B.data(), B.rows(), 0., C.data(), C.rows());
     return C;
@@ -207,7 +207,7 @@ inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
 /// Multiplication operator of the matrix-vector product (using BLAS level3)
 inline cvector operator*(const cmatrix& A, const cvector& v) {
     int n = A.cols(), m = A.rows();
-    if (n != v.size()) throw "mult_matrix_by_vector: A.cols != v.size";
+    if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     cvector dst(m);
     F(zgemv)('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
     return dst;
@@ -216,7 +216,7 @@ inline cvector operator*(const cmatrix& A, const cvector& v) {
 /// Multiplication by the diagonal matrix (right)
 template <typename T>
 inline cmatrix operator*(const Matrix<T>& A, const MatrixDiagonal<T>& B) {
-    if (A.cols() != B.size()) throw "operator*<cmatrix,cdiagonal>: cannot multiply: A.cols != B.size";
+    if (A.cols() != B.size()) throw ComputationError("operator*<cmatrix,cdiagonal>", "Cannot multiply: A.cols != B.size");
     cmatrix C(A.rows(), B.size());
     register int n = 0;
     int r = A.rows(), c = A.cols();
@@ -232,7 +232,7 @@ inline cmatrix operator*(const Matrix<T>& A, const MatrixDiagonal<T>& B) {
 /// Multiplication by the diagonal matrix (left)
 template <typename T>
 inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
-    if (A.size() != B.rows()) throw "operator*<cdiagonal,cmatrix>: cannot multiply: A.size != B.rows";
+    if (A.size() != B.rows()) throw ComputationError("operator*<cdiagonal,cmatrix>", "Cannot multiply: A.size != B.rows");
     cmatrix C(A.size(), B.cols());
     register int n = 0;
     int r = B.rows(), c = B.cols();
@@ -245,7 +245,7 @@ inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
 /// Multiplication of matrix by diagonal in-place (replacing A)
 template <typename T>
 inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
-    if (A.cols() != B.size()) throw "mult_matrix_by_diagonal: cannot multiply: A.cols != B.size";
+    if (A.cols() != B.size()) throw ComputationError("mult_matrix_by_diagonal", "Cannot multiply: A.cols != B.size");
     register int n = 0;
     int r = A.rows(), c = A.cols();
     for (register int j = 0; j < c; j++) {
@@ -258,7 +258,7 @@ inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
 /// Multiplication of diagonal by matrix in-place (replacing B)
 template <typename T>
 inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
-    if (A.size() != B.rows()) throw "mult_diagonal_by_matrix: cannot multiply: A.size != B.rows";
+    if (A.size() != B.rows()) throw ComputationError("mult_diagonal_by_matrix", "Cannot multiply: A.size != B.rows");
     register int n = 0;
     int r = B.rows(), c = B.cols();
     for (register int j = 0; j < c; j++)

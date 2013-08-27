@@ -1,0 +1,7 @@
+#ifndef PLASK__SOLVER_SLAB_CONFIG_H
+#define PLASK__SOLVER_SLAB_CONFIG_H
+
+#cmakedefine USE_FFTW
+
+#endif // PLASK__SOLVER_SLAB_CONFIG_H
+// kate: syntax c++;

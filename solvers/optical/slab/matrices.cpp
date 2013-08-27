@@ -6,11 +6,11 @@ cmatrix invmult(cmatrix& A, cmatrix& B)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw "invmult: cannot invert rectangular matrix";
+        throw ComputationError("invmult", "Cannot invert rectangular matrix");
     int N = A.rows();
     // Check if can multiply
     if (B.rows() != N)
-        throw "invmult: cannot multiply matrices because of the dimensions mismatch";
+        throw ComputationError("invmult", "Cannot multiply matrices because of the dimensions mismatch");
     int nrhs = B.cols();
     // Needed variables
     int* ipiv = new int[N];
@@ -19,7 +19,7 @@ cmatrix invmult(cmatrix& A, cmatrix& B)
     F(zgesv)(N, nrhs, A.data(), N, ipiv, B.data(), N, info);
     delete[] ipiv;
     // Return the result
-    if (info > 0) throw "invmult: matrix is singular";
+    if (info > 0) throw ComputationError("invmult", "Matrix is singular");
     return B;
 }
 
@@ -28,11 +28,11 @@ cvector invmult(cmatrix& A, cvector& B)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw "invmult: cannot invert rectangular matrix";
+        throw ComputationError("invmult", "Cannot invert rectangular matrix");
     int N = A.rows();
     // Check if can multiply
     if (B.size() != N)
-        throw "invmult: cannot multiply matrix by vector because of the dimensions mismatch";
+        throw ComputationError("invmult", "Cannot multiply matrix by vector because of the dimensions mismatch");
     // Needed variables
     int* ipiv = new int[N];
     int info;
@@ -40,7 +40,7 @@ cvector invmult(cmatrix& A, cvector& B)
     F(zgesv)(N, 1, A.data(), N, ipiv, B.data(), N, info);
     delete[] ipiv;
     // Return the result
-    if (info > 0) throw "invmult: matrix is singular";
+    if (info > 0) throw ComputationError("invmult", "Matrix is singular");
     return B;
 }
 
@@ -49,7 +49,7 @@ cmatrix inv(cmatrix& A)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw "inv: cannot invert rectangular matrix";
+        throw ComputationError("inv", "Cannot invert rectangular matrix");
     int N = A.rows();
 
     // Simply call invmult(A, I)
@@ -66,7 +66,7 @@ dcomplex det(cmatrix& A)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw "det: cannot find the determinant of rectangular matrix";
+        throw ComputationError("det", "Cannot find the determinant of rectangular matrix");
     int N = A.rows();
     // Needed variables
     int* ipiv = new int[N];
@@ -90,14 +90,14 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
 {
     // Check the validity of the matrices
     if (A.rows() != A.cols())
-        throw "eigenv: matrix A should be square";
+        throw ComputationError("eigenv", "Matrix A should be square");
     int N = A.rows();
     if (vals.size() != N)
-        throw "eigenv: eigenvalues should have the same number of rows as the original matrix.";
+        throw ComputationError("eigenv", "Eigenvalues should have the same number of rows as the original matrix.");
     if (rightv) if (rightv->rows() != N || rightv->cols() != N)
-        throw "eigenv: matrices for right eigenvectors should be square";
+        throw ComputationError("eigenv", "Matrices for right eigenvectors should be square");
     if (leftv) if (leftv->rows() != N || leftv->cols() != N)
-        throw "eigenv: Matrices for left eigenvectors should be square";
+        throw ComputationError("eigenv", "Matrices for left eigenvectors should be square");
 
     // Determine the task
     char jobvl = (leftv==NULL)? 'N' : 'V';
