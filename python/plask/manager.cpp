@@ -28,6 +28,18 @@ class PythonXMLFilter {
     static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z') || (c == '_'); }
     static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
 
+    //move p to nearest unescape str_terminator or end of in
+    static inline void goto_string_end(const std::string& in, std::string::size_type& p) {
+        const char str_terminator = in[p++];    //skip string begin
+        while (p < in.size() && in[p] != str_terminator) {
+            if (p == '\\') {
+                ++p;
+                if (p == in.size()) return;
+            }
+            ++p;
+        }
+    }
+
   public:  
 
     PythonXMLFilter(PythonManager* manager): manager(manager) {}
@@ -46,9 +58,16 @@ class PythonXMLFilter {
                 if (in[pos] == '$') { result += '$'; continue; }    // $$ -> $
                 if (in[pos] == '{') {   // ${ ... }
                     ++pos;
-                    //TODO skip '}' inside python strings
-                    std::string::size_type close_pos = in.find('}', pos);
-                    if (close_pos == std::string::npos)
+                    // find } but not inside python string, note that this code sees python long strings as 3 normal strings (2 empties)
+                    std::string::size_type close_pos = pos;
+                    while (close_pos < in.size() && in[close_pos] != '}') {
+                        if (in[close_pos] == '\'' || in[close_pos] == '"') {
+                            goto_string_end(in, close_pos);
+                            if (close_pos == in.size()) break;  //else close_pos points to end of string
+                        }
+                        ++close_pos;
+                    }
+                    if (close_pos == in.size())
                         throw plask::Exception("Can't find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
                     result += eval(in.substr(pos, close_pos - pos));
                     pos = close_pos;    // pos with '}' that will be skiped
