@@ -25,7 +25,7 @@ class PythonXMLFilter {
     
     PythonManager* manager;
     
-    static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z'); }
+    static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z') || (c == '_'); }
     static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
 
   public:  
