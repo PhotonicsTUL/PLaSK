@@ -21,6 +21,47 @@ namespace plask { namespace python {
 
 extern py::dict xml_globals;
 
+struct Filter {
+
+    std::function<std::string(std::string)> filter;
+
+    std::string operator()(const std::string& in) const;
+
+};
+
+inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z'); }
+inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
+
+std::string Filter::operator()(const std::string& in) const {
+    std::string result;
+    result.reserve(in.size());  //we guess that output will have the simillar size as input
+    for (std::string::size_type pos = 0; pos < in.size(); ++pos) {
+        if (in[pos] == '$') {
+            ++pos;
+            if (pos == in.size()) { result += '$'; break; }
+            if (in[pos] == '$') { result += '$'; continue; }    //$$ -> $
+            if (in[pos] == '{') {   // ${ ... }
+                ++pos;
+                //TODO skip '}' inside python strings
+                std::string::size_type close_pos = in.find('}', pos);
+                if (close_pos == std::string::npos)
+                    throw plask::Exception("Can't find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
+                result += filter(in.substr(pos, close_pos - pos - 1));
+                pos = close_pos;    // pos with '}' that will be skiped
+            } else if (is_first_char_in_name(in[pos])) {    // $varible
+                std::size_t end_name_pos = pos + 1;
+                while (end_name_pos < in.size() && is_char_in_name(in[end_name_pos]))
+                    ++end_name_pos;
+                result += filter(in.substr(pos, end_name_pos - pos));
+                pos = end_name_pos - 1; //pos with last character of name
+            } else
+                result += '$';
+        } else
+            result += in[pos];
+    }
+    return result;
+}
+
 struct XMLPythonDataSource: public XMLReader::DataSource {
 
     py::object file;

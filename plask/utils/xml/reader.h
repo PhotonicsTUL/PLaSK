@@ -258,6 +258,9 @@ class XMLReader {
 
     };
 
+    /// Filter can change attribute or content value before parse.
+    typedef std::function<std::string(const std::string&)> Filter;
+
   private:
 
     static void startTag(void *data, const char *element, const char **attribute);
@@ -345,6 +348,21 @@ public:
     /// Parsers used to interpret string values.
     StringInterpreter stringInterpreter;
 
+    /// Filter that can change attribute value before parse.
+    Filter attributeFilter;
+
+    /// Filter that can change content value before parse.
+    Filter contentFilter;
+
+    /**
+     * Set attribute and content filter to @p f.
+     * @param f new filter common for attribute and content
+     */
+    void setFilter(Filter f) {
+        attributeFilter = f;
+        contentFilter = f;
+    }
+
 private:
 
     /// true if the reader should check if there are no spurious attributes in the current element
@@ -385,7 +403,7 @@ private:
 
     /**
      * Parse some data from input. Can (but not must!) append some states to states deque
-     * @return @c true if has more data to read and @c false of and of source was reach while reading
+     * @return @c true if has more data to read and @c false if end of source was reach while reading
      */
     bool readSome();
 

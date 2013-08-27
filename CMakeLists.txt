@@ -188,7 +188,7 @@ file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp solvers/pr
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 
 # Python sources and files
-file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp)
+file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.h)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
 # GUI sources
