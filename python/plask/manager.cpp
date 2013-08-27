@@ -29,7 +29,7 @@ class PythonXMLFilter {
     static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
 
     //check if in[p] == in[p+1] && in[p] == in[p+2], and if so forward p by 2 positions
-    static inline bool check_next2(const std::string& in, std::string::size_type& p) {
+    static inline bool has_long_str(const std::string& in, std::string::size_type& p) {
         if (p + 2 < in.size() && in[p] == in[p+1] && in[p] == in[p+2]) {
             p += 2;
             return true;
@@ -39,10 +39,10 @@ class PythonXMLFilter {
 
     //move p to nearest unescape str_terminator or end of in, support python long strings
     static inline void goto_string_end(const std::string& in, std::string::size_type& p) {
-        bool long_string = check_next2(in, p);
+        bool long_string = has_long_str(in, p);
         const char str_terminator = in[p++];    //skip string begin
         while (p < in.size()) {
-            if (in[p] == str_terminator && (!long_string || check_next2(in, p))) break;
+            if (in[p] == str_terminator && (!long_string || has_long_str(in, p))) break;
             if (p == '\\') {
                 ++p;
                 if (p == in.size()) break;
