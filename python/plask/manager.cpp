@@ -43,7 +43,7 @@ class PythonXMLFilter {
             if (in[pos] == '$') {
                 ++pos;
                 if (pos == in.size()) { result += '$'; break; }
-                if (in[pos] == '$') { result += '$'; continue; }    //$$ -> $
+                if (in[pos] == '$') { result += '$'; continue; }    // $$ -> $
                 if (in[pos] == '{') {   // ${ ... }
                     ++pos;
                     //TODO skip '}' inside python strings
@@ -52,7 +52,7 @@ class PythonXMLFilter {
                         throw plask::Exception("Can't find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
                     result += eval(in.substr(pos, close_pos - pos));
                     pos = close_pos;    // pos with '}' that will be skiped
-                } else if (is_first_char_in_name(in[pos])) {    // $varible
+                } else if (is_first_char_in_name(in[pos])) {    // $variable
                     std::size_t end_name_pos = pos + 1;
                     while (end_name_pos < in.size() && is_char_in_name(in[end_name_pos]))
                         ++end_name_pos;

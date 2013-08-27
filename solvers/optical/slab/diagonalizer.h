@@ -49,22 +49,22 @@ class DiagonalizerBase
     virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky) = 0;
 
     /// Calculate the diagonalization of given layer
-    virtual void diagonalizeLayer(int layer) = 0;
+    virtual void diagonalizeLayer(size_t layer) = 0;
 
     /// Return diagnoal matrix of eignevalues
-    virtual const cdiagonal& Gamma(int layer) const = 0;
+    virtual const cdiagonal& Gamma(size_t layer) const = 0;
     
     /// Return matrix of eigenvectors of QE
-    virtual const cmatrix& TE(int layer) const = 0;
+    virtual const cmatrix& TE(size_t layer) const = 0;
     
     /// Return matrix of eigenvectors of QH
-    virtual const cmatrix& TH(int layer) const = 0;
+    virtual const cmatrix& TH(size_t layer) const = 0;
     
     /// Return inverse matrix of eigenvectors of QE
-    virtual const cmatrix& invTE(int layer) const = 0;
+    virtual const cmatrix& invTE(size_t layer) const = 0;
     
     /// Return inverse matrix of eigenvectors of QH
-    virtual const cmatrix& invTH(int layer) const = 0;
+    virtual const cmatrix& invTH(size_t layer) const = 0;
 
     // Diagonalization function to compute the smallest eigenvalue of the provided matrix
 //     virtual dcomplex smallest_eigevalue(const cmatrix& M) = 0;
@@ -103,11 +103,11 @@ class SimpleDiagonalizer : public DiagonalizerBase
     virtual void diagonalizeLayer(size_t layer);
 
     // Functions returning references to calculated matrices
-    virtual const cdiagonal& Gamma(int layer) const { return gamma[layer]; }
-    virtual const cmatrix& TE(int layer) const { return Te[layer]; }
-    virtual const cmatrix& TH(int layer) const { return Th[layer]; }
-    virtual const cmatrix& invTE(int layer) const { return Te1[layer]; }
-    virtual const cmatrix& invTH(int layer) const { return Th1[layer]; }
+    virtual const cdiagonal& Gamma(size_t layer) const { return gamma[layer]; }
+    virtual const cmatrix& TE(size_t layer) const { return Te[layer]; }
+    virtual const cmatrix& TH(size_t layer) const { return Th[layer]; }
+    virtual const cmatrix& invTE(size_t layer) const { return Te1[layer]; }
+    virtual const cmatrix& invTH(size_t layer) const { return Th1[layer]; }
 };
 
 }}} // namespace plask::solvers::slab
