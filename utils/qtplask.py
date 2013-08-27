@@ -11,8 +11,6 @@ sys.argv[0] = os.path.abspath(sys.argv[0])
 
 from PySide import QtCore, QtGui
 
-tr = lambda txt: QtGui.QApplication.translate("self", txt, None, QtGui.QApplication.UnicodeUTF8)
-
 APP_ICON = '''
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBI
 WXMAADddAAA3XQEZgEZdAAAAB3RJTUUH3QMDEwoeKeG4rwAAE3lJREFUeNrlm2uQZVd1mL+9z/u+
@@ -125,7 +123,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setupUi(self, config):
         self.setObjectName("PLaSK")
-        self.setWindowTitle(tr("PLaSK"))
+        self.setWindowTitle(self.tr("PLaSK"))
 
         space = QtGui.QDesktopWidget().availableGeometry(self)
         self.resize(config.value("window/size", QtCore.QSize(int(0.8*space.width()), int(0.9*space.height()))))
@@ -164,7 +162,7 @@ class MainWindow(QtGui.QMainWindow):
         self.messagesView.setReadOnly(True)
         self.messagesView.setAcceptRichText(True)
         self.messagesView.setFont(font)
-        self.messagesView.append(tr("Press F5 to start computations..."))
+        self.messagesView.append(self.tr("Press F5 to start computations..."))
         #splitter.addWidget(self.messagesView)
         layout.addWidget(self.messagesView)
 
@@ -174,41 +172,41 @@ class MainWindow(QtGui.QMainWindow):
         self.menubar = QtGui.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 20))
         self.menuFile = QtGui.QMenu(self.menubar)
-        self.menuFile.setTitle(tr("&File"))
+        self.menuFile.setTitle(self.tr("&File"))
         self.menuView = QtGui.QMenu(self.menubar)
-        self.menuView.setTitle(tr("&View"))
+        self.menuView.setTitle(self.tr("&View"))
         self.actionRun = QtGui.QAction(self)
-        self.actionRun.setText(tr("&Run computations..."))
+        self.actionRun.setText(self.tr("&Run computations..."))
         self.actionRun.setShortcut("F5")
         self.actionQuit = QtGui.QAction(self)
-        self.actionQuit.setText(tr("&Quit"))
+        self.actionQuit.setText(self.tr("&Quit"))
         self.actionQuit.setShortcut("Ctrl+Q")
         self.actionError = QtGui.QAction(self)
-        self.actionError.setText(tr("&Error"))
+        self.actionError.setText(self.tr("&Error"))
         self.actionError.setCheckable(True)
         self.actionError.setChecked(config.value('view/error', 'true')=='true')
         self.actionWarning = QtGui.QAction(self)
-        self.actionWarning.setText(tr("&Warning"))
+        self.actionWarning.setText(self.tr("&Warning"))
         self.actionWarning.setCheckable(True)
         self.actionWarning.setChecked(config.value('view/warning', 'true')=='true')
         self.actionInfo = QtGui.QAction(self)
-        self.actionInfo.setText(tr("&Info"))
+        self.actionInfo.setText(self.tr("&Info"))
         self.actionInfo.setCheckable(True)
         self.actionInfo.setChecked(config.value('view/info', 'true')=='true')
         self.actionResult = QtGui.QAction(self)
-        self.actionResult.setText(tr("&Result"))
+        self.actionResult.setText(self.tr("&Result"))
         self.actionResult.setCheckable(True)
         self.actionResult.setChecked(config.value('view/result', 'true')=='true')
         self.actionData = QtGui.QAction(self)
-        self.actionData.setText(tr("&Data"))
+        self.actionData.setText(self.tr("&Data"))
         self.actionData.setCheckable(True)
         self.actionData.setChecked(config.value('view/data', 'true')=='true')
         self.actionDetail = QtGui.QAction(self)
-        self.actionDetail.setText(tr("De&tail"))
+        self.actionDetail.setText(self.tr("De&tail"))
         self.actionDetail.setCheckable(True)
         self.actionDetail.setChecked(config.value('view/detail', 'true')=='true')
         self.actionDebug = QtGui.QAction(self)
-        self.actionDebug.setText(tr("De&bug"))
+        self.actionDebug.setText(self.tr("De&bug"))
         self.actionDebug.setCheckable(True)
         self.actionDebug.setChecked(config.value('view/debug', 'false')=='true')
         self.menuFile.addAction(self.actionRun)
@@ -227,15 +225,15 @@ class MainWindow(QtGui.QMainWindow):
         xpl2dan = self.find_tool('xpl2dan')
         if dan2xpl or xpl2dan:
             self.menuTools = QtGui.QMenu(self.menubar)
-            self.menuTools.setTitle(tr("&Tools"))
+            self.menuTools.setTitle(self.tr("&Tools"))
             if dan2xpl:
                 self.actionDanXpl = QtGui.QAction(self)
-                self.actionDanXpl.setText(tr("Convert DAN to &XPL..."))
+                self.actionDanXpl.setText(self.tr("Convert DAN to &XPL..."))
                 self.actionDanXpl.triggered.connect(lambda: self.runConvert(dan2xpl, 'RPSMES files (*.dan)'))
                 self.menuTools.addAction(self.actionDanXpl)
             if xpl2dan:
                 self.actionXplDan = QtGui.QAction(self)
-                self.actionXplDan.setText(tr("Convert XPL to &DAN..."))
+                self.actionXplDan.setText(self.tr("Convert XPL to &DAN..."))
                 self.actionXplDan.triggered.connect(lambda: self.runConvert(xpl2dan, 'XPL files (*.xpl)'))
                 self.menuTools.addAction(self.actionXplDan)
             self.menubar.addAction(self.menuTools.menuAction())
@@ -296,7 +294,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def runConvert(self, tool, filter):
-        fname, _ = QtGui.QFileDialog.getOpenFileName(self, tr("Choose file to convert"), self.last_dir, tr(filter))
+        fname, _ = QtGui.QFileDialog.getOpenFileName(self, self.tr("Choose file to convert"), self.last_dir, self.tr(filter))
         if not fname: return
         self.last_dir = os.path.dirname(fname)
         self.start_plask(tool, fname)
@@ -304,7 +302,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def runFile(self):
         '''Load and run XPL script in an external program'''
-        fname, _ = QtGui.QFileDialog.getOpenFileName(self, tr("Choose file to run"), self.last_dir, tr("PLaSK files (*.xpl *.py)"))
+        fname, _ = QtGui.QFileDialog.getOpenFileName(self, self.tr("Choose file to run"), self.last_dir, self.tr("PLaSK files (*.xpl *.py)"))
         if not fname: return
         self.last_dir = os.path.dirname(fname)
         self.start_plask(fname)
@@ -316,8 +314,10 @@ class MainWindow(QtGui.QMainWindow):
         idx = len(self.messages)-1
         self.tabBar.addTab("%s @ %s" % (os.path.basename(fname), strftime('%X')))
         button = QtGui.QPushButton(self)
+        button.setFlat(True)
+        button.setFixedSize(16, 14)
         button.setIcon(self.stopicon)
-        button.setFixedSize(16, 16)
+        button.setToolTip(self.tr("Abort computations"))
         self.tabBar.setTabButton(idx, QtGui.QTabBar.RightSide, button)
         self.tabBar.setCurrentIndex(idx)
 
@@ -391,7 +391,7 @@ class PlaskThread(QtCore.QThread):
             self.proc = subprocess.Popen(['plask', '-ldebug', '-u', fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         else:
-            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-mw', fname] + list(args), startupinfo=si,
+            self.proc = subprocess.Popen(['plask', '-ldebug', '-u', '-w', fname] + list(args), startupinfo=si,
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         self.lines = lines

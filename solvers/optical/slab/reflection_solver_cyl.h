@@ -43,7 +43,7 @@ struct FourierReflectionCyl: public ModalSolver<Geometry2DCylindrical> {
      * \param neff initial effective index to search the mode around
      * \return determined effective index
      */
-    double computeMode(dcomplex neff);
+    size_t findMode(dcomplex neff);
 
   protected:
 

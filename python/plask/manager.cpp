@@ -21,46 +21,52 @@ namespace plask { namespace python {
 
 extern py::dict xml_globals;
 
-struct Filter {
+class PythonXMLFilter {
+    
+    PythonManager* manager;
+    
+    static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z'); }
+    static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
 
-    std::function<std::string(std::string)> filter;
+  public:  
 
-    std::string operator()(const std::string& in) const;
+    PythonXMLFilter(PythonManager* manager): manager(manager) {}
+      
+    std::string eval(const std::string& str) const {
+        return py::extract<std::string>(py::str(py::eval(py::str(str), xml_globals, manager->locals)));
+    }
+
+    std::string operator()(const std::string& in) const {
+        std::string result;
+        result.reserve(in.size());  //we guess that output will have the simillar size as input
+        for (std::string::size_type pos = 0; pos < in.size(); ++pos) {
+            if (in[pos] == '$') {
+                ++pos;
+                if (pos == in.size()) { result += '$'; break; }
+                if (in[pos] == '$') { result += '$'; continue; }    //$$ -> $
+                if (in[pos] == '{') {   // ${ ... }
+                    ++pos;
+                    //TODO skip '}' inside python strings
+                    std::string::size_type close_pos = in.find('}', pos);
+                    if (close_pos == std::string::npos)
+                        throw plask::Exception("Can't find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
+                    result += eval(in.substr(pos, close_pos - pos));
+                    pos = close_pos;    // pos with '}' that will be skiped
+                } else if (is_first_char_in_name(in[pos])) {    // $varible
+                    std::size_t end_name_pos = pos + 1;
+                    while (end_name_pos < in.size() && is_char_in_name(in[end_name_pos]))
+                        ++end_name_pos;
+                    result += eval(in.substr(pos, end_name_pos - pos));
+                    pos = end_name_pos - 1; //pos with last character of name
+                } else
+                    result += '$';
+            } else
+                result += in[pos];
+        }
+        return result;
+    }
 
 };
-
-inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z'); }
-inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
-
-std::string Filter::operator()(const std::string& in) const {
-    std::string result;
-    result.reserve(in.size());  //we guess that output will have the simillar size as input
-    for (std::string::size_type pos = 0; pos < in.size(); ++pos) {
-        if (in[pos] == '$') {
-            ++pos;
-            if (pos == in.size()) { result += '$'; break; }
-            if (in[pos] == '$') { result += '$'; continue; }    //$$ -> $
-            if (in[pos] == '{') {   // ${ ... }
-                ++pos;
-                //TODO skip '}' inside python strings
-                std::string::size_type close_pos = in.find('}', pos);
-                if (close_pos == std::string::npos)
-                    throw plask::Exception("Can't find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
-                result += filter(in.substr(pos, close_pos - pos - 1));
-                pos = close_pos;    // pos with '}' that will be skiped
-            } else if (is_first_char_in_name(in[pos])) {    // $varible
-                std::size_t end_name_pos = pos + 1;
-                while (end_name_pos < in.size() && is_char_in_name(in[end_name_pos]))
-                    ++end_name_pos;
-                result += filter(in.substr(pos, end_name_pos - pos));
-                pos = end_name_pos - 1; //pos with last character of name
-            } else
-                result += '$';
-        } else
-            result += in[pos];
-    }
-    return result;
-}
 
 struct XMLPythonDataSource: public XMLReader::DataSource {
 
@@ -123,18 +129,8 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     manager->locals = vars.copy();
     if (!manager->locals.has_key("self")) manager->locals["self"] = self;
 
-    reader.stringInterpreter.set(
-        [manager](const std::string& str) -> double { return py::extract<double>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> dcomplex { return py::extract<dcomplex>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> size_t { return py::extract<size_t>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> int { return py::extract<int>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> short { return py::extract<short>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> long { return py::extract<long>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> unsigned int { return py::extract<unsigned int>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> unsigned short { return py::extract<unsigned short>(py::eval(py::str(str), xml_globals, manager->locals)); },
-        [manager](const std::string& str) -> unsigned long { return py::extract<unsigned long>(py::eval(py::str(str), xml_globals, manager->locals)); }
-    );
-
+    reader.attributeFilter = PythonXMLFilter(manager);
+    
     if (filter == py::object()) {
         manager->load(reader, MaterialsDB::getDefault().toSource(), Manager::ExternalSourcesFromFile(filename));
     } else {

@@ -22,7 +22,7 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 //             std::string = reader.requireTextUntilEnd();
 //             inWavelength.setValue(boost::lexical_cast<double>(wavelength));
 //         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <newton>, or <wavelength>");
+            parseStandardConfiguration(reader, manager, "TODO");
     }
 }
 

@@ -223,9 +223,9 @@ int main(int argc, const char *argv[])
             setbuf(stderr, NULL);
             --argc; ++argv;
 #ifdef _WIN32
-        } else if (arg == "-mw") {
+        } else if (arg == "-w") {
             HWND hwnd = GetConsoleWindow();
-            ShowWindow(hwnd, SW_SHOWMINNOACTIVE);
+            ShowWindow(hwnd, SW_SHOWDEFAULT);
             --argc; ++argv;
 #endif
         } else if (arg.find('=') != std::string::npos) {

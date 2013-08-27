@@ -8,10 +8,10 @@
 namespace plask { namespace  solvers { namespace slab {
 
 
-    SimpleDiagonalizer::SimpleDiagonalizer(GridBase& g) :
+    SimpleDiagonalizer::SimpleDiagonalizer(Expansion& g) :
     DiagonalizerBase(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
 {
-    int N = grid.matrixSize();         // Size of each matrix
+    int N = src.matrixSize();         // Size of each matrix
 
     //logger(LOG_BASIC) << "Creating simple diagonalizer...\n\n";
 
@@ -33,18 +33,18 @@ SimpleDiagonalizer::~SimpleDiagonalizer()
 }
 
 
-void SimpleDiagonalizer::diagonalizeLayer(int layer)
+void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 {
     // If diagonalization already done, do not repeat it
     if (diagonalized[layer]) return;
 
-    int N = grid.matrixSize();         // Size of each matrix
+    int N = src.matrixSize();         // Size of each matrix
 
     // First find necessary matrices
-    cmatrix RH = grid.getRH(layer, k0, Kx, Ky, matgain);
-    cmatrix RE = grid.getRE(layer, k0, Kx, Ky, matgain);
+    cmatrix RH = src.getRH(layer, k0, Kx, Ky);
+    cmatrix RE = src.getRE(layer, k0, Kx, Ky);
 
-    if (grid.diagonalQE(layer)) {
+    if (src.diagonalQE(layer)) {
 
         // We are lucky - the QH matrix is diagonal so we can make it fast and easy
         //logger(LOG_SHOWDIAGONALIZATION) << "    diagonalizer: using the uniform layer " << layer << "\n";
@@ -71,7 +71,7 @@ void SimpleDiagonalizer::diagonalizeLayer(int layer)
         int NN = N*N;
         for (int i = 0; i < NN; i++) {
             if (isnan(real(QE[i])) || isnan(imag(QE[i])))
-                throw "SimpleDiagonalizer::diagonalizeLayer: NaN in Q matrix";
+                throw ComputationError("SimpleDiagonalizer", "NaN in Q matrix");
         }
 
         // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE

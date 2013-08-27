@@ -56,7 +56,7 @@ BOOST_PYTHON_MODULE(slab)
         export_base(solver);
         RECEIVER(inWavelength, "Wavelength of the light");
         PROVIDER(outNeff, "Effective index of the last computed mode");
-        //METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
+        METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
     }
 
 }

@@ -204,17 +204,19 @@ class Manager(unittest.TestCase):
           <defines>
             <define name="hh1" value="9"/>
             <define name="h2" value="1"/>
+            <define name="iii" value="'Ga'"/>
           </defines>
           <geometry>
             <cartesian2d axes="xy">
               <stack>
-                <rectangle name="block1" dx="5" dy="sqrt(hh1)" material="GaAs" />
-                <rectangle name="block2" dx="self.geo.block1.dims[0]" dy="h2" material="GaAs" />
+                <rectangle name="block1" dx="5" dy="${sqrt(hh1)}" material="${iii}As"/>
+                <rectangle name="block2" dx="${self.geo.block1.dims[0]}" dy="$h2" material="GaAs"/>
               </stack>
             </cartesian2d>
           </geometry>
         </plask>
         ''', {'hh1': 4})
-        self.assertEqual(manager.geo.block1.dims[1], 2)
-        self.assertEqual(manager.geo.block2.dims[0], 5)
-        self.assertEqual(manager.geo.block2.dims[1], 1)
+        self.assertEqual( str(manager.geo.block1.material), 'GaAs' )
+        self.assertEqual( manager.geo.block1.dims[1], 2 )
+        self.assertEqual( manager.geo.block2.dims[0], 5 )
+        self.assertEqual( manager.geo.block2.dims[1], 1 )

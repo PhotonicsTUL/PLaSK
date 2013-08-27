@@ -43,9 +43,9 @@ void FourierReflectionCyl::onInitialize()
 // }
 
 
-double FourierReflectionCyl::computeMode(dcomplex neff) {
+size_t FourierReflectionCyl::findMode(dcomplex neff) {
     initCalculation();
-    return NAN;
+    return 0;
 }
 
 
