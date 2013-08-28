@@ -14,7 +14,6 @@ def _parse_material(mat):
     if len(mat) == 1:
         return mat[0], 'ST', 0.
     dp, dc = mat[1].split('=')
-    print dp, dc
     if len(dp) > 1 and dp[-2] == ' ':
         dp = dp[:-2] # there is no common way to get dopant concentration from carriers concentration
     return mat[0], dp, float(dc)
@@ -75,7 +74,7 @@ def write_dan(name, manager, geo, allm=True):
         if geo.item.has_role('active', point):
             mt = 'j'
             if electrical is not None:
-                cy = electrical.pnjcond
+                cy = average(electrical.pnjcond)
             else:
                 cy = 0.2
             cx = 1e-6
