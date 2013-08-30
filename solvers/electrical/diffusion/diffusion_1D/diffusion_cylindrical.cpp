@@ -49,7 +49,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     iterations = 0;
     detected_QW = detectQuantumWells();
     determineQwWidth();
-    
+
     // reset mesh to original value
     internal_mesh_update = true;
     mesh() = original_mesh;
@@ -57,7 +57,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     mesh2.axis1 = plask::RegularMesh1D(z, z, 1);
     if (mesh().size() % 2 == 0) mesh().reset(mesh().first(), mesh().last(), mesh().size()+1);
     internal_mesh_update = false;
-    
+
     n_present.reset(mesh().size(), 0.0);
 }
 
@@ -66,13 +66,13 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 {
     j_on_the_mesh.reset();
     T_on_the_mesh.reset();
-    
-    overthreshold_left.reset();   
-    overthreshold_dgdn.reset();   
-    overthreshold_g.reset();      
 
-    n_present.reset();            
-    n_previous.reset();           
+    overthreshold_left.reset();
+    overthreshold_dgdn.reset();
+    overthreshold_g.reset();
+
+    n_present.reset();
+    n_previous.reset();
 }
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(ComputationType type)
@@ -103,31 +103,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             internal_mesh_update = false;
             T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
-            if (overthreshold_computation)
-            {
-                // Compute E and F components for overthreshold computations
-                if (inWavelength.size() != inLightIntensity.size())
-                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightIntensity differ");
-                // Sum all modes
-                overthreshold_left = DataVector<double>(mesh2.size(), 0.);
-                overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
-                overthreshold_g = DataVector<double>(mesh2.size(), 0.);
-                double inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
-                // Sum all modes
-                for (size_t n = 0; n != inWavelength.size(); ++n) {
-                    double wavelength = real(inWavelength(n));
-                    auto g = inGain(mesh2, wavelength, interpolation_method);
-                    auto dgdn = inGainOverCarriersConcentration(mesh2, interpolation_method);
-                    auto Li = inLightIntensity(n, mesh2, interpolation_method);
-                    double factor = inv_hc * wavelength;
-                    for (size_t i = 0; i != mesh2.size(); ++i) {
-                        register auto common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * g[i] * Li[i];
-                        overthreshold_left[i] += common;
-                        overthreshold_dgdn[i] += common * dgdn[i];
-                        overthreshold_g[i] += common * g[i];
-                    }
-                }
-            }
+
             auto old_n = n_present;
             size_t nm = old_n.size()-1;
             n_present.reset(mesh().size(), 0.0);
@@ -152,17 +128,23 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         }
         if (overthreshold_computation)
         {
+writelog(LOG_DETAIL, "Git0a!");
+
             this->writelog(LOG_DETAIL, "Conducting overthreshold computations");
             convergence = MatrixFEM();
-            if (convergence) overthreshold_computation = false;
+            if (convergence)
+            {
+                overthreshold_computation = false;
+                writelog(LOG_DETAIL, "Integral of overthreshold loses: %1%", integral());
+            }
         }
     }
     while(initial_computation || threshold_computation || overthreshold_computation);
 
     this->writelog(LOG_DETAIL, "Converged after %1% mesh refinements and %2% computational loops", mesh_changes, iterations);
 
-    outCarriersConcentration.fireChanged();
 }
+
 
 template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geometry2DType>::MatrixFEM()
 {
@@ -261,6 +243,45 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
             }
             else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
             {
+                if (overthreshold_computation)
+                {
+                    // Compute E and F components for overthreshold computations
+                    if (inWavelength.size() != inLightIntensity.size())
+                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightIntensity differ");
+
+                    // Sum all modes
+                    overthreshold_left = DataVector<double>(mesh2.size(), 0.);
+                    overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
+                    overthreshold_g = DataVector<double>(mesh2.size(), 0.);
+
+                    for (size_t n = 0; n != inWavelength.size(); ++n)
+                    {
+                        auto wavelength = real(inWavelength(n));
+writelog(LOG_DETAIL, "wavelength: %1%", wavelength);
+                        auto Li = inLightIntensity(n, mesh2, interpolation_method);
+writelog(LOG_DETAIL, "Li[0]: %1%", Li[0]*1.0e-4);
+                        int ile = 0;
+                        for (auto n: n_present)
+                        {
+                            if (n <= 0) ile++;
+                        }
+writelog(LOG_DETAIL, "ile: %1%", ile);
+                        auto g = inGain(mesh2, wavelength, interpolation_method);
+writelog(LOG_DETAIL, "g[0]: %1%", g[0]);
+                        auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
+writelog(LOG_DETAIL, "dgdn[0]: %1%", dgdn[0]);
+                        auto factor = inv_hc * wavelength;
+writelog(LOG_DETAIL, "Git2a!");
+                        for (size_t i = 0; i != mesh2.size(); ++i)
+                        {
+                            double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
+                            overthreshold_left[i] += common * g[i];
+                            overthreshold_dgdn[i] += common * dgdn[i];
+                            overthreshold_g[i] += common * g[i];
+                        }
+                    }
+                }
+
                 FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)mesh().size();
@@ -315,6 +336,10 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
 
                     absolute_error = abs(L - R);
                     relative_error = abs(absolute_error/R);
+writelog(LOG_DETAIL, "absolute_error: %1%", absolute_error);
+writelog(LOG_DETAIL, "relative_error: %1%", relative_error);
+writelog(LOG_DETAIL, "concentration: %1%", n_present[0]);
+writelog(LOG_DETAIL, "F: %1%", F(0));
 
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
@@ -330,9 +355,12 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                 }
             }
             iterations += 1;
+            writelog(LOG_DETAIL, "iterations: %1%", iterations);
         }
 
     } while ( !_convergence && (iterations < max_iterations));
+
+    outCarriersConcentration.fireChanged();
 
     return _convergence;
 }
@@ -573,7 +601,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        product += overthreshold_dgdn;
+        product += overthreshold_dgdn[i];
     }
 
     return product;
@@ -593,7 +621,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        product += overthreshold_dgdn * n0 - overthreshold_g;
+        product += overthreshold_dgdn[i] * n0 - overthreshold_g[i];
     }
 
     return product;
@@ -666,10 +694,24 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
+writelog(LOG_DETAIL, "product before: %1%", product);
         product -= overthreshold_left[i];
+writelog(LOG_DETAIL, "product after: %1%", product);
+writelog(LOG_DETAIL, "straty: %1%", overthreshold_left[i]);
     }
 
     return product;
+}
+
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::integral()
+{
+    double int_val = 0.0;
+    for (int i = 0; i < (mesh().size() - 1)/2; i++)
+    {
+        int_val += (overthreshold_left[2*i + 1] * mesh()[2*i + 1] * (mesh()[2*i + 2] - mesh()[2*i]));
+    }
+
+    return 2*M_PI*int_val*1.0e-8;
 }
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(int i)

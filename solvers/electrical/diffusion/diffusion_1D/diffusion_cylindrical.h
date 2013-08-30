@@ -16,7 +16,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             COMPUTATION_THRESHOLD,
             COMPUTATION_OVERTHRESHOLD
         };
-        
+
         plask::ReceiverFor<plask::CurrentDensity, Geometry2DType> inCurrentDensity;
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
@@ -33,7 +33,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
         double minor_concentration;
         bool do_initial;                            ///< Should we start from initial computations
-        
+
         FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
             plask::SolverOver<Geometry2DType> (name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
@@ -46,6 +46,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             max_iterations = 20;
             minor_concentration = 5.0e+15;
             inTemperature = 300.;
+            inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
             mesh2.changedConnectMethod(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onMeshChange);
         }
 
@@ -53,7 +54,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         {
             mesh2.changedDisconnectMethod(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onMeshChange);
         }
-        
+
         virtual std::string getClassName() const;
 
         virtual void loadConfiguration(XMLReader&, Manager&);
@@ -64,12 +65,12 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         {
             return mesh2.axis0;
         }
-        
+
         void setMesh(plask::RegularMesh1D mesh)
         {
             mesh2.axis0.reset(mesh.first(), mesh.last(), mesh.size());
         }
-        
+
     private:
         bool internal_mesh_update;
 
@@ -95,6 +96,10 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         bool threshold_computation;
         bool overthreshold_computation;
 
+//        double wavelength;
+//        double factor;
+        double inv_hc;
+
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
         int iterations;
 
@@ -102,7 +107,11 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         plask::DataVector<const Vec<2>> j_on_the_mesh;  // current density vector provided by inCurrentDensity reciever
         plask::DataVector<const double> T_on_the_mesh;  // temperature vector provided by inTemperature reciever
-        
+
+//        plask::DataVector<const double> Li;                   // Light intensity vector
+//        plask::DataVector<const double> g;                    // gain on the mesh
+//        plask::DataVector<const double> dgdn;                 // gain over concentration derivative on the mesh
+
         plask::DataVector<double> overthreshold_left;   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_g;      // Factor for overthreshold computations summed for all modes
@@ -132,6 +141,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 //        double KThreshold(size_t i, double T, double n0);    // K postaci D(T)
         double E(int i);        // E dla rozkladu poczatkowego i progowego
         double F(int i);        // F dla rozkladu poczatkowego i progowego
+        double integral(void);  // całka strat nadprogu
 
 //        double Enprog(size_t i, double T, double n0);   // E dla rozkladu nadprogowego
 //        double Fnprog(size_t i, double T, double n0);	// F dla rozkladu nadprogowego

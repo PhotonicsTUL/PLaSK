@@ -278,7 +278,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i] + differenceQuotient*nOnMesh[i], region);
                 gainOnMesh2 = gainModule.Get_gain_at(nm_to_eV(wavelength));
 
-                dGdn[i] = (gainOnMesh2 - gainOnMesh1)/differenceQuotient;
+                dGdn[i] = (gainOnMesh2 - gainOnMesh1)/(differenceQuotient*nOnMesh[i]);
             }
         }
 //        gainModule.Set_momentum_matrix_element(gainModule.element());

@@ -31,6 +31,7 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
         RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
         RECEIVER(inGain, "Gain distribution"); // receiver in the solver
+        RECEIVER(inWavelength, "Wavelength"); // receiver in the solver
         RECEIVER(inGainOverCarriersConcentration, "Gain over carriers concentration derivative distribution"); // receiver in the solver
         RECEIVER(inLightIntensity, "Light intensity distribution"); // receiver in the solver
         PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
