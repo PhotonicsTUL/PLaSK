@@ -7,6 +7,7 @@
 // Math library to use
 #define PLASK_MATH_STD
 
+// Fortran name mangling
 #cmakedefine CMAKE_Fortran_COMPILER_WORKS
 #ifdef CMAKE_Fortran_COMPILER_WORKS
 #   include "f77.h" // Fortran name mangling scheme
@@ -24,6 +25,8 @@
 #    define F77FUN(RT) extern "C" RT
 #endif
 
+// OpenMP
+#cmakedefine OPENMP_FOUND
 
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

@@ -32,9 +32,15 @@ struct Box2D {
 
     /**
      * Calculate height of this.
-     * @return upper.vert() - lower.up
+     * @return height of the box
      */
     double height() const { return upper.vert() - lower.vert(); }
+
+    /**
+     * Calculate height of this.
+     * @return width of the box
+     */
+    double width() const { return upper.tran() - lower.tran(); }
 
     ///Construct uninitialized .
     Box2D() {}

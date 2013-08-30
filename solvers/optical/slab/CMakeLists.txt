@@ -30,18 +30,21 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 #find_package(Eigen3)
 
-set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}/include)
-
 option(USE_FFTW "Use FFTW library (impossible for published app)" ON)
 if(USE_FFTW)
-    find_package(FFTW3)
-    list(APPEND SOLVER_LINK_LIBRARIES ${FFTW3_THREADS_LIBRARY})
+    if (OPENMP_FOUND)
+        find_package(FFTW3 COMPONENTS double openmp)
+        set(USE_PARALLEL_FFT YES)
+    else()
+        find_package(FFTW3)
+    endif()
+    list(APPEND SOLVER_LINK_LIBRARIES ${FFTW3_LIBRARIES})
     list(APPEND SOLVER_INCLUDE_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 else()
     # TODO
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/optical/slab/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.h)
 
 
 
@@ -70,10 +73,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
 # below.
 #
 enable_testing()
-#add_executable(mytest test/source1.cpp test/source2.cpp)
-#set(SOLVER_TEST_DEPENDS mytest)
-#add_test(solvers/foo/bar ${PLASK_SOLVER_PATH}/mytest)
-#add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+
+if(BUILD_TESTING)
+    add_executable(fft_test tests/fft_test.cpp)
+    target_link_libraries(fft_test libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
+    set(SOLVER_TEST_DEPENDS fft_test)
+    add_test(solvers/optical/slab/fft ${PLASK_SOLVER_PATH}/fft_test)
+endif()
+
 add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
 
 

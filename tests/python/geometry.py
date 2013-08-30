@@ -208,3 +208,29 @@ class Containers(unittest.TestCase):
         self.block2.role = "something"
         self.assertIn( "something", stack.get_roles(2., 4.) )
         self.assertTrue( stack.has_role("something", 2., 4.) )
+
+
+class Borders(unittest.TestCase):
+
+    def testSymmetricPeriodic(self):
+        GaN = plask.material.GaN()
+        AlN = plask.material.AlN()
+        shelf = geometry.Shelf2D()
+        shelf.append(geometry.Block2D(2., 2., GaN))
+        shelf.append(geometry.Block2D(3., 2., AlN))
+        space = geometry.Cartesian2D(shelf, left='mirror', right='periodic')
+        self.assertEqual( space.get_material(1., 1.), GaN )
+        self.assertEqual( space.get_material(3., 1.), AlN )
+        self.assertEqual( space.get_material(4., 1.), AlN )
+        self.assertEqual( space.get_material(6., 1.), AlN )
+        self.assertEqual( space.get_material(7., 1.), AlN )
+        self.assertEqual( space.get_material(9., 1.), GaN )
+        self.assertEqual( space.get_material(11., 1.), GaN )
+        self.assertEqual( space.get_material(13., 1.), AlN )
+        self.assertEqual( space.get_material(-1., 1.), GaN )
+        self.assertEqual( space.get_material(-3., 1.), AlN )
+        self.assertEqual( space.get_material(-4., 1.), AlN )
+        self.assertEqual( space.get_material(-6., 1.), AlN )
+        self.assertEqual( space.get_material(-7., 1.), AlN )
+        self.assertEqual( space.get_material(-9., 1.), GaN )
+        

@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace slab {
 
 FourierReflection2D::FourierReflection2D(const std::string& name): ModalSolver<Geometry2DCartesian>(name),
-    order(5),
+    size(5),
     refine(8)
 {
 }

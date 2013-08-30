@@ -150,7 +150,12 @@ class MainWindow(QtGui.QMainWindow):
         #layout.addWidget(splitter)
 
         font = QtGui.QFont()
-        font.setFamily("Monospace")
+        if sys.platform == 'win32':
+            font.setFamily("Consolas")
+        elif sys.platform == 'darwin':
+            font.setFamily("Monaco")
+        else:
+            font.setFamily("Monospace")
         font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setPointSize(10)
         #self.outputView = QtGui.QTextEdit()

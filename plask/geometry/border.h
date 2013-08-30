@@ -34,16 +34,18 @@ struct Strategy {
      * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in startegy working direction
      * @param[in,out] p coordinate of point in startegy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
      * @param[out] result_material optionaly, this method can assign to it material which should be used
+     * \param[in] opposite strategy at opposite side (if known)
      */
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const = 0;
 
     /**
      * Apply strategy to given point @p p.
      * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in startegy working direction
      * @param[in,out] p coordinate of point in startegy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
      * @param[out] result_material optionaly, this method can assign to it material which should be used
+     * \param[in] opposite strategy at opposite side (if known)
      */
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const = 0;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const = 0;
 
     /**
      * Check if this strategy can move point p to place outside bounding box.
@@ -115,8 +117,8 @@ struct UniversalStrategy: public Strategy {
  */
 struct Null: public UniversalStrategy {
     virtual Type type() const { return DEFAULT; }
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
     virtual Null* clone() const;
     virtual std::string str() const;
 };
@@ -139,8 +141,8 @@ struct SimpleMaterial: public UniversalStrategy {
 
     virtual Type type() const { return SIMPLE; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
 
     virtual SimpleMaterial* clone() const;
 
@@ -155,8 +157,8 @@ struct Extend: public UniversalStrategy {
 
     virtual Type type() const { return EXTEND; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
 
     virtual Extend* clone() const;
 
@@ -171,8 +173,8 @@ struct Periodic: public Strategy {
 
     virtual Type type() const { return PERIODIC; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
 
     virtual Periodic* clone() const;
 
@@ -187,8 +189,8 @@ struct Mirror: public Strategy {
 
     virtual Type type() const { return MIRROR; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material) const;
+    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
+    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
 
     virtual bool canMoveOutsideBoundingBox() const;
 
@@ -239,27 +241,25 @@ public:
     }*/
 
     template <int dims>
-    inline void applyLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        strategy->applyLo(bbox.lower[direction], bbox.upper[direction],
-              p[direction], result_material);
+    inline void applyLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material, const Strategy* opposite) const {
+        strategy->applyLo(bbox.lower[direction], bbox.upper[direction], p[direction], result_material, opposite);
     }
 
     template <int dims>
-    inline void applyHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
-        strategy->applyHi(bbox.lower[direction], bbox.upper[direction],
-              p[direction], result_material);
+    inline void applyHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material, const Strategy* opposite) const {
+        strategy->applyHi(bbox.lower[direction], bbox.upper[direction], p[direction], result_material, opposite);
     }
 
     template <int dims>
-    inline void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+    inline void applyIfLo(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material, const Strategy* opposite) const {
         if (p[direction] < bbox.lower[direction])
-            applyLo(bbox, p, result_material);
+            applyLo(bbox, p, result_material, opposite);
     }
 
     template <int dims>
-    inline void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
+    inline void applyIfHi(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material, const Strategy* opposite) const {
         if (p[direction] > bbox.upper[direction])
-            applyHi(bbox, p, result_material);
+            applyHi(bbox, p, result_material, opposite);
     }
 
 };
@@ -274,19 +274,21 @@ class StrategyPairHolder {
     /// lo and hi strategy
     StrategyHolder<direction, StrategyType> strategy_lo, strategy_hi;
 
-    /// if true strategies calling order are: hi, lo
+    /// If true strategies calling order is: hi, lo
     bool reverseCallingOrder;
-
+    
     void setOrder(const StrategyType& strategy_lo, const StrategyType& strategy_hi) {
-        if ((strategy_lo.type() == Strategy::PERIODIC || strategy_hi.type() == Strategy::PERIODIC) && (strategy_lo.type() != strategy_hi.type()))
-            writelog(LOG_WARNING, "Periodic and non-periodic borders strategies used on opposite sides of one direction.");
+        if ((strategy_lo.type() == Strategy::PERIODIC || strategy_hi.type() == Strategy::PERIODIC) &&
+             strategy_lo.type() != Strategy::MIRROR && strategy_hi.type() != Strategy::MIRROR &&
+             strategy_lo.type() != strategy_hi.type()
+           ) writelog(LOG_WARNING, "Periodic and non-periodic borders strategies used on opposite sides of one direction.");
         //strategy_lo.ensureCanCoexists(strategy_hi);
-        if (strategy_lo.canMoveOutsideBoundingBox()) {
-            if (strategy_hi.canMoveOutsideBoundingBox())
+        if (strategy_hi.canMoveOutsideBoundingBox()) {
+            if (strategy_lo.canMoveOutsideBoundingBox())
                 throw Exception("Border strategies on both sides can move point outside bounding box.");
-            reverseCallingOrder = false;
-        } else
             reverseCallingOrder = true;
+        } else
+            reverseCallingOrder = false;
     }
 
 public:
@@ -340,13 +342,13 @@ public:
     template <int dims>
     inline void apply(const typename Primitive<dims>::Box& bbox, Vec<dims, double>& p, shared_ptr<Material>& result_material) const {
         if (reverseCallingOrder) {
-            strategy_hi.applyIfHi(bbox, p, result_material);
+            strategy_hi.applyIfHi(bbox, p, result_material, &strategy_lo.getStrategy());
             if (result_material) return;
-            strategy_lo.applyIfLo(bbox, p, result_material);
+            strategy_lo.applyIfLo(bbox, p, result_material, &strategy_hi.getStrategy());
         } else {
-            strategy_lo.applyIfLo(bbox, p, result_material);
+            strategy_lo.applyIfLo(bbox, p, result_material, &strategy_hi.getStrategy());
             if (result_material) return;
-            strategy_hi.applyIfHi(bbox, p, result_material);
+            strategy_hi.applyIfHi(bbox, p, result_material, &strategy_lo.getStrategy());
         }
     }
 

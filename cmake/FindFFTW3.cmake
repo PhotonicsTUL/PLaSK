@@ -1,5 +1,5 @@
 # - Try to find FFTW3.
-# Usage: find_package(FFTW3 [COMPONENTS [single double long-double threads]])
+# Usage: find_package(FFTW3 [COMPONENTS [single double long-double threads openmp]])
 #
 # Variables used by this module:
 #  FFTW3_ROOT_DIR             - FFTW3 root directory
@@ -52,6 +52,8 @@ foreach(_comp ${_components})
     list(APPEND _libraries fftw3l)
   elseif(_comp STREQUAL "threads")
     set(_use_threads ON)
+  elseif(_comp STREQUAL "openmp")
+    set(_use_openmp ON)
   else(_comp STREQUAL "single")
     message(FATAL_ERROR "FindFFTW3: unknown component `${_comp}' specified. "
       "Valid components are `single', `double', `long-double', and `threads'.")
@@ -59,13 +61,22 @@ foreach(_comp ${_components})
 endforeach(_comp ${_components})
 
 # If using threads, we need to link against threaded libraries as well.
+set(_thread_libs)
 if(_use_threads)
-  set(_thread_libs)
   foreach(_lib ${_libraries})
     list(APPEND _thread_libs ${_lib}_threads)
   endforeach(_lib ${_libraries})
-  set(_libraries ${_thread_libs} ${_libraries})
 endif(_use_threads)
+
+# If using OpenMP, we need to link against OpenMP libraries as well.
+set(_openmp_libs)
+if(_use_openmp)
+  foreach(_lib ${_libraries})
+    list(APPEND _openmp_libs ${_lib}_omp)
+  endforeach(_lib ${_libraries})
+endif(_use_openmp)
+
+set(_libraries ${_openmp_libs} ${_thread_libs} ${_libraries})
 
 # Keep a list of variable names that we need to pass on to
 # find_package_handle_standard_args().

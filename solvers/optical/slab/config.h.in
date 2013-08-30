@@ -2,6 +2,7 @@
 #define PLASK__SOLVER_SLAB_CONFIG_H
 
 #cmakedefine USE_FFTW
+#cmakedefine USE_PARALLEL_FFT
 
 #endif // PLASK__SOLVER_SLAB_CONFIG_H
 // kate: syntax c++;

@@ -19,19 +19,13 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
         double extinction;  ///< Extinction of the PMLs
         double size;        ///< Size of the PMLs
         double shift;       ///< Distance of the PMLs from defined computational domain
-        double order;       ///< Order of the PMLs
+        int order;          ///< Order of the PMLs
     };
 
   protected:
 
     /// Maximum order of the orthogonal base
-    size_t order;
-
-    /// Mesh multiplier for finer computation of the refractive indices
-    size_t refine;
-
-    /// Lateral PMLs
-    PML pml;
+    size_t size;
 
     /// Cache of the normalized frequency [1/µm]
     dcomplex k0;
@@ -39,6 +33,12 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     void onInitialize();
 
   public:
+
+    /// Mesh multiplier for finer computation of the refractive indices
+    size_t refine;
+
+    /// Lateral PMLs
+    PML pml;
 
     /// Receiver of the wavelength
     ReceiverFor<Wavelength> inWavelength;
@@ -50,7 +50,6 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
 
-
     /**
      * Find the mode around the specified effective index.
      * This method remembers the determined mode, for retrieval of the field profiles.
@@ -59,6 +58,13 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
      */
     size_t findMode(dcomplex neff);
 
+    /// Get order of the orthogonal base
+    size_t getSize() const { return size; }
+    /// Set order of the orthogonal base
+    void setSize(size_t n) {
+        size = n;
+    }
+    
   protected:
 
     /**

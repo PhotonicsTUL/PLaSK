@@ -128,7 +128,7 @@ struct Geometry: public GeometryObject {
      * @return @c true only if structure is periodic in given @p direction
      */
     bool isPeriodic(Direction direction) const {
-        return getBorder(direction, false).type() == border::Strategy::PERIODIC && getBorder(direction, true).type() == border::Strategy::PERIODIC;
+        return getBorder(direction, false).type() == border::Strategy::PERIODIC || getBorder(direction, true).type() == border::Strategy::PERIODIC;
     }
 
     /**
