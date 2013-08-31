@@ -624,7 +624,7 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const 
 
                 double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
-                if (rect_mesh.getIterationOrder() == MeshT::NORMAL_ORDER) {
+                if (rect_mesh.getIterationOrder() == MeshT::ORDER_NORMAL) {
                     #pragma omp for
                     for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                         double* data = results.data() + i1 * rect_mesh.axis0.size();

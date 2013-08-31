@@ -170,8 +170,8 @@ static shared_ptr<To> Mesh__init__(const From& from) {
 template <typename MeshT>
 static void RectangularMesh2D__setOrdering(MeshT& self, std::string order) {
     if (order == "best" || order == "optimal") self.setOptimalIterationOrder();
-    else if (order == "10") self.setIterationOrder(MeshT::NORMAL_ORDER);
-    else if (order == "01") self.setIterationOrder(MeshT::TRANSPOSED_ORDER);
+    else if (order == "10") self.setIterationOrder(MeshT::ORDER_NORMAL);
+    else if (order == "01") self.setIterationOrder(MeshT::ORDER_TRANSPOSED);
     else {
         throw ValueError("order must be '01', '10' or 'best'");
     }
@@ -214,7 +214,7 @@ static Vec<2,double> RectangularMesh2D__getitem__(const MeshT& self, py::object 
 
 template <typename MeshT>
 static std::string RectangularMesh2D__getOrdering(MeshT& self) {
-    return (self.getIterationOrder() == MeshT::NORMAL_ORDER) ? "10" : "01";
+    return (self.getIterationOrder() == MeshT::ORDER_NORMAL) ? "10" : "01";
 }
 
 template <typename MeshT>

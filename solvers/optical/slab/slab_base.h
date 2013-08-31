@@ -111,6 +111,11 @@ struct ModalSolver: public SolverOver<GeometryT> {
     /// \return layer sets
     const std::vector<RectilinearMesh1D>& getLayersPoints() const { return lverts; }
 
+    /// Get list of vertical positions of layers in one set
+    /// \param n set number
+    /// \return layer sets
+    const RectilinearMesh1D& getLayerPoints(size_t n) const { return lverts[n]; }
+
   protected:
 
     /**
@@ -119,7 +124,7 @@ struct ModalSolver: public SolverOver<GeometryT> {
     size_t nummodes() const {
         return 1; //TODO
     }
-      
+
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
      */

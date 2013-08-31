@@ -258,8 +258,8 @@ class PythonMaterial : public Material
             return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
         return base->Nr(wl, T);
     }
-    virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
-        if (overriden("nR_tensor")) return py::call_method<Tensor3<dcomplex>>(self, "nR_tensor", wl, T);
+    virtual Tensor3<dcomplex> NR(double wl, double T) const {
+        if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T);
         if (overriden("Nr")) {
             dcomplex n = py::call_method<dcomplex>(self, "Nr", wl, T);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
@@ -268,7 +268,7 @@ class PythonMaterial : public Material
             dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
-        return base->nR_tensor(wl, T);
+        return base->NR(wl, T);
     }
 
     // End of overriden methods
@@ -635,7 +635,7 @@ void initMaterials() {
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300.), "Get refractive index nr")
         .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.), "Get absorption coefficient alpha")
         .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index Nr")
-        .def("nR_tensor", &Material::nR_tensor, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor Nr")
+        .def("NR", &Material::NR, (py::arg("wl"), py::arg("T")=300.), "Get complex refractive index tensor Nr")
     ;
 
     Material_from_Python_string();

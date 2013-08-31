@@ -1,5 +1,4 @@
 #include "expansion_pw2d.h"
-
 #include "fft.h"
 
 namespace plask { namespace solvers { namespace slab {
@@ -33,38 +32,71 @@ cmatrix ExpansionPW2D::getRE(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
 
 cmatrix ExpansionPW2D::getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
 }
-   
-void ExpansionPW2D::setupMaterialParameters(size_t l)
+
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialParameters(size_t l)
 {
     auto geometry = solver->getGeometry();
-    
+
     double xl = geometry->getChild()->getBoundingBox().lower[0];
     double xh = geometry->getChild()->getBoundingBox().upper[0];
-    
+
     if (!geometry->isPeriodic(Geometry2DCartesian::DIRECTION_TRAN)) {
         // Add PMLs
         xl -= solver->pml.size + solver->pml.shift;
         xh += solver->pml.size + solver->pml.shift;
     }
-    
+
     size_t refine = solver->refine;
-    
+    size_t N, M;    // number of of required coefficients for material parameters and ofpoints to sample material at
+    const RectilinearMesh1D& axis1 = solver->getLayerPoints(l);
+    RegularMesh1D axis0;
+
     if (!symmetric) {
-        size_t N = 4 * solver->getSize() + 1;   // number of required coefficients for material parameters
-        if (refine % 2 == 0) refine += 1;       // we sample at mesh points
-        size_t M = refine * N;                  // number of points to sample material at
-        RegularMesh1D axis0(xl, xh - (xh-xl)/M, M);
+        N = 4 * solver->getSize() + 1;
+        if (refine % 2 == 0) ++refine;  // we sample at (refine+1)/2 point per single coefficient
+        M = refine * N;
+        axis0 = RegularMesh1D(xl, xh - (xh-xl)/M, M);
         // uśrednianie węzeł główny ± (refine-1)/2 dookoła
-        
+
     } else {
-        size_t N = 2 * solver->getSize() + 1;   // number of required coefficients for material parameters
-        size_t M = refine * N;                  // number of points to sample material at
+        N = 2 * solver->getSize() + 1;
+        M = refine * N;
+        double dx = 0.5 * (xh-xl) / M;
+        axis0 = RegularMesh1D(xl + dx, xh - dx, M);
         // uśrednianie refine pomiędzy dwoma węzłami głównymi
-        
-        
     }
-    
+
+    DataVector<Tensor3<dcomplex>> NR(M);
+
+    RectilinearMesh2D mesh(axis0, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
+    auto temperature = solver->inTemperature(mesh);
+    double maty = axis1[0]; // at each point along any vertical axis material is the same (assert below checks this)
+    for (size_t i = 0; i < M; ++i) {
+        auto material = geometry->getMaterial(Vec<2>(axis0[i],maty));
+        assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(Vec<2>(axis0[i],y))!=material)return false; return true;}());
+        double T = 0.; // average temperature in all vertical points
+        for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
+        T /= axis1.size();
+        NR[i] = material->NR(solver->inWavelength(0), T);
+    }
+
+    // Materials coefficients (espilon and mu, which apears from PMLs)
+    DataVector<Tensor3<dcomplex>> coeffs(2*N);
+
+    if (!symmetric) {
+        // Add PMLs
+        // Average material parameters
+        // Perform FFT
+    } else {
+        // Add PMLs
+        // Average material parameters
+        // Perform FFT
+    }
+
+    // Cache coefficients required for field computations (
+
+    return coeffs;
 }
 
-   
+
 }}} // namespace plask

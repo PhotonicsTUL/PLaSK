@@ -44,7 +44,7 @@ namespace detail {
     inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2,Mesh1D>& mesh, size_t nd) {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
-        if (mesh.getIterationOrder() == RectangularMesh<2,Mesh1D>::NORMAL_ORDER) {
+        if (mesh.getIterationOrder() == RectangularMesh<2,Mesh1D>::ORDER_NORMAL) {
             strides[0] = sizeof(T);
             strides[1] = mesh.axis0.size() * sizeof(T);
         } else {

@@ -33,7 +33,7 @@ static std::size_t transposed_index1(const RectangularMesh<2,Mesh1D>* mesh, std:
 
 template <typename Mesh1D>
 void RectangularMesh<2,Mesh1D>::setIterationOrder(IterationOrder iterationOrder) {
-    if (iterationOrder == TRANSPOSED_ORDER) {
+    if (iterationOrder == ORDER_TRANSPOSED) {
         index_f = transposed_index<Mesh1D>;
         index0_f = transposed_index0<Mesh1D>;
         index1_f = transposed_index1<Mesh1D>;
@@ -51,7 +51,7 @@ void RectangularMesh<2,Mesh1D>::setIterationOrder(IterationOrder iterationOrder)
 
 template <typename Mesh1D>
 typename RectangularMesh<2,Mesh1D>::IterationOrder RectangularMesh<2,Mesh1D>::getIterationOrder() const {
-    return (index_f == &transposed_index<Mesh1D>)? TRANSPOSED_ORDER : NORMAL_ORDER;
+    return (index_f == &transposed_index<Mesh1D>)? ORDER_TRANSPOSED : ORDER_NORMAL;
 }
 
 // Particular instantations

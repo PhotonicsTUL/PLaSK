@@ -84,7 +84,7 @@ std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
 }
 
 plask::Tensor3<plask::dcomplex> NrTensor(plask::shared_ptr<plask::Material> material) {
-    return material->nR_tensor(1000., 300.);
+    return material->NR(1000., 300.);
 }
 
 bool compareMaterials(plask::shared_ptr<plask::Material>  m1, plask::shared_ptr<plask::Material>  m2) {
@@ -238,7 +238,7 @@ BOOST_PYTHON_MODULE(plasktest)
 
     py::def("material_typeid", &materialTypeId);
 
-    py::def("nR_tensor", &NrTensor);
+    py::def("NR", &NrTensor);
 
     py::def("compareMaterials", &compareMaterials);
 

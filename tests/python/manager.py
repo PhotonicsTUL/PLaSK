@@ -186,7 +186,7 @@ class Manager(unittest.TestCase):
         mat = plask.material.XmlMat()
         self.assertAlmostEqual( mat.nr(900, 300), 1.39 )
         self.assertAlmostEqual( mat.Nr(900, 300), 1.39-7.16197244e-06j )
-        self.assertEqual( plask.material.XmlMatSimple().nR_tensor(900, 300), (3.5, 3.5, 3.5, 0., 0.) )
+        self.assertEqual( plask.material.XmlMatSimple().NR(900, 300), (3.5, 3.5, 3.5, 0., 0.) )
 
 
         mad = plask.material.XmlMat(dp="Mg", dc=1e18)

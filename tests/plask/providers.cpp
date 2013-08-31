@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(attach_datavector)
     BOOST_CHECK_EQUAL(result2[3], 400.);
 
     BOOST_CHECK_EQUAL(data.unique(), false);
-    mesh1->setIterationOrder(plask::RegularMesh2D::TRANSPOSED_ORDER);
+    mesh1->setIterationOrder(plask::RegularMesh2D::ORDER_TRANSPOSED);
     BOOST_CHECK_EQUAL(data.unique(), true);
 }
 

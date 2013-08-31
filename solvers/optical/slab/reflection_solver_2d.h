@@ -64,7 +64,7 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     void setSize(size_t n) {
         size = n;
     }
-    
+
   protected:
 
     /**

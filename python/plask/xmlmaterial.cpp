@@ -26,21 +26,21 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     PyCodeObject
         *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *c11, *c12, *eps, *chi,
         *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
-        *thermk, *dens, *cp, *nr, *absp, *Nr, *nR_tensor;
+        *thermk, *dens, *cp, *nr, *absp, *Nr, *NR;
 
     PythonEvalMaterialConstructor(const std::string& name) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), nR_tensor(NULL) {}
+        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), NR(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), c11(NULL), c12(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), nR_tensor(NULL) {}
+        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), NR(NULL) {}
 
     virtual ~PythonEvalMaterialConstructor() {
         Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
@@ -48,7 +48,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
         Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
         Py_XDECREF(thermk); Py_XDECREF(dens); Py_XDECREF(cp);
-        Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr); Py_XDECREF(nR_tensor);
+        Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr); Py_XDECREF(NR);
     }
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
@@ -168,10 +168,10 @@ class PythonEvalMaterial : public Material
             return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
         return base->Nr(wl, T);
     }
-    virtual Tensor3<dcomplex> nR_tensor(double wl, double T) const {
+    virtual Tensor3<dcomplex> NR(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
-        if (cls->nR_tensor != NULL) {
-            PyObject* result = PY_EVAL(cls->nR_tensor);
+        if (cls->NR != NULL) {
+            PyObject* result = PY_EVAL(cls->NR);
             if (!result) throw py::error_already_set();
             return py::extract<Tensor3<dcomplex>>(result);
         }
@@ -183,7 +183,7 @@ class PythonEvalMaterial : public Material
             dcomplex n(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
-        return base->nR_tensor(wl, T);
+        return base->NR(wl, T);
     }
     // End of overridden methods
 };
@@ -305,7 +305,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
         COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
-        COMPILE_PYTHON_MATERIAL_FUNCTION2("Nr-tensor", nR_tensor)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(NR)
         else throw XMLUnexpectedElementException(reader, "material parameter tag");
     }
 
