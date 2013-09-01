@@ -110,7 +110,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
         for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
-            bool active = this->geometry->hasRoleAt("active", point);
+            bool active = (bool)this->geometry->hasRoleAt("active", point);
 
             if (c < ileft) {
                 if (active)
