@@ -40,9 +40,6 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     /// Lateral PMLs
     PML pml;
 
-    /// Receiver of the wavelength
-    ReceiverFor<Wavelength> inWavelength;
-
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::WithValue outNeff;
 
@@ -63,6 +60,19 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     /// Set order of the orthogonal base
     void setSize(size_t n) {
         size = n;
+    }
+
+    /// \return current wavelength
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+
+    /**
+     * Set new polarization
+     * \param polar new polarization
+     */
+    void setWavelength(dcomplex wavelength) {
+        k0 = 2e3*M_PI / wavelength;
+        //if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
+        //modes.clear();
     }
 
   protected:

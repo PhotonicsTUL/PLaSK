@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
     fourier.forward(2, 17, &data.front(), FFT::SYMMETRY_NONE);
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 }
-    
+
 BOOST_AUTO_TEST_CASE(ForwardSymmetric)
 {
     // Test symmetric forward transform
@@ -94,5 +94,5 @@ BOOST_AUTO_TEST_CASE(ForwardSymmetric)
     fourier.forward(2, 8, &data.front(), FFT::SYMMETRY_EVEN);
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 }
-    
+
 BOOST_AUTO_TEST_SUITE_END()

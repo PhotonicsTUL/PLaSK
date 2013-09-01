@@ -38,16 +38,9 @@ BOOST_PYTHON_MODULE(slab)
         "Calculate optical modes and optical field distribution using Fourier slab method\n"
         " and reflection transfer in two-dimensional Cartesian space.")
         export_base(solver);
-        RECEIVER(inWavelength, "Wavelength of the light");
         PROVIDER(outNeff, "Effective index of the last computed mode");
         METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
-        //RO_FIELD(root, "Configuration of the global rootdigger");
-        //RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
-        //METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
-        //       arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6,1e-9));
-        //METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff");
-        //solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get slab determinant", (py::arg("neff")));
-        //BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
+        RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
     }
 
     {CLASS(FourierReflectionCyl, "FourierReflectionCyl",

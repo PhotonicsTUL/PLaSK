@@ -53,47 +53,45 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialParameters(size_t 
 
     if (!symmetric) {
         N = 4 * solver->getSize() + 1;
-        if (refine % 2 == 0) ++refine;  // we sample at (refine+1)/2 point per single coefficient
+        if (refine % 2 == 0) ++refine;  // we sample at (refine-1)/2 secondary points per single coefficient
         M = refine * N;
         axis0 = RegularMesh1D(xl, xh - (xh-xl)/M, M);
-        // uśrednianie węzeł główny ± (refine-1)/2 dookoła
-
     } else {
         N = 2 * solver->getSize() + 1;
         M = refine * N;
         double dx = 0.5 * (xh-xl) / M;
         axis0 = RegularMesh1D(xl + dx, xh - dx, M);
-        // uśrednianie refine pomiędzy dwoma węzłami głównymi
     }
 
     DataVector<Tensor3<dcomplex>> NR(M);
 
     RectilinearMesh2D mesh(axis0, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
     auto temperature = solver->inTemperature(mesh);
-    double maty = axis1[0]; // at each point along any vertical axis material is the same (assert below checks this)
+    double lambda = real(solver->getWavelength());
+    double maty = axis1[0]; // at each point along any vertical axis material is the same
     for (size_t i = 0; i < M; ++i) {
         auto material = geometry->getMaterial(Vec<2>(axis0[i],maty));
-        assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(Vec<2>(axis0[i],y))!=material)return false; return true;}());
+        // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(Vec<2>(axis0[i],y))!=material)return false; return true;}());
         double T = 0.; // average temperature in all vertical points
         for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
         T /= axis1.size();
-        NR[i] = material->NR(solver->inWavelength(0), T);
+        NR[i] = material->NR(lambda, T);
     }
 
-    // Materials coefficients (espilon and mu, which apears from PMLs)
-    DataVector<Tensor3<dcomplex>> coeffs(2*N);
+    // Materials coefficients (espilon and mu, which appears from PMLs)
+    DataVector<Tensor3<dcomplex>> coeffs(2*N, Tensor3<dcomplex>(1.));
 
     if (!symmetric) {
         // Add PMLs
-        // Average material parameters
+        // Average material parameters (uśrednianie węzeł główny ± (refine-1)/2 dookoła)
         // Perform FFT
     } else {
         // Add PMLs
-        // Average material parameters
+        // Average material parameters (uśrednianie refine pomiędzy dwoma węzłami głównymi)
         // Perform FFT
     }
 
-    // Cache coefficients required for field computations (
+    // Cache coefficients required for field computations
 
     return coeffs;
 }
