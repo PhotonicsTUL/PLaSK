@@ -17,9 +17,7 @@ namespace py = boost::python;
 #include <plask/utils/string.h>
 
 #ifdef _WIN32
-//    #ifndef _WIN32_WINNT
-        #define _WIN32_WINNT 0x502
-//    #endif
+    #define _WIN32_WINNT 0x502
     #include <windows.h>
 #endif
 
@@ -36,8 +34,8 @@ namespace py = boost::python;
 #   define PLASK_MODULE init_plask
 #endif
 
+//******************************************************************************
 py::dict globals;
-
 
 //******************************************************************************
 // static PyThreadState* mainTS;   // state of the main thread
@@ -171,6 +169,10 @@ int main(int argc, const char *argv[])
 
 #ifdef _WIN32
     SetDllDirectory(plask::exePath().c_str());
+    DWORD procIDs[2];
+    unsigned console_count = GetConsoleProcessList(procIDs, 2);
+#else
+    unsigned console_count = 1;
 #endif
 
     // Parse commnad line
@@ -178,7 +180,7 @@ int main(int argc, const char *argv[])
     bool force_interactive = false;
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
-
+   
     std::deque<const char*> defs;
 
     while (argc > 1) {
@@ -224,8 +226,11 @@ int main(int argc, const char *argv[])
             --argc; ++argv;
 #ifdef _WIN32
         } else if (arg == "-w") {
-            HWND hwnd = GetConsoleWindow();
-            ShowWindow(hwnd, SW_SHOWDEFAULT);
+            if (console_count == 1) { // we are the only ones using the console
+                HWND hwnd = GetConsoleWindow();
+                ShowWindow(hwnd, SW_HIDE);
+                console_count = 0;
+            }
             --argc; ++argv;
 #endif
         } else if (arg.find('=') != std::string::npos) {
@@ -278,11 +283,12 @@ int main(int argc, const char *argv[])
             if (!result) py::throw_error_already_set();
             else Py_DECREF(result);
 
-        } catch (py::error_already_set) { // This should not happen
+        } catch (py::error_already_set) {
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;
         } catch (...) {
+            endPlask();
             return 0;
         }
 
@@ -413,7 +419,7 @@ int main(int argc, const char *argv[])
             return 3;
         }
 
-    } else { // start the interactive console
+    } else if (console_count) { // start the interactive console
 
         if (!defs.empty()) {
             PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
