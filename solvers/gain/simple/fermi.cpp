@@ -234,6 +234,8 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     }
     const MeshD<2>& src_mesh = (mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 
+    WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
+
     DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh); // carriers concentration on the mesh
     DataVector<const double> TOnMesh = inTemperature(src_mesh); // temperature on the mesh
     DataVector<double> gainOnMesh(src_mesh.size(), 0.);
@@ -245,9 +247,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
-        for (int i = 0; i < src_mesh.size(); i++)
+        for (int i = 0; i < geo_mesh.size(); i++)
         {
-            if (region.contains(src_mesh[i]) && nOnMesh[i] > 0.)
+            if (region.contains(geo_mesh[i]) && nOnMesh[i] > 0.)
             {
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
                 gainOnMesh[i] = gainModule.Get_gain_at(nm_to_eV(wavelength));
@@ -255,7 +257,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
         }
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
-    
+
     if (mesh) {
         return interpolate(mesh2, gainOnMesh, dst_mesh, INTERPOLATION_SPLINE);
     } else {
@@ -277,7 +279,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
         mesh2.axis0 = *mesh; mesh2.axis1 = verts;
     }
     const MeshD<2>& src_mesh = (mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
-    
+
+    WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
+
     DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh); // carriers concentration on the mesh
     DataVector<const double> TOnMesh = inTemperature(src_mesh); // temperature on the mesh
     DataVector<double> dGdn(src_mesh.size(), 0.);
@@ -289,9 +293,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
-        for (int i = 0; i < src_mesh.size(); i++)
+        for (int i = 0; i < geo_mesh.size(); i++)
         {
-            if (region.contains(src_mesh[i]) && nOnMesh[i] > 0.)
+            if (region.contains(geo_mesh[i]) && nOnMesh[i] > 0.)
             {
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
                 double gainOnMesh1 = gainModule.Get_gain_at(nm_to_eV(wavelength));
@@ -303,7 +307,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
         }
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
-    
+
     if (mesh) {
         return interpolate(mesh2, dGdn, dst_mesh, INTERPOLATION_SPLINE);
     } else {

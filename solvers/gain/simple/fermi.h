@@ -52,7 +52,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
         /// \return bounding box of the whole active region
         Box2D getBoundingBox() const
-            {
+        {
             return layers->getBoundingBox() + origin;
         }
 
@@ -65,7 +65,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     std::vector<ActiveRegionInfo> regions;  ///< List of active regions
 
     shared_ptr<RectilinearMesh1D> mesh;     ///< Optional mesh allowing faster calculations with interpolation
-    
+
     /// Receiver for temperature.
     ReceiverFor<Temperature,GeometryType> inTemperature;
 
@@ -97,7 +97,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Print gain parameters for debugging purposes
     void printParameters();
 #endif
-    
+
   protected:
 
     friend struct GainSpectrum<GeometryType>;
@@ -120,7 +120,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 //    double lambda;
 
     void setParameters(double wavelength, double T, double n, const ActiveRegionInfo& active);
-    
+
     double nm_to_eV(double wavelength);
 
     /// Initialize the solver
