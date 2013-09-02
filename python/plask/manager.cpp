@@ -25,8 +25,8 @@ class PythonXMLFilter {
     
     PythonManager* manager;
     
-    static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z') || (c == '_'); }
-    static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
+    // static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z') || (c == '_'); }
+    // static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
 
     //check if in[p] == in[p+1] && in[p] == in[p+2], and if so forward p by 2 positions
     static inline bool has_long_str(const std::string& in, std::string::size_type& p) {
@@ -54,8 +54,9 @@ class PythonXMLFilter {
   public:  
 
     PythonXMLFilter(PythonManager* manager): manager(manager) {}
-      
-    std::string eval(const std::string& str) const {
+
+    std::string eval(std::string str) const {
+        boost::algorithm::trim(str);
         return py::extract<std::string>(py::str(py::eval(py::str(str), xml_globals, manager->locals)));
     }
 
@@ -63,33 +64,25 @@ class PythonXMLFilter {
         std::string result;
         result.reserve(in.size());  //we guess that output will have the simillar size as input
         for (std::string::size_type pos = 0; pos < in.size(); ++pos) {
-            if (in[pos] == '$') {
+            if (in[pos] == '{') {
                 ++pos;
-                if (pos == in.size()) { result += '$'; break; }
-                if (in[pos] == '$') { result += '$'; continue; }    // $$ -> $
-                if (in[pos] == '{') {   // ${ ... }
-                    ++pos;
-                    // find } but not inside python string, note that this code support also python long strings
-                    std::string::size_type close_pos = pos;
-                    while (close_pos < in.size() && in[close_pos] != '}') {
-                        if (in[close_pos] == '\'' || in[close_pos] == '"') {
-                            goto_string_end(in, close_pos);
-                            if (close_pos == in.size()) break;  //else close_pos points to end of string
-                        }
-                        ++close_pos;
+                if (in[pos] == '{') { result += '{'; continue; }
+                // find } but not inside python string, note that this code support also python long strings
+                std::string::size_type close_pos = pos;
+                int level = 1;
+                while (close_pos < in.size() && level > 0) {
+                    if (in[close_pos] == '\'' || in[close_pos] == '"') {
+                        goto_string_end(in, close_pos);
+                        if (close_pos == in.size()) break;  // else close_pos points to end of string
                     }
-                    if (close_pos == in.size())
-                        throw plask::Exception("Can't find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
-                    result += eval(in.substr(pos, close_pos - pos));
-                    pos = close_pos;    // pos with '}' that will be skiped
-                } else if (is_first_char_in_name(in[pos])) {    // $variable
-                    std::size_t end_name_pos = pos + 1;
-                    while (end_name_pos < in.size() && is_char_in_name(in[end_name_pos]))
-                        ++end_name_pos;
-                    result += eval(in.substr(pos, end_name_pos - pos));
-                    pos = end_name_pos - 1; //pos with last character of name
-                } else
-                    result += '$';
+                    else if (in[close_pos] == '{') ++level;
+                    else if (in[close_pos] == '}') --level;
+                    ++close_pos;
+                }
+                if (close_pos == in.size() && level != 0)
+                    throw plask::Exception("Cannot find '}' mathing to '{' at position %1% in: %2%", pos-1, in);
+                result += eval(in.substr(pos, close_pos-1 - pos));
+                pos = close_pos-1;    // pos with '}' that will be skipped
             } else
                 result += in[pos];
         }

@@ -5470,14 +5470,14 @@ value
 \end_deeper
 \begin_layout Standard
 Defined parameters can be used in the rest of the XPL inside any attribute
- value preceded by the `$` sign (e.
+ value inside curly braces (e.
 \begin_inset space \thinspace{}
 \end_inset
 
 g.
  
 \family typewriter
-$param
+{param}
 \family default
 ).
 \end_layout

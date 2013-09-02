@@ -64,6 +64,8 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
     std::vector<ActiveRegionInfo> regions;  ///< List of active regions
 
+    shared_ptr<RectilinearMesh1D> mesh;     ///< Optional mesh allowing faster calculations with interpolation
+    
     /// Receiver for temperature.
     ReceiverFor<Temperature,GeometryType> inTemperature;
 
@@ -91,6 +93,11 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Function which checks if current mesh is identical to previously used
     plask::SameMeshChecker meshChecker;
 
+#ifndef NDEBUG
+    /// Print gain parameters for debugging purposes
+    void printParameters();
+#endif
+    
   protected:
 
     friend struct GainSpectrum<GeometryType>;
@@ -113,7 +120,7 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 //    double lambda;
 
     void setParameters(double wavelength, double T, double n, const ActiveRegionInfo& active);
-    void getParameters();
+    
     double nm_to_eV(double wavelength);
 
     /// Initialize the solver

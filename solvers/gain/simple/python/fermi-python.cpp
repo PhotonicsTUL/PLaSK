@@ -35,12 +35,16 @@ BOOST_PYTHON_MODULE(simple)
         solver.add_receiver("inCarriersConcentration",
                             reinterpret_cast<ReceiverFor<CarriersConcentration,Geometry2DCartesian>__Class__::*>(&__Class__::inCarriersConcentration),
                             "Carrier pairs concentration");
+        RW_FIELD(mesh, "Horizontal mesh to compute derivative on (if None then do not use interpolation)");
         PROVIDER(outGain, "Optical gain in the active region");
         PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
         // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
+#ifndef NDEBUG
+        METHOD(print_params, printParameters, "Print gain parameters for debugging purposes");
+#endif
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
@@ -57,12 +61,16 @@ BOOST_PYTHON_MODULE(simple)
         METHOD(determine_levels, determineLevels, "Determine quasi-Fermi levels and carriers levels inside QW", "T", "n");
         RECEIVER(inTemperature, "Temperature distribution");
         RECEIVER(inCarriersConcentration, "Carrier pairs concentration");
+        RW_FIELD(mesh, "Horizontal mesh to compute derivative on (if None then do not use interpolation)");
         PROVIDER(outGain, "Optical gain in the active region");
         PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
         // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
+#ifndef NDEBUG
+        METHOD(print_params, printParameters, "Print gain parameters for debugging purposes");
+#endif
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),

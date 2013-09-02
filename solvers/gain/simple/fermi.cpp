@@ -28,21 +28,6 @@ template <typename GeometryType>
 void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     // Load a configuration parameter from XML.
-    // Below you have an example
-//     while (reader.requireTagOrEnd())
-//     {
-//         std::string param = reader.getNodeName();
-//         if (param == "newton") {
-//             newton.tolx = reader.getAttribute<double>("tolx", newton.tolx);
-//             newton.tolf = reader.getAttribute<double>("tolf", newton.tolf);
-//             newton.maxstep = reader.getAttribute<double>("maxstep", newton.maxstep);
-//             reader.requireTagEnd();
-//         } else if (param == "wavelength") {
-//             std::string = reader.requireTextUntilEnd();
-//             inWavelength.setValue(boost::lexical_cast<double>(wavelength));
-//         } else
-//             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <newton>, or <wavelength>");
-//     }
     while (reader.requireTagOrEnd())
     {
         std::string param = reader.getNodeName();
@@ -50,6 +35,28 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
             mLifeTime = reader.getAttribute<double>("lifetime", mLifeTime);
             mMatrixElem = reader.getAttribute<double>("matrix_elem", mMatrixElem);
             reader.requireTagEnd();
+        }
+        else if (param == "mesh")
+        {
+            if (reader.hasAttribute("start")) {
+                double start = reader.requireAttribute<double>("start");
+                double stop = reader.requireAttribute<double>("stop");
+                size_t count = reader.requireAttribute<size_t>("num");
+                mesh = make_shared<RectilinearMesh1D>();
+                mesh->addPointsLinear(start, stop, count);
+                reader.requireTagEnd();
+            } else {
+                std::string data = reader.requireTextInCurrentTag();
+                mesh = make_shared<RectilinearMesh1D>();
+                for (auto point: boost::tokenizer<>(data)) {
+                    try {
+                        double val = boost::lexical_cast<double>(point);
+                        mesh->addPoint(val);
+                    } catch (boost::bad_lexical_cast) {
+                        throw XMLException(reader, format("Value '%1%' cannot be converted to float", point));
+                    }
+                }
+            }
         } else
             this->parseStandardConfiguration(reader, manager, "<geometry> or <config>");
     }
@@ -216,13 +223,20 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 template <typename GeometryType>
 const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
 {
+    this->writelog(LOG_DETAIL, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
-    auto dst_mesh_geo = WrappedMesh<2>(dst_mesh, this->geometry);
+    RectilinearMesh2D mesh2;
+    if (mesh) {
+        RectilinearMesh1D verts;
+        for (auto p: dst_mesh) verts.addPoint(p.vert());
+        mesh2.axis0 = *mesh; mesh2.axis1 = verts;
+    }
+    const MeshD<2>& src_mesh = (mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(dst_mesh); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(dst_mesh); // temperature on the mesh
-    DataVector<double> gainOnMesh(dst_mesh_geo.size(), 0.);
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh); // temperature on the mesh
+    DataVector<double> gainOnMesh(src_mesh.size(), 0.);
 
     if (regions.size() == 1)
         this->writelog(LOG_DETAIL, "Found 1 active region");
@@ -231,10 +245,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
-//        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
-        for (int i = 0; i < dst_mesh_geo.size(); i++)
+        for (int i = 0; i < src_mesh.size(); i++)
         {
-            if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))
+            if (region.contains(src_mesh[i]) && nOnMesh[i] > 0.)
             {
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
                 gainOnMesh[i] = gainModule.Get_gain_at(nm_to_eV(wavelength));
@@ -242,8 +255,12 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
         }
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
-
-    return gainOnMesh;
+    
+    if (mesh) {
+        return interpolate(mesh2, gainOnMesh, dst_mesh, INTERPOLATION_SPLINE);
+    } else {
+        return gainOnMesh;
+    }
 }
 
 
@@ -253,13 +270,17 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     this->writelog(LOG_INFO, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
-    auto dst_mesh_geo = WrappedMesh<2>(dst_mesh, this->geometry);
-
-    DataVector<const double> nOnMesh = inCarriersConcentration(dst_mesh); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(dst_mesh); // temperature on the mesh
-    double gainOnMesh1 = 0.0;
-    double gainOnMesh2 = 0.0;
-    DataVector<double> dGdn(dst_mesh_geo.size(), 0.);
+    RectilinearMesh2D mesh2;
+    if (mesh) {
+        RectilinearMesh1D verts;
+        for (auto p: dst_mesh) verts.addPoint(p.vert());
+        mesh2.axis0 = *mesh; mesh2.axis1 = verts;
+    }
+    const MeshD<2>& src_mesh = (mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
+    
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh); // temperature on the mesh
+    DataVector<double> dGdn(src_mesh.size(), 0.);
 
     if (regions.size() == 1)
         this->writelog(LOG_DETAIL, "Found 1 active region");
@@ -268,23 +289,26 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 
     for (const ActiveRegionInfo& region: regions)
     {
-//        this->writelog(LOG_DETAIL, "size %1%", dst_mesh_geo.size());
-        for (int i = 0; i < dst_mesh_geo.size(); i++)
+        for (int i = 0; i < src_mesh.size(); i++)
         {
-            if (region.contains(dst_mesh_geo[i]) && !isnan(nOnMesh[i]))
+            if (region.contains(src_mesh[i]) && nOnMesh[i] > 0.)
             {
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
-                gainOnMesh1 = gainModule.Get_gain_at(nm_to_eV(wavelength));
+                double gainOnMesh1 = gainModule.Get_gain_at(nm_to_eV(wavelength));
                 setParameters(wavelength, TOnMesh[i], nOnMesh[i] + differenceQuotient*nOnMesh[i], region);
-                gainOnMesh2 = gainModule.Get_gain_at(nm_to_eV(wavelength));
-
+                double gainOnMesh2 = gainModule.Get_gain_at(nm_to_eV(wavelength));
                 dGdn[i] = (gainOnMesh2 - gainOnMesh1)/(differenceQuotient*nOnMesh[i]);
+
             }
         }
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
-
-    return dGdn;
+    
+    if (mesh) {
+        return interpolate(mesh2, dGdn, dst_mesh, INTERPOLATION_SPLINE);
+    } else {
+        return dGdn;
+    }
 }
 
 
@@ -357,46 +381,41 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
 
 }
 
-
+#ifndef NDEBUG
 template <typename GeometryType>
-void FermiGainSolver<GeometryType>::getParameters()
+void FermiGainSolver<GeometryType>::printParameters()
 {
-    std::cout<<"T = "<<gainModule.Get_temperature()<<std::endl;
-    std::cout<<"n = "<<gainModule.Get_koncentr()<<std::endl;
+    this->writelog(LOG_DEBUG, "T =  %1%", gainModule.Get_temperature());
+    this->writelog(LOG_DEBUG, "n =  %1%", gainModule.Get_koncentr());
 
-    std::cout<<"nR = "<<gainModule.Get_refr_index()<<std::endl;
+    this->writelog(LOG_DEBUG, "nR =  %1%", gainModule.Get_refr_index());
 
-    std::cout<<"m_e_plane = "<<gainModule.Get_electron_mass_in_plain()<<std::endl;
-    std::cout<<"m_e_trans = "<<gainModule.Get_electron_mass_transverse()<<std::endl;
-    std::cout<<"m_hh_plane = "<<gainModule.Get_heavy_hole_mass_in_plain()<<std::endl;
-    std::cout<<"m_hh_trans = "<<gainModule.Get_heavy_hole_mass_transverse()<<std::endl;
-    std::cout<<"m_lh_plane = "<<gainModule.Get_light_hole_mass_in_plain()<<std::endl;
-    std::cout<<"m_lh_trans = "<<gainModule.Get_light_hole_mass_transverse()<<std::endl;
+    this->writelog(LOG_DEBUG, "m_e_plane =  %1%", gainModule.Get_electron_mass_in_plain());
+    this->writelog(LOG_DEBUG, "m_e_trans =  %1%", gainModule.Get_electron_mass_transverse());
+    this->writelog(LOG_DEBUG, "m_hh_plane =  %1%", gainModule.Get_heavy_hole_mass_in_plain());
+    this->writelog(LOG_DEBUG, "m_hh_trans =  %1%", gainModule.Get_heavy_hole_mass_transverse());
+    this->writelog(LOG_DEBUG, "m_lh_plane =  %1%", gainModule.Get_light_hole_mass_in_plain());
+    this->writelog(LOG_DEBUG, "m_lh_trans =  %1%", gainModule.Get_light_hole_mass_transverse());
 
-    std::cout<<"m_e_bar = "<<gainModule.Get_electron_mass_in_barrier()<<std::endl;
-    std::cout<<"m_hh_bar = "<<gainModule.Get_heavy_hole_mass_in_barrier()<<std::endl;
-    std::cout<<"m_lh_bar = "<<gainModule.Get_light_hole_mass_in_barrier()<<std::endl;
+    this->writelog(LOG_DEBUG, "m_e_bar =  %1%", gainModule.Get_electron_mass_in_barrier());
+    this->writelog(LOG_DEBUG, "m_hh_bar =  %1%", gainModule.Get_heavy_hole_mass_in_barrier());
+    this->writelog(LOG_DEBUG, "m_lh_bar =  %1%", gainModule.Get_light_hole_mass_in_barrier());
 
-    std::cout<<"QW_width = "<<gainModule.Get_well_width()<<std::endl;
-    std::cout<<"waveguide_width = "<<gainModule.Get_waveguide_width()<<std::endl;
+    this->writelog(LOG_DEBUG, "QW_width =  %1%", gainModule.Get_well_width());
+    this->writelog(LOG_DEBUG, "waveguide_width =  %1%", gainModule.Get_waveguide_width());
 
-    std::cout<<"SO = "<<gainModule.Get_split_off()<<std::endl;
-    std::cout<<"Eg = "<<gainModule.Get_bandgap()<<std::endl;
-    std::cout<<"QW_Qc = "<<gainModule.Get_conduction_depth()<<std::endl;
-    std::cout<<"QW_Qv = "<<gainModule.Get_valence_depth()<<std::endl;
+    this->writelog(LOG_DEBUG, "SO =  %1%", gainModule.Get_split_off());
+    this->writelog(LOG_DEBUG, "Eg =  %1%", gainModule.Get_bandgap());
+    this->writelog(LOG_DEBUG, "QW_Qc =  %1%", gainModule.Get_conduction_depth());
+    this->writelog(LOG_DEBUG, "QW_Qv =  %1%", gainModule.Get_valence_depth());
 
-    std::cout<<"waveguide_Qc = "<<gainModule.Get_cond_waveguide_depth()<<std::endl;
-    std::cout<<"waveguide_Qv = "<<gainModule.Get_vale_waveguide_depth()<<std::endl;
+    this->writelog(LOG_DEBUG, "waveguide_Qc =  %1%", gainModule.Get_cond_waveguide_depth());
+    this->writelog(LOG_DEBUG, "waveguide_Qv =  %1%", gainModule.Get_vale_waveguide_depth());
 
-    std::cout<<"tau = "<<gainModule.Get_lifetime()<<std::endl;
-    std::cout<<"M = "<<gainModule.Get_momentum_matrix_element()<<std::endl;
-
-
-//    gainModule.Set_first_point(1.19);
-//    gainModule.Set_last_point(1.4);
-//    gainModule.Set_step(.001);
+    this->writelog(LOG_DEBUG, "tau =  %1%", gainModule.Get_lifetime());
+    this->writelog(LOG_DEBUG, "M =  %1%", gainModule.Get_momentum_matrix_element());
 }
-
+#endif
 
 template <typename GeometryType>
 double FermiGainSolver<GeometryType>::nm_to_eV(double wavelength)

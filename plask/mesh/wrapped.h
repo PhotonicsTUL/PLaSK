@@ -25,7 +25,7 @@ struct WrappedMesh: public MeshD<dim> {
   protected:
 
       const MeshD<dim>& original;   ///< Original mesh
-      bool symmetric[dim];          ///< Indicates whether there is a symmetry along specified axes
+      const shared_ptr<GeometryD<dim>>& geometry; ///< Geometry of the mesh
 
   public:
 
@@ -34,7 +34,7 @@ struct WrappedMesh: public MeshD<dim> {
      * \param original original mesh
      * \param geometry geometry in which the mesh is defined
      */
-    WrappedMesh(const MeshD<dim>& original, const shared_ptr<GeometryD<dim>>& geometry);
+    WrappedMesh(const MeshD<dim>& original, const shared_ptr<GeometryD<dim>>& geometry): original(original), geometry(geometry) {}
 
     virtual ~WrappedMesh() {}
 
@@ -44,8 +44,19 @@ struct WrappedMesh: public MeshD<dim> {
 
     virtual Vec<dim> at(std::size_t index) const {
         Vec<dim> pos = original.at(index);
-        for (int dir = 0; dir < dim; ++dir)
-            if (symmetric[dir]) pos[dir] = abs(pos[dir]);
+        for (int dir = 0; dir < dim; ++dir) {
+            if (geometry->isPeriodic(Geometry::Direction(dir+3-dim))) {
+                auto box = geometry->getChild()->getBoundingBox();
+                double l = box.lower[index], h = box.upper[index];
+                if (geometry->isSymmetric(Geometry::Direction(dir+3-dim)))
+                    pos[dir] = std::fmod(abs(pos[dir]), h-l) + l;
+                else {
+                    pos[dir] = std::fmod(pos[dir], h-l);
+                    pos[dir] += (pos[dir] >= 0)? l : h;
+                }
+            } else
+                if (geometry->isSymmetric(Geometry::Direction(dir+3-dim))) pos[dir] = abs(pos[dir]);
+        }
         return pos;
     }
 
