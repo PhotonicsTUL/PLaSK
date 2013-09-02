@@ -26,7 +26,7 @@ FFT fourier;
 BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
 {
     // Test forward transform
-    std::vector<dcomplex> data = {
+    DataVector<dcomplex> data = {
         -1.0,    0.000000000000,
         -1.0,    0.055363321799,
         -1.0,    0.103806228374,
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
          0.0,    0.103806228374,
          0.0,    0.055363321799
     };
-    std::vector<dcomplex> results = {
+    DataVector<dcomplex> results = {
          0.352941176471 + 0.000000000000 * I,     0.166089965398,
         -0.491274029836 + 0.113535329482 * I,    -0.051241253516,
         -0.157995760054 + 0.145143943954 * I,    -0.013257953397,
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
         -0.157995760054 - 0.145143943954 * I,    -0.013257953397,
         -0.491274029836 - 0.113535329482 * I,    -0.051241253516
     };
-    fourier.forward(2, 17, &data.front(), FFT::SYMMETRY_NONE);
+    fourier.forward(2, 17, data.data(), FFT::SYMMETRY_NONE);
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 }
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(ForwardSymmetric)
           -0.095670858091272459,      -0.0008756670491561827,
           -0.117747425324767870,      -0.00039611189655973031
     };
-    fourier.forward(2, 8, &data.front(), FFT::SYMMETRY_EVEN);
+    fourier.forward(2, 8, data.data(), FFT::SYMMETRY_EVEN);
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 }
 

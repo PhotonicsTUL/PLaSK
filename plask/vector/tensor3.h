@@ -207,6 +207,23 @@ struct Tensor3 {
     }
 
     /**
+     * Square each component of tensor
+     * \return squared tensor
+     */
+    Tensor3<T> sqr() const {
+        return Tensor3<T>(c00*c00, c11*c11, c22*c22, c01*c01, c10*c10);
+    }
+
+    /**
+     * Square each component of tensor in place
+     * \return *this (squared)
+     */
+    Tensor3<T>& sqr_inplace() {
+        c00 *= c00; c11 *= c11; c22 *= c22; c01 *= c01; c10 *= c10;
+        return *this;
+    }
+
+    /**
      * Print tensor to stream using format (where c00 and c11 are tensor components): [c00, c11]
      * @param out print destination, output stream
      * @param to_print tensor to print
@@ -216,7 +233,6 @@ struct Tensor3 {
         return out << '(' << to_print.c00 << ", " <<  to_print.c11 << ", " << to_print.c22 << ", ("
                           << to_print.c01 << ", " << to_print.c10 << "))";
     }
-
 };
 
 /**
