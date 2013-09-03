@@ -84,7 +84,7 @@ namespace plask {
  * @see @ref meshes_interpolation
  */
 enum InterpolationMethod: unsigned {
-    DEFAULT_INTERPOLATION = 0,  ///< Default interpolation (depends on source mesh)
+    INTERPOLATION_DEFAULT = 0,  ///< Default interpolation (depends on source mesh)
     INTERPOLATION_NEAREST,      ///< Nearest neighbor interpolation
     INTERPOLATION_LINEAR,       ///< Linear interpolation
     INTERPOLATION_SPLINE,       ///< Spline interpolation with parabolic derivatives and Hyman monotonic filter
@@ -106,11 +106,11 @@ static constexpr const char* interpolationMethodNames[] = {
 };
 
 /**
- * Helper utility that replaces DEFAULT_INTERPOLATION with particular method.
+ * Helper utility that replaces INTERPOLATION_DEFAULT with particular method.
  */
 template <InterpolationMethod default_method>
 inline InterpolationMethod defInterpolation(InterpolationMethod method) {
-    return (method == DEFAULT_INTERPOLATION)? default_method : method;
+    return (method == INTERPOLATION_DEFAULT)? default_method : method;
 }
 
 /**
@@ -135,10 +135,10 @@ struct InterpolationAlgorithm
  * Specialization of InterpolationAlgorithm showing elegant message if algorithm default is used.
  */
 template <typename SrcMeshT, typename SrcT, typename DstT>
-struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, DEFAULT_INTERPOLATION>
+struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, INTERPOLATION_DEFAULT>
 {
     static void interpolate(const SrcMeshT& src_mesh, const DataVector<const SrcT>& src_vec, const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DstT>& dst_vec) {
-        throw CriticalException("interpolate(...) called for DEFAULT_INTERPOLATION method. Contact solver author to fix this issue."
+        throw CriticalException("interpolate(...) called for INTERPOLATION_DEFAULT method. Contact solver author to fix this issue."
 #ifndef NDEBUG
                                 "\n\nINFO FOR SOLVER AUTHOR: To avoid this error use 'defInterpolation<YOUR_DEFAULT_METHOD>(interpolation_method) in C++ code of the provider in your solver.\n"
 #endif
@@ -185,7 +185,7 @@ struct __InterpolateMeta__<SrcMeshT, SrcT, DstT, __ILLEGAL_INTERPOLATION_METHOD_
  */
 template <typename SrcMeshT, typename SrcT, typename DstT=SrcT>
 DataVector<DstT> interpolate(const SrcMeshT& src_mesh, const DataVector<SrcT>& src_vec,
-                             const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = DEFAULT_INTERPOLATION)
+                             const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = INTERPOLATION_DEFAULT)
 {
     if (src_mesh.size() != src_vec.size())
         throw BadMesh("interpolate", "Mesh size (%2%) and values size (%1%) do not match", src_vec.size(), src_mesh.size());
@@ -206,7 +206,7 @@ namespace boost {
     template <>
     inline plask::InterpolationMethod lexical_cast<plask::InterpolationMethod, std::string>(const std::string& arg) {
         std::string val = arg; to_upper(val);
-        for (unsigned i = plask::DEFAULT_INTERPOLATION+1; i != plask::__ILLEGAL_INTERPOLATION_METHOD__; ++i) {
+        for (unsigned i = plask::INTERPOLATION_DEFAULT+1; i != plask::__ILLEGAL_INTERPOLATION_METHOD__; ++i) {
             if (val == plask::interpolationMethodNames[i]) return (plask::InterpolationMethod)i;
         }
         throw bad_lexical_cast(typeid(std::string), typeid(plask::InterpolationMethod));

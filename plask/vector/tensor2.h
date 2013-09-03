@@ -191,7 +191,6 @@ auto operator*(const OtherT scale, const Tensor2<T>& tensor) -> decltype(tensor*
     return tensor * scale;
 }
 
-
 /**
  * Calculate tensor conjugate.
  * @param v a tensor

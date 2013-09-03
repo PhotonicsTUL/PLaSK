@@ -161,7 +161,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         virtual void onInitialize();
         virtual void onInvalidate();
 
-        const DataVector<double> getConcentration(const plask::MeshD<2>& dest_mesh, plask::InterpolationMethod interpolation=DEFAULT_INTERPOLATION ); // method providing concentration from inside to the provider (outConcentration)
+        const DataVector<double> getConcentration(const plask::MeshD<2>& dest_mesh, plask::InterpolationMethod interpolation=INTERPOLATION_DEFAULT ); // method providing concentration from inside to the provider (outConcentration)
 
 }; // class FiniteElementMethodDiffusion2DSolver
 

@@ -649,7 +649,7 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
 {
     if (!mPotentials) throw NoValue("Potentials");
     this->writelog(LOG_DETAIL, "Getting potentials");
-    if (method == DEFAULT_INTERPOLATION)  method = INTERPOLATION_LINEAR;
+    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(*(this->mesh), mPotentials, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
@@ -659,7 +659,7 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodE
     if (!mPotentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Getting current densities");
     if (!mCurrentDensities) saveCurrentDensities();
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     auto result = interpolate(*(this->mesh->getMidpointsMesh()), mCurrentDensities, dest_mesh, method);
     constexpr Vec<2> zero(0.,0.);
@@ -673,7 +673,7 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
     if (!mPotentials) throw NoValue("Heat densities");
     this->writelog(LOG_DETAIL, "Getting heat densities");
     if (!mHeatDensities) saveHeatDensities(); // we will compute fluxes only if they are needed
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     auto result = interpolate(*(this->mesh->getMidpointsMesh()), mHeatDensities, dest_mesh, method);
     for (size_t i = 0; i < result.size(); ++i)

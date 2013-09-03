@@ -31,6 +31,8 @@ namespace detail {
     template <> inline constexpr int typenum<const Vec<3,double>>() { return NPY_DOUBLE; }
     template <> inline constexpr int typenum<const Vec<3,dcomplex>>() { return NPY_CDOUBLE; }
     template <> inline constexpr int typenum<const Tensor2<double>>() { return NPY_DOUBLE; }
+    template <> inline constexpr int typenum<const Tensor2<dcomplex>>() { return NPY_CDOUBLE; }
+    template <> inline constexpr int typenum<const Tensor3<double>>() { return NPY_DOUBLE; }
     template <> inline constexpr int typenum<const Tensor3<dcomplex>>() { return NPY_CDOUBLE; }
 }
 

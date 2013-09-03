@@ -53,7 +53,7 @@ struct YourSolver: public SolverWithMesh<ForExample_Geometry2DCartesian, ForExam
     virtual void onInvalidate();
 
     /// Method computing the value for the delegate provider
-    const DataVector<const double> getDelegated(const MeshD<2>& dst_mesh, InterpolationMethod method=DEFAULT_INTERPOLATION);
+    const DataVector<const double> getDelegated(const MeshD<2>& dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
 };
 

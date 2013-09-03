@@ -10,14 +10,14 @@ namespace plask { namespace solvers { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct FourierReflectionCyl: public ModalSolver<Geometry2DCylindrical> {
+struct FourierReflectionCyl: public SlabSolver<Geometry2DCylindrical> {
 
     std::string getClassName() const { return "slab.FourierReflectionCyl"; }
 
   protected:
 
     /// Maximum order of orthogonal base
-    size_t order;
+    size_t size;
 
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
@@ -26,16 +26,9 @@ struct FourierReflectionCyl: public ModalSolver<Geometry2DCylindrical> {
 
   public:
 
-    /// Receiver of the wavelength
-    ReceiverFor<Wavelength> inWavelength;
-
-    /// Provider for computed effective index
-    ProviderFor<EffectiveIndex>::WithValue outNeff;
-
     FourierReflectionCyl(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
-
 
     /**
      * Find the mode around the specified effective index.
@@ -44,6 +37,14 @@ struct FourierReflectionCyl: public ModalSolver<Geometry2DCylindrical> {
      * \return determined effective index
      */
     size_t findMode(dcomplex neff);
+
+    /// Get order of the orthogonal base
+    size_t getSize() const { return size; }
+    /// Set order of the orthogonal base
+    void setSize(size_t n) {
+        size = n;
+        invalidate();
+    }
 
   protected:
 

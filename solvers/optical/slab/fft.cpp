@@ -34,7 +34,7 @@ FFT::~FFT() {
 void FFT::forward(size_t howmany, size_t n, dcomplex* data, Symmetry symmetry)
 {
     if (symmetry == SYMMETRY_NONE) {
-        
+
         int ranks[] = { n };
         fftw_plan plan = fftw_plan_many_dft(1, ranks, howmany,
                                         reinterpret_cast<fftw_complex*>(data), NULL, howmany, 1,
@@ -45,7 +45,7 @@ void FFT::forward(size_t howmany, size_t n, dcomplex* data, Symmetry symmetry)
 
         double factor = 1. / n;
         for (size_t N = howmany*n, i = 0; i < N; i++) data[i] *= factor;
-        
+
     } else if (symmetry == SYMMETRY_EVEN) {
 
         int ranks[] = { n };
@@ -56,10 +56,10 @@ void FFT::forward(size_t howmany, size_t n, dcomplex* data, Symmetry symmetry)
                                             kinds, FFTW_ESTIMATE);
         fftw_execute(plan);
         fftw_destroy_plan(plan);
-    
+
         double factor = 0.5 / n;
         for (size_t N = howmany*n, i = 0; i < N; i++) data[i] *= factor;
-        
+
     } else
         throw NotImplemented("forward FFT for odd symmetry");
 }
@@ -78,7 +78,13 @@ void FFT::forward(size_t howmany, size_t n1, size_t n2, dcomplex* data, Symmetry
         fftw_destroy_plan(plan);
         double factor = 1. / n1 / n2;
         for (size_t N = howmany*n1*n2, i = 0; i < N; i++) data[i] *= factor;
-        
+
+    } else if (symmetry1 == SYMMETRY_EVEN && symmetry2 == SYMMETRY_EVEN) {
+        //TODO
+    } else if (symmetry1 == SYMMETRY_NONE && symmetry2 == SYMMETRY_EVEN) {
+        //TODO
+    } else if (symmetry1 == SYMMETRY_EVEN && symmetry2 == SYMMETRY_NONE) {
+        //TODO
     } else
         throw NotImplemented("forward FFT for odd symmetry");
 }
@@ -86,8 +92,41 @@ void FFT::forward(size_t howmany, size_t n1, size_t n2, dcomplex* data, Symmetry
 
 void FFT::backward(size_t howmany, size_t n, dcomplex* data, Symmetry symmetry)
 {
+    if (symmetry == SYMMETRY_NONE) {
+
+        int ranks[] = { n };
+        fftw_plan plan = fftw_plan_many_dft(1, ranks, howmany,
+                                        reinterpret_cast<fftw_complex*>(data), NULL, howmany, 1,
+                                        reinterpret_cast<fftw_complex*>(data), NULL, howmany, 1,
+                                        FFTW_BACKWARD, FFTW_ESTIMATE);
+        fftw_execute(plan);
+        fftw_destroy_plan(plan);
+
+    } else if (symmetry == SYMMETRY_EVEN) {
+
+        int ranks[] = { n };
+        fftw_r2r_kind kinds[] = { FFTW_REDFT01 };
+        fftw_plan plan = fftw_plan_many_r2r(1, ranks, 2*howmany,
+                                            reinterpret_cast<double*>(data), NULL, 2*howmany, 1,
+                                            reinterpret_cast<double*>(data), NULL, 2*howmany, 1,
+                                            kinds, FFTW_ESTIMATE);
+        fftw_execute(plan);
+        fftw_destroy_plan(plan);
+
+    } else {
+
+        int ranks[] = { n };
+        fftw_r2r_kind kinds[] = { FFTW_RODFT01 };
+        fftw_plan plan = fftw_plan_many_r2r(1, ranks, 2*howmany,
+                                            reinterpret_cast<double*>(data), NULL, 2*howmany, 1,
+                                            reinterpret_cast<double*>(data), NULL, 2*howmany, 1,
+                                            kinds, FFTW_ESTIMATE);
+        fftw_execute(plan);
+        fftw_destroy_plan(plan);
+
+    }
 }
-    
+
 
 void FFT::backward(size_t howmany, size_t n1, size_t n2, dcomplex* data, Symmetry symmetry1, Symmetry symmetry2)
 {

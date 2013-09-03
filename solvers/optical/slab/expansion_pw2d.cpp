@@ -1,5 +1,5 @@
 #include "expansion_pw2d.h"
-#include "fft.h"
+#include "reflection_solver_2d.h"
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -24,72 +24,81 @@ ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): solver(solver)
 
     if (!periodic) {
         // Add PMLs
-        left -= solver->pml.size + solver->pml.shift;
+        if (!symmetric) left -= solver->pml.size + solver->pml.shift;
         right += solver->pml.size + solver->pml.shift;
     }
 
     size_t refine = solver->refine, M;
-                                                            //  . . 0 . . . . 1 . . . . 2 . . . . 0    N = 3  refine = 5  M = 15
-    if (!symmetric) {                                       //  ^ ^ ^ ^ ^
-        N = 2 * solver->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4
+    double L;
+    if (refine == 0) refine = 1;
+                                                            // N = 3  nN = 5  refine = 5  M = 25
+    if (!symmetric) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
+        L = right - left;                                   //  ^ ^ ^ ^ ^
+        N = 2 * solver->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * solver->getSize() + 1;
-        M = refine * nN;
-        double dx = 0.5 * (right-left) * (1-refine) / M;    // . . 0 . . . 1 . . . 2 . .               N = 3  refine = 4  M = 12
-        xmesh = RegularMesh1D(left + dx, right + dx, M);    //  ^ ^ ^ ^
-    } else {                                                // |0 1 2 3|4 5 6 7|8 9 0 1
+        M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
+        double dx = 0.5 * L * (refine-1) / M;               // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        xmesh = RegularMesh1D(left-dx, right-dx-L/M, M);    //  ^ ^ ^ ^
+        xpoints = RegularMesh1D(left, right-L/N, N);        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+    } else {
+        L = 2 * right;
         N = solver->getSize() + 1;
-        nN = 2 * solver->getSize() + 1;                     // # . 0 . # . 1 . # . 2 . # . 3 . # . 3   N = 4 refine = 4  M = 16
-        M = refine * nN;                                    //  ^ ^ ^ ^
-        double dx = 0.5 * (right-left) / M;                 // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5
-        xmesh = RegularMesh1D(left + dx, right - dx, M);
+        nN = 2 * solver->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
+        M = refine * nN;                                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+        double dx = 0.25 * L / M;                           //  ^ ^ ^ ^
+        xmesh = RegularMesh1D(left + dx, right - dx, M);    // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        dx = 0.25 * L / N;
+        xpoints = RegularMesh1D(left + dx, right - dx, N);
     }
 
+    solver->writelog(LOG_DETAIL, "Creating expansion with %1% plane-waves (matrix size: %2%)", N, matrixSize());
+
     // Compute permeability coefficients
+    mag.reset(nN, Tensor2<dcomplex>(0.));
     if (periodic) {
-        mag.reset(nN, Tensor2<dcomplex>(0.));
         mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
     } else {
         DataVector<double> Sy(M, 0.);   // PML coeffs for mu
-        if (!symmetric) {
-            // Add PMLs
-            double pl = left + solver->pml.size, pr = right - solver->pml.size;
-            pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
-            for (size_t i = 0; i != pil; ++i) {
-                double h = (pl - xmesh[i]) / solver->pml.size;
-                Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
-            }
-            pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
-            for (size_t i = pir+1; i != xmesh.size(); ++i) {
-                double h = (xmesh[i] - pr) / solver->pml.size;
-                Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
-                dcomplex sy(1., Sy[i]);
-            }
-        } else {
-            // Add PMLs
-            double pr = right - solver->pml.size;
-            pil = 0; pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
-            for (size_t i = pir+1; i != xmesh.size(); ++i) {
-                double h = (xmesh[i] - pr) / solver->pml.size;
-                Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
-                dcomplex sy(1., Sy[i]);
-            }
+        // Add PMLs
+        solver->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
+        double pl = left + solver->pml.size, pr = right - solver->pml.size;
+        if (symmetric) pil = 0;
+        else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
+        pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
+        for (size_t i = 0; i != pil; ++i) {
+            double h = (pl - xmesh[i]) / solver->pml.size;
+            Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
+        }
+        for (size_t i = pir+1; i != xmesh.size(); ++i) {
+            double h = (xmesh[i] - pr) / solver->pml.size;
+            Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
+            dcomplex sy(1., Sy[i]);
         }
         // Average mu
         std::fill(mag.begin(), mag.end(), Tensor2<dcomplex>(0.));
         for (size_t i = 0; i != nN; ++i) {
-            for (size_t j = 0; j != refine; ++j) {
-                dcomplex sy(1., Sy[refine*i+j]);
+            for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
+                dcomplex sy(1., Sy[j]);
                 mag[i] += Tensor2<dcomplex>(sy, 1./sy);
             }
             mag[i] /= refine;
         }
         // Compute FFT
         fft.forward(2, nN, reinterpret_cast<dcomplex*>(mag.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+        // Smooth coefficients
+        if (solver->smooth) {
+            double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
+            for (size_t i = 0; i != nN; ++i) {
+                int k = i; if (k > nN/2) k -= nN;
+                mag[i] *= exp(-solver->smooth * bb4 * k * k);
+            }
+        }
     }
 }
 
 
 size_t ExpansionPW2D::lcount() const {
+    return solver->getLayersPoints().size();
 }
 
 
@@ -102,20 +111,18 @@ size_t ExpansionPW2D::matrixSize() const {
 }
 
 
-cmatrix ExpansionPW2D::getRE(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
-}
-
-
-cmatrix ExpansionPW2D::getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
-}
-
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialParameters(size_t l)
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_t l)
 {
+    if (isnan(real(solver->getWavelength())) || isnan(imag(solver->getWavelength())))
+        throw BadInput(solver->getId(), "No wavelength set in solver");
+
     auto geometry = solver->getGeometry();
     const RectilinearMesh1D& axis1 = solver->getLayerPoints(l);
 
     size_t refine = solver->refine;
     size_t M = refine * nN;
+
+    solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
 
     DataVector<Tensor3<dcomplex>> NR(M);
 
@@ -134,7 +141,6 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialParameters(size_t 
 
     for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR
 
-    // Materials coefficients (espilon and mu, which appears from PMLs)
     // Add PMLs
     if (!periodic) {
         Tensor3<dcomplex> ref;
@@ -156,23 +162,82 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialParameters(size_t 
     // Average material parameters
     DataVector<Tensor3<dcomplex>> coeffs(nN, Tensor3<dcomplex>(0.));
     for (size_t i = 0; i != nN; ++i) {
-        for (size_t j = 0; j != refine; ++j) {
-            coeffs[i] += NR[refine*i + j];
-        }
+        for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
+            coeffs[i] += NR[j];
         coeffs[i] /= refine;
     }
 
     // Perform FFT
     fft.forward(5, nN, reinterpret_cast<dcomplex*>(coeffs.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
-    // Shift coefficients to proper position 0 -> left
-    if (!symmetric) {
+    // Smooth coefficients
+    if (solver->smooth) {
+        double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
+        for (size_t i = 0; i != nN; ++i) {
+            int k = i; if (k > nN/2) k -= nN;
+            coeffs[i] *= exp(-solver->smooth * bb4 * k * k);
+        }
     }
 
     // Cache coefficients required for field computations
 
     return coeffs;
 }
+
+
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearMesh1D mesh,
+                                                                InterpolationMethod interp)
+{
+    double L = right - left;
+    DataVector<Tensor3<dcomplex>> coeffs = getMaterialCoefficients(l).claim();
+    DataVector<Tensor3<dcomplex>> result;
+    if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
+        result.reset(mesh.size(), Tensor3<dcomplex>(0.));
+        if (!symmetric) {
+            for (int k = -nN/2, end = (nN+1)/2; k != end; ++k) {
+                int j = (k>=0)? k : k + nN;
+                for (size_t i = 0; i != mesh.size(); ++i) {
+                    result[i] += coeffs[j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
+                }
+            }
+        } else {
+            for (size_t i = 0; i != mesh.size(); ++i) {
+                result[i] += coeffs[0];
+                for (int k = 1; k != nN; ++k) {
+                    result[i] += 2. * coeffs[k] * cos(M_PI * k * mesh[i] / L);
+                }
+            }
+        }
+    } else {
+        fft.backward(5, nN, reinterpret_cast<dcomplex*>(coeffs.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+        RegularMesh1D cmesh;
+        if (symmetric) {
+            double dx = 0.5 * (right-left) / nN;
+            cmesh.reset(left + dx, right - dx, nN);
+        } else {
+            cmesh.reset(left, right, nN+1);
+            auto old = coeffs;
+            coeffs.reset(nN+1);
+            std::copy(old.begin(), old.end(), coeffs.begin());
+            coeffs[old.size()] = old[0];
+        }
+        RegularMesh2D src_mesh(cmesh, RegularMesh1D(0,0,1));
+        RectilinearMesh2D dst_mesh(mesh, RectilinearMesh1D({0}));
+        result = interpolate(src_mesh, coeffs, WrappedMesh<2>(dst_mesh, solver->getGeometry()), interp);
+    }
+    for (Tensor3<dcomplex>& eps: result) eps.sqrt_inplace();
+    return result;
+}
+
+
+
+cmatrix ExpansionPW2D::getRE(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
+}
+
+
+cmatrix ExpansionPW2D::getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
+}
+
 
 
 }}} // namespace plask

@@ -474,7 +474,7 @@ void FiniteElementMethodThermal3DSolver::saveHeatFluxes()
 DataVector<const double> FiniteElementMethodThermal3DSolver::getTemperatures(const MeshD<3>& dst_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DETAIL, "Getting temperatures");
     if (!temperatures) return DataVector<const double>(dst_mesh.size(), inittemp); // in case the receiver is connected and no temperature calculated yet
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(*(this->mesh), temperatures, WrappedMesh<3>(dst_mesh, this->geometry), method);
 }
 
@@ -483,7 +483,7 @@ DataVector<const Vec<3> > FiniteElementMethodThermal3DSolver::getHeatFluxes(cons
     this->writelog(LOG_DETAIL, "Getting heat fluxes");
     if (!temperatures) return DataVector<const Vec<3>>(dst_mesh.size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
-    if (method == DEFAULT_INTERPOLATION) method = INTERPOLATION_LINEAR;
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(*((this->mesh)->getMidpointsMesh()), fluxes, WrappedMesh<3>(dst_mesh, this->geometry), method);
 }
 

@@ -11,10 +11,10 @@ using namespace plask::python;
 using namespace plask::solvers::slab;
 
 template <typename SolverT>
-static const std::vector<std::size_t>& ModalSolver_getStack(const SolverT& self) { return self.getStack(); }
+static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) { return self.getStack(); }
 
 template <typename SolverT>
-static const std::vector<RectilinearMesh1D>& ModalSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
+static const std::vector<RectilinearMesh1D>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
 
 template <typename Class>
 inline void export_base(Class solver) {
@@ -23,13 +23,19 @@ inline void export_base(Class solver) {
     solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position");
     solver.def("set_interface", &Solver::setInterfaceOn, "Set interface on object pointed by path", (py::arg("object"), py::arg("path")=py::object()));
     solver.def("set_interface", &Solver::setInterfaceAt, "Set interface around position pos", py::arg("pos"));
-    solver.add_property("stack", py::make_function<>(&ModalSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers");
-    solver.add_property("layer_sets", py::make_function<>(&ModalSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set");
+    solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter");
+    solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers");
+    solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set");
     solver.add_receiver("inTemperature", &Solver::inTemperature, "Optical gain in the active region");
     solver.add_receiver("inGain", &Solver::inGain, "Optical gain in the active region");
     solver.add_provider("outIntensity", &Solver::outIntensity, "Light intensity of the last computed mode");
 }
 
+
+DataVectorWrap<const Tensor3<dcomplex>,2> FourierReflection2D_getRefractiveIndexProfile(FourierReflection2D& self,
+                const shared_ptr<RectilinearMesh2D>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
+    return DataVectorWrap<const Tensor3<dcomplex>,2>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
+}
 
 
 BOOST_PYTHON_MODULE(slab)
@@ -41,16 +47,17 @@ BOOST_PYTHON_MODULE(slab)
         PROVIDER(outNeff, "Effective index of the last computed mode");
         METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
+        RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
+        solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
+                   "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
     }
 
     {CLASS(FourierReflectionCyl, "FourierReflectionCyl",
         "Calculate optical modes and optical field distribution using Fourier slab method\n"
         " and reflection transfer in two-dimensional cylindrical geometry.")
         export_base(solver);
-        RECEIVER(inWavelength, "Wavelength of the light");
-        PROVIDER(outNeff, "Effective index of the last computed mode");
         METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
+        RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
     }
-
 }
 

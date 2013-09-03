@@ -31,6 +31,8 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Vec<3,double>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<const Vec<3,dcomplex>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<const Tensor2<double>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<const Tensor2<dcomplex>>() { return 2; }
+    template <> constexpr inline npy_intp type_dim<const Tensor3<double>>() { return 5; }
     template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 5; }
 
 
@@ -388,6 +390,8 @@ static inline void register_data_vectors_d() {
     register_data_vector<Vec<3,double>, dim>();
     register_data_vector<Vec<3,dcomplex>, dim>();
     register_data_vector<Tensor2<double>, dim>();
+    register_data_vector<Tensor2<dcomplex>, dim>();
+    register_data_vector<Tensor3<double>, dim>();
     register_data_vector<Tensor3<dcomplex>, dim>();
 }
 

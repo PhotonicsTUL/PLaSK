@@ -4,16 +4,18 @@
 #include <plask/plask.hpp>
 
 #include "expansion.h"
-#include "reflection_solver_2d.h"
 #include "fft.h"
 
 namespace plask { namespace solvers { namespace slab {
+
+struct FourierReflection2D;
 
 struct ExpansionPW2D: public Expansion {
 
     FourierReflection2D* solver;        ///< Solver which performs calculations (and is the interface to the outside world)
 
     RegularMesh1D xmesh;                ///< Horizontal axis for structure sampling
+    RegularMesh1D xpoints;              ///< Horizontal points in which fields will be computed by the inverse FFT
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
@@ -45,14 +47,23 @@ struct ExpansionPW2D: public Expansion {
 
     virtual cmatrix getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky);
 
+    /**
+     * Get refractive index back from expansion
+     * \param l layer number
+     * \param mesh mesh to get parameters to
+     * \param interp interpolation method
+     * \return computed refractive indices
+     */
+    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearMesh1D mesh,
+                                                      InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
   protected:
 
     /**
      * Compute expansion coefficients for material parameters
      * \param l layer number
      */
-    DataVector<const Tensor3<dcomplex>> getMaterialParameters(size_t l);
-
+    DataVector<const Tensor3<dcomplex>> getMaterialCoefficients(size_t l);
 };
 
 }}} // namespace plask

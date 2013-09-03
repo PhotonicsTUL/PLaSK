@@ -44,18 +44,21 @@ struct WrappedMesh: public MeshD<dim> {
 
     virtual Vec<dim> at(std::size_t index) const {
         Vec<dim> pos = original.at(index);
-        for (int dir = 0; dir < dim; ++dir) {
-            if (geometry->isPeriodic(Geometry::Direction(dir+3-dim))) {
-                auto box = geometry->getChild()->getBoundingBox();
-                double l = box.lower[index], h = box.upper[index];
-                if (geometry->isSymmetric(Geometry::Direction(dir+3-dim)))
-                    pos[dir] = std::fmod(abs(pos[dir]), h-l) + l;
-                else {
-                    pos[dir] = std::fmod(pos[dir], h-l);
-                    pos[dir] += (pos[dir] >= 0)? l : h;
+        auto box = geometry->getChild()->getBoundingBox();
+        for (int i = 0; i < dim; ++i) {
+            auto dir = Geometry::Direction(i+3-dim);
+            if (geometry->isPeriodic(dir)) {
+                double l = box.lower[i], h = box.upper[i];
+                double d = h - l;
+                if (geometry->isSymmetric(dir)) {
+                    pos[i] = std::fmod(abs(pos[i]), 2*d);
+                    if (pos[i] > d) pos[i] = 2*d - pos[i];
+                } else {
+                    pos[i] = std::fmod(pos[i]-l, d);
+                    pos[i] += (pos[i] >= 0)? l : h;
                 }
             } else
-                if (geometry->isSymmetric(Geometry::Direction(dir+3-dim))) pos[dir] = abs(pos[dir]);
+                if (geometry->isSymmetric(dir)) pos[i] = abs(pos[i]);
         }
         return pos;
     }

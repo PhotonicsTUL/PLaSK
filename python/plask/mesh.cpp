@@ -13,7 +13,7 @@ void register_mesh_rectangular();
 void register_mesh()
 {
     py_enum<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");
-    for (unsigned method = DEFAULT_INTERPOLATION; method != __ILLEGAL_INTERPOLATION_METHOD__; ++method) {
+    for (unsigned method = INTERPOLATION_DEFAULT; method != __ILLEGAL_INTERPOLATION_METHOD__; ++method) {
         pyInterpolationMethod.value(interpolationMethodNames[method], (InterpolationMethod)method);
     }
 

@@ -9,7 +9,7 @@ namespace plask { namespace solvers { namespace slab {
  * Base class for all slab solvers
  */
 template <typename GeometryT>
-struct ModalSolver: public SolverOver<GeometryT> {
+struct SlabSolver: public SolverOver<GeometryT> {
 
   protected:
 
@@ -48,6 +48,9 @@ struct ModalSolver: public SolverOver<GeometryT> {
     /// Distance outside outer borders where material is sampled
     double outdist;
 
+    /// Smoothing coefficient
+    double smooth;
+
     /// Receiver for the temperature
     ReceiverFor<Temperature, GeometryT> inTemperature;
 
@@ -57,7 +60,7 @@ struct ModalSolver: public SolverOver<GeometryT> {
     /// Provider of optical field
     typename ProviderFor<LightIntensity, GeometryT>::Delegate outIntensity;
 
-    ModalSolver(const std::string& name="");
+    SlabSolver(const std::string& name="");
 
     /**
      * Get the position of the matching interface.
@@ -102,6 +105,20 @@ struct ModalSolver: public SolverOver<GeometryT> {
         if (interface >= vbounds.size()) interface = vbounds.size() - 1;
         this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
     }
+
+    /**
+     * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
+     * The bottom infinite layer has always negative coordinate.
+     * \param[in,out] h vertical coordinate
+     * \return layer number (in the stack)
+     */
+    size_t getLayerFor(double& h) const {
+        size_t n = std::upper_bound(vbounds.begin(), vbounds.end(), h) - vbounds.begin();
+        if (n == 0) h -= vbounds[0];
+        else h -= vbounds[n-1];
+        return n;
+    }
+
 
     /// Get stack
     /// \return layers stack

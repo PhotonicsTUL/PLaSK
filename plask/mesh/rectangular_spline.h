@@ -39,6 +39,23 @@ namespace detail {
             Hyman<T>::filter(data.c2, a.c2, b.c2);
         }
     };
+
+    template <typename T> struct Hyman<Tensor2<T>> {
+        static void filter(Tensor2<T>& data, const Tensor2<T>& a, const Tensor2<T>& b) {
+            Hyman<T>::filter(data.c00, a.c00, b.c00);
+            Hyman<T>::filter(data.c11, a.c11, b.c11);
+        }
+    };
+
+    template <typename T> struct Hyman<Tensor3<T>> {
+        static void filter(Tensor3<T>& data, const Tensor3<T>& a, const Tensor3<T>& b) {
+            Hyman<T>::filter(data.c00, a.c00, b.c00);
+            Hyman<T>::filter(data.c11, a.c11, b.c11);
+            Hyman<T>::filter(data.c22, a.c22, b.c22);
+            Hyman<T>::filter(data.c01, a.c01, b.c01);
+            Hyman<T>::filter(data.c10, a.c10, b.c10);
+        }
+    };
 }
 
 template <typename Mesh1D, typename SrcT, typename DstT>

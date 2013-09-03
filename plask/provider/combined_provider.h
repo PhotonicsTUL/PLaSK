@@ -137,7 +137,7 @@ struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<Extra
 
     typedef typename ProviderFor<PropertyT,SpaceT>::ProvidedType ProvidedType;
 
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
         this->ensureHasProviders();
         auto p = this->begin();
         ProvidedType result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);

@@ -192,7 +192,7 @@ namespace detail {
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
         }
 
       private:
@@ -247,7 +247,7 @@ namespace detail {
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
+            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
         }
 
@@ -545,7 +545,7 @@ namespace detail {
             return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
+            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
         }
     };
 
@@ -560,7 +560,7 @@ namespace detail {
             return DataVectorWrap<const ValueT,DIMS>(self(n, *mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=DEFAULT_INTERPOLATION);
+            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
         }
     };

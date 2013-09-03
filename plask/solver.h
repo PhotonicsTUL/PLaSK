@@ -255,7 +255,7 @@ For interpolated fields they will look like in the following example:
 \code
   protected:
 
-    DataVector<const double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=DEFAULT_INTERPOLATION) {
+    DataVector<const double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=INTERPOLATION_DEFAULT) {
         if (!outNeff.hasValue()) throw NoValue(LightIntensity::NAME); // this is one possible indication that the solver is in invalidated state
 
         if (computed_light_intensity.size() == 0)    // we need to compute the light intensity
@@ -275,7 +275,7 @@ and are up-to-date (remember, we have cleared the value of \c outNeff in \c onIn
 we use plask::interpolate function to interpolate our data to the receiver mesh (which is provided as \c destination_mesh argument).
 
 Helper class WrappedMesh helps to automatically consider mirror and periodic boundaries, so the requested points will be wrapped into
-your computational domain correctly. And defInterpolation changes DEFAULT_INTERPOLATION method to some real one.
+your computational domain correctly. And defInterpolation changes INTERPOLATION_DEFAULT method to some real one.
 
 Our solver can perform computations now. However, if it has any configuration to load, we can read it from XML file. To do this, we should
 reimplement \c loadConfiguration method. It reads the configuration from the current XML file using plask::XMLReader, by walking through

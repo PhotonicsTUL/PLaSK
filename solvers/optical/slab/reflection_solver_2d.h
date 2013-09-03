@@ -4,15 +4,16 @@
 #include <plask/plask.hpp>
 
 #include "slab_base.h"
+#include "expansion_pw2d.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
+struct FourierReflection2D: public SlabSolver<Geometry2DCartesian> {
 
-    std::string getClassName() const { return "slab.FourierReflection2D"; }
+    std::string getClassName() const { return "optical.FourierReflection2D"; }
 
     /// Information about lateral PMLs
     struct PML {
@@ -20,6 +21,7 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
         double size;        ///< Size of the PMLs
         double shift;       ///< Distance of the PMLs from defined computational domain
         int order;          ///< Order of the PMLs
+        PML(): extinction(2.), size(1.), shift(0.5), order(2) {}
     };
 
   protected:
@@ -30,7 +32,12 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     /// Cache of the normalized frequency [1/µm]
     dcomplex k0;
 
+    /// Class responsoble for computing expansion coefficients
+    std::unique_ptr<ExpansionPW2D> expansion;
+
     void onInitialize();
+
+    void onInvalidate();
 
   public:
 
@@ -60,6 +67,7 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
     /// Set order of the orthogonal base
     void setSize(size_t n) {
         size = n;
+        invalidate();
     }
 
     /// \return current wavelength
@@ -74,6 +82,12 @@ struct FourierReflection2D: public ModalSolver<Geometry2DCartesian> {
         //if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
         //modes.clear();
     }
+
+    /**
+     * Get refractive index after expansion
+     */
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh2D& dst_mesh,
+                                            InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   protected:
 

@@ -114,7 +114,7 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, propertyType, SpaceT,
 
     typedef typename ProviderFor<DstPropertyT,SpaceT>::ProvidedType ProvidedType;
 
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
         this->ensureHasProvider();
         return (*this->source)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
     }
@@ -128,7 +128,7 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, MULTI_FIELD_PROPERTY,
 
     typedef typename ProviderFor<DstPropertyT,SpaceT>::ProvidedType ProvidedType;
 
-    virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=DEFAULT_INTERPOLATION) const {
+    virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
         this->ensureHasProvider();
         return (*this->source)(n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
     }

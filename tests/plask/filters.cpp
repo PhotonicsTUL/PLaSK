@@ -50,11 +50,11 @@ BOOST_AUTO_TEST_SUITE(filters) // MUST be the same as the file name
 
         filter2D.setDefault(1.0);
         filter2D.appendInner(g.block11) = 2.0;
-        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(0.5, 0.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 1.0 });
-        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(1.5, 1.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 2.0 });
-        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(2.5, 2.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 2.0 });
+        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(0.5, 0.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 1.0 });
+        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(1.5, 1.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 2.0 });
+        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(2.5, 2.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 2.0 });
         filter2D.setOuter(g.extrusion) = 3.0;
-        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(0.5, 0.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 3.0 });
+        BOOST_CHECK_EQUAL(filter2D.out(plask::toMesh(plask::vec(0.5, 0.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 3.0 });
     }
 
     BOOST_AUTO_TEST_CASE(cartesian3D) {
@@ -66,10 +66,10 @@ BOOST_AUTO_TEST_SUITE(filters) // MUST be the same as the file name
         filter3D.setDefault(1.0);
         filter3D.appendInner(e.block111) = 2.0;
         filter3D.appendInner2D(e.extr211) = 3.0;
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(0.5, 0.5, 0.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 1.0 });
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(1.5, 1.5, 1.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 2.0 });
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(2.5, 2.5, 2.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 2.0 });
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(4.5, 3.5, 3.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<double>{ 3.0 });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(0.5, 0.5, 0.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 1.0 });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(1.5, 1.5, 1.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 2.0 });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(2.5, 2.5, 2.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 2.0 });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(4.5, 3.5, 3.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<double>{ 3.0 });
     }
 
     BOOST_AUTO_TEST_CASE(cartesian3Dvectorfields) {
@@ -82,10 +82,10 @@ BOOST_AUTO_TEST_SUITE(filters) // MUST be the same as the file name
         filter3D.appendInner(e.block111) = plask::vec(2.0, 2.0, 2.0);
         filter3D.appendInner2D(e.extr211) = plask::vec(3.0, 3.0);
 
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(0.5, 0.5, 0.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<plask::Vec<3>>{ plask::vec(1.0, 1.0, 1.0) });
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(1.5, 1.5, 1.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<plask::Vec<3>>{ plask::vec(2.0, 2.0, 2.0) });
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(2.5, 2.5, 2.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<plask::Vec<3>>{ plask::vec(2.0, 2.0, 2.0) });
-        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(4.5, 3.5, 3.5)), plask::DEFAULT_INTERPOLATION), plask::DataVector<plask::Vec<3>>{ plask::vec(0.0, 3.0, 3.0) });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(0.5, 0.5, 0.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<plask::Vec<3>>{ plask::vec(1.0, 1.0, 1.0) });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(1.5, 1.5, 1.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<plask::Vec<3>>{ plask::vec(2.0, 2.0, 2.0) });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(2.5, 2.5, 2.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<plask::Vec<3>>{ plask::vec(2.0, 2.0, 2.0) });
+        BOOST_CHECK_EQUAL(filter3D.out(plask::toMesh(plask::vec(4.5, 3.5, 3.5)), plask::INTERPOLATION_DEFAULT), plask::DataVector<plask::Vec<3>>{ plask::vec(0.0, 3.0, 3.0) });
     }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -157,8 +157,8 @@ struct FermiGainSolver: public SolverOver<GeometryType>
      * \param wavelength wavelength to compute gain for
      * \return gain distribution
      */
-    const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
-    const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=DEFAULT_INTERPOLATION);
+    const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=INTERPOLATION_DEFAULT);
 
   public:
     double getLifeTime() const { return mLifeTime; }

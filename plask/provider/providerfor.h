@@ -1035,9 +1035,9 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
          * @param method method which should be use to do interpolation
          * @return values in points described by mesh @a dst_mesh
          */
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const {
             ensureHasCorrectValue();
-            if (method == DEFAULT_INTERPOLATION) method = default_interpolation;
+            if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
             return interpolate(*mesh_ptr, values, dst_mesh, method);
         }
     };
@@ -1291,9 +1291,9 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param method method which should be use to do interpolation
          * \return values in points described by mesh \a dst_mesh
          */
-        virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = DEFAULT_INTERPOLATION) const {
+        virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const {
             ensureHasCorrectValue(n);
-            if (method == DEFAULT_INTERPOLATION) method = default_interpolation;
+            if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
             return interpolate(*mesh_ptr, values[n], dst_mesh, method);
         }
     };

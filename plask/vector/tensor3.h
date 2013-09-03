@@ -224,6 +224,23 @@ struct Tensor3 {
     }
 
     /**
+     * Square root each component of tensor
+     * \return squared tensor
+     */
+    Tensor3<T> sqrt() const {
+        return Tensor3<T>(std::sqrt(c00), std::sqrt(c11), std::sqrt(c22), std::sqrt(c01), std::sqrt(c10));
+    }
+
+    /**
+     * Square root each component of tensor in place
+     * \return *this (squared)
+     */
+    Tensor3<T>& sqrt_inplace() {
+        c00 = std::sqrt(c00); c11 = std::sqrt(c11); c22 = std::sqrt(c22); c01 = std::sqrt(c01); c10 = std::sqrt(c10);
+        return *this;
+    }
+
+    /**
      * Print tensor to stream using format (where c00 and c11 are tensor components): [c00, c11]
      * @param out print destination, output stream
      * @param to_print tensor to print
@@ -245,7 +262,6 @@ template <typename T, typename OtherT>
 auto operator*(const OtherT scale, const Tensor3<T>& tensor) -> decltype(tensor*scale) {
     return tensor * scale;
 }
-
 
 /**
  * Calculate tensor conjugate.

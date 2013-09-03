@@ -1,37 +1,38 @@
+// #include <plask/filters/factory.h>
+
 #include "slab_base.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
-ModalSolver<GeometryT>::ModalSolver(const std::string& name): SolverOver<GeometryT>(name),
+SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
     outdist(0.1),
-    outIntensity(this, &ModalSolver<GeometryT>::getIntensity, &ModalSolver<GeometryT>::nummodes)
+    smooth(0.),
+    outIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes)
 {
     inTemperature = 300.; // temperature receiver has some sensible value
 }
 
 
 template <typename GeometryT>
-void ModalSolver<GeometryT>::prepareLayers()
+void SlabSolver<GeometryT>::prepareLayers()
 {
-    if (!this->geometry) throw NoGeometryException(this->getId());
-
     vbounds = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
 
 template <>
-void ModalSolver<Geometry3D>::prepareLayers()
+void SlabSolver<Geometry3D>::prepareLayers()
 {
-    if (!this->geometry) throw NoGeometryException(this->getId());
-
     vbounds = RectilinearMesh3DSimpleGenerator()(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
 
 template <typename GeometryT>
-void ModalSolver<GeometryT>::setupLayers()
+void SlabSolver<GeometryT>::setupLayers()
 {
+    if (!this->geometry) throw NoGeometryException(this->getId());
+
     if (vbounds.empty()) prepareLayers();
 
     auto points = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild())->getMidpointsMesh();
@@ -92,7 +93,7 @@ void ModalSolver<GeometryT>::setupLayers()
 }
 
 template <>
-void ModalSolver<Geometry3D>::setupLayers()
+void SlabSolver<Geometry3D>::setupLayers()
 {
     if (vbounds.empty()) prepareLayers();
 
@@ -154,10 +155,14 @@ void ModalSolver<Geometry3D>::setupLayers()
         }
     }
 
+    assert(vbounds.size() == stack.size()-1);
+
     this->writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
 
-template struct ModalSolver<Geometry2DCartesian>;
-template struct ModalSolver<Geometry2DCylindrical>;
+template struct SlabSolver<Geometry2DCartesian>;
+template struct SlabSolver<Geometry2DCylindrical>;
+
+// FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
 
 }}} // namespace
