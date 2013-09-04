@@ -226,13 +226,13 @@ namespace detail {
 
         size_t size;
 
-        auto regular = dynamic_pointer_cast<RectangularMesh<dim,RegularMesh1D>>(mesh);
-        auto rectilinear = dynamic_pointer_cast<RectangularMesh<dim,RectilinearMesh1D>>(mesh);
+        auto regular = dynamic_pointer_cast<RectangularMesh<dim,RegularAxis>>(mesh);
+        auto rectilinear = dynamic_pointer_cast<RectangularMesh<dim,RectilinearAxis>>(mesh);
 
         if (PyArray_NDIM(arr) != 1) {
 
-            if (regular) size = checkMeshAndArray<T, RectangularMesh<dim,RegularMesh1D>>(arr, *regular);
-            else if (rectilinear) size = checkMeshAndArray<T, RectangularMesh<dim,RectilinearMesh1D>>(arr, *rectilinear);
+            if (regular) size = checkMeshAndArray<T, RectangularMesh<dim,RegularAxis>>(arr, *regular);
+            else if (rectilinear) size = checkMeshAndArray<T, RectangularMesh<dim,RectilinearAxis>>(arr, *rectilinear);
             else throw TypeError("For this mesh type only one-dimensional array is allowed");
 
         } else

@@ -16,7 +16,7 @@ template <typename GeometryT> struct GainSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct FermiGainSolver: public SolverOver<GeometryType>
+struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
 {
     /// Structure containing information about each active region
     struct ActiveRegionInfo
@@ -64,8 +64,6 @@ struct FermiGainSolver: public SolverOver<GeometryType>
 
     std::vector<ActiveRegionInfo> regions;  ///< List of active regions
 
-    shared_ptr<RectilinearMesh1D> mesh;     ///< Optional mesh allowing faster calculations with interpolation
-
     /// Receiver for temperature.
     ReceiverFor<Temperature,GeometryType> inTemperature;
 
@@ -89,9 +87,6 @@ struct FermiGainSolver: public SolverOver<GeometryType>
     /// Function computing energy levels
     //  TODO: it should return computed levels
     void determineLevels(double T, double n);
-
-    /// Function which checks if current mesh is identical to previously used
-    plask::SameMeshChecker meshChecker;
 
 #ifndef NDEBUG
     /// Print gain parameters for debugging purposes

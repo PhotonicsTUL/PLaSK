@@ -22,11 +22,32 @@ namespace plask { namespace python {
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
+
+template <typename T>
+shared_ptr<T> __init__empty() {
+    return make_shared<T>();
+}
+
+
+template <typename T>
+static std::string __str__(const T& self) {
+    std::stringstream out;
+    out << self;
+    return out.str();
+}
+
+
+template <typename To, typename From=To>
+static shared_ptr<To> Mesh__init__(const From& from) {
+    return make_shared<To>(from);
+}
+
+
 namespace detail {
-    struct Rectilinear1D_from_Sequence
+    struct RectilinearAxis_from_Sequence
     {
-        Rectilinear1D_from_Sequence() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearMesh1D>());
+        RectilinearAxis_from_Sequence() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearAxis>());
         }
 
         static void* convertible(PyObject* obj) {
@@ -36,66 +57,94 @@ namespace detail {
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
         {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearMesh1D>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearAxis>*)data)->storage.bytes;
             py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj)))), end;
-            new(storage) RectilinearMesh1D(std::vector<double>(begin, end));
+            new(storage) RectilinearAxis(std::vector<double>(begin, end));
             data->convertible = storage;
         }
     };
 }
 
-static py::object Rectilinear1D__array__(py::object self, py::object dtype) {
-    RectilinearMesh1D* mesh = py::extract<RectilinearMesh1D*>(self);
-    npy_intp dims[] = { mesh->size() };
-    PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*mesh->begin()));
+static py::object RectilinearAxis__array__(py::object self, py::object dtype) {
+    RectilinearAxis* axis = py::extract<RectilinearAxis*>(self);
+    npy_intp dims[] = { axis->size() };
+    PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*axis->begin()));
     if (arr == nullptr) throw TypeError("cannot create array");
     confirm_array<double>(arr, self, dtype);
     return py::object(py::handle<>(arr));
 }
 
-shared_ptr<RectilinearMesh1D> Rectilinear1D__init__empty() {
-    return make_shared<RectilinearMesh1D>();
+static py::object RectilinearMesh1D__array__(py::object self, py::object dtype) {
+    RectilinearMesh1D* mesh = py::extract<RectilinearMesh1D*>(self);
+    npy_intp dims[] = { mesh->size() };
+    PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*mesh->axis.begin()));
+    if (arr == nullptr) throw TypeError("cannot create array");
+    confirm_array<double>(arr, self, dtype);
+    return py::object(py::handle<>(arr));
 }
 
-shared_ptr<RectilinearMesh1D> Rectilinear1D__init__seq(py::object seq) {
+template <typename RectilinearT>
+shared_ptr<RectilinearT> Rectilinear__init__seq(py::object seq) {
     py::stl_input_iterator<double> begin(seq), end;
-    return make_shared<RectilinearMesh1D>(std::vector<double>(begin, end));
+    return make_shared<RectilinearT>(std::vector<double>(begin, end));
 }
 
-static std::string Rectilinear1D__str__(const RectilinearMesh1D& self) {
-    std::stringstream out;
-    out << self;
-    return out.str();
+static std::string RectilinearAxis__repr__(const RectilinearAxis& self) {
+    return "RectilinearAxis(" + __str__(self) + ")";
 }
 
-static std::string Rectilinear1D__repr__(const RectilinearMesh1D& self) {
-    return "Rectilinear1D(" + Rectilinear1D__str__(self) + ")";
+static std::string RectilinearMesh1D__repr__(const RectilinearMesh1D& self) {
+    return "Rectilinear1D(" + __str__(self) + ")";
 }
 
-static double Rectilinear1D__getitem__(const RectilinearMesh1D& self, int i) {
+static double RectilinearAxis__getitem__(const RectilinearAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("mesh.Rectilinear1D index out of range");
+    if (i < 0) throw IndexError("axis index out of range");
     return self[i];
 }
 
-static void Rectilinear1D__delitem__(RectilinearMesh1D& self, int i) {
+static double RectilinearMesh1D__getitem__(const RectilinearMesh1D& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("mesh.Rectilinear1D index out of range");
+    if (i < 0) throw IndexError("mesh index out of range");
+    return self[i];
+}
+
+static void RectilinearAxis__delitem__(RectilinearAxis& self, int i) {
+    if (i < 0) i = self.size() + i;
+    if (i < 0) throw IndexError("axis index out of range");
     self.removePoint(i);
 }
 
-static void Rectilinear1D_extend(RectilinearMesh1D& self, py::object sequence) {
+static void RectilinearMesh1D__delitem__(RectilinearMesh1D& self, int i) {
+    if (i < 0) i = self.size() + i;
+    if (i < 0) throw IndexError("mesh index out of range");
+    self.axis.removePoint(i);
+}
+
+static void RectilinearMesh1D_insert(RectilinearMesh1D& self, double p) {
+    self.axis.addPoint(p);
+}
+
+static void RectilinearAxis_extend(RectilinearAxis& self, py::object sequence) {
     py::stl_input_iterator<double> begin(sequence), end;
     std::vector<double> points(begin, end);
     std::sort(points.begin(), points.end());
     self.addOrderedPoints(points.begin(), points.end());
 }
 
+static void RectilinearMesh1D_extend(RectilinearMesh1D& self, py::object sequence) {
+    py::stl_input_iterator<double> begin(sequence), end;
+    std::vector<double> points(begin, end);
+    std::sort(points.begin(), points.end());
+    self.axis.addOrderedPoints(points.begin(), points.end());
+}
+
+
 namespace detail {
-    struct Regular1D_from_Tuple
+    struct RegularAxis_from_Tuple
     {
-        Regular1D_from_Tuple() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularMesh1D>());
+        RegularAxis_from_Tuple() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularAxis>());
         }
 
         static void* convertible(PyObject* obj) {
@@ -106,65 +155,85 @@ namespace detail {
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
         {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularMesh1D>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularAxis>*)data)->storage.bytes;
             auto tuple = py::object(py::handle<>(py::borrowed(obj)));
             try {
                 if (py::len(tuple) == 3)
-                    new(storage) RegularMesh1D(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
+                    new(storage) RegularAxis(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
                 else if (py::len(tuple) == 1) {
                     double val = py::extract<double>(tuple[0]);
-                    new(storage) RegularMesh1D(val, val, 1);
+                    new(storage) RegularAxis(val, val, 1);
                 } else
                     throw py::error_already_set();
                 data->convertible = storage;
             } catch (py::error_already_set) {
-                throw TypeError("Must provide either mesh.Regular1D or a tuple (first[, last=first, count=1])");
+                throw TypeError("Must provide either mesh.RegularAxis or a tuple (first[, last=first, count=1])");
             }
         }
     };
 }
 
-shared_ptr<RegularMesh1D> Regular1D__init__empty() {
-    return make_shared<RegularMesh1D>();
+template <typename RegularT>
+shared_ptr<RegularT> Regular__init__params(double first, double last, int count) {
+    return make_shared<RegularT>(first, last, count);
 }
 
-shared_ptr<RegularMesh1D> Regular1D__init__params(double first, double last, int count) {
-    return make_shared<RegularMesh1D>(first, last, count);
+static std::string RegularAxis__repr__(const RegularAxis& self) {
+    return format("RegularAxis(%1%, %2%, %3%)", self.first(), self.last(), self.size());
 }
 
-static std::string Regular1D__str__(const RegularMesh1D& self) {
-    std::stringstream out;
-    out << self;
-    return out.str();
+static std::string RegularMesh1D__repr__(const RegularMesh1D& self) {
+    return format("Regular1D(%1%, %2%, %3%)", self.axis.first(), self.axis.last(), self.size());
 }
 
-static std::string Regular1D__repr__(const RegularMesh1D& self) {
-    return format("Regular1D(%1%, %2%, %3%)", self.first(), self.last(), self.size());
-}
-
-static double Regular1D__getitem__(const RegularMesh1D& self, int i) {
+static double RegularAxis__getitem__(const RegularAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("mesh.Regular1D index out of range");
+    if (i < 0) throw IndexError("axis index out of range");
     return self[i];
 }
 
-static void RegularMesh1D_resize(RegularMesh1D& self, int count) {
+static double RegularMesh1D__getitem__(const RegularMesh1D& self, int i) {
+    if (i < 0) i = self.size() + i;
+    if (i < 0) throw IndexError("mesh index out of range");
+    return self[i];
+}
+
+static void RegularAxis_resize(RegularAxis& self, int count) {
     self.reset(self.first(), self.last(), count);
 }
 
-static void RegularMesh1D_setFirst(RegularMesh1D& self, double first) {
+static void RegularMesh1D_resize(RegularMesh1D& self, int count) {
+    self.axis.reset(self.axis.first(), self.axis.last(), count);
+}
+
+static double RegularMesh1D_getFirst(const RegularMesh1D& self) {
+    return self.axis.first();
+}
+
+static double RegularMesh1D_getLast(const RegularMesh1D& self) {
+    return self.axis.last();
+}
+
+static double RegularMesh1D_getStep(const RegularMesh1D& self) {
+    return self.axis.step();
+}
+
+static void RegularAxis_setFirst(RegularAxis& self, double first) {
     self.reset(first, self.last(), self.size());
 }
 
-static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
+static void RegularMesh1D_setFirst(RegularMesh1D& self, double first) {
+    self.axis.reset(first, self.axis.last(), self.size());
+}
+
+static void RegularAxis_setLast(RegularAxis& self, double last) {
     self.reset(self.first(), last, self.size());
 }
 
-
-template <typename To, typename From=To>
-static shared_ptr<To> Mesh__init__(const From& from) {
-    return make_shared<To>(from);
+static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
+    self.axis.reset(self.axis.first(), last, self.size());
 }
+
 
 
 template <typename MeshT>
@@ -195,6 +264,8 @@ template <typename MeshT>
 static Vec<2,double> RectangularMesh2D__getitem__(const MeshT& self, py::object index) {
     try {
         int indx = py::extract<int>(index);
+        if (indx < 0) indx = self.size() + indx;
+        if (indx < 0) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -262,6 +333,8 @@ template <typename MeshT>
 Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) {
     try {
         int indx = py::extract<int>(index);
+        if (indx < 0) indx = self.size() + indx;
+        if (indx < 0) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -515,7 +588,7 @@ py::dict RectilinearMeshDivideGenerator_listRefinements(const RectilinearMeshDiv
 template <int dim>
 void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
-                   py::bases<MeshGeneratorOf<RectangularMesh<dim,RectilinearMesh1D>>>, boost::noncopyable>
+                   py::bases<MeshGeneratorOf<RectangularMesh<dim,RectilinearAxis>>>, boost::noncopyable>
             dividecls("DivideGenerator",
             format("Generator of Rectilinear%1%D mesh by simple division of the geometry.\n\n"
             "DivideGenerator()\n"
@@ -572,26 +645,47 @@ void register_mesh_rectangular()
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    py::class_<RectilinearMesh1D, shared_ptr<RectilinearMesh1D>>("Rectilinear1D",
+    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>>("RectilinearAxis",
         "Rectilinear mesh axis\n\n"
+        "RectilinearAxis()\n    create empty mesh\n\n"
+        "RectilinearAxis(points)\n    create mesh filled with points provides in sequence type"
+        )
+        .def("__init__", py::make_constructor(&__init__empty<RectilinearAxis>))
+        .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearAxis>, py::default_call_policies(), (py::arg("points"))))
+        .def("__len__", &RectilinearAxis::size)
+        .def("__nonzero__", __nonempty__<RectilinearAxis>)
+        .def("__getitem__", &RectilinearAxis__getitem__)
+        .def("__delitem__", &RectilinearAxis__delitem__)
+        .def("__str__", &__str__<RectilinearAxis>)
+        .def("__repr__", &RectilinearAxis__repr__)
+        .def("__array__", &RectilinearAxis__array__, py::arg("dtype")=py::object())
+        .def("insert", &RectilinearAxis::addPoint, "Insert point to the mesh", (py::arg("point")))
+        .def("extend", &RectilinearAxis_extend, "Insert points from the sequence to the mesh", (py::arg("points")))
+        .def(py::self == py::self)
+        .def("__iter__", py::range(&RectilinearAxis::begin, &RectilinearAxis::end))
+    ;
+    detail::RectilinearAxis_from_Sequence();
+
+    py::class_<RectilinearMesh1D, shared_ptr<RectilinearMesh1D>>("Rectilinear1D",
+        "One-dimesnional rectilinear mesh\n\n"
         "Rectilinear1D()\n    create empty mesh\n\n"
         "Rectilinear1D(points)\n    create mesh filled with points provides in sequence type"
         )
-        .def("__init__", py::make_constructor(&Rectilinear1D__init__empty))
-        .def("__init__", py::make_constructor(&Rectilinear1D__init__seq, py::default_call_policies(), (py::arg("points"))))
+        .def("__init__", py::make_constructor(&__init__empty<RectilinearMesh1D>))
+        .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearMesh1D>, py::default_call_policies(), (py::arg("points"))))
         .def("__len__", &RectilinearMesh1D::size)
         .def("__nonzero__", __nonempty__<RectilinearMesh1D>)
-        .def("__getitem__", &Rectilinear1D__getitem__)
-        .def("__delitem__", &Rectilinear1D__delitem__)
-        .def("__str__", &Rectilinear1D__str__)
-        .def("__repr__", &Rectilinear1D__repr__)
-        .def("__array__", &Rectilinear1D__array__, py::arg("dtype")=py::object())
-        .def("insert", &RectilinearMesh1D::addPoint, "Insert point to the mesh", (py::arg("point")))
-        .def("extend", &Rectilinear1D_extend, "Insert points from the sequence to the mesh", (py::arg("points")))
+        .def("__getitem__", &RectilinearMesh1D__getitem__)
+        .def("__delitem__", &RectilinearMesh1D__delitem__)
+        .def("__str__", &__str__<RectilinearMesh1D>)
+        .def("__repr__", &RectilinearMesh1D__repr__)
+        .def("__array__", &RectilinearMesh1D__array__, py::arg("dtype")=py::object())
+        .def("insert", &RectilinearMesh1D_insert, "Insert point to the mesh", (py::arg("point")))
+        .def("extend", &RectilinearMesh1D_extend, "Insert points from the sequence to the mesh", (py::arg("points")))
         .def(py::self == py::self)
-        .def("__iter__", py::range(&RectilinearMesh1D::begin, &RectilinearMesh1D::end))
     ;
-    detail::Rectilinear1D_from_Sequence();
+    py::implicitly_convertible<RectilinearAxis, RectilinearMesh1D>();
+    py::implicitly_convertible<RectilinearMesh1D, RectilinearAxis>();
 
     py::class_<RectilinearMesh2D, shared_ptr<RectilinearMesh2D>, py::bases<MeshD<2>>> rectilinear2d("Rectilinear2D",
         "Two-dimensional mesh\n\n"
@@ -602,14 +696,14 @@ void register_mesh_rectangular()
         py::no_init
         ); rectilinear2d
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectilinearMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh2D, RegularMesh2D>, py::default_call_policies(), py::arg("src")))
         .def("copy", &Mesh__init__<RectilinearMesh2D, RectilinearMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RectilinearMesh2D::axis1, "The second (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh2D::*)())&RectilinearMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
-        .add_property("minor_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh2D::*)())&RectilinearMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
+        .add_property("major_axis", py::make_function((RectilinearAxis&(RectilinearMesh2D::*)())&RectilinearMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
+        .add_property("minor_axis", py::make_function((RectilinearAxis&(RectilinearMesh2D::*)())&RectilinearMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
         .def("__nonzero__", &__nonempty__<RectilinearMesh2D>, "Return True if the mesh is empty")
         .def("clear", &RectilinearMesh2D::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh2D__getitem__<RectilinearMesh2D>)
@@ -648,23 +742,23 @@ void register_mesh_rectangular()
     py::class_<RectilinearMesh3D, shared_ptr<RectilinearMesh3D>, py::bases<MeshD<3>>> rectilinear3d("Rectilinear3D",
         "Two-dimensional mesh\n\n"
         "Rectilinear3D(ordering='012')\n    create empty mesh\n\n"
-        "Rectilinear3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.Rectilinear1D\n\n"
+        "Rectilinear3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RectilinearAxis\n\n"
         "Rectilinear3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",
         py::no_init
         ); rectilinear3d
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
         .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="012")))
         .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh3D, RegularMesh3D>, py::default_call_policies(), py::arg("src")))
         .def("copy", &Mesh__init__<RectilinearMesh3D, RectilinearMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh3D::axis0, "The first (longitudinal) axis of the mesh")
         .def_readwrite("axis1", &RectilinearMesh3D::axis1, "The second (transverse) axis of the mesh")
         .def_readwrite("axis2", &RectilinearMesh3D::axis2, "The third (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh3D::*)())&RectilinearMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
-        .add_property("medium_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh3D::*)())&RectilinearMesh3D::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
-        .add_property("minor_axis", py::make_function((RectilinearMesh1D&(RectilinearMesh3D::*)())&RectilinearMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
+        .add_property("major_axis", py::make_function((RectilinearAxis&(RectilinearMesh3D::*)())&RectilinearMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
+        .add_property("medium_axis", py::make_function((RectilinearAxis&(RectilinearMesh3D::*)())&RectilinearMesh3D::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
+        .add_property("minor_axis", py::make_function((RectilinearAxis&(RectilinearMesh3D::*)())&RectilinearMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
         .def("__nonzero__", &__nonempty__<RectilinearMesh3D>)
         .def("clear", &RectilinearMesh3D::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh3D__getitem__<RectilinearMesh3D>)
@@ -701,27 +795,50 @@ void register_mesh_rectangular()
     ;
     ExportBoundary<RectilinearMesh3D> { rectilinear3d };
 
-    py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>>("Regular1D",
+    py::class_<RegularAxis, shared_ptr<RegularAxis>>("RegularAxis",
         "Regular mesh axis\n\n"
+        "RegularAxis()\n    create empty mesh\n\n"
+        "RegularAxis(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
+        )
+        .def("__init__", py::make_constructor(&__init__empty<RegularAxis>))
+        .def("__init__", py::make_constructor(&Regular__init__params<RegularAxis>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
+        .add_property("start", &RegularAxis::first, &RegularAxis_setFirst, "Position of the beginning of the mesh")
+        .add_property("stop", &RegularAxis::last, &RegularAxis_setLast, "Position of the end of the mesh")
+        .add_property("step", &RegularAxis::step)
+        .def("__len__", &RegularAxis::size)
+        .def("__nonzero__", __nonempty__<RegularAxis>)
+        .def("__getitem__", &RegularAxis__getitem__)
+        .def("__str__", &__str__<RegularAxis>)
+        .def("__repr__", &RegularAxis__repr__)
+        .def("resize", &RegularAxis_resize, "Change number of points in this mesh", (py::arg("num")))
+        .def(py::self == py::self)
+        .def("__iter__", py::range(&RegularAxis::begin, &RegularAxis::end))
+    ;
+    detail::RegularAxis_from_Tuple();
+    py::implicitly_convertible<RegularAxis, RectilinearAxis>();
+
+    py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>>("Regular1D",
+        "One-dimensional regular mesh\n\n"
         "Regular1D()\n    create empty mesh\n\n"
         "Regular1D(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
         )
-        .def("__init__", py::make_constructor(&Regular1D__init__empty))
-        .def("__init__", py::make_constructor(&Regular1D__init__params, py::default_call_policies(), (py::arg("start"), "stop", "num")))
-        .add_property("start", &RegularMesh1D::first, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
-        .add_property("stop", &RegularMesh1D::last, &RegularMesh1D_setLast, "Position of the end of the mesh")
-        .add_property("step", &RegularMesh1D::step)
+        .def("__init__", py::make_constructor(&__init__empty<RegularMesh1D>))
+        .def("__init__", py::make_constructor(&Regular__init__params<RegularMesh1D>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
+        .add_property("start", &RegularMesh1D_getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
+        .add_property("stop", RegularMesh1D_getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
+        .add_property("step", &RegularMesh1D_getStep)
         .def("__len__", &RegularMesh1D::size)
         .def("__nonzero__", __nonempty__<RegularMesh1D>)
-        .def("__getitem__", &Regular1D__getitem__)
-        .def("__str__", &Regular1D__str__)
-        .def("__repr__", &Regular1D__repr__)
+        .def("__getitem__", &RegularMesh1D__getitem__)
+        .def("__str__", &__str__<RegularMesh1D>)
+        .def("__repr__", &RegularMesh1D__repr__)
         .def("resize", &RegularMesh1D_resize, "Change number of points in this mesh", (py::arg("num")))
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularMesh1D::begin, &RegularMesh1D::end))
     ;
-    detail::Regular1D_from_Tuple();
-    py::implicitly_convertible<RegularMesh1D, RectilinearMesh1D>();
+    py::implicitly_convertible<RegularAxis, RegularMesh1D>();
+    py::implicitly_convertible<RegularMesh1D, RegularAxis>();
+    py::implicitly_convertible<RegularMesh1D, RectilinearAxis>();
 
     py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
         "Two-dimensional mesh\n\n"
@@ -731,12 +848,12 @@ void register_mesh_rectangular()
         py::no_init
         ); regular2d
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("copy", &Mesh__init__<RegularMesh2D, RegularMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh2D::axis1, "The second (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RegularMesh1D&(RegularMesh2D::*)())&RegularMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
-        .add_property("minor_axis", py::make_function((RegularMesh1D&(RegularMesh2D::*)())&RegularMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
+        .add_property("major_axis", py::make_function((RegularAxis&(RegularMesh2D::*)())&RegularMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
+        .add_property("minor_axis", py::make_function((RegularAxis&(RegularMesh2D::*)())&RegularMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
         .def("__nonzero__", &__nonempty__<RegularMesh2D>)
         .def("clear", &RegularMesh2D::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh2D__getitem__<RegularMesh2D>)
@@ -776,20 +893,20 @@ void register_mesh_rectangular()
     py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>, boost::noncopyable>regular3d("Regular3D",
         "Two-dimensional mesh\n\n"
         "Regular3D(ordering='012')\n    create empty mesh\n\n"
-        "Regular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.Regular1D\n\n"
+        "Regular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RegularAxis\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",
         py::no_init
         ); regular3d
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularMesh1D>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
         .def("copy", &Mesh__init__<RegularMesh3D, RegularMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh3D::axis1, "The second (transverse) axis of the mesh")
         .def_readwrite("axis2", &RegularMesh3D::axis2, "The third (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RegularMesh1D&(RegularMesh3D::*)())&RegularMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
-        .add_property("medium_axis", py::make_function((RegularMesh1D&(RegularMesh3D::*)())&RegularMesh3D::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
-        .add_property("minor_axis", py::make_function((RegularMesh1D&(RegularMesh3D::*)())&RegularMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
+        .add_property("major_axis", py::make_function((RegularAxis&(RegularMesh3D::*)())&RegularMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
+        .add_property("medium_axis", py::make_function((RegularAxis&(RegularMesh3D::*)())&RegularMesh3D::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
+        .add_property("minor_axis", py::make_function((RegularAxis&(RegularMesh3D::*)())&RegularMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
         .def("__nonzero__", &__nonempty__<RegularMesh3D>)
         .def("clear", &RegularMesh3D::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh3D__getitem__<RegularMesh3D>)

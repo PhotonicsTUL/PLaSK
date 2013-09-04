@@ -12,7 +12,6 @@ namespace plask {
 template <int dim, typename T=double>
 struct Vec {};
 
-
 /**
  * Vector component helper.
  * This class allow to perform operations on single components of vectors.

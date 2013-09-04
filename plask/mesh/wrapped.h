@@ -25,7 +25,7 @@ struct WrappedMesh: public MeshD<dim> {
   protected:
 
       const MeshD<dim>& original;   ///< Original mesh
-      const shared_ptr<GeometryD<dim>>& geometry; ///< Geometry of the mesh
+      shared_ptr<GeometryD<dim>> geometry; ///< Geometry of the mesh
 
   public:
 
@@ -38,34 +38,11 @@ struct WrappedMesh: public MeshD<dim> {
 
     virtual ~WrappedMesh() {}
 
-    virtual std::size_t size() const {
-        return original.size();
-    }
+    virtual std::size_t size() const;
 
-    virtual Vec<dim> at(std::size_t index) const {
-        Vec<dim> pos = original.at(index);
-        auto box = geometry->getChild()->getBoundingBox();
-        for (int i = 0; i < dim; ++i) {
-            auto dir = Geometry::Direction(i+3-dim);
-            if (geometry->isPeriodic(dir)) {
-                double l = box.lower[i], h = box.upper[i];
-                double d = h - l;
-                if (geometry->isSymmetric(dir)) {
-                    pos[i] = std::fmod(abs(pos[i]), 2*d);
-                    if (pos[i] > d) pos[i] = 2*d - pos[i];
-                } else {
-                    pos[i] = std::fmod(pos[i]-l, d);
-                    pos[i] += (pos[i] >= 0)? l : h;
-                }
-            } else
-                if (geometry->isSymmetric(dir)) pos[i] = abs(pos[i]);
-        }
-        return pos;
-    }
+    virtual Vec<dim> at(std::size_t index) const;
 
-    virtual void writeXML(XMLElement& object) const {
-        original.writeXML(object);
-    }
+    virtual void writeXML(XMLElement& object) const;
 };
 
 } // namespace plask

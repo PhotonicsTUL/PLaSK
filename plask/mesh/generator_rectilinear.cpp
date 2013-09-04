@@ -6,6 +6,29 @@
 
 namespace plask {
 
+shared_ptr<RectilinearMesh1D> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
+{
+    auto mesh = make_shared<RectilinearMesh1D>();
+
+    std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
+
+    for (auto& box: boxes) {
+        mesh->axis.addPoint(box.lower.c0);
+        mesh->axis.addPoint(box.upper.c0);
+    }
+
+    return mesh;
+}    
+
+shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+{
+    auto mesh = makeGeometryGrid1D(geometry);
+    if (extend_to_zero) mesh->axis.addPoint(0.);
+    writelog(LOG_DETAIL, "mesh.Rectilinear1D::SimpleGenerator: Generating new mesh (%1%)", mesh->axis.size());
+    return mesh;
+}
+
+
 shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = make_shared<RectilinearMesh2D>();
@@ -31,6 +54,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
     writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
 }
+
 
 shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
@@ -61,12 +85,12 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const s
 
 
 template <int dim>
-RectilinearMesh1D RectilinearMeshDivideGenerator<dim>::get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir)
+RectilinearAxis RectilinearMeshDivideGenerator<dim>::getAxis(const RectilinearAxis& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir)
 {
     if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
     if (post_divisions[dir] == 0) post_divisions[dir] = 1;
 
-    RectilinearMesh1D result = initial;
+    RectilinearAxis result = initial;
 
     // First add refinement points
     for (auto ref: refinements[dir]) {
@@ -156,7 +180,7 @@ RectilinearMesh1D RectilinearMeshDivideGenerator<dim>::get1DMesh(const Rectiline
 template <> shared_ptr<RectilinearMesh2D>
 RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
-    RectangularMesh<2,RectilinearMesh1D> initial;
+    RectangularMesh<2,RectilinearAxis> initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes) {
         initial.axis0.addPoint(box.lower.c0);
@@ -165,7 +189,7 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
         initial.axis1.addPoint(box.upper.c1);
     }
 
-    auto mesh = make_shared<RectangularMesh<2,RectilinearMesh1D>>(get1DMesh(initial.axis0, geometry, 0), get1DMesh(initial.axis1, geometry, 1));
+    auto mesh = make_shared<RectangularMesh<2,RectilinearAxis>>(getAxis(initial.axis0, geometry, 0), getAxis(initial.axis1, geometry, 1));
 
     mesh->setOptimalIterationOrder();
 
@@ -177,7 +201,7 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
 template <> shared_ptr<RectilinearMesh3D>
 RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
-    RectangularMesh<3,RectilinearMesh1D> initial;
+    RectangularMesh<3,RectilinearAxis> initial;
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes) {
         initial.axis0.addPoint(box.lower.c0);
@@ -188,10 +212,10 @@ RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::Geome
         initial.axis2.addPoint(box.upper.c2);
     }
 
-    auto mesh = make_shared<RectangularMesh<3,RectilinearMesh1D>>(
-        get1DMesh(initial.axis0, geometry, 0),
-        get1DMesh(initial.axis1, geometry, 1),
-        get1DMesh(initial.axis2, geometry, 2)
+    auto mesh = make_shared<RectangularMesh<3,RectilinearAxis>>(
+        getAxis(initial.axis0, geometry, 0),
+        getAxis(initial.axis1, geometry, 1),
+        getAxis(initial.axis2, geometry, 2)
     );
 
     mesh->setOptimalIterationOrder();
@@ -251,7 +275,8 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "refinements") {
             while (reader.requireTagOrEnd()) {
-                if (reader.getNodeName() != "axis0" && reader.getNodeName() != "axis1" && (dim == 2 || reader.getNodeName() != "axis2")) {
+                if (reader.getNodeName() != "axis0" && (dim == 1 || (reader.getNodeName() != "axis1" && (dim == 2 || reader.getNodeName() != "axis2")))) {
+                    if (dim == 1) throw XMLUnexpectedElementException(reader, "<axis0>");
                     if (dim == 2) throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
                     if (dim == 3) throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
                 }
@@ -282,9 +307,11 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
     return result;
 }
 
+static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
 
+//TODO static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear1d.divide", readRectilinearMeshDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear2d.divide", readRectilinearMeshDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectilinearmesh3d_dividinggenerator_reader("rectilinear3d.divide", readRectilinearMeshDivideGenerator<3>);
 

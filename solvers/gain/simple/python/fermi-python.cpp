@@ -35,7 +35,6 @@ BOOST_PYTHON_MODULE(simple)
         solver.add_receiver("inCarriersConcentration",
                             reinterpret_cast<ReceiverFor<CarriersConcentration,Geometry2DCartesian>__Class__::*>(&__Class__::inCarriersConcentration),
                             "Carrier pairs concentration");
-        RW_FIELD(mesh, "Horizontal mesh to compute derivative on (if None then do not use interpolation)");
         PROVIDER(outGain, "Optical gain in the active region");
         PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
@@ -61,7 +60,6 @@ BOOST_PYTHON_MODULE(simple)
         METHOD(determine_levels, determineLevels, "Determine quasi-Fermi levels and carriers levels inside QW", "T", "n");
         RECEIVER(inTemperature, "Temperature distribution");
         RECEIVER(inCarriersConcentration, "Carrier pairs concentration");
-        RW_FIELD(mesh, "Horizontal mesh to compute derivative on (if None then do not use interpolation)");
         PROVIDER(outGain, "Optical gain in the active region");
         PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");

@@ -14,10 +14,10 @@ struct SlabSolver: public SolverOver<GeometryT> {
   protected:
 
     /// Layer boundaries
-    RectilinearMesh1D vbounds;
+    RectilinearAxis vbounds;
 
     /// Vertical positions of elements in each layer set
-    std::vector<RectilinearMesh1D> lverts;
+    std::vector<RectilinearAxis> lverts;
 
     /// Information if the layer has gain
     std::vector<bool> lgained;
@@ -126,12 +126,12 @@ struct SlabSolver: public SolverOver<GeometryT> {
 
     /// Get list of vertical positions of layers in each set
     /// \return layer sets
-    const std::vector<RectilinearMesh1D>& getLayersPoints() const { return lverts; }
+    const std::vector<RectilinearAxis>& getLayersPoints() const { return lverts; }
 
     /// Get list of vertical positions of layers in one set
     /// \param n set number
     /// \return layer sets
-    const RectilinearMesh1D& getLayerPoints(size_t n) const { return lverts[n]; }
+    const RectilinearAxis& getLayerPoints(size_t n) const { return lverts[n]; }
 
   protected:
 

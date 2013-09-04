@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(vector_field) {
     );
     plask::ReceiverFor<Vector2DProp, plask::Geometry2DCartesian> receiver;
     receiver.setProvider(provider);
-    plask::RegularMesh2D mesh(plask::RegularMesh1D(0., 0., 1), plask::RegularMesh1D(0., 0., 1));
+    plask::RegularMesh2D mesh(plask::RegularAxis(0., 0., 1), plask::RegularAxis(0., 0., 1));
     plask::DataVector<plask::Vec<2, double> > expected(1, plask::vec(1.0, 2.0));
     BOOST_CHECK_EQUAL(receiver(mesh), expected);*/
 }
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(polymorphic_receivers) {
 
 BOOST_AUTO_TEST_CASE(attach_datavector)
 {
-    auto mesh1 = plask::make_shared<plask::RegularMesh2D>(plask::RegularMesh1D(0., 4., 3), plask::RegularMesh1D(0., 20., 3));
+    auto mesh1 = plask::make_shared<plask::RegularMesh2D>(plask::RegularAxis(0., 4., 3), plask::RegularAxis(0., 20., 3));
 
     auto mesh2 = mesh1->getMidpointsMesh();
 

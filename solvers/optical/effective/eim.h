@@ -214,7 +214,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(const RectilinearMesh1D& meshx) {
+    void setHorizontalMesh(const RectilinearAxis& meshx) {
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto meshxy = make_shared<RectilinearMesh2D>(*RectilinearMesh2DSimpleGenerator()(geometry->getChild()));

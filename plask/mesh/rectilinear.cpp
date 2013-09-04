@@ -13,11 +13,11 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2D::getMidpointsMesh() {
     if (this->axis0.size() < 2 || this->axis1.size() < 2)
         throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
 
-    RectilinearMesh1D line0;
+    RectilinearAxis line0;
     for (auto a = this->axis0.begin(), b = this->axis0.begin()+1; b != this->axis0.end(); ++a, ++b)
         line0.addPoint(0.5 * (*a + *b));
 
-    RectilinearMesh1D line1;
+    RectilinearAxis line1;
     for (auto a = this->axis1.begin(), b = this->axis1.begin()+1; b != this->axis1.end(); ++a, ++b)
         line1.addPoint(0.5 * (*a + *b));
 
@@ -33,15 +33,15 @@ shared_ptr<RectilinearMesh3D> RectilinearMesh3D::getMidpointsMesh() {
     if (this->axis0.size() < 2 || this->axis1.size() < 2 || this->axis2.size() < 2)
         throw BadMesh("getMidpointsMesh", "at least two points in each direction are required");
 
-    RectilinearMesh1D line0;
+    RectilinearAxis line0;
     for (auto a = this->axis0.begin(), b = this->axis0.begin()+1; b != this->axis0.end(); ++a, ++b)
         line0.addPoint((*a + *b) / 2.0);
 
-    RectilinearMesh1D line1;
+    RectilinearAxis line1;
     for (auto a = this->axis1.begin(), b = this->axis1.begin()+1; b != this->axis1.end(); ++a, ++b)
         line1.addPoint((*a + *b) / 2.0);
 
-    RectilinearMesh1D line2;
+    RectilinearAxis line2;
     for (auto a = this->axis2.begin(), b = this->axis2.begin()+1; b != this->axis2.end(); ++a, ++b)
         line2.addPoint((*a + *b) / 2.0);
 
@@ -81,7 +81,7 @@ void RectilinearMesh3D::writeXML(XMLElement& object) const {
 
 static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
 {
-    std::map<std::string,RectilinearMesh1D> axes;
+    std::map<std::string,RectilinearAxis> axes;
 
     for (int i = 0; i < 2; ++i) {
         reader.requireTag();
@@ -115,7 +115,7 @@ static shared_ptr<Mesh> readRectilinearMesh2D(XMLReader& reader)
 
 static shared_ptr<Mesh> readRectilinearMesh3D(XMLReader& reader)
 {
-    std::map<std::string,RectilinearMesh1D> axes;
+    std::map<std::string,RectilinearAxis> axes;
 
     for (int i = 0; i < 3; ++i) {
         reader.requireTag();

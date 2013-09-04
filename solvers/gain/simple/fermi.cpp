@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace fermi {
 
 template <typename GeometryType>
-FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverOver<GeometryType>(name),
+FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverWithMesh<GeometryType,RectilinearMesh1D>(name),
     outGain(this, &FermiGainSolver<GeometryType>::getGain),
     outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
@@ -35,30 +35,8 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
             mLifeTime = reader.getAttribute<double>("lifetime", mLifeTime);
             mMatrixElem = reader.getAttribute<double>("matrix_elem", mMatrixElem);
             reader.requireTagEnd();
-        }
-        else if (param == "mesh")
-        {
-            if (reader.hasAttribute("start")) {
-                double start = reader.requireAttribute<double>("start");
-                double stop = reader.requireAttribute<double>("stop");
-                size_t count = reader.requireAttribute<size_t>("num");
-                mesh = make_shared<RectilinearMesh1D>();
-                mesh->addPointsLinear(start, stop, count);
-                reader.requireTagEnd();
-            } else {
-                std::string data = reader.requireTextInCurrentTag();
-                mesh = make_shared<RectilinearMesh1D>();
-                for (auto point: boost::tokenizer<>(data)) {
-                    try {
-                        double val = boost::lexical_cast<double>(point);
-                        mesh->addPoint(val);
-                    } catch (boost::bad_lexical_cast) {
-                        throw XMLException(reader, format("Value '%1%' cannot be converted to float", point));
-                    }
-                }
-            }
         } else
-            this->parseStandardConfiguration(reader, manager, "<geometry> or <config>");
+            this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, or <config>");
     }
 }
 
@@ -227,12 +205,12 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     this->initCalculation(); // This must be called before any calculation!
 
     RectilinearMesh2D mesh2;
-    if (mesh) {
-        RectilinearMesh1D verts;
+    if (this->mesh) {
+        RectilinearAxis verts;
         for (auto p: dst_mesh) verts.addPoint(p.vert());
-        mesh2.axis0 = *mesh; mesh2.axis1 = verts;
+        mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
     }
-    const MeshD<2>& src_mesh = (mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
+    const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 
     WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
 
@@ -258,7 +236,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
 
-    if (mesh) {
+    if (this->mesh) {
         return interpolate(mesh2, gainOnMesh, dst_mesh, INTERPOLATION_SPLINE);
     } else {
         return gainOnMesh;
@@ -273,12 +251,12 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     this->initCalculation(); // This must be called before any calculation!
 
     RectilinearMesh2D mesh2;
-    if (mesh) {
-        RectilinearMesh1D verts;
+    if (this->mesh) {
+        RectilinearAxis verts;
         for (auto p: dst_mesh) verts.addPoint(p.vert());
-        mesh2.axis0 = *mesh; mesh2.axis1 = verts;
+        mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
     }
-    const MeshD<2>& src_mesh = (mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
+    const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 
     WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
 
@@ -308,7 +286,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 //        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
 
-    if (mesh) {
+    if (this->mesh) {
         return interpolate(mesh2, dGdn, dst_mesh, INTERPOLATION_SPLINE);
     } else {
         return dGdn;

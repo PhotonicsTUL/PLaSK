@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(mesh) {
     writer.writeHeader();
     auto grids = writer.addTag("grids");
 
-    auto mesh2 = plask::RegularMesh2D(plask::RegularMesh1D(1,5,3), plask::RegularMesh1D(10, 40, 4));
+    auto mesh2 = plask::RegularMesh2D(plask::RegularAxis(1,5,3), plask::RegularAxis(10, 40, 4));
     mesh2.writeXML(writer.addTag("mesh").attr("name", "reg"));
 
     auto mesh3 = plask::RectilinearMesh3D({1,2,3}, {20,50}, {10});

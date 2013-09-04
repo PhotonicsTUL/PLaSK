@@ -20,7 +20,7 @@ namespace plask {
 /**
  * Rectilinear mesh in 1D space.
  */
-class RectilinearMesh1D {
+class RectilinearAxis {
 
     /// Points coordinates in ascending order.
     std::vector<double> points;
@@ -83,22 +83,17 @@ public:
      */
     std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
 
-    //should we allow for non-const iterators?
-    /*typedef std::vector<double>::iterator iterator;
-    iterator begin() { return points.begin(); }
-    iterator end() { return points.end(); }*/
-
     /// Construct an empty mesh.
-    RectilinearMesh1D(): owner(nullptr) {}
+    RectilinearAxis(): owner(nullptr) {}
 
-    /// Copy constructor. It does not copy owner.
-    RectilinearMesh1D(const RectilinearMesh1D& src): points(src.points), owner(nullptr) {}
-
-    /// Move constructor. It does not move owner.
-    RectilinearMesh1D(RectilinearMesh1D&& src): points(std::move(src.points)), owner(nullptr) {}
-
-    /// Copy constructor from RegularMesh1D
-    RectilinearMesh1D(const RegularMesh1D& src): points(src.size()), owner(nullptr) {
+    /// Copy constructor. It does not copy the owner.
+    RectilinearAxis(const RectilinearAxis& src): points(src.points), owner(nullptr) {}
+    
+    /// Move constructor. It does not move the owner.
+    RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)), owner(nullptr) {}
+    
+    /// Copy constructor from RegularAxis
+    RectilinearAxis(const RegularAxis& src): points(src.size()), owner(nullptr) {
         if (src.step() < 0.0)
             std::reverse_copy(src.begin(), src.end(), points.begin());
         else
@@ -110,24 +105,24 @@ public:
      * It use algorithm which has logarithmic time complexity.
      * @param points points, in any order
      */
-    RectilinearMesh1D(std::initializer_list<PointType> points);
+    RectilinearAxis(std::initializer_list<PointType> points);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
-    RectilinearMesh1D(const std::vector<PointType>& points);
+    RectilinearAxis(const std::vector<PointType>& points);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
-    RectilinearMesh1D(std::vector<PointType>&& points);
+    RectilinearAxis(std::vector<PointType>&& points);
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearMesh1D& operator=(const RectilinearMesh1D& src) {
+    RectilinearAxis& operator=(const RectilinearAxis& src) {
         bool resized = size() != src.size();
         points = src.points;
         if (owner) {
@@ -138,7 +133,7 @@ public:
     }
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearMesh1D& operator=(RectilinearMesh1D&& src) {
+    RectilinearAxis& operator=(RectilinearAxis&& src) {
         bool resized = size() != src.size();
         std::swap(points, src.points);
         if (owner) {
@@ -149,7 +144,7 @@ public:
     }
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearMesh1D& operator=(const RegularMesh1D& src) {
+    RectilinearAxis& operator=(const RegularAxis& src) {
         bool resized = size() != src.size();
         points.clear();
         points.reserve(src.size());
@@ -170,7 +165,7 @@ public:
      * @param to_compare mesh to compare
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
-    bool operator==(const RectilinearMesh1D& to_compare) const;
+    bool operator==(const RectilinearAxis& to_compare) const;
 
     /**
      * Print mesh to stream
@@ -178,7 +173,7 @@ public:
      * @param mesh mesh to print
      * @return out
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearMesh1D& mesh) {
+    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearAxis& mesh) {
         out << "[";
         for (auto p: mesh.points) {
             out << p << ((p != mesh.points.back())? ", " : "");
@@ -260,9 +255,9 @@ public:
 
 };
 
-// RectilinearMesh1D method templates implementation
+// RectilinearAxis method templates implementation
 template <typename RandomAccessContainer>
-inline auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
+inline auto RectilinearAxis::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should it do if mesh is empty?
     if (index == 0 || points[index] == point) return data[index]; // hit exactly
@@ -271,7 +266,7 @@ inline auto RectilinearMesh1D::interpolateLinear(const RandomAccessContainer& da
 }
 
 template <typename IteratorT>
-inline void RectilinearMesh1D::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
+inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
     std::vector<double> result;
     result.reserve(this->size() + points_count_hint);
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));

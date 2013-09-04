@@ -38,17 +38,17 @@ ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): solver(solver)
         nN = 4 * solver->getSize() + 1;
         M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
         double dx = 0.5 * L * (refine-1) / M;               // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        xmesh = RegularMesh1D(left-dx, right-dx-L/M, M);    //  ^ ^ ^ ^
-        xpoints = RegularMesh1D(left, right-L/N, N);        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        xmesh = RegularAxis(left-dx, right-dx-L/M, M);      //  ^ ^ ^ ^
+        xpoints = RegularAxis(left, right-L/N, N);          // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
     } else {
         L = 2 * right;
         N = solver->getSize() + 1;
         nN = 2 * solver->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
         M = refine * nN;                                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
         double dx = 0.25 * L / M;                           //  ^ ^ ^ ^
-        xmesh = RegularMesh1D(left + dx, right - dx, M);    // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        xmesh = RegularAxis(left + dx, right - dx, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
         dx = 0.25 * L / N;
-        xpoints = RegularMesh1D(left + dx, right - dx, N);
+        xpoints = RegularAxis(left + dx, right - dx, N);
     }
 
     solver->writelog(LOG_DETAIL, "Creating expansion with %1% plane-waves (matrix size: %2%)", N, matrixSize());
@@ -117,7 +117,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_
         throw BadInput(solver->getId(), "No wavelength set in solver");
 
     auto geometry = solver->getGeometry();
-    const RectilinearMesh1D& axis1 = solver->getLayerPoints(l);
+    const RectilinearAxis& axis1 = solver->getLayerPoints(l);
 
     size_t refine = solver->refine;
     size_t M = refine * nN;
@@ -185,7 +185,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearMesh1D mesh,
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearAxis mesh,
                                                                 InterpolationMethod interp)
 {
     double L = right - left;
@@ -210,7 +210,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
         }
     } else {
         fft.backward(5, nN, reinterpret_cast<dcomplex*>(coeffs.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
-        RegularMesh1D cmesh;
+        RegularAxis cmesh;
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;
             cmesh.reset(left + dx, right - dx, nN);
@@ -221,8 +221,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
             std::copy(old.begin(), old.end(), coeffs.begin());
             coeffs[old.size()] = old[0];
         }
-        RegularMesh2D src_mesh(cmesh, RegularMesh1D(0,0,1));
-        RectilinearMesh2D dst_mesh(mesh, RectilinearMesh1D({0}));
+        RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));
+        RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
         result = interpolate(src_mesh, coeffs, WrappedMesh<2>(dst_mesh, solver->getGeometry()), interp);
     }
     for (Tensor3<dcomplex>& eps: result) eps.sqrt_inplace();

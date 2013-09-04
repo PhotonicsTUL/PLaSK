@@ -323,7 +323,7 @@ inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
 
 
 /** Base template for rectangular mesh of any dimension */
-template <int dim, typename Mesh1D>
+template <int dim, typename AxisT>
 class RectangularMesh {};
 
 
@@ -378,7 +378,7 @@ class MeshGenerator {
 };
 
 /** Base class for specific mesh generator */
-template <typename MeshT>
+template <typename MeshT, int dim=((MeshT::DIM < 2)? 2 : MeshT::DIM)>
 class MeshGeneratorOf: public MeshGenerator
 {
   protected:
@@ -395,7 +395,7 @@ class MeshGeneratorOf: public MeshGenerator
      * \param geometry on which the mesh should be generated
      * \return new generated mesh
      */
-    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryObjectD<MeshT::DIM>>& geometry) = 0;
+    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryObjectD<dim>>& geometry) = 0;
 
     /**
      * Clear the cache of generated meshes.
@@ -406,7 +406,7 @@ class MeshGeneratorOf: public MeshGenerator
     }
 
     /// Get generated mesh if it is cached or create a new one
-    shared_ptr<MeshT> operator()(const shared_ptr<GeometryObjectD<MeshT::DIM>>& geometry) {
+    shared_ptr<MeshT> operator()(const shared_ptr<GeometryObjectD<dim>>& geometry) {
         if (auto res = cache.get(geometry))
             return res;
         else

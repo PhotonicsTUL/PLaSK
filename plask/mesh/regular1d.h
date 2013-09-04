@@ -17,7 +17,7 @@ namespace plask {
 /**
  * Regular mesh in 1d space.
  */
-class RegularMesh1D {
+class RegularAxis {
 
     double lo, _step;
     std::size_t points_count;
@@ -27,8 +27,8 @@ class RegularMesh1D {
     /// Type of points in this mesh.
     typedef double PointType;
 
-    typedef IndexedIterator<const RegularMesh1D, PointType> iterator;
-    typedef IndexedIterator<const RegularMesh1D, PointType> const_iterator;
+    typedef IndexedIterator<const RegularAxis, PointType> iterator;
+    typedef IndexedIterator<const RegularAxis, PointType> const_iterator;
 
     /// @return iterator referring to the first point in this mesh
     const_iterator begin() const { return const_iterator(this, 0); }
@@ -40,11 +40,11 @@ class RegularMesh1D {
     Mesh* owner;
 
     /// Construct uninitialized mesh.
-    RegularMesh1D():
+    RegularAxis():
         lo(0.), _step(0.), points_count(0), owner(nullptr) {}
 
     /// Copy constructor. It does not copy owner
-    RegularMesh1D(const RegularMesh1D& src):
+    RegularAxis(const RegularAxis& src):
         lo(src.lo), _step(src._step), points_count(src.points_count), owner(nullptr) {}
 
     /**
@@ -53,12 +53,12 @@ class RegularMesh1D {
      * @param last coordinate of last point in mesh
      * @param points_count number of points in mesh
      */
-    RegularMesh1D(double first, double last, std::size_t points_count):
+    RegularAxis(double first, double last, std::size_t points_count):
         lo(first), _step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
         points_count(points_count), owner(nullptr) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RegularMesh1D& operator=(const RegularMesh1D& src) {
+    RegularAxis& operator=(const RegularAxis& src) {
         bool resized = points_count != src.points_count;
         lo = src.lo; _step = src._step; points_count = src.points_count;
         if (owner) {
@@ -109,7 +109,7 @@ class RegularMesh1D {
      * @param to_compare mesh to compare
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
-    bool operator==(const RegularMesh1D& to_compare) const {
+    bool operator==(const RegularAxis& to_compare) const {
         return this->lo == to_compare.lo && this->_step == to_compare._step && this->points_count == to_compare.points_count;
     }
 
@@ -119,7 +119,7 @@ class RegularMesh1D {
      * @param self mesh to print
      * @return out
      */
-    friend inline std::ostream& operator<<(std::ostream& out, const RegularMesh1D& self) {
+    friend inline std::ostream& operator<<(std::ostream& out, const RegularAxis& self) {
         out << "[";
         for (std::size_t i = 0; i < self.points_count; ++i) {
             if (i != 0) out << ", ";
@@ -197,9 +197,9 @@ class RegularMesh1D {
 
 };
 
-// RegularMesh1D method templates implementation
+// RegularAxis method templates implementation
 template <typename RandomAccessContainer>
-auto RegularMesh1D::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
+auto RegularAxis::interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should do if mesh is empty?
     if (index == 0 || this->operator[](index) == point) return data[index]; //hit exactly

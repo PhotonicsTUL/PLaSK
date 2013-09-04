@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
 template<typename Geometry2DType>
-class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2DType > //plask::Geometry2DCylindrical
+class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometry2DType,plask::RegularMesh1D>
 {
     public:
         enum FemMethod {
@@ -35,11 +35,10 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
         bool do_initial;                            ///< Should we start from initial computations
 
         FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
-            plask::SolverOver<Geometry2DType> (name),
+            plask::SolverWithMesh<Geometry2DType,plask::RegularMesh1D>(name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_SPLINE),
-            do_initial(false),
-            internal_mesh_update(false)
+            do_initial(false)
         {
             relative_accuracy = 0.01;
             max_mesh_changes = 5;
@@ -47,12 +46,10 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
             minor_concentration = 5.0e+15;
             inTemperature = 300.;
             inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
-            mesh2.changedConnectMethod(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onMeshChange);
         }
 
         virtual ~FiniteElementMethodDiffusion2DSolver<Geometry2DType>()
         {
-            mesh2.changedDisconnectMethod(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onMeshChange);
         }
 
         virtual std::string getClassName() const;
@@ -61,29 +58,13 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverOver < Geometry2
 
         void compute(ComputationType type);
 
-        plask::RegularMesh1D& mesh()
+        plask::RegularAxis& current_mesh()
         {
             return mesh2.axis0;
         }
 
-        void setMesh(plask::RegularMesh1D mesh)
-        {
-            mesh2.axis0.reset(mesh.first(), mesh.last(), mesh.size());
-        }
-
-    private:
-        bool internal_mesh_update;
-
-        void onMeshChange(const Mesh::Event&) {
-            if (!internal_mesh_update) {
-                original_mesh = mesh2.axis0;
-                this->invalidate();
-            }
-        }
-
     protected:
 
-        plask::RegularMesh1D original_mesh; ///< Original radial mesh
         plask::RegularMesh2D mesh2;         ///< Computational mesh
 
         static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi

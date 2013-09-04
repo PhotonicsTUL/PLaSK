@@ -14,8 +14,8 @@ struct ExpansionPW2D: public Expansion {
 
     FourierReflection2D* solver;        ///< Solver which performs calculations (and is the interface to the outside world)
 
-    RegularMesh1D xmesh;                ///< Horizontal axis for structure sampling
-    RegularMesh1D xpoints;              ///< Horizontal points in which fields will be computed by the inverse FFT
+    RegularAxis xmesh;                ///< Horizontal axis for structure sampling
+    RegularAxis xpoints;              ///< Horizontal points in which fields will be computed by the inverse FFT
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
@@ -54,7 +54,7 @@ struct ExpansionPW2D: public Expansion {
      * \param interp interpolation method
      * \return computed refractive indices
      */
-    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearMesh1D mesh,
+    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearAxis mesh,
                                                       InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   protected:

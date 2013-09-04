@@ -29,8 +29,8 @@ namespace details {
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
  */
-template <typename Mesh1D>
-inline bool getLineLo(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
+template <typename AxisT>
+inline bool getLineLo(std::size_t& line, const AxisT& axis, double box_lower, double box_upper) {
     assert(box_lower <= box_upper);
     line = axis.findIndex(box_lower);
     return line != axis.size() && axis[line] <= box_upper;
@@ -44,8 +44,8 @@ inline bool getLineLo(std::size_t& line, const Mesh1D& axis, double box_lower, d
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if @p axis has point which lies in bounds [@p box_lower, @p box_upper]
  */
-template <typename Mesh1D>
-inline bool getLineHi(std::size_t& line, const Mesh1D& axis, double box_lower, double box_upper) {
+template <typename AxisT>
+inline bool getLineHi(std::size_t& line, const AxisT& axis, double box_lower, double box_upper) {
     assert(box_lower <= box_upper);
     line = axis.findIndex(box_upper);
     if (line != axis.size() && axis[line] == box_upper) return true;
@@ -62,8 +62,8 @@ inline bool getLineHi(std::size_t& line, const Mesh1D& axis, double box_lower, d
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if some of @p axis points lies in bounds [@p box_lower, @p box_upper]
  */
-template <typename Mesh1D>
-inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
+template <typename AxisT>
+inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const AxisT& axis, double box_lower, double box_upper) {
     assert(box_lower <= box_upper);
     begInd = axis.findIndex(box_lower);
     endInd = axis.findIndex(box_upper);
@@ -77,8 +77,8 @@ inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const M
  * @param[in, out] index index such that axis[index] <= real_pos < axis[index+1], can be unchanged or decrement by one by this method
  * @param[in] real_pos position
  */
-template <typename Mesh1D>
-inline void tryMakeLower(const Mesh1D& axis, std::size_t& index, double real_pos) {
+template <typename AxisT>
+inline void tryMakeLower(const AxisT& axis, std::size_t& index, double real_pos) {
     if (index == 0) return;
     if ((real_pos - axis[index-1]) * 100.0 < (axis[index] - axis[index-1])) --index;
 }
@@ -89,8 +89,8 @@ inline void tryMakeLower(const Mesh1D& axis, std::size_t& index, double real_pos
  * @param[in, out] index index such that axis[index-1] <= real_pos < axis[index], can be unchanged or increment by one by this method
  * @param[in] real_pos position
  */
-template <typename Mesh1D>
-inline void tryMakeHigher(const Mesh1D& axis, std::size_t& index, double real_pos) {
+template <typename AxisT>
+inline void tryMakeHigher(const AxisT& axis, std::size_t& index, double real_pos) {
     if (index == axis.size() || index == 0) return; //index == 0 means empty mesh
     if ((axis[index] - real_pos) * 100.0 < (axis[index] - axis[index-1])) ++index;
 }
@@ -103,8 +103,8 @@ inline void tryMakeHigher(const Mesh1D& axis, std::size_t& index, double real_po
  * @param[in] box_lower, box_upper position of lower and upper box edges
  * @return @c true only if some of @p axis points (almost) lies in bounds [@p box_lower, @p box_upper]
  */
-template <typename Mesh1D>
-inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const Mesh1D& axis, double box_lower, double box_upper) {
+template <typename AxisT>
+inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, const AxisT& axis, double box_lower, double box_upper) {
     getIndexesInBounds(begInd, endInd, axis, box_lower, box_upper);
     tryMakeLower(axis, begInd, box_lower);
     tryMakeHigher(axis, endInd, box_upper);
@@ -182,24 +182,23 @@ inline Boundary parseBoundaryFromXML(plask::XMLReader& boundary_desc, plask::Bou
  * - axis1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
-//TODO methods which call fireChanged() when points are added, etc.
-template <typename Mesh1D>
-class RectangularMesh<2,Mesh1D>: public MeshD<2> {
+template <typename AxisT>
+class RectangularMesh<2,AxisT>: public MeshD<2> {
 
-    static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<Mesh1D>().operator[](0))>::type >::value,
+    static_assert(std::is_floating_point< typename std::remove_reference<decltype(std::declval<AxisT>().operator[](0))>::type >::value,
                   "Mesh1d must have operator[](std::size_t index) which returns floating-point value");
 
-    typedef std::size_t index_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t axis0_index, std::size_t axis1_index);
-    typedef std::size_t index01_ft(const RectangularMesh<2,Mesh1D>* mesh, std::size_t mesh_index);
+    typedef std::size_t index_ft(const RectangularMesh<2,AxisT>* mesh, std::size_t axis0_index, std::size_t axis1_index);
+    typedef std::size_t index01_ft(const RectangularMesh<2,AxisT>* mesh, std::size_t mesh_index);
 
     // Our own virtual table, changeable in run-time:
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;
-    Mesh1D* minor_axis; ///< minor (changing fastest) axis
-    Mesh1D* major_axis; ///< major (changing slowest) axis
+    AxisT* minor_axis; ///< minor (changing fastest) axis
+    AxisT* major_axis; ///< major (changing slowest) axis
 
-    shared_ptr<RectangularMesh<2,Mesh1D>> midpoints_cache; ///< cache for midpoints mesh
+    shared_ptr<RectangularMesh<2,AxisT>> midpoints_cache; ///< cache for midpoints mesh
 
   protected:
 
@@ -213,7 +212,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * Represent FEM-like element in RectangularMesh.
      */
     class Element {
-        const RectangularMesh<2,Mesh1D>& mesh;
+        const RectangularMesh<2,AxisT>& mesh;
         std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
 
         public:
@@ -223,20 +222,20 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
          * @param mesh mesh, this element is valid up to time of this mesh life
          * @param index0, index1 axis 0 and 1 indexes of element (equal to low corrner mesh indexes of element)
          */
-        Element(const RectangularMesh<2,Mesh1D>& mesh, std::size_t index0, std::size_t index1): mesh(mesh), index0(index0), index1(index1) {}
+        Element(const RectangularMesh<2,AxisT>& mesh, std::size_t index0, std::size_t index1): mesh(mesh), index0(index0), index1(index1) {}
 
         /**
          * Construct element using mesh and element index.
          * @param mesh mesh, this element is valid up to time of this mesh life
          * @param elementIndex index of element
          */
-        Element(const RectangularMesh<2,Mesh1D>& mesh, std::size_t elementIndex): mesh(mesh) {
+        Element(const RectangularMesh<2,AxisT>& mesh, std::size_t elementIndex): mesh(mesh) {
             std::size_t v = mesh.getElementMeshLowIndex(elementIndex);
             index0 = mesh.index0(v);
             index1 = mesh.index1(v);
         }
 
-        typedef typename Mesh1D::PointType PointType;
+        typedef typename AxisT::PointType PointType;
 
         /// \return tran index of the element
         inline std::size_t getIndex0() const { return index0; }
@@ -328,9 +327,9 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         typedef IndexedIterator<const Elements, Element> const_iterator;
         typedef const_iterator iterator;
 
-        const RectangularMesh<2,Mesh1D>* mesh;
+        const RectangularMesh<2,AxisT>* mesh;
 
-        Elements(const RectangularMesh<2,Mesh1D>* mesh): mesh(mesh) {}
+        Elements(const RectangularMesh<2,AxisT>* mesh): mesh(mesh) {}
 
         /**
          * Get @p i-th element.
@@ -361,13 +360,13 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     };
 
     /// Boundary type.
-    typedef ::plask::Boundary<RectangularMesh<2,Mesh1D>> Boundary;
+    typedef ::plask::Boundary<RectangularMesh<2,AxisT>> Boundary;
 
     /// First coordinate of points in this mesh.
-    Mesh1D axis0;
+    AxisT axis0;
 
     /// Second coordinate of points in this mesh.
-    Mesh1D axis1;
+    AxisT axis1;
 
     /// Accessor to FEM-like elements.
     const Elements elements;
@@ -410,20 +409,20 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     }
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh<2,Mesh1D>& src): axis0(src.axis0), axis1(src.axis1), elements(this) {
+    RectangularMesh(const RectangularMesh<2,AxisT>& src): axis0(src.axis0), axis1(src.axis1), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
 
     /// Move constructor
-    RectangularMesh(RectangularMesh<2,Mesh1D>&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), elements(this) {
+    RectangularMesh(RectangularMesh<2,AxisT>&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(src.getIterationOrder());
     }
 
     /// Construct from different mesh type
-    template <typename OtherMesh1D>
-    RectangularMesh(const RectangularMesh<2,OtherMesh1D>& src): axis0(src.axis0), axis1(src.axis1), elements(this) {
+    template <typename OtherAxisT>
+    RectangularMesh(const RectangularMesh<2,OtherAxisT>& src): axis0(src.axis0), axis1(src.axis1), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(IterationOrder(src.getIterationOrder()));
     }
@@ -435,7 +434,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param mesh1 mesh for the second coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(Mesh1D mesh0, Mesh1D mesh1, IterationOrder iterationOrder = ORDER_NORMAL):
+    RectangularMesh(AxisT mesh0, AxisT mesh1, IterationOrder iterationOrder = ORDER_NORMAL):
         axis0(std::move(mesh0)), axis1(std::move(mesh1)), elements(this) {
         axis0.owner = this; axis1.owner = this;
         setIterationOrder(iterationOrder);
@@ -458,80 +457,80 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    Mesh1D& tran() { return axis0; }
+    AxisT& tran() { return axis0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const Mesh1D& tran() const { return axis0; }
+    const AxisT& tran() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    Mesh1D& vert() { return axis1; }
+    AxisT& vert() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const Mesh1D& vert() const { return axis1; }
+    const AxisT& vert() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    Mesh1D& ee_x() { return axis0; }
+    AxisT& ee_x() { return axis0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const Mesh1D& ee_x() const { return axis0; }
+    const AxisT& ee_x() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    Mesh1D& ee_y() { return axis1; }
+    AxisT& ee_y() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const Mesh1D& ee_y() const { return axis1; }
+    const AxisT& ee_y() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    Mesh1D& rad_r() { return axis0; }
+    AxisT& rad_r() { return axis0; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const Mesh1D& rad_r() const { return axis0; }
+    const AxisT& rad_r() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    Mesh1D& rad_z() { return axis1; }
+    AxisT& rad_z() { return axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const Mesh1D& rad_z() const { return axis1; }
+    const AxisT& rad_z() const { return axis1; }
 
     /**
      * Get numbered axis
      * @param n number of axis
      * @return n-th axis (cn)
      */
-    Mesh1D& axis(size_t n) {
+    AxisT& axis(size_t n) {
         if (n == 0) return axis0;
         else if (n != 1) throw Exception("Bad axis number");
         return axis1;
@@ -542,29 +541,29 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
      * @param n number of axis
      * @return n-th axis (cn)
      */
-    const Mesh1D& axis(size_t n) const {
+    const AxisT& axis(size_t n) const {
         if (n == 0) return axis0;
         else if (n != 1) throw Exception("Bad axis number");
         return axis1;
     }
 
     /// \return major (changing slowest) axis
-    inline const Mesh1D& majorAxis() const {
+    inline const AxisT& majorAxis() const {
         return *major_axis;
     }
 
     /// \return major (changing slowest) axis
-    inline Mesh1D& majorAxis() {
+    inline AxisT& majorAxis() {
         return *major_axis;
     }
 
     /// \return minor (changing fastest) axis
-    inline const Mesh1D& minorAxis() const {
+    inline const AxisT& minorAxis() const {
         return *minor_axis;
     }
 
     /// \return minor (changing fastest) axis
-    inline Mesh1D& minorAxis() {
+    inline AxisT& minorAxis() {
         return *minor_axis;
     }
 
@@ -573,7 +572,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
       * @param to_compare mesh to compare
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
-    bool operator==(const RectangularMesh<2,Mesh1D>& to_compare) {
+    bool operator==(const RectangularMesh<2,AxisT>& to_compare) {
         return axis0 == to_compare.axis0 && axis1 == to_compare.axis1;
     }
 
@@ -900,13 +899,13 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         }
     };
 
-    struct VerticalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
+    struct VerticalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
         std::size_t line;
 
-        VerticalBoundary(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis0) {}
+        VerticalBoundary(const RectangularMesh<2,AxisT>& mesh, std::size_t line_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>>(mesh), line(line_axis0) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
@@ -928,14 +927,14 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     };
 
 
-    struct VerticalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
+    struct VerticalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
         std::size_t line, beginInLineIndex, endInLineIndex;
 
-        VerticalBoundaryInRange(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis0, std::size_t beginInLineIndex, std::size_t endInLineIndex)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis0), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
+        VerticalBoundaryInRange(const RectangularMesh<2,AxisT>& mesh, std::size_t line_axis0, std::size_t beginInLineIndex, std::size_t endInLineIndex)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>>(mesh), line(line_axis0), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
@@ -956,13 +955,13 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         }
     };
 
-    struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
+    struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
         std::size_t line;
 
-        HorizontalBoundary(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis1): BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis1) {}
+        HorizontalBoundary(const RectangularMesh<2,AxisT>& mesh, std::size_t line_axis1): BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>>(mesh), line(line_axis1) {}
 
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
@@ -983,14 +982,14 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
         }
     };
 
-    struct HorizontalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>> {
+    struct HorizontalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>> {
 
         typedef typename BoundaryLogicImpl::Iterator Iterator;
 
         std::size_t line, beginInLineIndex, endInLineIndex;
 
-        HorizontalBoundaryInRange(const RectangularMesh<2,Mesh1D>& mesh, std::size_t line_axis1, std::size_t beginInLineIndex, std::size_t endInLineIndex)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<2,Mesh1D>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
+        HorizontalBoundaryInRange(const RectangularMesh<2,AxisT>& mesh, std::size_t line_axis1, std::size_t beginInLineIndex, std::size_t endInLineIndex)
+            : BoundaryWithMeshLogicImpl<RectangularMesh<2,AxisT>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
         bool contains(std::size_t mesh_index) const {
@@ -1011,7 +1010,7 @@ class RectangularMesh<2,Mesh1D>: public MeshD<2> {
     };
 
     //TODO
-    /*struct HorizontalLineBoundary: public BoundaryLogicImpl<RectangularMesh<2,Mesh1D>> {
+    /*struct HorizontalLineBoundary: public BoundaryLogicImpl<RectangularMesh<2,AxisT>> {
 
         double height;
 
@@ -1025,7 +1024,7 @@ public:
 
     template <typename Predicate>
     static Boundary getBoundary(Predicate predicate) {
-        return Boundary(new PredicateBoundaryImpl<RectangularMesh<2,Mesh1D>, Predicate>(predicate));
+        return Boundary(new PredicateBoundaryImpl<RectangularMesh<2,AxisT>, Predicate>(predicate));
     }
 
     /**
@@ -1034,7 +1033,7 @@ public:
      * @return boundary which show one vertical (from bottom to top) line in mesh
      */
     static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0) {
-        return Boundary( [line_nr_axis0](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, line_nr_axis0);} );
+        return Boundary( [line_nr_axis0](const RectangularMesh<2,AxisT>& mesh) {return new VerticalBoundary(mesh, line_nr_axis0);} );
     }
 
     /**
@@ -1044,7 +1043,7 @@ public:
      * @return boundary which show range in vertical (from bottom to top) line in mesh.
      */
     static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundaryInRange(mesh, line_nr_axis0, indexBegin, indexEnd);} );
+        return Boundary( [=](const RectangularMesh<2,AxisT>& mesh) {return new VerticalBoundaryInRange(mesh, line_nr_axis0, indexBegin, indexEnd);} );
     }
 
     /**
@@ -1053,7 +1052,7 @@ public:
      * @return boundary which show one vertical (from bottom to top) line in mesh
      */
     static Boundary getVerticalBoundaryNear(double axis0_coord) {
-        return Boundary( [axis0_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.findNearestIndex(axis0_coord));} );
+        return Boundary( [axis0_coord](const RectangularMesh<2,AxisT>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.findNearestIndex(axis0_coord));} );
     }
 
     /**
@@ -1063,7 +1062,7 @@ public:
      * @return boundary which show one vertical (from bottom to top) segment in mesh
      */
     static Boundary getVerticalBoundaryNear(double axis0_coord, double from, double to) {
-        return Boundary( [axis0_coord, from, to](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [axis0_coord, from, to](const RectangularMesh<2,AxisT>& mesh) -> BoundaryLogicImpl* {
             std::size_t begInd, endInd;
             if (!details::getIndexesInBoundsExt(begInd, endInd, mesh.axis1, from, to))
                 return new EmptyBoundaryImpl();
@@ -1076,7 +1075,7 @@ public:
      * @return boundary which show left line in mesh
      */
     static Boundary getLeftBoundary() {
-        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, 0);} );
+        return Boundary( [](const RectangularMesh<2,AxisT>& mesh) {return new VerticalBoundary(mesh, 0);} );
     }
 
     /**
@@ -1084,7 +1083,7 @@ public:
      * @return boundary which show right line in mesh
      */
     static Boundary getRightBoundary() {
-        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.size()-1);} );
+        return Boundary( [](const RectangularMesh<2,AxisT>& mesh) {return new VerticalBoundary(mesh, mesh.axis0.size()-1);} );
     }
 
     /**
@@ -1093,7 +1092,7 @@ public:
      * @return boundary which lies on left edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getLeftOfBoundary(const Box2D& box) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2,AxisT>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineLo(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
@@ -1109,7 +1108,7 @@ public:
      * @return boundary which lies on right edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getRightOfBoundary(const Box2D& box) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2,AxisT>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineHi(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd, endInd, mesh.axis1, box.lower.c1, box.upper.c1))
@@ -1125,7 +1124,7 @@ public:
      * @return boundary which lies on bottom edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getBottomOfBoundary(const Box2D& box) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2,AxisT>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineLo(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
@@ -1141,7 +1140,7 @@ public:
      * @return boundary which lies on top edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
     static Boundary getTopOfBoundary(const Box2D& box) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2,AxisT>& mesh) -> BoundaryLogicImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineHi(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd, endInd, mesh.axis0, box.lower.c0, box.upper.c0))
@@ -1159,9 +1158,9 @@ public:
      * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
      */
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getLeftOfBoundary(box); }
         );
     }
 
@@ -1174,9 +1173,9 @@ public:
      */
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getLeftOfBoundary(geometry, object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getLeftOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getLeftOfBoundary(box); }
         );
     }
 
@@ -1188,9 +1187,9 @@ public:
      * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
      */
     static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getRightOfBoundary(box); }
         );
     }
 
@@ -1203,9 +1202,9 @@ public:
      */
     static Boundary getRightOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getRightOfBoundary(geometry, object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getRightOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getRightOfBoundary(box); }
         );
     }
 
@@ -1217,9 +1216,9 @@ public:
      * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
      */
     static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getBottomOfBoundary(box); }
         );
     }
 
@@ -1232,9 +1231,9 @@ public:
      */
     static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getBottomOfBoundary(geometry, object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getBottomOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getBottomOfBoundary(box); }
         );
     }
 
@@ -1246,9 +1245,9 @@ public:
      * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
      */
     static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getTopOfBoundary(box); }
         );
     }
 
@@ -1261,9 +1260,9 @@ public:
      */
     static Boundary getTopOfBoundary(shared_ptr<const GeometryD<2>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
         if (path) return getTopOfBoundary(geometry, object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh<2,Mesh1D> >(
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
             [=] { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box2D& box) { return RectangularMesh<2,Mesh1D>::getTopOfBoundary(box); }
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getTopOfBoundary(box); }
         );
     }
 
@@ -1273,7 +1272,7 @@ public:
      * @return boundary which show one horizontal (from left to right) line in mesh
      */
     static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1) {
-        return Boundary( [line_nr_axis1](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
+        return Boundary( [line_nr_axis1](const RectangularMesh<2,AxisT>& mesh) {return new HorizontalBoundary(mesh, line_nr_axis1);} );
     }
 
     /**
@@ -1283,7 +1282,7 @@ public:
      * @return boundary which show range in horizontal (from left to right) line in mesh.
      */
     static Boundary getHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) {
-        return Boundary( [=](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundaryInRange(mesh, line_nr_axis1, indexBegin, indexEnd);} );
+        return Boundary( [=](const RectangularMesh<2,AxisT>& mesh) {return new HorizontalBoundaryInRange(mesh, line_nr_axis1, indexBegin, indexEnd);} );
     }
 
     /**
@@ -1292,7 +1291,7 @@ public:
      * @return boundary which show one horizontal (from left to right) line in mesh
      */
     static Boundary getHorizontalBoundaryNear(double axis1_coord) {
-        return Boundary( [axis1_coord](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.findNearestIndex(axis1_coord));} );
+        return Boundary( [axis1_coord](const RectangularMesh<2,AxisT>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.findNearestIndex(axis1_coord));} );
     }
 
     /**
@@ -1302,7 +1301,7 @@ public:
      * @return boundary which show one horizontal (from left to right) line in mesh
      */
     static Boundary getHorizontalBoundaryNear(double axis1_coord, double from, double to) {
-        return Boundary( [axis1_coord, from, to](const RectangularMesh<2,Mesh1D>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [axis1_coord, from, to](const RectangularMesh<2,AxisT>& mesh) -> BoundaryLogicImpl* {
             std::size_t begInd, endInd;
             if (!details::getIndexesInBoundsExt(begInd, endInd, mesh.axis0, from, to))
                 return new EmptyBoundaryImpl();
@@ -1315,7 +1314,7 @@ public:
      * @return boundary which show top line in mesh
      */
     static Boundary getTopBoundary() {
-        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.size()-1);} );
+        return Boundary( [](const RectangularMesh<2,AxisT>& mesh) {return new HorizontalBoundary(mesh, mesh.axis1.size()-1);} );
     }
 
     /**
@@ -1323,7 +1322,7 @@ public:
      * @return boundary which show bottom line in mesh
      */
     static Boundary getBottomBoundary() {
-        return Boundary( [](const RectangularMesh<2,Mesh1D>& mesh) {return new HorizontalBoundary(mesh, 0);} );
+        return Boundary( [](const RectangularMesh<2,AxisT>& mesh) {return new HorizontalBoundary(mesh, 0);} );
     }
 
     static Boundary getBoundary(const std::string& boundary_desc) {
@@ -1375,8 +1374,8 @@ public:
  * @return value in point point_axis0, point_axis1
  * @tparam DataGetter2D functor
  */
-template <typename DataGetter2D, typename Mesh1D>
-auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const double& point_axis1, const Mesh1D& axis0, const Mesh1D& axis1, std::size_t index0, std::size_t index1)
+template <typename DataGetter2D, typename AxisT>
+auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const double& point_axis1, const AxisT& axis0, const AxisT& axis1, std::size_t index0, std::size_t index1)
   -> typename std::remove_reference<decltype(data(0, 0))>::type {
     if (index0 == 0) {
         if (index1 == 0) return data(0, 0);
@@ -1409,9 +1408,9 @@ auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const dou
 }
 
 
-template <typename Mesh1D, typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
+template <typename AxisT, typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh<2,AxisT>, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static void interpolate(const RectangularMesh<2,AxisT>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
         if (src_mesh.axis0.size() == 0 || src_mesh.axis1.size() == 0) throw BadMesh("interpolate", "Source mesh empty");
         #pragma omp parallel for
         for (size_t i = 0; i < dst_mesh.size(); ++i)
@@ -1419,9 +1418,9 @@ struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATI
     }
 };
 
-template <typename Mesh1D, typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static void interpolate(const RectangularMesh<2,Mesh1D>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
+template <typename AxisT, typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh<2,AxisT>, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static void interpolate(const RectangularMesh<2,AxisT>& src_mesh, const DataVector<const SrcT>& src_vec, const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
         if (src_mesh.axis0.size() == 0 || src_mesh.axis1.size() == 0) throw BadMesh("interpolate", "Source mesh empty");
         #pragma omp parallel for
         for (size_t i = 0; i < dst_mesh.size(); ++i)

@@ -2,6 +2,7 @@
 #define PLASK__GENERATOR_RECTILINEAR_H
 
 #include "mesh.h"
+#include "mesh1d.h"
 #include "rectilinear.h"
 #include <plask/geometry/path.h>
 
@@ -24,6 +25,26 @@ shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
 /**
  * Generator of basic 2D geometry grid
  */
+class RectilinearMesh1DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh1D> {
+
+    /// Should we add line at horizontal zero
+    bool extend_to_zero;
+
+  public:
+
+    /**
+     * Create generator
+     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     */
+    RectilinearMesh1DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
+
+    virtual shared_ptr<RectilinearMesh1D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
+};
+
+
+/**
+ * Generator of basic 2D geometry grid
+ */
 class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
     /// Should we add line at horizontal zero
@@ -42,7 +63,7 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
 
 /**
- * Generator of basic 2D geometry grid
+ * Generator of basic 3D geometry grid
  */
 struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D> {
 
@@ -50,10 +71,10 @@ struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3
 };
 
 /**
- * Dividing generator ensuring no rpaid change of element size
+ * Dividing generator ensuring no rapid change of element size
  */
 template <int dim>
-struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<dim,RectilinearMesh1D>> {
+struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<dim,RectilinearAxis>> {
 
     size_t pre_divisions[dim];
     size_t post_divisions[dim];
@@ -63,7 +84,7 @@ struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<di
 
     Refinements refinements[dim];
 
-    RectilinearMesh1D get1DMesh(const RectilinearMesh1D& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir);
+    RectilinearAxis getAxis(const RectilinearAxis& initial, const shared_ptr<GeometryObjectD<dim>>& geometry, size_t dir);
 
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
          warn_missing,     ///< Warn if a defined refinement points to object absent from provided geometry.
@@ -81,7 +102,7 @@ struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<di
         }
     }
 
-    boost::shared_ptr<plask::RectangularMesh<dim,RectilinearMesh1D>>
+    boost::shared_ptr<plask::RectangularMesh<dim,RectilinearAxis>>
     generate(const boost::shared_ptr<plask::GeometryObjectD<dim>>& geometry);
 
     /// Get initial division of the smallest object in the mesh

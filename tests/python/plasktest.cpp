@@ -138,7 +138,7 @@ struct SimpleSolver : plask::Solver {
     plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
 
     std::string showVectors() {
-        plask::RegularMesh2D mesh(plask::RegularMesh1D(1., 3., 2), plask::RegularMesh1D(5., 15., 2));
+        plask::RegularMesh2D mesh(plask::RegularAxis(1., 3., 2), plask::RegularAxis(5., 15., 2));
         auto data = inVectors(mesh);
         std::stringstream str;
         for (size_t i = 0; i != 4; i++) {
@@ -148,7 +148,7 @@ struct SimpleSolver : plask::Solver {
     }
 
     SimpleSolver() :
-        outIntensity( plask::make_shared<plask::RegularMesh2D>(plask::RegularMesh1D(0., 4., 3), plask::RegularMesh1D(0., 20., 3)) )
+        outIntensity( plask::make_shared<plask::RegularMesh2D>(plask::RegularAxis(0., 4., 3), plask::RegularAxis(0., 20., 3)) )
     {
         plask::DataVector<double> data(9);
         data[0] = 100.; data[1] = 100.; data[2] = 100.;

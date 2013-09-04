@@ -672,7 +672,7 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
 {
     if (!mPotentials) throw NoValue("Heat densities");
     this->writelog(LOG_DETAIL, "Getting heat densities");
-    if (!mHeatDensities) saveHeatDensities(); // we will compute fluxes only if they are needed
+    if (!mHeatDensities) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     auto result = interpolate(*(this->mesh->getMidpointsMesh()), mHeatDensities, dest_mesh, method);

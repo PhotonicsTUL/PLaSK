@@ -7,8 +7,8 @@ shared_ptr<RegularMesh2D> RegularMesh2D::getMidpointsMesh() {
     if (this->midpoints_cache) return this->midpoints_cache;
 
     this->midpoints_cache = make_shared<RegularMesh2D>(
-        RegularMesh1D(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
-        RegularMesh1D(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1)
+        RegularAxis(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
+        RegularAxis(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1)
     );
     return this->midpoints_cache;
 }
@@ -18,9 +18,9 @@ shared_ptr<RegularMesh3D> RegularMesh3D::getMidpointsMesh() {
     if (this->midpoints_cache) return this->midpoints_cache;
 
     this->midpoints_cache = make_shared<RegularMesh3D>(
-        RegularMesh1D(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
-        RegularMesh1D(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1),
-        RegularMesh1D(this->axis2.first() + 0.5*this->axis2.step(), this->axis2.last() - 0.5*this->axis2.step(), this->axis2.size()-1)
+        RegularAxis(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
+        RegularAxis(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1),
+        RegularAxis(this->axis2.first() + 0.5*this->axis2.step(), this->axis2.last() - 0.5*this->axis2.step(), this->axis2.size()-1)
     );
     return this->midpoints_cache;
 }
@@ -62,8 +62,8 @@ static shared_ptr<Mesh> readRegularMesh2D(XMLReader& reader)
     }
     reader.requireTagEnd();
 
-    return make_shared<RegularMesh2D>(RegularMesh1D(std::get<0>(axes["axis0"]), std::get<1>(axes["axis0"]), std::get<2>(axes["axis0"])),
-                                      RegularMesh1D(std::get<0>(axes["axis1"]), std::get<1>(axes["axis1"]), std::get<2>(axes["axis1"])));
+    return make_shared<RegularMesh2D>(RegularAxis(std::get<0>(axes["axis0"]), std::get<1>(axes["axis0"]), std::get<2>(axes["axis0"])),
+                                      RegularAxis(std::get<0>(axes["axis1"]), std::get<1>(axes["axis1"]), std::get<2>(axes["axis1"])));
 }
 
 static shared_ptr<Mesh> readRegularMesh3D(XMLReader& reader)
@@ -86,9 +86,9 @@ static shared_ptr<Mesh> readRegularMesh3D(XMLReader& reader)
     }
     reader.requireTagEnd();
 
-    return make_shared<RegularMesh3D>(RegularMesh1D(std::get<0>(axes["axis0"]), std::get<1>(axes["axis0"]), std::get<2>(axes["axis0"])),
-                                      RegularMesh1D(std::get<0>(axes["axis1"]), std::get<1>(axes["axis1"]), std::get<2>(axes["axis1"])),
-                                      RegularMesh1D(std::get<0>(axes["axis2"]), std::get<1>(axes["axis2"]), std::get<2>(axes["axis2"])));
+    return make_shared<RegularMesh3D>(RegularAxis(std::get<0>(axes["axis0"]), std::get<1>(axes["axis0"]), std::get<2>(axes["axis0"])),
+                                      RegularAxis(std::get<0>(axes["axis1"]), std::get<1>(axes["axis1"]), std::get<2>(axes["axis1"])),
+                                      RegularAxis(std::get<0>(axes["axis2"]), std::get<1>(axes["axis2"]), std::get<2>(axes["axis2"])));
 }
 
 static RegisterMeshReader regularmesh2d_reader("regular2d", readRegularMesh2D);

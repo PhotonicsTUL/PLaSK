@@ -18,13 +18,13 @@ template <typename Cls>
 static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
-        RectilinearMesh1D line1;
+        RectilinearAxis line1;
         for (size_t n = 0; n < self->getActNo(); ++n)
             line1.addPoint(self->getMesh()->axis1[(self->getActLo(n)+self->getActHi(n))/2]);
         auto mesh = make_shared<RectilinearMesh2D>(midmesh->axis0, line1);
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     } else {
-        auto mesh = make_shared<RectilinearMesh2D>(RectilinearMesh1D({NAN}), RectilinearMesh1D({NAN}));
+        auto mesh = make_shared<RectilinearMesh2D>(RectilinearAxis({NAN}), RectilinearAxis({NAN}));
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     }
 }

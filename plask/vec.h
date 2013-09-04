@@ -6,22 +6,29 @@
 
 namespace plask {
 
+/// Vec<1,T> is just wrapper over T
+template <typename T>
+struct Vec<1,T> {
+    T val;
+    Vec<1,T> (const T& val): val(val) {}
+    operator T() const { return val; }
+};
 
 /** @relates Vec
-* Calculate square of vector magnitude.
-* @param v a vector
-* @return square of vector magnitude
-*/
+ * Calculate square of vector magnitude.
+ * @param v a vector
+ * @return square of vector magnitude
+ */
 template <int dim, typename T>
 inline double abs2(const Vec<dim,T>& v) { return dot(v,v); }
 
 #ifndef DOXYGEN
 
 template <>
-inline double abs2<2,dcomplex>(const Vec<2,dcomplex>& v) { return dot(v,v).real(); }
+inline double abs2<2,dcomplex>(const Vec<2,dcomplex>& v) { return dot(v,conj(v)).real(); }
 
 template <>
-inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,v).real(); }
+inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,conj(v)).real(); }
 
 #endif // DOXYGEN
 
