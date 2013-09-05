@@ -136,10 +136,10 @@ void GeometryTreeItem::onChanged(const ObjectWrapper::Event& evt) {
     miniatureInitialized = false;
  /*   if (childrenInitialized && evt.hasChangedChildrenList()) {
         if (evt.isDelgatedFromWrappedObject() &&
-          evt.delegatedEvent->hasAnyFlag(plask::GeometryObject::Event::CHILDREN_REMOVE | plask::GeometryObject::Event::CHILDREN_INSERT)) {
+          evt.delegatedEvent->hasAnyFlag(plask::GeometryObject::Event::EVENT_CHILDREN_REMOVE | plask::GeometryObject::Event::EVENT_CHILDREN_INSERT)) {
             plask::GeometryObject::ChildrenListChangedEvent* details =
                     static_cast<plask::GeometryObject::ChildrenListChangedEvent*>(evt.delegatedEvent);
-            if (details->hasFlag(plask::GeometryObject::Event::CHILDREN_REMOVE)) {
+            if (details->hasFlag(plask::GeometryObject::Event::EVENT_CHILDREN_REMOVE)) {
                 model->beginRemoveRows(getIndex(), details->beginIndex, details->endIndex-1);
                 childItems.erase(childItems.begin() + details->beginIndex, childItems.begin() + details->endIndex);
                 model->endRemoveRows();

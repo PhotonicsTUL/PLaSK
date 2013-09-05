@@ -76,22 +76,22 @@ struct ObjectWrapper {
         bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
 
         /**
-         * Check if DELETE flag is set, which mean that source of event is deleted.
-         * @return @c true only if DELETE flag is set
+         * Check if EVENT_DELETE flag is set, which mean that source of event is deleted.
+         * @return @c true only if EVENT_DELETE flag is set
          */
-        bool isDelete() const { return hasFlag(plask::GeometryObject::Event::DELETE); }
+        bool isDelete() const { return hasFlag(plask::GeometryObject::Event::EVENT_DELETE); }
 
         /**
-         * Check if RESIZE flag is set, which mean that source of event could be resized.
-         * @return @c true only if RESIZE flag is set
+         * Check if EVENT_RESIZE flag is set, which mean that source of event could be resized.
+         * @return @c true only if EVENT_RESIZE flag is set
          */
-        bool isResize() const { return hasFlag(plask::GeometryObject::Event::RESIZE); }
+        bool isResize() const { return hasFlag(plask::GeometryObject::Event::EVENT_RESIZE); }
 
         /**
-         * Check if DELEGATED flag is set, which mean that source delegate event from its child.
-         * @return @c true only if DELEGATED flag is set
+         * Check if EVENT_DELEGATED flag is set, which mean that source delegate event from its child.
+         * @return @c true only if EVENT_DELEGATED flag is set
          */
-        bool isDelgatedFromChild() const { return hasFlag(plask::GeometryObject::Event::DELEGATED); }
+        bool isDelgatedFromChild() const { return hasFlag(plask::GeometryObject::Event::EVENT_DELEGATED); }
 
         /**
          * Check if event is delegated from wrapped object.
@@ -103,7 +103,7 @@ struct ObjectWrapper {
          * Check if CHILD_LIST flag is set, which mean that children list of source could be changed.
          * @return @c true only if CHILD_LIST flag is set
          */
-        bool hasChangedChildrenList() const { return hasAnyFlag(plask::GeometryObject::Event::CHILDREN_GENERIC | plask::GeometryObject::Event::CHILDREN_INSERT | plask::GeometryObject::Event::CHILDREN_REMOVE); }
+        bool hasChangedChildrenList() const { return hasAnyFlag(plask::GeometryObject::Event::EVENT_CHILDREN_GENERIC | plask::GeometryObject::Event::EVENT_CHILDREN_INSERT | plask::GeometryObject::Event::EVENT_CHILDREN_REMOVE); }
 
         /**
          * Construct event.

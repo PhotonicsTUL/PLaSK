@@ -116,7 +116,7 @@ void Geometry2DCartesian::setBorders(Direction direction, const border::Strategy
         leftright.setStrategies(border_lo, border_hi);
     else
         bottomup.setStrategies(border_lo, border_hi);
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 void Geometry2DCartesian::setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) {
@@ -125,7 +125,7 @@ void Geometry2DCartesian::setBorder(Direction direction, bool higher, const bord
         leftright.set(higher, border_to_set);
     else
         bottomup.set(higher, border_to_set);
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 const border::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool higher) const {
@@ -201,14 +201,14 @@ void Geometry2DCylindrical::setBorders(Direction direction, const border::Strate
         }
     } else
         bottomup.setBoth(border_to_set);
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 void Geometry2DCylindrical::setBorders(Direction direction, const border::Strategy& border_lo, const border::Strategy& border_hi) {
     ensureBoundDirIsProper(direction, false);
     ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 void Geometry2DCylindrical::setBorder(Direction direction, bool higher, const border::Strategy& border_to_set) {
@@ -221,7 +221,7 @@ void Geometry2DCylindrical::setBorder(Direction direction, bool higher, const bo
         }
     } else
         bottomup.set(higher, border_to_set);
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 const border::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bool higher) const {
@@ -246,7 +246,7 @@ void Geometry3D::setBorders(Direction direction, const border::Strategy &border_
         case DIRECTION_TRAN: leftright.setStrategies(border_lo, border_hi); break;
         case DIRECTION_VERT: bottomup.setStrategies(border_lo, border_hi); break;
     }
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 void Geometry3D::setBorders(Direction direction, const border::Strategy &border_to_set) {
@@ -255,7 +255,7 @@ void Geometry3D::setBorders(Direction direction, const border::Strategy &border_
         case DIRECTION_TRAN: leftright.setBoth(border_to_set); break;
         case DIRECTION_VERT: bottomup.setBoth(border_to_set); break;
     }
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 void Geometry3D::setBorder(Direction direction, bool higher, const border::Strategy &border_to_set) {
@@ -264,7 +264,7 @@ void Geometry3D::setBorder(Direction direction, bool higher, const border::Strat
         case DIRECTION_TRAN: leftright.set(higher, border_to_set); break;
         case DIRECTION_VERT: bottomup.set(higher, border_to_set); break;
     }
-    fireChanged(Event::BORDERS);
+    fireChanged(Event::EVENT_BORDERS);
 }
 
 const border::Strategy &Geometry3D::getBorder(Direction direction, bool higher) const {

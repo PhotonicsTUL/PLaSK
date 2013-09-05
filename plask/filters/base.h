@@ -76,7 +76,7 @@ public:
     DataSourceWithReceiver() {
         in.providerValueChanged.connect(
             [&] (ReceiverBase&, ReceiverBase::ChangeReason reason) {
-                if (reason != ReceiverBase::ChangeReason::DELETE) this->fireChanged();
+                if (reason != ReceiverBase::ChangeReason::EVENT_DELETE) this->fireChanged();
             }
         );
     }
@@ -108,8 +108,8 @@ public:
     }
 
     void inOrOutWasChanged(GeometryObject::Event& e) {
-        if (e.hasFlag(GeometryObject::Event::DELETE)) disconnect(); else
-        if (e.hasFlag(GeometryObject::Event::RESIZE)) calcConnectionParameters();
+        if (e.hasFlag(GeometryObject::Event::EVENT_DELETE)) disconnect(); else
+        if (e.hasFlag(GeometryObject::Event::EVENT_RESIZE)) calcConnectionParameters();
     }
 
     void connect(InputGeomObj& inputObj, OutputGeomObj& outputObj, const PathHints* path = nullptr) {

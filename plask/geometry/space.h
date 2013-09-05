@@ -50,7 +50,7 @@ struct Geometry: public GeometryObject {
     Geometry& operator=(const Geometry& to_copy) { defaultMaterial = to_copy.defaultMaterial; return *this; }
 
     /// Inform observators that this is being deleted.
-    virtual ~Geometry() { fireChanged(Event::DELETE); }
+    virtual ~Geometry() { fireChanged(Event::EVENT_DELETE); }
 
     /**
      * Set all borders in given direction or throw exception if this borders can't be set for this calculation space or direction.
@@ -676,7 +676,7 @@ public:
      * Set strategy for the left border.
      * @param newValue new strategy for the left border
      */
-    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::BORDERS); }
+    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get left border strategy.
@@ -688,7 +688,7 @@ public:
      * Set strategy for the right border.
      * @param newValue new strategy for the right border
      */
-    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get right border strategy.
@@ -700,7 +700,7 @@ public:
      * Set strategy for the bottom border.
      * @param newValue new strategy for the bottom border
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get bottom border strategy.
@@ -712,7 +712,7 @@ public:
      * Set strategy for the top border.
      * @param newValue new strategy for the top border
      */
-    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get top border strategy.
@@ -742,7 +742,7 @@ public:
      * Set material on the positive side of the axis along the extrusion.
      * \param material material to set
      */
-    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::BORDERS); }
+    void setFrontMaterial(const shared_ptr<Material> material) { frontMaterial = material; fireChanged(Event::EVENT_BORDERS); }
 
     /// \return material on the positive side of the axis along the extrusion
     shared_ptr<Material> getFrontMaterial() const { return frontMaterial ? frontMaterial : defaultMaterial; }
@@ -751,7 +751,7 @@ public:
      * Set material on the negative side of the axis along the extrusion.
      * \param material material to set
      */
-    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::BORDERS); }
+    void setBackMaterial(const shared_ptr<Material> material) { backMaterial = material; fireChanged(Event::EVENT_BORDERS); }
 
     /// \return material on the negative side of the axis along extrusion
     shared_ptr<Material> getBackMaterial() const { return backMaterial ? backMaterial : defaultMaterial; }
@@ -839,7 +839,7 @@ public:
      * Set strategy for inner border.
      * @param newValue new strategy for inner border
      */
-    void setInnerBorder(const border::UniversalStrategy& newValue) { innerouter.setLo(newValue); fireChanged(Event::BORDERS); }
+    void setInnerBorder(const border::UniversalStrategy& newValue) { innerouter.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get inner border strategy.
@@ -851,7 +851,7 @@ public:
      * Set strategy for outer border.
      * @param newValue new strategy for outer border
      */
-    void setOuterBorder(const border::UniversalStrategy& newValue) { innerouter.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setOuterBorder(const border::UniversalStrategy& newValue) { innerouter.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get outer border strategy.
@@ -863,7 +863,7 @@ public:
      * Set strategy for bottom border.
      * @param newValue new strategy for bottom border
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get bottom border strategy.
@@ -875,7 +875,7 @@ public:
      * Set strategy for up border.
      * @param newValue new strategy for up border
      */
-    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setUpBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get up border strategy.
@@ -982,7 +982,7 @@ public:
      * Set strategy for the left border.
      * @param newValue new strategy for the left border
      */
-    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::BORDERS); }
+    void setLeftBorder(const border::Strategy& newValue) { leftright.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get left border strategy.
@@ -994,7 +994,7 @@ public:
      * Set strategy for the right border.
      * @param newValue new strategy for the right border
      */
-    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setRightBorder(const border::Strategy& newValue) { leftright.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get right border strategy.
@@ -1006,7 +1006,7 @@ public:
      * Set strategy for the bottom border.
      * @param newValue new strategy for the bottom border
      */
-    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::BORDERS); }
+    void setBottomBorder(const border::Strategy& newValue) { bottomup.setLo(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get bottom border strategy.
@@ -1018,7 +1018,7 @@ public:
      * Set strategy for the top border.
      * @param newValue new strategy for the top border
      */
-    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::BORDERS); }
+    void setTopBorder(const border::Strategy& newValue) { bottomup.setHi(newValue); fireChanged(Event::EVENT_BORDERS); }
 
     /**
      * Get top border strategy.

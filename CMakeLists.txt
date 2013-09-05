@@ -199,6 +199,7 @@ file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
 
 # CAMOS
 add_subdirectory(extlib/camos)
+add_subdirectory(extlib/fftpacx)
 
 
 # ---------- PLaSK library --------------------------------------------

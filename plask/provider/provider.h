@@ -212,7 +212,7 @@ struct ReceiverBase {
 
     /// The reason of change of provider value
     enum class ChangeReason {
-        DELETE,     ///< this receiver is being deleted
+        EVENT_DELETE,     ///< this receiver is being deleted
         VALUE,      ///< value of provider has just been changed
         PROVIDER    ///< provider has just been exchanged to another one
     };
@@ -288,7 +288,7 @@ public:
             delete this->provider;
             this->provider = nullptr;
         }
-        fireChanged(ChangeReason::DELETE);
+        fireChanged(ChangeReason::EVENT_DELETE);
     }
 
     /**

@@ -15,11 +15,11 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
     for (std::size_t i = 1; i < stackHeights.size(); ++i) {
         stackHeights[i] += diff;
         children[i-1]->translation[growingDirection] += diff;
-        //children[i-1]->fireChanged(GeometryObject::Event::RESIZE);
+        //children[i-1]->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
     this->fireChildrenChanged();    //TODO should this be called? children was moved but not removed/inserted
-    //this->fireChanged(GeometryObject::Event::RESIZE);
-    //TODO: block connection to not react on children changed, call children[i]->fireChanged(GeometryObject::Event::RESIZE); for each child, call this->fireChanged(GeometryObject::Event::RESIZE delegate;
+    //this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
+    //TODO: block connection to not react on children changed, call children[i]->fireChanged(GeometryObject::Event::EVENT_RESIZE); for each child, call this->fireChanged(GeometryObject::Event::EVENT_RESIZE delegate;
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>

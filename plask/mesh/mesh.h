@@ -127,9 +127,9 @@ struct Mesh {
 
         /// Event flags (which describe event properties).
         enum Flags {
-            DELETE = 1,             ///< is deleted
-            RESIZE = 1<<1,          ///< size could be changed (points added or deleted)
-            USER_DEFINED = 1<<2     ///< user-defined flags could have ids: USER_DEFINED, USER_DEFINED<<1, USER_DEFINED<<2, ...
+            EVENT_DELETE = 1,             ///< is deleted
+            EVENT_RESIZE = 1<<1,          ///< size could be changed (points added or deleted)
+            EVENT_USER_DEFINED = 1<<2     ///< user-defined flags could have ids: EVENT_USER_DEFINED, EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
         };
 
         /**
@@ -140,16 +140,16 @@ struct Mesh {
         bool hasFlag(Flags flag) const { return hasAnyFlag(flag); }
 
         /**
-         * Check if DELETE flag is set, which mean that source of event is being deleted.
-         * @return @c true only if DELETE flag is set
+         * Check if EVENT_DELETE flag is set, which mean that source of event is being deleted.
+         * @return @c true only if EVENT_DELETE flag is set
          */
-        bool isDelete() const { return hasFlag(DELETE); }
+        bool isDelete() const { return hasFlag(EVENT_DELETE); }
 
         /**
-         * Check if RESIZE flag is set, which mean that source of event could have been resized.
-         * @return @c true only if RESIZE flag is set
+         * Check if EVENT_RESIZE flag is set, which mean that source of event could have been resized.
+         * @return @c true only if EVENT_RESIZE flag is set
          */
-        bool isResize() const { return hasFlag(RESIZE); }
+        bool isResize() const { return hasFlag(EVENT_RESIZE); }
 
         /**
          * Construct the event.
@@ -191,7 +191,7 @@ struct Mesh {
     }
 
     /// This method is called when the mesh is resized
-    void fireResized() { fireChanged(Event::RESIZE); }
+    void fireResized() { fireChanged(Event::EVENT_RESIZE); }
 
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
@@ -204,7 +204,7 @@ struct Mesh {
         throw NotImplemented("Mesh::writeXML()");
     }
 
-    virtual ~Mesh() { fireChanged(Event::DELETE); }
+    virtual ~Mesh() { fireChanged(Event::EVENT_DELETE); }
 
   protected:
 

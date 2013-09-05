@@ -8,7 +8,7 @@ namespace plask {
 void Extrusion::setLength(double new_length) {
     if (length == new_length) return;
     length = new_length;
-    fireChanged(Event::RESIZE);
+    fireChanged(Event::EVENT_RESIZE);
 }
 
 bool Extrusion::contains(const DVec& p) const {

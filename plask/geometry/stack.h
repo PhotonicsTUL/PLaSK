@@ -480,7 +480,7 @@ struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackCo
         if (aligners[child_no] == aligner) return; //protected for self assign
         aligners[child_no] = aligner;
         aligners[child_no]->align(*children[child_no]);
-        this->fireChanged(GeometryObject::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }*/
 
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);

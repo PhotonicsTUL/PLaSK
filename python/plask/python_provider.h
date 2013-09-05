@@ -63,7 +63,7 @@ namespace detail {
             py::incref(obj);
             receiver.providerValueChanged.connect_extended(
                 [obj](const boost::signals2::connection& conn, ReceiverBase&, ReceiverBase::ChangeReason reason) -> void {
-                    if (reason == ReceiverT::ChangeReason::PROVIDER || reason == ReceiverT::ChangeReason::DELETE) {
+                    if (reason == ReceiverT::ChangeReason::PROVIDER || reason == ReceiverT::ChangeReason::EVENT_DELETE) {
                         conn.disconnect();
                         py::decref(obj);
                     }

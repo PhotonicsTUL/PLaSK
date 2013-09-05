@@ -139,7 +139,7 @@ struct Block: public GeometryObjectLeaf<dim> {
      */
     void setSize(DVec&& new_size) {
         size = new_size;
-        this->fireChanged(GeometryObject::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
     /**

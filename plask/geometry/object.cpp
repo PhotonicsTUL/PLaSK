@@ -92,7 +92,7 @@ XMLElement GeometryObject::WriteXMLCallback::makeChildTag(XMLElement& container_
 }
 
 GeometryObject::~GeometryObject() {
-    fireChanged(Event::DELETE);
+    fireChanged(Event::EVENT_DELETE);
 }
 
 void GeometryObject::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {

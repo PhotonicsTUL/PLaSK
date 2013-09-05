@@ -34,7 +34,7 @@ struct Cylinder: public GeometryObjectLeaf<3> {
      */
     void setRadius(double new_radius) {
         this->radius = new_radius;
-        this->fireChanged(GeometryObject::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
     /**
@@ -43,7 +43,7 @@ struct Cylinder: public GeometryObjectLeaf<3> {
      */
     void setHeight(double new_height) {
         this->height = new_height;
-        this->fireChanged(GeometryObject::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
     /**
@@ -54,7 +54,7 @@ struct Cylinder: public GeometryObjectLeaf<3> {
     void resize(double radius, double height) {
         this->radius = radius;
         this->height = height;
-        this->fireChanged(GeometryObject::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
 };

@@ -156,7 +156,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
      */
     void setSize(double new_size) {
         size = new_size;
-        this->fireChanged(GeometryObject::Event::RESIZE);
+        this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames&) const {
