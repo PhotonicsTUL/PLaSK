@@ -122,14 +122,16 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         }
         if (overthreshold_computation)
         {
-writelog(LOG_DETAIL, "Git0a!");
+writelog(LOG_DEBUG, "Git0a!");
 
             this->writelog(LOG_DETAIL, "Conducting overthreshold computations");
             convergence = MatrixFEM();
             if (convergence)
             {
                 overthreshold_computation = false;
-                writelog(LOG_DETAIL, "Integral of overthreshold loses: %1%", integral());
+#ifndef NDEBUG                
+                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1%", integral());
+#endif
             }
         }
     }
@@ -251,21 +253,21 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
                         auto wavelength = real(inWavelength(n));
-writelog(LOG_DETAIL, "wavelength: %1%", wavelength);
+writelog(LOG_DEBUG, "wavelength: %1%", wavelength);
                         auto Li = inLightIntensity(n, mesh2, interpolation_method);
-writelog(LOG_DETAIL, "Li[0]: %1%", Li[0]*1.0e-4);
+writelog(LOG_DEBUG, "Li[0]: %1%", Li[0]*1.0e-4);
                         int ile = 0;
                         for (auto n: n_present)
                         {
                             if (n <= 0) ile++;
                         }
-writelog(LOG_DETAIL, "ile: %1%", ile);
+writelog(LOG_DEBUG, "ile: %1%", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
-writelog(LOG_DETAIL, "g[0]: %1%", g[0]);
+writelog(LOG_DEBUG, "g[0]: %1%", g[0]);
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
-writelog(LOG_DETAIL, "dgdn[0]: %1%", dgdn[0]);
+writelog(LOG_DEBUG, "dgdn[0]: %1%", dgdn[0]);
                         auto factor = inv_hc * wavelength;
-writelog(LOG_DETAIL, "Git2a!");
+writelog(LOG_DEBUG, "Git2a!");
                         for (size_t i = 0; i != mesh2.size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
@@ -330,10 +332,10 @@ writelog(LOG_DETAIL, "Git2a!");
 
                     absolute_error = abs(L - R);
                     relative_error = abs(absolute_error/R);
-writelog(LOG_DETAIL, "absolute_error: %1%", absolute_error);
-writelog(LOG_DETAIL, "relative_error: %1%", relative_error);
-writelog(LOG_DETAIL, "concentration: %1%", n_present[0]);
-writelog(LOG_DETAIL, "F: %1%", F(0));
+writelog(LOG_DEBUG, "absolute_error: %1%", absolute_error);
+writelog(LOG_DEBUG, "relative_error: %1%", relative_error);
+writelog(LOG_DEBUG, "concentration: %1%", n_present[0]);
+writelog(LOG_DEBUG, "F: %1%", F(0));
 
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
@@ -349,7 +351,7 @@ writelog(LOG_DETAIL, "F: %1%", F(0));
                 }
             }
             iterations += 1;
-            writelog(LOG_DETAIL, "iterations: %1%", iterations);
+writelog(LOG_DEBUG, "iteration: %1%", iterations);
         }
 
     } while ( !_convergence && (iterations < max_iterations));
@@ -687,10 +689,10 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-writelog(LOG_DETAIL, "product before: %1%", product);
+writelog(LOG_DEBUG, "product before: %1%", product);
         product -= overthreshold_left[i];
-writelog(LOG_DETAIL, "product after: %1%", product);
-writelog(LOG_DETAIL, "straty: %1%", overthreshold_left[i]);
+writelog(LOG_DEBUG, "product after: %1%", product);
+writelog(LOG_DEBUG, "straty: %1%", overthreshold_left[i]);
     }
 
     return product;
