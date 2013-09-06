@@ -9,9 +9,9 @@
     auto a = begin(aa), ae = end(aa); \
     auto b = begin(bb); \
     BOOST_REQUIRE_EQUAL(distance(a, ae), distance(b, end(bb))); \
-    for(; a != ae; ++a, ++b) { \
-        BOOST_CHECK_SMALL(abs2(*a-*b), tolerance); \
-    } \
+    double total_error = 0.;\
+    for(; a != ae; ++a, ++b) total_error += abs2(*a - *b); \
+    BOOST_CHECK_SMALL(total_error, distance(begin(aa), ae) * tolerance); \
 }
 
 #include "../fft.h"
@@ -21,7 +21,7 @@ using namespace plask::solvers::slab;
 
 BOOST_AUTO_TEST_SUITE(fft)
 
-BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
+BOOST_AUTO_TEST_CASE(FullFFT)
 {
     // Test forward transform
     DataVector<dcomplex> source = {
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
     CHECK_CLOSE_COLLECTION(data, source, 1e-16)
 }
 
-BOOST_AUTO_TEST_CASE(ForwardSymmetric)
+BOOST_AUTO_TEST_CASE(EvenFTT)
 {
     // Test symmetric forward transform
     DataVector<dcomplex> source = {
@@ -98,6 +98,10 @@ BOOST_AUTO_TEST_CASE(ForwardSymmetric)
 
     FFT::Forward1D(2, 8, FFT::SYMMETRY_EVEN, data.data()).execute();
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
+    for (int i = 0; i != 16; i += 2) {
+        std::cerr << data[i].real() << " " << results[i].real() << " " << (results[i].real()/data[i].real()) << "\n";
+    }
+    
 
     FFT::Backward1D(2, 8, FFT::SYMMETRY_EVEN, data.data()).execute();
     CHECK_CLOSE_COLLECTION(data, source, 1e-16)

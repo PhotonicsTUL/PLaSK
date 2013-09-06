@@ -86,6 +86,7 @@ inline void* aligned_malloc(std::size_t size)
  */
 inline void aligned_free(void *ptr)
 {
+    if (!ptr) return;
 #if PLASK_MALLOC_ALIGNED
     std::free(ptr);
 #elif defined _WIN32

@@ -19,13 +19,13 @@ class PlaskTestResult(unittest.TextTestResult):
             tb_lines = traceback.extract_tb(tb, length)
         else:
             tb_lines = traceback.extract_tb(tb)
-            #msgLines = traceback.format_exception(exctype, value, tb)
+            #msg_lines = traceback.format_exception(exctype, value, tb)
 
-        msgLines = []
+        msg_lines = []
         for filename, lineno, function, text in tb_lines[:-1]:
-            msgLines.append("In function %s: %s(%d)\n: %s\n" % (function, filename, lineno, text))
+            msg_lines.append('%s(%d)\n: in "%s": %s\n' % (filename, lineno, function, text))
         filename, lineno, function, text = tb_lines[-1]
-        msgLines.append("In function %s: %s(%d): %s: %s\n: %s\n" % (function, filename, lineno, exctype.__name__, value, text))
+        msg_lines.append('%s(%d): %s in "%s": %s\n>   %s\n' % (filename, lineno, exctype.__name__, function, value, text))
 
         if self.buffer:
             output = sys.stdout.getvalue()
@@ -33,13 +33,13 @@ class PlaskTestResult(unittest.TextTestResult):
             if output:
                 if not output.endswith('\n'):
                     output += '\n'
-                msgLines.append(STDOUT_LINE % output)
+                msg_lines.append(STDOUT_LINE % output)
             if error:
                 if not error.endswith('\n'):
                     error += '\n'
-                msgLines.append(STDERR_LINE % error)
+                msg_lines.append(STDERR_LINE % error)
 
-        return ''.join(msgLines)
+        return ''.join(msg_lines)
 
 
 

@@ -31,12 +31,12 @@ struct Forward1D {
     /// Assignment operator
     Forward1D& operator=(Forward1D&& old);
     /** Init transfrom
-     * \param howmany number of arrays to transform
+     * \param lot number of arrays to transform
      * \param n size of a single array
      * \param data pointer to data to transform
      * \param symmetry symmetry of the transform
      */
-    Forward1D(size_t howmany, size_t n, Symmetry symmetry, dcomplex* data);
+    Forward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data);
     ~Forward1D();
     /// Execute transform
     void execute();
@@ -45,13 +45,14 @@ struct Forward1D {
      */
     void execute(dcomplex* data);
   private:
-    int howmany;
+    int lot;
     int n;
     Symmetry symmetry;
     dcomplex* data;
 #ifdef USE_FFTW
     fftw_plan plan;
 #else
+    double *wsave;
 #endif
 };
 
@@ -64,12 +65,12 @@ struct Forward2D {
     /// Assignment operator
     Forward2D& operator=(Forward2D&& old);
     /** Init transfrom
-     * \param howmany number of arrays to transform
+     * \param lot number of arrays to transform
      * \param n1,n2 dimensions of a single array
      * \param data pointer to data to transform
      * \param symmetry1,symmetry2 symmetry of the transform
      */
-    Forward2D(size_t howmany, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
+    Forward2D(size_t lot, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
     ~Forward2D();
     /// Execute transform
     void execute();
@@ -78,13 +79,14 @@ struct Forward2D {
      */
     void execute(dcomplex* data);
   private:
-    int howmany;
+    int lot;
     int n1, n2;
     Symmetry symmetry1, symmetry2;
     dcomplex* data;
 #ifdef USE_FFTW
     fftw_plan plan;
 #else
+    double *wsave;
 #endif
 };
 
@@ -97,12 +99,12 @@ struct Backward1D {
     /// Assignment operator
     Backward1D& operator=(Backward1D&& old);
     /** Init transfrom
-     * \param howmany number of arrays to transform
+     * \param lot number of arrays to transform
      * \param n size of a single array
      * \param data pointer to data to transform
      * \param symmetry symmetry of the transform
      */
-    Backward1D(size_t howmany, size_t n, Symmetry symmetry, dcomplex* data);
+    Backward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data);
     ~Backward1D();
     /// Execute transform
     void execute();
@@ -111,13 +113,14 @@ struct Backward1D {
      */
     void execute(dcomplex* data);
   private:
-    int howmany;
+    int lot;
     int n;
     Symmetry symmetry;
     dcomplex* data;
 #ifdef USE_FFTW
     fftw_plan plan;
 #else
+    double *wsave;
 #endif
 };
 
@@ -130,12 +133,12 @@ struct Backward2D {
     /// Assignment operator
     Backward2D& operator=(Backward2D&& old);
     /** Init transfrom
-     * \param howmany number of arrays to transform
+     * \param lot number of arrays to transform
      * \param n1,n2 dimensions of a single array
      * \param data pointer to data to transform
      * \param symmetry1,symmetry2 symmetry of the transform
      */
-    Backward2D(size_t howmany, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
+    Backward2D(size_t lot, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
     ~Backward2D();
     /// Execute transform
     void execute();
@@ -144,13 +147,14 @@ struct Backward2D {
      */
     void execute(dcomplex* data);
   private:
-    int howmany;
+    int lot;
     int n1, n2;
     Symmetry symmetry1, symmetry2;
     dcomplex* data;
 #ifdef USE_FFTW
     fftw_plan plan;
 #else
+    double *wsave;
 #endif
 };
 

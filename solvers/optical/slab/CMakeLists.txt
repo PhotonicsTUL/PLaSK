@@ -41,7 +41,7 @@ if(USE_FFTW)
     list(APPEND SOLVER_LINK_LIBRARIES ${FFTW3_LIBRARIES})
     list(APPEND SOLVER_INCLUDE_DIRECTORIES ${FFTW3_INCLUDE_DIR})
 else()
-    # TODO
+    list(APPEND SOLVER_LINK_LIBRARIES fftpacx)
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.h)

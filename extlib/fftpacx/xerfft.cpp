@@ -34,33 +34,18 @@ int xerfft_(char *srname, integer *info, ftnlen)
 {
     std::stringstream msg;
 
-    if (*info >= 1) {
-        msg << "On entry to ";
-        msg << srname;
-        msg << " parameter number ";
-        msg << (*info);
-        msg << " had an illegal value";
-    } else if (*info == -1) {
-        msg << "On entry to ";
-        msg << srname;
-        msg << " parameters LOT, JUMP, N and INC are inconsistent";
-    } else if (*info == -2) {
-        msg << "On entry to ";
-        msg << srname;
-        msg << " parameter L is greater than LDIM";
-    } else if (*info == -3) {
-        msg << "On entry to ";
-        msg << srname;
-        msg << " parameter M is greater than MDIM";
-    } else if (*info == -5) {
-        msg << "Within ";
-        msg << srname;
-        msg << " input error returned by lower level routine";
-    } else if (*info == -6) {
-        msg << "On entry to ";
-        msg << srname;
-        msg << " parameter LDIM is less than 2*(L/2+1)";
-    }
+    if (*info >= 1)
+        msg << "On entry to " << srname << " parameter number " << (*info) << " had an illegal value";
+    else if (*info == -1)
+        msg << "On entry to " << srname << " parameters LOT, JUMP, N and INC are inconsistent";
+    else if (*info == -2)
+        msg << "On entry to " << srname << " parameter L is greater than LDIM";
+    else if (*info == -3)
+        msg << "On entry to " << srname << " parameter M is greater than MDIM";
+    else if (*info == -5)
+        msg << "Within " << srname << " input error returned by lower level routine";
+    else if (*info == -6)
+        msg << "On entry to " << srname << " parameter LDIM is less than 2*(L/2+1)";
 
     throw msg.str();
 
