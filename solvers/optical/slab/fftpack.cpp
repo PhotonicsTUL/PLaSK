@@ -25,7 +25,7 @@ Forward1D& Forward1D::operator=(Forward1D&& old) {
     return *this;
 }
 
-Forward1D::Forward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data):
+Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
     lot(lot), n(n), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
     try { 
         int ier;
@@ -53,7 +53,7 @@ void Forward1D::execute(dcomplex* data) {
             cfftmf_(lot, 1, n, lot, data, lot*n, wsave, lensav(n), work, 2*lot*n, ier);
         } else {
             cosqmb_(2*lot, 1, n, 2*lot, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
-            double factor = 1./n; for (size_t N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
+            double factor = 1./n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
         }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Forward1D::execute: %1%", msg);
@@ -84,7 +84,7 @@ Backward1D& Backward1D::operator=(Backward1D&& old) {
     return *this;
 }
 
-Backward1D::Backward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data):
+Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
     lot(lot), n(n), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
     try { 
         int ier;
@@ -112,10 +112,10 @@ void Backward1D::execute(dcomplex* data) {
             cfftmb_(lot, 1, n, lot, data, lot*n, wsave, lensav(n), work, 2*lot*n, ier);
         } else if (symmetry == SYMMETRY_EVEN) {
             cosqmf_(2*lot, 1, n, 2*lot, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
-             double factor = n; for (size_t N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
+             double factor = n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
         } else if (symmetry == SYMMETRY_EVEN) {
             sinqmf_(2*lot, 1, n, 2*lot, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
-            double factor = n; for (size_t N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
+            double factor = n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
          }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Backward1D::execute: %1%", msg);

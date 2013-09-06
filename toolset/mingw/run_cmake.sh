@@ -22,5 +22,6 @@ cmake .. -G Ninja \
 	 -DUSE_OMP=OFF \
 	 -DGSL_CONFIG_EXECUTABLE=$MINGW_ROOT/usr/$arch-pc-$mingw/bin/gsl-config \
 	 -DDLLS_DIR=$MINGW_ROOT/$arch/dlls \
+         -DUSE_FFTW=OFF \
 	 -DCMAKE_BUILD_TYPE=Release	
 #	 -DCMAKE_BUILD_TYPE=Debug	

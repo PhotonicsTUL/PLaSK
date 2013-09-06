@@ -36,7 +36,7 @@ struct Forward1D {
      * \param data pointer to data to transform
      * \param symmetry symmetry of the transform
      */
-    Forward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data);
+    Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data);
     ~Forward1D();
     /// Execute transform
     void execute();
@@ -70,7 +70,7 @@ struct Forward2D {
      * \param data pointer to data to transform
      * \param symmetry1,symmetry2 symmetry of the transform
      */
-    Forward2D(size_t lot, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
+    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
     ~Forward2D();
     /// Execute transform
     void execute();
@@ -104,7 +104,7 @@ struct Backward1D {
      * \param data pointer to data to transform
      * \param symmetry symmetry of the transform
      */
-    Backward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data);
+    Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data);
     ~Backward1D();
     /// Execute transform
     void execute();
@@ -138,7 +138,7 @@ struct Backward2D {
      * \param data pointer to data to transform
      * \param symmetry1,symmetry2 symmetry of the transform
      */
-    Backward2D(size_t lot, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
+    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
     ~Backward2D();
     /// Execute transform
     void execute();

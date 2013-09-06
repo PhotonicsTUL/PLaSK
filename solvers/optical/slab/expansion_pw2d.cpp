@@ -197,8 +197,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         result.reset(mesh.size(), Tensor3<dcomplex>(0.));
         if (!symmetric) {
-            for (int k = -nN/2, end = (nN+1)/2; k != end; ++k) {
-                int j = (k>=0)? k : k + nN;
+            for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
+                size_t j = (k>=0)? k : k + nN;
                 for (size_t i = 0; i != mesh.size(); ++i) {
                     result[i] += coeffs[j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
                 }

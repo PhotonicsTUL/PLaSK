@@ -44,7 +44,7 @@ Forward1D& Forward1D::operator=(Forward1D&& old) {
     return *this;
 }
 
-Forward1D::Forward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data):
+Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
     lot(lot), n(n), symmetry(symmetry), data(data) {
     if (symmetry == SYMMETRY_NONE) {
         plan = fftw_plan_many_dft(1, &this->n, lot,
@@ -65,7 +65,7 @@ void Forward1D::execute() {
     if (!plan) throw CriticalException("No FFTW plan");
     fftw_execute(plan);
     double factor = (symmetry==SYMMETRY_NONE? 1. : 0.5) / n;
-    for (size_t N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
+    for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
 }
 
 void Forward1D::execute(dcomplex* data) {
@@ -78,7 +78,7 @@ void Forward1D::execute(dcomplex* data) {
         fftw_execute_r2r(plan, reinterpret_cast<double*>(data), reinterpret_cast<double*>(data));
         factor = 0.5 / n;
     }
-    for (size_t N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
+    for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
 }
 
 Forward1D::~Forward1D() {
@@ -105,7 +105,7 @@ Forward2D& Forward2D::operator=(Forward2D&& old) {
     return *this;
 }
 
-Forward2D::Forward2D(size_t lot, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data):
+Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data):
     lot(lot), n1(n1), n2(n2), symmetry1(symmetry1), symmetry2(symmetry2), data(data) {
     if (symmetry1 == SYMMETRY_NONE && symmetry2 == SYMMETRY_NONE) {
         plan = fftw_plan_many_dft(2, &this->n1, lot,
@@ -127,7 +127,7 @@ void Forward2D::execute() {
     fftw_execute(plan);
     double factor;
     if (symmetry1 == SYMMETRY_NONE && symmetry2 == SYMMETRY_NONE) factor = 0.5 / n1 / n2;
-    for (size_t N = lot*n1*n2, i = 0; i < N; ++i) data[i] *= factor;
+    for (int N = lot*n1*n2, i = 0; i < N; ++i) data[i] *= factor;
 }
 
 void Forward2D::execute(dcomplex* data) {
@@ -138,7 +138,7 @@ void Forward2D::execute(dcomplex* data) {
         factor = 0.5 / n1 / n2;
     } else
         throw NotImplemented("Forward2D");
-    for (size_t N = lot*n1*n2, i = 0; i < N; ++i) data[i] *= factor;
+    for (int N = lot*n1*n2, i = 0; i < N; ++i) data[i] *= factor;
 }
 
 Forward2D::~Forward2D() {
@@ -165,7 +165,7 @@ Backward1D& Backward1D::operator=(Backward1D&& old) {
     return *this;
 }
 
-Backward1D::Backward1D(size_t lot, size_t n, Symmetry symmetry, dcomplex* data):
+Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
     lot(lot), n(n), symmetry(symmetry), data(data) {
     if (symmetry == SYMMETRY_NONE) {
         plan = fftw_plan_many_dft(1, &this->n, lot,
@@ -223,7 +223,7 @@ Backward2D& Backward2D::operator=(Backward2D&& old) {
     return *this;
 }
 
-Backward2D::Backward2D(size_t lot, size_t n1, size_t n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data):
+Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data):
     lot(lot), n1(n1), n2(n2), symmetry1(symmetry1), symmetry2(symmetry2), data(data) {
     plan = nullptr; //TODO
 }
