@@ -114,6 +114,13 @@ class RectilinearMeshes(unittest.TestCase):
         mesh3 = generator3(stack)
         self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
 
+        generator1d = plask.mesh.Rectilinear1D.DivideGenerator()
+        generator1d.postdiv = 2
+        shelf = geometry.Shelf2D()
+        shelf.append(geometry.Rectangle(1., 1., None))
+        shelf.append(geometry.Rectangle(8., 1., None))
+        self.assertEqual( list(generator1d(shelf)), [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0] )
+
 
     def testDivideGeneratorXML(self):
         manager = plask.Manager()
@@ -131,12 +138,18 @@ class RectilinearMeshes(unittest.TestCase):
                 <axis1 object="rect" every="1."/>
               </refinements>
             </generator>
+            <generator type="rectilinear1d" method="divide" name="one">
+              <refinements>
+                <axis0 object="rect" by="2"/>
+              </refinements>
+            </generator>
           </grids>
         </plask>
         ''')
         msh = manager.meshgens['refined'](manager.geometrics['rect'])
         self.assertEqual( list(msh.axis0), [0., 10., 20., 30., 40., 50.] )
         self.assertEqual( list(msh.axis1), [0., 1., 2., 3., 4., 5.] )
+        self.assertEqual( list(manager.meshgens['one'](manager.geometrics['rect'])), [0., 25., 50.] )
 
 
     def testRegenerationInSolver(self):

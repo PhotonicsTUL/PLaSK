@@ -13,7 +13,9 @@ namespace plask {
  * \tparam PtrT intelligent pointer holding the axis
  */
 template <typename AxisT>
-struct Mesh1D: public MeshD<1> {
+class RectangularMesh<1,AxisT>: public MeshD<1> {
+
+  public:
     
     /// Original mesh type for further access
     typedef AxisT AxisType;
@@ -26,7 +28,7 @@ struct Mesh1D: public MeshD<1> {
      * \param args... arguments forwarded to the axis
      */
     template <typename... Args>
-    Mesh1D(const Args&... args): axis(args...) {
+    RectangularMesh(const Args&... args): axis(args...) {
         axis.owner = this;
     }
     
@@ -34,7 +36,7 @@ struct Mesh1D: public MeshD<1> {
      * Copy constructor
      * \param source object to copy from
      */
-    Mesh1D(const Mesh1D<AxisT>& source): axis(source.axis) {
+    RectangularMesh(const RectangularMesh<1,AxisT>& source): axis(source.axis) {
         axis.owner = this;
     }
     
@@ -65,13 +67,13 @@ struct Mesh1D: public MeshD<1> {
      * \param to_compare mesh to compare
      * \return \c true only if this mesh and \p to_compare represents the same set of points
      */
-    bool operator==(const Mesh1D<AxisT>& to_compare) {
+    bool operator==(const RectangularMesh<1,AxisT>& to_compare) {
         return axis == to_compare.axis;
     }
 };
 
-typedef Mesh1D<RectilinearAxis> RectilinearMesh1D;
-typedef Mesh1D<RegularAxis> RegularMesh1D;
+typedef RectangularMesh<1,RectilinearAxis> RectilinearMesh1D;
+typedef RectangularMesh<1,RegularAxis> RegularMesh1D;
 
 
 } // namespace plask

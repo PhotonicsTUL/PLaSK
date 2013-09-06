@@ -387,9 +387,12 @@ class MeshGeneratorOf: public MeshGenerator
     void onChange(const Event& evt) { clearCache(); }
 
   public:
-    // Type of generated mesh
+    /// Type of the generated mesh
     typedef MeshT MeshType;
 
+    /// Number of geometry dimensions
+    enum { DIM = dim };
+    
     /**
      * Generate new mesh
      * \param geometry on which the mesh should be generated

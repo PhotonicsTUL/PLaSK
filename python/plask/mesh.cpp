@@ -25,6 +25,11 @@ void register_mesh()
         .def("__len__", &Mesh::size)
     ;
 
+    py::class_<MeshD<1>, shared_ptr<MeshD<1>>, py::bases<Mesh>, boost::noncopyable>("Mesh1D",
+        "Base class for every one-dimensional transverse mesh in two-dimensional geometry", py::no_init)
+        .def("__iter__", py::range(&MeshD<1>::begin, &MeshD<1>::end))
+    ;
+
     py::class_<MeshD<2>, shared_ptr<MeshD<2>>, py::bases<Mesh>, boost::noncopyable>("Mesh2D", "Base class for every two-dimensional mesh", py::no_init)
         .def("__iter__", py::range(&MeshD<2>::begin, &MeshD<2>::end))
     ;

@@ -3,7 +3,7 @@
 namespace plask {
     
 template <>
-void Mesh1D<RectilinearAxis>::writeXML(XMLElement& object) const {
+void RectangularMesh<1,RectilinearAxis>::writeXML(XMLElement& object) const {
     object.attr("type", "rectilinear1d");
     auto tag = object.addTag("axis");
     tag.indent();
@@ -16,7 +16,7 @@ void Mesh1D<RectilinearAxis>::writeXML(XMLElement& object) const {
 
 
 template <>
-void Mesh1D<RegularAxis>::writeXML(XMLElement& object) const {
+void RectangularMesh<1,RegularAxis>::writeXML(XMLElement& object) const {
     object.attr("type", "regular1d");
     object.addTag("axis").attr("start", axis.first()).attr("stop", axis.last()).attr("num", axis.size());
 }
@@ -50,7 +50,7 @@ static shared_ptr<Mesh> readRectilinearMesh1D(XMLReader& reader)
     }
     reader.requireTagEnd();
 
-    return make_shared<Mesh1D<RectilinearAxis>>(std::move(axis));
+    return make_shared<RectangularMesh<1,RectilinearAxis>>(std::move(axis));
 }
 
 
@@ -73,7 +73,7 @@ static shared_ptr<Mesh> readRegularMesh1D(XMLReader& reader)
     }
     reader.requireTagEnd();
 
-    return make_shared<Mesh1D<RegularAxis>>(start, stop, count);
+    return make_shared<RectangularMesh<1,RegularAxis>>(start, stop, count);
 }
 
 static RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D);
