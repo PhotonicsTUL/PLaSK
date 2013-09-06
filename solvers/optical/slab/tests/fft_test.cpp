@@ -21,8 +21,6 @@ using namespace plask::solvers::slab;
 
 BOOST_AUTO_TEST_SUITE(fft)
 
-FFT fourier;
-
 BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
 {
     // Test forward transform
@@ -66,10 +64,10 @@ BOOST_AUTO_TEST_CASE(ForwardAsymmetric)
     };
     DataVector<dcomplex> data = source.copy();
 
-    fourier.forward(2, 17, data.data(), FFT::SYMMETRY_NONE);
+    FFT::Forward1D(2, 17, FFT::SYMMETRY_NONE, data.data()).execute();
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 
-    fourier.backward(2, 17, data.data(), FFT::SYMMETRY_NONE);
+    FFT::Backward1D(2, 17, FFT::SYMMETRY_NONE, data.data()).execute();
     CHECK_CLOSE_COLLECTION(data, source, 1e-16)
 }
 
@@ -98,10 +96,10 @@ BOOST_AUTO_TEST_CASE(ForwardSymmetric)
     };
     DataVector<dcomplex> data = source.copy();
 
-    fourier.forward(2, 8, data.data(), FFT::SYMMETRY_EVEN);
+    FFT::Forward1D(2, 8, FFT::SYMMETRY_EVEN, data.data()).execute();
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 
-    fourier.backward(2, 8, data.data(), FFT::SYMMETRY_EVEN);
+    FFT::Backward1D(2, 8, FFT::SYMMETRY_EVEN, data.data()).execute();
     CHECK_CLOSE_COLLECTION(data, source, 1e-16)
 }
 

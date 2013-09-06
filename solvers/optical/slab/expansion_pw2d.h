@@ -14,8 +14,8 @@ struct ExpansionPW2D: public Expansion {
 
     FourierReflection2D* solver;        ///< Solver which performs calculations (and is the interface to the outside world)
 
-    RegularAxis xmesh;                ///< Horizontal axis for structure sampling
-    RegularAxis xpoints;              ///< Horizontal points in which fields will be computed by the inverse FFT
+    RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
+    RegularAxis xpoints;                ///< Horizontal points in which fields will be computed by the inverse FFT
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
@@ -26,10 +26,6 @@ struct ExpansionPW2D: public Expansion {
 
     size_t pil,                         ///< Index of the beginnig of the left PML
            pir;                         ///< Index of the beginnig of the right PML
-
-    DataVector<Tensor2<dcomplex>> mag;  ///< Magnetic permeability coefficients (used with for PMLs)
-
-    FFT fft;                            ///< FFT object
 
     /**
      * Create new expansion
@@ -59,11 +55,16 @@ struct ExpansionPW2D: public Expansion {
 
   protected:
 
+    DataVector<Tensor2<dcomplex>> mag;      ///< Magnetic permeability coefficients (used with for PMLs)
+    DataVector<Tensor3<dcomplex>> coeffs;   ///< Material coefficients
+
+    FFT::Forward1D matFFT;                  ///< FFT object for material coeffictiens
+
     /**
      * Compute expansion coefficients for material parameters
      * \param l layer number
      */
-    DataVector<const Tensor3<dcomplex>> getMaterialCoefficients(size_t l);
+    void getMaterialCoefficients(size_t l);
 };
 
 }}} // namespace plask

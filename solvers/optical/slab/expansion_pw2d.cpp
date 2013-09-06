@@ -53,6 +53,9 @@ ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): solver(solver)
 
     solver->writelog(LOG_DETAIL, "Creating expansion with %1% plane-waves (matrix size: %2%)", N, matrixSize());
 
+    coeffs.reset(nN);
+    matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, reinterpret_cast<dcomplex*>(coeffs.data()));
+
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
     if (periodic) {
@@ -84,7 +87,7 @@ ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): solver(solver)
             mag[i] /= refine;
         }
         // Compute FFT
-        fft.forward(2, nN, reinterpret_cast<dcomplex*>(mag.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+        FFT::Forward1D(2, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, reinterpret_cast<dcomplex*>(mag.data())).execute();
         // Smooth coefficients
         if (solver->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
@@ -111,7 +114,7 @@ size_t ExpansionPW2D::matrixSize() const {
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_t l)
+void ExpansionPW2D::getMaterialCoefficients(size_t l)
 {
     if (isnan(real(solver->getWavelength())) || isnan(imag(solver->getWavelength())))
         throw BadInput(solver->getId(), "No wavelength set in solver");
@@ -160,15 +163,16 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_
     }
 
     // Average material parameters
-    DataVector<Tensor3<dcomplex>> coeffs(nN, Tensor3<dcomplex>(0.));
+    coeffs.fill(Tensor3<dcomplex>(0.));
+    double factor = 1. / refine;
     for (size_t i = 0; i != nN; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
             coeffs[i] += NR[j];
-        coeffs[i] /= refine;
+        coeffs[i] *= factor;
     }
 
     // Perform FFT
-    fft.forward(5, nN, reinterpret_cast<dcomplex*>(coeffs.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+    matFFT.execute();
 
     // Smooth coefficients
     if (solver->smooth) {
@@ -181,7 +185,6 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_
 
     // Cache coefficients required for field computations
 
-    return coeffs;
 }
 
 
@@ -189,7 +192,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
                                                                 InterpolationMethod interp)
 {
     double L = right - left;
-    DataVector<Tensor3<dcomplex>> coeffs = getMaterialCoefficients(l).claim();
+    getMaterialCoefficients(l);
     DataVector<Tensor3<dcomplex>> result;
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         result.reset(mesh.size(), Tensor3<dcomplex>(0.));
@@ -209,7 +212,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
             }
         }
     } else {
-        fft.backward(5, nN, reinterpret_cast<dcomplex*>(coeffs.data()), symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, reinterpret_cast<dcomplex*>(coeffs.data())).execute();
         RegularAxis cmesh;
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;
