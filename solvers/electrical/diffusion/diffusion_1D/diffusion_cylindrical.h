@@ -77,7 +77,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         bool threshold_computation;
         bool overthreshold_computation;
 
-//        double wavelength;
+        double wavelength;
 //        double factor;
         double inv_hc;
 
