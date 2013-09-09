@@ -12,7 +12,6 @@ const double gain::przels=1.05459/1.60219*1e-3;
 const double gain::ep0=8.8542*1.05459/(100*1.60219*sqrtl(1.60219*9.10956));
 const double gain::c=300*sqrtl(9.10956/1.60219);
 const double gain::exprng=11100;
-int gain::Break=0;
 
 nosnik::nosnik()
 {
@@ -54,7 +53,8 @@ parametry::~parametry()
 }
 /*****************************************************************************/
 gain::gain()
-{
+{ 
+  Break = 0;
   ilwyw=0;
   ustawione='n';
   Twzmoc=NULL;

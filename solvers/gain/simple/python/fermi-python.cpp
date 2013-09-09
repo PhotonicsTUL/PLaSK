@@ -41,9 +41,6 @@ BOOST_PYTHON_MODULE(simple)
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
         // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
-#ifndef NDEBUG
-        METHOD(print_params, printParameters, "Print gain parameters for debugging purposes");
-#endif
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
@@ -66,9 +63,6 @@ BOOST_PYTHON_MODULE(simple)
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
         // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
-#ifndef NDEBUG
-        METHOD(print_params, printParameters, "Print gain parameters for debugging purposes");
-#endif
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),

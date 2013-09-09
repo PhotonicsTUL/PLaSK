@@ -223,17 +223,17 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     else
         this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
-    for (const ActiveRegionInfo& region: regions)
+    #pragma omp parallel for
+    for (int i = 0; i < geo_mesh.size(); i++)
     {
-        for (int i = 0; i < geo_mesh.size(); i++)
+        for (const ActiveRegionInfo& region: regions)
         {
             if (region.contains(geo_mesh[i]) && nOnMesh[i] > 0.)
             {
-                setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
+                QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
                 gainOnMesh[i] = gainModule.Get_gain_at(nm_to_eV(wavelength));
             }
         }
-//        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
 
     if (this->mesh) {
@@ -269,21 +269,19 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     else
         this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
-    for (const ActiveRegionInfo& region: regions)
+    #pragma omp parallel for
+    for (int i = 0; i < geo_mesh.size(); i++)
     {
-        for (int i = 0; i < geo_mesh.size(); i++)
+        for (const ActiveRegionInfo& region: regions)
         {
             if (region.contains(geo_mesh[i]) && nOnMesh[i] > 0.)
             {
-                setParameters(wavelength, TOnMesh[i], nOnMesh[i], region);
-                double gainOnMesh1 = gainModule.Get_gain_at(nm_to_eV(wavelength));
-                setParameters(wavelength, TOnMesh[i], nOnMesh[i] + differenceQuotient*nOnMesh[i], region);
-                double gainOnMesh2 = gainModule.Get_gain_at(nm_to_eV(wavelength));
+                double gainOnMesh1 = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region).Get_gain_at(nm_to_eV(wavelength));
+                double gainOnMesh2 = getGainModule(wavelength, TOnMesh[i], nOnMesh[i] + differenceQuotient*nOnMesh[i], region).Get_gain_at(nm_to_eV(wavelength));
                 dGdn[i] = (gainOnMesh2 - gainOnMesh1)/(differenceQuotient*nOnMesh[i]);
 
             }
         }
-//        gainModule.Set_momentum_matrix_element(gainModule.element());
     }
 
     if (this->mesh) {
@@ -295,7 +293,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 
 
 template <typename GeometryType>
-void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, double n, const ActiveRegionInfo& active)
+QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& active)
 {
     /// Material data base
     plask::shared_ptr<plask::Material> QW_material, Bar_material;
@@ -329,82 +327,45 @@ void FermiGainSolver<GeometryType>::setParameters(double wavelength, double T, d
         }
     }
 
+    QW::gain gainModule;
+    
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
-    gainModule.Set_refr_index(QW_material->nr(wavelength, T));
+    #pragma omp critical // necessary as the material may be defined in Python
+    {
+        gainModule.Set_refr_index(QW_material->nr(wavelength, T));
 
-    gainModule.Set_electron_mass_in_plain(QW_material->Me(T).c00);
-    gainModule.Set_electron_mass_transverse(QW_material->Me(T).c11);
-    gainModule.Set_heavy_hole_mass_in_plain(QW_material->Mhh(T).c00);
-    gainModule.Set_heavy_hole_mass_transverse(QW_material->Mhh(T).c11);
-    gainModule.Set_light_hole_mass_in_plain(QW_material->Mlh(T).c00);
-    gainModule.Set_light_hole_mass_transverse(QW_material->Mlh(T).c11);
+        gainModule.Set_electron_mass_in_plain(QW_material->Me(T).c00);
+        gainModule.Set_electron_mass_transverse(QW_material->Me(T).c11);
+        gainModule.Set_heavy_hole_mass_in_plain(QW_material->Mhh(T).c00);
+        gainModule.Set_heavy_hole_mass_transverse(QW_material->Mhh(T).c11);
+        gainModule.Set_light_hole_mass_in_plain(QW_material->Mlh(T).c00);
+        gainModule.Set_light_hole_mass_transverse(QW_material->Mlh(T).c11);
 
-    gainModule.Set_electron_mass_in_barrier(Bar_material->Me(T).c00);
-    gainModule.Set_heavy_hole_mass_in_barrier(Bar_material->Mhh(T).c00);
-    gainModule.Set_light_hole_mass_in_barrier(Bar_material->Mlh(T).c00);
-//    gainModule.Set_barrier_width(15);
+        gainModule.Set_electron_mass_in_barrier(Bar_material->Me(T).c00);
+        gainModule.Set_heavy_hole_mass_in_barrier(Bar_material->Mhh(T).c00);
+        gainModule.Set_light_hole_mass_in_barrier(Bar_material->Mlh(T).c00);
+        // gainModule.Set_barrier_width(15);
 
-    gainModule.Set_well_width(determineBoxWidth(QWBox)*1e+4);
-    gainModule.Set_waveguide_width(determineBoxWidth(BarBox)*1e+4);
+        gainModule.Set_well_width(determineBoxWidth(QWBox)*1e+4);
+        gainModule.Set_waveguide_width(determineBoxWidth(BarBox)*1e+4);
 
-    gainModule.Set_split_off(QW_material->Dso(T));
-    gainModule.Set_bandgap(QW_material->Eg(T));
+        gainModule.Set_split_off(QW_material->Dso(T));
+        gainModule.Set_bandgap(QW_material->Eg(T));
 
-    gainModule.Set_conduction_depth(Bar_material->CBO(T) - QW_material->CBO(T));
-    gainModule.Set_valence_depth(QW_material->VBO(T) - Bar_material->VBO(T));
+        gainModule.Set_conduction_depth(Bar_material->CBO(T) - QW_material->CBO(T));
+        gainModule.Set_valence_depth(QW_material->VBO(T) - Bar_material->VBO(T));
+    }
 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
 
     gainModule.Set_lifetime(mLifeTime); //gainModule.Set_lifetime(0.5);
     gainModule.Set_momentum_matrix_element(mMatrixElem); //gainModule.Set_momentum_matrix_element(8.0);
-
+    
+    return gainModule;
 }
-
-#ifndef NDEBUG
-template <typename GeometryType>
-void FermiGainSolver<GeometryType>::printParameters()
-{
-    this->writelog(LOG_DEBUG, "T =  %1%", gainModule.Get_temperature());
-    this->writelog(LOG_DEBUG, "n =  %1%", gainModule.Get_koncentr());
-
-    this->writelog(LOG_DEBUG, "nR =  %1%", gainModule.Get_refr_index());
-
-    this->writelog(LOG_DEBUG, "m_e_plane =  %1%", gainModule.Get_electron_mass_in_plain());
-    this->writelog(LOG_DEBUG, "m_e_trans =  %1%", gainModule.Get_electron_mass_transverse());
-    this->writelog(LOG_DEBUG, "m_hh_plane =  %1%", gainModule.Get_heavy_hole_mass_in_plain());
-    this->writelog(LOG_DEBUG, "m_hh_trans =  %1%", gainModule.Get_heavy_hole_mass_transverse());
-    this->writelog(LOG_DEBUG, "m_lh_plane =  %1%", gainModule.Get_light_hole_mass_in_plain());
-    this->writelog(LOG_DEBUG, "m_lh_trans =  %1%", gainModule.Get_light_hole_mass_transverse());
-
-    this->writelog(LOG_DEBUG, "m_e_bar =  %1%", gainModule.Get_electron_mass_in_barrier());
-    this->writelog(LOG_DEBUG, "m_hh_bar =  %1%", gainModule.Get_heavy_hole_mass_in_barrier());
-    this->writelog(LOG_DEBUG, "m_lh_bar =  %1%", gainModule.Get_light_hole_mass_in_barrier());
-
-    this->writelog(LOG_DEBUG, "QW_width =  %1%", gainModule.Get_well_width());
-    this->writelog(LOG_DEBUG, "waveguide_width =  %1%", gainModule.Get_waveguide_width());
-
-    this->writelog(LOG_DEBUG, "SO =  %1%", gainModule.Get_split_off());
-    this->writelog(LOG_DEBUG, "Eg =  %1%", gainModule.Get_bandgap());
-    this->writelog(LOG_DEBUG, "QW_Qc =  %1%", gainModule.Get_conduction_depth());
-    this->writelog(LOG_DEBUG, "QW_Qv =  %1%", gainModule.Get_valence_depth());
-
-    this->writelog(LOG_DEBUG, "waveguide_Qc =  %1%", gainModule.Get_cond_waveguide_depth());
-    this->writelog(LOG_DEBUG, "waveguide_Qv =  %1%", gainModule.Get_vale_waveguide_depth());
-
-    this->writelog(LOG_DEBUG, "tau =  %1%", gainModule.Get_lifetime());
-    this->writelog(LOG_DEBUG, "M =  %1%", gainModule.Get_momentum_matrix_element());
-}
-#endif
-
-template <typename GeometryType>
-double FermiGainSolver<GeometryType>::nm_to_eV(double wavelength)
-{
-    return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
-}
-
 
 //  TODO: it should return computed levels
 template <typename GeometryType>
@@ -421,7 +382,7 @@ void FermiGainSolver<GeometryType>::determineLevels(double T, double n)
     {
         this->writelog(LOG_DETAIL, "Evaluating energy levels for active region nr %1%:", act+1);
 
-        setParameters(0.0, T, n, regions[act]); //wavelength=0.0 - no refractive index needs to be calculated (any will do)
+        QW::gain gainModule = getGainModule(0.0, T, n, regions[act]); //wavelength=0.0 - no refractive index needs to be calculated (any will do)
         gainModule.runPrzygobl();
 
         writelog(LOG_RESULT, "Conduction band quasi-Fermi level (from the band edge) = %1% eV", gainModule.Get_qFlc());

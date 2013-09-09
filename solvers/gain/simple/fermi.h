@@ -88,18 +88,10 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     //  TODO: it should return computed levels
     void determineLevels(double T, double n);
 
-#ifndef NDEBUG
-    /// Print gain parameters for debugging purposes
-    void printParameters();
-#endif
-
   protected:
 
     friend struct GainSpectrum<GeometryType>;
     friend class QW::gain;
-
-    /// External gain module (Michal Wasiak)
-    QW::gain gainModule;
 
     double cond_waveguide_depth;///< waveguide conduction band depth [eV]
     double vale_waveguide_depth;///< waveguide valence band depth [eV]
@@ -114,9 +106,11 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
 //    double lambda_stop;
 //    double lambda;
 
-    void setParameters(double wavelength, double T, double n, const ActiveRegionInfo& active);
+    QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& active);
 
-    double nm_to_eV(double wavelength);
+    double nm_to_eV(double wavelength) {
+        return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
+    }
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -204,8 +198,7 @@ struct GainSpectrum {
             T = solver->inTemperature(OnePointMesh<2>(point))[0];
         if (isnan(n) || solver->inCarriersConcentration.changed())
             n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
-        solver->setParameters(wavelength, T, n, *region);
-        return solver->gainModule.Get_gain_at(solver->nm_to_eV(wavelength));
+        return solver->getGainModule(wavelength, T, n, *region).Get_gain_at(solver->nm_to_eV(wavelength));
     }
 };
 

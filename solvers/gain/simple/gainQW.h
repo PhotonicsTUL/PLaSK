@@ -121,7 +121,7 @@ namespace QW{
     void runPrzygobl();
 
   private:
-    static int Break;
+    int Break;
     static const double kB;
     static const double przelm;
     static const double przels;
