@@ -9,7 +9,7 @@ namespace plask { namespace  solvers { namespace slab {
 
 
     SimpleDiagonalizer::SimpleDiagonalizer(Expansion& g) :
-    DiagonalizerBase(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
+    Diagonalizer(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
 {
     int N = src.matrixSize();         // Size of each matrix
 

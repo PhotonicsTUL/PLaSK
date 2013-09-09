@@ -29,12 +29,14 @@ void FourierReflection2D::onInitialize()
 {
     setupLayers();
     expansion.reset(new ExpansionPW2D(this));
+    diagonalizer.reset(new SimpleDiagonalizer(*expansion.get()));    //TODO add other diagonalizer types
 }
 
 
 void FourierReflection2D::onInvalidate()
 {
     expansion.reset();
+    diagonalizer.reset();
 }
 
 

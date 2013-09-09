@@ -22,19 +22,19 @@ namespace plask { namespace  solvers { namespace slab {
  * object is destroyed (this is necessary for computation of the fields
  * after the convergence).
  */
-class DiagonalizerBase
+class Diagonalizer
 {
   protected:
-    Expansion& src;                ///< Information about the matrices to diagonalize
+    Expansion& src;                 ///< Information about the matrices to diagonalize
     std::vector<bool> diagonalized; ///< True if the given layer was diagonalized
 
   public:
     const int lcount;                // number of layers
 
-    DiagonalizerBase(Expansion& src) :
+    Diagonalizer(Expansion& src) :
         src(src), diagonalized(src.lcount(), false), lcount(src.lcount()) {}
 
-    virtual ~DiagonalizerBase() {}
+    virtual ~Diagonalizer() {}
 
     /// Return the overall matrix size
     virtual int matrixSize() const = 0;
@@ -76,7 +76,7 @@ class DiagonalizerBase
  * This class is a simple diagonalizer. It calculates all its results
  * immediately and stores them in the memory.
  */
-class SimpleDiagonalizer : public DiagonalizerBase
+class SimpleDiagonalizer : public Diagonalizer
 {
   protected:
     dcomplex k0;                        // The frequency for which we compute the diagonalization for all layers

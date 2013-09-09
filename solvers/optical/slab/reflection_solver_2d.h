@@ -5,6 +5,7 @@
 
 #include "slab_base.h"
 #include "expansion_pw2d.h"
+#include "diagonalizer.h"
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -35,6 +36,9 @@ struct FourierReflection2D: public SlabSolver<Geometry2DCartesian> {
     /// Class responsoble for computing expansion coefficients
     std::unique_ptr<ExpansionPW2D> expansion;
 
+    /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
+    std::unique_ptr<Diagonalizer> diagonalizer;
+    
     void onInitialize();
 
     void onInvalidate();

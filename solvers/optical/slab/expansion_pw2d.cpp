@@ -167,8 +167,11 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
     double factor = 1. / refine;
     for (size_t i = 0; i != nN; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
-            coeffs[i] += NR[j];
+            coeffs[i] += Tensor3<dcomplex>(NR[j].c00, 1./NR[j].c11, NR[j].c22, 1./NR[j].c01, NR[j].c10);
         coeffs[i] *= factor;
+        coeffs[i].c11 = 1. / coeffs[i].c11; // We were averaging inverses of c11 (xx)
+        coeffs[i].c22 = 1. / coeffs[i].c22; // We need inverses of c22 (yy)
+        coeffs[i].c01 = 1. / coeffs[i].c01; // We were averaging inverses of c01 (zx)
     }
 
     // Perform FFT
@@ -228,7 +231,10 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
         RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
         result = interpolate(src_mesh, coeffs, WrappedMesh<2>(dst_mesh, solver->getGeometry()), interp);
     }
-    for (Tensor3<dcomplex>& eps: result) eps.sqrt_inplace();
+    for (Tensor3<dcomplex>& eps: result) {
+        eps.c22 = 1. / eps.c22;
+        eps.sqrt_inplace();
+    }
     return result;
 }
 

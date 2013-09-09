@@ -65,6 +65,13 @@ struct ExpansionPW2D: public Expansion {
      * \param l layer number
      */
     void getMaterialCoefficients(size_t l);
+    
+    /// Get \f$\varepsilon_{xx}\f$
+    dcomplex epsxx(int i) {
+        return coeffs[(i>=0)? i : i+nN].c11;
+        
+    }
+    
 };
 
 }}} // namespace plask
