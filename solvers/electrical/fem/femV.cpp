@@ -19,8 +19,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     algorithm(ALGORITHM_CHOLESKY),
     itererr(1e-8),
     iterlim(10000),
-    logfreq(500),
-    accelerate(false)
+    logfreq(500)
 {
     onInvalidate();
     inTemperature = 300.;
@@ -41,7 +40,6 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                 .value("absolute", CORRECTION_ABSOLUTE, 3)
                 .value("relative", CORRECTION_RELATIVE, 3)
                 .get(corrtype);
-            accelerate = source.getAttribute<bool>("accelerate", accelerate);
             source.requireTagEnd();
         }
 
@@ -290,7 +288,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
         Vec<2,double> midpoint = e.getMidpoint();
 
         // update junction conductivities
-        if (again && this->geometry->hasRoleAt("active", midpoint)) {
+        if (loopno != 0 && this->geometry->hasRoleAt("active", midpoint)) {
             size_t left = this->mesh->index0(loleftno);
             size_t right = this->mesh->index0(lorghtno);
             size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(loleftno)) - acthi.begin();
@@ -389,7 +387,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 template<typename Geometry2DType> template <typename MatrixT>
 double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loops)
 {
-    again = this->initCalculation();
+    this->initCalculation();
 
     currents.reset();
     heats.reset();
@@ -409,33 +407,25 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
         if (!potentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
 #   endif
     potentials = potentials.claim();
-    DataVector<double> corr0(size);
+    DataVector<double> corr(size);
 
-    DataVector<double> corr1; if (accelerate) corr1.reset(size);
-    
     loadConductivities();
 
     do {
-        if (accelerate && loopno != 0) {
-            for (auto v2 = potentials.begin(), v1 = corr1.begin(), v0 = corr0.begin(); v2 != potentials.end(); ++v2, ++v1, ++v0) {
-                double d = *v1 - *v0;
-                if (d != 0) *v2 -= (*v1)*(*v1) / d;
-            }
-        }
-    
-        setMatrix(A, corr0, vconst);    // corr0 holds RHS now
-        std::swap(potentials, corr0);   // corr0 holds old potentials now
+        setMatrix(A, corr, vconst);    // corr holds RHS now
+        std::swap(potentials, corr);   // corr holds old potentials now
         solveMatrix(A, potentials);
-        computeCorrections(corr0);      // corr0 hold corrections now
 
-        again = true;
-
-        if (accelerate) {
-            setMatrix(A, corr1, vconst);   // corr1 holds RHS now
-            std::swap(potentials, corr1);  // corr1 holds old potentials now
-            solveMatrix(A, potentials);
-            computeCorrections(corr1);     // corr1 hold corrections now
-        }
+        abscorr = 0.;
+        double maxv = 0., minv = INFINITY;
+        for (auto vnew = potentials.begin(), vold = corr.begin(); vnew != potentials.end(); ++vnew, ++vold) {
+            *vold = *vnew - *vold;
+            double acorr = abs(*vold);
+            if (acorr > abscorr) abscorr = acorr;
+            if (*vnew > maxv) maxv = *vnew;
+            if (*vnew < minv) minv = *vnew;
+        } // vec holds corrections now
+        dV = maxv - minv;
 
         relcorr = abscorr / dV;
         if (abscorr > max_abscorr) max_abscorr = abscorr;
@@ -463,21 +453,6 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
     if (corrtype == CORRECTION_RELATIVE) return relcorr;
     else return abscorr;
 }
-
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::computeCorrections(DataVector<double>& vec)
-{
-    abscorr = 0.;
-    double maxv = 0., minv = INFINITY;
-    for (auto vnew = potentials.begin(), vold = vec.begin(); vnew != potentials.end(); ++vnew, ++vold) {
-        *vold = *vnew - *vold;
-        double acorr = abs(*vold);
-        if (acorr > abscorr) abscorr = acorr;
-        if (*vnew > maxv) maxv = *vnew;
-        if (*vnew < minv) minv = *vnew;
-    } // vec holds corrections now
-    dV = maxv - minv;
-}
-
 
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)

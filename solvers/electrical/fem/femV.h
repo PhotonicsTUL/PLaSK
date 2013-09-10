@@ -74,9 +74,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     /// Save conductivities of active region
     void saveConductivities();
 
-    /// Calculate corrections
-    void computeCorrections(DataVector<double>& vec);
-
     /// Update stored current densities
     void saveCurrentDensities();
 
@@ -149,8 +146,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     size_t iterlim;         ///< Maximum nunber of iterations for iterative method
     size_t logfreq;         ///< Frequency of iteration progress reporting
 
-    bool accelerate;        ///< If \c true use Aitken Δ² convergence acceleration
-    
     /**
      * Run electrical calculations
      * \return max correction of potential against the last call
@@ -228,9 +223,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     DataVector<const double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
     DataVector<const Vec<2>> getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
-
-  private:
-    bool again;
 
 };
 

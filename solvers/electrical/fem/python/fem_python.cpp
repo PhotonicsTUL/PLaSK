@@ -116,7 +116,6 @@ BOOST_PYTHON_MODULE(fem)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-        RW_FIELD(accelerate, "Use  Aitken Δ² convergence acceleration");
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
@@ -143,7 +142,6 @@ BOOST_PYTHON_MODULE(fem)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-        RW_FIELD(accelerate, "Use  Aitken Δ² convergence acceleration");
     }
 
     py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");
