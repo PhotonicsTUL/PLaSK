@@ -12,6 +12,12 @@ struct FourierReflection2D;
 
 struct ExpansionPW2D: public Expansion {
 
+    /// Type of the mode symmetry
+    enum Symmetry {
+        SYMMETRIC_E_TRAN,               ///< E_tran and H_long are symmetric and E_long and H_tran anti-symmetric
+        SYMMETRIC_E_LONG                ///< E_long and H_tran are symmetric and E_tran and H_long anti-symmetric
+    };
+    
     FourierReflection2D* solver;        ///< Solver which performs calculations (and is the interface to the outside world)
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
@@ -24,14 +30,15 @@ struct ExpansionPW2D: public Expansion {
     bool symmetric;                     ///< Indicates if the expansion is a symmetric one
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
 
-    size_t pil,                         ///< Index of the beginnig of the left PML
-           pir;                         ///< Index of the beginnig of the right PML
+    size_t pil,                         ///< Index of the beginning of the left PML
+           pir;                         ///< Index of the beginning of the right PML
 
     /**
      * Create new expansion
      * \param solver solver which performs calculations
+     * \param allow_symmetry \c true if expansion may be symmetric (i.e. \f$ k_x = 0 \f$)
      */
-    ExpansionPW2D(FourierReflection2D* solver);
+    ExpansionPW2D(FourierReflection2D* solver, bool allow_symmetry=true);
 
     virtual size_t lcount() const;
 
@@ -39,9 +46,9 @@ struct ExpansionPW2D: public Expansion {
 
     virtual size_t matrixSize() const;
 
-    virtual cmatrix getRE(size_t l, dcomplex k0, dcomplex kx, dcomplex ky);
+    virtual cmatrix getRE(size_t l, dcomplex k0, dcomplex beta, dcomplex kx);
 
-    virtual cmatrix getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky);
+    virtual cmatrix getRH(size_t l, dcomplex k0, dcomplex beta, dcomplex kx);
 
     /**
      * Get refractive index back from expansion
@@ -66,12 +73,29 @@ struct ExpansionPW2D: public Expansion {
      */
     void getMaterialCoefficients(size_t l);
     
-    /// Get \f$\varepsilon_{xx}\f$
-    dcomplex epsxx(int i) {
-        return coeffs[(i>=0)? i : i+nN].c11;
-        
-    }
+    /// Get \f$ \varepsilon_{zz} \f$
+    dcomplex epszz(int i) { return coeffs[(i>=0)? i : i+nN].c00; }
     
+    /// Get \f$ \varepsilon_{xx} \f$
+    dcomplex epsxx(int i) { return coeffs[(i>=0)? i : i+nN].c11; }
+    
+    /// Get \f$ \varepsilon_{yy}^{-1} \f$
+    dcomplex iepsyy(int i) { return coeffs[(i>=0)? i : i+nN].c22; }
+    
+    /// Get \f$ \varepsilon_{zx} \f$
+    dcomplex epszx(int i) { return coeffs[(i>=0)? i : i+nN].c01; }
+    
+    /// Get \f$ \varepsilon_{xz} \f$
+    dcomplex epsxz(int i) { return coeffs[(i>=0)? i : i+nN].c10; }
+    
+    /// Get \f$ \mu_{xx} \f$
+    dcomplex muzz(int i) { return mag[(i>=0)? i : i+nN].c00; }
+    
+    /// Get \f$ \mu_{xx} \f$
+    dcomplex muxx(int i) { return mag[(i>=0)? i : i+nN].c00; }
+    
+    /// Get \f$ \mu_{xx} \f$
+    dcomplex imuyy(int i) { return mag[(i>=0)? i : i+nN].c11; }
 };
 
 }}} // namespace plask

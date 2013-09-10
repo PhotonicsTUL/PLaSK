@@ -102,20 +102,21 @@ BOOST_PYTHON_MODULE(fem)
         PROVIDER(outPotential, "Potentials");
         PROVIDER(outCurrentDensity, "CurrentDensities");
         PROVIDER(outHeatDensity, "HeatDensities");
-        solver.add_boundary_conditions("voltage_boundary", &__Class__::mVConst, "Boundary conditions of the first kind (constant potential)");
+        BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(corrlim, getVCorrLim, setVCorrLim, "Limit for the potential updates");
-        solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
-        solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
+        RW_FIELD(corrtype, "Type of returned correction");
+        RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
+        solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
         solver.setattr("outVoltage", solver.attr("outPotential"));
-        solver.def_readwrite("itererr", &__Class__::mIterErr, "Allowed residual iteration for iterative method");
-        solver.def_readwrite("iterlim", &__Class__::mIterLim ,"Maximum number of iterations for iterative method");
-        solver.def_readwrite("logfreq", &__Class__::mLogFreq ,"Frequency of iteration progress reporting");
+        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
+        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
+        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+        RW_FIELD(accelerate, "Use  Aitken Δ² convergence acceleration");
     }
 
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
@@ -128,20 +129,21 @@ BOOST_PYTHON_MODULE(fem)
         PROVIDER(outPotential, "Potentials");
         PROVIDER(outCurrentDensity, "CurrentDensities");
         PROVIDER(outHeatDensity, "HeatDensities");
-        solver.add_boundary_conditions("voltage_boundary", &__Class__::mVConst, "Boundary conditions of the first kind (constant potential)");
+        BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(corrlim, getVCorrLim, setVCorrLim, "Limit for the potential updates");
-        solver.def_readwrite("corrtype", &__Class__::mCorrType, "Type of returned correction");
-        solver.def_readwrite("algorithm", &__Class__::mAlgorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("heat", &__Class__::mHeatMethod, "Chosen method used for computing heats");
+        RW_FIELD(corrtype, "Type of returned correction");
+        RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
+        solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
         RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
         solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
         solver.setattr("outVoltage", solver.attr("outPotential"));
-        solver.def_readwrite("itererr", &__Class__::mIterErr, "Allowed residual iteration for iterative method");
-        solver.def_readwrite("iterlim", &__Class__::mIterLim ,"Maximum number of iterations for iterative method");
-        solver.def_readwrite("logfreq", &__Class__::mLogFreq ,"Frequency of iteration progress reporting");
+        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
+        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
+        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+        RW_FIELD(accelerate, "Use  Aitken Δ² convergence acceleration");
     }
 
     py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");

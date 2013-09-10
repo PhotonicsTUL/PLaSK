@@ -3,11 +3,11 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): solver(solver)
+ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver, bool allow_symmetry): solver(solver)
 {
     auto geometry = solver->getGeometry();
 
-    symmetric = geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN);
+    symmetric = geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN) && allow_symmetry;
     periodic = geometry->isPeriodic(Geometry2DCartesian::DIRECTION_TRAN);
 
     left = geometry->getChild()->getBoundingBox().lower[0];
@@ -106,6 +106,7 @@ size_t ExpansionPW2D::lcount() const {
 
 
 bool ExpansionPW2D::diagonalQE(size_t l) const {
+    return false;
 }
 
 
@@ -240,11 +241,20 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
 
 
 
-cmatrix ExpansionPW2D::getRE(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
+cmatrix ExpansionPW2D::getRE(size_t l, dcomplex k0, dcomplex beta, dcomplex kx) {
+
+    
+    
+    if (!symmetric) {
+    }
+    
 }
 
 
-cmatrix ExpansionPW2D::getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) {
+cmatrix ExpansionPW2D::getRH(size_t l, dcomplex k0, dcomplex beta, dcomplex kx) {
+
+    
+    
 }
 
 

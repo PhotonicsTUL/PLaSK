@@ -12,18 +12,18 @@ namespace plask { namespace solvers { namespace thermal {
 /// Boundary condition: convection
 struct Convection
 {
-    double mConvCoeff; ///< convection coefficient [W/(m^2*K)]
-    double mTAmb1; ///< ambient temperature [K]
-    Convection(double coeff, double amb): mConvCoeff(coeff), mTAmb1(amb) {}
+    double coeff;   ///< convection coefficient [W/(m^2*K)]
+    double ambient; ///< ambient temperature [K]
+    Convection(double coeff, double amb): coeff(coeff), ambient(amb) {}
     Convection() = default;
 };
 
 /// Boundary condition: radiation
 struct Radiation
 {
-    double mSurfEmiss; ///< surface emissivity [-]
-    double mTAmb2; ///< ambient temperature [K]
-    Radiation(double emiss, double amb): mSurfEmiss(emiss), mTAmb2(amb) {}
+    double emissivity;  ///< surface emissivity [-]
+    double ambient;     ///< ambient temperature [K]
+    Radiation(double emiss, double amb): emissivity(emiss), ambient(amb) {}
     Radiation() = default;
 };
 
@@ -50,16 +50,16 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   protected:
 
-    int mAsize;         ///< Number of columns in the main matrix
+    int size;         ///< Number of columns in the main matrix
 
 
-    double mTCorrLim;     ///< Maximum temperature correction accepted as convergence
-    double mTInit;        ///< Initial temperature
-    int mLoopNo;          ///< Number of completed loops
-    double mMaxT;         ///< Maximum temperature recorded
-    double mMaxAbsTCorr;  ///< Maximum absolute temperature correction (useful for single calculations managed by external python script)
-    double mMaxRelTCorr;  ///< Maximum relative temperature correction (useful for single calculations managed by external python script)
-    double mMaxTCorr;     ///< Maximum absolute temperature correction (useful for calculations with internal loops)
+    double corrlim;     ///< Maximum temperature correction accepted as convergence
+    double inittemp;    ///< Initial temperature
+    int loopno;         ///< Number of completed loops
+    double maxT;        ///< Maximum temperature recorded
+    double abscorr;     ///< Maximum absolute temperature correction (useful for single calculations managed by external python script)
+    double relcorr;     ///< Maximum relative temperature correction (useful for single calculations managed by external python script)
+    double corr;        ///< Maximum absolute temperature correction (useful for calculations with internal loops)
 
     DataVector<double> mTemperatures;           ///< Computed temperatures
 
@@ -67,27 +67,27 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
-    void setMatrix(MatrixT& oA, DataVector<double>& oLoad,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iTConst,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iHFConst,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& iConvection,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& iRadiation
+    void setMatrix(MatrixT& A, DataVector<double>& B,
+                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& bradiation
                   );
 
     /// Update stored temperatures and calculate corrections
-    void saveTemperatures(DataVector<double>& iT);
+    void saveTemperatures(DataVector<double>& T);
 
     /// Create 2D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
 
     /// Matrix solver
-    void solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver
-    void solveMatrix(DgbMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver
-    void solveMatrix(SparseBandMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -97,13 +97,13 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   public:
 
-    CorrectionType mCorrType; ///< Type of the returned correction
+    CorrectionType corrtype; ///< Type of the returned correction
 
     // Boundary conditions
-    BoundaryConditions<RectilinearMesh2D,double> mTConst; ///< Boundary condition of constant temperature [K]
-    BoundaryConditions<RectilinearMesh2D,double> mHFConst; ///< Boundary condition of constant heat flux [W/m^2]
-    BoundaryConditions<RectilinearMesh2D,Convection> mConvection; ///< Boundary condition of convection
-    BoundaryConditions<RectilinearMesh2D,Radiation> mRadiation; ///< Boundary condition of radiation
+    BoundaryConditions<RectilinearMesh2D,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectilinearMesh2D,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
+    BoundaryConditions<RectilinearMesh2D,Convection> convection_boundary;   ///< Boundary condition of convection
+    BoundaryConditions<RectilinearMesh2D,Radiation> radiation_boundary;     ///< Boundary condition of radiation
 
     typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
 
@@ -111,35 +111,35 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     ReceiverFor<HeatDensity, Geometry2DType> inHeatDensity;
 
-    Algorithm mAlgorithm;   ///< Factorization algorithm to use
+    Algorithm algorithm;   ///< Factorization algorithm to use
 
-    double mIterErr;        ///< Allowed residual iteration for iterative method
-    size_t mIterLim;        ///< Maximum nunber of iterations for iterative method
-    size_t mLogFreq;        ///< Frequency of iteration progress reporting
+    double itererr;        ///< Allowed residual iteration for iterative method
+    size_t iterlim;        ///< Maximum nunber of iterations for iterative method
+    size_t logfreq;        ///< Frequency of iteration progress reporting
 
     /**
      * Run temperature calculations
      * \return max correction of temperature against the last call
      **/
-    double compute(int iLoopLim=1);
+    double compute(int loops=1);
 
     /**
      * Get max absolute correction for temperature
      * \return get max absolute correction for temperature
      **/
-    double getMaxAbsTCorr() const { return mMaxAbsTCorr; } // result in [K]
+    double getMaxAbsTCorr() const { return abscorr; } // result in [K]
 
     /**
      * Get max relative correction for temperature
      * \return get max relative correction for temperature
      **/
-    double getMaxRelTCorr() const { return mMaxRelTCorr; }// result in [%]
+    double getMaxRelTCorr() const { return relcorr; }// result in [%]
 
-    void setTCorrLim(double iTCorrLim) { mTCorrLim = iTCorrLim; }
-    void setTInit(double iTInit)  { mTInit = iTInit; }
+    void setTCorrLim(double corr) { corrlim = corr; }
+    void setTInit(double temp)  { inittemp = temp; }
 
-    double getTCorrLim() const { return mTCorrLim; }
-    double getTInit() const { return mTInit; }
+    double getTCorrLim() const { return corrlim; }
+    double getTInit() const { return inittemp; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
@@ -205,7 +205,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
-    double doCompute(int iLoopLim=1);
+    double doCompute(int loops=1);
 
 };
 

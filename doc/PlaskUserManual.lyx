@@ -262,8 +262,21 @@ Windows
 \end_layout
 
 \begin_layout Standard
-Just unzip provided file to the folder of your choice.
- The full installer will be provided in some distant future.
+Install complete Python distribution.
+ We recommend Anaconda from Continuum Analytics (
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+https://store.continuum.io/cshop/anaconda/
+\end_layout
+
+\end_inset
+
+).
+ While installing choose Anaconda to by your default Python in the system.
+ Then run the PLaSK installer provided.
 \end_layout
 
 \begin_layout Subsection

@@ -37,37 +37,36 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   protected:
 
-    int mAsize;            ///< Number of columns in the main matrix
+    int size;           ///< Number of columns in the main matrix
 
-    double mJs;             ///< p-n junction parameter [A/m^2]
-    double mBeta;           ///< p-n junction parameter [1/V]
-    double mCondPcontact;   ///< p-contact electrical conductivity [S/m]
-    double mCondNcontact;   ///< n-contact electrical conductivity [S/m]
+    double js;          ///< p-n junction parameter [A/m^2]
+    double beta;        ///< p-n junction parameter [1/V]
+    double pcond;       ///< p-contact electrical conductivity [S/m]
+    double ncond;       ///< n-contact electrical conductivity [S/m]
 
-    double mVCorrLim;       ///< Maximum voltage correction accepted as convergence
-    int mLoopNo;            ///< Number of completed loops
-    double mMaxAbsVCorr;    ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
-    double mMaxRelVCorr;    ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
-    double mMaxVCorr;       ///< Maximum absolute voltage correction (useful for calculations with internal loops)
-    double mDV;             ///< Maximum voltage
+    double corrlim;     ///< Maximum voltage correction accepted as convergence
+    int loopno;         ///< Number of completed loops
+    double abscorr;     ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
+    double relcorr;     ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
+    double dV;          ///< Maximum voltage
 
-    DataVector<double> mCondJunc;                   ///< electrical conductivity for p-n junction in y-direction [S/m]
-    double mDefCondJunc;                            ///< default electrical conductivity for p-n junction in y-direction [S/m]
+    DataVector<double> junction_conductivity;   ///< electrical conductivity for p-n junction in y-direction [S/m]
+    double default_junction_conductivity;       ///< default electrical conductivity for p-n junction in y-direction [S/m]
 
-    DataVector<Tensor2<double>> mCond;              ///< Cached element conductivities
-    DataVector<double> mPotentials;                 ///< Computed potentials
-    DataVector<Vec<2,double>> mCurrentDensities;    ///< Computed current densities
-    DataVector<double> mHeatDensities;              ///< Computed and cached heat source densities
+    DataVector<Tensor2<double>> conds;          ///< Cached element conductivities
+    DataVector<double> potentials;              ///< Computed potentials
+    DataVector<Vec<2,double>> currents;         ///< Computed current densities
+    DataVector<double> heats;                   ///< Computed and cached heat source densities
 
     std::vector<size_t>
-        mActLo,                ///< Vertical index of the lower side of the active regions
-        mActHi;                ///< Vertical index of the higher side of the active regions
-    std::vector<double> mDact; ///< Active regions thickness
+        actlo,                  ///< Vertical index of the lower side of the active regions
+        acthi;                  ///< Vertical index of the higher side of the active regions
+    std::vector<double> actd;   ///< Active regions thickness
 
     /// Save locate stiffness matrix to global one
-    inline void setLocalMatrix(double& ioK44, double& ioK33, double& ioK22, double& ioK11,
-                               double& ioK43, double& ioK21, double& ioK42, double& ioK31, double& ioK32, double& ioK41,
-                               double iKy, double iElemWidth, const Vec<2,double>& iMidPoint);
+    inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
+                               double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
+                               double ky, double width, const Vec<2,double>& midpoint);
 
     /// Load conductivities
     void loadConductivities();
@@ -75,8 +74,8 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     /// Save conductivities of active region
     void saveConductivities();
 
-    /// Update stored potentials and calculate corrections
-    void savePotentials(DataVector<double>& iV);
+    /// Calculate corrections
+    void computeCorrections(DataVector<double>& vec);
 
     /// Update stored current densities
     void saveCurrentDensities();
@@ -85,13 +84,13 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     void saveHeatDensities();
 
     /// Matrix solver
-    void solveMatrix(DpbMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver
-    void solveMatrix(DgbMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Matrix solver
-    void solveMatrix(SparseBandMatrix& iA, DataVector<double>& ioB);
+    void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
     virtual void onInitialize() override;
@@ -119,20 +118,20 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
-    void setMatrix(MatrixT& oA, DataVector<double>& oLoad, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& iVConst);
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
-    double doCompute(int iLoopLim=1);
+    double doCompute(int loops=1);
 
   public:
 
-    CorrectionType mCorrType; ///< Type of the returned correction
+    CorrectionType corrtype; ///< Type of the returned correction
 
-    HeatMethod mHeatMethod; ///< Method of heat computation
+    HeatMethod heatmet;     ///< Method of heat computation
 
     /// Boundary condition
-    BoundaryConditions<RectilinearMesh2D,double> mVConst;
+    BoundaryConditions<RectilinearMesh2D,double> voltage_boundary;
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
@@ -144,67 +143,75 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
 
-    Algorithm mAlgorithm;   ///< Factorization algorithm to use
+    Algorithm algorithm;    ///< Factorization algorithm to use
 
-    double mIterErr;        ///< Allowed residual iteration for iterative method
-    size_t mIterLim;        ///< Maximum nunber of iterations for iterative method
-    size_t mLogFreq;        ///< Frequency of iteration progress reporting
+    double itererr;         ///< Allowed residual iteration for iterative method
+    size_t iterlim;         ///< Maximum nunber of iterations for iterative method
+    size_t logfreq;         ///< Frequency of iteration progress reporting
 
+    bool accelerate;        ///< If \c true use Aitken Δ² convergence acceleration
+    
     /**
      * Run electrical calculations
      * \return max correction of potential against the last call
      **/
-    double compute(int iLoopLim=1);
+    double compute(int loops=1);
 
     /**
      * Integrate vertical total current at certain level.
-     * \param iVertIndex vertical index of the element smesh to perform integration at
+     * \param vindex vertical index of the element smesh to perform integration at
      * \return computed total current
      */
-    double integrateCurrent(size_t iVertIndex);
+    double integrateCurrent(size_t vindex);
 
     /**
      * Integrate vertical total current flowing vertically through active region
-     * \param iNact number of the active region
+     * \param nact number of the active region
      * \return computed total current
      */
-    double getTotalCurrent(size_t iNact=0);
+    double getTotalCurrent(size_t nact=0);
 
     /// \return max absolute correction for potential
-    double getMaxAbsVCorr() const { return mMaxAbsVCorr; } // result in [K]
+    double getMaxAbsVCorr() const { return abscorr; } // result in [K]
 
     /// \return get max relative correction for potential
-    double getMaxRelVCorr() const { return mMaxRelVCorr; } // result in [%]
+    double getMaxRelVCorr() const { return relcorr; } // result in [%]
 
-    double getVCorrLim() const { return mVCorrLim; }
-    void setVCorrLim(double iVCorrLim) { mVCorrLim = iVCorrLim; }
+    double getVCorrLim() const { return corrlim; }
+    void setVCorrLim(double lim) { corrlim = lim; }
 
-    double getBeta() const { return mBeta; }
-    void setBeta(double iBeta)  { mBeta = iBeta; }
-
-    double getJs() const { return mJs; }
-    void setJs(double iJs)  { mJs = iJs; }
-
-    double getCondPcontact() const { return mCondPcontact; }
-    void setCondPcontact(double iCondPcontact)  { mCondPcontact = iCondPcontact; }
-
-    double getCondNcontact() const { return mCondNcontact; }
-    void setCondNcontact(double iCondNcontact)  { mCondNcontact = iCondNcontact; }
-
-    DataVector<const double> getCondJunc() const { return mCondJunc; }
-    void setCondJunc(double iCond) {
-        mCondJunc.reset(max(mCondJunc.size(), size_t(1)), iCond);
-        mDefCondJunc = iCond;
+    double getBeta() const { return beta; }
+    void setBeta(double beta)  {
+        this->beta = beta;
+        this->invalidate();
     }
-    void setCondJunc(const DataVector<const double>& iCond)  {
-        if (!this->mesh || iCond.size() != (this->mesh->axis0.size()-1) * getActNo())
+
+    double getJs() const { return js; }
+    void setJs(double js)  {
+        this->js = js;
+        this->invalidate();
+    }
+
+    double getCondPcontact() const { return pcond; }
+    void setCondPcontact(double cond)  { pcond = cond; }
+
+    double getCondNcontact() const { return ncond; }
+    void setCondNcontact(double cond)  { ncond = cond; }
+
+    DataVector<const double> getCondJunc() const { return junction_conductivity; }
+    void setCondJunc(double cond) {
+        junction_conductivity.reset(max(junction_conductivity.size(), size_t(1)), cond);
+        default_junction_conductivity = cond;
+    }
+    void setCondJunc(const DataVector<const double>& cond)  {
+        if (!this->mesh || cond.size() != (this->mesh->axis0.size()-1) * getActNo())
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
-        mCondJunc = iCond.claim();
+        junction_conductivity = cond.claim();
     }
 
-    double getActLo(size_t iActN) const { return mActLo[iActN]; }
-    double getActHi(size_t iActN) const { return mActHi[iActN]; }
-    size_t getActNo() const { return mDact.size(); }
+    double getActLo(size_t n) const { return actlo[n]; }
+    double getActHi(size_t n) const { return acthi[n]; }
+    size_t getActNo() const { return actd.size(); }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
@@ -221,6 +228,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     DataVector<const double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
     DataVector<const Vec<2>> getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+  private:
+    bool again;
+
 };
 
 }} //namespaces
