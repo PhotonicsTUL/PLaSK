@@ -41,8 +41,8 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     int N = src.matrixSize();         // Size of each matrix
 
     // First find necessary matrices
-    cmatrix RH = src.getRH(layer, k0, Kx, Ky);
-    cmatrix RE = src.getRE(layer, k0, Kx, Ky);
+    cmatrix RE = Th1[layer], RH = Th[layer];
+    src.getMatrices(layer, k0, Kx, Ky, RE, RH);
 
     if (src.diagonalQE(layer)) {
 
@@ -77,18 +77,18 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
         // we use Te as work and Te1 as rwork (as N >= 2, their sizes are ok)
         int info;
-        F(zgeev)('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  tmp.data(), N,
+        F(zgeev)('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
                  Te[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
 
         // ...and rewrite the eigenvectors to their final locations
-        memcpy(Te[layer].data(), tmp.data(), NN*sizeof(dcomplex));
+        memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
 
-        // Find the inverse of Th in the classical way (maybe to be optimized in future)
+        // Find the inverse of Te in the classical way (maybe to be optimized in future)
         // TODO: eigenvectors should be built by hand based on Schur vectors
         memset(Te1[layer].data(), 0., NN*sizeof(dcomplex));
         for (int i = 0; i < NN; i += (N+1))
             Te1[layer][i] = 1.;
-        invmult(tmp, Te1[layer]);
+        invmult(Th[layer], Te1[layer]);
     }
 
     // Make Gamma of Gamma^2
@@ -112,21 +112,21 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
     // Compute the Th1[layer] = Gamma[layer] * Te1[layer] * inv(RE)
     // we use the LU factorization of the RE matrix for this purpose and then solve Th1^T = inv(RE)^T * Te1^T * Gamma^T
-    // the RH array is used as a temporary storage
+    // the tmp array is used as a temporary storage
     for (int i = 0; i < N; i++)
         for (int j = 0; j < N; j++)
-            RH(i,j) = Te1[layer](j,i);
+            tmp(i,j) = Te1[layer](j,i);
     // LU factorization of RE
     int ierr;
     int* ipiv = new int[N];
     F(zgetrf)(N, N, RE.data(), N, ipiv, ierr);
-    // the RH will contain inv(RE)^T * Te1^T
-    F(zgetrs)('t', N, N, RE.data(), N, ipiv, RH.data(), N, ierr);
-    // compute RH^T and store it in Th1
+    // the tmp will contain inv(RE)^T * Te1^T
+    F(zgetrs)('t', N, N, RE.data(), N, ipiv, tmp.data(), N, ierr);
+    // compute tmp^T and store it in Th1
     for (int j = 0; j < N; j++) {
         dcomplex g = gam[j];
         for (int i = 0; i < N; i++)
-            Th1[layer](j,i) = RH(i,j) * g;
+            Th1[layer](j,i) = tmp(i,j) * g;
     }
     delete[] ipiv;
 

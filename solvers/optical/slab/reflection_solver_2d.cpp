@@ -6,6 +6,8 @@ namespace plask { namespace solvers { namespace slab {
 FourierReflection2D::FourierReflection2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
     size(12),
     k0(NAN),
+    klong(0.),
+    ktran(0.),
     refine(8)
 {
 }
@@ -28,7 +30,7 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierReflection2D::onInitialize()
 {
     setupLayers();
-    expansion.reset(new ExpansionPW2D(this));
+    expansion.reset(new ExpansionPW2D(this, klong == 0., ktran == 0.));
     diagonalizer.reset(new SimpleDiagonalizer(*expansion.get()));    //TODO add other diagonalizer types
 }
 
@@ -42,6 +44,8 @@ void FourierReflection2D::onInvalidate()
 
 size_t FourierReflection2D::findMode(dcomplex neff)
 {
+    klong = neff * k0;
+    if (klong == 0.) klong = 1e-12;
     initCalculation();
     return NAN;
 }

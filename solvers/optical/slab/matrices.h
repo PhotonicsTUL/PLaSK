@@ -128,7 +128,7 @@ class MatrixDiagonal {
     MatrixDiagonal(int n) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
 #ifndef NDEBUG
-        writelog(LOG_DEBUG, "allocating matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
+        writelog(LOG_DEBUG, "allocating diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
 #endif
         memset(data_, 0, siz*sizeof(T));
         *gc = 1;
@@ -144,7 +144,7 @@ class MatrixDiagonal {
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
 #ifndef NDEBUG
-                writelog(LOG_DEBUG, "freeing matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
+                writelog(LOG_DEBUG, "freeing diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
 #endif
             }
         }
@@ -158,7 +158,7 @@ class MatrixDiagonal {
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
 #ifndef NDEBUG
-                writelog(LOG_DEBUG, "freeing matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
+                writelog(LOG_DEBUG, "freeing diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
 #endif
             }
         }

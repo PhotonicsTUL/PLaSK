@@ -33,6 +33,9 @@ struct FourierReflection2D: public SlabSolver<Geometry2DCartesian> {
     /// Cache of the normalized frequency [1/µm]
     dcomplex k0;
 
+    dcomplex klong, ///< Longitudinal wavevector
+             ktran; ///< Transverse wavevector
+    
     /// Class responsoble for computing expansion coefficients
     std::unique_ptr<ExpansionPW2D> expansion;
 

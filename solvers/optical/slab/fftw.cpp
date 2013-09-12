@@ -30,32 +30,32 @@ namespace detail {
 Forward1D::Forward1D(): plan(nullptr) {}
 
 Forward1D::Forward1D(Forward1D&& old):
-    lot(old.lot), n(old.n),
+    lot(old.lot), n(old.n), st(old.st),
     symmetry(old.symmetry),
     data(old.data), plan(old.plan) {
     old.plan = nullptr;
 }
 
 Forward1D& Forward1D::operator=(Forward1D&& old) {
-    lot = old.lot; n = old.n;
+    lot = old.lot; n = old.n; st = old.st;
     symmetry = old.symmetry;
     data = old.data; plan = old.plan;
     old.plan = nullptr;
     return *this;
 }
 
-Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
-    lot(lot), n(n), symmetry(symmetry), data(data) {
+Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
+    lot(lot), n(n), st(st), symmetry(symmetry), data(data) {
     if (symmetry == SYMMETRY_NONE) {
         plan = fftw_plan_many_dft(1, &this->n, lot,
-                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot, 1,
-                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot, 1,
+                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot*st, st,
+                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot*st, st,
                                   FFTW_FORWARD, FFTW_ESTIMATE);
     } else if (symmetry == SYMMETRY_EVEN) {
         static const fftw_r2r_kind kinds[] = { FFTW_REDFT10 };
         plan = fftw_plan_many_r2r(1, &this->n, 2*lot,
-                                  reinterpret_cast<double*>(data), nullptr, 2*lot, 1,
-                                  reinterpret_cast<double*>(data), nullptr, 2*lot, 1,
+                                  reinterpret_cast<double*>(data), nullptr, 2*lot*st, st,
+                                  reinterpret_cast<double*>(data), nullptr, 2*lot*st, st,
                                   kinds, FFTW_ESTIMATE);
     } else
         throw NotImplemented("forward FFT for odd symmetry");
@@ -91,26 +91,26 @@ Forward1D::~Forward1D() {
 Forward2D::Forward2D(): plan(nullptr) {}
 
 Forward2D::Forward2D(Forward2D&& old):
-    lot(old.lot), n1(old.n1), n2(old.n2),
+    lot(old.lot), n1(old.n1), n2(old.n2), st(old.st),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     data(old.data), plan(old.plan) {
     old.plan = nullptr;
 }
 
 Forward2D& Forward2D::operator=(Forward2D&& old) {
-    lot = old.lot; n1 = old.n1; n2 = old.n2;
+    lot = old.lot; n1 = old.n1; n2 = old.n2; st = old.st;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
     data = old.data; plan = old.plan;
     old.plan = nullptr;
     return *this;
 }
 
-Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data):
-    lot(lot), n1(n1), n2(n2), symmetry1(symmetry1), symmetry2(symmetry2), data(data) {
+Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data, int st):
+    lot(lot), n1(n1), n2(n2), st(st), symmetry1(symmetry1), symmetry2(symmetry2), data(data) {
     if (symmetry1 == SYMMETRY_NONE && symmetry2 == SYMMETRY_NONE) {
         plan = fftw_plan_many_dft(2, &this->n1, lot,
-                                  reinterpret_cast<fftw_complex*>(data), nullptr, 1, n1*n2,
-                                  reinterpret_cast<fftw_complex*>(data), nullptr, 1, n1*n2,
+                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot*st, st,
+                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot*st, st,
                                   FFTW_FORWARD, FFTW_ESTIMATE);
     } else if (symmetry1 == SYMMETRY_EVEN && symmetry2 == SYMMETRY_EVEN) {
         throw NotImplemented("FFTW even,even");//TODO
@@ -151,38 +151,38 @@ Forward2D::~Forward2D() {
 Backward1D::Backward1D(): plan(nullptr) {}
 
 Backward1D::Backward1D(Backward1D&& old):
-    lot(old.lot), n(old.n),
+    lot(old.lot), n(old.n), st(old.st),
     symmetry(old.symmetry),
     data(old.data), plan(old.plan) {
     old.plan = nullptr;
 }
 
 Backward1D& Backward1D::operator=(Backward1D&& old) {
-    lot = old.lot; n = old.n;
+    lot = old.lot; n = old.n; st = old.st;
     symmetry = old.symmetry;
     data = old.data; plan = old.plan;
     old.plan = nullptr;
     return *this;
 }
 
-Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
-    lot(lot), n(n), symmetry(symmetry), data(data) {
+Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
+    lot(lot), n(n), st(st), symmetry(symmetry), data(data) {
     if (symmetry == SYMMETRY_NONE) {
         plan = fftw_plan_many_dft(1, &this->n, lot,
-                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot, 1,
-                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot, 1,
+                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot*st, st,
+                                  reinterpret_cast<fftw_complex*>(data), nullptr, lot*st, st,
                                   FFTW_BACKWARD, FFTW_ESTIMATE);
     } else if (symmetry == SYMMETRY_EVEN) {
         static const fftw_r2r_kind kinds[] = { FFTW_REDFT01 };
         plan = fftw_plan_many_r2r(1, &this->n, 2*lot,
-                                  reinterpret_cast<double*>(data), nullptr, 2*lot, 1,
-                                  reinterpret_cast<double*>(data), nullptr, 2*lot, 1,
+                                  reinterpret_cast<double*>(data), nullptr, 2*lot*st, st,
+                                  reinterpret_cast<double*>(data), nullptr, 2*lot*st, st,
                                   kinds, FFTW_ESTIMATE);
     } else {
         static const fftw_r2r_kind kinds[] = { FFTW_RODFT01 };
         plan = fftw_plan_many_r2r(1, &this->n, 2*lot,
-                                  reinterpret_cast<double*>(data), nullptr, 2*lot, 1,
-                                  reinterpret_cast<double*>(data), nullptr, 2*lot, 1,
+                                  reinterpret_cast<double*>(data), nullptr, 2*lot*st, st,
+                                  reinterpret_cast<double*>(data), nullptr, 2*lot*st, st,
                                   kinds, FFTW_ESTIMATE);
     }
 }
@@ -209,22 +209,22 @@ Backward1D::~Backward1D() {
 Backward2D::Backward2D(): plan(nullptr) {}
 
 Backward2D::Backward2D(Backward2D&& old):
-    lot(old.lot), n1(old.n1), n2(old.n2),
+    lot(old.lot), n1(old.n1), n2(old.n2), st(old.st),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     data(old.data), plan(old.plan) {
     old.plan = nullptr;
 }
 
 Backward2D& Backward2D::operator=(Backward2D&& old) {
-    lot = old.lot; n1 = old.n1; n2 = old.n2;
+    lot = old.lot; n1 = old.n1; n2 = old.n2; st = old.st;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
     data = old.data; plan = old.plan;
     old.plan = nullptr;
     return *this;
 }
 
-Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data):
-    lot(lot), n1(n1), n2(n2), symmetry1(symmetry1), symmetry2(symmetry2), data(data) {
+Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data, int st):
+    lot(lot), n1(n1), n2(n2), st(st), symmetry1(symmetry1), symmetry2(symmetry2), data(data) {
     plan = nullptr; //TODO
 }
 

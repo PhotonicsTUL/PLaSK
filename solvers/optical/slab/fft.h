@@ -33,10 +33,11 @@ struct Forward1D {
     /** Init transfrom
      * \param lot number of arrays to transform
      * \param n size of a single array
-     * \param data pointer to data to transform
      * \param symmetry symmetry of the transform
+     * \param data pointer to data to transform
+     * \param st data stride
      */
-    Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data);
+    Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st=1);
     ~Forward1D();
     /// Execute transform
     void execute();
@@ -47,6 +48,7 @@ struct Forward1D {
   private:
     int lot;
     int n;
+    int st;
     Symmetry symmetry;
     dcomplex* data;
 #ifdef USE_FFTW
@@ -67,10 +69,11 @@ struct Forward2D {
     /** Init transfrom
      * \param lot number of arrays to transform
      * \param n1,n2 dimensions of a single array
-     * \param data pointer to data to transform
      * \param symmetry1,symmetry2 symmetry of the transform
+     * \param data pointer to data to transform
+     * \param st data stride
      */
-    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
+    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data, int st=1);
     ~Forward2D();
     /// Execute transform
     void execute();
@@ -81,6 +84,7 @@ struct Forward2D {
   private:
     int lot;
     int n1, n2;
+    int st;
     Symmetry symmetry1, symmetry2;
     dcomplex* data;
 #ifdef USE_FFTW
@@ -101,10 +105,11 @@ struct Backward1D {
     /** Init transfrom
      * \param lot number of arrays to transform
      * \param n size of a single array
-     * \param data pointer to data to transform
      * \param symmetry symmetry of the transform
+     * \param data pointer to data to transform
+     * \param st data stride
      */
-    Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data);
+    Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st=1);
     ~Backward1D();
     /// Execute transform
     void execute();
@@ -115,6 +120,7 @@ struct Backward1D {
   private:
     int lot;
     int n;
+    int st;
     Symmetry symmetry;
     dcomplex* data;
 #ifdef USE_FFTW
@@ -135,10 +141,11 @@ struct Backward2D {
     /** Init transfrom
      * \param lot number of arrays to transform
      * \param n1,n2 dimensions of a single array
-     * \param data pointer to data to transform
      * \param symmetry1,symmetry2 symmetry of the transform
+     * \param data pointer to data to transform
+     * \param st data stride
      */
-    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data);
+    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, dcomplex* data, int st=1);
     ~Backward2D();
     /// Execute transform
     void execute();
@@ -149,6 +156,7 @@ struct Backward2D {
   private:
     int lot;
     int n1, n2;
+    int st;
     Symmetry symmetry1, symmetry2;
     dcomplex* data;
 #ifdef USE_FFTW

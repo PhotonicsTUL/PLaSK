@@ -29,22 +29,13 @@ struct Expansion {
     virtual size_t matrixSize() const = 0;
 
     /**
-     * Get RE matrix
+     * Get RE anf RH matrices
      * \param l layer number
      * \param k0 normalized frequency [1/µm]
-     * \param kx,ky horizontal wavevector components [1/µm]
-     * \return RE matrix
+     * \param klong,ktran horizontal wavevector components [1/µm]
+     * \param[out] RE,RH resulting matrix
      */
-    virtual cmatrix getRE(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) = 0;
-
-    /**
-     * Get RH matrix
-     * \param l layer number
-     * \param k0 normalized frequency [1/µm]
-     * \param kx,ky horizontal wavevector components [1/µm]
-     * \return RH matrix
-     */
-    virtual cmatrix getRH(size_t l, dcomplex k0, dcomplex kx, dcomplex ky) = 0;
+    virtual void getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH) = 0;
 };
 
 

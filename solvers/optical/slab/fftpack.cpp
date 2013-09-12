@@ -11,22 +11,22 @@ namespace plask { namespace solvers { namespace slab { namespace FFT {
 Forward1D::Forward1D(): wsave(nullptr) {}
 
 Forward1D::Forward1D(Forward1D&& old):
-    lot(old.lot), n(old.n),
+    lot(old.lot), n(old.n), st(old.st),
     symmetry(old.symmetry),
     data(old.data), wsave(old.wsave) {
     old.wsave = nullptr;
 }
 
 Forward1D& Forward1D::operator=(Forward1D&& old) {
-    lot = old.lot; n = old.n;
+    lot = old.lot; n = old.n; st = old.st;
     symmetry = old.symmetry;
     data = old.data; wsave = old.wsave;
     old.wsave = nullptr;
     return *this;
 }
 
-Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
-    lot(lot), n(n), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
+Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
+    lot(lot), n(n), st(st), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
     try { 
         int ier;
         if (symmetry == SYMMETRY_NONE)
@@ -50,9 +50,9 @@ void Forward1D::execute(dcomplex* data) {
         int ier;
         double work[2*lot*n];
         if (symmetry == SYMMETRY_NONE) {
-            cfftmf_(lot, 1, n, lot, data, lot*n, wsave, lensav(n), work, 2*lot*n, ier);
+            cfftmf_(lot, st, n, lot*st, data, lot*n, wsave, lensav(n), work, 2*lot*n, ier);
         } else {
-            cosqmb_(2*lot, 1, n, 2*lot, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
+            cosqmb_(2*lot, st, n, 2*lot*st, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
             double factor = 1./n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
         }
     } catch (const std::string& msg) {
@@ -70,22 +70,22 @@ Forward1D::~Forward1D() {
 Backward1D::Backward1D(): wsave(nullptr) {}
 
 Backward1D::Backward1D(Backward1D&& old):
-    lot(old.lot), n(old.n),
+    lot(old.lot), n(old.n), st(old.st),
     symmetry(old.symmetry),
     data(old.data), wsave(old.wsave) {
     old.wsave = nullptr;
 }
 
 Backward1D& Backward1D::operator=(Backward1D&& old) {
-    lot = old.lot; n = old.n;
+    lot = old.lot; n = old.n; st = old.st;
     symmetry = old.symmetry;
     data = old.data; wsave = old.wsave;
     old.wsave = nullptr;
     return *this;
 }
 
-Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data):
-    lot(lot), n(n), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
+Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
+    lot(lot), n(n), st(st), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
     try { 
         int ier;
         if (symmetry == SYMMETRY_NONE)
@@ -109,12 +109,12 @@ void Backward1D::execute(dcomplex* data) {
         int ier;
         double work[2*lot*n];
         if (symmetry == SYMMETRY_NONE) {
-            cfftmb_(lot, 1, n, lot, data, lot*n, wsave, lensav(n), work, 2*lot*n, ier);
+            cfftmb_(lot, st, n, lot*st, data, lot*n, wsave, lensav(n), work, 2*lot*n, ier);
         } else if (symmetry == SYMMETRY_EVEN) {
-            cosqmf_(2*lot, 1, n, 2*lot, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
+            cosqmf_(2*lot, st, n, 2*lot*st, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
              double factor = n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
         } else if (symmetry == SYMMETRY_EVEN) {
-            sinqmf_(2*lot, 1, n, 2*lot, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
+            sinqmf_(2*lot, st, n, 2*lot*st, (double*)data, 2*lot*n, wsave, lensav(n), work, 2*lot*n, ier);
             double factor = n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
          }
     } catch (const std::string& msg) {

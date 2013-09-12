@@ -18,6 +18,12 @@ struct ExpansionPW2D: public Expansion {
         SYMMETRIC_E_LONG                ///< E_long and H_tran are symmetric and E_tran and H_long anti-symmetric
     };
     
+    /// Polarization of separated modes
+    enum Polarization {
+        TE,                             ///< E_z and H_x exist
+        TM                              ///< H_z and E_x exist
+    };
+    
     FourierReflection2D* solver;        ///< Solver which performs calculations (and is the interface to the outside world)
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
@@ -29,26 +35,30 @@ struct ExpansionPW2D: public Expansion {
     double right;                       ///< Right side of the sampled area
     bool symmetric;                     ///< Indicates if the expansion is a symmetric one
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
+    bool separated;                     ///< Indicates whether TE and TM modes can be separated
 
+    Symmetry symmetry;                  ///< Indicates symmetry if `symmetric`
+    
+    
+    
     size_t pil,                         ///< Index of the beginning of the left PML
            pir;                         ///< Index of the beginning of the right PML
 
     /**
      * Create new expansion
      * \param solver solver which performs calculations
-     * \param allow_symmetry \c true if expansion may be symmetric (i.e. \f$ k_x = 0 \f$)
+     * \param long_zero \c true if \f$ k_z = 0 \f$)
+     * \param tran_zero \c true if \f$ k_x = 0 \f$)
      */
-    ExpansionPW2D(FourierReflection2D* solver, bool allow_symmetry=true);
+    ExpansionPW2D(FourierReflection2D* solver, bool long_zero, bool tran_zero);
 
     virtual size_t lcount() const;
 
     virtual bool diagonalQE(size_t l) const;
 
-    virtual size_t matrixSize() const;
+    virtual size_t matrixSize() const { return separated? N : 2*N; }
 
-    virtual cmatrix getRE(size_t l, dcomplex k0, dcomplex beta, dcomplex kx);
-
-    virtual cmatrix getRH(size_t l, dcomplex k0, dcomplex beta, dcomplex kx);
+    virtual void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH);
 
     /**
      * Get refractive index back from expansion
@@ -74,28 +84,46 @@ struct ExpansionPW2D: public Expansion {
     void getMaterialCoefficients(size_t l);
     
     /// Get \f$ \varepsilon_{zz} \f$
-    dcomplex epszz(int i) { return coeffs[(i>=0)? i : i+nN].c00; }
+    dcomplex epszz(int i) { return coeffs[(i>=0)?i:i+nN].c00; }
     
     /// Get \f$ \varepsilon_{xx} \f$
-    dcomplex epsxx(int i) { return coeffs[(i>=0)? i : i+nN].c11; }
+    dcomplex epsxx(int i) { return coeffs[(i>=0)?i:i+nN].c11; }
     
     /// Get \f$ \varepsilon_{yy}^{-1} \f$
-    dcomplex iepsyy(int i) { return coeffs[(i>=0)? i : i+nN].c22; }
+    dcomplex iepsyy(int i) { return coeffs[(i>=0)?i:i+nN].c22; }
     
     /// Get \f$ \varepsilon_{zx} \f$
-    dcomplex epszx(int i) { return coeffs[(i>=0)? i : i+nN].c01; }
+    dcomplex epszx(int i) { return coeffs[(i>=0)?i:i+nN].c01; }
     
     /// Get \f$ \varepsilon_{xz} \f$
-    dcomplex epsxz(int i) { return coeffs[(i>=0)? i : i+nN].c10; }
+    dcomplex epsxz(int i) { return coeffs[(i>=0)?i:i+nN].c10; }
     
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muzz(int i) { return mag[(i>=0)? i : i+nN].c00; }
+    dcomplex muzz(int i) { return mag[(i>=0)?i:i+nN].c00; }
     
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(int i) { return mag[(i>=0)? i : i+nN].c00; }
+    dcomplex muxx(int i) { return mag[(i>=0)?i:i+nN].c00; }
     
     /// Get \f$ \mu_{xx} \f$
-    dcomplex imuyy(int i) { return mag[(i>=0)? i : i+nN].c11; }
+    dcomplex imuyy(int i) { return mag[(i>=0)?i:i+nN].c11; }
+    
+    /// Get \f$ E_x \f$ index
+    size_t iEx(int i) { return 2 * ((i>=0)?i:i+nN); }
+    
+    /// Get \f$ E_x \f$ index
+    size_t iEz(int i) { return 2 * ((i>=0)?i:i+nN) + 1; }
+    
+    /// Get \f$ E_x \f$ index
+    size_t iHx(int i) { return 2 * ((i>=0)?i:i+nN); }
+    
+    /// Get \f$ E_x \f$ index
+    size_t iHz(int i) { return 2 * ((i>=0)?i:i+nN) + 1; }
+    
+    /// Get \f$ E_x \f$ index
+    size_t iE(int i) { return (i>=0)?i:i+nN; }
+    
+    /// Get \f$ E_x \f$ index
+    size_t iH(int i) { return (i>=0)?i:i+nN; }
 };
 
 }}} // namespace plask

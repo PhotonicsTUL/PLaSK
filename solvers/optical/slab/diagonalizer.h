@@ -83,8 +83,8 @@ class SimpleDiagonalizer : public Diagonalizer
     dcomplex Kx, Ky;                    // The wavevector for which we compute the diagonalization for all layers
 
     std::vector<cdiagonal> gamma;       // diagonal matrices Gamma
-    std::vector<cmatrix> Te, Th;        // matrices EE and EH
-    std::vector<cmatrix> Te1, Th1;      // matrices TE^-1 anf TE^-1
+    std::vector<cmatrix> Te, Th;        // matrices TE and TH
+    std::vector<cmatrix> Te1, Th1;      // matrices TE^-1 and TH^-1
 
     cmatrix QE;                         // temporary matrix to store QH = RE * RH
     cmatrix tmp;                        // some temporary matrix
