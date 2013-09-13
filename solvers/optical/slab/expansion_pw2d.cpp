@@ -3,7 +3,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver, bool long_zero, bool tran_zero): solver(solver)
+void ExpansionPW2D::init(bool long_zero, bool tran_zero)
 {
     auto geometry = solver->getGeometry();
 
@@ -262,16 +262,59 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
     int order = solver->getSize();
     dcomplex f = I / k0, k02 = k0*k0;
     dcomplex b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-    
+
     if (separated) {
         //TODO
-        throw NotImplemented("Expansion for separated matrices");
         if (symmetric) {
+            // Separated symmetric
+            std::fill_n(RE.data(), N*N, dcomplex(0.));
+            std::fill_n(RH.data(), N*N, dcomplex(0.));
+            if (polarization == TE) {
+                for (int i = 0; i <= order; ++i) {
+                    dcomplex gi = b * double(i) - kx;
+                    for (int j = -order; j <= order; ++j) {
+                        int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                        dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
+                        RH(iE(i), iH(j)) = - k02 * muxx(ij);
+                        RE(iH(i), iE(j)) =   fz * gi * gj * imuyy(ij) - k02 * epszz(ij);
+                    }
+                }
+            } else {
+                for (int i = 0; i <= order; ++i) {
+                    dcomplex gi = b * double(i) - kx;
+                    for (int j = -order; j <= order; ++j) {
+                        int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                        dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
+                        RH(iE(i), iH(j)) = - fx * gi * gj * iepsyy(ij) + k02 * muzz(ij);
+                        RE(iH(i), iE(j)) =   k02 * epsxx(ij);
+                    }
+                }
+            }
         } else {
+            // Separated asymmetric
+            if (polarization == TE) {
+                for (int i = -order; i <= order; ++i) {
+                    dcomplex gi = b * double(i) - kx;
+                    for (int j = -order; j <= order; ++j) {
+                        int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                        RH(iE(i), iH(j)) = - k02 * muxx(ij);
+                        RE(iH(i), iE(j)) =   f * gi * gj * imuyy(ij) - k02 * epszz(ij);
+                    }
+                }
+            } else {
+                for (int i = -order; i <= order; ++i) {
+                    dcomplex gi = b * double(i) - kx;
+                    for (int j = -order; j <= order; ++j) {
+                        int ij = i-j;   dcomplex gj = b * double(j) - kx;
+                        RH(iE(i), iH(j)) = - f * gi * gj * iepsyy(ij) + k02 * muzz(ij);
+                        RE(iH(i), iE(j)) =   k02 * epsxx(ij);
+                    }
+                }
+            }
         }
-    } else { // separated
+    } else {
         if (symmetric) {
-            // Full symmetric 
+            // Full symmetric
             std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
             std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
             for (int i = 0; i <= order; ++i) {
@@ -292,25 +335,23 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 }
             }
         } else {
-            // Full asymmetric 
+            // Full asymmetric
             for (int i = -order; i <= order; ++i) {
                 dcomplex gi = b * double(i) - kx;
                 for (int j = -order; j <= order; ++j) {
-                    dcomplex gj = b * double(j) - kx;
-                    int ij = i-j;
+                    int ij = i-j;   dcomplex gj = b * double(j) - kx;
                     RH(iEx(i), iHz(j)) = - f * gi * gj * iepsyy(ij) + k02 * muzz(ij);
                     RH(iEz(i), iHz(j)) =   f * beta * gj * iepsyy(ij);
                     RH(iEx(i), iHx(j)) = - f * beta * gi * iepsyy(ij);
                     RH(iEz(i), iHx(j)) =   f * beta*beta * iepsyy(ij) - k02 * muxx(ij);
                     RE(iHz(i), iEx(j)) = - f * beta*beta * imuyy(ij) + k02 * epsxx(ij);
-                    RE(iHx(i), iEx(j)) =   f * beta * gi  * imuyy(ij) + k02 * epszx(ij);
+                    RE(iHx(i), iEx(j)) =   f * beta * gi  * imuyy(ij) - k02 * epszx(ij);
                     RE(iHz(i), iEz(j)) = - f * beta * gj * imuyy(ij) + k02 * epsxz(ij);
-                    RE(iHx(i), iEz(j)) =   f * gi * gj * imuyy(ij) + k02 * epszz(ij);
+                    RE(iHx(i), iEz(j)) =   f * gi * gj * imuyy(ij) - k02 * epszz(ij);
                 }
             }
         }
     }
-    
 }
 
 

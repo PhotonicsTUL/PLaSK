@@ -35,13 +35,13 @@ struct FourierReflection2D: public SlabSolver<Geometry2DCartesian> {
 
     dcomplex klong, ///< Longitudinal wavevector
              ktran; ///< Transverse wavevector
-    
+
     /// Class responsoble for computing expansion coefficients
-    std::unique_ptr<ExpansionPW2D> expansion;
+    ExpansionPW2D expansion;
 
     /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
     std::unique_ptr<Diagonalizer> diagonalizer;
-    
+
     void onInitialize();
 
     void onInvalidate();

@@ -8,6 +8,7 @@ FourierReflection2D::FourierReflection2D(const std::string& name): SlabSolver<Ge
     k0(NAN),
     klong(0.),
     ktran(0.),
+    expansion(this),
     refine(8)
 {
 }
@@ -30,14 +31,13 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierReflection2D::onInitialize()
 {
     setupLayers();
-    expansion.reset(new ExpansionPW2D(this, klong == 0., ktran == 0.));
-    diagonalizer.reset(new SimpleDiagonalizer(*expansion.get()));    //TODO add other diagonalizer types
+    expansion.init(klong == 0., ktran == 0.);
+    diagonalizer.reset(new SimpleDiagonalizer(expansion));    //TODO add other diagonalizer types
 }
 
 
 void FourierReflection2D::onInvalidate()
 {
-    expansion.reset();
     diagonalizer.reset();
 }
 
@@ -63,7 +63,7 @@ DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfi
         size_t n = getLayerFor(h);
         size_t l = stack[n];
         if (cache.find(l) == cache.end()) {
-            cache[l] = expansion->getMaterialNR(l, dst_mesh.axis0, interp);
+            cache[l] = expansion.getMaterialNR(l, dst_mesh.axis0, interp);
         }
         for (size_t x = 0; x != dst_mesh.axis0.size(); ++x) {
             result[dst_mesh.index(x,y)] = cache[l][x];

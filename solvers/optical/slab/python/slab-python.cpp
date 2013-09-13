@@ -48,6 +48,7 @@ BOOST_PYTHON_MODULE(slab)
         METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
+        RW_FIELD(refine, "Number of refinemnet points for refractive index averaging");
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
     }

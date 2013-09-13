@@ -17,13 +17,13 @@ struct ExpansionPW2D: public Expansion {
         SYMMETRIC_E_TRAN,               ///< E_tran and H_long are symmetric and E_long and H_tran anti-symmetric
         SYMMETRIC_E_LONG                ///< E_long and H_tran are symmetric and E_tran and H_long anti-symmetric
     };
-    
+
     /// Polarization of separated modes
     enum Polarization {
         TE,                             ///< E_z and H_x exist
         TM                              ///< H_z and E_x exist
     };
-    
+
     FourierReflection2D* solver;        ///< Solver which performs calculations (and is the interface to the outside world)
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
@@ -38,19 +38,23 @@ struct ExpansionPW2D: public Expansion {
     bool separated;                     ///< Indicates whether TE and TM modes can be separated
 
     Symmetry symmetry;                  ///< Indicates symmetry if `symmetric`
-    
-    
-    
+    Polarization polarization;          ///< Indicates polarization if `separated`
+
     size_t pil,                         ///< Index of the beginning of the left PML
            pir;                         ///< Index of the beginning of the right PML
 
     /**
      * Create new expansion
      * \param solver solver which performs calculations
+     */
+    ExpansionPW2D(FourierReflection2D* solver): solver(solver) {}
+
+    /**
+     * Init expansion
      * \param long_zero \c true if \f$ k_z = 0 \f$)
      * \param tran_zero \c true if \f$ k_x = 0 \f$)
      */
-    ExpansionPW2D(FourierReflection2D* solver, bool long_zero, bool tran_zero);
+    void init(bool long_zero, bool tran_zero);
 
     virtual size_t lcount() const;
 
@@ -82,46 +86,46 @@ struct ExpansionPW2D: public Expansion {
      * \param l layer number
      */
     void getMaterialCoefficients(size_t l);
-    
+
     /// Get \f$ \varepsilon_{zz} \f$
     dcomplex epszz(int i) { return coeffs[(i>=0)?i:i+nN].c00; }
-    
+
     /// Get \f$ \varepsilon_{xx} \f$
     dcomplex epsxx(int i) { return coeffs[(i>=0)?i:i+nN].c11; }
-    
+
     /// Get \f$ \varepsilon_{yy}^{-1} \f$
     dcomplex iepsyy(int i) { return coeffs[(i>=0)?i:i+nN].c22; }
-    
+
     /// Get \f$ \varepsilon_{zx} \f$
     dcomplex epszx(int i) { return coeffs[(i>=0)?i:i+nN].c01; }
-    
+
     /// Get \f$ \varepsilon_{xz} \f$
     dcomplex epsxz(int i) { return coeffs[(i>=0)?i:i+nN].c10; }
-    
+
     /// Get \f$ \mu_{xx} \f$
     dcomplex muzz(int i) { return mag[(i>=0)?i:i+nN].c00; }
-    
+
     /// Get \f$ \mu_{xx} \f$
     dcomplex muxx(int i) { return mag[(i>=0)?i:i+nN].c00; }
-    
+
     /// Get \f$ \mu_{xx} \f$
     dcomplex imuyy(int i) { return mag[(i>=0)?i:i+nN].c11; }
-    
+
     /// Get \f$ E_x \f$ index
     size_t iEx(int i) { return 2 * ((i>=0)?i:i+nN); }
-    
+
     /// Get \f$ E_x \f$ index
     size_t iEz(int i) { return 2 * ((i>=0)?i:i+nN) + 1; }
-    
+
     /// Get \f$ E_x \f$ index
     size_t iHx(int i) { return 2 * ((i>=0)?i:i+nN); }
-    
+
     /// Get \f$ E_x \f$ index
     size_t iHz(int i) { return 2 * ((i>=0)?i:i+nN) + 1; }
-    
+
     /// Get \f$ E_x \f$ index
     size_t iE(int i) { return (i>=0)?i:i+nN; }
-    
+
     /// Get \f$ E_x \f$ index
     size_t iH(int i) { return (i>=0)?i:i+nN; }
 };
