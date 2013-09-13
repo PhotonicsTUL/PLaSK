@@ -3,11 +3,8 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-FourierReflection2D::FourierReflection2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
+FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSolver<Geometry2DCartesian>(name),
     size(12),
-    k0(NAN),
-    klong(0.),
-    ktran(0.),
     expansion(this),
     refine(8)
 {

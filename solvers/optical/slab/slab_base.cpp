@@ -162,6 +162,7 @@ void SlabSolver<Geometry3D>::setupLayers()
 
 template struct SlabSolver<Geometry2DCartesian>;
 template struct SlabSolver<Geometry2DCylindrical>;
+template struct SlabSolver<Geometry3D>;
 
 // FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
 

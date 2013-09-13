@@ -3,16 +3,15 @@
 
 #include <plask/plask.hpp>
 
-#include "slab_base.h"
+#include "reflection_base.h"
 #include "expansion_pw2d.h"
-#include "diagonalizer.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct FourierReflection2D: public SlabSolver<Geometry2DCartesian> {
+struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
     std::string getClassName() const { return "optical.FourierReflection2D"; }
 
@@ -30,17 +29,8 @@ struct FourierReflection2D: public SlabSolver<Geometry2DCartesian> {
     /// Maximum order of the orthogonal base
     size_t size;
 
-    /// Cache of the normalized frequency [1/µm]
-    dcomplex k0;
-
-    dcomplex klong, ///< Longitudinal wavevector
-             ktran; ///< Transverse wavevector
-
     /// Class responsoble for computing expansion coefficients
     ExpansionPW2D expansion;
-
-    /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
-    std::unique_ptr<Diagonalizer> diagonalizer;
 
     void onInitialize();
 

@@ -145,7 +145,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
      */
-    virtual const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method) = 0;
+    virtual const DataVector<const double> getIntensity(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
 
 };
 
