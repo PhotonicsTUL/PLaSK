@@ -110,7 +110,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
         for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
-            bool active = (bool)this->geometry->hasRoleAt("active", point);
+            auto roles = this->geometry->getRolesAt(point);
+            bool active = roles.find("active") != roles.end() || roles.find("junction") != roles.end();
 
             if (c < ileft) {
                 if (active)
@@ -288,16 +289,19 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
         Vec<2,double> midpoint = e.getMidpoint();
 
         // update junction conductivities
-        if (loopno != 0 && this->geometry->hasRoleAt("active", midpoint)) {
-            size_t left = this->mesh->index0(loleftno);
-            size_t right = this->mesh->index0(lorghtno);
-            size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(loleftno)) - acthi.begin();
-            assert(nact < acthi.size());
-            double jy = 0.5e6 * conds[i].c11 *
-                abs( - potentials[this->mesh->index(left, actlo[nact])] - potentials[this->mesh->index(right, actlo[nact])]
-                    + potentials[this->mesh->index(left, acthi[nact])] + potentials[this->mesh->index(right, acthi[nact])]
-                ) / actd[nact]; // [j] = A/m²
-            conds[i] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+        if (loopno != 0) {
+            auto roles = this->geometry->getRolesAt(midpoint);
+            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
+                size_t left = this->mesh->index0(loleftno);
+                size_t right = this->mesh->index0(lorghtno);
+                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(loleftno)) - acthi.begin();
+                assert(nact < acthi.size());
+                double jy = 0.5e6 * conds[i].c11 *
+                    abs( - potentials[this->mesh->index(left, actlo[nact])] - potentials[this->mesh->index(right, actlo[nact])]
+                        + potentials[this->mesh->index(left, acthi[nact])] + potentials[this->mesh->index(right, acthi[nact])]
+                    ) / actd[nact]; // [j] = A/m²
+                conds[i] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+            }
         }
         double kx = conds[i].c00;
         double ky = conds[i].c11;
@@ -354,7 +358,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         Vec<2,double> midpoint = e.getMidpoint();
 
         auto roles = this->geometry->getRolesAt(midpoint);
-        if (roles.find("active") != roles.end()) {
+        if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
             size_t n = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(i)) - acthi.begin();
             assert(n < acthi.size());
             conds[i] = Tensor2<double>(0., junction_conductivity[n * (this->mesh->axis0.size()-1) + e.getIndex0()]);
@@ -579,7 +583,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                                 / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
             auto midpoint = e.getMidpoint();
             auto roles = this->geometry->getRolesAt(midpoint);
-            if (roles.find("active") != roles.end()) {
+            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
                 size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(i)) - acthi.begin();
                 assert(nact < acthi.size());
                 double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * actd[nact]);
