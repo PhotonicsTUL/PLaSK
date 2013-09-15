@@ -93,9 +93,10 @@ bool compareMaterials(plask::shared_ptr<plask::Material>  m1, plask::shared_ptr<
 
 //// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-py::list testBoundary(const plask::RectilinearMesh2D& mesh, const typename plask::RectilinearMesh2D::Boundary& boundary) {
+py::list testBoundary(const plask::RectilinearMesh2D& mesh, const plask::shared_ptr<const plask::GeometryD<2>>& geometry,
+                      const typename plask::RectilinearMesh2D::Boundary& boundary) {
     py::list result;
-    for(auto i: boundary(mesh)) {
+    for(auto i: boundary(mesh, geometry)) {
         result.append(i);
     }
     return result;

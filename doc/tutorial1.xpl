@@ -43,7 +43,7 @@
 
 <connects>
   <connect in="electr.inTemperature" out="therm.outTemperature"/>
-  <connect in="therm.inHeatDensity" out="electr.outHeatDensity"/>
+  <connect in="therm.inHeat" out="electr.outHeat"/>
 </connects>
 
 <script>

@@ -74,13 +74,14 @@ class RectilinearMeshes(unittest.TestCase):
 
     def testBoundary(self):
         self.mesh2.ordering = "10"
-        b = plask.mesh.Rectilinear2D.left(self.mesh2)
+        geo = plask.geometry.Cartesian2D(plask.geometry.Rectangle(0,0,None))
+        b = plask.mesh.Rectilinear2D.Left()(self.mesh2, geo)
         self.assertIn(0, b)
         self.assertNotIn(1, b)
         self.assertIn(3, b)
         self.assertEqual( list(b), [0, 3] )
 
-        self.assertEqual( plasktest.test_boundary(self.mesh2, lambda mesh,i: i in [2,3]), [2, 3] )
+        self.assertEqual( plasktest.test_boundary(self.mesh2, geo, lambda mesh,i: i in [2,3]), [2, 3] )
 
 
     def testDivideGenerator(self):

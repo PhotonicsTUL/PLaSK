@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(dim2boundary) {
     plask::RectilinearMesh2D mesh;
     mesh.axis0.addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
     mesh.axis1.addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
-    auto right_boundary_on_mesh = right_boundary(mesh);
+    auto right_boundary_on_mesh = right_boundary(mesh, plask::shared_ptr<plask::Geometry2DCartesian>());
     std::size_t expected[2] = { 2, 5 };
     BOOST_CHECK_EQUAL_COLLECTIONS(right_boundary_on_mesh.begin(), right_boundary_on_mesh.end(),
                                   std::begin(expected), std::end(expected));
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(boundary) {
     mesh.axis0.addPointsLinear(0.0, 4.0, 3);
     mesh.axis1.addPointsLinear(2.0, 6.0, 3);
     auto leftB = plask::RectilinearMesh2D::getLeftBoundary();
-    auto left = leftB(mesh);
+    auto left = leftB(mesh, plask::shared_ptr<plask::Geometry2DCartesian>());
     // auto left = plask::RectilinearMesh2D::getLeftBoundary()(mesh); // WRONG!
     std::vector<std::size_t> indxs(left.begin(), left.end());
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(boundary) {
                 [](const plask::RectilinearMesh2D& mesh, std::size_t index) -> bool { return index == 2 || index == 4; }
     );
     std::size_t expected[2] = { 2, 4 };
-    auto pred_bound_with_mesh = only_index_24(mesh);
+    auto pred_bound_with_mesh = only_index_24(mesh, plask::shared_ptr<plask::Geometry2DCartesian>());
     BOOST_CHECK_EQUAL_COLLECTIONS(pred_bound_with_mesh.begin(), pred_bound_with_mesh.end(),
                                   std::begin(expected), std::end(expected));
 

@@ -73,7 +73,7 @@ struct HeatFlux: public VectorFieldProperty<> {
 /**
  * Density of heat sources.
  */
-struct HeatDensity: public ScalarFieldProperty {
+struct Heat: public ScalarFieldProperty {
     static constexpr const char* NAME = "heat sources density";
 };
 
@@ -81,7 +81,7 @@ struct HeatDensity: public ScalarFieldProperty {
  * Provider which sums heat densities from one or more sources.
  */
 template <typename SpaceT>
-struct HeatDensitySumProvider: public FieldSumProvider<HeatDensity, SpaceT> {};
+struct HeatSumProvider: public FieldSumProvider<Heat, SpaceT> {};
 
 } // namespace plask
 

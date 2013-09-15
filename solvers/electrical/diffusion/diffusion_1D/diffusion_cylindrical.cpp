@@ -80,7 +80,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     this->writelog(LOG_INFO, "Computing lateral carriers diffusion using %1% FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
 
     T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
-    j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
+    j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by (in|out)Current reciever
 
     int mesh_changes = 0;
     bool convergence = true;

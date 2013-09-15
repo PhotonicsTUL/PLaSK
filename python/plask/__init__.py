@@ -10,7 +10,6 @@ allows to easily perform complex self-consistent analysis of complete devices.
 
 copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
 
-
 import sys as _sys
 import os as _os
 
@@ -228,5 +227,6 @@ except ImportError:
 else:
     has_hdf5 = True
 
+import algorithm
 
 ## ##  ## ##

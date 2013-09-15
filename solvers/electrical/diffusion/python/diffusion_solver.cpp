@@ -51,7 +51,7 @@ BOOST_PYTHON_MODULE(diffusion)
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC)
         ;
-            
+
         py_enum<__Class__::ComputationType>("Computation")
             .value("INITIAL", __Class__::COMPUTATION_INITIAL)
             .value("THRESHOLD", __Class__::COMPUTATION_THRESHOLD)
@@ -87,7 +87,7 @@ BOOST_PYTHON_MODULE(diffusion)
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC)
         ;
-            
+
         py_enum<__Class__::ComputationType>("Computation")
             .value("INITIAL", __Class__::COMPUTATION_INITIAL)
             .value("THRESHOLD", __Class__::COMPUTATION_THRESHOLD)

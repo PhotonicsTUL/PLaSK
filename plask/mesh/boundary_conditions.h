@@ -390,35 +390,45 @@ public:
      * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> get(const MeshType& mesh) const {
+    BoundaryConditionsWithMesh<MeshType,ValueType> get(const MeshType& mesh,
+                                                       const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         BoundaryConditionsWithMesh<MeshType,ValueType> impl;
         impl.container.reserve(container.size());
-        for (auto& el: container) impl.container.push_back(BoundaryConditionWithMesh<MeshType,ValueType>(el.place(mesh), el.value));
+        for (auto& el: container)
+            impl.container.push_back(
+                BoundaryConditionWithMesh<MeshType,ValueType>(el.place(mesh, geometry), el.value)
+            );
         return impl;
     }
 
     /**
      * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
+     * @param geometry geometry at which the boundary conditions are defines
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> get(const shared_ptr<const MeshType>& mesh) const {
-        return get(*mesh);
+    BoundaryConditionsWithMesh<MeshType,ValueType> get(const shared_ptr<const MeshType>& mesh,
+                                                       const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return get(*mesh, geometry);
     }
 
     /**
      * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
+     * @param geometry geometry at which the boundary conditions are defines
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const MeshType& mesh) const {
-        return get(mesh);
+    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const MeshType& mesh,
+                                                              const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return get(mesh, geometry);
     }
 
     /**
      * Get BoundaryConditionsWithMesh<MeshType,ValueType>
      * @param mesh mesh
+     * @param geometry geometry at which the boundary conditions are defines
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const shared_ptr<const MeshType>& mesh) const {
-        return get(*mesh);
+    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const shared_ptr<const MeshType>& mesh,
+                                                              const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return get(*mesh, geometry);
     }
 
 };

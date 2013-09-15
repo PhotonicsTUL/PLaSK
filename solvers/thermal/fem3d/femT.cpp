@@ -19,7 +19,7 @@ FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std
 {
     temperatures.reset();
     fluxes.reset();
-    inHeatDensity = 0.;
+    inHeat = 0.;
 }
 
 
@@ -139,7 +139,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
-    auto heats = inHeatDensity(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
+    auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
 
     // zero the matrix and the load vector
     A.clear();
@@ -303,10 +303,10 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
     fluxes.reset();
 
     // store boundary conditions for current mesh
-    auto btemperature = temperature_boundary(this->mesh);
-    auto bheatflux = heatflux_boundary(this->mesh);
-    auto bconvection = convection_boundary(this->mesh);
-    auto bradiation = radiation_boundary(this->mesh);
+    auto btemperature = temperature_boundary(this->mesh, this->geometry);
+    auto bheatflux = heatflux_boundary(this->mesh, this->geometry);
+    auto bconvection = convection_boundary(this->mesh, this->geometry);
+    auto bradiation = radiation_boundary(this->mesh, this->geometry);
 
     this->writelog(LOG_INFO, "Running thermal calculations");
 

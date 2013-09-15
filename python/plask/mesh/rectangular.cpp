@@ -497,12 +497,12 @@ namespace detail {
         static void setPost(RectilinearMeshDivideGenerator<1>& self, size_t val) {
             self.setPostDivision(Primitive<2>::DIRECTION_TRAN, val);
         }
-        
+
         static void register_proxy(py::object) {}
     };
 
 
-    
+
     template <> py::tuple DivideGeneratorDivProxy<2>::__mul__(int f) const {
         return py::make_tuple(get(0) * f, get(1) * f);
     }
@@ -651,7 +651,7 @@ void register_divide_generator() {
                 "Get list of all the refinements defined for this generator for specified axis"
             )
         ;
-                    
+
         if (dim != 1) dividecls
             .add_property("prediv",
                         py::make_function(&detail::DivideGeneratorDivProxy<dim>::getPre, py::with_custodian_and_ward_postcall<0,1>()),
@@ -752,26 +752,26 @@ void register_mesh_rectangular()
         .def("set_optimal_ordering", &RectilinearMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering<RectilinearMesh2D>, &RectangularMesh2D__setOrdering<RectilinearMesh2D>, "Ordering of the points in this mesh")
         .def("get_midpoints", &RectilinearMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
-        .add_static_property("left", &RectilinearMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
-        .add_static_property("right", &RectilinearMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
-        .add_static_property("top", &RectilinearMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
-        .add_static_property("bottom", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
-        .def("left_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("left_of")
-        .def("right_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("right_of")
-        .def("top_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("top_of")
-        .def("bottom_of", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
-             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottom_of")
-        .def("horizontal", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at horizontal line", (py::arg("at"), "start", "stop"))
-        .def("horizontal", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at horizontal line", py::arg("at")).staticmethod("horizontal")
-        .def("vertical", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at vertical line", (py::arg("at"), "start", "stop"))
-        .def("vertical", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at vertical line", py::arg("at")).staticmethod("vertical")
+        .def("Left", &RectilinearMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions").staticmethod("Left")
+        .def("Right", &RectilinearMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions").staticmethod("Right")
+        .def("Top", &RectilinearMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions").staticmethod("Top")
+        .def("Bottom", &RectilinearMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions").staticmethod("Bottom")
+        .def("LeftOf", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
+        .def("RightOf", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
+        .def("TopOf", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
+        .def("BottomOf", (RectilinearMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh2D::getLeftOfBoundary,
+             "Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
+        .def("Horizontal", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
+             "Boundary at horizontal line", (py::arg("at"), "start", "stop"))
+        .def("Horizontal", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
+             "Boundary at horizontal line", py::arg("at")).staticmethod("Horizontal")
+        .def("Vertical", (RectilinearMesh2D::Boundary(*)(double,double,double))&RectilinearMesh2D::getHorizontalBoundaryNear,
+             "Boundary at vertical line", (py::arg("at"), "start", "stop"))
+        .def("Vertical", (RectilinearMesh2D::Boundary(*)(double))&RectilinearMesh2D::getHorizontalBoundaryNear,
+             "Boundary at vertical line", py::arg("at")).staticmethod("Vertical")
         .def(py::self == py::self)
     ;
     ExportBoundary<RectilinearMesh2D> { rectilinear2d };
@@ -810,24 +810,24 @@ void register_mesh_rectangular()
         .def("set_optimal_ordering", &RectilinearMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering<RectilinearMesh3D>, &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Ordering of the points in this mesh")
         .def("get_midpoints", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
-        .add_static_property("front", &RectilinearMesh3D::getFrontBoundary, "Front side of the mesh for setting boundary conditions")
-        .add_static_property("back", &RectilinearMesh3D::getBackBoundary, "Back side of the mesh for setting boundary conditions")
-        .add_static_property("left", &RectilinearMesh3D::getLeftBoundary, "Left side of the mesh for setting boundary conditions")
-        .add_static_property("right", &RectilinearMesh3D::getRightBoundary, "Right side of the mesh for setting boundary conditions")
-        .add_static_property("top", &RectilinearMesh3D::getTopBoundary, "Top side of the mesh for setting boundary conditions")
-        .add_static_property("bottom", &RectilinearMesh3D::getBottomBoundary, "Bottom side of the mesh for setting boundary conditions")
-        .def("front_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getFrontOfBoundary,
-             "Get boundary in front of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("front_of")
-        .def("back_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getBackOfBoundary,
-             "Get boundary back of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("back_of")
-        .def("left_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
-             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("left_of")
-        .def("right_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
-             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("right_of")
-        .def("top_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
-             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("top_of")
-        .def("bottom_of", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryD<3>>,shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
-             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottom_of")
+        .def("Front", &RectilinearMesh3D::getFrontBoundary, "Front side of the mesh for setting boundary conditions").staticmethod("Front")
+        .def("Back", &RectilinearMesh3D::getBackBoundary, "Back side of the mesh for setting boundary conditions").staticmethod("Back")
+        .def("Left", &RectilinearMesh3D::getLeftBoundary, "Left side of the mesh for setting boundary conditions").staticmethod("Left")
+        .def("Right", &RectilinearMesh3D::getRightBoundary, "Right side of the mesh for setting boundary conditions").staticmethod("Right")
+        .def("Top", &RectilinearMesh3D::getTopBoundary, "Top side of the mesh for setting boundary conditions").staticmethod("Top")
+        .def("Bottom", &RectilinearMesh3D::getBottomBoundary, "Bottom side of the mesh for setting boundary conditions").staticmethod("Bottom")
+        .def("FrontOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getFrontOfBoundary,
+             "Boundary in front of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("FrontOf")
+        .def("BackOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getBackOfBoundary,
+             "Boundary back of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BackOf")
+        .def("LeftOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
+        .def("RightOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
+        .def("TopOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
+        .def("BottomOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
+             "Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
         .def(py::self == py::self)
     ;
     ExportBoundary<RectilinearMesh3D> { rectilinear3d };
@@ -903,22 +903,22 @@ void register_mesh_rectangular()
         .add_static_property("right", &RegularMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
         .add_static_property("top", &RegularMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
         .add_static_property("bottom", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
-        .def("left_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary left of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("left_of")
-        .def("right_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary right of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("right_of")
-        .def("top_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary top of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("top_of")
-        .def("bottom_of", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryD<2>>,shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Get boundary bottom of specified object", (py::arg("geometry"), "object", py::arg("path")=py::object())).staticmethod("bottom_of")
-        .def("horizontal", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at horizontal line", (py::arg("at"), "start", "stop"))
-        .def("horizontal", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at horizontal line", py::arg("at")).staticmethod("horizontal")
-        .def("vertical", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at vertical line", (py::arg("at"), "start", "stop"))
-        .def("vertical", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Get boundary at vertical line", py::arg("at")).staticmethod("vertical")
+        .def("LeftOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
+        .def("RightOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
+        .def("TopOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
+        .def("BottomOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
+             "Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
+        .def("Horizontal", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
+             "Boundary at horizontal line", (py::arg("at"), "start", "stop"))
+        .def("Horizontal", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
+             "Boundary at horizontal line", py::arg("at")).staticmethod("Horizontal")
+        .def("Vertical", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
+             "Boundary at vertical line", (py::arg("at"), "start", "stop"))
+        .def("Vertical", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
+             "Boundary at vertical line", py::arg("at")).staticmethod("Vertical")
         .def(py::self == py::self)
     ;
     ExportBoundary<RegularMesh2D> { regular2d };

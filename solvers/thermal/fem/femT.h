@@ -109,7 +109,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     typename ProviderFor<HeatFlux, Geometry2DType>::Delegate outHeatFlux;
 
-    ReceiverFor<HeatDensity, Geometry2DType> inHeatDensity;
+    ReceiverFor<Heat, Geometry2DType> inHeat;
 
     Algorithm algorithm;   ///< Factorization algorithm to use
 

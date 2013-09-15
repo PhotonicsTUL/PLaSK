@@ -428,6 +428,15 @@ void register_calculation_spaces() {
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
+    py::implicitly_convertible<shared_ptr<Geometry2DCartesian>, shared_ptr<const Geometry2DCartesian>>();
+    py::implicitly_convertible<shared_ptr<Geometry2DCartesian>, shared_ptr<const GeometryD<2>>>();
+
+    py::implicitly_convertible<shared_ptr<Geometry2DCylindrical>, shared_ptr<const Geometry2DCylindrical>>();
+    py::implicitly_convertible<shared_ptr<Geometry2DCylindrical>, shared_ptr<const GeometryD<2>>>();
+
+    py::implicitly_convertible<shared_ptr<Geometry3D>, shared_ptr<const Geometry3D>>();
+    py::implicitly_convertible<shared_ptr<Geometry3D>, shared_ptr<const GeometryD<3>>>();
+
 }
 
 

@@ -2217,7 +2217,7 @@ status open
 
 \begin_layout Plain Layout
 
-  <connect in="therm.inHeatDensity" out="electr.outHeatDensity"/>
+  <connect in="therm.inHeat" out="electr.outHeat"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2568,7 +2568,7 @@ on"/>
 
 \begin_layout Plain Layout
 
-  <connect in="therm.inHeatDensity" out="electr.outHeatDensity"/>
+  <connect in="therm.inHeat" out="electr.outHeat"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -5065,6 +5065,10 @@ Finding threshold current of photonic crystal VCSEL
 combining 2D and 3D geometries with filters
 \end_layout
 
+\begin_layout Section
+Using high-level algorithms
+\end_layout
+
 \begin_layout Chapter
 General Concepts of PLaSK
 \end_layout
@@ -5175,6 +5179,10 @@ Creating and managing solvers from Python
 
 \begin_layout Section
 Running computations
+\end_layout
+
+\begin_layout Chapter
+High-level algorithms
 \end_layout
 
 \begin_layout Chapter

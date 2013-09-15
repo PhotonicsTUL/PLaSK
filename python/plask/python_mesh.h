@@ -33,7 +33,7 @@ struct ExportBoundary {
 
         py::object pyfun;
 
-        PythonPredicate(PyObject* obj) : pyfun(py::object(py::handle<>(py::incref(obj)))) { }
+        PythonPredicate(PyObject* obj) : pyfun(py::object(py::handle<>(py::incref(obj)))) {}
 
         bool operator()(const MeshType& mesh, std::size_t indx) const {
             py::object pyresult = pyfun(mesh, indx);
@@ -59,8 +59,10 @@ struct ExportBoundary {
 
     };
 
-    static typename MeshType::Boundary::WithMesh Boundary__call__(const typename MeshType::Boundary& self, const MeshType& mesh) {
-        return self(mesh);
+    static typename MeshType::Boundary::WithMesh Boundary__call__(
+        const typename MeshType::Boundary& self, const MeshType& mesh, shared_ptr<const GeometryD<MeshType::DIM>> geometry
+    ) {
+        return self(mesh, geometry);
     }
 
     ExportBoundary(py::object mesh_class) {
@@ -81,7 +83,7 @@ struct ExportBoundary {
 
         py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>("Boundary",
             ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)
-            .def("__call__", &Boundary__call__, py::arg("mesh"), "Get boundary instance for particular mesh",
+            .def("__call__", &Boundary__call__, (py::arg("mesh"), "geometry"), "Get boundary instance for particular mesh",
                  py::with_custodian_and_ward_postcall<0,1,
                  py::with_custodian_and_ward_postcall<0,2>>())
         ;

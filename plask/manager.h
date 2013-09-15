@@ -573,7 +573,6 @@ inline ConditionT parseBoundaryValue(const XMLReader& tag_with_value) {
 
 template <typename MeshT, typename ConditionT>
 inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry) {
-    BoundaryParserEnviroment parser_enviroment(*this, geometry);
     while (reader.requireTagOrEnd("condition")) {
         Boundary<MeshT> boundary;
         boost::optional<std::string> place = reader.getAttribute("place");
@@ -581,7 +580,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         //boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
         ConditionT value = parseBoundaryValue<ConditionT>(reader);
         if (place) {
-            boundary = parseBoundary<MeshT>(*place, parser_enviroment);
+            boundary = parseBoundary<MeshT>(*place, *this);
             if (boundary.isNull()) throw XMLException(reader, format("Can't parse boundary place from string \"%1%\".", *place));
         } else {
             place = reader.getAttribute("placeref");
@@ -593,7 +592,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
             } else {
                 reader.requireTag("place");
                 if (!placename) placename = reader.getAttribute("name");
-                boundary = parseBoundary<MeshT>(reader, parser_enviroment);
+                boundary = parseBoundary<MeshT>(reader, *this);
                 if (boundary.isNull()) throw XMLException(reader, "Can't parse boundary place from XML.");
             }
         }

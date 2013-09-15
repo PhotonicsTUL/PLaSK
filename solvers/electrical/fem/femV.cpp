@@ -15,7 +15,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     heatmet(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
-    outHeatDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities),
+    outHeat(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities),
     algorithm(ALGORITHM_CHOLESKY),
     itererr(1e-8),
     iterlim(10000),
@@ -393,7 +393,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
     heats.reset();
 
     // Store boundary conditions for current mesh
-    auto vconst = voltage_boundary(this->mesh);
+    auto vconst = voltage_boundary(this->mesh, this->geometry);
 
     this->writelog(LOG_INFO, "Running electrical calculations");
 
@@ -443,7 +443,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
 
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
-    outHeatDensity.fireChanged();
+    outHeat.fireChanged();
 
     // Make sure we store the maximum encountered values, not just the last ones
     // (so, this will indicate if the results changed since the last run, not since the last loop iteration)

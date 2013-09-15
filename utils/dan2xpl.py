@@ -370,7 +370,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('<connects>')
         out('  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>')
         if not heats:
-            out('  <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>')
+            out('  <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>')
         else:
             out('  <!-- heats are attached in the script -->')
         out('</connects>\n')
@@ -385,9 +385,9 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('heat_profile[GEO.%s] = %s' % heat)
 
         if electr:
-            out('THERMAL.inHeatDensity = ELECTRICAL.outHeatDensity + ProviderForHeatDensity%s(heat_profile)\n' % suffix)
+            out('THERMAL.inHeat = ELECTRICAL.outHeat + ProviderForHeat%s(heat_profile)\n' % suffix)
         else:
-            out('THERMAL.inHeatDensity = ProviderForHeatDensity%s(heat_profile)\n' % suffix)
+            out('THERMAL.inHeat = ProviderForHeat%s(heat_profile)\n' % suffix)
 
     if electr:
         out('# Adjust the values below!')
@@ -427,7 +427,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
         if therm:
             out('temperature = THERMAL.outTemperature(plotgrid)')
-            out('heats = THERMAL.inHeatDensity(plotgrid)')
+            out('heats = THERMAL.inHeat(plotgrid)')
         if electr:
             out('voltage = ELECTRICAL.outPotential(plotgrid)')
             out('current = ELECTRICAL.outCurrentDensity(plotgrid)')
@@ -440,10 +440,10 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('    h5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")')
         if therm:
             out('    save_field(temperature, h5file, "Temperature")')
-            out('    save_field(heats, h5file, "HeatDensity")')
+            out('    save_field(heats, h5file, "Heat")')
         if electr:
             out('    save_field(voltage, h5file, "Voltage")')
-            out('    save_field(current, h5file, "CurrentDenstity")')
+            out('    save_field(current, h5file, "CurrentDensity")')
 
         out('    h5file.close()')
 

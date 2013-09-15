@@ -22,9 +22,6 @@ namespace plask { namespace  solvers { namespace slab {
         Te[i] = cmatrix(N, N);
         Te1[i] = cmatrix(N, N);
     }
-
-    QE = cmatrix(N,N);
-    tmp = cmatrix(N,N);
 }
 
 
@@ -43,6 +40,8 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     // First find necessary matrices
     cmatrix RE = Th1[layer], RH = Th[layer];
     src.getMatrices(layer, k0, Kx, Ky, RE, RH);
+
+    cmatrix QE(N,N);
 
     if (src.diagonalQE(layer)) {
 
@@ -112,21 +111,21 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
     // Compute the Th1[layer] = Gamma[layer] * Te1[layer] * inv(RE)
     // we use the LU factorization of the RE matrix for this purpose and then solve Th1^T = inv(RE)^T * Te1^T * Gamma^T
-    // the tmp array is used as a temporary storage
+    // the QE array is used as a temporary storage
     for (int i = 0; i < N; i++)
         for (int j = 0; j < N; j++)
-            tmp(i,j) = Te1[layer](j,i);
+            QE(i,j) = Te1[layer](j,i);
     // LU factorization of RE
     int ierr;
     int* ipiv = new int[N];
     F(zgetrf)(N, N, RE.data(), N, ipiv, ierr);
-    // the tmp will contain inv(RE)^T * Te1^T
-    F(zgetrs)('t', N, N, RE.data(), N, ipiv, tmp.data(), N, ierr);
-    // compute tmp^T and store it in Th1
+    // the QE will contain inv(RE)^T * Te1^T
+    F(zgetrs)('t', N, N, RE.data(), N, ipiv, QE.data(), N, ierr);
+    // compute QE^T and store it in Th1
     for (int j = 0; j < N; j++) {
         dcomplex g = gam[j];
         for (int i = 0; i < N; i++)
-            Th1[layer](j,i) = tmp(i,j) * g;
+            Th1[layer](j,i) = QE(i,j) * g;
     }
     delete[] ipiv;
 

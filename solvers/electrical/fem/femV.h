@@ -134,7 +134,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     typename ProviderFor<CurrentDensity, Geometry2DType>::Delegate outCurrentDensity;
 
-    typename ProviderFor<HeatDensity, Geometry2DType>::Delegate outHeatDensity;
+    typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
 
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 

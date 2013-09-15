@@ -16,20 +16,20 @@ namespace plask {
 typedef RectangularMesh<2, RectilinearAxis> RectilinearMesh2D;
 
 template <>
-inline Boundary<RectilinearMesh2D> parseBoundary<RectilinearMesh2D>(const std::string& boundary_desc, plask::BoundaryParserEnviroment) { return RectilinearMesh2D::getBoundary(boundary_desc); }
+inline Boundary<RectilinearMesh2D> parseBoundary<RectilinearMesh2D>(const std::string& boundary_desc, plask::Manager&) { return RectilinearMesh2D::getBoundary(boundary_desc); }
 
 template <>
-inline Boundary<RectilinearMesh2D> parseBoundary<RectilinearMesh2D>(XMLReader& boundary_desc, BoundaryParserEnviroment env) { return RectilinearMesh2D::getBoundary(boundary_desc, env); }
+inline Boundary<RectilinearMesh2D> parseBoundary<RectilinearMesh2D>(XMLReader& boundary_desc, Manager& env) { return RectilinearMesh2D::getBoundary(boundary_desc, env); }
 
 
 /// Three-dimensional rectilinear mesh type
 typedef RectangularMesh<3, RectilinearAxis> RectilinearMesh3D;
 
 template <>
-inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(const std::string& boundary_desc, plask::BoundaryParserEnviroment) { return RectilinearMesh3D::getBoundary(boundary_desc); }
+inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(const std::string& boundary_desc, plask::Manager&) { return RectilinearMesh3D::getBoundary(boundary_desc); }
 
 template <>
-inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(XMLReader& boundary_desc, BoundaryParserEnviroment env) { return RectilinearMesh3D::getBoundary(boundary_desc, env); }
+inline Boundary<RectilinearMesh3D> parseBoundary<RectilinearMesh3D>(XMLReader& boundary_desc, Manager& env) { return RectilinearMesh3D::getBoundary(boundary_desc, env); }
 
 } // namespace  plask
 

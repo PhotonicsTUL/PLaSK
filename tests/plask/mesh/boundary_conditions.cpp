@@ -32,15 +32,15 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
                     "<block name=\"top\" dx=\"5\" dy=\"3\" material=\"Al\" />"
                     "<block name=\"bottom\" dx=\"5\" dy=\"3\" material=\"Al\" />"
                 "</stack></cartesian2d></geometry></plask>", materialsDB); //repeat=\"2\"
-    plask::RectilinearMesh2D::Boundary bottom_b = plask::RectilinearMesh2D::getBottomOfBoundary(manager.getGeometry<plask::GeometryD<2> >("space"), manager.getGeometryObject("bottom"));
+    plask::RectilinearMesh2D::Boundary bottom_b = plask::RectilinearMesh2D::getBottomOfBoundary(manager.getGeometryObject("bottom"));
     plask::RectilinearMesh2D mesh;
     mesh.axis0.addPointsLinear(1.0, 5.0, 5);   // 1.0, 2.0, 3.0, 4.0, 5.0
     mesh.axis1.addPointsLinear(0.0, 4.0, 5);   // 0.0, 1.0, 2.0, 3.0, 4.0
-    plask::RectilinearMesh2D::Boundary::WithMesh wm = bottom_b.get(mesh);
+    plask::RectilinearMesh2D::Boundary::WithMesh wm = bottom_b.get(mesh, manager.getGeometry<plask::GeometryD<2> >("space"));
     for (int i = 0; i < 5; ++i) BOOST_CHECK(wm.contains(i));
     for (int i = 5; i < 25; ++i) BOOST_CHECK(!wm.contains(i));
-    plask::RectilinearMesh2D::Boundary top_b = plask::RectilinearMesh2D::getTopOfBoundary(manager.getGeometry<plask::GeometryD<2> >("space"), manager.getGeometryObject("top"));
-    wm = top_b.get(mesh);
+    plask::RectilinearMesh2D::Boundary top_b = plask::RectilinearMesh2D::getTopOfBoundary(manager.getGeometryObject("top"));
+    wm = top_b.get(mesh, manager.getGeometry<plask::GeometryD<2> >("space"));
     for (int i = 0; i < 20; ++i) BOOST_CHECK(!wm.contains(i));
     for (int i = 20; i < 25; ++i) BOOST_CHECK(wm.contains(i));
 }

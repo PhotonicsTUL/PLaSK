@@ -55,9 +55,10 @@ BOOST_PYTHON_MODULE(fem)
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
-        RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
+        RECEIVER(inHeat, "Heat densities"); // receiver in the solver
+        solver.setattr("inHeatDensity", solver.attr("inHeat"));
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
-        PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
+        PROVIDER(outHeatFlux, "Heat fluxes"); // provider in the solver
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
@@ -75,9 +76,10 @@ BOOST_PYTHON_MODULE(fem)
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
         RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
-        RECEIVER(inHeatDensity, "HeatDensities"); // receiver in the solver
+        RECEIVER(inHeat, "Heat densities"); // receiver in the solver
+        solver.setattr("inHeatDensity", solver.attr("inHeat"));
         PROVIDER(outTemperature, "Temperatures"); // provider in the solver
-        PROVIDER(outHeatFlux, "HeatFluxes"); // provider in the solver
+        PROVIDER(outHeatFlux, "Heat fluxes"); // provider in the solver
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");

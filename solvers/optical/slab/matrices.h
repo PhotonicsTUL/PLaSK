@@ -31,7 +31,15 @@ class Matrix {
 #ifndef NDEBUG
         writelog(LOG_DEBUG, "allocating matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
 #endif
-        memset(data_, 0, r*c*sizeof(T));
+        *gc = 1;
+    }
+
+    Matrix(int m, int n, T val) : r(m), c(n) {
+        data_ = aligned_new_array<T>(m*n); gc = new int;
+#ifndef NDEBUG
+        writelog(LOG_DEBUG, "allocating matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
+#endif
+        std::fill_n(data_, m*n, val);
         *gc = 1;
     }
 
@@ -84,7 +92,7 @@ class Matrix {
 
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
-    
+
     inline const T& operator[](int i) const { return data_[i]; }
     inline T& operator[](int i) { return data_[i]; }
 
@@ -122,7 +130,7 @@ class MatrixDiagonal {
     T* data_;                //< The data of the matrix
 
   public:
-      
+
     MatrixDiagonal() : gc(NULL) {}
 
     MatrixDiagonal(int n) : siz(n) {
@@ -130,11 +138,19 @@ class MatrixDiagonal {
 #ifndef NDEBUG
         writelog(LOG_DEBUG, "allocating diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
 #endif
-        memset(data_, 0, siz*sizeof(T));
         *gc = 1;
     }
 
-    MatrixDiagonal(const MatrixDiagonal<T>& M) : siz(M.siz), data_(M.data), gc(M.gc) {
+    MatrixDiagonal(int n, T val) : siz(n) {
+        data_ = aligned_new_array<T>(n); gc = new int;
+#ifndef NDEBUG
+        writelog(LOG_DEBUG, "allocating and filling diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
+#endif
+        std::fill_n(data_, n, val);
+        *gc = 1;
+    }
+
+    MatrixDiagonal(const MatrixDiagonal<T>& M) : siz(M.siz), gc(M.gc), data_(M.data_) {
         if (gc) (*gc)++;
     }
 
@@ -166,7 +182,7 @@ class MatrixDiagonal {
 
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
-    
+
     inline const T& operator[](int n) const { return data_[n]; }
     inline T& operator[](int n) { return data_[n]; }
 

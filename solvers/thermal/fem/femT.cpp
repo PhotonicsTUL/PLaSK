@@ -17,7 +17,7 @@ template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DT
 {
     mTemperatures.reset();
     mHeatFluxes.reset();
-    inHeatDensity = 0.;
+    inHeat = 0.;
 }
 
 
@@ -147,7 +147,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto heatdensities = inHeatDensity(iMesh);
+    auto heatdensities = inHeat(iMesh);
 
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
@@ -278,7 +278,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto heatdensities = inHeatDensity(iMesh);
+    auto heatdensities = inHeat(iMesh);
 
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
@@ -434,10 +434,10 @@ template<typename Geometry2DType> template<typename MatrixT> double FiniteElemen
     mHeatFluxes.reset();
 
     // store boundary conditions for current mesh
-    auto btemperature = temperature_boundary(this->mesh);
-    auto bheatflux = heatflux_boundary(this->mesh);
-    auto bconvection = convection_boundary(this->mesh);
-    auto bradiation = radiation_boundary(this->mesh);
+    auto btemperature = temperature_boundary(this->mesh, this->geometry);
+    auto bheatflux = heatflux_boundary(this->mesh, this->geometry);
+    auto bconvection = convection_boundary(this->mesh, this->geometry);
+    auto bradiation = radiation_boundary(this->mesh, this->geometry);
 
     this->writelog(LOG_INFO, "Running thermal calculations");
 

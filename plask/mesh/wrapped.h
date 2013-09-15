@@ -25,7 +25,7 @@ struct WrappedMesh: public MeshD<dim> {
   protected:
 
       const MeshD<dim>& original;   ///< Original mesh
-      shared_ptr<GeometryD<dim>> geometry; ///< Geometry of the mesh
+      shared_ptr<const GeometryD<dim>> geometry; ///< Geometry of the mesh
 
   public:
 
@@ -34,7 +34,7 @@ struct WrappedMesh: public MeshD<dim> {
      * \param original original mesh
      * \param geometry geometry in which the mesh is defined
      */
-    WrappedMesh(const MeshD<dim>& original, const shared_ptr<GeometryD<dim>>& geometry): original(original), geometry(geometry) {}
+    WrappedMesh(const MeshD<dim>& original, const shared_ptr<const GeometryD<dim>>& geometry): original(original), geometry(geometry) {}
 
     virtual ~WrappedMesh() {}
 

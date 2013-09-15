@@ -245,7 +245,7 @@ public:
     /**
      * Get material in point @p p of child space.
      *
-     * Material is got from geometry (if geometry define material in given point) or environment (in another cases).
+     * Material is got from the geometry (if geometry defines material at given point) or the environment (otherwise).
      * Result is defined, and is not nullptr, for each point @p p.
      *
      * Default implementation just call getMaterialOrDefault which returns default material in each point for which geometry return nullptr.

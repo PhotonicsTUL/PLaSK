@@ -75,6 +75,7 @@ PLaSK contains some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<
 
 #include "../utils/metaprog.h"   // for is_callable
 #include "../exceptions.h"
+#include "../geometry/space.h"
 #include <vector>
 
 namespace plask {
@@ -129,7 +130,7 @@ struct BoundaryLogicImpl {
      * \return number of points in this boundary
      */
     virtual std::size_t size() const { return std::distance(begin(), end()); }
-    
+
 };
 
 /**
@@ -245,14 +246,14 @@ struct Boundary {
     typedef BoundaryWithMesh WithMesh;
 
 protected:
-    std::function< WithMesh(const MeshType& mesh) > create;
+    std::function<WithMesh(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create;
 
 public:
 
     //template <typename... T>
     //Boundary(T&&... args): create(std::forward<T>(args)...) {}
 
-    Boundary(std::function< WithMesh(const MeshType& mesh) > create_fun): create(create_fun) {}
+    Boundary(std::function<WithMesh(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create_fun): create(create_fun) {}
 
     Boundary() = default;
 
@@ -264,28 +265,36 @@ public:
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh operator()(const MeshType& mesh) const { return this->create(mesh); }
+    WithMesh operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return this->create(mesh, geometry);
+    }
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh operator()(const shared_ptr<const MeshType>& mesh) const { return this->create(*mesh); }
+    WithMesh operator()(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return this->create(*mesh, geometry);
+    }
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const MeshType& mesh) const { return this->create(mesh); }
+    WithMesh get(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return this->create(mesh, geometry);
+    }
 
     /**
      * Get boundary-mesh pair for this boundary and given @p mesh.
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const shared_ptr<const MeshType>& mesh) const { return this->create(*mesh); }
+    WithMesh get(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+        return this->create(*mesh, geometry);
+    }
 
     /**
      * Check if boundary, for given @p mesh, represents empty set of indexes.
@@ -470,7 +479,8 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
 
       private:
         bool check_predicate() {
-            return static_cast<const PredicateBoundaryImpl&>(this->getBoundary()).predicate(this->getMesh(), meshIterator.getIndex());
+            return static_cast<const PredicateBoundaryImpl&>(this->getBoundary())
+                .predicate(this->getMesh(), meshIterator.getIndex());
         }
 
       public:
@@ -499,7 +509,8 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
      * @param mesh mesh for which boundary should be calculated
      * @param predicate predicate which check if given point is in boundary
      */
-    PredicateBoundaryImpl(const MeshType& mesh, Predicate predicate): BoundaryWithMeshLogicImpl<MeshType>(mesh), predicate(predicate) {}
+    PredicateBoundaryImpl(const MeshType& mesh, Predicate predicate):
+        BoundaryWithMeshLogicImpl<MeshType>(mesh), predicate(predicate) {}
 
     //virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
 
@@ -541,29 +552,17 @@ inline typename MeshType::Boundary makeEmptyBoundary() {
  * @param predicate functor which check if given point is in boundary
  * @return boundary which represents set of indexes which fulfill @p predicate
  * @tparam MeshType type of mesh for which boundary should be returned
- * @tparam Predicate predicate which check if given point is in boundary, predicate has following arguments:
- * - std::size_t index, MeshType mesh (mesh and index in mesh)
+ * @tparam Predicate predicate which check if given point is in boundary, predicate has the following arguments:
+ * - MeshType mesh (mesh and index in mesh), std::size_t index
  */
 template <typename MeshType, typename Predicate>
 inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
-    return typename MeshType::Boundary( [=](const MeshType& mesh) { return new PredicateBoundaryImpl<MeshType, Predicate>(mesh, predicate); } );
+    return typename MeshType::Boundary( [=](const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>&) {
+        return new PredicateBoundaryImpl<MeshType, Predicate>(mesh, predicate);
+    } );
 }
 
 struct Manager;
-struct Geometry;
-
-/**
- * Hold informations which can by used by boundary parser.
- */
-struct BoundaryParserEnviroment {
-
-    Manager& manager;   ///< XML manager
-
-    shared_ptr<const Geometry> geometry;    ///< geometry used by solver for which boundary are read, can by nullptr
-
-    BoundaryParserEnviroment(Manager& manager, shared_ptr<const Geometry> geometry)
-        : manager(manager), geometry(geometry) {}
-};
 
 
 /**
@@ -575,11 +574,11 @@ struct BoundaryParserEnviroment {
  * @endcode
  * are responsible to parse boundary from string for this mesh type.
  * @param boundary_desc boundary description, depends from type of mesh
- * @param enviroment informations which can by used by parser
+ * @param manager geometry manager
  * @return parsed boundary or Boundary<MeshType>() if can't parse given string
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, BoundaryParserEnviroment enviroment) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, Manager& manager) { return Boundary<MeshType>(); }
 
 
 /**
@@ -593,11 +592,11 @@ inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, Bounda
  * @endcode
  * are responsible to parse boundary from XML for this mesh type.
  * @param boundary_desc boundary description, depends from type of mesh
- * @param enviroment informations which can by used by parser
+ * @param manager geometry manager
  * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc, BoundaryParserEnviroment enviroment) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc, Manager& manager) { return Boundary<MeshType>(); }
 
 }   // namespace plask
 

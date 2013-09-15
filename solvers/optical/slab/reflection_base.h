@@ -38,6 +38,8 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
 
     bool fields_determined;                     ///< Are the diagonalized fields determined for all layers?
 
+    Data2DLog<dcomplex,dcomplex> detlog;        ///< Determinant logger
+
   private:
 
     cdiagonal phas;                             ///< current phase shift matrix
@@ -50,12 +52,60 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
 
     ~ReflectionSolver();
 
+    /// Get currently searched variable
+    Variable getVariable() const { return variable; }
+    /// Set new variable to searched
+    /// \param var new variable
+    void setVariable(Variable var) {
+        variable = var;
+        detlog.resetCounter();
+        switch (var) {
+            case K_0: detlog.axis_arg_name = "k0"; return;
+            case K_LONG: detlog.axis_arg_name = "klong"; return;
+            case K_TRAN: detlog.axis_arg_name = "ktran"; return;
+        }
+    }
+
   protected:
 
+    /// Solver constructor
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
-        k0(NAN), klong(0.), ktran(0.), variable(K_0) {}
+        k0(NAN), klong(0.), ktran(0.), variable(K_0), detlog(this->getId(), "modal", "k0", "det") {}
 
+    /// Initialize memory for calculations
     void init();
+
+    /// Compute discontinuity matrix determinant for the current parameters
+    dcomplex determinant();
+
+    /// Get admittance (A) and discontinuity (M) matrices for the whole structure
+    void getFinalMatrix() {
+        getAM(this->stack.size()-1, this->interface, false);
+        getAM(0, this->interface-1, true);
+    }
+
+    /**
+     * Get admittance (A) and discontinuity (M) matrices for half of the structure
+     * \param start start of the transfer
+     * \param end end of the transfer
+     * \param add if \c true then M matrix is added to the previous value
+     * \param mfac factor to multiply M matrix befere addition
+     */
+    void getAM(size_t start, size_t end, bool add, double mfac=1.);
+
+    /**
+     * Find reflection matrix for the part of the structure
+     * \param start starting layer
+     * \param end last layer (reflection matrix is computed for this layer)
+     */
+    void findReflection(size_t start, size_t end);
+
+    /**
+     * Store P matrix if we want it for field compuation
+     * \param n layer number
+     */
+    void storeP(size_t n);
+
 
 };
 

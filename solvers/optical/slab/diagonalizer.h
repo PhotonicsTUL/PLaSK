@@ -13,7 +13,7 @@
 
 namespace plask { namespace  solvers { namespace slab {
 
-/** 
+/**
  * Base for the class determining and holding the necessary matrices
  * This is the abstract base class for all diagonalizers (multi-threaded,
  * disk-storage, MPI-using etc.
@@ -53,16 +53,16 @@ class Diagonalizer
 
     /// Return diagnoal matrix of eignevalues
     virtual const cdiagonal& Gamma(size_t layer) const = 0;
-    
+
     /// Return matrix of eigenvectors of QE
     virtual const cmatrix& TE(size_t layer) const = 0;
-    
+
     /// Return matrix of eigenvectors of QH
     virtual const cmatrix& TH(size_t layer) const = 0;
-    
+
     /// Return inverse matrix of eigenvectors of QE
     virtual const cmatrix& invTE(size_t layer) const = 0;
-    
+
     /// Return inverse matrix of eigenvectors of QH
     virtual const cmatrix& invTH(size_t layer) const = 0;
 
@@ -71,7 +71,7 @@ class Diagonalizer
 };
 
 
-/** 
+/**
  * Simple diagonalizer
  * This class is a simple diagonalizer. It calculates all its results
  * immediately and stores them in the memory.
@@ -86,8 +86,6 @@ class SimpleDiagonalizer : public Diagonalizer
     std::vector<cmatrix> Te, Th;        // matrices TE and TH
     std::vector<cmatrix> Te1, Th1;      // matrices TE^-1 and TH^-1
 
-    cmatrix QE;                         // temporary matrix to store QH = RE * RH
-    cmatrix tmp;                        // some temporary matrix
 
   public:
     SimpleDiagonalizer(Expansion& g);

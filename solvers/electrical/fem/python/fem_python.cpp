@@ -100,8 +100,9 @@ BOOST_PYTHON_MODULE(fem)
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
         RECEIVER(inTemperature, "Temperatures");
         PROVIDER(outPotential, "Potentials");
-        PROVIDER(outCurrentDensity, "CurrentDensities");
-        PROVIDER(outHeatDensity, "HeatDensities");
+        PROVIDER(outCurrentDensity, "Current densities");
+        PROVIDER(outHeat, "Heat densities");
+        solver.setattr("outHeatDensity", solver.attr("outHeat"));
         BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(corrlim, getVCorrLim, setVCorrLim, "Limit for the potential updates");
         RW_FIELD(corrtype, "Type of returned correction");
@@ -126,8 +127,9 @@ BOOST_PYTHON_MODULE(fem)
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
         RECEIVER(inTemperature, "Temperatures");
         PROVIDER(outPotential, "Potentials");
-        PROVIDER(outCurrentDensity, "CurrentDensities");
-        PROVIDER(outHeatDensity, "HeatDensities");
+        PROVIDER(outCurrentDensity, "Current densities");
+        PROVIDER(outHeat, "Heat densities");
+        solver.setattr("outHeatDensity", solver.attr("outHeat"));
         BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
         RW_PROPERTY(corrlim, getVCorrLim, setVCorrLim, "Limit for the potential updates");
         RW_FIELD(corrtype, "Type of returned correction");

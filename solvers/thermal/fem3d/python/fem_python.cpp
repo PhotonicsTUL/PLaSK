@@ -47,9 +47,10 @@ BOOST_PYTHON_MODULE(fem3d)
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_FIELD(abscorr, "Maximum absolute correction for temperature");
         RO_FIELD(relcorr, "Maximum relative correction for temperature");
-        RECEIVER(inHeatDensity, "HeatDensities");
+        RECEIVER(inHeat, "Heat densities");
+        solver.setattr("inHeatDensity", solver.attr("inHeat"));
         PROVIDER(outTemperature, "Temperatures");
-        PROVIDER(outHeatFlux, "HeatFluxes");
+        PROVIDER(outHeatFlux, "Heat fluxes");
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");

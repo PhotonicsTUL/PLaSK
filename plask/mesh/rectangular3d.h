@@ -1156,7 +1156,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getBackBoundary() {
-        return Boundary( [](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex0Boundary(mesh, 0);} );
+        return Boundary( [](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex0Boundary(mesh, 0);
+        } );
     }
 
     /**
@@ -1164,7 +1166,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getFrontBoundary() {
-        return Boundary( [](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex0Boundary(mesh, mesh.axis0.size()-1);} );
+        return Boundary( [](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex0Boundary(mesh, mesh.axis0.size()-1);
+        } );
     }
 
     /**
@@ -1173,7 +1177,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getIndex0BoundaryAtLine(std::size_t line_nr_axis0) {
-        return Boundary( [line_nr_axis0](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex0Boundary(mesh, line_nr_axis0);} );
+        return Boundary( [line_nr_axis0](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex0Boundary(mesh, line_nr_axis0);
+        } );
     }
 
     /**
@@ -1181,7 +1187,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getLeftBoundary() {
-        return Boundary( [](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex1Boundary(mesh, 0);} );
+        return Boundary( [](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex1Boundary(mesh, 0);
+        } );
     }
 
     /**
@@ -1189,7 +1197,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getRightBoundary() {
-        return Boundary( [](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex1Boundary(mesh, mesh.axis1.size()-1);} );
+        return Boundary( [](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex1Boundary(mesh, mesh.axis1.size()-1);
+        } );
     }
 
     /**
@@ -1198,7 +1208,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getIndex1BoundaryAtLine(std::size_t line_nr_axis1) {
-        return Boundary( [line_nr_axis1](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex1Boundary(mesh, line_nr_axis1);} );
+        return Boundary( [line_nr_axis1](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex1Boundary(mesh, line_nr_axis1);
+        } );
     }
 
     /**
@@ -1206,7 +1218,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getBottomBoundary() {
-        return Boundary( [](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex2Boundary(mesh, 0);} );
+        return Boundary( [](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex2Boundary(mesh, 0);
+        } );
     }
 
     /**
@@ -1214,7 +1228,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getTopBoundary() {
-        return Boundary( [](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex2Boundary(mesh, mesh.axis2.size()-1);} );
+        return Boundary( [](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex2Boundary(mesh, mesh.axis2.size()-1);
+        } );
     }
 
     /**
@@ -1223,7 +1239,9 @@ private:
      * @return boundary which show plane in mesh
      */
     static Boundary getIndex2BoundaryAtLine(std::size_t line_nr_axis2) {
-        return Boundary( [line_nr_axis2](const RectangularMesh<3,AxisT>& mesh) {return new FixedIndex2Boundary(mesh, line_nr_axis2);} );
+        return Boundary( [line_nr_axis2](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return new FixedIndex2Boundary(mesh, line_nr_axis2);
+        } );
     }
 
     /**
@@ -1232,7 +1250,7 @@ private:
      * @return boundary which has fixed index at axis 0 direction and lies on lower face of the @p box
      */
     static Boundary getBackOfBoundary(const Box3D& box) {
-        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
             if (details::getLineLo(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd1, endInd1, mesh.axis1, box.lower.c1, box.upper.c1) &&
@@ -1249,7 +1267,7 @@ private:
      * @return boundary which has fixed index at axis 0 direction and lies on higher face of the @p box
      */
     static Boundary getFrontOfBoundary(const Box3D& box) {
-        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
             if (details::getLineHi(line, mesh.axis0, box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd1, endInd1, mesh.axis1, box.lower.c1, box.upper.c1) &&
@@ -1266,7 +1284,7 @@ private:
      * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
      */
     static Boundary getLeftOfBoundary(const Box3D& box) {
-        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
             if (details::getLineLo(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1283,7 +1301,7 @@ private:
      * @return boundary which has fixed index at axis 1 direction and lies on higher face of the @p box
      */
     static Boundary getRightOfBoundary(const Box3D& box) {
-        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
             if (details::getLineHi(line, mesh.axis1, box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1300,7 +1318,7 @@ private:
      * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
      */
     static Boundary getBottomOfBoundary(const Box3D& box) {
-        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
             if (details::getLineLo(line, mesh.axis2, box.lower.c2, box.upper.c2) &&
                 details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1317,7 +1335,7 @@ private:
      * @return boundary which has fixed index at axis 2 direction and lies on higher face of the @p box
      */
     static Boundary getTopOfBoundary(const Box3D& box) {
-        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3,AxisT>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
             if (details::getLineHi(line, mesh.axis2, box.lower.c2, box.upper.c2) &&
                 details::getIndexesInBounds(begInd0, endInd0, mesh.axis0, box.lower.c0, box.upper.c0) &&
@@ -1330,174 +1348,174 @@ private:
 
     /**
      * Get boundary which lies on back faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getBackOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getBackOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on back faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getBackOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getBackOfBoundary(geometry, object, *path);
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getBackOfBoundary(object, *path);
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getBackOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on front faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getFrontOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getFrontOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on front faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getFrontOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getFrontOfBoundary(geometry, object, *path);
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getFrontOfBoundary(object, *path);
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getFrontOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on left faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getLeftOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on left faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getLeftOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getLeftOfBoundary(geometry, object, *path);
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getLeftOfBoundary(object, *path);
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getLeftOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on right faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getRightOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getRightOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on right faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getRightOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getRightOfBoundary(geometry, object, *path);
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getRightOfBoundary(object, *path);
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getRightOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on bottom faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getBottomOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on bottom faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getBottomOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getBottomOfBoundary(geometry, object, *path);
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getBottomOfBoundary(object, *path);
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getBottomOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on top faces (higher faces with fixed axis 2 coordinate) of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getTopOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints& path) {
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object, path); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getTopOfBoundary(box); }
         );
     }
 
     /**
      * Get boundary which lies on top faces (higher faces with fixed axis 2 coordinate) of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geomoetry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geomoetry
+     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
+     * @param object object included in @p geometry
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
      */
-    static Boundary getTopOfBoundary(shared_ptr<const GeometryD<3>> geometry, shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getTopOfBoundary(geometry, object, *path);
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
+        if (path) return getTopOfBoundary(object, *path);
         return details::getBoundaryForBoxes< RectangularMesh<3,AxisT> >(
-            [=] { return geometry->getObjectBoundingBoxes(object); },
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
             [](const Box3D& box) { return RectangularMesh<3,AxisT>::getTopOfBoundary(box); }
         );
     }
@@ -1512,7 +1530,7 @@ private:
         return Boundary();
     }
 
-    static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::BoundaryParserEnviroment enviroment) {
+    static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::Manager& manager) {
         auto side = boundary_desc.requireAttribute("side");
        /* auto side = boundary_desc.getAttribute("side");
         auto line = boundary_desc.getAttribute("line");
@@ -1520,17 +1538,17 @@ private:
             throw XMLConflictingAttributesException(boundary_desc, "size", "line");
         } else if (side)*/ {
             if (side == "back")
-                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getBackBoundary, &getBackOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, manager, &getBackBoundary, &getBackOfBoundary);
             if (side == "front")
-                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getFrontBoundary, &getFrontOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, manager, &getFrontBoundary, &getFrontOfBoundary);
             if (side == "left")
-                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getLeftBoundary, &getLeftOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, manager, &getLeftBoundary, &getLeftOfBoundary);
             if (side == "right")
-                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getRightBoundary, &getRightOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, manager, &getRightBoundary, &getRightOfBoundary);
             if (side == "bottom")
-                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getBottomBoundary, &getBottomOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, manager, &getBottomBoundary, &getBottomOfBoundary);
             if (side == "top")
-                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, enviroment, &getTopBoundary, &getTopOfBoundary);
+                return details::parseBoundaryFromXML<Boundary, 3>(boundary_desc, manager, &getTopBoundary, &getTopOfBoundary);
             throw XMLBadAttrException(boundary_desc, "side", side);
         } /*else if (line) {
             double at = boundary_desc.requireAttribute<double>("at"),
