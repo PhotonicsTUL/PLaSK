@@ -130,7 +130,7 @@ writelog(LOG_DEBUG, "Git0a!");
             {
                 overthreshold_computation = false;
 #ifndef NDEBUG
-                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% W, qw_width: %2% cm", burning_integral(), global_QW_width);
+                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% mW, qw_width: %2% cm", burning_integral(), global_QW_width);
 #endif
             }
         }
@@ -706,7 +706,8 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
         int_val += (overthreshold_left[2*i + 1] * current_mesh()[2*i + 1] * (current_mesh()[2*i + 2] - current_mesh()[2*i]));
     }
 
-    return 2*M_PI*int_val*1.0e-8*global_QW_width*(plask::phys::h_J*plask::phys::c/(wavelength*1.0e-9)); // 1.0e-8 from um to cm conversion (r*dr), 2*M_PI from integral over full angle, (...) - photon energy
+    return 2*M_PI * int_val * 1.0e-5 * global_QW_width * (plask::phys::h_J*plask::phys::c/(wavelength*1.0e-9));
+    // 1.0e-5 from um to cm conversion and conversion to mW (r*dr), 2*M_PI from integral over full angle, (...) - photon energy
 }
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(int i)
