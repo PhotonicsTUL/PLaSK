@@ -110,7 +110,7 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
         while (traceback) {
             int lineno = traceback->tb_lineno;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            if (filename == scriptname) lineno += startline;
+            if (scriptname != nullptr && filename == scriptname) lineno += startline;
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";

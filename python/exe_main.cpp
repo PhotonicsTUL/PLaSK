@@ -296,9 +296,15 @@ int main(int argc, const char *argv[])
 
         // Add plask to the global namespace
         if (import_plask) {
-            py::object plask = py::import("plask");
-            globals["plask"] = plask;           // import plask
-            from_import_all("plask", globals);  // from plask import *
+            try {
+                py::object plask = py::import("plask");
+                globals["plask"] = plask;           // import plask
+                from_import_all("plask", globals);  // from plask import *
+            } catch (py::error_already_set) {
+                int exitcode = handlePythonException();
+                endPlask();
+                return exitcode;
+            }
         }
 
         unsigned scriptline = 0;

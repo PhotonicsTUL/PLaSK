@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-This module constains the set of high-level PLaSK algorithm typically used
+This module contains the set of high-level PLaSK algorithm typically used
 in computations of semiconductor lasers.
 
 TODO doc
@@ -188,7 +188,7 @@ class ThresholdSearch(ThermoElectric):
     laser cavity.
 
     ThresholdSearch(thermal, electrical, diffusion, gain, optical,
-                    ivolt, approx_mode, tfreq=6, mode='auto',
+                    ivolt, vmin, vmax, approx_mode, mode='auto', tfreq=6,
                     quick=False)
 
     Parameters
@@ -222,15 +222,19 @@ class ThresholdSearch(ThermoElectric):
     ivolt : integer
         Index in the `voltage_boundary` boundary conditions list in the
         `electrical` solver that
+    vmin : float
+        TODO
+    vmax : float
+        TODO
     approx_mode : float
         Approximation of the optical mode (either the effective index or
         the wavelength) needed for optical computation.
+    mode : string, optional
+        TODO: 'neff', 'wavelength' or 'auto'
     tfreq : integer, optional
         Number of electrical iterations per single thermal step. As temperature
         tends to converge faster, it is reasonable to repeat thermal solution
         less frequently.
-    mode : string, optional
-        TODO: 'neff', 'wavelength' or 'auto'
     quick : bool, optional
         If this parameter is True, the algorithm tries to find the threshold
         the easy way i.e. by computing only the optical determinant in each
@@ -244,6 +248,50 @@ class ThresholdSearch(ThermoElectric):
     '''
 
     def __init__(self, thermal, electrical, diffusion, gain, optical,
-                 ivolt, approx_mode, tfreq=6, mode='auto',
+                 ivolt, vmin, vmax, approx_mode, mode='auto', tfreq=6,
                  quick=False):
+        ThermoElectric.__init__(self, thermal, electrical, tfreq)
+        if diffusion is not None:
+            diffusion.inTemperature = thermal.outTemperature
+            diffusion.inCurrentDensity = electrical.outCurrentDensity
+            self.diffusion = diffusion
+        else:
+            self.diffusion = electrical
+        self.gain = gain
+        self.optical = optical
+        self.ab = vmin,vmax
+        self.ivb = ivolt
+        self.optstart = approx_mode
+        self.quick = quick
+        if mode == 'auto':
+            if type(otpical.geometry) == plask.geometry.Cartesian2D:
+                self.mode = 'neff'
+            elif type(otpical.geometry) == plask.geometry.Cylindrical2D:
+                self.mode = 'wavelength'
+            else:
+                raise TypeError("unable to determine the mode automatically in 3D")
+        else:
+            self.mode = mode
+        if self.mode not in ('neff', 'wavelength'):
+            raise ValueError("wrong mode ('neff', 'wavelength', or 'auto' allowed)")
+
+    def run(self):
+        '''
+        Execute the algorithm.
+
+        In the beginning the solvers are invalidated and next, the self-
+        consistent loop of thermal, electrical, gain, and optical calculations
+        are run within the root-finding algorithm until the mode is found
+        with zero optical losses.
+        
+        Returns
+        -------
+        float
+            The voltage set to `ivolt` boundary condition for the threshold.
+            The threshold current can be then obtained by calling
+            
+            >>> electrical.get_total_current()
+            123.0
+        '''
         pass
+    

@@ -63,6 +63,8 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
             return mesh2.axis0;
         }
 
+        double burning_integral(void);  // całka strat nadprogu
+        
     protected:
 
         plask::RegularMesh2D mesh2;         ///< Computational mesh
@@ -122,7 +124,6 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 //        double KThreshold(size_t i, double T, double n0);    // K postaci D(T)
         double E(int i);        // E dla rozkladu poczatkowego i progowego
         double F(int i);        // F dla rozkladu poczatkowego i progowego
-        double integral(void);  // całka strat nadprogu
 
 //        double Enprog(size_t i, double T, double n0);   // E dla rozkladu nadprogowego
 //        double Fnprog(size_t i, double T, double n0);	// F dla rozkladu nadprogowego

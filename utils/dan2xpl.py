@@ -452,11 +452,11 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('    defmesh = MSG.default(GEO.main.item)')
         out('    plot_mesh(defmesh, color="0.75")')
         if electr:
-            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, color="b", marker="D")')
+            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")')
         if therm:
-            out('    plot_boundary(THERMAL.temperature_boundary, defmesh, color="r")')
-            out('    plot_boundary(THERMAL.convection_boundary, defmesh, color="g")')
-            out('    plot_boundary(THERMAL.radiation_boundary, defmesh, color="y")')
+            out('    plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")')
+            out('    plot_boundary(THERMAL.convection_boundary, defmesh, THERMAL.geometry, color="g")')
+            out('    plot_boundary(THERMAL.radiation_boundary, defmesh, THERMAL.geometry, color="y")')
         out('    gcf().canvas.set_window_title("Default mesh")')
         if therm:
             out('\n    figure()')

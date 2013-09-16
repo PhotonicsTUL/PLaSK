@@ -40,6 +40,7 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inGainOverCarriersConcentration, "Gain over carriers concentration derivative distribution"); // receiver in the solver
         RECEIVER(inLightIntensity, "Light intensity distribution"); // receiver in the solver
         PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
+        METHOD(get_total_burning, burning_integral, "Compute power burned over threshold");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
@@ -76,6 +77,7 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inGainOverCarriersConcentration, "Gain over carriers concentration derivative distribution"); // receiver in the solver
         RECEIVER(inLightIntensity, "Light intensity distribution"); // receiver in the solver
         PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
+        METHOD(get_total_burning, burning_integral, "Compute power burned over threshold");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property

@@ -301,7 +301,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
     return lines
 
 
-def plot_boundary(boundary, mesh, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
+def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
     '''Plot points of specified boundary'''
     #TODO documentation
 
@@ -322,7 +322,7 @@ def plot_boundary(boundary, mesh, cmap=None, color='0.75', plane=None, zorder=4,
     x = []
     y = []
     for place, value in boundary:
-        points = place(mesh)
+        points = place(mesh, geometry)
         for i in points:
             x.append(mesh[i][ax[0]])
             y.append(mesh[i][ax[1]])

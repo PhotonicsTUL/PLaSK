@@ -130,7 +130,7 @@ writelog(LOG_DEBUG, "Git0a!");
             {
                 overthreshold_computation = false;
 #ifndef NDEBUG
-                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% W, qw_width: %2% cm", integral(), global_QW_width);
+                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% W, qw_width: %2% cm", burning_integral(), global_QW_width);
 #endif
             }
         }
@@ -698,7 +698,7 @@ writelog(LOG_DEBUG, "overthreshold_left[i]: %1%", overthreshold_left[i]);
     return product;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::integral()
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::burning_integral()
 {
     double int_val = 0.0;
     for (int i = 0; i < (current_mesh().size() - 1)/2; i++)
