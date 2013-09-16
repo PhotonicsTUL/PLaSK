@@ -28,10 +28,10 @@ class ThermoElectric(object):
         maximum convergence error.
     electrical : electrical solver
         Configured electrical solver. It must have `outHeat` provider and
-        `inTemperature` receiver. Temperature computations are done with
-        `compute` method, which takes maximum number of iterations as input and
-        returns maximum convergence error. Solver specific parameters (e.g.
-        `beta`) should already be set before execution of the algorithm.
+        `inTemperature` receiver. Computations are done with `compute` method,
+        which takes maximum number of iterations as input and returns maximum
+        convergence error. Solver specific parameters (e.g. `beta`) should
+        already be set before execution of the algorithm.
     tfreq : integer, optional
         Number of electrical iterations per single thermal step. As temperature
         tends to converge faster, it is reasonable to repeat thermal solution
@@ -188,7 +188,8 @@ class ThresholdSearch(ThermoElectric):
     laser cavity.
 
     ThresholdSearch(thermal, electrical, diffusion, gain, optical,
-                    tfreq, approx_mode, quick=False)
+                    ivolt, approx_mode, tfreq=6, mode='auto',
+                    quick=False)
 
     Parameters
     ----------
@@ -198,19 +199,38 @@ class ThresholdSearch(ThermoElectric):
         method, which takes maximum number of iterations as input and returns
         maximum convergence error.
     electrical : electrical solver
-        Configured electrical solver. It must have `outHeat` provider and
-        `inTemperature` receiver. Temperature computations are done with
-        `compute` method, which takes maximum number of iterations as input and
-        returns maximum convergence error. Solver specific parameters (e.g.
-        `beta`) should already be set before execution of the algorithm.
+        Configured electrical solver. It must have providers `outHeat` and
+        `outCurrentDensity` as well as `inTemperature` receiver. Computations
+        are done with `compute` method, which takes maximum number of iterations
+        as input and returns maximum convergence error. Solver specific parameters
+        (e.g. `beta`) should already be set before execution of the algorithm.
+    diffusion : diffusion solver or None
+        Configured solver computing carriers diffusion. It must have one provider:
+        `outCarriersConcentration` and two receivers: `inTemperature` and
+        `inCurrentDensity`. Under-threshold computations are done with `compute`
+        method. If this parameter is None then it is assumed that its functionality
+        is already ensured by the electrical solvers, which in such a case should
+        have its own `outCarriersConcentration` provider.
+    gain : gain solver
+        Configured gain solver. TODO
+    optical : optical solver
+        Configured optical solver. It is required to have `inTemperature` and
+        `inGain` receivers and `outIntensity` provider that is necessary only
+        for plotting electromagnetic field profile. This solver needs to have
+        `find_mode` method if `quick` is false or `get_detrminant` and `set_mode`
+        methods is `quick` is true. TODO
+    ivolt : integer
+        Index in the `voltage_boundary` boundary conditions list in the
+        `electrical` solver that
+    approx_mode : float
+        Approximation of the optical mode (either the effective index or
+        the wavelength) needed for optical computation.
     tfreq : integer, optional
         Number of electrical iterations per single thermal step. As temperature
         tends to converge faster, it is reasonable to repeat thermal solution
         less frequently.
-    TODO
-    approx_mode : float
-        Approximation of the optical mode (either the effective index or
-        the wavelength) needed for optical computation.
+    mode : string, optional
+        TODO: 'neff', 'wavelength' or 'auto'
     quick : bool, optional
         If this parameter is True, the algorithm tries to find the threshold
         the easy way i.e. by computing only the optical determinant in each
@@ -222,4 +242,8 @@ class ThresholdSearch(ThermoElectric):
     visually using `plot_`... methods.
 
     '''
-    pass
+
+    def __init__(self, thermal, electrical, diffusion, gain, optical,
+                 ivolt, approx_mode, tfreq=6, mode='auto',
+                 quick=False):
+        pass
