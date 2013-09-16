@@ -60,6 +60,11 @@ ylim(290., ylim()[1])
 tight_layout()
 
 figure()
+task.plot_vertical_voltage()
+xlim(290., xlim()[1])
+tight_layout()
+
+figure()
 task.plot_junction_current()
 xlim(0., 40.)
 tight_layout()

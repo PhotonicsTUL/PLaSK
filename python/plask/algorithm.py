@@ -51,6 +51,7 @@ class ThermoElectric(object):
         self.electrical = electrical
         self.tfreq = tfreq
 
+
     def run(self):
         '''
         Execute the algorithm.
@@ -69,8 +70,10 @@ class ThermoElectric(object):
             verr = self.electrical.compute(self.tfreq)
             terr = self.thermal.compute(1)
 
+
     def save(self, filename):
         raise NotImplementedError('save')
+
 
     def plot_temperature(self, geometry_color='w', mesh_color=None):
         '''
@@ -101,6 +104,7 @@ class ThermoElectric(object):
             plask.plot_mesh(self.thermal.mesh, color=mesh_color)
         plask.gcf().canvas.set_window_title("Temperature")
 
+
     def plot_voltage(self, geometry_color='w', mesh_color=None):
         '''
         Plot computed voltage to the current axes.
@@ -129,6 +133,24 @@ class ThermoElectric(object):
         if mesh_color is not None:
             plask.plot_mesh(self.electrical.mesh, color=mesh_color)
         plask.gcf().canvas.set_window_title("Voltage")
+
+
+    def plot_vertical_voltage(self, at=0.):
+        '''
+        Plot computed voltage along the vertical axis
+
+        Parameters
+        ----------
+        at : float, optional
+            Horizontal position of the axis at which the voltage is plotted.
+        '''
+        mesh = plask.mesh.Rectilinear2D([at], self.electrical.mesh.axis1)
+        field = self.electrical.outVoltage(mesh)
+        plask.plot(mesh.axis1, field)
+        plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-1])
+        plask.ylabel("Voltage [V]")
+        plask.gcf().canvas.set_window_title("Voltage")
+
 
     def plot_junction_current(self, refine=16):
         '''
@@ -174,6 +196,7 @@ class ThermoElectric(object):
         plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-2])
         plask.ylabel(u"Current Density [kA/cm\xb2]")
         plask.gcf().canvas.set_window_title("Current Density")
+
 
 
 class ThresholdSearch(ThermoElectric):
@@ -283,15 +306,14 @@ class ThresholdSearch(ThermoElectric):
         consistent loop of thermal, electrical, gain, and optical calculations
         are run within the root-finding algorithm until the mode is found
         with zero optical losses.
-        
+
         Returns
         -------
         float
             The voltage set to `ivolt` boundary condition for the threshold.
             The threshold current can be then obtained by calling
-            
+
             >>> electrical.get_total_current()
             123.0
         '''
         pass
-    
