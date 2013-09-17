@@ -59,18 +59,16 @@ static shared_ptr<Mesh> readRegularMesh1D(XMLReader& reader)
     double start, stop;
     size_t count;
 
-    for (int i = 0; i < 2; ++i) {
-        reader.requireTag();
-        std::string node = reader.getNodeName();
+    reader.requireTag();
 
-        if (node != "axis") throw XMLUnexpectedElementException(reader, "<axis>");
+    if (reader.getNodeName() != "axis") throw XMLUnexpectedElementException(reader, "<axis>");
 
-        start = reader.requireAttribute<double>("start");
-        stop = reader.requireAttribute<double>("stop");
-        count = reader.requireAttribute<size_t>("num");
+    start = reader.requireAttribute<double>("start");
+    stop = reader.requireAttribute<double>("stop");
+    count = reader.requireAttribute<size_t>("num");
 
-        reader.requireTagEnd();
-    }
+    reader.requireTagEnd();
+
     reader.requireTagEnd();
 
     return make_shared<RectangularMesh<1,RegularAxis>>(start, stop, count);

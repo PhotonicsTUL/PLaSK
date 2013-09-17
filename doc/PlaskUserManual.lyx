@@ -19537,29 +19537,6 @@ Attributes
 \labelwidthstring 00.00.0000
 
 \family typewriter
-m
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Angular mode number.
- (integer)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
 lam0
 \family default
  
