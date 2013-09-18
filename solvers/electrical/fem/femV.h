@@ -44,7 +44,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double pcond;       ///< p-contact electrical conductivity [S/m]
     double ncond;       ///< n-contact electrical conductivity [S/m]
 
-    double corrlim;     ///< Maximum voltage correction accepted as convergence
     int loopno;         ///< Number of completed loops
     double abscorr;     ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
     double relcorr;     ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
@@ -123,9 +122,10 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   public:
 
-    CorrectionType corrtype; ///< Type of the returned correction
+    CorrectionType corrtype;    ///< Type of the returned correction
+    double corrlim;             ///< Maximum voltage correction accepted as convergence
 
-    HeatMethod heatmet;     ///< Method of heat computation
+    HeatMethod heatmet;         ///< Method of heat computation
 
     /// Boundary condition
     BoundaryConditions<RectilinearMesh2D,double> voltage_boundary;
@@ -172,9 +172,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     /// \return get max relative correction for potential
     double getMaxRelVCorr() const { return relcorr; } // result in [%]
 
-    double getVCorrLim() const { return corrlim; }
-    void setVCorrLim(double lim) { corrlim = lim; }
-
     double getBeta() const { return beta; }
     void setBeta(double beta)  {
         this->beta = beta;
@@ -188,10 +185,16 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     }
 
     double getCondPcontact() const { return pcond; }
-    void setCondPcontact(double cond)  { pcond = cond; }
+    void setCondPcontact(double cond)  {
+        pcond = cond;
+        this->invalidate();
+    }
 
     double getCondNcontact() const { return ncond; }
-    void setCondNcontact(double cond)  { ncond = cond; }
+    void setCondNcontact(double cond)  {
+        ncond = cond;
+        this->invalidate();
+    }
 
     DataVector<const double> getCondJunc() const { return junction_conductivity; }
     void setCondJunc(double cond) {

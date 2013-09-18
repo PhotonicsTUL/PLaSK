@@ -1,6 +1,6 @@
 #define BOOST_TEST_DYN_LINK
 
-#define BOOST_TEST_MODULE "thermal/fem2d Tests"
+#define BOOST_TEST_MODULE "electrical/fem2d Tests"
 
 #include <boost/test/unit_test.hpp>
 

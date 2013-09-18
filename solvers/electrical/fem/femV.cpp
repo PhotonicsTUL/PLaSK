@@ -8,10 +8,10 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     beta(20.),
     pcond(5.),
     ncond(50.),
-    corrlim(1e-3),
     loopno(0),
     default_junction_conductivity(5.),
     corrtype(CORRECTION_ABSOLUTE),
+    corrlim(1e-6),
     heatmet(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
@@ -105,20 +105,16 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     bool in_active = false;
 
     for (size_t r = 0; r < points->axis1.size(); ++r) {
-        bool had_active = false; // indicates if we had active region in this layer
-        shared_ptr<Material> layer_material;
-
+        bool had_active = false;
         for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
             auto roles = this->geometry->getRolesAt(point);
             bool active = roles.find("active") != roles.end() || roles.find("junction") != roles.end();
 
             if (c < ileft) {
-                if (active)
-                    throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
+                if (active) throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
             } else if (c >= iright) {
-                if (active)
-                    throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+                if (active) throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
             } else {
                 // Here we are inside potential active region
                 if (active) {
@@ -129,10 +125,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
                         }
                     }
                 } else if (had_active) {
-                    if (!in_active) {
-                        iright = c;
-                    } else
-                        throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+                    if (!in_active) iright = c;
+                    else throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
                 }
                 had_active |= active;
             }
