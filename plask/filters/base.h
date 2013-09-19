@@ -150,6 +150,17 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         return nullptr;
     }
 
+    /**
+     * Find region that has @p p inside bouding-box and fulfill predicate @p pred.
+     */
+    template <typename Predicate>
+    const Region* findRegion(const OutVec& p, Predicate pred) const {
+        for (const Region& r: regions)
+            if (r.inGeomBB.contains(p) && pred(r))
+                return &r;
+        return nullptr;
+    }
+
     virtual void calcConnectionParameters() {
         regions.clear();
         std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());

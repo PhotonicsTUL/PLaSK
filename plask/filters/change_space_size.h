@@ -130,13 +130,13 @@ using DataFrom3Dto2DSource = DataFrom3Dto2DSourceImpl<PropertyT, PropertyT::prop
 
 
 
-/// Don't use this directly, use DataFrom2Dto3DSourceImpl instead.
+/// Don't use this directly, use DataFrom2Dto3DSource instead.
 template <typename PropertyT, PropertyType propertyType, typename VariadicTemplateTypesHolder>
 struct DataFrom2Dto3DSourceImpl {
-    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "ChangeSpaceCartesian2Dto3D can't be used with single value properties (it can be use only with fields properties)");
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "DataFrom2Dto3DSource can't be used with single value properties (it can be use only with fields properties)");
 };
 
-/// Don't use this directly, use TranslatedDataSource instead.
+/// Don't use this directly, use DataFrom2Dto3DSource instead.
 template <typename PropertyT, typename... ExtraArgs>
 struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
 : public InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>

@@ -41,11 +41,9 @@ struct Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     // virtual void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const;
 
-private:
-
     /**
      * Convert vector @p v to space of child.
-     * @param r vector in parent (this) space
+     * @param r vector in parent (this) space, i.e. in space where (0, 0, 0) is at center of base of cylinder
      * @return vector in child space
      */
     static Vec<2, double> childVec(const Vec<3, double>& v) {
@@ -59,6 +57,7 @@ private:
      */
     //static ChildBox childBox(const Box& r);
 
+private:
     /**
      * Convert rectangle @p r to space of parent (this).
      * @param r rectangle in child space

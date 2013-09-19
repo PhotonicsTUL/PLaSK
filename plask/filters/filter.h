@@ -3,6 +3,7 @@
 
 #include "translation.h"
 #include "change_space_size.h"
+#include "change_space_size_cyl.h"
 
 namespace plask {
 
@@ -262,6 +263,23 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
         return appendInner2D(innerObj->getExtrusion(), path);
     }
 
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner2D(Revolution& innerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< DataFromCyl2Dto3DSource<PropertyT> > source(new DataFromCyl2Dto3DSource<PropertyT>());
+        source->connect(innerObj, *this->geometry, path);
+        return this->appendInnerRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner2D(shared_ptr<Revolution> innerObj, const PathHints* path = nullptr) {
+        return appendInner2D(*innerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner(Geometry2DCylindrical& innerObj, const PathHints* path = nullptr) {
+        return appendInner2D(innerObj.getRevolution(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner(shared_ptr<Geometry2DCylindrical> innerObj, const PathHints* path = nullptr) {
+        return appendInner2D(innerObj->getRevolution(), path);
+    }
 };
 
 /**
