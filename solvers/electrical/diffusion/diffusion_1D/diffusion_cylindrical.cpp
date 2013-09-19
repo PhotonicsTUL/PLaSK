@@ -63,9 +63,9 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     j_on_the_mesh.reset();
     T_on_the_mesh.reset();
 
-    overthreshold_left.reset();
+    PM.reset();
     overthreshold_dgdn.reset();
-    overthreshold_g.reset();
+//    overthreshold_g.reset();
 
     n_present.reset();
     n_previous.reset();
@@ -126,13 +126,7 @@ writelog(LOG_DEBUG, "Git0a!");
 
             this->writelog(LOG_DETAIL, "Conducting overthreshold computations");
             convergence = MatrixFEM();
-            if (convergence)
-            {
-                overthreshold_computation = false;
-#ifndef NDEBUG
-                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% mW, qw_width: %2% cm", burning_integral(), global_QW_width);
-#endif
-            }
+            if (convergence) overthreshold_computation = false;
         }
     }
     while(initial_computation || threshold_computation || overthreshold_computation);
@@ -246,9 +240,9 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                     throw BadInput(this->getId(), "Number of modes in inWavelength and inLightIntensity differ");
 
                     // Sum all modes
-                    overthreshold_left = DataVector<double>(mesh2.size(), 0.);
+                    PM = DataVector<double>(mesh2.size(), 0.);
                     overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
-                    overthreshold_g = DataVector<double>(mesh2.size(), 0.);
+//                    overthreshold_g = DataVector<double>(mesh2.size(), 0.);
 
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
@@ -271,9 +265,9 @@ writelog(LOG_DEBUG, "Git2a!");
                         for (size_t i = 0; i != mesh2.size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
-                            overthreshold_left[i] += common * g[i];
+                            PM[i] += common * g[i];
                             overthreshold_dgdn[i] += common * dgdn[i];
-                            overthreshold_g[i] += common * g[i];
+//                            overthreshold_g[i] += common * g[i];
                         }
                     }
                 }
@@ -349,9 +343,15 @@ writelog(LOG_DEBUG, "F(0): %1%", F(0));
                         break;
                     }
                 }
+#ifndef NDEBUG
+
+#endif
             }
             iterations += 1;
+#ifndef NDEBUG
+if (overthreshold_computation) writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% mW, qw_width: %2% cm", burning_integral(), global_QW_width);
 writelog(LOG_DEBUG, "iteration: %1%", iterations);
+#endif
         }
 
     } while ( !_convergence && (iterations < max_iterations));
@@ -616,7 +616,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        product += overthreshold_dgdn[i] * n0 - overthreshold_g[i];
+        product += overthreshold_dgdn[i] * n0 - PM[i];
     }
 
     return product;
@@ -690,9 +690,9 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     if (overthreshold_computation)
     {
 writelog(LOG_DEBUG, "product before: %1%", product);
-        product -= overthreshold_left[i];
+        product -= PM[i];
 writelog(LOG_DEBUG, "product after: %1%", product);
-writelog(LOG_DEBUG, "overthreshold_left[i]: %1%", overthreshold_left[i]);
+writelog(LOG_DEBUG, "PM[i]: %1%", PM[i]);
     }
 
     return product;
@@ -703,7 +703,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     double int_val = 0.0;
     for (int i = 0; i < (current_mesh().size() - 1)/2; i++)
     {
-        int_val += (overthreshold_left[2*i + 1] * current_mesh()[2*i + 1] * (current_mesh()[2*i + 2] - current_mesh()[2*i]));
+        int_val += (PM[2*i + 1] * current_mesh()[2*i + 1] * (current_mesh()[2*i + 2] - current_mesh()[2*i]));
     }
 
     return 2*M_PI * int_val * 1.0e-5 * global_QW_width * (plask::phys::h_J*plask::phys::c/(wavelength*1.0e-9));

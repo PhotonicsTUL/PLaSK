@@ -201,7 +201,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 template <typename GeometryType>
 const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
 {
-    this->writelog(LOG_DETAIL, "Calculating gain");
+    this->writelog(LOG_INFO, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
     RectilinearMesh2D mesh2;

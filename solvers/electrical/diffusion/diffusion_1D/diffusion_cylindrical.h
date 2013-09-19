@@ -95,9 +95,9 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 //        plask::DataVector<const double> g;                    // gain on the mesh
 //        plask::DataVector<const double> dgdn;                 // gain over concentration derivative on the mesh
 
-        plask::DataVector<double> overthreshold_left;   // Factor for overthreshold computations summed for all modes
+        plask::DataVector<double> PM;   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
-        plask::DataVector<double> overthreshold_g;      // Factor for overthreshold computations summed for all modes
+//        plask::DataVector<double> overthreshold_g;      // Factor for overthreshold computations summed for all modes
 
         plask::DataVector<double> n_previous;           // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;            // concentration computed in n -th step vector
