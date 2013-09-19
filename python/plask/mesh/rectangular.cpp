@@ -411,6 +411,8 @@ namespace detail {
 
         py::tuple __div__(int f) const;
 
+        std::string __str__() const;
+        
         struct Iter {
             const ThisT& obj;
             int i;
@@ -469,6 +471,7 @@ namespace detail {
                 .def("__truediv__", &ThisT::__div__)
                 .def("__floordiv__", &ThisT::__div__)
                 .def("__iter__", &ThisT::__iter__, py::with_custodian_and_ward_postcall<0,1>())
+                .def("__str__", &ThisT::__str__)
             ;
 
             py::scope scope2 = cls;
@@ -490,12 +493,12 @@ namespace detail {
             return self.getPostDivision(Primitive<2>::DIRECTION_TRAN);
         }
 
-        static void setPre(RectilinearMeshDivideGenerator<1>& self, size_t val) {
-            self.setPreDivision(Primitive<2>::DIRECTION_TRAN, val);
+        static void setPre(RectilinearMeshDivideGenerator<1>& self, py::object val) {
+            self.setPreDivision(Primitive<2>::DIRECTION_TRAN, py::extract<size_t>(val));
         }
 
-        static void setPost(RectilinearMeshDivideGenerator<1>& self, size_t val) {
-            self.setPostDivision(Primitive<2>::DIRECTION_TRAN, val);
+        static void setPost(RectilinearMeshDivideGenerator<1>& self, py::object val) {
+            self.setPostDivision(Primitive<2>::DIRECTION_TRAN, py::extract<size_t>(val));
         }
 
         static void register_proxy(py::object) {}
@@ -517,6 +520,13 @@ namespace detail {
     template <> py::tuple DivideGeneratorDivProxy<3>::__div__(int f) const {
         if (get(0) < f || get(1) < f || get(2) < f) throw ValueError("Refinement already too small.");
         return py::make_tuple(get(0) / f, get(1) / f, get(2) / f);
+    }
+
+    template <> std::string DivideGeneratorDivProxy<2>::__str__() const {
+        return format("(%1%, %2%)", get(0), get(1));
+    }
+    template <> std::string DivideGeneratorDivProxy<3>::__str__() const {
+        return format("(%1%, %2%, %3%)", get(0), get(1), get(2));
     }
 }
 
@@ -612,13 +622,29 @@ py::dict RectilinearMeshDivideGenerator_listRefinements(const RectilinearMeshDiv
 }
 
 template <int dim>
+shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__init__(py::object prediv, py::object postdiv, bool gradual,
+                                                                                       bool warn_multiple, bool warn_missing, bool warn_outside) {
+    auto result = make_shared<RectilinearMeshDivideGenerator<dim>>();
+    if (prediv != py::object()) detail::DivideGeneratorDivProxy<dim>::setPre(*result, prediv);
+    if (postdiv != py::object()) detail::DivideGeneratorDivProxy<dim>::setPost(*result, postdiv);
+    result->gradual = gradual;
+    result->warn_multiple = warn_multiple;
+    result->warn_missing = warn_missing;
+    result->warn_outside = warn_outside;
+    return result;
+};
+
+template <int dim>
 void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
                    py::bases<MeshGeneratorOf<RectangularMesh<dim,RectilinearAxis>>>, boost::noncopyable>
             dividecls("DivideGenerator",
             format("Generator of Rectilinear%1%D mesh by simple division of the geometry.\n\n"
             "DivideGenerator()\n"
-            "    create generator without initial division of geometry objects", dim).c_str()); dividecls
+            "    create generator without initial division of geometry objects", dim).c_str(), py::no_init); dividecls
+            .def("__init__", py::make_constructor(&RectilinearMeshDivideGenerator__init__<dim>, py::default_call_policies(),
+                 (py::arg("prediv")=py::object(), py::arg("postdiv")=py::object(), py::arg("gradual")=true,
+                  py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))      
             .add_property("gradual", &RectilinearMeshDivideGenerator<dim>::getGradual, &RectilinearMeshDivideGenerator<dim>::setGradual, "Limit maximum adjacent objects size change to the factor of two")
             .def_readwrite("warn_multiple", &RectilinearMeshDivideGenerator<dim>::warn_multiple, "Warn if refining path points to more than one object")
             .def_readwrite("warn_missing", &RectilinearMeshDivideGenerator<dim>::warn_missing, "Warn if refining path does not point to any object")

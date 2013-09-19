@@ -27,10 +27,7 @@ class Shockley3D_Test(unittest.TestCase):
         space = geometry.Cartesian3D(stack)
         self.solver = Shockley3D("electrical3d")
         self.solver.geometry = space
-        generator = mesh.Rectilinear3D.DivideGenerator()
-        generator.prediv = 2,2,1
-        generator.gradual = False
-        self.solver.mesh = generator
+        self.solver.mesh = mesh.Rectilinear3D.DivideGenerator(prediv=(2,2,1), gradual=False)
         self.solver.beta = 10.
         self.solver.js = 1.
         self.solver.corrlim = 1e-12 # such insane accuracy on voltage is necessary
