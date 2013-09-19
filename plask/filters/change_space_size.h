@@ -34,6 +34,9 @@ struct PointsOnLineMesh: public MeshD<3> {
 
 };
 
+/**
+ * 3D mesh that wrap 2D mesh. It translates all points of oryginal mesh and complement lon. parameter of each point.
+ */
 struct CartesianMesh2DTo3D: public MeshD<3> {
 
     Vec<3, double> translation;

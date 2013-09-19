@@ -363,7 +363,12 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
     }
 };
 
-// filter in 2D cylindrical space
+/**
+ * Filter which provides data in 2D cylindrical space.
+ *
+ * It can have one or more inner (only custom) inputs and one outer (3D) input or default value (which is used in all points where inner inputs don't provide data).
+ * @tparam PropertyT property which has type FIELD_PROPERTY
+ */
 template <typename PropertyT>
 struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT, Geometry2DCylindrical> {
 
