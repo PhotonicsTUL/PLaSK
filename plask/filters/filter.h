@@ -373,16 +373,22 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
 
     using FilterBase<PropertyT, Geometry2DCylindrical>::appendInner;
 
-    virtual ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& obj, const PathHints* path = nullptr) {
-        //TODO
-        ReceiverFor<PropertyT, Geometry3D>* dupa = nullptr;
-        return *dupa;
+    ReceiverFor<PropertyT, Geometry3D>& input(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr) override {
+        return setOuter(outerObj, path);
     }
 
-    virtual ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& obj, const PathHints* path = nullptr) {
-        //TODO
-        ReceiverFor<PropertyT, Geometry2DCartesian>* dupa = nullptr;
-        return *dupa;
+    ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian&, const PathHints* = nullptr) override {
+        throw Exception("Bad use of filter over cylindrical space. Cylindrical geometry can't contain any other geometry and can't be included in any geometry 2D.");
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
+        std::unique_ptr< DataFrom3DtoCyl2DSource<PropertyT> > source(new DataFrom3DtoCyl2DSource<PropertyT>(pointsCount));
+        source->connect(outerObj, *this->geometry->getRevolution(), path);
+        return this->setOuterRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<GeometryObjectD<3>> outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
+        return setOuter(*outerObj, path, pointsCount);
     }
 };
 

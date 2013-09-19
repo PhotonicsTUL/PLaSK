@@ -6,127 +6,101 @@
 
 namespace plask {
 
-//struct PointsOnLineMesh: public MeshD<3> {
+struct PointsOnCircleMesh: public MeshD<3> {
 
-//    Vec<3, double> begin;
+    Vec<3, double> center;
 
-//    double longSize;
+    double radius;
 
-//    std::size_t lastPointNr;
+private:
+    double slice;
 
-//    PointsOnLineMesh() = default;
+    std::size_t pointsCount;
 
-//    PointsOnLineMesh(Vec<3, double> begin, double lonSize, std::size_t pointsCount)
-//        : begin(begin), longSize(lonSize), lastPointNr(pointsCount-1) {}
+public:
 
-//    virtual Vec<3, double> at(std::size_t index) const override {
-//        Vec<3, double> ans = begin;
-//        ans.lon() += longSize * index / lastPointNr;
-//        return ans;
-//    }
+    void setPointsCount(std::size_t pointsCount) {
+        this->pointsCount = pointsCount;
+        this->slice = PI_DOUBLED / pointsCount;
+    }
 
-//    virtual std::size_t size() const override {
-//        return lastPointNr + 1;
-//    }
+    PointsOnCircleMesh() = default;
 
-//};
+    PointsOnCircleMesh(Vec<3, double> center, double readius, std::size_t pointsCount)
+        : center(center), radius(readius) { setPointsCount(pointsCount); }
 
-//struct CartesianMesh2DTo3D: public MeshD<3> {
+    virtual Vec<3, double> at(std::size_t index) const override {
+        const double angle = slice * index;
+        return Vec<3, double>(center.lon() + radius * cos(angle), center.tran() + radius * sin(angle), center.vert());
+    }
 
-//    Vec<3, double> translation;
+    virtual std::size_t size() const override {
+        return pointsCount;
+    }
 
-//    const MeshD<2>& sourceMesh;
+};
 
-//    CartesianMesh2DTo3D(Vec<3, double> translation, const MeshD<2>& sourceMesh, double lon)
-//        : translation(translation), sourceMesh(sourceMesh) {
-//        this->translation.lon() += lon;
-//    }
+/// Don't use this directly, use DataFrom3DtoCyl2DSource instead.
+template <typename PropertyT, PropertyType propertyType, typename VariadicTemplateTypesHolder>
+struct DataFrom3DtoCyl2DSourceImpl {
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "DataFrom3DtoCyl2DSource can't be used with single value properties (it can be use only with fields properties)");
+};
 
-//    CartesianMesh2DTo3D(Vec<3, double> translation, const MeshD<2>& sourceMesh)
-//        : translation(translation), sourceMesh(sourceMesh) {}
+/// Don't use this directly, use DataFrom3DtoCyl2DSource instead.
+template <typename PropertyT, typename... ExtraArgs>
+struct DataFrom3DtoCyl2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
+: public OuterDataSource<PropertyT, Geometry2DCylindrical, Geometry3D, Revolution, GeometryObjectD<3>>
+{
+    /// Points count for average function
+    std::size_t pointsCount;
 
-//    virtual Vec<3, double> at(std::size_t index) const override {
-//        return vec3Dplus2D(translation, sourceMesh.at(index));
-//    }
+    explicit DataFrom3DtoCyl2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
 
-//    virtual std::size_t size() const override {
-//        return sourceMesh.size();
-//    }
-//};
+    /// Type of property value in output space
+    typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType ValueType;
 
-///// Don't use this directly, use DataFrom3Dto2DSource instead.
-//template <typename PropertyT, PropertyType propertyType, typename VariadicTemplateTypesHolder>
-//struct DataFrom3Dto2DSourceImpl {
-//    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "ChangeSpaceCartesian2Dto3DDataSource can't be used with single value properties (it can be use only with fields properties)");
-//};
+    Vec<3, double> getCenterForPoint(const Vec<2, double>& p) const {
+        return Vec<3, double>(this->inTranslation.lon(), this->inTranslation.tran(), this->inTranslation.vert() + p.rad_z());
+    }
 
-///// Don't use this directly, use DataFrom3Dto2DSource instead.
-//template <typename PropertyT, typename... ExtraArgs>
-//struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
-//: public OuterDataSource<PropertyT, Geometry2DCartesian, Geometry3D, Extrusion, GeometryObjectD<3>>
-//{
-//    /// Points count for average function
-//    std::size_t pointsCount;
+    virtual boost::optional<ValueType> get(const Vec<2, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return PropertyT::value3Dto2D(average(this->in(
+                   PointsOnCircleMesh(getCenterForPoint(p), p.rad_r(), pointsCount),
+                   std::forward<ExtraArgs>(extra_args)...,
+                   method
+               )));
+    }
 
-//    explicit DataFrom3Dto2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
+    virtual DataVector<const ValueType> operator()(const MeshD<2>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        /*if (pointsCount == 1)
+            return PropertyVec3Dto2D<PropertyT>(this->in(
+                 CartesianMesh2DTo3D(this->inTranslation, requested_points, this->outputObj->getLength() * 0.5),
+                 std::forward<ExtraArgs>(extra_args)...,
+                 method
+             ));*/
+        DataVector<ValueType> result(requested_points.size());
+        PointsOnCircleMesh circleMesh;
+        circleMesh.setPointsCount(pointsCount);
+        for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
+                const auto v = requested_points[src_point_nr];
+                circleMesh.center = getCenterForPoint(v);
+                circleMesh.radius = v.rad_r();
+                result[src_point_nr] =
+                        PropertyT::value3Dto2D(average(this->in(
+                            circleMesh,
+                            std::forward<ExtraArgs>(extra_args)...,
+                            method
+                        )));
+        }
+        return result;
+    }
+};
 
-//    /// Type of property value in output space
-//    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType ValueType;
-
-//    //inLinePos in 0, inputObj->getLength()
-//    Vec<3, double> getPointAt(const Vec<2, double>& p, double lon) const {
-//        return vec3Dplus2D(this->inTranslation, p, lon);
-//    }
-
-//    //inLineRelPos in 0, 1
-//    Vec<3, double> getPointAtRel(const Vec<2, double>& p, double inLineRelPos) const {
-//        return getPointAt(p, this->outputObj->getLength() * inLineRelPos);
-//    }
-
-//    virtual boost::optional<ValueType> get(const Vec<2, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
-//        if (pointsCount == 1)
-//            return PropertyT::value3Dto2D(this->in(toMesh(getPointAtRel(p, 0.5)), std::forward<ExtraArgs>(extra_args)..., method)[0]);
-//        const double d = this->outputObj->getLength() / pointsCount;
-//        return PropertyT::value3Dto2D(average(this->in(
-//                   PointsOnLineMesh(getPointAt(p, d*0.5), this->outputObj->getLength()-d, pointsCount),
-//                   std::forward<ExtraArgs>(extra_args)...,
-//                   method
-//               )));
-//    }
-
-//    virtual DataVector<const ValueType> operator()(const MeshD<2>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
-//        if (pointsCount == 1)
-//            return PropertyVec3Dto2D<PropertyT>(this->in(
-//                 CartesianMesh2DTo3D(this->inTranslation, requested_points, this->outputObj->getLength() * 0.5),
-//                 std::forward<ExtraArgs>(extra_args)...,
-//                 method
-//             ));
-//        DataVector<ValueType> result(requested_points.size());
-//        PointsOnLineMesh lineMesh;
-//            const double d = this->outputObj->getLength() / this->pointsCount;
-//            lineMesh.lastPointNr = this->pointsCount - 1;
-//            lineMesh.longSize = this->outputObj->getLength() - d;
-//            lineMesh.begin.lon() = this->outputObj->getLength() + d * 0.5;
-//            for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
-//                const auto v = requested_points[src_point_nr];
-//                lineMesh.begin.tran() = this->inTranslation.tran() + v.tran();
-//                lineMesh.begin.vert() = this->inTranslation.vert() + v.vert();
-//                result[src_point_nr] =
-//                        PropertyT::value3Dto2D(average(this->in(
-//                            lineMesh,
-//                            std::forward<ExtraArgs>(extra_args)...,
-//                            method
-//                        )));
-//            }
-//            return result;
-//    }
-//};
-
-///**
-// * Source of data in 2D space which read, and averages data from outer 3D space.
-// */
-//template <typename PropertyT>
-//using DataFrom3Dto2DSource = DataFrom3Dto2DSourceImpl<PropertyT, PropertyT::propertyType, typename PropertyT::ExtraParams>;
+/**
+ * Source of data in 2D space which read, and averages data from outer 3D space.
+ */
+template <typename PropertyT>
+using DataFrom3DtoCyl2DSource = DataFrom3DtoCyl2DSourceImpl<PropertyT, PropertyT::propertyType, typename PropertyT::ExtraParams>;
 
 
 

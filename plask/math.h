@@ -37,7 +37,8 @@ using std::ptrdiff_t;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
 
-
+const double PI = M_PI;
+const double PI_DOUBLED = 6.28318530717958647692;
 
 // Limits for comparing approximate numbers with zero
 constexpr double SMALL = std::numeric_limits<double>::epsilon(); ///< The numeric precision limit

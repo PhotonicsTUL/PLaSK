@@ -6,6 +6,9 @@
 
 namespace plask {
 
+/**
+ * Mesh that includes set of points on line parallel to lon. axis.
+ */
 struct PointsOnLineMesh: public MeshD<3> {
 
     Vec<3, double> begin;
@@ -57,7 +60,7 @@ struct CartesianMesh2DTo3D: public MeshD<3> {
 /// Don't use this directly, use DataFrom3Dto2DSource instead.
 template <typename PropertyT, PropertyType propertyType, typename VariadicTemplateTypesHolder>
 struct DataFrom3Dto2DSourceImpl {
-    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "ChangeSpaceCartesian2Dto3DDataSource can't be used with single value properties (it can be use only with fields properties)");
+    static_assert(propertyType != SINGLE_VALUE_PROPERTY, "DataFrom3Dto2DSource can't be used with single value properties (it can be use only with fields properties)");
 };
 
 /// Don't use this directly, use DataFrom3Dto2DSource instead.
