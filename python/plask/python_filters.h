@@ -64,10 +64,12 @@ namespace detail {
         }
     };
 
-    template <typename PropertyT, typename GeometryT> struct FilterIn {
+    template <typename PropertyT, typename GeometryT> struct FilterIn;
+    
+    template <typename PropertyT> struct FilterIn<PropertyT,Geometry2DCartesian> {
         template <typename Fun, typename... Args>
         static PyObject* __getsetitem__(const py::object& self, const py::object& key, Args... value) {
-            Filter<PropertyT,GeometryT>* filter = py::extract<Filter<PropertyT,GeometryT>*>(self);
+            Filter<PropertyT,Geometry2DCartesian>* filter = py::extract<Filter<PropertyT,Geometry2DCartesian>*>(self);
             shared_ptr<GeometryObject> geom;
             PathHints* path;
             int points;
@@ -75,8 +77,32 @@ namespace detail {
 
             if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
                 return Fun::call(self, filter->input(*geomd, path), value...);
-            if (auto geomd = dynamic_pointer_cast<GeometryT>(geom))
+            if (auto geomd = dynamic_pointer_cast<Geometry2DCartesian>(geom))
                 return Fun::call(self, filter->input(*geomd, path), value...);
+
+            if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
+                return Fun::call(self, filter->setOuter(*geomd, path, points), value...);
+            if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
+                return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
+
+            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key.attr("__class__")))));
+            return nullptr;
+        }
+    };
+
+    template <typename PropertyT> struct FilterIn<PropertyT,Geometry2DCylindrical> {
+        template <typename Fun, typename... Args>
+        static PyObject* __getsetitem__(const py::object& self, const py::object& key, Args... value) {
+            Filter<PropertyT,Geometry2DCylindrical>* filter = py::extract<Filter<PropertyT,Geometry2DCylindrical>*>(self);
+            shared_ptr<GeometryObject> geom;
+            PathHints* path;
+            int points;
+            filterin_parse_key(key, geom, path, points);
+
+            // if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
+            //     return Fun::call(self, filter->input(*geomd, path), value...);
+            // if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom))
+            //     return Fun::call(self, filter->input(*geomd, path), value...);
 
             if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
                 return Fun::call(self, filter->setOuter(*geomd, path, points), value...);
@@ -103,10 +129,10 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry2DCartesian>(geom))
                 return Fun::call(self, filter->appendInner(*geomd, path), value...);
 
-//             if (auto geomd = dynamic_pointer_cast<Revolution>(geom))
-//                 return Fun::call(self, filter->appendInner2D(*geomd, path), value...);
-//             if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom))
-//                 return Fun::call(self, filter->input(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<Revolution>(geom))
+                return Fun::call(self, filter->appendInner2D(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom))
+                return Fun::call(self, filter->appendInner(*geomd, path), value...);
 
             if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
                 return Fun::call(self, filter->input(*geomd, path), value...);
@@ -150,6 +176,7 @@ template <typename PropertyT>
 void registerFilters() {
 
     detail::registerFilterImpl<PropertyT,Geometry2DCartesian>("2D");
+    detail::registerFilterImpl<PropertyT,Geometry2DCylindrical>("Cyl");
     detail::registerFilterImpl<PropertyT,Geometry3D>("3D");
 
 }

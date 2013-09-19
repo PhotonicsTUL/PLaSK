@@ -75,7 +75,7 @@ BOOST_PYTHON_MODULE(fem3d)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;
 
-    {CLASS(FiniteElementMethodElectrical3DSolver, "Beta3D", "Finite element thermal solver for 3D Geometry.")
+    {CLASS(FiniteElementMethodElectrical3DSolver, "Shockley3D", "Finite element thermal solver for 3D Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
         RO_PROPERTY(abscorr, getAbsCorr, "Maximum absolute correction for potential");
@@ -100,6 +100,7 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+        py::scope().attr("Beta3D") = solver;
     }
 
 }

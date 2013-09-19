@@ -8,6 +8,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
     algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
+    default_junction_conductivity(5.),
     inittemp(300.),
     corrlim(1e-6),
     corrtype(CORRECTION_ABSOLUTE),
@@ -21,6 +22,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     potential.reset();
     current.reset();
     inTemperature = 300.;
+    junction_conductivity.reset(1, default_junction_conductivity);
 }
 
 
@@ -105,11 +107,11 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
     size_t iback = 0, ifront = points->axis1.size();
     bool in_active = false;
 
-    for (size_t ver = 0; ver < points->axis1.size(); ++ver) {
-        bool had_active_lon = false;
-        for (size_t lon = 0; lon < points->axis0.size(); ++lon) {
-            bool had_active_tra = false;
-            for (size_t tra = 0; tra < points->axis1.size(); ++tra) {
+    for (size_t ver = 0; ver < points->axis2.size(); ++ver) {
+        bool had_active_tra = false;
+        for (size_t tra = 0; tra < points->axis1.size(); ++tra) {
+            bool had_active_lon = false;
+            for (size_t lon = 0; lon < points->axis0.size(); ++lon) {
                 auto point = points->at(lon, tra, ver);
                 auto roles = geometry->getRolesAt(point);
                 bool active = roles.find("active") != roles.end() || roles.find("junction") != roles.end();
@@ -131,25 +133,31 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
                             actlo.push_back(ver);
                         }
                     }
-                    had_active_tra = true;
-                } else if (had_active_tra) {
-                    if (!in_active && !had_active_lon) iright = tra;
-                    else throw Exception("%1%: Right edge of the active region not aligned.", getId());
-                } else if (had_active_lon && !had_active_tra) {
-                    if (!in_active) ifront = lon;
+                    had_active_lon = true;
+                } else if (had_active_lon) {
+                    if (!in_active && !had_active_tra) ifront = lon;
                     else throw Exception("%1%: Front edge of the active region not aligned.", getId());
+                } else if (had_active_tra) {
+                    if (!in_active) iright = tra;
+                    else throw Exception("%1%: Right edge of the active region not aligned.", getId());
                 }
             }
-            had_active_lon |= had_active_tra;
+            had_active_tra |= had_active_lon;
         }
-        in_active = had_active_lon;
+        in_active = had_active_tra;
 
         // Test if the active region has finished
         if (!in_active && actlo.size() != acthi.size()) {
             acthi.push_back(ver);
-            actd.push_back(mesh->axis1[acthi.back()] - mesh->axis1[actlo.back()]);
+            actd.push_back(mesh->axis2[acthi.back()] - mesh->axis2[actlo.back()]);
             this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
         }
+    }
+
+    if (actlo.size() != acthi.size()) {
+        acthi.push_back(points->axis2.size());
+        actd.push_back(mesh->axis2[acthi.back()] - mesh->axis2[actlo.back()]);
+        this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
     }
 
     assert(acthi.size() == actlo.size());
@@ -169,18 +177,20 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
     potential.reset(mesh->size(), inittemp);
+    conds.reset(this->mesh->elements.size());
+    if (junction_conductivity.size() == 1) {
+        size_t condsize = max(actlo.size() * (this->mesh->axis1.size()-1) * (this->mesh->axis0.size()-1), size_t(1));
+        junction_conductivity.reset(condsize, junction_conductivity[0]);
+    }
 }
 
 
 void FiniteElementMethodElectrical3DSolver::onInvalidate() {
+    conds.reset();
     potential.reset();
     current.reset();
-}
-
-
-void FiniteElementMethodElectrical3DSolver::setAlgorithm(Algorithm alg) {
-    //TODO
-    algorithm = alg;
+    heat.reset();
+    junction_conductivity.reset(1, default_junction_conductivity);
 }
 
 
@@ -236,12 +246,12 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
         
         // nodes numbers for the current element
         size_t idx[8];
-        idx[0] = elem.getLoLoLoIndex();          //   z y            6-----7
-        idx[1] = elem.getUpLoLoIndex();          //   |/__x         /|    /|
-        idx[2] = elem.getLoUpLoIndex();          //                4-----5 |
-        idx[3] = elem.getUpUpLoIndex();          //                | 2---|-3
+        idx[0] = elem.getLoLoLoIndex();          //   z              4-----6
+        idx[1] = elem.getUpLoLoIndex();          //   |__y          /|    /|
+        idx[2] = elem.getLoUpLoIndex();          //  x/            5-----7 |
+        idx[3] = elem.getUpUpLoIndex();          //                | 0---|-2
         idx[4] = elem.getLoLoUpIndex();          //                |/    |/
-        idx[5] = elem.getUpLoUpIndex();          //                0-----1
+        idx[5] = elem.getUpLoUpIndex();          //                1-----3
         idx[6] = elem.getLoUpUpIndex();          //
         idx[7] = elem.getUpUpUpIndex();          //
 
@@ -254,6 +264,20 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
         Vec<3> middle = elem.getMidpoint();
         auto material = geometry->getMaterial(middle);
 
+        // update junction conductivities
+        if (loopno != 0) {
+            auto roles = this->geometry->getRolesAt(middle);
+            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
+                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index2(idx[0])) - acthi.begin();
+                assert(nact < acthi.size());
+                double jy = - 0.25e6 * conds[index].c11  *
+                    (- potential[idx[0]] - potential[idx[1]] - potential[idx[2]] - potential[idx[3]]
+                     + potential[idx[4]] + potential[idx[5]] + potential[idx[6]] + potential[idx[7]])
+                    / actd[nact]; // [j] = A/m²
+                conds[index] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+            }
+        }
+        
         // average voltage on the element
         double temp = 0.; for (int i = 0; i < 8; ++i) temp += potential[idx[i]]; temp *= 0.125;
 
@@ -374,6 +398,8 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
     potential = potential.claim();
     DataVector<double> corr(size);
 
+    loadConductivity();
+    
     do {
         setMatrix(A, corr, bvoltage);   // corr holds RHS now
         std::swap(potential, corr);     // corr holds old potential now
@@ -389,8 +415,8 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
             if (*vnew < minv) minv = *vnew;
         } // vec holds corrections now
         dV = maxv - minv;
-
-        relcorr = abscorr / dV;
+        if (loopno == 0) abscorr = dV;
+        relcorr = 100. * abscorr / dV;
         if (abscorr > max_abscorr) max_abscorr = abscorr;
         if (relcorr > max_relcorr) max_relcorr = relcorr;
 
@@ -398,9 +424,11 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", loop, loopno, dV, abscorr, relcorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%gmV(%g%%)", loop, loopno, dV, 1e3*abscorr, relcorr);
 
     } while (((corrtype == CORRECTION_ABSOLUTE)? (abscorr > corrlim) : (relcorr > corrlim)) && (loops == 0 || loop < loops));
+
+    saveConductivity();
 
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
@@ -485,15 +513,15 @@ void FiniteElementMethodElectrical3DSolver::saveCurrentDensity()
         size_t uul = el.getUpUpLoIndex();
         size_t uuu = el.getUpUpUpIndex();
         current[el.getIndex()] = vec(
-            - 0.25e6 * conds[i].c00 * (- potential[lll] - potential[llu] - potential[lul] - potential[luu]
-                                       + potential[ull] + potential[ulu] + potential[uul] + potential[uuu])
-                / (el.getUpper0() - el.getLower0()), // 1e6 - from µm to m
-            - 0.25e6 * conds[i].c00 * (- potential[lll] - potential[llu] + potential[lul] + potential[luu]
-                                       - potential[ull] - potential[ulu] + potential[uul] + potential[uuu])
-                / (el.getUpper1() - el.getLower1()), // 1e6 - from µm to m
-            - 0.25e6 * conds[i].c11  * (- potential[lll] + potential[llu] - potential[lul] + potential[luu]
-                                        - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
-                / (el.getUpper2() - el.getLower2()) // 1e6 - from µm to m
+            - 0.025 * conds[i].c00 * (- potential[lll] - potential[llu] - potential[lul] - potential[luu]
+                                      + potential[ull] + potential[ulu] + potential[uul] + potential[uuu])
+                / (el.getUpper0() - el.getLower0()), // [j] = kA/cm²
+            - 0.025 * conds[i].c00 * (- potential[lll] - potential[llu] + potential[lul] + potential[luu]
+                                      - potential[ull] - potential[ulu] + potential[uul] + potential[uuu])
+                / (el.getUpper1() - el.getLower1()), // [j] = kA/cm²
+            - 0.025 * conds[i].c11  * (- potential[lll] + potential[llu] - potential[lul] + potential[luu]
+                                       - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
+                / (el.getUpper2() - el.getLower2()) // [j] = kA/cm²
         );
     }
 }
@@ -582,7 +610,7 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex)
     }
     if (geometry->isSymmetric(Geometry::DIRECTION_LONG)) result *= 2.;
     if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
-    return result;
+    return result * 0.01; // kA/cm² µm² -->  mA
 }
 
 double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)

@@ -53,9 +53,9 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 #
 #add_executable(mytest test/source1.cpp test/source2.cpp)
 #set(SOLVER_TEST_DEPENDS mytest)
-#enable_testing()
+enable_testing()
 #add_test(solvers/foo/bar ${PLASK_SOLVER_PATH}/mytest)
-#add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+add_python_test(solvers/electrical/fem3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
 #add_executable(femtest ${femtest_src})

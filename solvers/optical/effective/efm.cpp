@@ -69,9 +69,10 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
+    dcomplex v = 2. - 4e3*M_PI / lambda / k0;
     stageOne();
     Mode mode(this, m);
-    mode.freqv = RootDigger(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, log_value, root)(0.);
+    mode.freqv = RootDigger(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, log_value, root)(v);
     return insertMode(mode);
 }
 

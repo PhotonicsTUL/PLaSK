@@ -72,15 +72,13 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 
         x = x0 + lambda*p;
         F = val_function(x);
-
+        log_value.count(x, F);
+        
         f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
         if (std::isnan(f)) throw ComputationError(solver.getId(), "Computed value is NaN");
 
-        if (f < f0 + par.alpha*lambda*slope) {      // sufficient function decrease
-            log_value.count(x, F);
+        if (f < f0 + par.alpha*lambda*slope)    // sufficient function decrease
             return true;
-        }
-        log_value(x, F);
 
         lambda1 = lambda;
 

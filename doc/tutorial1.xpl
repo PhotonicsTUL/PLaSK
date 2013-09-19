@@ -30,7 +30,7 @@
       <condition value="300.0" place="bottom"/>
     </temperature>
   </thermal>
-  <electrical solver="Beta2D" name="electr">
+  <electrical solver="Shockley2D" name="electr">
     <geometry ref="main"/>
     <mesh ref="default"/>
     <junction beta="19" js="1"/>

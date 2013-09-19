@@ -98,12 +98,12 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     void setActiveRegions();
 
     virtual void onMeshChange(const typename RectilinearMesh2D::Event& evt) override {
-        this->invalidate();
+        SolverWithMesh<Geometry2DType,RectilinearMesh2D>::onMeshChange(evt);
         setActiveRegions();
     }
 
     virtual void onGeometryChange(const Geometry::Event& evt) override {
-        SolverWithMesh<Geometry2DType, RectilinearMesh2D>::onGeometryChange(evt);
+        SolverWithMesh<Geometry2DType,RectilinearMesh2D>::onGeometryChange(evt);
         setActiveRegions();
     }
 

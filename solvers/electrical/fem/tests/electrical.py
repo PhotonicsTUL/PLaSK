@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from electrical.fem import Beta2D, BetaCyl
+from electrical.fem import Shockley2D, ShockleyCyl
 
 @material.simple
 class Conductor(material.Material):
@@ -14,7 +14,7 @@ class Conductor(material.Material):
         return 1e+9
 
 
-class Beta2D_Test(unittest.TestCase):
+class Shockley2D_Test(unittest.TestCase):
 
     def setUp(self):
         rect = geometry.Rectangle(1000., 300., Conductor())
@@ -25,10 +25,11 @@ class Beta2D_Test(unittest.TestCase):
         stack.append(junc)
         stack.append(rect)
         space = geometry.Cartesian2D(stack, length=1000.)
-        self.solver = Beta2D("electrical2d")
+        self.solver = Shockley2D("electrical2d")
         self.solver.geometry = space
-        self.solver.mesh = mesh.Rectilinear2D.DivideGenerator()
-        self.solver.mesh.prediv = 4,1
+        generator = mesh.Rectilinear2D.DivideGenerator()
+        generator.prediv = 2,1
+        self.solver.mesh = generator
         self.solver.beta = 10.
         self.solver.js = 1.
         self.solver.corrlim = 1e-15 # such insane accuracy on voltage is necessary
@@ -42,7 +43,7 @@ class Beta2D_Test(unittest.TestCase):
 
 
 
-class BetaCyl_Test(unittest.TestCase):
+class ShockleyCyl_Test(unittest.TestCase):
 
     def setUp(self):
         rect = geometry.Rectangle(1000., 300., Conductor())
@@ -53,10 +54,11 @@ class BetaCyl_Test(unittest.TestCase):
         stack.append(junc)
         stack.append(rect)
         space = geometry.Cylindrical2D(stack)
-        self.solver = BetaCyl("electricalcyl")
+        self.solver = ShockleyCyl("electricalcyl")
         self.solver.geometry = space
-        self.solver.mesh = mesh.Rectilinear2D.DivideGenerator()
-        self.solver.mesh.prediv = 16,1
+        generator = mesh.Rectilinear2D.DivideGenerator()
+        generator.prediv = 4,1
+        self.solver.mesh = generator
         self.solver.beta = 10.
         self.solver.js = 1.
         self.solver.corrlim = 1e-18 # such insane accuracy on voltage is necessary

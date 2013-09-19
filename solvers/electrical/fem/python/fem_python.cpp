@@ -92,7 +92,7 @@ BOOST_PYTHON_MODULE(fem)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;
 
-    {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Beta2D", "Finite element thermal solver for 2D Cartesian Geometry.")
+    {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Shockley2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
@@ -117,9 +117,10 @@ BOOST_PYTHON_MODULE(fem)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+        py::scope().attr("Beta2D") = solver;
     }
 
-    {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "BetaCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
+    {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "ShockleyCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
         RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
@@ -144,6 +145,7 @@ BOOST_PYTHON_MODULE(fem)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+        py::scope().attr("BetaCyl") = solver;
     }
 
     py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");

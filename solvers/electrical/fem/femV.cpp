@@ -23,6 +23,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
 {
     onInvalidate();
     inTemperature = 300.;
+    junction_conductivity.reset(1, default_junction_conductivity);
 }
 
 template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
@@ -141,6 +142,13 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         }
     }
 
+    // Test if the active region has finished
+    if (actlo.size() != acthi.size()) {
+        acthi.push_back(points->axis1.size());
+        actd.push_back(this->mesh->axis1[acthi.back()] - this->mesh->axis1[actlo.back()]);
+        this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
+    }
+        
     assert(acthi.size() == actlo.size());
 
     size_t condsize = max(actlo.size() * (this->mesh->axis0.size()-1), size_t(1));
@@ -292,7 +300,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
                 assert(nact < acthi.size());
                 double jy = 0.5e6 * conds[i].c11 *
                     abs( - potentials[this->mesh->index(left, actlo[nact])] - potentials[this->mesh->index(right, actlo[nact])]
-                        + potentials[this->mesh->index(left, acthi[nact])] + potentials[this->mesh->index(right, acthi[nact])]
+                         + potentials[this->mesh->index(left, acthi[nact])] + potentials[this->mesh->index(right, acthi[nact])]
                     ) / actd[nact]; // [j] = A/m²
                 conds[i] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
             }
@@ -424,8 +432,8 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
             if (*vnew < minv) minv = *vnew;
         } // vec holds corrections now
         dV = maxv - minv;
-
-        relcorr = abscorr / dV;
+        if (loopno == 0) abscorr = dV;
+        relcorr = 100. * abscorr / dV;
         if (abscorr > max_abscorr) max_abscorr = abscorr;
         if (relcorr > max_relcorr) max_relcorr = relcorr;
 
@@ -433,7 +441,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%.3fV(%.3f%%)", loop, loopno, dV, abscorr, relcorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%gmV(%g%%)", loop, loopno, dV, 1e3*abscorr, relcorr);
 
     } while (((corrtype == CORRECTION_ABSOLUTE)? (abscorr > corrlim) : (relcorr > corrlim)) && (loops == 0 || loop < loops));
 
@@ -602,9 +610,8 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
         auto element = mesh->elements(i, vindex);
         result += currents[element.getIndex()].c1 * element.getSize0();
     }
-    result *= geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA
-    if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) return 2.*result;
-    return result;
+    if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
+    return result * geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA;
 }
 
 
@@ -670,8 +677,8 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
 
 
 
-template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Beta2D"; }
-template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.BetaCyl"; }
+template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Shockley2D"; }
+template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ShockleyCyl"; }
 
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;
 template struct FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>;

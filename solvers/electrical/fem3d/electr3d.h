@@ -98,6 +98,16 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     /// Invalidate the data
     virtual void onInvalidate();
 
+    virtual void onMeshChange(const typename RectilinearMesh3D::Event& evt) override {
+        SolverWithMesh<Geometry3D,RectilinearMesh3D>::onMeshChange(evt);
+        setActiveRegions();
+    }
+
+    virtual void onGeometryChange(const Geometry::Event& evt) override {
+        SolverWithMesh<Geometry3D,RectilinearMesh3D>::onGeometryChange(evt);
+        setActiveRegions();
+    }
+
     /// Get info on active region
     void setActiveRegions();
 
@@ -140,7 +150,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 
-    virtual std::string getClassName() const { return "electrical.Beta3D"; }
+    virtual std::string getClassName() const { return "electrical.Shockley3D"; }
 
     ~FiniteElementMethodElectrical3DSolver();
 
@@ -177,7 +187,9 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
      * Set algorithm
      * \param alg new algorithm
      */
-    void setAlgorithm(Algorithm alg);
+    void setAlgorithm(Algorithm alg) {
+        algorithm = alg;
+    }
 
     /// Get \f$ \beta \f$ [1/V]
     double getBeta() const { return beta; }

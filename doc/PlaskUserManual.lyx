@@ -1475,7 +1475,7 @@ thermal.Static2D
 \family default
  and phenomenological electrical solver 
 \family typewriter
-electrical.Beta2D
+electrical.Shockley2D
 \family default
 .
  Details of this solvers are presented in chapter
@@ -1760,14 +1760,14 @@ solver!thermal
 e.
  computing the temperature distribution) and 
 \family typewriter
-electrical.Beta2D
+electrical.Shockley2D
 \family default
  to determine the current flow
 \begin_inset Index idx
 status collapsed
 
 \begin_layout Plain Layout
-solver!electrical!beta
+solver!electrical!Shockley
 \end_layout
 
 \end_inset
@@ -1947,7 +1947,7 @@ bottom
 \begin_layout Standard
 The other solver we use is 
 \family typewriter
-electrical.Beta2D
+electrical.Shockley2D
 \family default
 .
  Its configuration is very similar to the above one, with some additional
@@ -1958,7 +1958,7 @@ status open
 
 \begin_layout Plain Layout
 
-  <electrical solver="Beta2D" name="electr">
+  <electrical solver="Shockley2D" name="electr">
 \end_layout
 
 \begin_layout Plain Layout
@@ -1973,7 +1973,7 @@ status open
 
 \begin_layout Plain Layout
 
-    <junction beta="19" js="1"/>
+    <junction Shockley="19" js="1"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -2042,15 +2042,15 @@ You notice the additional tag
 \family default
  with attributes 
 \family typewriter
-beta
+Shockley
 \family default
  and 
 \family typewriter
 js
 \family default
 .
- These are custom parameters of Beta2D electrical solver and they set values
- for phenomenological junction coefficient 
+ These are custom parameters of Shockley2D electrical solver and they set
+ values for phenomenological junction coefficient 
 \begin_inset Formula $\beta$
 \end_inset
 
@@ -2180,7 +2180,7 @@ inTemperature
  section of the XPL file, we can ensure that each time the other solver
  (in our case this will be 
 \family typewriter
-electrical.Beta2D
+electrical.Shockley2D
 \family default
  that we named 
 \emph on
@@ -2484,7 +2484,7 @@ on"/>
 
 \begin_layout Plain Layout
 
-  <electrical solver="Beta2D" name="electr">
+  <electrical solver="Shockley2D" name="electr">
 \end_layout
 
 \begin_layout Plain Layout
@@ -2499,7 +2499,7 @@ on"/>
 
 \begin_layout Plain Layout
 
-    <junction beta="19" js="1"/>
+    <junction Shockley="19" js="1"/>
 \end_layout
 
 \begin_layout Plain Layout
@@ -3020,7 +3020,7 @@ status open
 
 \begin_layout Plain Layout
 
-INFO          : electr:electrical.Beta2D: Running electrical calculations
+INFO          : electr:electrical.Shockley2D: Running electrical calculations
 \end_layout
 
 \begin_layout Plain Layout
@@ -3035,19 +3035,19 @@ DETAIL        : interpolate: Running LINEAR interpolation
 
 \begin_layout Plain Layout
 
-DETAIL        : electr:electrical.Beta2D: Setting up matrix system (size=1675,
- bands=27{28})
+DETAIL        : electr:electrical.Shockley2D: Setting up matrix system (size=1675
+, bands=27{28})
 \end_layout
 
 \begin_layout Plain Layout
 
-DETAIL        : electr:electrical.Beta2D: Solving matrix system
+DETAIL        : electr:electrical.Shockley2D: Solving matrix system
 \end_layout
 
 \begin_layout Plain Layout
 
-RESULT        : electr:electrical.Beta2D: Loop 1(47): DeltaV=1.131V, update=0.000V(
-8.451%)
+RESULT        : electr:electrical.Shockley2D: Loop 1(47): DeltaV=1.131V, update=0.0
+00V(8.451%)
 \end_layout
 
 \begin_layout Plain Layout
@@ -3063,12 +3063,12 @@ DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675,
 
 \begin_layout Plain Layout
 
-DETAIL        : electr:electrical.Beta2D: Getting heat densities
+DETAIL        : electr:electrical.Shockley2D: Getting heat densities
 \end_layout
 
 \begin_layout Plain Layout
 
-DETAIL        : electr:electrical.Beta2D: Computing heat densities
+DETAIL        : electr:electrical.Shockley2D: Computing heat densities
 \end_layout
 
 \begin_layout Plain Layout
@@ -17594,7 +17594,7 @@ solver=
 \begin_inset Quotes erd
 \end_inset
 
-Beta2D
+Shockley2D
 \begin_inset Quotes erd
 \end_inset
 
@@ -18104,7 +18104,7 @@ Reverse bias current density.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-beta
+Shockley
 \family default
  
 \begin_inset ERT
@@ -18343,7 +18343,7 @@ solver=
 \begin_inset Quotes erd
 \end_inset
 
-BetaCyl
+ShockleyCyl
 \begin_inset Quotes erd
 \end_inset
 
@@ -18375,7 +18375,7 @@ Contents
 \begin_inset Quotes erd
 \end_inset
 
-Beta2D
+Shockley2D
 \begin_inset Quotes erd
 \end_inset
 

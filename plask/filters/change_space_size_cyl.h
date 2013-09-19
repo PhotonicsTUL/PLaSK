@@ -122,10 +122,10 @@ struct DataFromCyl2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
     typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
 
     virtual boost::optional<ValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
-        const Region* r = this->findRegion(p, [&](Region& r) {
+        const Region* r = this->findRegion(p, [&](const Region& r) {
                 //check if p can be in cylinder inside r
-                const Vec<3, double> v = p - r->inTranslation;  // r->inTranslation points to center of cylinder base
-                const double radius = (r->inGeomBB.upper.lon() - r->inGeomBB.lower.lon()) * 0.5;    //TODO all regions should have same size, so this can be calc. only once
+                const Vec<3, double> v = p - r.inTranslation;  // r.inTranslation points to center of cylinder base
+                const double radius = (r.inGeomBB.upper.lon() - r.inGeomBB.lower.lon()) * 0.5;    //TODO all regions should have same size, so this can be calc. only once
                 return std::fma(v.lon(), v.lon(), v.tran() * v.tran()) <= radius * radius;
         });
         if (r)
