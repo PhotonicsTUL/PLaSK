@@ -32,14 +32,14 @@ class Shockley2D_Test(unittest.TestCase):
         self.solver.mesh = generator
         self.solver.beta = 10.
         self.solver.js = 1.
-        self.solver.maxerr = 1e-15 # such insane accuracy on voltage is necessary
+        self.solver.maxerr = 1e-5
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
 
     def testComputations(self):
         self.solver.compute()
         correct_current = 1e-3 * self.solver.js * (exp(self.solver.beta) - 1)
-        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 4 )
+        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
 
 
 
@@ -61,12 +61,12 @@ class ShockleyCyl_Test(unittest.TestCase):
         self.solver.mesh = generator
         self.solver.beta = 10.
         self.solver.js = 1.
-        self.solver.maxerr = 1e-18 # such insane accuracy on voltage is necessary
+        self.solver.maxerr = 1e-5
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
 
     def testComputations(self):
         self.solver.compute(1000)
         correct_current = 1e-3 * pi * self.solver.js * (exp(self.solver.beta) - 1)
-        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 4 )
+        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
 

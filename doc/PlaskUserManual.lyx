@@ -3046,8 +3046,8 @@ DETAIL        : electr:electrical.Shockley2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : electr:electrical.Shockley2D: Loop 1(47): DeltaV=1.131V, update=0.0
-00V(8.451%)
+RESULT        : electr:electrical.Shockley2D: Loop 1(47): max(j) = 153 kA/cm2,
+ error = 0.037 %
 \end_layout
 
 \begin_layout Plain Layout
@@ -3063,7 +3063,7 @@ DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675,
 
 \begin_layout Plain Layout
 
-DETAIL        : electr:electrical.Shockley2D: Getting heat densities
+DETAIL        : electr:electrical.Shockley2D: Getting heat density
 \end_layout
 
 \begin_layout Plain Layout
@@ -3083,17 +3083,13 @@ DETAIL        : therm:thermal.Static2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : therm:thermal.Static2D: Loop 1(27): max(T)=345.828K, update=0.049K(
-0.014%)
+RESULT        : therm:thermal.Static2D: Loop 1(11): max(T) = 345.823 K, error
+ = 0.0484355 K
 \end_layout
 
 \begin_layout Plain Layout
 
 INFO          : Calculations finished!
-\end_layout
-
-\begin_layout Plain Layout
-
 \end_layout
 
 \end_inset

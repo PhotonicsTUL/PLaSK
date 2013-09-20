@@ -31,16 +31,16 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   protected:
 
-    int size;           ///< Number of columns in the main matrix
+    int size;               ///< Number of columns in the main matrix
 
-    double js;          ///< p-n junction parameter [A/m^2]
-    double beta;        ///< p-n junction parameter [1/V]
-    double pcond;       ///< p-contact electrical conductivity [S/m]
-    double ncond;       ///< n-contact electrical conductivity [S/m]
+    double js;              ///< p-n junction parameter [A/m^2]
+    double beta;            ///< p-n junction parameter [1/V]
+    double pcond;           ///< p-contact electrical conductivity [S/m]
+    double ncond;           ///< n-contact electrical conductivity [S/m]
 
-    int loopno;         ///< Number of completed loops
-    double toterr;      ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
-    double dV;          ///< Maximum voltage
+    int loopno;             ///< Number of completed loops
+    double toterr;          ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
+    Vec<2,double> maxcur;   ///< Maximum current in the structure
 
     DataVector<double> junction_conductivity;   ///< electrical conductivity for p-n junction in y-direction [S/m]
     double default_junction_conductivity;       ///< default electrical conductivity for p-n junction in y-direction [S/m]
@@ -65,9 +65,6 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     /// Save conductivities of active region
     void saveConductivities();
-
-    /// Update stored current densities
-    void saveCurrentDensities();
 
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
@@ -176,7 +173,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
         this->beta = 1. / Vt;
         this->invalidate();
     }
-    
+
     /// Return js
     double getJs() const { return js; }
     /// Set new js and invalidate the solver

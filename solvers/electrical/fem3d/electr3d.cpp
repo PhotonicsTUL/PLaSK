@@ -9,7 +9,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
     default_junction_conductivity(5.),
-    maxerr(1e-6),
+    maxerr(0.05),
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
@@ -52,7 +52,7 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
             logfreq = source.getAttribute<size_t>("logfreq", logfreq);
             source.requireTagEnd();
         }
-        
+
         else if (param == "junction") {
             js = source.getAttribute<double>("js", js);
             beta = source.getAttribute<double>("beta", beta);
@@ -170,6 +170,7 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
     potential.reset(mesh->size(), 0.);
+    current.reset(this->mesh->elements.size(), vec(0.,0.,0.));
     conds.reset(this->mesh->elements.size());
     if (junction_conductivity.size() == 1) {
         size_t condsize = max(actlo.size() * (this->mesh->axis1.size()-1) * (this->mesh->axis0.size()-1), size_t(1));
@@ -228,15 +229,39 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
-    // zero the matrix and the load vector
+    // Uupdate junction conductivities
+    if (loopno != 0) {
+        for (auto elem: mesh->elements) {
+            Vec<3> middle = elem.getMidpoint();
+            auto roles = this->geometry->getRolesAt(middle);
+            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
+                size_t index = elem.getIndex(), lll = elem.getLoLoLoIndex(), uuu = elem.getUpUpUpIndex();
+                size_t back = mesh->index0(lll),
+                       front = mesh->index0(uuu),
+                       left = mesh->index1(lll),
+                       right = mesh->index1(uuu);
+                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index2(lll)) - acthi.begin();
+                assert(nact < acthi.size());
+                double jy = - 0.25e6 * conds[index].c11  *
+                    (- potential[mesh->index(back,left,actlo[nact])] - potential[mesh->index(front,left,actlo[nact])]
+                     - potential[mesh->index(back,right,actlo[nact])] - potential[mesh->index(front,right,actlo[nact])]
+                     + potential[mesh->index(back,left,acthi[nact])] + potential[mesh->index(front,left,acthi[nact])]
+                     + potential[mesh->index(back,right,acthi[nact])] + potential[mesh->index(front,right,acthi[nact])])
+                    / actd[nact]; // [j] = A/m²
+                conds[index] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+            }
+        }
+    }
+
+    // Zero the matrix and the load vector
     A.clear();
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: mesh->elements)
-    {
+    for (auto elem: mesh->elements) {
+
         size_t index = elem.getIndex();
-        
+
         // nodes numbers for the current element
         size_t idx[8];
         idx[0] = elem.getLoLoLoIndex();          //   z              4-----6
@@ -257,20 +282,6 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
         Vec<3> middle = elem.getMidpoint();
         auto material = geometry->getMaterial(middle);
 
-        // update junction conductivities
-        if (loopno != 0) {
-            auto roles = this->geometry->getRolesAt(middle);
-            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index2(idx[0])) - acthi.begin();
-                assert(nact < acthi.size());
-                double jy = - 0.25e6 * conds[index].c11  *
-                    (- potential[idx[0]] - potential[idx[1]] - potential[idx[2]] - potential[idx[3]]
-                     + potential[idx[4]] + potential[idx[5]] + potential[idx[6]] + potential[idx[7]])
-                    / actd[nact]; // [j] = A/m²
-                conds[index] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
-            }
-        }
-        
         // average voltage on the element
         double temp = 0.; for (int i = 0; i < 8; ++i) temp += potential[idx[i]]; temp *= 0.125;
 
@@ -303,7 +314,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
     }
 
     applyBC(A, B, bvoltage);
-    
+
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
     for (double* pa = A.data; pa != aend; ++pa) {
@@ -370,8 +381,6 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
 {
     initCalculation();
 
-    current.reset();
-
     // store boundary conditions for current mesh
     auto bvoltage = voltage_boundary(mesh, geometry);
 
@@ -389,33 +398,50 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
         if (!potential.unique()) this->writelog(LOG_DEBUG, "Potentials data held by something else...");
 #   endif
     potential = potential.claim();
-    DataVector<double> corr(size);
 
     loadConductivity();
-    
+
     do {
-        setMatrix(A, corr, bvoltage);   // corr holds RHS now
-        std::swap(potential, corr);     // corr holds old potential now
+        setMatrix(A, potential, bvoltage);   // corr holds RHS now
         solveMatrix(A, potential);
 
-        double maxv = 0., minv = INFINITY;
-        for (auto vnew = potential.begin(), vold = corr.begin(); vnew != potential.end(); ++vnew, ++vold) {
-            *vold = *vnew - *vold;
-            double corr = abs(*vold);
-            if (corr > err) err = corr;
-            if (*vnew > maxv) maxv = *vnew;
-            if (*vnew < minv) minv = *vnew;
-        } // vec holds corrections now
-        dV = maxv - minv;
-        if (loopno == 0) err = dV;
-        err *= 100. / dV;
+        err = 0.;
+        double mcur = 0.;
+        for (auto el: mesh->elements) {
+            size_t i = el.getIndex();
+            size_t lll = el.getLoLoLoIndex();
+            size_t llu = el.getLoLoUpIndex();
+            size_t lul = el.getLoUpLoIndex();
+            size_t luu = el.getLoUpUpIndex();
+            size_t ull = el.getUpLoLoIndex();
+            size_t ulu = el.getUpLoUpIndex();
+            size_t uul = el.getUpUpLoIndex();
+            size_t uuu = el.getUpUpUpIndex();
+            auto cur = vec(
+                - 0.025 * conds[i].c00 * (- potential[lll] - potential[llu] - potential[lul] - potential[luu]
+                                          + potential[ull] + potential[ulu] + potential[uul] + potential[uuu])
+                    / (el.getUpper0() - el.getLower0()), // [j] = kA/cm²
+                - 0.025 * conds[i].c00 * (- potential[lll] - potential[llu] + potential[lul] + potential[luu]
+                                          - potential[ull] - potential[ulu] + potential[uul] + potential[uuu])
+                    / (el.getUpper1() - el.getLower1()), // [j] = kA/cm²
+                - 0.025 * conds[i].c11  * (- potential[lll] + potential[llu] - potential[lul] + potential[luu]
+                                           - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
+                    / (el.getUpper2() - el.getLower2()) // [j] = kA/cm²
+            );
+            double acur = abs2(cur);
+            if (acur > mcur) { mcur = acur; maxcur = cur; }
+            double delta = abs2(current[i] - cur);
+            if (delta > err) err = delta;
+            current[i] = cur;
+        }
+        err = 100. * sqrt(err / mcur);
         if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, error=%g%%", loop, loopno, dV, err);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g %%", loop, loopno, sqrt(mcur), err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 
@@ -480,36 +506,6 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix& A, Dat
     // now A contains factorized matrix and B the solutions
 }
 
-
-void FiniteElementMethodElectrical3DSolver::saveCurrentDensity()
-{
-    this->writelog(LOG_DETAIL, "Computing current densities");
-
-    current.reset(mesh->elements.size());
-
-    for (auto el: mesh->elements) {
-        size_t i = el.getIndex();
-        size_t lll = el.getLoLoLoIndex();
-        size_t llu = el.getLoLoUpIndex();
-        size_t lul = el.getLoUpLoIndex();
-        size_t luu = el.getLoUpUpIndex();
-        size_t ull = el.getUpLoLoIndex();
-        size_t ulu = el.getUpLoUpIndex();
-        size_t uul = el.getUpUpLoIndex();
-        size_t uuu = el.getUpUpUpIndex();
-        current[el.getIndex()] = vec(
-            - 0.025 * conds[i].c00 * (- potential[lll] - potential[llu] - potential[lul] - potential[luu]
-                                      + potential[ull] + potential[ulu] + potential[uul] + potential[uuu])
-                / (el.getUpper0() - el.getLower0()), // [j] = kA/cm²
-            - 0.025 * conds[i].c00 * (- potential[lll] - potential[llu] + potential[lul] + potential[luu]
-                                      - potential[ull] - potential[ulu] + potential[uul] + potential[uuu])
-                / (el.getUpper1() - el.getLower1()), // [j] = kA/cm²
-            - 0.025 * conds[i].c11  * (- potential[lll] + potential[llu] - potential[lul] + potential[luu]
-                                       - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
-                / (el.getUpper2() - el.getLower2()) // [j] = kA/cm²
-        );
-    }
-}
 
 void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
 {
@@ -585,7 +581,6 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex)
 {
     if (!potential) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
-    if (!current) saveCurrentDensity();
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0.size()-1; ++i) {
         for (size_t j = 0; j < mesh->axis1.size()-1; ++j) {
@@ -618,7 +613,6 @@ DataVector<const double> FiniteElementMethodElectrical3DSolver::getPotential(con
 DataVector<const Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Current density");
     this->writelog(LOG_DETAIL, "Getting current density");
-    if (!current) saveCurrentDensity(); // we will compute current density only if it is needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<3>(dst_mesh, geometry);
     auto result = interpolate(*(mesh->getMidpointsMesh()), current, dest_mesh, method);

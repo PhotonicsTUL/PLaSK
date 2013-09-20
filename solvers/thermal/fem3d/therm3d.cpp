@@ -331,13 +331,13 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(T) = %.3f K, error = %gK", loop, loopno, maxT, err);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(T) = %.3f K, error = %g K", loop, loopno, maxT, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
-    
+
     return toterr;
 }
 

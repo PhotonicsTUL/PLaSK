@@ -42,7 +42,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     double default_junction_conductivity;       ///< default electrical conductivity for p-n junction in y-direction [S/m]
 
     DataVector<Tensor2<double>> conds;          ///< Cached element conductivities
-    
+
     DataVector<double> potential;               ///< Computed potentials
     DataVector<Vec<3,double>> current;          ///< Computed current densities
     DataVector<double> heat;                    ///< Computed and cached heat source densities
@@ -52,7 +52,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
         acthi;                                  ///< Vertical index of the higher side of the active regions
     std::vector<double> actd;                   ///< Active regions thickness
 
-    
+
     /**
      * Set stiffness matrix and load vector
      * \param[out] A matrix to fill-in
@@ -73,9 +73,6 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
     /// Save conductivities of active region
     void saveConductivity();
-    
-    /// Create 3D-vector with calculated current density
-    void saveCurrentDensity();
 
     /// Create 3D-vector with calculated heat density
     void saveHeatDensity();
@@ -111,10 +108,10 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
   public:
 
-    double maxerr;             ///< Maximum voltage correction accepted as convergence
+    double maxerr;              ///< Maximum voltage correction accepted as convergence
     double abscorr;             ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
     double relcorr;             ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
-    double dV;                  ///< Maximum voltage
+    Vec<3,double> maxcur;       ///< Maximum current in the structure
 
     HeatMethod heatmet;         ///< Method of heat computation
 
@@ -165,13 +162,13 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
      * \return computed total current
      */
     double getTotalCurrent(size_t nact=0);
-    
+
     /// Return maximum estimated error
     double getErr() const { return toterr; }
 
     /// \return current algorithm
     Algorithm getAlgorithm() const { return algorithm; }
-    
+
     /// Set algorithm
     void setAlgorithm(Algorithm alg) {
         algorithm = alg;
@@ -192,7 +189,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
         this->beta = 1. / Vt;
         this->invalidate();
     }
-    
+
     /// Get \f$ j_s \f$ [A/m²]
     double getJs() const { return js; }
     /// Set \f$ j_s \f$ [A/m²]
