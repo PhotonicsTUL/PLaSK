@@ -42,6 +42,24 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute_initial()
+{
+    compute(COMPUTATION_INITIAL);
+}
+
+
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute_threshold()
+{
+    compute(COMPUTATION_THRESHOLD);
+}
+
+
+template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute_overthreshold()
+{
+    compute(COMPUTATION_OVERTHRESHOLD);
+}
+
+
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onInitialize()
 {
     iterations = 0;

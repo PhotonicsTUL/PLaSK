@@ -24,7 +24,9 @@ BOOST_PYTHON_MODULE(diffusion)
 {
     {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>, "DiffusionCyl", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
 
-        METHOD(compute, compute, "Perform the computation", arg("type"));
+        METHOD(compute_initial, compute_initial, "Perform the initial computation");
+        METHOD(compute_threshold, compute_threshold, "Perform the threshold computation");
+        METHOD(compute_overthreshold, compute_overthreshold, "Perform the overthreshold computation");
         solver.def_readwrite("initial", &__Class__::do_initial, "True if we start from initial computations");
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         solver.add_property("current_mesh", DiffusionSolver_current_mesh<Geometry2DCylindrical>, "Horizontal adaptive mesh)");
@@ -62,7 +64,9 @@ BOOST_PYTHON_MODULE(diffusion)
      }
      {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>, "Diffusion2D", "Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
 
-        METHOD(compute, compute, "Perform the computation", arg("type"));
+        METHOD(compute_initial, compute_initial, "Perform the initial computation");
+        METHOD(compute_threshold, compute_threshold, "Perform the threshold computation");
+        METHOD(compute_overthreshold, compute_overthreshold, "Perform the overthreshold computation");
         solver.def_readwrite("initial", &__Class__::do_initial, "True if we start from initial computations");
         solver.def_readwrite("fem_method", &__Class__::fem_method, "Finite-element method (linear of parabolic)");
         solver.add_property("current_mesh", DiffusionSolver_current_mesh<Geometry2DCartesian>, "Horizontal adaptive mesh)");

@@ -57,6 +57,9 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         virtual void loadConfiguration(XMLReader&, Manager&);
 
         void compute(ComputationType type);
+        void compute_initial();
+        void compute_threshold();
+        void compute_overthreshold();
 
         plask::RegularAxis& current_mesh()
         {
@@ -64,7 +67,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         }
 
         double burning_integral(void);  // całka strat nadprogu
-        
+
     protected:
 
         plask::RegularMesh2D mesh2;         ///< Computational mesh
