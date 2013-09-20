@@ -4,18 +4,17 @@ namespace plask { namespace solvers { namespace thermal {
 
 template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
-    corrlim(0.05),
-    inittemp(300.),
     loopno(0),
-    corrtype(CORRECTION_ABSOLUTE),
     outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes),
+    maxerr(0.05),
+    inittemp(300.),
     algorithm(ALGORITHM_CHOLESKY),
     itererr(1e-8),
     iterlim(10000),
     logfreq(500)
 {
-    mTemperatures.reset();
+    temperatures.reset();
     mHeatFluxes.reset();
     inHeat = 0.;
 }
@@ -45,11 +44,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
 
         else if (param == "loop") {
             inittemp = source.getAttribute<double>("inittemp", inittemp);
-            corrlim = source.getAttribute<double>("corrlim", corrlim);
-            corrtype = source.enumAttribute<CorrectionType>("corrtype")
-                .value("absolute", CORRECTION_ABSOLUTE, 3)
-                .value("relative", CORRECTION_RELATIVE, 3)
-                .get(corrtype);
+            maxerr = source.getAttribute<double>("maxerr", maxerr);
             source.requireTagEnd();
         }
 
@@ -74,12 +69,12 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
     if (!this->mesh) throw NoMeshException(this->getId());
     loopno = 0;
     size = this->mesh->size();
-    mTemperatures.reset(size, inittemp);
+    temperatures.reset(size, inittemp);
 }
 
 
 template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInvalidate() {
-    mTemperatures.reset();
+    temperatures.reset();
     mHeatFluxes.reset();
 }
 
@@ -172,7 +167,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
         auto material = this->geometry->getMaterial(midpoint);
 
         // average temperature on the element
-        double temp = 0.25 * (mTemperatures[loleftno] + mTemperatures[lorghtno] + mTemperatures[upleftno] + mTemperatures[uprghtno]);
+        double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]);
 
         // thermal conductivity
         double kx, ky;
@@ -227,7 +222,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
                       f1, f2, f3, f4, k11, k22, k33, k44, k21, k32, k43, k41,
                       [this](double len, Radiation val, Radiation, size_t i, size_t, BoundarySide) -> double { // F
                           double a = val.ambient; a = a*a;
-                          double T = this->mTemperatures[i]; T = T*T;
+                          double T = this->temperatures[i]; T = T*T;
                           return - 0.5e-6 * len * val.emissivity * phys::SB * (T*T - a*a);},
                       [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}, // K diagonal
                       [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}  // K off-diagonal
@@ -304,7 +299,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
         double r = midpoint.rad_r();
 
         // average temperature on the element
-        double temp = 0.25 * (mTemperatures[loleftno] + mTemperatures[lorghtno] + mTemperatures[upleftno] + mTemperatures[uprghtno]);
+        double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]);
 
         // thermal conductivity
         double kx, ky;
@@ -371,7 +366,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
                       f1, f2, f3, f4, k11, k22, k33, k44, k21, k32, k43, k41,
                       [&,this](double len, Radiation val, Radiation, size_t i1,  size_t i2, BoundarySide side) -> double { // F
                             double amb = val.ambient; amb = amb*amb;
-                            double T = this->mTemperatures[i1]; T = T*T;
+                            double T = this->temperatures[i1]; T = T*T;
                             double a = - 0.5e-6 * len * val.emissivity * phys::SB * (T*T - amb*amb);
                             if (side == LEFT) return a * e.getLower0();
                             else if (side == RIGHT) return a * e.getUpper0();
@@ -444,13 +439,13 @@ template<typename Geometry2DType> template<typename MatrixT> double FiniteElemen
     int loop = 0;
     MatrixT A(size, this->mesh->minorAxis().size());
 
-    double max_abscorr = 0.,
-           max_relcorr = 0.;
+    double err = 0.;
+    toterr = 0.;
 
 #   ifndef NDEBUG
-        if (!mTemperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
+        if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
 #   endif
-    mTemperatures = mTemperatures.claim();
+    temperatures = temperatures.claim();
     DataVector<double> T(size);
 
     do {
@@ -458,29 +453,22 @@ template<typename Geometry2DType> template<typename MatrixT> double FiniteElemen
 
         solveMatrix(A, T);
 
-        saveTemperatures(T);
+        err = saveTemperatures(T);
 
-        if (abscorr > max_abscorr) max_abscorr = abscorr;
-        if (relcorr > max_relcorr) max_relcorr = relcorr;
+        if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(T)=%.3fK, update=%.3fK(%.3f%%)", loop, loopno, maxT, abscorr, relcorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(T) = %.3f K, error = %g K", loop, loopno, maxT, err);
 
-    } while (((corrtype == CORRECTION_ABSOLUTE)? (abscorr > corrlim) : (relcorr > corrlim)) && (loops == 0 || loop < loops));
+    } while (err > maxerr && (loops == 0 || loop < loops));
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
 
-    // Make sure we store the maximum encountered values, not just the last ones
-    // (so, this will indicate if the results changed since the last run, not since the last loop iteration)
-    abscorr = max_abscorr;
-    relcorr = max_relcorr;
-
-    if (corrtype == CORRECTION_RELATIVE) return relcorr;
-    else return abscorr;
+    return toterr;
 }
 
 
@@ -536,7 +524,7 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
 
     PrecondJacobi precond(ioA);
 
-    DataVector<double> x = mTemperatures.copy(); // We use previous potentials as initial solution
+    DataVector<double> x = temperatures.copy(); // We use previous potentials as initial solution
     double err;
     try {
         int iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
@@ -551,24 +539,18 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveTemperatures(DataVector<double>& T)
+template<typename Geometry2DType> double FiniteElementMethodThermal2DSolver<Geometry2DType>::saveTemperatures(plask::DataVector<double>& T)
 {
-    abscorr = 0.;
-    relcorr = 0.;
-
+    double err = 0.;
     maxT = 0.;
-
-    for (auto temp = mTemperatures.begin(), t = T.begin(); t != T.end(); ++temp, ++t)
+    for (auto temp = temperatures.begin(), t = T.begin(); t != T.end(); ++temp, ++t)
     {
-        double acorr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
-        double rcorr = acorr / *t;
-        if (acorr > abscorr) abscorr = acorr;
-        if (rcorr > relcorr) relcorr = rcorr;
+        double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
+        if (corr > err) err = corr;
         if (*t > maxT) maxT = *t;
     }
-    relcorr *= 100.; // %
-    if (loopno == 0) relcorr = 100.;
-    std::swap(mTemperatures, T);
+    std::swap(temperatures, T);
+    return err;
 }
 
 
@@ -588,8 +570,8 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
         size_t upleftno = e.getLoUpIndex();
         size_t uprghtno = e.getUpUpIndex();
 
-        double temp = 0.25 * (mTemperatures[loleftno] + mTemperatures[lorghtno] +
-                               mTemperatures[upleftno] + mTemperatures[uprghtno]);
+        double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] +
+                               temperatures[upleftno] + temperatures[uprghtno]);
 
         double kx, ky;
         auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(
@@ -602,25 +584,25 @@ template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geomet
 
 
         mHeatFluxes[e.getIndex()] = vec(
-            - 0.5e6 * kx * (- mTemperatures[loleftno] + mTemperatures[lorghtno]
-                             - mTemperatures[upleftno] + mTemperatures[uprghtno]) / (e.getUpper0() - e.getLower0()), // 1e6 - from um to m
-            - 0.5e6 * ky * (- mTemperatures[loleftno] - mTemperatures[lorghtno]
-                             + mTemperatures[upleftno] + mTemperatures[uprghtno]) / (e.getUpper1() - e.getLower1())); // 1e6 - from um to m
+            - 0.5e6 * kx * (- temperatures[loleftno] + temperatures[lorghtno]
+                             - temperatures[upleftno] + temperatures[uprghtno]) / (e.getUpper0() - e.getLower0()), // 1e6 - from um to m
+            - 0.5e6 * ky * (- temperatures[loleftno] - temperatures[lorghtno]
+                             + temperatures[upleftno] + temperatures[uprghtno]) / (e.getUpper1() - e.getLower1())); // 1e6 - from um to m
     }
 }
 
 
 template<typename Geometry2DType> DataVector<const double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DETAIL, "Getting temperatures");
-    if (!mTemperatures) return DataVector<const double>(dst_mesh.size(), inittemp); // in case the receiver is connected and no temperature calculated yet
+    if (!temperatures) return DataVector<const double>(dst_mesh.size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(*(this->mesh), mTemperatures, WrappedMesh<2>(dst_mesh, this->geometry), method);
+    return interpolate(*(this->mesh), temperatures, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
 
 template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method) {
     this->writelog(LOG_DETAIL, "Getting heat fluxes");
-    if (!mTemperatures) return DataVector<const Vec<2>>(dst_mesh.size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
+    if (!temperatures) return DataVector<const Vec<2>>(dst_mesh.size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(*((this->mesh)->getMidpointsMesh()), mHeatFluxes, WrappedMesh<2>(dst_mesh, this->geometry), method);

@@ -14,12 +14,6 @@ enum Algorithm {
     ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
 };
 
-/// Type of the returned correction
-enum CorrectionType {
-    CORRECTION_ABSOLUTE,    ///< absolute correction is used
-    CORRECTION_RELATIVE     ///< relative correction is used
-};
-
 /// Choice of heat computation method in active region
 enum HeatMethod {
     HEAT_JOULES, ///< compute Joules heat using effective conductivity
@@ -42,7 +36,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     Algorithm algorithm;                        ///< Factorization algorithm to use
 
     int loopno;                                 ///< Number of completed loops
-    double corr;                                ///< Maximum absolute voltage correction (useful for calculations with internal loops)
+    double toterr;                              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
 
     DataVector<double> junction_conductivity;   ///< electrical conductivity for p-n junction in y-direction [S/m]
     double default_junction_conductivity;       ///< default electrical conductivity for p-n junction in y-direction [S/m]
@@ -117,13 +111,11 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
   public:
 
-    double inittemp;            ///< Initial voltage
-    double corrlim;             ///< Maximum voltage correction accepted as convergence
+    double maxerr;             ///< Maximum voltage correction accepted as convergence
     double abscorr;             ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
     double relcorr;             ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
     double dV;                  ///< Maximum voltage
 
-    CorrectionType corrtype;    ///< Type of the returned correction
     HeatMethod heatmet;         ///< Method of heat computation
 
 
@@ -174,19 +166,13 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
      */
     double getTotalCurrent(size_t nact=0);
     
-    /// \return max absolute correction for potential
-    double getAbsCorr() const { return abscorr; } // result in [K]
+    /// Return maximum estimated error
+    double getErr() const { return toterr; }
 
-    /// \return get max relative correction for potential
-    double getRelCorr() const { return relcorr; } // result in [%]
-    
     /// \return current algorithm
     Algorithm getAlgorithm() const { return algorithm; }
-
-    /**
-     * Set algorithm
-     * \param alg new algorithm
-     */
+    
+    /// Set algorithm
     void setAlgorithm(Algorithm alg) {
         algorithm = alg;
     }
@@ -199,6 +185,14 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
         this->invalidate();
     }
 
+    /// Get junction thermal voltage \f$ V_t \f$
+    double getVt() const { return 1. / beta; }
+    /// Set new junction thermal voltage \f$ V_t \f$ and invalidate the solver
+    void setVt(double Vt) {
+        this->beta = 1. / Vt;
+        this->invalidate();
+    }
+    
     /// Get \f$ j_s \f$ [A/m²]
     double getJs() const { return js; }
     /// Set \f$ j_s \f$ [A/m²]

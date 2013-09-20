@@ -9,9 +9,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
     default_junction_conductivity(5.),
-    inittemp(300.),
-    corrlim(1e-6),
-    corrtype(CORRECTION_ABSOLUTE),
+    maxerr(1e-6),
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
@@ -40,12 +38,7 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
             readBoundaryConditions(manager, source, voltage_boundary);
 
         else if (param == "loop") {
-            inittemp = source.getAttribute<double>("inittemp", inittemp);
-            corrlim = source.getAttribute<double>("corrlim", corrlim);
-            corrtype = source.enumAttribute<CorrectionType>("corrtype")
-                .value("absolute", CORRECTION_ABSOLUTE, 3)
-                .value("relative", CORRECTION_RELATIVE, 3)
-                .get(corrtype);
+            maxerr = source.getAttribute<double>("maxerr", maxerr);
             source.requireTagEnd();
         }
 
@@ -176,7 +169,7 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
     if (!geometry) throw NoGeometryException(getId());
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
-    potential.reset(mesh->size(), inittemp);
+    potential.reset(mesh->size(), 0.);
     conds.reset(this->mesh->elements.size());
     if (junction_conductivity.size() == 1) {
         size_t condsize = max(actlo.size() * (this->mesh->axis1.size()-1) * (this->mesh->axis0.size()-1), size_t(1));
@@ -389,8 +382,8 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
 
     MatrixT A(size, mesh->mediumAxis().size()*mesh->minorAxis().size(), mesh->minorAxis().size());
 
-    double max_abscorr = 0.,
-           max_relcorr = 0.;
+    double err = 0.;
+    toterr = 0.;
 
 #   ifndef NDEBUG
         if (!potential.unique()) this->writelog(LOG_DEBUG, "Potentials data held by something else...");
@@ -405,42 +398,34 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
         std::swap(potential, corr);     // corr holds old potential now
         solveMatrix(A, potential);
 
-        abscorr = 0.;
         double maxv = 0., minv = INFINITY;
         for (auto vnew = potential.begin(), vold = corr.begin(); vnew != potential.end(); ++vnew, ++vold) {
             *vold = *vnew - *vold;
-            double acorr = abs(*vold);
-            if (acorr > abscorr) abscorr = acorr;
+            double corr = abs(*vold);
+            if (corr > err) err = corr;
             if (*vnew > maxv) maxv = *vnew;
             if (*vnew < minv) minv = *vnew;
         } // vec holds corrections now
         dV = maxv - minv;
-        if (loopno == 0) abscorr = dV;
-        relcorr = 100. * abscorr / dV;
-        if (abscorr > max_abscorr) max_abscorr = abscorr;
-        if (relcorr > max_relcorr) max_relcorr = relcorr;
+        if (loopno == 0) err = dV;
+        err *= 100. / dV;
+        if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%gmV(%g%%)", loop, loopno, dV, 1e3*abscorr, relcorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, error=%g%%", loop, loopno, dV, err);
 
-    } while (((corrtype == CORRECTION_ABSOLUTE)? (abscorr > corrlim) : (relcorr > corrlim)) && (loops == 0 || loop < loops));
+    } while (err > maxerr && (loops == 0 || loop < loops));
 
     saveConductivity();
 
     outPotential.fireChanged();
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
-    
-    // Make sure we store the maximum encountered values, not just the last ones
-    // (so, this will indicate if the results changed since the last run, not since the last loop iteration)
-    abscorr = max_abscorr;
-    relcorr = max_relcorr;
 
-    if (corrtype == CORRECTION_RELATIVE) return relcorr;
-    else return abscorr;
+    return toterr;
 }
 
 
@@ -623,16 +608,16 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 
 
 DataVector<const double> FiniteElementMethodElectrical3DSolver::getPotential(const MeshD<3>& dst_mesh, InterpolationMethod method) const {
+    if (!potential) throw NoValue("Potential");
     this->writelog(LOG_DETAIL, "Getting potential");
-    if (!potential) return DataVector<const double>(dst_mesh.size(), inittemp); // in case the receiver is connected and no voltage calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(*(mesh), potential, WrappedMesh<3>(dst_mesh, geometry), method);
 }
 
 
 DataVector<const Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+    if (!potential) throw NoValue("Current density");
     this->writelog(LOG_DETAIL, "Getting current density");
-    if (!potential) return DataVector<const Vec<3>>(dst_mesh.size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no current calculated yet
     if (!current) saveCurrentDensity(); // we will compute current density only if it is needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<3>(dst_mesh, geometry);
@@ -644,10 +629,9 @@ DataVector<const Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensi
 }
 
 
-DataVector<const double> FiniteElementMethodElectrical3DSolver::getHeatDensity(const MeshD<3>& dst_mesh, InterpolationMethod method)
-{
-    if (!potential) throw NoValue("Heat densities");
-    this->writelog(LOG_DETAIL, "Getting heat densities");
+DataVector<const double> FiniteElementMethodElectrical3DSolver::getHeatDensity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+    if (!potential) throw NoValue("Heat density");
+    this->writelog(LOG_DETAIL, "Getting heat density");
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<3>(dst_mesh, geometry);

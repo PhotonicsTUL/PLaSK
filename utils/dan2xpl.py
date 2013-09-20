@@ -400,7 +400,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('verr = 10.')
         out('ELECTRICAL.compute(1)')
         out('THERMAL.compute(1)')
-        out('while terr > THERMAL.corrlim or verr > ELECTRICAL.corrlim:')
+        out('while terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr:')
         out('    verr = ELECTRICAL.compute(6)')
         out('    terr = THERMAL.compute(1)')
     else:

@@ -35,13 +35,6 @@ enum Algorithm {
     ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
-/// Type of the returned correction
-enum CorrectionType {
-    CORRECTION_ABSOLUTE,    ///< absolute correction is used
-    CORRECTION_RELATIVE     ///< relative correction is used
-};
-
-
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
@@ -52,16 +45,11 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     int size;         ///< Number of columns in the main matrix
 
-
-    double corrlim;     ///< Maximum temperature correction accepted as convergence
-    double inittemp;    ///< Initial temperature
     int loopno;         ///< Number of completed loops
     double maxT;        ///< Maximum temperature recorded
-    double abscorr;     ///< Maximum absolute temperature correction (useful for single calculations managed by external python script)
-    double relcorr;     ///< Maximum relative temperature correction (useful for single calculations managed by external python script)
-    double corr;        ///< Maximum absolute temperature correction (useful for calculations with internal loops)
+    double toterr;      ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
 
-    DataVector<double> mTemperatures;           ///< Computed temperatures
+    DataVector<double> temperatures;           ///< Computed temperatures
 
     DataVector<Vec<2,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
@@ -75,7 +63,7 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
                   );
 
     /// Update stored temperatures and calculate corrections
-    void saveTemperatures(DataVector<double>& T);
+    double saveTemperatures(DataVector<double>& T);
 
     /// Create 2D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
@@ -97,8 +85,6 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   public:
 
-    CorrectionType corrtype; ///< Type of the returned correction
-
     // Boundary conditions
     BoundaryConditions<RectilinearMesh2D,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
     BoundaryConditions<RectilinearMesh2D,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
@@ -110,6 +96,9 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     typename ProviderFor<HeatFlux, Geometry2DType>::Delegate outHeatFlux;
 
     ReceiverFor<Heat, Geometry2DType> inHeat;
+
+    double maxerr;          ///< Maximum temperature correction accepted as convergence
+    double inittemp;        ///< Initial temperature
 
     Algorithm algorithm;   ///< Factorization algorithm to use
 
@@ -123,23 +112,8 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
      **/
     double compute(int loops=1);
 
-    /**
-     * Get max absolute correction for temperature
-     * \return get max absolute correction for temperature
-     **/
-    double getMaxAbsTCorr() const { return abscorr; } // result in [K]
-
-    /**
-     * Get max relative correction for temperature
-     * \return get max relative correction for temperature
-     **/
-    double getMaxRelTCorr() const { return relcorr; }// result in [%]
-
-    void setTCorrLim(double corr) { corrlim = corr; }
-    void setTInit(double temp)  { inittemp = temp; }
-
-    double getTCorrLim() const { return corrlim; }
-    double getTInit() const { return inittemp; }
+    /// Get max absolute correction for temperature
+    double getErr() const { return toterr; }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 

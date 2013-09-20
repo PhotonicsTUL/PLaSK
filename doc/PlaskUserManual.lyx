@@ -2843,7 +2843,7 @@ status open
 
 \begin_layout Plain Layout
 
-while terr > therm.corrlim or verr > electr.corrlim:
+while terr > therm.maxerr or verr > electr.maxerr:
 \end_layout
 
 \begin_layout Plain Layout
@@ -2903,11 +2903,11 @@ electr.compute()
 \begin_layout Standard
 
 \family typewriter
-therm.corrlim
+therm.maxerr
 \family default
  and 
 \family typewriter
-electr.corrlim
+electr.maxerr
 \family default
  are default values of the convergence limits for the solvers (they can
  be adjuster either in the 
@@ -3730,7 +3730,7 @@ terr = therm.compute(1)
 
 \begin_layout Plain Layout
 
-while terr > therm.corrlim or verr > electr.corrlim:
+while terr > therm.maxerr or verr > electr.maxerr:
 \end_layout
 
 \begin_layout Plain Layout
@@ -16836,7 +16836,7 @@ Initial temperature.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-corrlim
+maxerr
 \family default
  
 \begin_inset ERT
@@ -16851,55 +16851,8 @@ opt
 
 \end_inset
 
-Correction limit.
- (float [K] or [%])
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-corrtype
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Correction type.
- (
-\begin_inset Quotes eld
-\end_inset
-
-
-\emph on
-absolute
-\emph default
-
-\begin_inset Quotes erd
-\end_inset
-
- or 
-\begin_inset Quotes eld
-\end_inset
-
-
-\emph on
-relative
-\emph default
-
-\begin_inset Quotes erd
-\end_inset
-
-)
+Maximum allowed error.
+ (float [K])
 \end_layout
 
 \end_deeper
@@ -17356,7 +17309,7 @@ Static2D
 
 >
 \family default
- with the following change in the 
+ with the following changes in the 
 \family typewriter
 <matrix/>
 \family default
@@ -17761,7 +17714,7 @@ Initial temperature.
 \labelwidthstring 00.00.0000
 
 \family typewriter
-corrlim
+maxerr
 \family default
  
 \begin_inset ERT
@@ -17776,55 +17729,8 @@ opt
 
 \end_inset
 
-Correction limit.
- (float [K] or [%])
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\family typewriter
-corrtype
-\family default
- 
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-
-\backslash
-opt 
-\end_layout
-
-\end_inset
-
-Correction type.
- (
-\begin_inset Quotes eld
-\end_inset
-
-
-\emph on
-absolute
-\emph default
-
-\begin_inset Quotes erd
-\end_inset
-
- or 
-\begin_inset Quotes eld
-\end_inset
-
-
-\emph on
-relative
-\emph default
-
-\begin_inset Quotes erd
-\end_inset
-
-)
+Maximum allowed error.
+ (float [K])
 \end_layout
 
 \end_deeper
@@ -18384,6 +18290,278 @@ Shockley2D
 .
 \end_layout
 
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<electrical
+\begin_inset space ~
+\end_inset
+
+solver=
+\begin_inset Quotes erd
+\end_inset
+
+Shockley3D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+\series default
+ Three-dimensional phenomenological solver in Cartesian geometry, based
+ on finite-element method.
+\end_layout
+
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<electrical solver=
+\begin_inset Quotes erd
+\end_inset
+
+Shockley2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+ with the following changes in the 
+\family typewriter
+<matrix/>
+\family default
+ element:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<matrix/>
+\family default
+\series default
+ Configuration of the matrix solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+algorithm
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Solution algorithm.
+ Defaults to 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+cholesky
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+cholesky
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+iterative
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+itererr
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Allowed residual error for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+iterlim
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Maximum number of iterations for the iterative algorithm.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+logfreq
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Frequency of logging iterative solver progress.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+preconditioner
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Preconditioner for the iterative (conjugate gradient) algorithm.
+ (
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+jacobi
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+factor
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000

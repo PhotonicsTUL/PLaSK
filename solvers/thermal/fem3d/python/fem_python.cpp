@@ -26,11 +26,6 @@ BOOST_PYTHON_MODULE(fem3d)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<CorrectionType>("CorrectionType", "Types of the returned correction")
-        .value("ABSOLUTE", CORRECTION_ABSOLUTE)
-        .value("RELATIVE", CORRECTION_RELATIVE)
-    ;
-
     py::class_<Convection>("Convection", "Convective boundary condition value", py::init<double,double>())
         .def_readwrite("coeff", &Convection::coeff)
         .def_readwrite("ambient", &Convection::ambient)
@@ -45,19 +40,17 @@ BOOST_PYTHON_MODULE(fem3d)
 
     {CLASS(FiniteElementMethodThermal3DSolver, "Static3D", "Finite element thermal solver for 3D Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        RO_FIELD(abscorr, "Maximum absolute correction for temperature");
-        RO_FIELD(relcorr, "Maximum relative correction for temperature");
-        RECEIVER(inHeat, "Heat densities");
+        RO_PROPERTY(err, getErr, "Maximum estimated error");
+        RECEIVER(inHeat, "Receiver of heat density"); // receiver in the solver
         solver.setattr("inHeatDensity", solver.attr("inHeat"));
-        PROVIDER(outTemperature, "Temperatures");
-        PROVIDER(outHeatFlux, "Heat fluxes");
+        PROVIDER(outTemperature, "Provider of temperatures"); // provider in the solver
+        PROVIDER(outHeatFlux, "Provider of heat flux"); // provider in the solver
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
         BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
         RW_FIELD(inittemp, "Initial temperature");
-        RW_FIELD(corrlim, "Limit for the temperature updates");
-        RW_FIELD(corrtype, "Type of returned correction");
+        RW_FIELD(maxerr, "Limit for the temperature updates");
         RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");

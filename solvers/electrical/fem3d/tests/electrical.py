@@ -30,11 +30,11 @@ class Shockley3D_Test(unittest.TestCase):
         self.solver.mesh = mesh.Rectilinear3D.DivideGenerator(prediv=(2,2,1), gradual=False)
         self.solver.beta = 10.
         self.solver.js = 1.
-        self.solver.corrlim = 1e-12 # such insane accuracy on voltage is necessary
+        self.solver.maxerr = 1e-12 # such insane accuracy on voltage is necessary
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
 
     def testComputations(self):
-        self.solver.compute()
+        self.solver.compute(1000)
         correct_current = 1e-3 * self.solver.js * (exp(self.solver.beta) - 1)
         self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 4 )

@@ -10,8 +10,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     ncond(50.),
     loopno(0),
     default_junction_conductivity(5.),
-    corrtype(CORRECTION_ABSOLUTE),
-    corrlim(1e-6),
+    maxerr(1e-6),
     heatmet(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
@@ -36,11 +35,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
             this->readBoundaryConditions(manager, source, voltage_boundary);
 
         else if (param == "loop") {
-            corrlim = source.getAttribute<double>("corrlim", corrlim);
-            corrtype = source.enumAttribute<CorrectionType>("corrtype")
-                .value("absolute", CORRECTION_ABSOLUTE, 3)
-                .value("relative", CORRECTION_RELATIVE, 3)
-                .get(corrtype);
+            maxerr = source.getAttribute<double>("maxerr", maxerr);
             source.requireTagEnd();
         }
 
@@ -404,10 +399,11 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
     this->writelog(LOG_INFO, "Running electrical calculations");
 
     int loop = 0;
+    
     MatrixT A(size, this->mesh->minorAxis().size());
 
-    double max_abscorr = 0.,
-           max_relcorr = 0.;
+    double err = 0.;
+    toterr = 0.;
 
 #   ifndef NDEBUG
         if (!potentials.unique()) this->writelog(LOG_DEBUG, "Potential data held by something else...");
@@ -422,28 +418,27 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
         std::swap(potentials, corr);   // corr holds old potentials now
         solveMatrix(A, potentials);
 
-        abscorr = 0.;
+        err = 0.;
         double maxv = 0., minv = INFINITY;
         for (auto vnew = potentials.begin(), vold = corr.begin(); vnew != potentials.end(); ++vnew, ++vold) {
             *vold = *vnew - *vold;
-            double acorr = abs(*vold);
-            if (acorr > abscorr) abscorr = acorr;
+            double corr = abs(*vold);
+            if (corr > err) err = corr;
             if (*vnew > maxv) maxv = *vnew;
             if (*vnew < minv) minv = *vnew;
         } // vec holds corrections now
         dV = maxv - minv;
-        if (loopno == 0) abscorr = dV;
-        relcorr = 100. * abscorr / dV;
-        if (abscorr > max_abscorr) max_abscorr = abscorr;
-        if (relcorr > max_relcorr) max_relcorr = relcorr;
+        if (loopno == 0) err = dV;
+        err *= 100. / dV;
+        if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, update=%gmV(%g%%)", loop, loopno, dV, 1e3*abscorr, relcorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): DeltaV=%.3fV, error=%g%%", loop, loopno, dV, err);
 
-    } while (((corrtype == CORRECTION_ABSOLUTE)? (abscorr > corrlim) : (relcorr > corrlim)) && (loops == 0 || loop < loops));
+    } while (err > maxerr && (loops == 0 || loop < loops));
 
     saveConductivities();
 
@@ -451,13 +446,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
     outCurrentDensity.fireChanged();
     outHeat.fireChanged();
 
-    // Make sure we store the maximum encountered values, not just the last ones
-    // (so, this will indicate if the results changed since the last run, not since the last loop iteration)
-    abscorr = max_abscorr;
-    relcorr = max_relcorr;
-
-    if (corrtype == CORRECTION_RELATIVE) return relcorr;
-    else return abscorr;
+    return toterr;
 }
 
 
@@ -641,7 +630,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 
 template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const
 {
-    if (!potentials) throw NoValue("Potentials");
+    if (!potentials) throw NoValue("Potential");
     this->writelog(LOG_DETAIL, "Getting potentials");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(*(this->mesh), potentials, WrappedMesh<2>(dst_mesh, this->geometry), method);
@@ -650,7 +639,7 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
 
 template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
-    if (!potentials) throw NoValue("Current densities");
+    if (!potentials) throw NoValue("Current density");
     this->writelog(LOG_DETAIL, "Getting current densities");
     if (!currents) saveCurrentDensities();
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -664,8 +653,8 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodE
 
 template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
-    if (!potentials) throw NoValue("Heat densities");
-    this->writelog(LOG_DETAIL, "Getting heat densities");
+    if (!potentials) throw NoValue("Heat density");
+    this->writelog(LOG_DETAIL, "Getting heat density");
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = WrappedMesh<2>(dst_mesh, this->geometry);

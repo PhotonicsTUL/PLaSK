@@ -58,15 +58,15 @@ class ThermoElectric(object):
 
         In the beginning the solvers are invalidated and next, the thermo-
         electric algorithm is executed until both solvers converge to the
-        value specified in their configuration in the `corrlim` property.
+        value specified in their configuration in the `maxerr` property.
         '''
         self.thermal.invalidate()
         self.electrical.invalidate()
         self.electrical.invalidate()
 
-        verr = 2. * self.electrical.corrlim
-        terr = 2. * self.thermal.corrlim
-        while terr > self.thermal.corrlim or verr > self.electrical.corrlim:
+        verr = 2. * self.electrical.maxerr
+        terr = 2. * self.thermal.maxerr
+        while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
             verr = self.electrical.compute(self.tfreq)
             terr = self.thermal.compute(1)
 

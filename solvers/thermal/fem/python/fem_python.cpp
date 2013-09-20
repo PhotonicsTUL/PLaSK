@@ -34,11 +34,6 @@ BOOST_PYTHON_MODULE(fem)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<CorrectionType>("CorrectionType", "Types of the returned correction")
-        .value("ABSOLUTE", CORRECTION_ABSOLUTE)
-        .value("RELATIVE", CORRECTION_RELATIVE)
-    ;
-
     py::class_<Convection>("Convection", "Convective boundary condition value", py::init<double,double>())
         .def_readwrite("coeff", &Convection::coeff)
         .def_readwrite("ambient", &Convection::ambient)
@@ -53,19 +48,17 @@ BOOST_PYTHON_MODULE(fem)
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
-        RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
-        RECEIVER(inHeat, "Heat densities"); // receiver in the solver
+        RO_PROPERTY(err, getErr, "Maximum estimated error");
+        RECEIVER(inHeat, "Receiver of heat density"); // receiver in the solver
         solver.setattr("inHeatDensity", solver.attr("inHeat"));
-        PROVIDER(outTemperature, "Temperatures"); // provider in the solver
-        PROVIDER(outHeatFlux, "Heat fluxes"); // provider in the solver
+        PROVIDER(outTemperature, "Provider of temperatures"); // provider in the solver
+        PROVIDER(outHeatFlux, "Provider of heat flux"); // provider in the solver
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
         BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-        RW_PROPERTY(inittemp, getTInit, setTInit, "Initial temperature"); // read-write property
-        RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
-        solver.def_readwrite("corrtype", &__Class__::corrtype, "Type of returned correction");
+        RW_FIELD(inittemp, "Initial temperature");
+        RW_FIELD(maxerr, "Limit for the temperature updates");
         solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
@@ -74,19 +67,17 @@ BOOST_PYTHON_MODULE(fem)
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        RO_PROPERTY(abscorr, getMaxAbsTCorr, "Maximum absolute correction for temperature");
-        RO_PROPERTY(relcorr, getMaxRelTCorr, "Maximum relative correction for temperature");
-        RECEIVER(inHeat, "Heat densities"); // receiver in the solver
+        RO_PROPERTY(err, getErr, "Maximum estimated error");
+        RECEIVER(inHeat, "Receiver of heat density"); // receiver in the solver
         solver.setattr("inHeatDensity", solver.attr("inHeat"));
-        PROVIDER(outTemperature, "Temperatures"); // provider in the solver
-        PROVIDER(outHeatFlux, "Heat fluxes"); // provider in the solver
+        PROVIDER(outTemperature, "Provider of temperatures"); // provider in the solver
+        PROVIDER(outHeatFlux, "Provider of heat flux"); // provider in the solver
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
         BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-        RW_PROPERTY(inittemp, getTInit, setTInit, "Initial temperature"); // read-write property
-        RW_PROPERTY(corrlim, getTCorrLim, setTCorrLim, "Limit for the temperature updates"); // read-write property
-        solver.def_readwrite("corrtype", &__Class__::corrtype, "Type of returned correction");
+        RW_FIELD(inittemp, "Initial temperature");
+        RW_FIELD(maxerr, "Limit for the temperature updates");
         solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");

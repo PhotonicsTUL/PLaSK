@@ -82,11 +82,6 @@ BOOST_PYTHON_MODULE(fem)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<CorrectionType>("CorrectionType", "Types of the returned correction")
-        .value("ABSOLUTE", CORRECTION_ABSOLUTE)
-        .value("RELATIVE", CORRECTION_RELATIVE)
-    ;
-
     py_enum<HeatMethod>("HeatType", "Methods used for computing heats")
         .value("JOULES", HEAT_JOULES)
         .value("WAVELENGTH", HEAT_BANDGAP)
@@ -95,20 +90,19 @@ BOOST_PYTHON_MODULE(fem)
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Shockley2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-        RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
-        RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
+        RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
-        RECEIVER(inTemperature, "Temperatures");
-        PROVIDER(outPotential, "Potentials");
-        PROVIDER(outCurrentDensity, "Current densities");
-        PROVIDER(outHeat, "Heat densities");
+        RECEIVER(inTemperature, "Receiver of temperature");
+        PROVIDER(outPotential, "Provider of potential");
+        PROVIDER(outCurrentDensity, "Provider of current density");
+        PROVIDER(outHeat, "Provider of heat densities");
         solver.setattr("outHeatDensity", solver.attr("outHeat"));
         BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-        RW_FIELD(corrlim, "Limit for the potential updates");
-        RW_FIELD(corrtype, "Type of returned correction");
+        RW_FIELD(maxerr, "Limit for the potential updates");
         RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
-        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
+        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient [1/V]");
+        RW_PROPERTY(Vt, getVt, setVt, "Junction thermal voltage [V]");
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
@@ -123,20 +117,19 @@ BOOST_PYTHON_MODULE(fem)
     {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "ShockleyCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-        RO_PROPERTY(abscorr, getMaxAbsVCorr, "Maximum absolute correction for potential");
-        RO_PROPERTY(relcorr, getMaxRelVCorr, "Maximum relative correction for potential");
+        RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
-        RECEIVER(inTemperature, "Temperatures");
-        PROVIDER(outPotential, "Potentials");
-        PROVIDER(outCurrentDensity, "Current densities");
-        PROVIDER(outHeat, "Heat densities");
+        RECEIVER(inTemperature, "Receiver of temperature");
+        PROVIDER(outPotential, "Provider of potential");
+        PROVIDER(outCurrentDensity, "Provider of current density");
+        PROVIDER(outHeat, "Provider of heat densities");
         solver.setattr("outHeatDensity", solver.attr("outHeat"));
         BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-        RW_FIELD(corrlim, "Limit for the potential updates");
-        RW_FIELD(corrtype, "Type of returned correction");
+        RW_FIELD(maxerr, "Limit for the potential updates");
         RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
         solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
-        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient");
+        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient [1/V]");
+        RW_PROPERTY(Vt, getVt, setVt, "Junction thermal voltage [V]");
         RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
         RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
         RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");

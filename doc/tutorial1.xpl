@@ -51,7 +51,7 @@
 verr = electr.compute(1)
 terr = therm.compute(1)
 
-while terr > therm.corrlim or verr > electr.corrlim:
+while terr > therm.maxerr or verr > electr.maxerr:
     verr = electr.compute(6)
     terr = therm.compute(1)
 

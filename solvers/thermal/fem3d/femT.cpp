@@ -9,8 +9,7 @@ FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std
     algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
     inittemp(300.),
-    corrlim(0.05),
-    corrtype(CORRECTION_ABSOLUTE),
+    maxerr(0.05),
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
@@ -47,11 +46,7 @@ void FiniteElementMethodThermal3DSolver::loadConfiguration(XMLReader &source, Ma
 
         else if (param == "loop") {
             inittemp = source.getAttribute<double>("inittemp", inittemp);
-            corrlim = source.getAttribute<double>("corrlim", corrlim);
-            corrtype = source.enumAttribute<CorrectionType>("corrtype")
-                .value("absolute", CORRECTION_ABSOLUTE, 3)
-                .value("relative", CORRECTION_RELATIVE, 3)
-                .get(corrtype);
+            maxerr = source.getAttribute<double>("maxerr", maxerr);
             source.requireTagEnd();
         }
 
@@ -315,8 +310,8 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
 
     MatrixT A(size, mesh->mediumAxis().size()*mesh->minorAxis().size(), mesh->minorAxis().size());
 
-    double max_abscorr = 0.,
-           max_relcorr = 0.;
+    double err = 0.;
+    toterr = 0.;
 
 #   ifndef NDEBUG
         if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
@@ -328,29 +323,22 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
         setMatrix(A, T, btemperature, bheatflux, bconvection, bradiation);
         solveMatrix(A, T);
 
-        saveTemperatures(T);
+        err = saveTemperatures(T);
 
-        if (abscorr > max_abscorr) max_abscorr = abscorr;
-        if (relcorr > max_relcorr) max_relcorr = relcorr;
+        if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(T)=%.3fK, update=%.3fK(%.3f%%)", loop, loopno, maxT, abscorr, relcorr);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(T) = %.3f K, error = %gK", loop, loopno, maxT, err);
 
-    } while (((corrtype == CORRECTION_ABSOLUTE)? (abscorr > corrlim) : (relcorr > corrlim)) && (loops == 0 || loop < loops));
+    } while (err > maxerr && (loops == 0 || loop < loops));
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();
-
-    // Make sure we store the maximum encountered values, not just the last ones
-    // (so, this will indicate if the results changed since the last run, not since the last loop iteration)
-    abscorr = max_abscorr;
-    relcorr = max_relcorr;
-
-    if (corrtype == CORRECTION_RELATIVE) return relcorr;
-    else return abscorr;
+    
+    return toterr;
 }
 
 
@@ -406,23 +394,18 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix& A, DataVe
 }
 
 
-void FiniteElementMethodThermal3DSolver::saveTemperatures(DataVector<double>& T)
+double FiniteElementMethodThermal3DSolver::saveTemperatures(DataVector<double>& T)
 {
-    abscorr = 0.;
-    relcorr = 0.;
-
+    double err = 0.;
     maxT = 0.;
-
-    for (auto oldT = temperatures.begin(), newT = T.begin(); newT != T.end(); ++oldT, ++newT)
+    for (auto temp = temperatures.begin(), t = T.begin(); t != T.end(); ++temp, ++t)
     {
-        double acor = std::abs(*newT - *oldT); // for boundary with constant temperature this will be zero anyway
-        double rcor = acor / *newT;
-        if (acor > abscorr) abscorr = acor;
-        if (rcor > relcorr) relcorr = rcor;
-        if (*newT > maxT) maxT = *newT;
+        double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
+        if (corr > err) err = corr;
+        if (*t > maxT) maxT = *t;
     }
-    relcorr *= 100.; // %
     std::swap(temperatures, T);
+    return err;
 }
 
 

@@ -16,12 +16,6 @@ enum Algorithm {
     ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
-/// Type of the returned correction
-enum CorrectionType {
-    CORRECTION_ABSOLUTE,    ///< absolute correction is used
-    CORRECTION_RELATIVE     ///< relative correction is used
-};
-
 /// Choice of heat computation method in active region
 enum HeatMethod {
     HEAT_JOULES, ///< compute Joules heat using effective conductivity
@@ -45,8 +39,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double ncond;       ///< n-contact electrical conductivity [S/m]
 
     int loopno;         ///< Number of completed loops
-    double abscorr;     ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
-    double relcorr;     ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
+    double toterr;      ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
     double dV;          ///< Maximum voltage
 
     DataVector<double> junction_conductivity;   ///< electrical conductivity for p-n junction in y-direction [S/m]
@@ -122,8 +115,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   public:
 
-    CorrectionType corrtype;    ///< Type of the returned correction
-    double corrlim;             ///< Maximum voltage correction accepted as convergence
+    double maxerr;             ///< Maximum voltage correction accepted as convergence
 
     HeatMethod heatmet;         ///< Method of heat computation
 
@@ -166,19 +158,28 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
      */
     double getTotalCurrent(size_t nact=0);
 
-    /// \return max absolute correction for potential
-    double getMaxAbsVCorr() const { return abscorr; } // result in [K]
+    /// Return maximum estimated error
+    double getErr() const { return toterr; }
 
-    /// \return get max relative correction for potential
-    double getMaxRelVCorr() const { return relcorr; } // result in [%]
-
+    /// Return beta
     double getBeta() const { return beta; }
+    /// Set new beta and invalidate the solver
     void setBeta(double beta)  {
         this->beta = beta;
         this->invalidate();
     }
 
+    /// Get junction thermal voltage
+    double getVt() const { return 1. / beta; }
+    /// Set new junction thermal voltage and invalidate the solver
+    void setVt(double Vt) {
+        this->beta = 1. / Vt;
+        this->invalidate();
+    }
+    
+    /// Return js
     double getJs() const { return js; }
+    /// Set new js and invalidate the solver
     void setJs(double js)  {
         this->js = js;
         this->invalidate();
