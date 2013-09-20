@@ -4,6 +4,12 @@
 #include <cstddef>
 #include <plask/plask.hpp>
 
+// BLAS routine to multiply matrix by vector
+#define dgbmv F77_GLOBAL(dgbmv,DGBMV)
+F77SUB dgbmv(const char& trans, const int& m, const int& n, const int& kl, const int& ku, const double& alpha, double* a, const int& lda,
+             const double* x, int incx, const double& beta, double* y, int incy);
+
+
 // LAPACK routines to solve set of linear equations
 #define dgbtrf F77_GLOBAL(dgbtrf,DGBTRF)
 F77SUB dgbtrf(const int& m, const int& n, const int& kl, const int& ku, double* ab, const int& ldab, int* ipiv, int& info);
@@ -78,6 +84,16 @@ struct DgbMatrix {
             for (size_t j = 1; j <= knd; ++j)
                 data[ldi + j] = data[ldi + ld * j];
         }
+    }
+    
+    /**
+     * Multiply matrix by vector
+     * \param vector vector to multiply
+     * \param result multiplication result
+     */
+    void mult(const DataVector<const double>& vector, DataVector<double>& result) {
+        mirror();
+        dgbmv('N', size, size, kd, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
     }
 };
 

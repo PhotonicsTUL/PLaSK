@@ -3,7 +3,7 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../femT.h"
+#include "../therm3d.h"
 using namespace plask::solvers::thermal3d;
 
 namespace plask { namespace solvers { namespace thermal3d {

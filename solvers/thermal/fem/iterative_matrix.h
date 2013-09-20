@@ -11,10 +11,6 @@ F77FUN(double) ddot(const int& n, const double* dx, const int& incx, const doubl
 #define daxpy F77_GLOBAL(daxpy,DAXPY)
 F77SUB daxpy(const int& n, const double& sa, const double* sx, const int& incx, double* sy, const int& incy); // sy = sy + sa*sx
 
-#define dsbmv F77_GLOBAL(dsbmv,DSBMV)
-F77SUB dsbmv(const char& uplo, const int& n, const int& k, const double& alpha, const double* a, const int& lda,
-             const double* x, const int& incx, const double& beta, double* y, const int& incy); // y = alpha*A*x + beta*y,
-
 namespace plask { namespace solvers { namespace thermal {
 
 /// Error code of solveDCG
@@ -67,11 +63,20 @@ struct SparseBandMatrix {
     void clear() {
         std::fill_n(data, LDA*size, 0.);
     }
+    
+    /**
+     * Multiply matrix by vector
+     * \param vector vector to multiply
+     * \param result multiplication result
+     */
+    void mult(const DataVector<const double>& vector, DataVector<double>& result) {
+        multiply(vector.data(), result.data());
+    }
 
     /**
      * Multiplication functor for symmetric banded matrix
      */
-    void multiply(double* x, double* y) const { // y = A x
+    void multiply(const double* x, double* y) const { // y = A x
         #pragma omp parallel for
         for (ptrdiff_t r = 0; r < size; ++r) {
             double* datar = data + LDA*r;

@@ -1,6 +1,6 @@
 #include <type_traits>
 
-#include "femT.h"
+#include "therm3d.h"
 
 namespace plask { namespace solvers { namespace thermal3d {
 

@@ -6,6 +6,11 @@
 
 #define UPLO 'L'
 
+// BLAS routine to multiply matrix by vector
+#define dsbmv F77_GLOBAL(dsbmv,DSBMV)
+F77SUB dsbmv(const char& uplo, const int& n, const int& k, const double& alpha, const double* a, const int& lda,
+             const double* x, const int& incx, const double& beta, double* y, const int& incy); // y = alpha*A*x + beta*y,
+
 // LAPACK routines to solve set of linear equations
 #define dpbtrf F77_GLOBAL(dpbtrf,DPBTRF)
 F77SUB dpbtrf(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
@@ -78,6 +83,15 @@ struct DpbMatrix {
     /// Clear the matrix
     void clear() {
         std::fill_n(data, size * (ld+1), 0.);
+    }
+    
+    /**
+     * Multiply matrix by vector
+     * \param vector vector to multiply
+     * \param result multiplication result
+     */
+    void mult(const DataVector<const double>& vector, DataVector<double>& result) {
+        dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
     }
 };
 
