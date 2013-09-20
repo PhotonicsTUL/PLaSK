@@ -32,7 +32,7 @@ class Shockley2D_Test(unittest.TestCase):
         self.solver.mesh = generator
         self.solver.beta = 10.
         self.solver.js = 1.
-        self.solver.maxerr = 1e-5
+        self.solver.maxerr = 1e-9
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
 
@@ -61,7 +61,7 @@ class ShockleyCyl_Test(unittest.TestCase):
         self.solver.mesh = generator
         self.solver.beta = 10.
         self.solver.js = 1.
-        self.solver.maxerr = 1e-5
+        self.solver.maxerr = 1e-9
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
 

@@ -3046,8 +3046,8 @@ DETAIL        : electr:electrical.Shockley2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : electr:electrical.Shockley2D: Loop 1(47): max(j) = 153 kA/cm2,
- error = 0.037 %
+RESULT        : electr:electrical.Shockley2D: Loop 1(64): max(j) = 153 kA/cm2,
+ error = 0.0085 kA/cm2
 \end_layout
 
 \begin_layout Plain Layout
@@ -3083,8 +3083,8 @@ DETAIL        : therm:thermal.Static2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : therm:thermal.Static2D: Loop 1(11): max(T) = 345.823 K, error
- = 0.0484355 K
+RESULT        : therm:thermal.Static2D: Loop 1(13): max(T) = 345.439 K, error
+ = 0.0101045 K
 \end_layout
 
 \begin_layout Plain Layout

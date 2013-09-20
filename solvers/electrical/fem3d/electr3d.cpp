@@ -9,7 +9,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
     default_junction_conductivity(5.),
-    maxerr(0.05),
+    maxerr(0.01),
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
@@ -434,14 +434,15 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
             if (delta > err) err = delta;
             current[i] = cur;
         }
-        err = 100. * sqrt(err / mcur);
+        // err = 100. * sqrt(err / mcur);
+        err = sqrt(err);
         if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g %%", loop, loopno, sqrt(mcur), err);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g kA/cm2", loop, loopno, sqrt(mcur), err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 

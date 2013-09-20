@@ -10,7 +10,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     ncond(50.),
     loopno(0),
     default_junction_conductivity(5.),
-    maxerr(0.05),
+    maxerr(0.01),
     heatmet(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
@@ -438,14 +438,15 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
             if (delta > err) err = delta;
             currents[i] = cur;
         }
-        err = 100. * sqrt(err / mcur);
+        // err = 100. * sqrt(err / mcur);
+        err = sqrt(err);
         if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g %%", loop, loopno, sqrt(mcur), err);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g kA/cm2", loop, loopno, sqrt(mcur), err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 
