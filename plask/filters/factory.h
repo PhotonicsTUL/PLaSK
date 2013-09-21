@@ -75,14 +75,14 @@ inline shared_ptr<Solver> FiltersFactory::standard(XMLReader& reader, Manager& m
     shared_ptr<GeometryObject> out = manager.requireGeometryObject(reader.requireAttribute("geometry"));
     reader.requireTagEnd();
 
-    shared_ptr<Geometry3D> out_as_geom3D = dynamic_pointer_cast<Geometry3D>(out);
-    if (out_as_geom3D) return shared_ptr<Solver>(new Filter<PropertyTag, Geometry3D>(out_as_geom3D));
+    if (shared_ptr<Geometry3D> out_as_geom3D = dynamic_pointer_cast<Geometry3D>(out))
+        return shared_ptr<Solver>(new Filter<PropertyTag, Geometry3D>(out_as_geom3D));
 
-    shared_ptr<Geometry2DCartesian> out_as_geom2D = dynamic_pointer_cast<Geometry2DCartesian>(out);
-    if (out_as_geom2D) return shared_ptr<Solver>(new Filter<PropertyTag, Geometry2DCartesian>(out_as_geom2D));
+    if (shared_ptr<Geometry2DCartesian> out_as_geom2D = dynamic_pointer_cast<Geometry2DCartesian>(out))
+        return shared_ptr<Solver>(new Filter<PropertyTag, Geometry2DCartesian>(out_as_geom2D));
 
-    shared_ptr<Geometry2DCylindrical> out_as_geomCyl = dynamic_pointer_cast<Geometry2DCylindrical>(out);
-    if (out_as_geomCyl) return shared_ptr<Solver>(new Filter<PropertyTag, Geometry2DCylindrical>(out_as_geomCyl));
+    if (shared_ptr<Geometry2DCylindrical> out_as_geomCyl = dynamic_pointer_cast<Geometry2DCylindrical>(out))
+        return shared_ptr<Solver>(new Filter<PropertyTag, Geometry2DCylindrical>(out_as_geomCyl));
 
     throw NotImplemented("standard filter (for given configuration), geometry must be of type: Geometry3D, Geometry2DCartesian or Geometry2DCylindrical");
 }
