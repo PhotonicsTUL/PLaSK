@@ -59,6 +59,28 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
         } else if (param == "outer") {
             outdist = reader.requireAttribute<double>("distance");
             reader.requireTagEnd();
+        } else if (param == "mesh") {
+            auto name = reader.getAttribute("ref");
+            if (!name) name.reset(reader.requireTextInCurrentTag());
+            else reader.requireTagEnd();
+            auto found = manager.meshes.find(*name);
+            if (found != manager.meshes.end()) {
+                auto mesh1 = dynamic_pointer_cast<RectilinearMesh1D>(found->second);
+                auto mesh2 = dynamic_pointer_cast<RectilinearMesh2D>(found->second);
+                if (mesh1) this->setHorizontalMesh(mesh1->axis);
+                else if (mesh2) this->setMesh(mesh2);
+                else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
+            } else {
+                auto found = manager.generators.find(*name);
+                if (found != manager.generators.end()) {
+                    auto generator1 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh1D>>(found->second);
+                    auto generator2 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh2D>>(found->second);
+                    if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
+                    else if (generator2) this->setMesh(generator2);
+                    else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
+                } else
+                    throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
+            }
         } else
             parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
     }
@@ -404,7 +426,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     nng[stripe] = 0.;
 
     std::vector<FieldZ> zfield(zsize);
-    
+
     dcomplex veff = veffs[stripe];
 
     // Compute fields

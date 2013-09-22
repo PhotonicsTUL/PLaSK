@@ -110,6 +110,17 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     template <typename MatrixT>
     double doCompute(int loops=1);
 
+    /// Return \c true if the specified point is at junction
+    bool isActive(const Vec<2>& point) const {
+        auto roles = this->geometry->getRolesAt(point);
+        return roles.find("active") != roles.end() || roles.find("junction") != roles.end();
+    }
+
+    /// Return \c true if the specified element is a junction
+    bool isActive(const RectilinearMesh2D::Element& element) const {
+           return isActive(element.getMidpoint());
+    }
+
   public:
 
     double maxerr;             ///< Maximum voltage correction accepted as convergence

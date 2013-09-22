@@ -10,7 +10,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     ncond(50.),
     loopno(0),
     default_junction_conductivity(5.),
-    maxerr(0.01),
+    maxerr(0.05),
     heatmet(HEAT_JOULES),
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
@@ -104,8 +104,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
         bool had_active = false;
         for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
-            auto roles = this->geometry->getRolesAt(point);
-            bool active = roles.find("active") != roles.end() || roles.find("junction") != roles.end();
+            bool active = isActive(point);
 
             if (c < ileft) {
                 if (active) throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
@@ -267,9 +266,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
     // Update junction conductivities
     if (loopno != 0) {
         for (auto e: this->mesh->elements) {
-            Vec<2,double> midpoint = e.getMidpoint();
-            auto roles = this->geometry->getRolesAt(midpoint);
-            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
+            if (isActive(e)) {
                 size_t i = e.getIndex();
                 size_t left = this->mesh->index0(e.getLoLoIndex());
                 size_t right = this->mesh->index0(e.getUpLoIndex());
@@ -415,38 +412,41 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
 
     loadConductivities();
 
+    bool noactive = (actd.size() == 0);
+
     do {
         setMatrix(A, potentials, vconst);    // corr holds RHS now
         solveMatrix(A, potentials);
 
         err = 0.;
         double mcur = 0.;
-        for (auto e: this->mesh->elements) {
-            size_t i = e.getIndex();
-            size_t loleftno = e.getLoLoIndex();
-            size_t lorghtno = e.getUpLoIndex();
-            size_t upleftno = e.getLoUpIndex();
-            size_t uprghtno = e.getUpUpIndex();
+        for (auto el: this->mesh->elements) {
+            size_t i = el.getIndex();
+            size_t loleftno = el.getLoLoIndex();
+            size_t lorghtno = el.getUpLoIndex();
+            size_t upleftno = el.getLoUpIndex();
+            size_t uprghtno = el.getUpUpIndex();
             double dvx = - 0.05 * (- potentials[loleftno] + potentials[lorghtno] - potentials[upleftno] + potentials[uprghtno])
-                                 / (e.getUpper0() - e.getLower0()); // [j] = kA/cm²
+                                 / (el.getUpper0() - el.getLower0()); // [j] = kA/cm²
             double dvy = - 0.05 * (- potentials[loleftno] - potentials[lorghtno] + potentials[upleftno] + potentials[uprghtno])
-                                 / (e.getUpper1() - e.getLower1()); // [j] = kA/cm²
+                                 / (el.getUpper1() - el.getLower1()); // [j] = kA/cm²
             auto cur = vec(conds[i].c00 * dvx, conds[i].c11 * dvy);
-            double acur = abs2(cur);
-            if (acur > mcur) { mcur = acur; maxcur = cur; }
+            if (noactive || isActive(el)) {
+                double acur = abs2(cur);
+                if (acur > mcur) { mcur = acur; maxcur = cur; }
+            }
             double delta = abs2(currents[i] - cur);
             if (delta > err) err = delta;
             currents[i] = cur;
         }
-        // err = 100. * sqrt(err / mcur);
-        err = sqrt(err);
+        err = 100. * sqrt(err / mcur);
         if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
-        // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g kA/cm2", loop, loopno, sqrt(mcur), err);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g %%",
+                       loop, loopno, noactive?"":"@junc", sqrt(mcur), err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 

@@ -17,7 +17,7 @@ shared_ptr<RectilinearMesh1D> makeGeometryGrid1D(const shared_ptr<GeometryObject
     }
 
     return mesh;
-}    
+}
 
 shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
@@ -52,6 +52,12 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
     if (extend_to_zero) mesh->axis0.addPoint(0.);
     writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
+}
+
+
+shared_ptr<RectilinearMesh2D> RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+{
+    return make_shared<RectilinearMesh2D>((*horizontal_generator)(geometry)->axis, makeGeometryGrid(geometry)->axis1);
 }
 
 

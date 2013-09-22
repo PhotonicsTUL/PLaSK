@@ -133,6 +133,22 @@ double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSol
     return imag(2e4 * mode.solver->k0 * (1. - mode.freqv/2.));
 }
 
+template <typename SolverT>
+static void Optical_setMesh(SolverT& self, py::object omesh) {
+    try {
+        shared_ptr<RectilinearMesh1D> mesh = py::extract<shared_ptr<RectilinearMesh1D>>(omesh);
+        self.setHorizontalMesh(mesh->axis);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        try {
+            shared_ptr<MeshGeneratorOf<RectilinearMesh1D>> meshg = py::extract<shared_ptr<MeshGeneratorOf<RectilinearMesh1D>>>(omesh);
+            self.setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(meshg));
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            plask::python::detail::ExportedSolverDefaultDefs<SolverT>::Solver_setMesh(self, omesh);
+        }
+    }
+}
 
 /**
  * Initialization of your solver to Python
@@ -147,13 +163,14 @@ BOOST_PYTHON_MODULE(effective)
     {CLASS(EffectiveIndex2DSolver, "EffectiveIndex2D",
         "Calculate optical modes and optical field distribution using the effective index\n"
         "method in two-dimensional Cartesian space.")
+        solver.add_property("mesh", &EffectiveIndex2DSolver::getMesh, &Optical_setMesh<EffectiveIndex2DSolver>, "Mesh provided to the solver");
         solver.add_property("polarization", &EffectiveIndex2DSolver_getPolarization, &EffectiveIndex2DSolver_setPolarization, "Polarization of the searched modes");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");
         RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
         RW_FIELD(emission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
-        METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
+        // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(search_vneffs, searchVeffs, "Find the effective index in the vertical direction within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("find_mode", &EffectiveIndex2DSolver_findMode, "Compute the mode near the specified effective index", (arg("neff"), arg("symmetry")=py::object()));
@@ -193,6 +210,7 @@ BOOST_PYTHON_MODULE(effective)
     {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
         "Calculate optical modes and optical field distribution using the effective frequency\n"
         "method in two-dimensional cylindrical space.")
+        solver.add_property("mesh", &EffectiveFrequencyCylSolver::getMesh, &Optical_setMesh<EffectiveFrequencyCylSolver>, "Mesh provided to the solver");
         RW_FIELD(k0, "Reference normalized frequency");
         solver.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
@@ -200,7 +218,7 @@ BOOST_PYTHON_MODULE(effective)
         RO_FIELD(stripe_root, "Configuration of the rootdigger for a single stripe");
         RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
-        METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
+        // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         METHOD(find_mode, findMode, "Compute the mode near the specified wavelength", "wavelength", arg("m")=0);
         METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("m")=0, arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));

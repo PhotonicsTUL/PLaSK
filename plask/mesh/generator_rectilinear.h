@@ -61,6 +61,26 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
     virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
 };
 
+/**
+ * Generator of 2D geometry grid using other generator for horizontal axis
+ */
+class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
+
+    shared_ptr<MeshGeneratorOf<RectilinearMesh1D>> horizontal_generator;
+
+  public:
+
+    /**
+     * Create generator
+     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     */
+    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorOf<RectilinearMesh1D>>& source):
+        horizontal_generator(source) {}
+
+    virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
+};
+
+
 
 /**
  * Generator of basic 3D geometry grid
@@ -81,7 +101,7 @@ struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<RectangularMesh<di
     bool gradual;
 
     using MeshGeneratorOf<RectangularMesh<dim,RectilinearAxis>>::DIM;
-    
+
     typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>,PathHints>, std::set<double>> Refinements;
 
     Refinements refinements[dim];

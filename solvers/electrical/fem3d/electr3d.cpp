@@ -9,7 +9,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     algorithm(ALGORITHM_ITERATIVE),
     loopno(0),
     default_junction_conductivity(5.),
-    maxerr(0.01),
+    maxerr(0.05),
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
@@ -106,8 +106,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
             bool had_active_lon = false;
             for (size_t lon = 0; lon < points->axis0.size(); ++lon) {
                 auto point = points->at(lon, tra, ver);
-                auto roles = geometry->getRolesAt(point);
-                bool active = roles.find("active") != roles.end() || roles.find("junction") != roles.end();
+                bool active = isActive(point);
 
                 // Here we are inside potential active region
                 if (tra < ileft) {
@@ -232,9 +231,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
     // Uupdate junction conductivities
     if (loopno != 0) {
         for (auto elem: mesh->elements) {
-            Vec<3> middle = elem.getMidpoint();
-            auto roles = this->geometry->getRolesAt(middle);
-            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
+            if (isActive(elem)) {
                 size_t index = elem.getIndex(), lll = elem.getLoLoLoIndex(), uuu = elem.getUpUpUpIndex();
                 size_t back = mesh->index0(lll),
                        front = mesh->index0(uuu),
@@ -401,6 +398,8 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
 
     loadConductivity();
 
+    bool noactive = (actd.size() == 0);
+
     do {
         setMatrix(A, potential, bvoltage);   // corr holds RHS now
         solveMatrix(A, potential);
@@ -428,21 +427,22 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
                                            - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
                     / (el.getUpper2() - el.getLower2()) // [j] = kA/cm²
             );
-            double acur = abs2(cur);
-            if (acur > mcur) { mcur = acur; maxcur = cur; }
+            if (noactive || isActive(el)) {
+                double acur = abs2(cur);
+                if (acur > mcur) { mcur = acur; maxcur = cur; }
+            }
             double delta = abs2(current[i] - cur);
             if (delta > err) err = delta;
             current[i] = cur;
         }
-        // err = 100. * sqrt(err / mcur);
-        err = sqrt(err);
+        err = 100. * sqrt(err / mcur);
         if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
-        // show max correction
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j) = %g kA/cm2, error = %g kA/cm2", loop, loopno, sqrt(mcur), err);
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g %%",
+                       loop, loopno, noactive?"":"@junc", sqrt(mcur), err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 
@@ -562,7 +562,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
                                      - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
                                 / (el.getUpper2() - el.getLower2()); // 1e6 - from µm to m
             auto midpoint = el.getMidpoint();
-            auto roles = geometry->getRolesAt(midpoint);
+            auto roles = this->geometry->getRolesAt(midpoint);
             if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
                 size_t nact = std::upper_bound(acthi.begin(), acthi.end(), mesh->index2(i)) - acthi.begin();
                 assert(nact < acthi.size());

@@ -3015,6 +3015,7 @@ You should see a lot of logs, but no results.
  This is not strange as we did not give any instructions to output the results.
  However, take a look at the end of the logs:
 \begin_inset listings
+lstparams "basicstyle={\footnotesize\ttfamily}"
 inline false
 status open
 
@@ -3046,8 +3047,8 @@ DETAIL        : electr:electrical.Shockley2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : electr:electrical.Shockley2D: Loop 1(64): max(j) = 153 kA/cm2,
- error = 0.0085 kA/cm2
+RESULT        : electr:electrical.Shockley2D: Loop 1(71): max(j@junc) = 8.88
+ kA/cm2, error = 0.0435 %
 \end_layout
 
 \begin_layout Plain Layout
@@ -3083,13 +3084,17 @@ DETAIL        : therm:thermal.Static2D: Solving matrix system
 
 \begin_layout Plain Layout
 
-RESULT        : therm:thermal.Static2D: Loop 1(13): max(T) = 345.439 K, error
- = 0.0101045 K
+RESULT        : therm:thermal.Static2D: Loop 1(14): max(T) = 345.393 K, error
+ = 0.00553302 K
 \end_layout
 
 \begin_layout Plain Layout
 
 INFO          : Calculations finished!
+\end_layout
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -3103,7 +3108,7 @@ Calculations finished!
 \end_inset
 
 , which you printed yourself in the script.
- Before this, there is a lot of information given by solvers.
+ Before this, there is a lot of information given by the solvers.
  The very interesting one is the one before the last, reported by the thermal
  solver (see 
 \family typewriter
@@ -3117,7 +3122,7 @@ compute
 \family default
  method.
  The convergence is achieved, since the default temperature change limit
- is 0.1
+ is 0.05
 \begin_inset space \thinspace{}
 \end_inset
 
