@@ -83,6 +83,7 @@ struct MaterialsDB {
 
     /**
      * Object of this class (inharited from it) construct material instance.
+     * It produces materials of one type but with variouse composition and ammount of dopant.
      */
     struct MaterialConstructor {
 
@@ -110,7 +111,7 @@ struct MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct it version with mixed version of two compositions and/or doping amounts.
+     * Base class for factories of complex material which construct it version with mixed version of two compositions and/or doping amounts.
      */
     struct MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double [0.0, 1.0]
 
@@ -132,11 +133,17 @@ struct MaterialsDB {
          */
         virtual shared_ptr<Material> operator()(double m1_weight) const = 0;
 
+        /**
+         * Get material only if it this factory represents solid material (if operator(double m1_weight) is independent from m1_weight).
+         * @return material or nullptr if it is not solid
+         */
+        virtual shared_ptr<Material> isSolid() const = 0;
+
     };
 
 
     /**
-     * Factory of complex material which construct it version with mixed version of two compositions.
+     * Factory of complex material which construct it version with mixed version of two compositions (for materials without dopants).
      */
     //TODO cache: double -> constructed material
     struct MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nieliniowe, funkcja, funktor double [0.0, 1.0] -> double
@@ -170,6 +177,9 @@ struct MaterialsDB {
             return (*constructor)(mixedComposition(m1_weight), Material::NO_DOPING, 0.0);
         }
 
+        virtual shared_ptr<Material> isSolid() const {
+            return material1composition == material2composition ? (*constructor)(material1composition, Material::NO_DOPING, 0.0) : shared_ptr<Material>();
+        }
     };
 
     /**
@@ -200,11 +210,19 @@ struct MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const {
-            return (*constructor)(mixedComposition(m1_weight), Material::NO_DOPING,
+            return (*constructor)(mixedComposition(m1_weight), dopAmountType,
                                   m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
+        }
+
+        virtual shared_ptr<Material> isSolid() const {
+            return (material1composition == material2composition) && (m1DopAmount == m2DopAmount) ?
+                        (*constructor)(material1composition, dopAmountType, m1DopAmount) : shared_ptr<Material>();
         }
     };
 
+    /**
+     * Factory of complex material which construct it version with mixed version of two dopants (for material with same compositions).
+     */
     struct MixedDopantFactory: public MixedCompositionFactory {
     protected:
         Material::DopingAmountType dopAmountType;
@@ -227,7 +245,11 @@ struct MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const {
-            return (*constructor)(Material::Composition(), Material::NO_DOPING, m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
+            return (*constructor)(Material::Composition(), dopAmountType, m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
+        }
+
+        virtual shared_ptr<Material> isSolid() const {
+            return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), dopAmountType, m1DopAmount) : shared_ptr<Material>();
         }
     };
 

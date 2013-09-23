@@ -6,6 +6,7 @@ This file contains geometry objects leafs classes.
 */
 
 #include "object.h"
+#include "../material/db.h"
 
 namespace plask {
 
@@ -22,7 +23,59 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
     using GeometryObjectD<dim>::getBoundingBox;
     using GeometryObjectD<dim>::shared_from_this;
 
-    shared_ptr<Material> material;
+private:
+
+    struct MaterialProvider {
+        virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const = 0;
+        virtual shared_ptr<Material> isSolid() const = 0;
+        virtual MaterialProvider* clone() const = 0;
+        virtual ~MaterialProvider() {}
+    };
+
+    struct SolidMaterial: public MaterialProvider {
+        shared_ptr<Material> material;
+
+        SolidMaterial(shared_ptr<Material> material): material(material) {}
+
+        virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
+            return material;
+        }
+
+        virtual shared_ptr<Material> isSolid() const {
+            return material;
+        }
+
+        SolidMaterial* clone() const {
+            return new SolidMaterial(material);
+        }
+    };
+
+    struct MixedCompositionMaterial: public MaterialProvider {
+
+        shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory;
+
+        MixedCompositionMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory): materialFactory(materialFactory) {}
+
+        virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
+            Box b = thisObj.getBoundingBox(); //TODO sth. faster. we only need vert() coordinates
+            return (*materialFactory)((p.vert() - b.lower.vert()) / b.height());
+        }
+
+        virtual shared_ptr<Material> isSolid() const {
+            return shared_ptr<Material>();
+        }
+
+        SolidMaterial* clone() const {
+            return new MixedCompositionMaterial(materialFactory);
+        }
+
+    };
+
+    //std::unique_ptr<MaterialProvider> materialProvider;
+
+public:
+
+    shared_ptr<Material> material;  //TODO change to MaterialProvider and make private, support for XML (checking if MixedCompositionFactory is solid)
 
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): material(material) {}
 
