@@ -112,7 +112,7 @@ struct MaterialsDB {
     /**
      * Factory of complex material which construct it version with mixed version of two compositions and/or doping amounts.
      */
-    struct MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double
+    struct MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double [0.0, 1.0]
 
     protected:
 
@@ -376,9 +376,9 @@ public:
      * Construct mixed material factory, for materials without dopant.
      * @param material1composition incomplate composition of first material
      * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
-     * @return constructed factory created using new operator, should by delete by caller
+     * @return constructed factory
      */
-    MixedCompositionFactory* getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition);
+    std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition);
 
     /**
      * Construct mixed material factory.
@@ -387,9 +387,9 @@ public:
      * @param dopant_name name of dopant, empty if there is no dopant
      * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
-     * @return constructed factory created using new operator, should by delete by caller
+     * @return constructed factory
      */
-    MixedCompositionFactory* getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
+    std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
                                         Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount);
 
     /**
@@ -401,7 +401,7 @@ public:
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
      * @return constructed factory created using new operator, should by delete by caller
      */
-    MixedCompositionFactory* getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
+    std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
                                         const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount);
 
     /**
@@ -410,7 +410,7 @@ public:
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory created using operator new, should by delete by caller
      */
-    MixedCompositionFactory* getFactory(const std::string& material1_fullname, const std::string& material2_fullname);
+    std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname);
 
     /**
      * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.

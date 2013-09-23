@@ -197,7 +197,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
     return get(pair.first, pair.second);
 }
 
-MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
+std::unique_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
                                                  const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
 {
     if (material1name_with_components.find('(') == std::string::npos) {  //simple material, without parsing composition, stil dopants can be mixed
@@ -207,7 +207,9 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string&
             throw MaterialParseException("%1%: only complex or doping materials with different amount of dopant can be mixed.", material1name_with_components);
         std::string dbKey = material1name_with_components;
         appendDopant(dbKey, dopant_name);
-        return new MixedDopantFactory(getConstructor(dbKey, Material::Composition(), dopant_name), dopAmountType, m1DopAmount, m2DopAmount);
+        return std::unique_ptr<MaterialsDB::MixedCompositionFactory>(
+                    new MixedDopantFactory(getConstructor(dbKey, Material::Composition(), dopant_name), dopAmountType, m1DopAmount, m2DopAmount)
+                    );
     }
     //complex materials:
     if (material2name_with_components.find('(') == std::string::npos)   //mix complex with simple?
@@ -218,21 +220,25 @@ MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string&
                       dopant_name, dopAmountType, m1DopAmount, m2DopAmount);
 }
 
-MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) {
-    return new MixedCompositionOnlyFactory(getConstructor(material1composition), material1composition, material2composition);
+std::unique_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) {
+    return std::unique_ptr<MaterialsDB::MixedCompositionFactory>(
+            new MixedCompositionOnlyFactory(getConstructor(material1composition), material1composition, material2composition)
+    );
 }
 
-MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition,
+std::unique_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition,
                                  const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
 {
     if (dopAmountType == Material::NO_DOPING)
         getFactory(material1composition, material2composition);
-    return new MixedCompositionAndDopantFactory(getConstructor(material1composition, dopant_name),
+    return std::unique_ptr<MaterialsDB::MixedCompositionFactory>(
+                new MixedCompositionAndDopantFactory(getConstructor(material1composition, dopant_name),
                                                 material1composition, material2composition,
-                                                dopAmountType, m1DopAmount, m2DopAmount);
+                                                dopAmountType, m1DopAmount, m2DopAmount)
+                );
 }
 
-MaterialsDB::MixedCompositionFactory* MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname) {
+std::unique_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname) {
     std::string m1comp, m1dop, m2comp, m2Dop;
     std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
     std::tie(m2comp, m2Dop) = splitString2(material2_fullname, ':');
