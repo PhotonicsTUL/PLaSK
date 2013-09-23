@@ -57,7 +57,7 @@ private:
         MixedCompositionMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory): materialFactory(materialFactory) {}
 
         virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
-            Box b = thisObj.getBoundingBox(); //TODO sth. faster. we only need vert() coordinates
+            Box b = thisObj.getBoundingBox(); //TODO sth. faster. we only need vert() coordinates, we can also cache lower and height
             return (*materialFactory)((p.vert() - b.lower.vert()) / b.height());
         }
 
@@ -75,7 +75,7 @@ private:
 
 public:
 
-    shared_ptr<Material> material;  //TODO change to MaterialProvider and make private, support for XML (checking if MixedCompositionFactory is solid)
+    shared_ptr<Material> material;  //TODO change to MaterialProvider and make private, support for XML (checking if MixedCompositionFactory is solid), add isSolid
 
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): material(material) {}
 
