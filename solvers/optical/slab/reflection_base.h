@@ -20,7 +20,7 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     dcomplex* interface_field;                  ///< Pointer to the interface field data
 
     cmatrix A;                                  ///< The (diagonalized field) admittance matrix for the interface
-    cmatrix M;                                  ///< The final matrix0 which must fulfill M * E = 0
+    cmatrix M;                                  ///< The final matrix which must fulfill M * E = 0
 
     dcomplex* evals;                            ///< Found eigenvalues of matrix M
     double* rwork;                              ///< temporary space

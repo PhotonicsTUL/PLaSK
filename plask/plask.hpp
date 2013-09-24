@@ -51,7 +51,6 @@ You should start reading from section \ref solvers "How to implement an own solv
 */
 
 #include <plask/config.h>
-#include <plask/version.h>
 
 #include "memory.h"
 #include "memalloc.h"

@@ -1,5 +1,3 @@
-// #include <plask/filters/factory.h>
-
 #include "slab_base.h"
 
 namespace plask { namespace solvers { namespace slab {
@@ -10,6 +8,11 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
     smooth(0.),
     outIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes)
 {
+    root.tolx = 1.0e-8;
+    root.tolf_min = 1.0e-10;
+    root.tolf_max = 1.0e-6;
+    root.maxstep = 0.1;
+    root.maxiter = 500;
     inTemperature = 300.; // temperature receiver has some sensible value
 }
 

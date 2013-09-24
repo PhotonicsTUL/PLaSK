@@ -28,6 +28,7 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierReflection2D::onInitialize()
 {
     setupLayers();
+    init();
     expansion.init(klong == 0., ktran == 0.);
     diagonalizer.reset(new SimpleDiagonalizer(expansion));    //TODO add other diagonalizer types
 }
@@ -44,7 +45,10 @@ size_t FourierReflection2D::findMode(dcomplex neff)
     klong = neff * k0;
     if (klong == 0.) klong = 1e-12;
     initCalculation();
-    return NAN;
+    klong =  RootDigger(*this,
+                        [this](const dcomplex& x) { this->klong = x; return this->determinant(); },
+                        detlog, root)(klong);
+    return 0;
 }
 
 

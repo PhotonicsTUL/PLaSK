@@ -2,6 +2,7 @@
 #define PLASK__OPTICAL_MODAL_H
 
 #include <plask/plask.hpp>
+#include "broyden.h"
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -51,6 +52,9 @@ struct SlabSolver: public SolverOver<GeometryT> {
     /// Smoothing coefficient
     double smooth;
 
+    /// Parameters for main rootdigger
+    RootDigger::Params root;
+    
     /// Receiver for the temperature
     ReceiverFor<Temperature, GeometryT> inTemperature;
 

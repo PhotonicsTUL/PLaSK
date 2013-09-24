@@ -97,12 +97,6 @@ dcomplex ReflectionSolver<GeometryT>::determinant()
 
     interface_field = nullptr;
 
-    switch (variable) {
-        case K_0: detlog(k0,result); break;
-        case K_LONG: detlog(klong,result); break;
-        case K_TRAN: detlog(ktran,result); break;
-    }
-
     return result;
 }
 
