@@ -435,7 +435,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
             if (delta > err) err = delta;
             current[i] = cur;
         }
-        err = 100. * sqrt(err / max(mcur,1e-8*js));
+        err = 100. * sqrt(err / max(mcur,1e-7*js));
         if (err > toterr) toterr = err;
 
         ++loopno;

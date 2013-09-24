@@ -439,7 +439,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
             if (delta > err) err = delta;
             currents[i] = cur;
         }
-        err = 100. * sqrt(err / max(mcur,1e-8*js));
+        err = 100. * sqrt(err / max(mcur,1e-7*js));
         if (err > toterr) toterr = err;
 
         ++loopno;
