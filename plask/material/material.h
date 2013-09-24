@@ -93,6 +93,31 @@ struct Material {
   public:
 
     /**
+     * Parameters of material, information about: name, composition and dopant.
+     */
+    struct Parameters {
+
+        /// short (without composition and doping amounts) name of material
+        std::string name;
+
+        Composition composition;
+
+        std::string dopant_name;
+
+        double dopantAmount;
+
+        Material::DopingAmountType dopantAmountType;
+
+        explicit Parameters(const std::string& name): name(name), dopantAmountType(NO_DOPING) {}
+
+
+
+        bool isSimple() const { return composition.empty(); }
+
+        bool hasDopant() const { return dopantAmountType != NO_DOPING; }
+    };
+
+    /**
      * Helper class for easy constructing string representations of complex materials.
      *
      * Typically this is used to implement str() method.
