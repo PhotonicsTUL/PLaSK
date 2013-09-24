@@ -94,10 +94,16 @@ struct Material {
 
     /**
      * Parameters of material, information about: name, composition and dopant.
+     *
+     * It stores all information which are represented by material string,
+     * but without precision lossing (amounts are stored in doubles).
+     *
+     * Can be obtained either from string (see parse(std::string)) or material (see getParameters()).
      */
     struct Parameters {
 
         /// short (without composition and doping amounts) name of material
+        /// only for simple material(?)
         std::string name;
 
         Composition composition;
