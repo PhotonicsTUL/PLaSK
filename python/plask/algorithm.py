@@ -238,7 +238,7 @@ class ThresholdSearch(ThermoElectric):
         Configured gain solver. TODO
     optical : optical solver
         Configured optical solver. It is required to have `inTemperature` and
-        `inGain` receivers and `outIntensity` provider that is necessary only
+        `inGain` receivers and `outLightIntensity` provider that is necessary only
         for plotting electromagnetic field profile. This solver needs to have
         `find_mode` method if `quick` is false or `get_detrminant` and `set_mode`
         methods is `quick` is true. TODO

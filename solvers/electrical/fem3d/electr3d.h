@@ -104,7 +104,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
-    double doCompute(int loops=1);
+    double doCompute(unsigned loops=1);
 
     /// Return \c true if the specified point is at junction
     bool isActive(const Vec<3>& point) const {
@@ -159,7 +159,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
      * \param loops maximum number of loops to run
      * \return max correction of voltage against the last call
      **/
-    double compute(int loops=1);
+    double compute(unsigned loops=1);
 
     /**
      * Integrate vertical total current at certain level.

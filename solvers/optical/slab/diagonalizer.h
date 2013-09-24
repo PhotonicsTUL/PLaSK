@@ -25,14 +25,14 @@ namespace plask { namespace  solvers { namespace slab {
 class Diagonalizer
 {
   protected:
-    Expansion& src;                 ///< Information about the matrices to diagonalize
+    Expansion* src;                 ///< Information about the matrices to diagonalize
     std::vector<bool> diagonalized; ///< True if the given layer was diagonalized
 
   public:
     const int lcount;                // number of layers
 
-    Diagonalizer(Expansion& src) :
-        src(src), diagonalized(src.lcount(), false), lcount(src.lcount()) {}
+    Diagonalizer(Expansion* src) :
+        src(src), diagonalized(src->lcount(), false), lcount(src->lcount()) {}
 
     virtual ~Diagonalizer() {}
 
@@ -40,10 +40,10 @@ class Diagonalizer
     virtual int matrixSize() const = 0;
 
     /// Return the reference to the source object
-    inline const Expansion& source() const { return src; }
+    inline const Expansion* source() const { return src; }
 
     /// Return the reference to the source object
-    inline Expansion& source() { return src; }
+    inline Expansion* source() { return src; }
 
     /// Initiate the diagonalization
     virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky) = 0;
@@ -88,10 +88,10 @@ class SimpleDiagonalizer : public Diagonalizer
 
 
   public:
-    SimpleDiagonalizer(Expansion& g);
+    SimpleDiagonalizer(Expansion* g);
     ~SimpleDiagonalizer();
 
-    virtual int matrixSize() const { return src.matrixSize(); }
+    virtual int matrixSize() const { return src->matrixSize(); }
 
     virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky) {
         k0 = ko; Kx = kx, Ky = ky;

@@ -108,7 +108,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
-    double doCompute(int loops=1);
+    double doCompute(unsigned loops=1);
 
     /// Return \c true if the specified point is at junction
     bool isActive(const Vec<2>& point) const {
@@ -150,7 +150,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
      * Run electrical calculations
      * \return max correction of potential against the last call
      **/
-    double compute(int loops=1);
+    double compute(unsigned loops=1);
 
     /**
      * Integrate vertical total current at certain level.

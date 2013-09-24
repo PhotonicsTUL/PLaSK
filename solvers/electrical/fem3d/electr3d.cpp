@@ -374,7 +374,7 @@ void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix>(SparseBand
 }
 
 template <typename MatrixT>
-double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
+double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 {
     initCalculation();
 
@@ -383,7 +383,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
 
     this->writelog(LOG_INFO, "Running electrical calculations");
 
-    int loop = 0;
+    unsigned loop = 0;
     size_t size = mesh->size();
 
     MatrixT A(size, mesh->mediumAxis().size()*mesh->minorAxis().size(), mesh->minorAxis().size());
@@ -435,7 +435,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
             if (delta > err) err = delta;
             current[i] = cur;
         }
-        err = 100. * sqrt(err / mcur);
+        err = 100. * sqrt(err / max(mcur,1e-8*js));
         if (err > toterr) toterr = err;
 
         ++loopno;
@@ -456,7 +456,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(int loops)
 }
 
 
-double FiniteElementMethodElectrical3DSolver::compute(int loops) {
+double FiniteElementMethodElectrical3DSolver::compute(unsigned loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);

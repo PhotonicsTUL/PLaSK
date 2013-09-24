@@ -23,7 +23,7 @@ class ReceiverTest(unittest.TestCase):
 
 
     def testReceiverWithData(self):
-        data = self.solver.outIntensity(0,self.mesh1)
+        data = self.solver.outLightIntensity(0,self.mesh1)
         self.solver.inTemperature = data
         self.assertEqual( list(self.solver.inTemperature(self.mesh2)), [200., 200., 400., 400.] )
 

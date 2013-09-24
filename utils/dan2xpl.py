@@ -410,7 +410,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('ELECTRICAL.compute(0)')
 
     if electr:
-        out('\nprint_log(LOG_INFO, "Total current: %.3gmA" % abs(ELECTRICAL.get_total_current()))')
+        out('\nprint_log(LOG_INFO, "Total current: %.3g mA" % abs(ELECTRICAL.get_total_current()))')
 
     if therm or electr:
         out('\nplotgrid = MSG.plots(GEO.main.item)')

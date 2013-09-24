@@ -62,7 +62,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
     ReceiverFor<Gain, GeometryT> inGain;
 
     /// Provider of optical field
-    typename ProviderFor<LightIntensity, GeometryT>::Delegate outIntensity;
+    typename ProviderFor<LightIntensity, GeometryT>::Delegate outLightIntensity;
 
     SlabSolver(const std::string& name="");
 
@@ -97,19 +97,28 @@ struct SlabSolver: public SolverOver<GeometryT> {
     }
 
     /**
-     * Set the position of the matching interface at the top of the provided geometry object
+     * Set the position of the matching interface at the bottom of the provided geometry object
      * \param object where the interface should  be set on
-     * \param path path specyfing object in the geometry
+     * \param path path specifying object in the geometry
      */
     void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints* path=nullptr) {
         if (vbounds.empty()) prepareLayers();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].upper.vert()) - vbounds.begin();
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()) - vbounds.begin();
         if (interface >= vbounds.size()) interface = vbounds.size() - 1;
         this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
     }
 
+    /**
+     * Set the position of the matching interface at the bottom of the provided geometry object
+     * \param object where the interface should  be set on
+     * \param path path specifying object in the geometry
+     */
+    void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints& path) {
+        setInterfaceOn(object, &path);
+    }
+    
     /**
      * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
      * The bottom infinite layer has always negative coordinate.

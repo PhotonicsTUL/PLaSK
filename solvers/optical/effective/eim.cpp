@@ -14,7 +14,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     vneff(0.),
     outdist(0.1),
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
-    outIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
+    outLightIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
     k0(2e3*M_PI/980) {
     inTemperature = 300.;
     inGain = NAN;
@@ -294,7 +294,7 @@ void EffectiveIndex2DSolver::onInvalidate()
     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
     modes.clear();
     outNeff.fireChanged();
-    outIntensity.fireChanged();
+    outLightIntensity.fireChanged();
 }
 
 /********* Here are the computations *********/

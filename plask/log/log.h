@@ -66,5 +66,10 @@ extern shared_ptr<Logger> default_logger;
 
 }   // namespace plask
 
+#ifdef NDEBUG
+#   define write_debug(...) void(0)
+#else
+#   define write_debug(...) writelog(LOG_DEBUG, __VA_ARGS__)
+#endif
 
 #endif // PLASK__LOG_LOG_H

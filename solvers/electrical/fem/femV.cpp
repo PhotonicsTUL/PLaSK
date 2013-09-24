@@ -377,7 +377,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(int loops) {
+template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(unsigned loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
@@ -387,7 +387,7 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 }
 
 template<typename Geometry2DType> template <typename MatrixT>
-double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loops)
+double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned loops)
 {
     this->initCalculation();
 
@@ -398,7 +398,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
 
     this->writelog(LOG_INFO, "Running electrical calculations");
 
-    int loop = 0;
+    unsigned loop = 0;
 
     MatrixT A(size, this->mesh->minorAxis().size());
 
@@ -439,7 +439,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(int loop
             if (delta > err) err = delta;
             currents[i] = cur;
         }
-        err = 100. * sqrt(err / mcur);
+        err = 100. * sqrt(err / max(mcur,1e-8*js));
         if (err > toterr) toterr = err;
 
         ++loopno;

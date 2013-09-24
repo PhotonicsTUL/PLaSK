@@ -273,7 +273,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     ProviderFor<ModalLoss>::Delegate outLoss;
 
     /// Provider of optical field
-    ProviderFor<LightIntensity, Geometry2DCylindrical>::Delegate outIntensity;
+    ProviderFor<LightIntensity, Geometry2DCylindrical>::Delegate outLightIntensity;
 
   protected:
 
@@ -314,7 +314,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         modes.push_back(mode);
         outWavelength.fireChanged();
         outLoss.fireChanged();
-        outIntensity.fireChanged();
+        outLightIntensity.fireChanged();
         return modes.size()-1;
     }
 

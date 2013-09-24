@@ -8,6 +8,7 @@ FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSol
     expansion(this),
     refine(8)
 {
+    detlog.global_prefix = this->getId();
 }
 
 
@@ -28,9 +29,9 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierReflection2D::onInitialize()
 {
     setupLayers();
-    init();
     expansion.init(klong == 0., ktran == 0.);
-    diagonalizer.reset(new SimpleDiagonalizer(expansion));    //TODO add other diagonalizer types
+    diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
+    init();
 }
 
 

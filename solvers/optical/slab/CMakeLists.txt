@@ -88,6 +88,7 @@ if(BUILD_TESTING)
 endif()
 
 add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
+add_python_test(solvers/optical/slab/refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection2d.py)
 
 
 # Build everything the default way.

@@ -292,7 +292,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     ProviderFor<EffectiveIndex>::Delegate outNeff;
 
     /// Provider of optical field
-    ProviderFor<LightIntensity, Geometry2DCartesian>::Delegate outIntensity;
+    ProviderFor<LightIntensity, Geometry2DCartesian>::Delegate outLightIntensity;
 
   protected:
 
@@ -367,7 +367,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
             if (modes[i] == mode) return i;
         modes.push_back(mode);
         outNeff.fireChanged();
-        outIntensity.fireChanged();
+        outLightIntensity.fireChanged();
         return modes.size()-1;
     }
 

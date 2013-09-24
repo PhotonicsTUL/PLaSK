@@ -8,10 +8,10 @@
 namespace plask { namespace  solvers { namespace slab {
 
 
-    SimpleDiagonalizer::SimpleDiagonalizer(Expansion& g) :
+SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
     Diagonalizer(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
 {
-    int N = src.matrixSize();         // Size of each matrix
+    int N = src->matrixSize();         // Size of each matrix
 
     //logger(LOG_BASIC) << "Creating simple diagonalizer...\n\n";
 
@@ -35,15 +35,15 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     // If diagonalization already done, do not repeat it
     if (diagonalized[layer]) return;
 
-    int N = src.matrixSize();         // Size of each matrix
+    int N = src->matrixSize();         // Size of each matrix
 
     // First find necessary matrices
     cmatrix RE = Th1[layer], RH = Th[layer];
-    src.getMatrices(layer, k0, Kx, Ky, RE, RH);
+    src->getMatrices(layer, k0, Kx, Ky, RE, RH);
 
     cmatrix QE(N,N);
 
-    if (src.diagonalQE(layer)) {
+    if (src->diagonalQE(layer)) {
 
         // We are lucky - the QH matrix is diagonal so we can make it fast and easy
         //logger(LOG_SHOWDIAGONALIZATION) << "    diagonalizer: using the uniform layer " << layer << "\n";
@@ -74,10 +74,10 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         }
 
         // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
-        // we use Te as work and Te1 as rwork (as N >= 2, their sizes are ok)
+        // we use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
         int info;
-        F(zgeev)('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
-                 Te[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
+        zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
+              Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
 
         // ...and rewrite the eigenvectors to their final locations
         memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
@@ -118,9 +118,9 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     // LU factorization of RE
     int ierr;
     int* ipiv = new int[N];
-    F(zgetrf)(N, N, RE.data(), N, ipiv, ierr);
+    zgetrf(N, N, RE.data(), N, ipiv, ierr);
     // the QE will contain inv(RE)^T * Te1^T
-    F(zgetrs)('t', N, N, RE.data(), N, ipiv, QE.data(), N, ierr);
+    zgetrs('t', N, N, RE.data(), N, ipiv, QE.data(), N, ierr);
     // compute QE^T and store it in Th1
     for (int j = 0; j < N; j++) {
         dcomplex g = gam[j];

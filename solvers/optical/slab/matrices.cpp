@@ -16,7 +16,7 @@ cmatrix invmult(cmatrix& A, cmatrix& B)
     int* ipiv = new int[N];
     int info;
     // Perform the calculation
-    F(zgesv)(N, nrhs, A.data(), N, ipiv, B.data(), N, info);
+    zgesv(N, nrhs, A.data(), N, ipiv, B.data(), N, info);
     delete[] ipiv;
     // Return the result
     if (info > 0) throw ComputationError("invmult", "Matrix is singular");
@@ -37,7 +37,7 @@ cvector invmult(cmatrix& A, cvector& B)
     int* ipiv = new int[N];
     int info;
     // Perform the calculation
-    F(zgesv)(N, 1, A.data(), N, ipiv, B.data(), N, info);
+    zgesv(N, 1, A.data(), N, ipiv, B.data(), N, info);
     delete[] ipiv;
     // Return the result
     if (info > 0) throw ComputationError("invmult", "Matrix is singular");
@@ -72,7 +72,7 @@ dcomplex det(cmatrix& A)
     int* ipiv = new int[N];
     int info;
     // Find the LU factorization
-    F(zgetrf)(N, N, A.data(), N, ipiv, info);
+    zgetrf(N, N, A.data(), N, ipiv, info);
     // Ok, now compute the determinant
     dcomplex det = 1.; int p = 1;
     for (int i = 0; i < N; i++) {
@@ -115,7 +115,7 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
 
     // Call the lapack subroutine
     int info;
-    F(zgeev)(jobvl, jobvr, N, A.data(), N, vals.data(), vl, N, vr, N, work, lwork, rwork, info);
+    zgeev(jobvl, jobvr, N, A.data(), N, vals.data(), vl, N, vr, N, work, lwork, rwork, info);
 
     delete[] work;
     delete[] rwork;

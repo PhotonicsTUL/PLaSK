@@ -66,11 +66,37 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
         }
     }
 
+    /// Get current wavelength
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+    /// Set current wavelength
+    void setWavelength(dcomplex lambda) {
+        k0 = 2e3*M_PI / lambda;
+        this->invalidate();
+    }
+
+    /// Get longitudinal wavevector
+    dcomplex getKlong() const { return klong; }
+    /// Set longitudinal wavevector
+    void setKlong(dcomplex k)  {
+        klong = k; 
+        this->invalidate();
+    }
+
+    /// Get transverse wavevector
+    dcomplex getKtran() const { return ktran; }
+    /// Set transverse wavevector
+    void setKtran(dcomplex k)  {
+        ktran = k; 
+        this->invalidate();
+    }
+
   protected:
 
     /// Solver constructor
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
-        k0(NAN), klong(0.), ktran(0.), variable(K_0), detlog(this->getId(), "modal", "k0", "det") {}
+        interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
+        k0(NAN), klong(0.), ktran(0.), variable(K_0), detlog("", "modal", "k0", "det"),
+        ipiv(nullptr) {}
 
     /// Initialize memory for calculations
     void init();

@@ -6,7 +6,7 @@ template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
     outdist(0.1),
     smooth(0.),
-    outIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes)
+    outLightIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes)
 {
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;

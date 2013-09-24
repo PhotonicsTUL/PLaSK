@@ -31,7 +31,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
             self.solver.outNeff(0)
         with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
-            self.solver.outIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
+            self.solver.outLightIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
 
     def testComputations(self):
         self.solver.wavelength = 1000.
@@ -52,7 +52,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         msh = mesh.Rectilinear2D(axis0, axis1).get_midpoints()
         dx = (axis0[1] - axis0[0]) * 1e-6
         dy = (axis1[1] - axis1[0]) * 1e-6
-        field = self.solver.outIntensity(0,msh).array
+        field = self.solver.outLightIntensity(0,msh).array
         integral = sum(field) * dx*dy
         self.assertAlmostEqual(integral, 14.65, 2)
 
@@ -124,7 +124,7 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         msh = mesh.Rectilinear2D(axis0, axis1)
         self.solver.find_mode(980., 0)
         self.solver.modes[0].power = 2000.
-        field = self.solver.outIntensity(0,msh).array[:,-1]
+        field = self.solver.outLightIntensity(0,msh).array[:,-1]
         integral = 2e-12 * pi * sum(field * msh.axis0) * dr
         self.assertAlmostEqual(integral, 2., 4)
 

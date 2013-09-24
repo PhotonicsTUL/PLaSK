@@ -14,7 +14,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     k0(NAN),
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
-    outIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes) {
+    outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes) {
     inTemperature = 300.;
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;
@@ -226,7 +226,7 @@ void EffectiveFrequencyCylSolver::onInvalidate()
     modes.clear();
     outWavelength.fireChanged();
     outLoss.fireChanged();
-    outIntensity.fireChanged();
+    outLightIntensity.fireChanged();
 }
 
 /********* Here are the computations *********/

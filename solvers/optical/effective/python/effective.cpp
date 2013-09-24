@@ -188,8 +188,9 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inTemperature, "Temperature distribution in the structure");
         RECEIVER(inGain, "Optical gain in the active region");
         PROVIDER(outNeff, "Effective index of the last computed mode");
-        PROVIDER(outIntensity, "Light intensity of the last computed mode");
+        PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
         RO_FIELD(modes, "Computed modes");
+        solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
         py::scope scope = solver;
 
@@ -233,8 +234,9 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "Optical gain distribution in the active region");
         PROVIDER(outWavelength, "Wavelength of the computed mode [nm]");
         PROVIDER(outLoss, "Modal loss of the computed mode [1/cm]");
-        PROVIDER(outIntensity, "Light intensity of the last computed mode");
+        PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
         RO_FIELD(modes, "Computed modes");
+        solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
         py::scope scope = solver;
 

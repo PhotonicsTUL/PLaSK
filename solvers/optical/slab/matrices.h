@@ -28,17 +28,13 @@ class Matrix {
 
     Matrix(int m, int n) : r(m), c(n) {
         data_ = aligned_new_array<T>(m*n); gc = new int;
-#ifndef NDEBUG
-        writelog(LOG_DEBUG, "allocating matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
-#endif
+        write_debug("allocating matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
         *gc = 1;
     }
 
     Matrix(int m, int n, T val) : r(m), c(n) {
         data_ = aligned_new_array<T>(m*n); gc = new int;
-#ifndef NDEBUG
-        writelog(LOG_DEBUG, "allocating matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
-#endif
+        write_debug("allocating matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
         std::fill_n(data_, m*n, val);
         *gc = 1;
     }
@@ -52,9 +48,7 @@ class Matrix {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
-#ifndef NDEBUG
-                writelog(LOG_DEBUG, "freeing matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
-#endif
+                write_debug("freeing matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
             }
         }
         r = M.r; c = M.c; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
@@ -64,9 +58,7 @@ class Matrix {
     Matrix(const MatrixDiagonal<T>& M) {
         r = c = M.size();
         data_ = aligned_new_array<T>(r*c); gc = new int;
-#ifndef NDEBUG
-        writelog(LOG_DEBUG, "allocating matrix %1%x%2% (%3% bytes) at %4% (from diagonal)", r, c, r*c*sizeof(T), data_);
-#endif
+        write_debug("allocating matrix %1%x%2% (%3% bytes) at %4% (from diagonal)", r, c, r*c*sizeof(T), data_);
         int size = r*c;
         for (int i = 0; i < size; i++) data_[i] = 0;
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M.data[j];
@@ -83,9 +75,7 @@ class Matrix {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(r*c, data_);
-#ifndef NDEBUG
-                writelog(LOG_DEBUG, "freeing matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
-#endif
+                write_debug("freeing matrix %1%x%2% (%3% bytes) at %4%", r, c, r*c*sizeof(T), data_);
             }
         }
     }
@@ -135,17 +125,13 @@ class MatrixDiagonal {
 
     MatrixDiagonal(int n) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
-#ifndef NDEBUG
-        writelog(LOG_DEBUG, "allocating diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
-#endif
+        write_debug("allocating diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
         *gc = 1;
     }
 
     MatrixDiagonal(int n, T val) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;
-#ifndef NDEBUG
-        writelog(LOG_DEBUG, "allocating and filling diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
-#endif
+        write_debug("allocating and filling diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
         std::fill_n(data_, n, val);
         *gc = 1;
     }
@@ -159,9 +145,7 @@ class MatrixDiagonal {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
-#ifndef NDEBUG
-                writelog(LOG_DEBUG, "freeing diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
-#endif
+                write_debug("freeing diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
             }
         }
         siz = M.siz; data_ = M.data_; gc = M.gc; if (gc) (*gc)++;
@@ -173,9 +157,7 @@ class MatrixDiagonal {
             (*gc)--;
             if (*gc == 0) {
                 delete gc; aligned_delete_array(siz, data_);
-#ifndef NDEBUG
-                writelog(LOG_DEBUG, "freeing diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
-#endif
+                write_debug("freeing diagonal matrix %1%x%1% (%2% bytes) at %3%", siz, siz*sizeof(T), data_);
             }
         }
     }
@@ -216,7 +198,7 @@ typedef MatrixDiagonal<dcomplex> cdiagonal;
 inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
     if (A.cols() != B.rows()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot multiply: A.cols != B.rows");
     cmatrix C(A.rows(), B.cols());
-    F(zgemm)('n', 'n', A.rows(), B.cols(), A.cols(), 1., A.data(), A.rows(), B.data(), B.rows(), 0., C.data(), C.rows());
+    zgemm('n', 'n', A.rows(), B.cols(), A.cols(), 1., A.data(), A.rows(), B.data(), B.rows(), 0., C.data(), C.rows());
     return C;
 }
 
@@ -225,7 +207,7 @@ inline cvector operator*(const cmatrix& A, const cvector& v) {
     int n = A.cols(), m = A.rows();
     if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     cvector dst(m);
-    F(zgemv)('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
+    zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
     return dst;
 }
 
@@ -288,7 +270,7 @@ inline void mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvector& d
     int m, n;
     if ((n = A.cols()) != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     if ((m = A.rows()) != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");
-    F(zgemv)('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
+    zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
 }
 
 inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
@@ -296,14 +278,14 @@ inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& d
     if ((k = A.cols()) != B.rows()) throw ComputationError("mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
     if ((m = A.rows()) != dst.rows()) throw ComputationError("mult_matrix_by_matrix", "A.rows != dst.rows");
     if ((n = B.cols()) != dst.cols()) throw ComputationError("mult_matrix_by_matrix", "B.cols != dst.cols");
-    F(zgemm)('n', 'n', m, n, k, 1., A.data(), m, B.data(), k, 0., dst.data(), m);
+    zgemm('n', 'n', m, n, k, 1., A.data(), m, B.data(), k, 0., dst.data(), m);
 }
 
 inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvector& dst) {
     int m, n;
     if ((n = A.cols()) != v.size()) throw ComputationError("add_mult_matrix_by_vector", "A.cols != v.size");
     if ((m = A.rows()) != dst.size()) throw ComputationError("add_mult_matrix_by_vector", "A.rows != dst.size");
-    F(zgemv)('n', m, n, 1., A.data(), m, v.data(), 1, 1., dst.data(), 1);
+    zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 1., dst.data(), 1);
 }
 
 inline void add_mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
@@ -311,7 +293,7 @@ inline void add_mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatri
     if ((k = A.cols()) != B.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.cols != B.rows");
     if ((m = A.rows()) != dst.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.rows != dst.rows");
     if ((n = B.cols()) != dst.cols()) throw ComputationError("add_mult_matrix_by_matrix", "B.cols != dst.cols");
-    F(zgemm)('n', 'n', m, n, k, 1., A.data(), m, B.data(), k, 1., dst.data(), m);
+    zgemm('n', 'n', m, n, k, 1., A.data(), m, B.data(), k, 1., dst.data(), m);
 }
 
 
