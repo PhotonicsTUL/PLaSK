@@ -167,7 +167,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                 shared_ptr<Block<2>> last;
                 if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->material && layer_QW == region->isQW(region->size()-1))
+                if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region->isQW(region->size()-1))  //TODO check if usage of getRepresentativeMaterial is fine here (was material)
                 {
                     last->setSize(w, last->size.c1 + h);
                 }

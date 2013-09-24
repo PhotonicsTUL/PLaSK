@@ -25,7 +25,8 @@ void BlockWrapper<2>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAb
     managers.connectSizeF(size, [&](const QSizeF &v) { this->c().setSize(v.width(), v.height()); });
 
     QtProperty *material = managers.string.addProperty("material");
-    plask::shared_ptr<NameOnlyMaterial> mat = plask::static_pointer_cast<NameOnlyMaterial>(this->c().material);
+    //TODO support for bottom and top materials...
+    /*plask::shared_ptr<NameOnlyMaterial> mat = plask::static_pointer_cast<NameOnlyMaterial>(this->c().material);
     managers.string.setValue(material, mat ? QString(mat->name().c_str()) : "");
     dst.addProperty(material);
     managers.connectString(material, [&](const QString &v) {
@@ -37,7 +38,7 @@ void BlockWrapper<2>::setupPropertiesBrowser(BrowserWithManagers& managers, QtAb
                                 else mat->setName(v.toStdString());
                            }
                            this->c().setMaterial(mat);
-    });
+    });*/
 }
 
 

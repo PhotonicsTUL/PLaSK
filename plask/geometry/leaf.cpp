@@ -3,14 +3,28 @@
 
 namespace plask {
 
+template <int dim>
+XMLWriter::Element& GeometryObjectLeaf<dim>::SolidMaterial::writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+    return dest_xml_object.attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
+}
+
+template <int dim>
+XMLWriter::Element& GeometryObjectLeaf<dim>::MixedCompositionMaterial::writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+    return dest_xml_object
+            .attr(GeometryReader::XML_MATERIAL_BOTTOM_ATTR, (*materialFactory)(0.0)->str())
+            .attr(GeometryReader::XML_MATERIAL_TOP_ATTR, (*materialFactory)(1.0)->str());
+}
+
+template struct GeometryObjectLeaf<2>;
+template struct GeometryObjectLeaf<3>;
+
 template struct Block<2>;
 template struct Block<3>;
 
 // Initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
-    leaf.material = reader.requireMaterial();
-    //XML::requireTagEndOrEmptyTag(reader.source, reader.source.getNodeName());
+    leaf.setMaterialFast(reader.requireMaterial()); //TODO support for bottom/top
     reader.source.requireTagEnd();
 }
 
@@ -49,17 +63,17 @@ shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
 
 template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForVert(), size.vert())
-                    .attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
+    materialProvider->writeXML(dest_xml_object, axes)
+                    .attr(axes.getNameForTran(), size.tran())
+                    .attr(axes.getNameForVert(), size.vert());
 }
 
 template <>
 void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr(axes.getNameForLong(), size.lon())
+    materialProvider->writeXML(dest_xml_object, axes)
+                    .attr(axes.getNameForLong(), size.lon())
                     .attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForVert(), size.vert())
-                    .attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
+                    .attr(axes.getNameForVert(), size.vert());
 }
 
 static GeometryReader::RegisterObjectReader block2D_reader(Block<2>::NAME, read_block2D);

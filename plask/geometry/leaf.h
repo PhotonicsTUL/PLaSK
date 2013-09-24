@@ -23,12 +23,27 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
     using GeometryObjectD<dim>::getBoundingBox;
     using GeometryObjectD<dim>::shared_from_this;
 
-private:
+protected:
 
     struct MaterialProvider {
-        virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const = 0;
+        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const = 0;
+
+        /**
+         * Get material only if it this provider represents solid material (if getMaterial returns value independent from arguments).
+         * @return material or nullptr if it is not solid
+         */
         virtual shared_ptr<Material> isSolid() const = 0;
+
         virtual MaterialProvider* clone() const = 0;
+
+        /**
+         * Get representative material of this provider (typically material which is returned in center of object).
+         * @return representative material of this provider
+         */
+        virtual shared_ptr<Material> getRepresentativeMaterial() const = 0;
+
+        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const = 0;
+
         virtual ~MaterialProvider() {}
     };
 
@@ -37,7 +52,7 @@ private:
 
         SolidMaterial(shared_ptr<Material> material): material(material) {}
 
-        virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
+        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
             return material;
         }
 
@@ -48,6 +63,12 @@ private:
         SolidMaterial* clone() const {
             return new SolidMaterial(material);
         }
+
+        virtual shared_ptr<Material> getRepresentativeMaterial() const {
+            return material;
+        }
+
+        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
 
     struct MixedCompositionMaterial: public MaterialProvider {
@@ -56,7 +77,7 @@ private:
 
         MixedCompositionMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory): materialFactory(materialFactory) {}
 
-        virtual shared_ptr<Material> getMaterial(GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
+        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
             Box b = thisObj.getBoundingBox(); //TODO sth. faster. we only need vert() coordinates, we can also cache lower and height
             return (*materialFactory)((p.vert() - b.lower.vert()) / b.height());
         }
@@ -65,29 +86,54 @@ private:
             return shared_ptr<Material>();
         }
 
-        SolidMaterial* clone() const {
+        MixedCompositionMaterial* clone() const {
             return new MixedCompositionMaterial(materialFactory);
         }
 
+        virtual shared_ptr<Material> getRepresentativeMaterial() const {
+            return (*materialFactory)(0.5);
+        }
+
+        virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
 
-    //std::unique_ptr<MaterialProvider> materialProvider;
+    std::unique_ptr<MaterialProvider> materialProvider;
 
 public:
 
-    shared_ptr<Material> material;  //TODO change to MaterialProvider and make private, support for XML (checking if MixedCompositionFactory is solid), add isSolid
+    //shared_ptr<Material> material;  //TODO support for XML (checking if MixedCompositionFactory is solid), add isSolid
 
-    GeometryObjectLeaf<dim>(shared_ptr<Material> material): material(material) {}
+    GeometryObjectLeaf<dim>(shared_ptr<Material> material): materialProvider(new SolidMaterial(material)) {}
+
+    /**
+     * Get representative material of this leaf (typically material which is returned in center of object).
+     * @return representative material of this
+     */
+    virtual shared_ptr<Material> getRepresentativeMaterial() const {
+        return materialProvider->getRepresentativeMaterial();
+    }
+
+    /**
+     * Get material only if it this leaf is solid (has assign exactly one material).
+     * @return material or nullptr if it is not solid
+     */
+    virtual shared_ptr<Material> isSolid() const {
+        return materialProvider->isSolid();
+    }
 
     void setMaterial(shared_ptr<Material> new_material) {
-        material = new_material;
+        materialProvider.reset(new SolidMaterial(new_material));
         this->fireChanged();
+    }
+
+    void setMaterialFast(shared_ptr<Material> new_material) {
+        materialProvider.reset(new SolidMaterial(new_material));
     }
 
     virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_LEAF; }
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return this->contains(p) ? material : shared_ptr<Material>();
+        return this->contains(p) ? materialProvider->getMaterial(*this, p) : shared_ptr<Material>();
     }
 
     virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const {

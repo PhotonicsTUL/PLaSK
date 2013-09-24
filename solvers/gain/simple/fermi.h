@@ -35,7 +35,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
         shared_ptr<Material> getLayerMaterial(size_t n) const
         {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
-            return block->material;
+            return block->getRepresentativeMaterial();
         }
 
         /// \return translated bounding box of \p n-th layer

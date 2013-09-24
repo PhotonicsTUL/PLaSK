@@ -76,14 +76,14 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     for (size_t i = 0; i < 5; ++i)
         BOOST_CHECK_EQUAL(solver.regions[0].isQW(i), qw[i]);
 
-    BOOST_CHECK_EQUAL(solver.regions[0].getLayerMaterial(1), well->material);
+    BOOST_CHECK_EQUAL(solver.regions[0].getLayerMaterial(1), well->isSolid());
     BOOST_CHECK_EQUAL(solver.regions[0].getLayerBox(1), Box2D(2., 25., 12., 32.));
     BOOST_CHECK_EQUAL(solver.regions[0].getBoundingBox(), Box2D(2., 20., 12., 54.));
     BOOST_CHECK_EQUAL(solver.regions[1].getLayerBox(1), Box2D(0., 79., 10., 86.));
 
     BOOST_CHECK_EQUAL(solver.regions[2].size(), 3);
-    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(0), cladding1->material);
-    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(2), cladding2->material);
+    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(0), cladding1->isSolid());
+    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(2), cladding2->isSolid());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

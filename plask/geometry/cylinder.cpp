@@ -17,9 +17,8 @@ bool Cylinder::contains(const Cylinder::DVec &p) const {
 }
 
 void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
-    dest_xml_object.attr("radius", radius)
-                    .attr("height", height)
-                    .attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
+    materialProvider->writeXML(dest_xml_object, axes)
+            .attr("radius", radius).attr("height", height);
 }
 
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {

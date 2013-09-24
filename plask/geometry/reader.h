@@ -20,13 +20,15 @@ struct Manager;
  */
 class GeometryReader {
 
-    /// Allow to access objects by auto-name (beggined with '#').
+    /// Allow to access objects by auto-name (with names beggined with '#').
     std::map<std::string, shared_ptr<GeometryObject> > autoNamedObjects;
 
   public:
 
-    static constexpr const char* XML_NAME_ATTR = "name";    ///< name of object's/geometry's name attribute in XML
-    static constexpr const char* XML_MATERIAL_ATTR = "material";    ///< name of material attribute in XML
+    static constexpr const char* XML_NAME_ATTR = "name";                        ///< name of object's/geometry's name attribute in XML
+    static constexpr const char* XML_MATERIAL_ATTR = "material";                ///< name of material attribute in XML
+    static constexpr const char* XML_MATERIAL_TOP_ATTR = "topmaterial";          ///< name of top material attribute in XML
+    static constexpr const char* XML_MATERIAL_BOTTOM_ATTR = "bottommaterial";    ///< name of bottom material attribute in XML
 
     /**
      * Create new geometry object with parameters reading from XML source.

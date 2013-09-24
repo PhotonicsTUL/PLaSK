@@ -101,7 +101,7 @@ struct Material {
      * @code
      * double Al = 0.6;
      * double Mg = 0.1;
-     * std::string str = StringBuilder("Al", Al)("Ga")("N").doppant("Mg", Mg);
+     * std::string str = StringBuilder("Al", Al)("Ga")("N").dopant("Mg", Mg);
      * //str is "Al(0.6)GaN:Mg=0.1"
      * @endcode
      */

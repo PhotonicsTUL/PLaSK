@@ -230,7 +230,7 @@ std::unique_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(co
                                  const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount)
 {
     if (dopAmountType == Material::NO_DOPING)
-        getFactory(material1composition, material2composition);
+        return getFactory(material1composition, material2composition);
     return std::unique_ptr<MaterialsDB::MixedCompositionFactory>(
                 new MixedCompositionAndDopantFactory(getConstructor(material1composition, dopant_name),
                                                 material1composition, material2composition,
