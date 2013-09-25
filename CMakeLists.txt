@@ -63,7 +63,9 @@ include(CMakeDependentOption)
 
 option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for windows users
 
-option(BUILD_DOCUMENTATION "Build doxygen documentation." OFF)
+option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
+
+option(BUILD_MANUAL "Build user manual." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build Python interface as external module." OFF "BUILD_PYTHON" OFF)
@@ -472,23 +474,40 @@ if(BUILD_TESTING)
 endif(BUILD_TESTING)
 
 # ----------===== Documentation (api) =====--------------------------------------------
-find_package(Doxygen)
+if(WIN32)
+    set(doc_dest doc)
+else()
+    set(doc_dest share/doc/plask)
+endif()
 
-if(BUILD_DOCUMENTATION)
+
+find_package(Doxygen)
+if(BUILD_DEVEL_DOC)
     if(DOXYGEN_FOUND)
         file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
         add_custom_target(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
-        install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION share/doc/plask-dev-doc COMPONENT dev-doc
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION ${doc_dest}/devel COMPONENT dev-doc
                 PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
     else()
         message("Doxygen not found. Building without documentation.")
     endif()
-else(BUILD_DOCUMENTATION)
+else()
     if(DOXYGEN_FOUND)
+        file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
         add_custom_target(doc ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
     endif()
-endif(BUILD_DOCUMENTATION)
+endif()
 
+if(BUILD_MANUAL)
+    find_package(LyX)
+    if(LYX_FOUND)
+        lyx_export_to_pdf(manual INPUT ${CMAKE_SOURCE_DIR}/doc/PlaskUserManual.lyx)
+        add_custom_target(manual ALL DEPENDS ${manual})
+        install(FILES ${manual} DESTINATION ${doc_dest} COMPONENT doc)
+    endif()
+    file(GLOB examples ${CMAKE_SOURCE_DIR}/doc/*.xpl ${CMAKE_SOURCE_DIR}/doc/*.py)
+    install(FILES ${examples} DESTINATION ${doc_dest} COMPONENT doc)
+endif()
 
 # ----------===== Optional tools =====--------------------------------------------
 
@@ -549,9 +568,10 @@ set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
 
 set(CPACK_STRIP_FILES ON)
 
-set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils")
+set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils;doc")
 set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK core")
 set(CPACK_COMPONENT_CORE_REQUIRED ON)
+set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User manual and examples")
 set(CPACK_COMPONENT_SOLVERS_DISPLAY_NAME "Computational solvers")
 set(CPACK_COMPONENT_GUI_DISPLAY_NAME "Graphical User Interface")
 set(CPACK_COMPONENT_UTILS_DISPLAY_NAME "Command-line utilities (e.g. dan2xpl)")

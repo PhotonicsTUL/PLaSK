@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language SYSTEM "language.dtd"
+[
+	<!-- names must start with a letter, ideogram or underscore. \w matches any
+		 word character *or* a number, hence the lookahead -->
+	<!ENTITY name    "(?![0-9])[\w_:][\w.:_-]*">
+	<!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
+]>
+<language name="PLaSK" version="0.01" kateversion="2.4" section="Markup"
+  extensions="*.xpl;*.plsx;*.plsk" mimetype="application/plask"
+  casesensitive="1" author="Maciej Dems (maciej.dems@p.lodz.pl)" license="LGPL">
+
+<highlighting>
+
+
+
+<contexts>
+    <context name="Start" attribute="Normal Text" lineEndContext="#stay">
+        <IncludeRules context="FindXML"/>
+    </context>
+
+    <context name="FindXML" attribute="Normal Text" lineEndContext="#stay">
+        <StringDetect attribute="MainElement" context="Script" String="&lt;script&gt;" beginRegion="script"/>
+        <RegExpr attribute="MainElement" String="&lt;/?(plask|defines|materials|geometry|grids|solvers|connects)" context="MainElement"/>
+        <IncludeRules context="##XML"/>
+    </context>
+
+    <context name="MainElement" lineEndContext="#stay">
+        <Detect2Chars attribute="MainElement" context="#pop" char="/" char1="&gt;" />
+        <DetectChar attribute="MainElement" context="#pop" char="&gt;" />
+        <RegExpr attribute="Attribute" context="Attribute" String="^&name;" />
+        <RegExpr attribute="Attribute" context="Attribute" String="\s+&name;" />
+        <RegExpr attribute="Error" context="#stay" String="\S" />
+    </context>
+
+        <context name="Attribute" attribute="Other Text" lineEndContext="#stay">
+        <DetectChar attribute="Attribute" context="Value" char="=" />
+        <RegExpr attribute="Error" context="#stay" String="\S" />
+    </context>
+
+    <context name="Value" attribute="Other Text" lineEndContext="#stay">
+        <DetectChar attribute="Value" context="Value DQ" char="&quot;" />
+        <DetectChar attribute="Value" context="Value SQ" char="&apos;" />
+        <RegExpr attribute="Error" context="#stay" String="\S" />
+    </context>
+
+    <context name="Value DQ" attribute="Value" lineEndContext="#stay">
+        <DetectChar attribute="Value" context="#pop#pop#pop" char="&quot;" />
+        <IncludeRules context="FindEntityRefs" />
+    </context>
+
+    <context name="Value SQ" attribute="Value" lineEndContext="#stay">
+        <DetectChar attribute="Value" context="#pop#pop#pop" char="&apos;" />
+        <IncludeRules context="FindEntityRefs" />
+    </context>
+
+    <context name="Script" lineEndContext="#stay">
+        <StringDetect attribute="MainElement" context="#pop" String="&lt;/script&gt;" endRegion="script"/>
+        <StringDetect attribute="CDATA" context="ScriptCDATA" String="&lt;![CDATA["/>
+        <IncludeRules context="FindEntityRefs"/>
+        <IncludeRules context="##Python"/>
+    </context>
+
+    <context name="ScriptCDATA" lineEndContext="#stay">
+        <StringDetect attribute="CDATA" context="#pop" String="]]&gt;"/>
+        <StringDetect attribute="EntityRef" context="#stay" String="]]&amp;gt;"/>
+        <IncludeRules context="##Python"/>
+    </context>
+
+    <context name="FindEntityRefs" attribute="Other Text" lineEndContext="#stay">
+        <RegExpr attribute="EntityRef" context="#stay" String="&entref;"/>
+        <AnyChar attribute="Error" context="#stay" String="&amp;&lt;"/>
+    </context>
+
+ </contexts>
+
+
+<itemDatas>
+    <itemData name="Normal" defStyleNum="dsNormal" spellChecking="false"/>
+    <itemData name="MainElement" defStyleNum="dsKeyword" color="#d00040" spellChecking="false"/>
+    <itemData name="CDATA" defStyleNum="dsBaseN" bold="1" spellChecking="false"/>
+    <itemData name="EntityRef" defStyleNum="dsDecVal" spellChecking="false"/>
+    <itemData name="Error" defStyleNum="dsError" spellChecking="false"/>
+    <itemData name="Attribute" defStyleNum="dsOthers" spellChecking="false" />
+    <itemData name="Value" defStyleNum="dsString" color="#a00" spellChecking="false" />
+</itemDatas>
+
+</highlighting>
+
+<general>
+  <comments>
+    <comment name="multiLine" start="&lt;!--" end="--&gt;" region=""/>
+    <comment name="singleLine" start="#"/>
+  </comments>
+</general>
+
+</language>
