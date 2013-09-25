@@ -7242,6 +7242,124 @@ wszystkie możliwości
 \labelwidthstring 00.00.0000
 
 \family typewriter
+bottom
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the bottom border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the left border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 length
 \family default
  
@@ -7277,6 +7395,124 @@ name
 \end_inset
 
 string)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the right border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the top border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
 \end_layout
 
 \begin_layout Standard
@@ -7422,6 +7658,183 @@ wszystkie możliwości
 \labelwidthstring 00.00.0000
 
 \family typewriter
+bottom
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the bottom border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+inner
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the inner radical border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+outer
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the outer radical border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 name
 \family default
  Geometry name for further reference.
@@ -7430,6 +7843,65 @@ name
 \end_inset
 
 string)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the top border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
 \end_layout
 
 \begin_layout Standard
@@ -7575,6 +8047,242 @@ wszystkie możliwości
 \labelwidthstring 00.00.0000
 
 \family typewriter
+back
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the back border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+bottom
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the bottom border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+front
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the front border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+left
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the left border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 name
 \family default
  Geometry name for further reference.
@@ -7583,6 +8291,124 @@ name
 \end_inset
 
 string)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+right
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the right border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+top
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Specification of the top border.
+ (any material name, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+mirror
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+periodic
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+, or 
+\begin_inset Quotes eld
+\end_inset
+
+
+\emph on
+extend
+\emph default
+
+\begin_inset Quotes erd
+\end_inset
+
+)
 \end_layout
 
 \begin_layout Standard
@@ -14758,6 +15584,23 @@ Contents
 
 \family typewriter
 \series bold
+<no-gradual/>
+\family default
+\series default
+ Turn off smooth mesh step (i.
+\begin_inset space \space{}
+\end_inset
+
+e.
+ the adjacent elements of the generated mesh may differ more than by the
+ factor of two).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
 <prediv/>
 \family default
 \series default
@@ -14928,7 +15771,83 @@ object
 \family typewriter
 at
 \family default
- Position of the refinement line in the local object coordinates.
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, a single refinement line is placed at the
+ position specified in it (in the local object coordinates).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, multiple refinement lines are placed dividing
+ the object into a specified number of equal parts.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+every
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, multiple refinement lines are places at distance
+ from each other specified in the attribute value.
+\end_layout
+
+\begin_layout Standard
+Exactly one of 
+\family typewriter
+at
+\family default
+, 
+\family typewriter
+by
+\family default
+, or 
+\family typewriter
+every
+\family default
+ attribute must be present.
 \end_layout
 
 \end_deeper
@@ -15127,6 +16046,23 @@ Contents
 \end_inset
 
 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<no-gradual/>
+\family default
+\series default
+ Turn off smooth mesh step (i.
+\begin_inset space \space{}
+\end_inset
+
+e.
+ the adjacent elements of the generated mesh may differ more than by the
+ factor of two).
 \end_layout
 
 \begin_layout Labeling
@@ -15361,8 +16297,83 @@ object
 \family typewriter
 at
 \family default
- Position of the refinement line in the local object coordinates.
  
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, a single refinement line is placed at the
+ position specified in it (in the local object coordinates).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, multiple refinement lines are placed dividing
+ the object into a specified number of equal parts.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+every
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, multiple refinement lines are places at distance
+ from each other specified in the attribute value.
+\end_layout
+
+\begin_layout Standard
+Exactly one of 
+\family typewriter
+at
+\family default
+, 
+\family typewriter
+by
+\family default
+, or 
+\family typewriter
+every
+\family default
+ attribute must be present.
 \end_layout
 
 \end_deeper
@@ -15595,6 +16606,23 @@ Contents
 \end_inset
 
 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<no-gradual/>
+\family default
+\series default
+ Turn off smooth mesh step (i.
+\begin_inset space \space{}
+\end_inset
+
+e.
+ the adjacent elements of the generated mesh may differ more than by the
+ factor of two).
 \end_layout
 
 \begin_layout Labeling
@@ -15847,8 +16875,83 @@ object
 \family typewriter
 at
 \family default
- Position of the refinement line in the local object coordinates.
  
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, a single refinement line is placed at the
+ position specified in it (in the local object coordinates).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+by
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, multiple refinement lines are placed dividing
+ the object into a specified number of equal parts.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+every
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+If this attribute is present, multiple refinement lines are places at distance
+ from each other specified in the attribute value.
+\end_layout
+
+\begin_layout Standard
+Exactly one of 
+\family typewriter
+at
+\family default
+, 
+\family typewriter
+by
+\family default
+, or 
+\family typewriter
+every
+\family default
+ attribute must be present.
 \end_layout
 
 \end_deeper
