@@ -112,22 +112,22 @@ struct ExpansionPW2D: public Expansion {
     dcomplex imuyy(int i) { return mag[(i>=0)?i:i+nN].c11; }
 
     /// Get \f$ E_x \f$ index
-    size_t iEx(int i) { return 2 * ((i>=0)?i:i+nN); }
+    size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }
 
     /// Get \f$ E_x \f$ index
-    size_t iEz(int i) { return 2 * ((i>=0)?i:i+nN) + 1; }
+    size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
 
     /// Get \f$ E_x \f$ index
-    size_t iHx(int i) { return 2 * ((i>=0)?i:i+nN); }
+    size_t iHx(int i) { return 2 * ((i>=0)?i:i+N); }
 
     /// Get \f$ E_x \f$ index
-    size_t iHz(int i) { return 2 * ((i>=0)?i:i+nN) + 1; }
+    size_t iHz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
 
     /// Get \f$ E_x \f$ index
-    size_t iE(int i) { return (i>=0)?i:i+nN; }
+    size_t iE(int i) { return (i>=0)?i:i+N; }
 
     /// Get \f$ E_x \f$ index
-    size_t iH(int i) { return (i>=0)?i:i+nN; }
+    size_t iH(int i) { return (i>=0)?i:i+N; }
 };
 
 }}} // namespace plask

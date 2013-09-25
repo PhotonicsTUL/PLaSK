@@ -61,8 +61,8 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
         detlog.resetCounter();
         switch (var) {
             case K_0: detlog.axis_arg_name = "k0"; return;
-            case K_LONG: detlog.axis_arg_name = "klong"; return;
-            case K_TRAN: detlog.axis_arg_name = "ktran"; return;
+            case K_LONG: detlog.axis_arg_name = "beta"; return;
+            case K_TRAN: detlog.axis_arg_name = "k"; return;
         }
     }
 

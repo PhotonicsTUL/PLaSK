@@ -259,6 +259,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
 
 void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
 {
+    getMaterialCoefficients(l);
+    
     int order = solver->getSize();
     dcomplex f = I / k0, k02 = k0*k0;
     dcomplex b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);

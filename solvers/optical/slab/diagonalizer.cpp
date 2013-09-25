@@ -39,6 +39,8 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
     // First find necessary matrices
     cmatrix RE = Th1[layer], RH = Th[layer];
+    
+    #pragma omp critical // expansion may share some memory
     src->getMatrices(layer, k0, Kx, Ky, RE, RH);
 
     cmatrix QE(N,N);
@@ -66,6 +68,12 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
         mult_matrix_by_matrix(RH, RE, QE);  // QE = RH * RE
 
+// for (int r = 0; r < QE.rows(); ++r) {
+//     for (int c = 0; c < QE.cols(); ++c)
+//         std::cerr << format("%.2f  ", real(QE(r,c)));
+//     std::cerr << "\n";
+// }
+    
         // This is probably expensive but necessary check to avoid hangs
         int NN = N*N;
         for (int i = 0; i < NN; i++) {
@@ -77,7 +85,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // we use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
         int info;
         zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
-              Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
+              Te[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
 
         // ...and rewrite the eigenvectors to their final locations
         memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
