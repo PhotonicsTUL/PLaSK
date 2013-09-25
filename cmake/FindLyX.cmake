@@ -92,17 +92,18 @@ function(lyx_export _format _extension _outvar)
 
         if(NOT OUTPUT_TO_SOURCE_DIR)
             set(_outname "${CMAKE_CURRENT_BINARY_DIR}/${_base}.${_extension}")
+            set(_export_command -batch -x "buffer-export-custom ${_format} ${CMAKE_COMMAND} -E copy '$$$$FName' '${_outname}'")
         else()
-            set(_outname "${CMAKE_CURRENT_SOURCE_DIR}/${_base}.${_extension}")
+            get_filename_component(_path "${_file}" PATH)
+            set(_outname "${_path}/${_base}.${_extension}")
+            set(_export_command -e ${_format})
         endif()
 
         list(APPEND _out "${_outname}")
 
         if(LYX_COMMAND)
             add_custom_command(OUTPUT "${_outname}"
-                COMMAND ${LYX_COMMAND} -batch
-                -x "buffer-export-custom ${_format} ${CMAKE_COMMAND} -E copy '$$$$FName' '${_outname}'"
-                "${_file}"
+                COMMAND ${LYX_COMMAND} ${_export_command} "${_file}"
                 MAIN_DEPENDENCY "${_file}"
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                 DEPENDS "${_file}" ${EXTRA_DEPS}
