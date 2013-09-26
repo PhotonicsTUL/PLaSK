@@ -80,7 +80,7 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const s
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    return make_shared<RectilinearMesh2D>((*horizontal_generator)(geometry)->axis, makeGeometryGrid(geometry)->axis1);
+    return make_shared<RectilinearMesh2D>((*horizontal_generator)(geometry)->axis, makeGeometryGrid(geometry, min_ply, max_points)->axis1);
 }
 
 

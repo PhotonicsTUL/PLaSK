@@ -88,14 +88,22 @@ class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorOf<RectilinearMesh2D
 
     shared_ptr<MeshGeneratorOf<RectilinearMesh1D>> horizontal_generator;
 
+    /// Minimum ply after split single, non-solid layer.
+    double min_ply;
+
+    /// Maximum points to split single, non-solid layer (more important than min_ply).
+    long max_points;
+
   public:
 
     /**
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param min_ply minimum ply after split single, non-solid layer
+     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorOf<RectilinearMesh1D>>& source):
-        horizontal_generator(source) {}
+    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorOf<RectilinearMesh1D>>& source, double min_ply = 0.01, long max_points = 10):
+        horizontal_generator(source), min_ply(min_ply), max_points(max_points) {}
 
     virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
 };
