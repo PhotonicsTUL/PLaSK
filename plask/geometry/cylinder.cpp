@@ -24,7 +24,7 @@ void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {
     shared_ptr< Cylinder > result(new Cylinder(
                                reader.source.requireAttribute<double>("radius"),
-                               reader.source.requireAttribute<double>("height"),
+                               reader.source.requireAttribute<double>("height")
                            ));
     result->readMaterial(reader);
     reader.source.requireTagEnd();
