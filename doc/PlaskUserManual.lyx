@@ -10601,7 +10601,7 @@ geometry!object!rectangle
 \begin_deeper
 \begin_layout Standard
 \begin_inset ERT
-status collapsed
+status open
 
 \begin_layout Plain Layout
 
@@ -10640,7 +10640,35 @@ role
 \family typewriter
 material
 \family default
- Definition of the block material.
+ Definition of the block material (for solid blocks).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material-bottom
+\family default
+ Definition of the material of the bottom of the block (for blocks which
+ material linearly change from bottom to top).
+ You should also set 
+\family typewriter
+material-top
+\family default
+, and these materials can differs only in composition or amount of dopant.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material-top
+\family default
+ Definition of the material of top of the block (see also 
+\family typewriter
+material-bottom
+\family default
+).
 \end_layout
 
 \begin_layout Labeling
@@ -13762,6 +13790,34 @@ material
 \labelwidthstring 00.00.0000
 
 \family typewriter
+material-bottom
+\family default
+ Definition of the material of the bottom of the block (for blocks which
+ material linearly change from bottom to top).
+ You should also set 
+\family typewriter
+material-top
+\family default
+, and these materials can differs only in composition or amount of dopant.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material-top
+\family default
+ Definition of the material of top of the block (see also 
+\family typewriter
+material-bottom
+\family default
+).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
 d
 \begin_inset Formula $x$
 \end_inset
@@ -13944,6 +14000,34 @@ role
 material
 \family default
  Definition of the block material.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material-bottom
+\family default
+ Definition of the material of the bottom of the cylinder (for cylinders
+ which material linearly change from bottom to top).
+ You should also set 
+\family typewriter
+material-top
+\family default
+, and these materials can differs only in composition or amount of dopant.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+material-top
+\family default
+ Definition of the material of top of the cylinder (see also 
+\family typewriter
+material-bottom
+\family default
+).
 \end_layout
 
 \begin_layout Labeling

@@ -255,7 +255,7 @@ aligner_any_attr =
 
 material_attr =
 	## name (and composition) of material, e.g. "air", "AlN", "Al(0.2)GaN", "Al(0.2)GaN:Mg=7e18"
-	attribute material { text }
+	(attribute (material) { text } | (attribute (material-top) { text } & attribute (material-bottom) { text }))
 
 
 # ====== extrusion ======
@@ -613,7 +613,7 @@ boundary_cond = element condition {
 		anyElement*
 	  }
 	) &
-	attribute value { text }
+	attribute value { text } &
 	anyAttribute*
 }
 
