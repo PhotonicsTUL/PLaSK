@@ -627,6 +627,21 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     bool isContainer() const { return getType() == TYPE_CONTAINER; }
     bool isGeometry() const { return getType() == TYPE_GEOMETRY; }
 
+    /*
+     * Get material only if it this object is solid (has assign exactly one material).
+     * @return material or nullptr if it is not solid
+     *
+     * Default implementation returns nullptr.
+     */
+    //virtual shared_ptr<Material> isSolid() const { return shared_ptr<Material>(); }
+
+    /**
+     * Get information if object is solid in its bouding-box in given @p direction.
+     * @param direction direction
+     * @return @c true only if object is solid in its bouding-box in given @p direction
+     */
+    virtual bool isSolidInBB(Primitive<3>::Direction direction) const { return false; }
+
     /**
      * Check if this object belongs to class (has tag) with name @p role_name.
      * @param role_name name of class/tag to check

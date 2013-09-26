@@ -5,16 +5,33 @@
 
 namespace plask {
 
-shared_ptr<RectilinearMesh1D> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
+inline static void addPoints(RectilinearAxis& dst, double lo, double up, bool isSolid, double min_ply, long max_points) {
+    dst.addPoint(lo);
+    dst.addPoint(up);
+    if (!isSolid) {
+        const double ply = up - lo;
+        const long points = std::min( long(std::ceil(ply / min_ply)), max_points );
+        for (long i = points - 1; i > 0; --i) {
+            dst.addPoint(lo + i * ply / points);
+        }
+    }
+}
+
+shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = make_shared<RectilinearMesh1D>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
+    std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
-    for (auto& box: boxes) {
+    for (std::size_t i = 0; i < boxes.size(); ++i) {
+        addPoints(mesh->axis, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+    }
+
+    /*for (auto& box: boxes) {
         mesh->axis.addPoint(box.lower.c0);
         mesh->axis.addPoint(box.upper.c0);
-    }
+    }*/
 
     return mesh;
 }
@@ -28,18 +45,24 @@ shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::generate(const s
 }
 
 
-shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply, long max_points)
 {
     auto mesh = make_shared<RectilinearMesh2D>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
+    std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
-    for (auto& box: boxes) {
+    for (std::size_t i = 0; i < boxes.size(); ++i) {
+        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+    }
+
+    /*for (auto& box: boxes) {
         mesh->axis0.addPoint(box.lower.c0);
         mesh->axis0.addPoint(box.upper.c0);
         mesh->axis1.addPoint(box.lower.c1);
         mesh->axis1.addPoint(box.upper.c1);
-    }
+    }*/
 
     mesh->setOptimalIterationOrder();
 
@@ -48,7 +71,7 @@ shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
 
 shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = makeGeometryGrid(geometry);
+    auto mesh = makeGeometryGrid(geometry, min_ply, max_points);
     if (extend_to_zero) mesh->axis0.addPoint(0.);
     writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
     return mesh;
@@ -61,20 +84,27 @@ shared_ptr<RectilinearMesh2D> RectilinearMesh2DFrom1DGenerator::generate(const s
 }
 
 
-shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
+shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply, long max_points)
 {
     auto mesh = make_shared<RectilinearMesh3D>();
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
+    std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
-    for (auto& box: boxes) {
+    for (std::size_t i = 0; i < boxes.size(); ++i) {
+        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+        addPoints(mesh->axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
+    }
+
+    /*for (auto& box: boxes) {
         mesh->axis0.addPoint(box.lower.c0);
         mesh->axis0.addPoint(box.upper.c0);
         mesh->axis1.addPoint(box.lower.c1);
         mesh->axis1.addPoint(box.upper.c1);
         mesh->axis2.addPoint(box.lower.c2);
         mesh->axis2.addPoint(box.upper.c2);
-    }
+    }*/
 
     mesh->setOptimalIterationOrder();
 
@@ -83,7 +113,7 @@ shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
 
 shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
-    auto mesh = makeGeometryGrid(geometry);
+    auto mesh = makeGeometryGrid(geometry, min_ply, max_points);
     writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
     return mesh;
 }

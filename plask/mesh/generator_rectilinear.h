@@ -13,30 +13,41 @@ namespace plask {
  * \param geometry given geometry
  * \return generated mesh
  */
-shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry);
+shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply = 0.01, long max_points = 10);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
  * \return generated mesh
  */
-shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
+shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply = 0.01, long max_points = 10);
 
 /**
  * Generator of basic 2D geometry grid
  */
 class RectilinearMesh1DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh1D> {
 
+    /// Minimum ply after split single, non-solid layer.
+    double min_ply;
+
+    /// Maximum points to split single, non-solid layer (more important than min_ply).
+    long max_points;
+
     /// Should we add line at horizontal zero
     bool extend_to_zero;
+
+    shared_ptr<RectilinearMesh1D> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry);
 
   public:
 
     /**
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param min_ply minimum ply after split single, non-solid layer
+     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh1DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
+    RectilinearMesh1DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
+        : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<RectilinearMesh1D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
 };
@@ -47,6 +58,12 @@ class RectilinearMesh1DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh1D
  */
 class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D> {
 
+    /// Minimum ply after split single, non-solid layer.
+    double min_ply;
+
+    /// Maximum points to split single, non-solid layer (more important than min_ply).
+    long max_points;
+
     /// Should we add line at horizontal zero
     bool extend_to_zero;
 
@@ -55,8 +72,11 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh2D
     /**
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param min_ply minimum ply after split single, non-solid layer
+     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
+    RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
+        : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<RectilinearMesh2D> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
 };
@@ -86,6 +106,23 @@ class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorOf<RectilinearMesh2D
  * Generator of basic 3D geometry grid
  */
 struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectilinearMesh3D> {
+
+    /// Minimum ply after split single, non-solid layer.
+    double min_ply;
+
+    /// Maximum points to split single, non-solid layer (more important than min_ply).
+    long max_points;
+
+public:
+
+    /**
+     * Create generator
+     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param min_ply minimum ply after split single, non-solid layer
+     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
+     */
+    RectilinearMesh3DSimpleGenerator(double min_ply = 0.01, long max_points = 10)
+        : min_ply(min_ply), max_points(max_points) {}
 
     virtual shared_ptr<RectilinearMesh3D> generate(const shared_ptr<GeometryObjectD<3>>& geometry);
 };

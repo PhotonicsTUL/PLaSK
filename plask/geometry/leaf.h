@@ -46,6 +46,8 @@ protected:
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const = 0;
 
+        virtual bool isSolidInBB(Primitive<3>::Direction direction) const = 0;
+
         virtual ~MaterialProvider() {}
     };
 
@@ -69,6 +71,8 @@ protected:
         virtual shared_ptr<Material> getRepresentativeMaterial() const {
             return material;
         }
+
+        virtual bool isSolidInBB(Primitive<3>::Direction direction) const { return true; }
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
@@ -96,6 +100,8 @@ protected:
             return (*materialFactory)(0.5);
         }
 
+        virtual bool isSolidInBB(Primitive<3>::Direction direction) const { return direction != Primitive<3>::DIRECTION_VERT; }
+
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
 
@@ -109,11 +115,15 @@ public:
 
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): materialProvider(new SolidMaterial(material)) {}
 
+    bool isSolidInBB(Primitive<3>::Direction direction) const override {
+        return materialProvider->isSolidInBB(direction);
+    }
+
     /**
      * Get representative material of this leaf (typically material which is returned in center of object).
      * @return representative material of this
      */
-    virtual shared_ptr<Material> getRepresentativeMaterial() const {
+    shared_ptr<Material> getRepresentativeMaterial() const {
         return materialProvider->getRepresentativeMaterial();
     }
 
@@ -121,7 +131,7 @@ public:
      * Get material only if it this leaf is solid (has assign exactly one material).
      * @return material or nullptr if it is not solid
      */
-    virtual shared_ptr<Material> isSolid() const {
+    shared_ptr<Material> isSolid() const {
         return materialProvider->isSolid();
     }
 

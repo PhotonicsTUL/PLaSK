@@ -35,7 +35,9 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
         shared_ptr<Material> getLayerMaterial(size_t n) const
         {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
-            return block->getRepresentativeMaterial();
+            //return block->getRepresentativeMaterial();
+            if (auto m = block->isSolid()) return m;
+            throw plask::Exception("FermiGainSolver requires solid layers.");
         }
 
         /// \return translated bounding box of \p n-th layer
