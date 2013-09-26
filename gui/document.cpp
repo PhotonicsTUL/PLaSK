@@ -24,7 +24,7 @@ void Document::open(const QString &fileName) {
     plask::Manager manager;
     undoStack.clear();
     //TODO support file names with non-asci char
-    manager.loadFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance);
+    //manager.loadFromFile(fileName.toStdString(), &NameOnlyMaterial::getInstance); //TODO !!!
     for (auto& object: manager.geometrics) {
         ext(object.second)->setName(QString(object.first.c_str()));
     }

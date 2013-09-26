@@ -115,7 +115,7 @@ class GeometryReader {
     XMLReader& source;
 
     /// Source of materials, typically use material database.
-    MaterialsSource materialSource;
+    shared_ptr<const MaterialsSource> materialSource;
 
     /**
      * Get material from material source (typically material database) connected with this reader.
@@ -125,7 +125,11 @@ class GeometryReader {
      * @return material with name @p material_full_name
      */
     shared_ptr<Material> getMaterial(const std::string& material_full_name) const {
-        return materialSource(material_full_name);
+        return materialSource->get(material_full_name);
+    }
+
+    std::unique_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name) const {
+        return materialSource->getFactory(material1_full_name, material2_full_name);
     }
 
     /**
@@ -150,7 +154,7 @@ class GeometryReader {
      * @param source xml data source from which object data should be read
      * @param materialsSource materials source used to set leafs materials
      */
-    GeometryReader(Manager& manager, XMLReader& source, const MaterialsSource& materialsSource);
+    GeometryReader(Manager& manager, XMLReader& source,  shared_ptr<const MaterialsSource> materialsSource);
 
     /**
      * Read geometry object from @p source and add it Manager structures.

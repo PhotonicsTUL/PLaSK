@@ -103,7 +103,8 @@ struct Geometry: public GeometryObject {
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
      * @param materialsSource source of materials
      */
-    void setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsSource& materialsSource = MaterialsDB::getDefault().toSource());
+    void setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames,
+                    const MaterialsSource& materialsSource = MaterialsSourceDB(MaterialsDB::getDefault()));
 
     /**
      * Get border strategy or throw exception if border can't be get for this calculation space or direction.

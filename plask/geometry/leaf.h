@@ -10,6 +10,8 @@ This file contains geometry objects leafs classes.
 
 namespace plask {
 
+struct GeometryReader;
+
 /**
  * Template of base classes for all leaf nodes.
  * @tparam dim number of dimensions
@@ -101,6 +103,8 @@ protected:
 
 public:
 
+    GeometryReader & readMaterial(GeometryReader &src);
+
     //shared_ptr<Material> material;  //TODO support for XML (checking if MixedCompositionFactory is solid), add isSolid
 
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): materialProvider(new SolidMaterial(material)) {}
@@ -128,6 +132,15 @@ public:
 
     void setMaterialFast(shared_ptr<Material> new_material) {
         materialProvider.reset(new SolidMaterial(new_material));
+    }
+
+    void setMaterialTopBottomCompositionFast(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
+        materialProvider.reset(new MixedCompositionMaterial(materialTopBottom));
+    }
+
+    void setMaterialTopBottomComposition(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
+        setMaterialTopBottomCompositionFast(materialTopBottom);
+        this->fireChanged();
     }
 
     virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_LEAF; }

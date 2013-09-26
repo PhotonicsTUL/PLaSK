@@ -26,7 +26,7 @@ struct PythonManager: public Manager {
 
     virtual void loadConnects(XMLReader& reader);
 
-    virtual void loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource);
+    virtual void loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource);
 
     static void export_dict(py::object self, py::dict dict);
 

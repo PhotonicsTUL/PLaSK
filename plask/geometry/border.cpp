@@ -17,7 +17,7 @@ Strategy* Strategy::fromStr(const std::string& str, const MaterialsSource& mater
     if (lower_name == "periodic") return new Periodic();
     if (lower_name == "extend") return new Extend();
     if (lower_name == "mirror") return new Mirror();
-    return new SimpleMaterial(materialsSource(str));
+    return new SimpleMaterial(materialsSource.get(str));
 }
 
 void SimpleMaterial::applyLo(double, double, double&, shared_ptr<plask::Material> &result_material, const Strategy*) const {

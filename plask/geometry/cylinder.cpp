@@ -25,8 +25,8 @@ shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {
     shared_ptr< Cylinder > result(new Cylinder(
                                reader.source.requireAttribute<double>("radius"),
                                reader.source.requireAttribute<double>("height"),
-                               reader.requireMaterial()
                            ));
+    result->readMaterial(reader);
     reader.source.requireTagEnd();
     return result;
 }

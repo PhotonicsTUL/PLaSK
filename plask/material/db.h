@@ -10,41 +10,35 @@
 namespace plask {
 
 /**
- * Type of material source, can return material with given name.
- */
-typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
-//TODO ? maybe MaterialsSource should be a class, a base class for MaterialsDB, and maybe it should has interface to append new materials
-
-/**
  * Materials database.
  *
  * Create materials with given name, composition and dopant.
  */
 struct MaterialsDB {
 
-    /**
+    /*
      * Materials source functor which use materials database.
      */
-    struct Source {
+    /*struct Source {
         const MaterialsDB& materialsDB;
         Source(const MaterialsDB& materialsDB): materialsDB(materialsDB) {}
         shared_ptr<Material> operator()(const std::string& material_full_name) const { return materialsDB.get(material_full_name); }
-    };
+    };*/
 
-    /**
+    /*
      * Get material database wrapped by @p materialsSource.
      * @param materialsSource source of materials, which can wrap material database
      * @return pointer to wrapped material database or @c nullptr if materialsSource is not constructed using material database
      */
-    static const MaterialsDB* getFromSource(const MaterialsSource& materialsSource);
+    //static const MaterialsDB* getFromSource(const MaterialsSource& materialsSource);
 
-    /**
+    /*
      * Convert @c this material database to material source.
      * @return material source which use @c this database
      */
-    Source toSource() const {
+    /*Source toSource() const {
         return Source(*this);
-    }
+    }*/
 
     /**
      * Get default material database.
@@ -400,7 +394,7 @@ public:
      * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
      * @return constructed factory
      */
-    std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition);
+    std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) const;
 
     /**
      * Construct mixed material factory.
@@ -412,7 +406,7 @@ public:
      * @return constructed factory
      */
     std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
-                                        Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount);
+                                        Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
 
     /**
      * Construct mixed material factory.
@@ -424,7 +418,7 @@ public:
      * @return constructed factory created using new operator, should by delete by caller
      */
     std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
-                                        const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount);
+                                        const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
 
     /**
      * Construct mixed material factory.
@@ -432,7 +426,7 @@ public:
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory created using operator new, should by delete by caller
      */
-    std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname);
+    std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const;
 
     /**
      * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.
@@ -566,6 +560,67 @@ private:
                              const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
 
 
+};
+
+/*
+ * Type of material source, can return material with given name.
+ */
+//typedef std::function<shared_ptr<Material>(const std::string& material_full_name)> MaterialsSource;
+//TODO ? maybe MaterialsSource should be a class, a base class for MaterialsDB, and maybe it should has interface to append new materials
+
+/**
+ * Type of material source, can return material with given name.
+ */
+struct MaterialsSource {
+
+    virtual ~MaterialsSource() {}
+
+    virtual const MaterialsDB* getDB() const = 0;
+
+    /**
+     * Get material object.
+     * @param full_name material name, with encoded parameters in format composition[:dopant], see get(const std::string&, const std::string&)
+     * @return material with @p full_name
+     * @throw NoSuchMaterial if material with given name not exists
+     * @throw MaterialParseException if can't parse @p full_name
+     */
+    virtual shared_ptr<Material> get(const std::string& full_name) const = 0;
+
+    /**
+     * Construct mixed material factory.
+     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
+     *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
+     * @return constructed factory created using operator new, should by delete by caller
+     */
+    virtual std::unique_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const = 0;
+};
+
+struct MaterialsSourceDB: public MaterialsSource {
+
+    const MaterialsDB& db;
+
+    MaterialsSourceDB(const MaterialsDB& db): db(db) {}
+
+    virtual const MaterialsDB* getDB() const { return &db; }
+
+    /**
+     * Get material object.
+     * @param full_name material name, with encoded parameters in format composition[:dopant], see get(const std::string&, const std::string&)
+     * @return material with @p full_name
+     * @throw NoSuchMaterial if material with given name not exists
+     * @throw MaterialParseException if can't parse @p full_name
+     */
+    shared_ptr<Material> get(const std::string& full_name) const { return db.get(full_name); }
+
+    /**
+     * Construct mixed material factory.
+     * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
+     *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
+     * @return constructed factory created using operator new, should by delete by caller
+     */
+    virtual std::unique_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const {
+        return db.getFactory(material1_fullname, material2_fullname);
+    }
 };
 
 }   // namespace plask

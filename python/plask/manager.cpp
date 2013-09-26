@@ -155,13 +155,13 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     reader.attributeFilter = PythonXMLFilter(manager);
     
     if (filter == py::object()) {
-        manager->load(reader, MaterialsDB::getDefault().toSource(), Manager::ExternalSourcesFromFile(filename));
+        manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename));
     } else {
         py::list sections = py::list(filter);
         auto filterfun = [sections](const std::string& section) -> bool {
             return py::extract<bool>(sections.contains(section));
         };
-        manager->load(reader, MaterialsDB::getDefault().toSource(), Manager::ExternalSourcesFromFile(filename), filterfun);
+        manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename), filterfun);
     }
 }
 
@@ -263,10 +263,10 @@ void PythonManager::loadConnects(XMLReader& reader)
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB);
 
-void PythonManager::loadMaterials(XMLReader& reader, const MaterialsSource& materialsSource)
+void PythonManager::loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource)
 {
     //we always use materials DB as source in python, so this cast is safe
-    MaterialsDB& materialsDB = const_cast<MaterialsDB&>(*MaterialsDB::getFromSource(materialsSource));
+    MaterialsDB& materialsDB = *const_cast<MaterialsDB*>(materialsSource->getDB());
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "material")
             PythonEvalMaterialLoadFromXML(reader, materialsDB);

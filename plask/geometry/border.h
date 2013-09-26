@@ -88,7 +88,7 @@ struct Strategy {
      * @param materialsSource source of materials, typically material database, used to get material
      * @return created strategy
      */
-    static Strategy* fromStr(const std::string& str, const MaterialsSource& materialsSource = MaterialsDB::getDefault().toSource());
+    static Strategy* fromStr(const std::string& str, const MaterialsSource& materialsSource = MaterialsSourceDB(MaterialsDB::getDefault()));
 
     /**
      * Create new strategy described by string @p str.
@@ -98,7 +98,7 @@ struct Strategy {
      * @param materialsSource source of materials, typically material database, used to get material
      * @return created strategy manged by unique_ptr, same as <code>std::unique_ptr<Strategy>(fromStr(str, materialsSource))</code>
      */
-    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsSource& materialsSource = MaterialsDB::getDefault().toSource()) {
+    static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsSource& materialsSource = MaterialsSourceDB(MaterialsDB::getDefault())) {
         return std::unique_ptr<Strategy>(fromStr(str, materialsSource));
     }
 };

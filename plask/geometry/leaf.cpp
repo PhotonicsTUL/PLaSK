@@ -15,6 +15,18 @@ XMLWriter::Element& GeometryObjectLeaf<dim>::MixedCompositionMaterial::writeXML(
             .attr(GeometryReader::XML_MATERIAL_TOP_ATTR, (*materialFactory)(1.0)->str());
 }
 
+template <int dim>
+GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
+    if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
+        this->setMaterialFast(src.getMaterial(*matstr));
+    else
+        this->setMaterialTopBottomComposition(src.getMixedCompositionFactory(
+                    src.source.requireAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR),
+                    src.source.requireAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR)
+                    ));
+    return src;
+}
+
 template struct GeometryObjectLeaf<2>;
 template struct GeometryObjectLeaf<3>;
 
@@ -24,7 +36,7 @@ template struct Block<3>;
 // Initialization common for all leafs
 template <typename LeafType>
 inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
-    leaf.setMaterialFast(reader.requireMaterial()); //TODO support for bottom/top
+    leaf.readMaterial(reader);
     reader.source.requireTagEnd();
 }
 
