@@ -58,7 +58,7 @@ struct Cylinder: public GeometryObjectLeaf<3> {
     }
 
     bool isSolidInBB(Primitive<3>::Direction direction) const override {
-        return direction != Primitive<3>::DIRECTION_TRAN && materialProvider->isSolidInBB(direction);
+        return direction == Primitive<3>::DIRECTION_VERT && materialProvider->isSolidInBB(direction);
     }
 
 };
