@@ -71,7 +71,15 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     /// Set current wavelength
     void setWavelength(dcomplex lambda) {
         k0 = 2e3*M_PI / lambda;
-        this->invalidate();
+        // this->invalidate();
+    }
+
+    /// Get current k0
+    dcomplex getK0() const { return k0; }
+    /// Set current k0
+    void setK0(dcomplex k) {
+        k0 = k;
+        // this->invalidate();
     }
 
     /// Get longitudinal wavevector
@@ -79,7 +87,7 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
         klong = k; 
-        this->invalidate();
+        // this->invalidate();
     }
 
     /// Get transverse wavevector
@@ -87,9 +95,15 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         ktran = k; 
-        this->invalidate();
+        // this->invalidate();
     }
 
+    /// Get discontinuity matrix determinant for the current parameters
+    dcomplex getDeterminant() {
+        this->initCalculation();
+        return determinant();
+    }
+    
   protected:
 
     /// Solver constructor

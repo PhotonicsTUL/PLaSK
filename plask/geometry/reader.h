@@ -128,7 +128,7 @@ class GeometryReader {
         return materialSource->get(material_full_name);
     }
 
-    std::unique_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name) const {
+    shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name) const {
         return materialSource->getFactory(material1_full_name, material2_full_name);
     }
 

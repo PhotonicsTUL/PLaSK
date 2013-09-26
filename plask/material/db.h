@@ -394,7 +394,7 @@ public:
      * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
      * @return constructed factory
      */
-    std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) const;
+    shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition) const;
 
     /**
      * Construct mixed material factory.
@@ -405,7 +405,7 @@ public:
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
      * @return constructed factory
      */
-    std::unique_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
+    shared_ptr<MixedCompositionFactory> getFactory(const Material::Composition& material1composition, const Material::Composition& material2composition, const std::string& dopant_name,
                                         Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
 
     /**
@@ -417,7 +417,7 @@ public:
      * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
      * @return constructed factory created using new operator, should by delete by caller
      */
-    std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
+    shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_name_with_components, const std::string& material2_name_with_components,
                                         const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const;
 
     /**
@@ -426,7 +426,7 @@ public:
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory created using operator new, should by delete by caller
      */
-    std::unique_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const;
+    shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const;
 
     /**
      * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.
@@ -592,7 +592,7 @@ struct MaterialsSource {
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory created using operator new, should by delete by caller
      */
-    virtual std::unique_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const = 0;
+    virtual shared_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const = 0;
 };
 
 struct MaterialsSourceDB: public MaterialsSource {
@@ -618,7 +618,7 @@ struct MaterialsSourceDB: public MaterialsSource {
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
      * @return constructed factory created using operator new, should by delete by caller
      */
-    virtual std::unique_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const {
+    virtual shared_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const {
         return db.getFactory(material1_fullname, material2_fullname);
     }
 };

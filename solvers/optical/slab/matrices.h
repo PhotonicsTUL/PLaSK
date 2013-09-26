@@ -61,7 +61,7 @@ class Matrix {
         write_debug("allocating matrix %1%x%2% (%3% bytes) at %4% (from diagonal)", r, c, r*c*sizeof(T), data_);
         int size = r*c;
         for (int i = 0; i < size; i++) data_[i] = 0;
-        for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M.data[j];
+        for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
         *gc = 1;
     }
 

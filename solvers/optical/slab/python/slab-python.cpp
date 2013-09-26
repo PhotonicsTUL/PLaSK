@@ -36,6 +36,7 @@ template <typename Class>
 inline void export_reflection_base(Class solver) {
     export_base(solver);
     typedef typename Class::wrapped_type Solver;
+    solver.def("determinant", &Solver::getDeterminant, "Compute discontinuity matrix determinant for the current settings");
 }
 
 
@@ -44,6 +45,15 @@ DataVectorWrap<const Tensor3<dcomplex>,2> FourierReflection2D_getRefractiveIndex
     return DataVectorWrap<const Tensor3<dcomplex>,2>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
 }
 
+template <typename SolverT>
+static dcomplex Reflection2D_getNeff(const SolverT& self) {
+    return self.getKlong() / self.getK0();
+}
+
+template <typename SolverT>
+static void Reflection2D_setNeff(SolverT& self, dcomplex neff) {
+    self.setKlong(neff * self.getK0());
+}
 
 BOOST_PYTHON_MODULE(slab)
 {
@@ -58,7 +68,8 @@ BOOST_PYTHON_MODULE(slab)
         RW_FIELD(refine, "Number of refinemnet points for refractive index averaging");
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        RW_PROPERTY("wavelength", getWavelength, setWavelength, "Mode wavelength");
+        // RW_PROPERTY(variable, getVariable, setVariable, "Searched variable");
+        solver.add_property("neff", Reflection2D_getNeff<__Class__>, Reflection2D_setNeff<__Class__>, "Current mode effective index");
     }
 
     {CLASS(FourierReflectionCyl, "FourierReflectionCyl",

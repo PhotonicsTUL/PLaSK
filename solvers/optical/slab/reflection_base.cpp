@@ -33,7 +33,7 @@ void ReflectionSolver<GeometryT>::init()
     interface_field = nullptr;
 
     this->writelog(LOG_DETAIL, "Initializing reflection-matrix solver"
-                               " (%1% layers in the this->stack, interface after %2% layers)", this->stack.size(), this->interface);
+                               " (%1% layers in the stack, interface after %2% layers)", this->stack.size(), this->interface);
 
     P = cmatrix(N,N);
     phas = cdiagonal(N);

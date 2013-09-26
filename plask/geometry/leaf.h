@@ -10,7 +10,7 @@ This file contains geometry objects leafs classes.
 
 namespace plask {
 
-struct GeometryReader;
+class GeometryReader;
 
 /**
  * Template of base classes for all leaf nodes.

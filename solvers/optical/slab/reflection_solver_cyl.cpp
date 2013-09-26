@@ -2,7 +2,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-FourierReflectionCyl::FourierReflectionCyl(const std::string& name): SlabSolver<Geometry2DCylindrical>(name),
+FourierReflectionCyl::FourierReflectionCyl(const std::string& name): ReflectionSolver<Geometry2DCylindrical>(name),
     size(5),
     refine(8)
 {

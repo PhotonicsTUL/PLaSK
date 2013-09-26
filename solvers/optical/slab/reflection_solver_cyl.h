@@ -3,14 +3,14 @@
 
 #include <plask/plask.hpp>
 
-#include "slab_base.h"
+#include "reflection_base.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct FourierReflectionCyl: public SlabSolver<Geometry2DCylindrical> {
+struct FourierReflectionCyl: public ReflectionSolver<Geometry2DCylindrical> {
 
     std::string getClassName() const { return "slab.FourierReflectionCyl"; }
 
