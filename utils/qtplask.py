@@ -5,6 +5,7 @@ import sys
 import os
 import base64
 import subprocess
+import ctypes
 from time import localtime, strftime, sleep
 
 sys.argv[0] = os.path.abspath(sys.argv[0])
@@ -228,7 +229,7 @@ class MainWindow(QtGui.QMainWindow):
 
         dan2xpl = self.find_tool('dan2xpl')
         xpl2dan = self.find_tool('xpl2dan')
-        if dan2xpl or xpl2dan:
+        if dan2xpl or xpl2dan or winsparkle:
             self.menuTools = QtGui.QMenu(self.menubar)
             self.menuTools.setTitle(self.tr("&Tools"))
             if dan2xpl:
@@ -241,6 +242,11 @@ class MainWindow(QtGui.QMainWindow):
                 self.actionXplDan.setText(self.tr("Convert XPL to &DAN..."))
                 self.actionXplDan.triggered.connect(lambda: self.runConvert(xpl2dan, 'XPL files (*.xpl)'))
                 self.menuTools.addAction(self.actionXplDan)
+            if winsparkle:
+                self.actionWinSparkle = QtGui.QAction(self)
+                self.actionWinSparkle.setText(self.tr("Check for updates"))
+                self.actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
+                self.menuTools.addAction(self.actionWinSparkle)
             self.menubar.addAction(self.menuTools.menuAction())
 
         self.setMenuBar(self.menubar)
@@ -340,7 +346,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def switch_tab(self):
         self.messagesView.clear()
-        self.message_lines = 0
+        self.printed_lines = 0
         self.update_outputs()
 
 
@@ -348,8 +354,9 @@ class MainWindow(QtGui.QMainWindow):
         n = self.tabBar.currentIndex()
         if n == -1: return
         total_lines = len(self.messages[n])
-        if self.message_lines != total_lines:
-            for line in self.messages[n][self.message_lines:total_lines]:
+        lines = []
+        if self.printed_lines != total_lines:
+            for line in self.messages[n][self.printed_lines:total_lines]:
                 cat = line[19:26].rstrip()
                 if cat in ('red', '#800000') and not self.actionError.isChecked(): continue
                 if cat == 'brown' and not self.actionWarning.isChecked(): continue
@@ -358,9 +365,10 @@ class MainWindow(QtGui.QMainWindow):
                 if cat == '#006060' and not self.actionData.isChecked(): continue
                 if cat == 'black' and not self.actionDetail.isChecked(): continue
                 if cat == 'gray' and not self.actionDebug.isChecked(): continue
-                self.messagesView.append(line)
+                lines.append(line)
+            self.messagesView.append("\n".join(lines))
             self.messagesView.moveCursor(QtGui.QTextCursor.End)
-            self.message_lines = total_lines
+            self.printed_lines = total_lines
 
 
     def quitting(self):
@@ -425,8 +433,26 @@ class PlaskThread(QtCore.QThread):
         self.proc.terminate()
 
 if __name__ == "__main__":
+    try:
+        winsparkle = ctypes.CDLL('WinSparkle.dll')
+    except OSError:
+        winsparkle = None
+    else:
+        si = subprocess.STARTUPINFO()
+        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = subprocess.SW_HIDE
+        proc = subprocess.Popen(['plask', '-version'], startupinfo=si, stdout=subprocess.PIPE)
+        version, err = proc.communicate()
+        wp = ctypes.c_wchar_p
+        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(version.strip()))
+        winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
+        winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
+        winsparkle.win_sparkle_init()
     app = QtGui.QApplication(sys.argv)
     mainwindow = MainWindow()
     app.aboutToQuit.connect(mainwindow.quitting)
     mainwindow.show()
-    sys.exit(app.exec_())
+    exit_code = app.exec_()
+    if winsparkle:
+        winsparkle.win_sparkle_cleanup()
+    sys.exit(exit_code)

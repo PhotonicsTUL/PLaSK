@@ -275,8 +275,33 @@ https://store.continuum.io/cshop/anaconda/
 \end_inset
 
 ).
- While installing choose Anaconda to by your default Python in the system.
+ While installing select 
+\begin_inset Quotes eld
+\end_inset
+
+Register Anaconda as default Python version of the system
+\begin_inset Quotes erd
+\end_inset
+
+ option.
  Then run the PLaSK installer provided.
+ We recommend selecting 
+\begin_inset Quotes eld
+\end_inset
+
+Add PLaSK to the system PATH for all users
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+Create PLaSK Desktop Icon
+\begin_inset Quotes erd
+\end_inset
+
+ options.
 \end_layout
 
 \begin_layout Subsection
@@ -551,17 +576,6 @@ joe@cray:~$ echo $HOME/plask/bin/plask laser/vcsel.xpl 10 | qsub -N vcsel
 \end_layout
 
 \begin_layout Standard
-In Windows there is a 
-\family typewriter
-PLaSK.bat
-\family default
- file provided in the ZIP archive to make it easier to run the binary from
- the Explorer.
- Simply double-click its icon to open the interactive shell, or drag the
- input file to run the saved script.
-\end_layout
-
-\begin_layout Standard
 If you run PLaSK without any parameters, you enter interactive mode.
  Do so and once you see the prompt type (type only commands, not the prompt
 \begin_inset Foot
@@ -624,9 +638,27 @@ In[3]: exit()
 \end_layout
 
 \begin_layout Standard
-The alternative method of running PLaSK will be by using launcher system
- in the graphical user interface.
- However, such a system is not implemented at the present moment.
+On Windows you can find the 
+\begin_inset Quotes eld
+\end_inset
+
+PLaSK Console
+\begin_inset Quotes erd
+\end_inset
+
+ in the Start Menu which will start the interactive mode.
+ Furthermore there is a simple graphical launcher provided, simply named
+ 
+\begin_inset Quotes eld
+\end_inset
+
+PLaSK
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Just run it and press F5 to run your XPL or Python file in PLaSK.
+ In the future this launcher will become a part of a more complex GUI.
 \end_layout
 
 \begin_layout Chapter
