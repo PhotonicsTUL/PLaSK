@@ -182,7 +182,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menuView = QtGui.QMenu(self.menubar)
         self.menuView.setTitle(self.tr("&View"))
         self.actionRun = QtGui.QAction(self)
-        self.actionRun.setText(self.tr("&Run computations..."))
+        self.actionRun.setText(self.tr("&Run Computations..."))
         self.actionRun.setShortcut("F5")
         self.actionQuit = QtGui.QAction(self)
         self.actionQuit.setText(self.tr("&Quit"))
@@ -244,7 +244,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.menuTools.addAction(self.actionXplDan)
             if winsparkle:
                 self.actionWinSparkle = QtGui.QAction(self)
-                self.actionWinSparkle.setText(self.tr("Check for updates"))
+                self.actionWinSparkle.setText(self.tr("Check for Updates..."))
                 self.actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
                 self.menuTools.addAction(self.actionWinSparkle)
             self.menubar.addAction(self.menuTools.menuAction())
@@ -353,6 +353,7 @@ class MainWindow(QtGui.QMainWindow):
     def update_outputs(self):
         n = self.tabBar.currentIndex()
         if n == -1: return
+        move = self.messagesView.verticalScrollBar().value() == self.messagesView.verticalScrollBar().maximum()
         total_lines = len(self.messages[n])
         lines = []
         if self.printed_lines != total_lines:
@@ -365,10 +366,9 @@ class MainWindow(QtGui.QMainWindow):
                 if cat == '#006060' and not self.actionData.isChecked(): continue
                 if cat == 'black' and not self.actionDetail.isChecked(): continue
                 if cat == 'gray' and not self.actionDebug.isChecked(): continue
-                lines.append(line)
-            self.messagesView.append("\n".join(lines))
-            self.messagesView.moveCursor(QtGui.QTextCursor.End)
+                self.messagesView.append(line)
             self.printed_lines = total_lines
+            if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)
 
 
     def quitting(self):
