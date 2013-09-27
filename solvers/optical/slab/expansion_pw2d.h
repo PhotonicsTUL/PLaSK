@@ -118,10 +118,10 @@ struct ExpansionPW2D: public Expansion {
     size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
 
     /// Get \f$ E_x \f$ index
-    size_t iHx(int i) { return 2 * ((i>=0)?i:i+N); }
+    size_t iHx(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
 
     /// Get \f$ E_x \f$ index
-    size_t iHz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
+    size_t iHz(int i) { return 2 * ((i>=0)?i:i+N); }
 
     /// Get \f$ E_x \f$ index
     size_t iE(int i) { return (i>=0)?i:i+N; }
