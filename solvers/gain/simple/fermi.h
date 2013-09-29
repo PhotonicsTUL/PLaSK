@@ -25,46 +25,95 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
         Vec<2> origin;                          ///< Location of the active region stack origin
         ActiveRegionInfo(Vec<2> origin): layers(make_shared<StackContainer<2>>()), origin(origin) {}
 
-        /// \return number of layers in the active region with surrounding barriers
+        /// Return number of layers in the active region with surrounding barriers
         size_t size() const
         {
             return layers->getChildrenCount();
         }
 
-        /// \return material of \p n-th layer
+        /// Return material of \p n-th layer
         shared_ptr<Material> getLayerMaterial(size_t n) const
         {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
-            //return block->getRepresentativeMaterial();
             if (auto m = block->isSolid()) return m;
             throw plask::Exception("FermiGainSolver requires solid layers.");
         }
 
-        /// \return translated bounding box of \p n-th layer
+        /// Return translated bounding box of \p n-th layer
         Box2D getLayerBox(size_t n) const
         {
             return static_cast<GeometryObjectD<2>*>(layers->getChildNo(n).get())->getBoundingBox() + origin;
         }
 
-        /// \return \p true if given layer is quantum well
+        /// Return \p true if given layer is quantum well
         bool isQW(size_t n) const
         {
             return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
         }
 
-        /// \return bounding box of the whole active region
+        /// Return bounding box of the whole active region
         Box2D getBoundingBox() const
         {
             return layers->getBoundingBox() + origin;
         }
 
-        /// \return \p true if the point is in the active region
+        /// Return \p true if the point is in the active region
         bool contains(const Vec<2>& point) const {
             return getBoundingBox().contains(point);
         }
+
+        shared_ptr<Material> materialQW;        ///< Quantum well material
+        shared_ptr<Material> materialBarrier;   ///< Barrier material
+        double qwlen;                           ///< Single quantum well thickness [Å]
+        double qwtotallen;                      ///< Total quantum wells thickness [Å]
+        double totallen;                        ///< Total active region thickness [Å]
+
+        /**
+         * Summarize active region, check for approprietness and compute some values
+         * \param solver solver
+         */
+        void summarize(const FermiGainSolver<GeometryType>* solver) {
+            auto bbox = layers->getBoundingBox();
+            totallen = 1e4 * (bbox.upper[1] - bbox.lower[1]);  // 1e4: µm -> Å
+            size_t qwn = 0;
+            qwtotallen = 0.;
+            bool lastbarrier = true;
+            for (const auto& layer: layers->children) {
+                auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
+                auto material = block->isSolid();
+                if (!material) throw plask::Exception("FermiGainSolver requires solid layers.");
+                if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW")) {
+                    if (!materialQW)
+                        materialQW = material;
+                    else if (*material != *materialQW)
+                        throw Exception("%1%: Multiple quantum well materials in active region.", solver->getId());
+                    auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
+                    qwtotallen += bbox.upper[1] - bbox.lower[1];
+                    if (lastbarrier) ++qwn;
+                    else solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
+                    lastbarrier = false;
+                } else {
+                    if (!materialBarrier)
+                        materialBarrier = material;
+                    else if (material->Me(300) != materialBarrier->Me(300) ||
+                             material->Mhh(300) != materialBarrier->Mhh(300) ||
+                             material->Mlh(300) != materialBarrier->Mlh(300) ||
+                             material->CBO(300) != materialBarrier->CBO(300) ||
+                             material->VBO(300) != materialBarrier->VBO(300))
+                        throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());
+                    lastbarrier = true;
+                }
+            }
+            qwtotallen *= 1e4; // µm -> Å
+            qwlen = qwtotallen / qwn;
+        }
     };
 
-    std::vector<ActiveRegionInfo> regions;  ///< List of active regions
+    ///< List of active regions
+    std::vector<ActiveRegionInfo> regions;
+
+    ///< Optional externally set energy levels
+    boost::optional<QW::ExternalLevels> extern_levels;
 
     /// Receiver for temperature.
     ReceiverFor<Temperature,GeometryType> inTemperature;
@@ -87,8 +136,8 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
     /// Function computing energy levels
-    //  TODO: it should return computed levels
-    void determineLevels(double T, double n);
+    std::deque<std::tuple<std::vector<double>,std::vector<double>,std::vector<double>,double,double>>
+    determineLevels(double T, double n);
 
   protected:
 
@@ -108,7 +157,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
 //    double lambda_stop;
 //    double lambda;
 
-    QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& active);
+    QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
 
     double nm_to_eV(double wavelength) {
         return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
@@ -131,16 +180,6 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
      * Store information about them in the \p regions field.
      */
     void detectActiveRegions();
-
-    /**
-     * Compute width of the box
-     * \param materialBox box to compute the width of
-     * \return width of the box
-     */
-    double determineBoxWidth(plask::Box2D materialBox)
-    {
-        return  materialBox.upper[1] - materialBox.lower[1];
-    }
 
     /**
      * Method computing the gain on the mesh (called by gain provider)
@@ -200,7 +239,8 @@ struct GainSpectrum {
             T = solver->inTemperature(OnePointMesh<2>(point))[0];
         if (isnan(n) || solver->inCarriersConcentration.changed())
             n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
-        return solver->getGainModule(wavelength, T, n, *region).Get_gain_at(solver->nm_to_eV(wavelength));
+            return solver->getGainModule(wavelength, T, n, *region)
+                .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
     }
 };
 

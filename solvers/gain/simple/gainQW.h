@@ -9,7 +9,19 @@
 #include <gsl/gsl_sf_fermi_dirac.h>
 #include <gsl/gsl_min.h>
 
+#include <plask/plask.hpp>
+using namespace plask;
+
 namespace QW{
+
+  struct ExternalLevels {
+      double* el;
+      double* hh;
+      double* lh;
+      ExternalLevels() {}
+      ExternalLevels(double* el, double* hh, double* lh): el(el), hh(hh), lh(lh) {}
+  };
+
   class nosnik{
     friend class gain;
     nosnik();
@@ -58,7 +70,7 @@ namespace QW{
     double Get_bar_konc_v();
     long Calculate_Gain_Profile();
     long Calculate_Gain_Profile2();
-    long Calculate_Gain_Profile_n(std::vector<std::vector<double> > &, double);
+    long Calculate_Gain_Profile_n(const ExternalLevels&, double);
     long Calculate_Spont_Profile();
     double Get_qFlc();
     double Get_qFlv();
@@ -106,7 +118,8 @@ namespace QW{
     void Set_momentum_matrix_element(double); //W eV
     double Get_momentum_matrix_element();
     double Get_gain_at(double);
-    double Get_gain_at_n(double, std::vector<std::vector<double> > &, double);
+    double Get_gain_at_n(double, double);
+    double Get_gain_at_n(double, const ExternalLevels&, double);
     double Get_bar_gain_at(double);
     double Get_inversion(double E, int i=0);
     double Get_spont_at(double);
@@ -114,13 +127,14 @@ namespace QW{
     std::vector<std::vector<double> > & Get_spont_wek();
     //    void przygobl();
     double Find_max_gain();
-    double Find_max_gain_n(std::vector<std::vector<double> > &, double);
+    double Find_max_gain_n(const ExternalLevels&, double);
     ~gain();
 
-    // Marcin Gebski 21.02.2013
-    void runPrzygobl();
+    void przygobl();
+    void przygobl2();
+    void przygobl_n(double);
+    void przygobl_n(const ExternalLevels&, double);
 
-  private:
     int Break;
     static const double kB;
     static const double przelm;
@@ -128,18 +142,18 @@ namespace QW{
     static const double ep0;
     static const double c;
     static const double exprng;
-    double bladb; //dopuszczalny b��d bezwzgl�dny
+    double bladb; //dopuszczalny błąd bezwzględny
     double T; //temperatura
-    double n_r; //wsp. za�amania
-    double szer; // szeroko�� studni
+    double n_r; //wsp. załamania
+    double szer; // szerokość studni
     double szerb; //szerokosc bariery
-    double szer_fal; // szeroko�� nad studni�
+    double szer_fal; // szerokość nad studnią
     double Eg; // przerwa energetyczna
     double Mt; // el. macierzowy
     double deltaSO; // split-off
-    double tau; // czas �ycia
+    double tau; // czas życia
     double konc; // koncentracja
-    double barkonc_c; //koncentracja elektron�w w barierach
+    double barkonc_c; //koncentracja elektronów w barierach
     double barkonc_v; //koncentracja dzur w barierach
     double Efc; // quasi-poziom Fermiego dla pasma walencyjnego
     double Efv; // quasi-poziom Fermiego dla pasma przewodnictwa
@@ -153,10 +167,8 @@ namespace QW{
     nosnik el;
     nosnik hh;
     nosnik lh;
-    void przygobl();
-    void przygobl2();
-    void przygobl_n(std::vector<std::vector<double> > &, double);
-    double * z_vec_wsk(std::vector<std::vector<double> > &, int);
+    bool kasuj_poziomy;
+
     double qFlc(); // liczy poziom Fermiego
     double qFlc2();
     double qFlc_n(double);
@@ -170,9 +182,9 @@ namespace QW{
     double przel_czas_na_psek(double);
     double przel_konc_z_cm(double);
     double przel_konc_na_cm(double);
-    double fc(double); // rozk�ad Fermiego dla p. przewodnictwa
-    double fv(double); // rozk�ad Fermiego dla p. walencyjnego
-    double L(double,double); // funkcja poszerzaj�ca
+    double fc(double); // rozk?ad Fermiego dla p. przewodnictwa
+    double fv(double); // rozk?ad Fermiego dla p. walencyjnego
+    double L(double,double); // funkcja poszerzająca
     double Lpr(double,double); // jej pochodna
     double gdziepoziomy(double,double *);
     double gdziepoziomy2A(double,double *);

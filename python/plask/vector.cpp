@@ -83,7 +83,7 @@ namespace detail {
             return boost::python::incref(boost::python::object(T(v)).ptr());
         }
     };
-    
+
 }
 
 

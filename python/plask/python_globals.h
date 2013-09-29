@@ -2,6 +2,7 @@
 #define PLASK__PYTHON_GLOBALS_H
 
 #include <cmath>
+#include <vector>
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Shared pointer
@@ -135,6 +136,26 @@ namespace detail {
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Register vectors of something
+
+template <typename T>
+struct VectorFromSequence {
+    VectorFromSequence() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<std::vector<T>>());
+    }
+    static void* convertible(PyObject* obj) {
+        if (!PySequence_Check(obj)) return NULL;
+        return obj;
+    }
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<std::vector<T>>*)data)->storage.bytes;
+        auto seq = py::object(py::handle<>(py::borrowed(obj)));
+        py::stl_input_iterator<T> begin(seq), end;
+        std::vector<T>* result = new(storage) std::vector<T>();
+        result->reserve(py::len(seq)); for (auto iter = begin; iter != end; ++iter) result->push_back(*iter);
+        data->convertible = storage;
+    }
+};
+
 template <typename T>
 static std::string str__vector_of(const std::vector<T>& self) {
     std::string result = "[";
@@ -146,8 +167,10 @@ static std::string str__vector_of(const std::vector<T>& self) {
     }
     return result + "]";
 }
+
 template <typename T>
 static inline py::class_< std::vector<T>, shared_ptr<std::vector<T>> > register_vector_of(const std::string& name) {
+    VectorFromSequence<T>();
     return py::class_< std::vector<T>, shared_ptr<std::vector<T>> >((name+"_list").c_str(), py::no_init)
         .def(py::vector_indexing_suite<std::vector<T>>())
         .def("__repr__", &str__vector_of<T>)

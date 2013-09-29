@@ -1,4 +1,5 @@
 #include <iostream>
+
 #include "gainQW.h"
 
 using QW::nosnik;
@@ -7,15 +8,14 @@ using QW::parametry;
 using namespace std;
 
 const double gain::kB=1.38062/1.60219*1e-4;
-const double gain::przelm=10*1.05459/(sqrtl(1.60219*9.10956));
+const double gain::przelm=10*1.05459/(sqrt(1.60219*9.10956));
 const double gain::przels=1.05459/1.60219*1e-3;
-const double gain::ep0=8.8542*1.05459/(100*1.60219*sqrtl(1.60219*9.10956));
-const double gain::c=300*sqrtl(9.10956/1.60219);
+const double gain::ep0=8.8542*1.05459/(100*1.60219*sqrt(1.60219*9.10956));
+const double gain::c=300*sqrt(9.10956/1.60219);
 const double gain::exprng=11100;
 
-nosnik::nosnik()
+nosnik::nosnik(): poziomy(NULL)
 {
-  poziomy=NULL;
 }
 /*****************************************************************************/
 double nosnik::Eodk(double k) // E(k)
@@ -42,18 +42,16 @@ int nosnik::ilepoz()
 /*****************************************************************************/
 nosnik::~nosnik()
 {
-  if(poziomy)
-    delete [] poziomy;
+  delete [] poziomy;
 }
 /*****************************************************************************/
 parametry::~parametry()
 {
-  if(ldopar)
-    delete [] ldopar;
+  delete [] ldopar;
 }
 /*****************************************************************************/
 gain::gain()
-{ 
+{
   Break = 0;
   ilwyw=0;
   ustawione='n';
@@ -107,28 +105,28 @@ double gain::przel_konc_na_cm(double konc_w_wew)
   return konc_w_wew/(przelm*przelm*przelm)*1e24;
 }
 /*****************************************************************************/
-double gain::element()                                                                /// funkcja licząca element macierzowy
+double gain::element()                                                                /// funkcja liczaca element macierzowy
 {
   return (1/el.masa_w_kier_prost - 1)*(Eg+deltaSO)*Eg/(Eg+2*deltaSO/3)/2;
 }
 /*****************************************************************************/
-double gain::fc(double E)                                                            /// rozkład fermiego dla pasma przewodnictwa
+double gain::fc(double E)                                                            /// rozklad fermiego dla pasma przewodnictwa
 {
   double arg=(E-Efc)/(kB*T);
-  return (arg<exprng)?1/(1+expl(arg)):0;
+  return (arg<exprng)?1/(1+exp(arg)):0;
 }
 /*****************************************************************************/
-double gain::fv(double E)                                                            /// rozkład fermiego dla pasma walencyjnego
+double gain::fv(double E)                                                            /// rozklad fermiego dla pasma walencyjnego
 {
   double arg=(E-Efv)/(kB*T);
-  return (arg<exprng)?1/(1+expl(arg)):0;
+  return (arg<exprng)?1/(1+exp(arg)):0;
 }
 /*****************************************************************************/
 double gain::metsiecz(double (gain::*wf)(double,double *),double xl,double xp,double * param,double prec) /// metoda siecznych
 {
   if( ((this->*wf)(xl,param))*((this->*wf)(xp,param))>0)
     {
-      //      std::cerr<<"\nZ³e krace!\n";
+      //      std::cerr<<"\nZłe krace!\n";
       throw -1;
     }
   double x,y,yp,yl;
@@ -159,15 +157,15 @@ double gain::metsiecz(double (gain::*wf)(double,double *),double xl,double xp,do
   return x;
 }
 /*****************************************************************************/
-double gain::gdziepoziomy(double e, double *param) /// zera dają poziomy, e - energia
+double gain::gdziepoziomy(double e, double *param) /// zera daja poziomy, e - energia
 {
   double v=param[0];
   double m1=param[1];
   double m2=param[2];
-  double kI=sqrtl(-2*m1*e); /// sqrt dla long double (standardowa - math)
-  double kII=sqrtl(2*m2*(e+v));
+  double kI=sqrt(-2*m1*e); /// sqrt dla long double (standardowa - math)
+  double kII=sqrt(2*m2*(e+v));
   double ilormas=m1/m2; // porawione warunki sklejania pochodnych
-  return 2*kI*kII*ilormas*cosl(szer*kII)+(kI*kI - kII*kII*ilormas*ilormas)*sinl(szer*kII);
+  return 2*kI*kII*ilormas*cos(szer*kII)+(kI*kI - kII*kII*ilormas*ilormas)*sin(szer*kII);
 }
 /*****************************************************************************/
 double gain::gdziepoziomy2A(double e, double *param) /// 2 - podwójna studnia
@@ -175,9 +173,9 @@ double gain::gdziepoziomy2A(double e, double *param) /// 2 - podwójna studnia
   double v=param[0];
   double m1=param[1];
   double m2=param[2];
-  double kI=sqrtl(-2*m1*e);
-  double kII=sqrtl(2*m2*(e+v));
-  return 2*kI*kII/(m1*m2)*cosl(szer*kII)+(kI*kI/(m1*m1)-kII*kII/(m2*m2))*sinl(szer*kII)-expl(-kI*szerb)*(kI*kI/(m1*m1)+kII*kII/(m2*m2))*sinl(kII*szer);
+  double kI=sqrt(-2*m1*e);
+  double kII=sqrt(2*m2*(e+v));
+  return 2*kI*kII/(m1*m2)*cos(szer*kII)+(kI*kI/(m1*m1)-kII*kII/(m2*m2))*sin(szer*kII)-exp(-kI*szerb)*(kI*kI/(m1*m1)+kII*kII/(m2*m2))*sin(kII*szer);
 }
 
 /*****************************************************************************/
@@ -186,12 +184,12 @@ double gain::gdziepoziomy2B(double e, double *param) // ma zawsze 0 w 0
   double v=param[0];
   double m1=param[1];
   double m2=param[2];
-  double kI=sqrtl(-2*m1*e);
-  double kII=sqrtl(2*m2*(e+v));
-  return 2*kI*kII/(m1*m2)*cosl(szer*kII)+(kI*kI/(m1*m1)-kII*kII/(m2*m2))*sinl(szer*kII)+expl(-kI*szerb)*(kI*kI/(m1*m1)+kII*kII/(m2*m2))*sinl(kII*szer);
+  double kI=sqrt(-2*m1*e);
+  double kII=sqrt(2*m2*(e+v));
+  return 2*kI*kII/(m1*m2)*cos(szer*kII)+(kI*kI/(m1*m1)-kII*kII/(m2*m2))*sin(szer*kII)+exp(-kI*szerb)*(kI*kI/(m1*m1)+kII*kII/(m2*m2))*sin(kII*szer);
 }
 /*****************************************************************************/
-double gain::krance(int n,double v,double m2) /// krańce przedziału w którym szuka się n-tego poziomu
+double gain::krance(int n,double v,double m2) /// krance przedzialu w którym szuka sie n-tego poziomu
 {
   return (n*M_PI/szer)*(n*M_PI/szer)/(2*m2)-v;
 }
@@ -207,10 +205,10 @@ double * gain::znajdzpoziomy(nosnik & no) /// przy pomocy gdziepoziomy znajduje 
     }
   else
     {
-      int n=(int)ceill(szer*sqrtl(2*no.masa_w_kier_prost*no.gleb)/M_PI);
+      int n=(int)ceil(szer*sqrt(2*no.masa_w_kier_prost*no.gleb)/M_PI);
       wsk=new double [n+1];
       if(!wsk)
-        exit(1);
+        throw CriticalException("Error in gain module");
       double p,q;
       p=mniej(this->krance(1,no.gleb,no.masa_w_kier_prost),(double)0);
       double fp=this->gdziepoziomy(p,par);
@@ -231,7 +229,7 @@ double * gain::znajdzpoziomy(nosnik & no) /// przy pomocy gdziepoziomy znajduje 
 /*****************************************************************************/
 double * gain::znajdzpoziomy2(nosnik & no) /// j.w. dla podwójnej studni
 {
-  double przes=1e-7; // startowy punkt zamiast 0 i g³êboko¶ci
+  double przes=1e-7; // startowy punkt zamiast 0 i głębokości
   double par[]={no.gleb,no.masabar,no.masa_w_kier_prost};
   /*
   for(double E=0.;E>=-no.gleb;E-=.00005)
@@ -240,11 +238,11 @@ double * gain::znajdzpoziomy2(nosnik & no) /// j.w. dla podwójnej studni
     }
   */
 
-  int n=(int)ceill(szer*sqrtl(2*no.masa_w_kier_prost*no.gleb)/M_PI);
+  int n=(int)ceil(szer*sqrt(2*no.masa_w_kier_prost*no.gleb)/M_PI);
   //  std::cerr<<"\n n="<<n<<"\n";
   double * wsk=new double [2*n+1];
   if(!wsk)
-    exit(1);
+    throw CriticalException("Error in gain module");
   double p,pom,ostkr;
   p=mniej(this->krance(1,no.gleb,no.masa_w_kier_prost),-przes);
   //  std::cerr<<"\n"<<this->gdziepoziomy2A(-.99*no.gleb,par)<<" "<<this->gdziepoziomy2A(p,par)<<"\n";
@@ -318,22 +316,22 @@ double gain::gdzieqflc(double ef,double *) /// zero wyznacza kwazi poziom fermie
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
   double k;
   //  std::cerr<<"\nszer w gdzieqflc_n="<<szer<<"\n";
-  f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchniê
+  f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
   //    std::cerr<<"\n3D = "<<f<<" dla ef = "<<ef;
   if(el.gleb_fal>0)
     {
-      for(int j=(int)ceill(szer_fal*sqrtl(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
+      for(int j=(int)ceil(szer_fal*sqrt(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
         {
           k = j*M_PI/(szer_fal);
           en=k*k/(2*el.masabar)+el.gleb;
-          f+=szer/szer_fal*(el.masabar*kT)/M_PI*logl(1+expl(-(en-ef)/(kB*T)));// spin jest
+          f+=szer/szer_fal*(el.masabar*kT)/M_PI*log(1+exp(-(en-ef)/(kB*T)));// spin jest
         }
-    } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
-  //  f*=szer/szer_fal;  // stosunek objêto¶ci falowodu i studni
+    } // Poziomy nad studnią przybliżone studnią nieskończoną.
+  //  f*=szer/szer_fal;  // stosunek objętości falowodu i studni
   //  std::clog<<"\nkocwbar = "<<f;
   barkonc_c=f/szer;
   for(int i=0;i<=el.ilepoz()-1;i++)
-    f+=(el.masa_w_plaszcz*kB*T)/M_PI*logl(1+expl(-(el.pozoddna(i)-ef)/(kB*T)));
+    f+=(el.masa_w_plaszcz*kB*T)/M_PI*log(1+exp(-(el.pozoddna(i)-ef)/(kB*T)));
   //  std::clog<<"\nkoccalk = "<<f;
   f-=konc*szer;
   return f;
@@ -343,19 +341,19 @@ double gain::gdzieqflc2(double ef,double *) /// j.w. dla podwójnej studni
 {
   double f=0;
   double en;
-  for(int j=(int)ceill(2*szer_fal*sqrtl(2*el.masa_w_plaszcz*el.gleb_fal)/M_PI);j>=1;j--)
+  for(int j=(int)ceil(2*szer_fal*sqrt(2*el.masa_w_plaszcz*el.gleb_fal)/M_PI);j>=1;j--)
     {
       en=(j*M_PI/(2*szer_fal))*(j*M_PI/(2*szer_fal))/(2*el.masa_w_plaszcz)+el.gleb;
-      f+=logl(1+expl(-(en-ef)/(kB*T)));
-    } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
-  f*=2*szer/szer_fal;  // stosunek objêto¶ci falowodu i studni
+      f+=log(1+exp(-(en-ef)/(kB*T)));
+    } // Poziomy nad studnią przybliżone studnią nieskończoną.
+  f*=2*szer/szer_fal;  // stosunek objętości falowodu i studni
   for(int i=0;i<=el.ilepoz()-1;i++)
-    f+=logl(1+expl(-(el.pozoddna(i)-ef)/(kB*T)));
+    f+=log(1+exp(-(el.pozoddna(i)-ef)/(kB*T)));
   f-=konc*M_PI*2*szer/(el.masa_w_plaszcz*kB*T);
   return f;
 }
 /*****************************************************************************/
-double gain::gdzieqflc_n(double ef,double * wsk_sszer) /// dla n studni - poziomy podane z zewnątrz
+double gain::gdzieqflc_n(double ef,double * wsk_sszer) /// dla n studni - poziomy podane z zewnatrz
 {
   double f=0;
   double en;
@@ -364,19 +362,19 @@ double gain::gdzieqflc_n(double ef,double * wsk_sszer) /// dla n studni - poziom
   //  std::cerr<<"\nsumaszer w gdzieqflc_n="<<sumaszer<<"\n";
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
    double k;
-  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchniê
+  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
   //  std::cerr<<"\n3D_n = "<<f<<" dla ef = "<<ef;
-  for(int j=(int)ceill(szer_fal*sqrtl(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
+  for(int j=(int)ceil(szer_fal*sqrt(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);
       en=k*k/(2*el.masabar)+el.gleb;
       //      en=(j*M_PI/(2*szer_fal))*(j*M_PI/(2*szer_fal))/(2*el.masabar)+el.gleb;
-      f+=sumaszer/szer_fal*(el.masabar*kT)/M_PI*logl(1+expl(-(en-ef)/(kB*T))); // spin jest
-    } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
+      f+=sumaszer/szer_fal*(el.masabar*kT)/M_PI*log(1+exp(-(en-ef)/(kB*T))); // spin jest
+    } // Poziomy nad studnią przybliżone studnią nieskończoną.
   //  std::clog<<"\nkocwbar = "<<f;
   barkonc_c=f/sumaszer;
   for(int i=0;i<=el.ilepoz()-1;i++)
-    f+=(el.masa_w_plaszcz*kB*T)/M_PI*logl(1+expl(-(el.pozoddna(i)-ef)/(kB*T)));
+    f+=(el.masa_w_plaszcz*kB*T)/M_PI*log(1+exp(-(el.pozoddna(i)-ef)/(kB*T)));
   f-=konc*sumaszer;
   return f;
 }
@@ -391,30 +389,30 @@ double gain::gdzieqflv(double ef,double *) /// zero wyznacza kwazi poziom fermie
   f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
   if(lh.gleb_fal>0)
     {
-      for(int j=(int)ceill(szer_fal*sqrtl(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
+      for(int j=(int)ceil(szer_fal*sqrt(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
         {
           k = j*M_PI/(szer_fal);
           en=k*k/(2*lh.masabar)+lh.gleb;
-          f+=szer/szer_fal*lh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
+          f+=szer/szer_fal*lh.masabar*kT/M_PI*log(1+exp((-en-ef)/(kB*T)));
         }
     }
-  //  f*=szer/szer_fal;  // stosunek objêto¶ci falowodu i studni
+  //  f*=szer/szer_fal;  // stosunek objętości falowodu i studni
   f+=szer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
   if(hh.gleb_fal>0)
     {
-      for(int j=(int)ceill(szer_fal*sqrtl(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
+      for(int j=(int)ceil(szer_fal*sqrt(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
         {
           k = j*M_PI/(szer_fal);
           en= k*k/(2*hh.masabar)+hh.gleb;
-          f+=szer/szer_fal*hh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
-        } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
+          f+=szer/szer_fal*hh.masabar*kT/M_PI*log(1+exp((-en-ef)/(kB*T)));
+        } // Poziomy nad studnią przybliżone studnią nieskończoną.
     }
   barkonc_v=f/szer;
   //  std::clog<<"\nkocvwbar = "<<f;
   for(int i=0;i<=hh.ilepoz()-1;i++)
-    f+=hh.masa_w_plaszcz*kB*T/M_PI*logl(1+expl((-hh.pozoddna(i)-ef)/(kB*T)));
+    f+=hh.masa_w_plaszcz*kB*T/M_PI*log(1+exp((-hh.pozoddna(i)-ef)/(kB*T)));
   for(int j=0;j<=lh.ilepoz()-1;j++)
-    f+=lh.masa_w_plaszcz*kB*T/M_PI*logl(1+expl((-lh.pozoddna(j)-ef)/(kB*T)));
+    f+=lh.masa_w_plaszcz*kB*T/M_PI*log(1+exp((-lh.pozoddna(j)-ef)/(kB*T)));
   //  std::clog<<"\nkocvcalk = "<<f;
   f-=konc*szer;
   return f;
@@ -424,22 +422,22 @@ double gain::gdzieqflv2(double ef,double *)
 {
   double f=0;
   double en;
-  for(int j=(int)ceill(2*szer_fal*sqrtl(2*lh.masa_w_plaszcz*lh.gleb_fal)/M_PI);j>=1;j--)
+  for(int j=(int)ceil(2*szer_fal*sqrt(2*lh.masa_w_plaszcz*lh.gleb_fal)/M_PI);j>=1;j--)
     {
       en=(j*M_PI/(2*szer_fal))*(j*M_PI/(2*szer_fal))/(2*lh.masa_w_plaszcz)+lh.gleb;
-      f+=logl(1+expl((-en-ef)/(kB*T)));
+      f+=log(1+exp((-en-ef)/(kB*T)));
     }
   f*=lh.masa_w_plaszcz;
-  f*=2*szer/szer_fal;  // stosunek objêto¶ci falowodu i studni
-  for(int j=(int)ceill(2*szer_fal*sqrtl(2*hh.masa_w_plaszcz*hh.gleb_fal)/M_PI);j>=1;j--)
+  f*=2*szer/szer_fal;  // stosunek objętości falowodu i studni
+  for(int j=(int)ceil(2*szer_fal*sqrt(2*hh.masa_w_plaszcz*hh.gleb_fal)/M_PI);j>=1;j--)
     {
       en=(j*M_PI/(2*szer_fal))*(j*M_PI/(2*szer_fal))/(2*hh.masa_w_plaszcz)+hh.gleb;
-      f+=hh.masa_w_plaszcz*logl(1+expl((-en-ef)/(kB*T)))*2*szer/szer_fal;
-    } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
+      f+=hh.masa_w_plaszcz*log(1+exp((-en-ef)/(kB*T)))*2*szer/szer_fal;
+    } // Poziomy nad studnią przybliżone studnią nieskończoną.
   for(int i=0;i<=hh.ilepoz()-1;i++)
-    f+=hh.masa_w_plaszcz*logl(1+expl((-hh.pozoddna(i)-ef)/(kB*T)));
+    f+=hh.masa_w_plaszcz*log(1+exp((-hh.pozoddna(i)-ef)/(kB*T)));
   for(int j=0;j<=lh.ilepoz()-1;j++)
-    f+=lh.masa_w_plaszcz*logl(1+expl((-lh.pozoddna(j)-ef)/(kB*T)));
+    f+=lh.masa_w_plaszcz*log(1+exp((-lh.pozoddna(j)-ef)/(kB*T)));
   f-=konc*M_PI*2*szer/(kB*T);
   return f;
 }
@@ -453,24 +451,24 @@ double gain::gdzieqflv_n(double ef,double * wsk_sszer)
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
   double k;
   f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
-  for(int j=(int)ceill(szer_fal*sqrtl(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
+  for(int j=(int)ceil(szer_fal*sqrt(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);
       en=k*k/(2*lh.masabar)+lh.gleb;
-      f+=sumaszer/szer_fal*lh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
+      f+=sumaszer/szer_fal*lh.masabar*kT/M_PI*log(1+exp((-en-ef)/(kB*T)));
     }
   f+=sumaszer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
-  for(int j=(int)ceill(szer_fal*sqrtl(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
+  for(int j=(int)ceil(szer_fal*sqrt(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);
       en= k*k/(2*hh.masabar)+hh.gleb;
-      f+=sumaszer/szer_fal*hh.masabar*kT/M_PI*logl(1+expl((-en-ef)/(kB*T)));
-    } // Poziomy nad studini± przybli¿one studni± nieskoñczon±.
+      f+=sumaszer/szer_fal*hh.masabar*kT/M_PI*log(1+exp((-en-ef)/(kB*T)));
+    } // Poziomy nad studnią przybliżone studnią nieskończoną.
   barkonc_v=f/sumaszer;
   for(int i=0;i<=hh.ilepoz()-1;i++)
-    f+=hh.masa_w_plaszcz*kB*T/M_PI*logl(1+expl((-hh.pozoddna(i)-ef)/(kB*T)));
+    f+=hh.masa_w_plaszcz*kB*T/M_PI*log(1+exp((-hh.pozoddna(i)-ef)/(kB*T)));
   for(int j=0;j<=lh.ilepoz()-1;j++)
-    f+=lh.masa_w_plaszcz*kB*T/M_PI*logl(1+expl((-lh.pozoddna(j)-ef)/(kB*T)));
+    f+=lh.masa_w_plaszcz*kB*T/M_PI*log(1+exp((-lh.pozoddna(j)-ef)/(kB*T)));
   //  std::clog<<"\nkocvcalk = "<<f;
   f-=konc*sumaszer;
   return f;
@@ -601,13 +599,13 @@ inline double gain::Lpr(double x,double b) /// pochodna poszerzenia lorentzowski
   return -2*x*b/(M_PI*(x*x+b*b)*(x*x+b*b));
 }
 /*****************************************************************************/
-double gain::kodE(double E,double mc,double mv) /// k(E) (k nośnika od energii fotonu)
+double gain::kodE(double E,double mc,double mv) /// k(E) (k nosnika od energii fotonu)
 {
   double m=1/(1/mc+1/mv);
-  return sqrtl(2*m*E);
+  return sqrt(2*m*E);
 }
 /*****************************************************************************/
-double gain::rored(double,double mc,double mv) /// dwuwymiarowa zredukowana gęstość stanów
+double gain::rored(double,double mc,double mv) /// dwuwymiarowa zredukowana gestosc stanów
 {
   double m=1/(1/mc+1/mv);
   return m/(2*M_PI*szer);
@@ -625,7 +623,7 @@ double gain::rored_n(double,double mc,double mv, double sumaszer)
   return m/(2*M_PI*sumaszer);
 }
 /*****************************************************************************/
-double gain::dosplotu(double E, parametry * param) /// splot lorentza ze wzmonieniem (nie poszerzonym) - funkcja podcałkowa do splotu dla emisji wymuszonej
+double gain::dosplotu(double E, parametry * param) /// splot lorentza ze wzmonieniem (nie poszerzonym) - funkcja podcalkowa do splotu dla emisji wymuszonej
 {
   double *par=param->ldopar;
   double E0=par[0];
@@ -680,7 +678,7 @@ double gain::dosplotu_n(double E, parametry * param)
   return f*L(E-t,b);
 }
 /*****************************************************************************/
-double gain::wzmoc_z_posz(double t) /// wykonuje całkę (splot) z funkcją dosplotu
+double gain::wzmoc_z_posz(double t) /// wykonuje calke (splot) z funkcja dosplotu
 {
   int i=0;
   double Ec,Ev;
@@ -847,7 +845,7 @@ double gain::wzmoc_z_posz_n(double t, double sumszer)
   return stala*g;
 }
 /*****************************************************************************/
-double gain::dosplotu_spont(double E, parametry * param) /// funkcja podcałkowa do splotu dla emisji spont.
+double gain::dosplotu_spont(double E, parametry * param) /// funkcja podcalkowa do splotu dla emisji spont.
 {
   double *par=param->ldopar;
   double E0=par[0];
@@ -868,7 +866,7 @@ double gain::dosplotu_spont(double E, parametry * param) /// funkcja podcałkowa
   return f*L(E-t,b);
 }
 /*****************************************************************************/
-double gain::spont_z_posz(double t) /// to samo co wzmoc_posz tylko, że spontaniczne
+double gain::spont_z_posz(double t) /// to samo co wzmoc_posz tylko, ze spontaniczne
 {
   int i=0;
   double Ec,Ev;
@@ -923,10 +921,10 @@ double gain::spont_z_posz(double t) /// to samo co wzmoc_posz tylko, że spontan
   return stala*g;
 }
 /*****************************************************************************/
-double gain::Prost(double (gain::*F)(double, parametry *),double M, double a, double b, parametry * par, double bld) /// metoda prostokątów (całkowania)
+double gain::Prost(double (gain::*F)(double, parametry *),double M, double a, double b, parametry * par, double bld) /// metoda prostokatów (calkowania)
 {
   double szer=b-a;
-  long N=(long)ceill(szer*sqrtl(szer*M/(24*bld)));
+  long N=(long)ceil(szer*sqrt(szer*M/(24*bld)));
   double podz=szer/N;
   double wyn=0;
   for(long k=0;k<=N-1;k++)
@@ -1041,7 +1039,7 @@ double gain::wzmoc0_n(double E, double sumszer)
   return M_PI*g/(c*n_r*ep0*E)/przelm*1e8;
 }
 /*****************************************************************************/
-double gain::spont0(double E) /// liczy emisję spont. bez poszerzenia
+double gain::spont0(double E) /// liczy emisje spont. bez poszerzenia
 {
   int i=0;
   double Ec,Ev;
@@ -1084,7 +1082,7 @@ void gain::przygobl() /// przygotuj obliczenia (znajduje kp fermiego, poziomy en
     }
   if(T<0 || n_r<0 || szer<0 || szer_fal<0 || Eg<0 || Mt<0 || tau<0 || konc<0)
     {
-      exit(1);
+      throw CriticalException("Error in gain module");
     }
   el.~nosnik();
   el.poziomy=znajdzpoziomy(el);
@@ -1092,6 +1090,7 @@ void gain::przygobl() /// przygotuj obliczenia (znajduje kp fermiego, poziomy en
   hh.poziomy=znajdzpoziomy(hh);
   lh.~nosnik();
   lh.poziomy=znajdzpoziomy(lh);
+  kasuj_poziomy = true;
   Efc=qFlc();
   Efv=qFlv();
   /*  std::cerr<<"\nszer="<<szer<<"\n";
@@ -1100,10 +1099,21 @@ void gain::przygobl() /// przygotuj obliczenia (znajduje kp fermiego, poziomy en
   ustawione='t';
 }
 /*****************************************************************************/
-// Marcin Gebski 21.02.2013
-void gain::runPrzygobl()
+void gain::przygobl_n(double sumaszer)
 {
-    this->przygobl();
+  //  std::cerr<<"\nW n\n";
+  if(Mt<=0) Mt=element();
+  if(T<0 || n_r<0 || szer<0 || szer_fal<0 || Eg<0 || Mt<0 || tau<0 || konc<0)
+    throw CriticalException("Error in gain module");
+  if (kasuj_poziomy) el.~nosnik();
+  el.poziomy = znajdzpoziomy(el);
+  if (kasuj_poziomy) hh.~nosnik();
+  hh.poziomy = znajdzpoziomy(hh);
+  if (kasuj_poziomy) lh.~nosnik();
+  lh.poziomy = znajdzpoziomy(lh);
+  Efc=qFlc_n(sumaszer);
+  Efv=qFlv_n(sumaszer);
+  ustawione='t';
 }
 /*****************************************************************************
 void gain::przygobl2()
@@ -1115,35 +1125,24 @@ void gain::przygobl2()
     }
   if(T<0 || n_r<0 || szer<0 || szer_fal<0 || Eg<0 || Mt<0 || tau<0 || konc<0)
     {
-      exit(1);
+      throw CriticalException("Error in gain module");
     }
-  el.~nosnik();
+  if (kasuj_poziomy) el.~nosnik();
   el.poziomy=znajdzpoziomy2(el);
   //  std::cerr<<"\nel2 poziomy "<<el.ilepoz()<<"\n";
-  hh.~nosnik();
+  if (kasuj_poziomy) hh.~nosnik();
   hh.poziomy=znajdzpoziomy2(hh);
   //  std::cerr<<"\nhh2 poziomy "<<hh.ilepoz()<<"\n";
-  lh.~nosnik();
+  if (kasuj_poziomy) lh.~nosnik();
   lh.poziomy=znajdzpoziomy2(lh);
   //  std::cerr<<"\nlh2 poziomy "<<lh.ilepoz()<<"\n";
+  kasuj_poziomy = true;
   Efc=qFlc2();
   Efv=qFlv2();
   ustawione='t';
 }
 *****************************************************************************/
-double * gain::z_vec_wsk(std::vector<std::vector<double> > & zewpoziomy, int k) /// z wektora wskaźnik
-{
-  size_t rozm=zewpoziomy[k].size();
-  double * wsk = new double [rozm+1];
-  for(size_t i=0; i<=rozm-1; i++)
-    {
-      wsk[i]=zewpoziomy[k][i];
-    }
-  wsk[rozm]=1.;
-  return wsk;
-}
-/*****************************************************************************/
-void gain::przygobl_n(std::vector<std::vector<double> > & zewpoziomy, double sumaszer)
+void gain::przygobl_n(const ExternalLevels& zewpoziomy, double sumaszer)
 {
   //  std::cerr<<"\nW n\n";
   if(Mt<=0)
@@ -1152,16 +1151,17 @@ void gain::przygobl_n(std::vector<std::vector<double> > & zewpoziomy, double sum
     }
   if(T<0 || n_r<0 || szer<0 || szer_fal<0 || Eg<0 || Mt<0 || tau<0 || konc<0)
     {
-      exit(1);
+      throw CriticalException("Error in gain module");
     }
-  el.~nosnik();
-  el.poziomy=z_vec_wsk(zewpoziomy, 0);
+  if (kasuj_poziomy) el.~nosnik();
+  el.poziomy = zewpoziomy.el;
   //  std::cerr<<"\neln poziomy "<<el.ilepoz()<<"\n";
-  hh.~nosnik();
-  hh.poziomy=z_vec_wsk(zewpoziomy, 1);
+  if (kasuj_poziomy) hh.~nosnik();
+  hh.poziomy = zewpoziomy.hh;
   //  std::cerr<<"\nhhn poziomy "<<hh.ilepoz()<<"\n";
-  lh.~nosnik();
-  lh.poziomy=z_vec_wsk(zewpoziomy, 2);
+  if (kasuj_poziomy) lh.~nosnik();
+  lh.poziomy = zewpoziomy.lh;
+  kasuj_poziomy = false;
   //  std::cerr<<"\nlhn poziomy "<<lh.ilepoz()<<"\n";
   Efc=qFlc_n(sumaszer);
   Efv=qFlv_n(sumaszer);
@@ -1173,7 +1173,7 @@ void gain::przygobl_n(std::vector<std::vector<double> > & zewpoziomy, double sum
   ustawione='t';
 }
 /*****************************************************************************/
-long gain::Calculate_Spont_Profile() /// liczy widmo emisji spont. (od energii) (pocz, koniec, krok), zwraca liczbę punktów
+long gain::Calculate_Spont_Profile() /// liczy widmo emisji spont. (od energii) (pocz, koniec, krok), zwraca liczbe punktów
 {
   if(ilwyw>0) return Tspont[0].size();
   ilwyw++;
@@ -1198,7 +1198,7 @@ long gain::Calculate_Spont_Profile() /// liczy widmo emisji spont. (od energii) 
   return Tspont[0].size();
 }
 /*****************************************************************************/
-long gain::Calculate_Gain_Profile() /// liczy widmo wzmocnienia (od energii) (pocz, koniec, krok), zwraca liczbę punktów
+long gain::Calculate_Gain_Profile() /// liczy widmo wzmocnienia (od energii) (pocz, koniec, krok), zwraca liczbe punktów
 {
   if(ilwyw>0) return ilpt;
   ilwyw++;
@@ -1259,7 +1259,7 @@ long gain::Calculate_Gain_Profile2()
   return j;
 }
 *****************************************************************************/
-long gain::Calculate_Gain_Profile_n(std::vector<std::vector<double> > & zewpoziomy, double sumaszer)
+long gain::Calculate_Gain_Profile_n(const ExternalLevels& zewpoziomy, double sumaszer)
 {
   //  if(ilwyw>0) return ilpt;
   //  ilwyw++;
@@ -1349,7 +1349,7 @@ double gain::Find_max_gain() /// szuka maksimum wzmocnienia
   return max;
 }
 /*****************************************************************************/
-double gain::Find_max_gain_n(std::vector<std::vector<double> > & zewpoziomy, double sumaszer)
+double gain::Find_max_gain_n(const ExternalLevels& zewpoziomy, double sumaszer)
 {
   int iter=0, it_max=200;
   const gsl_min_fminimizer_type *T;
@@ -1421,7 +1421,17 @@ double gain::Get_gain_at(double E) /// wzmocnienie dla energii E
   return (tau)? wzmoc_z_posz(E):wzmoc0(E);
 }
 /*****************************************************************************/
-double gain::Get_gain_at_n(double E,std::vector<std::vector<double> > & zewpoziomy, double sumaszer)
+double gain::Get_gain_at_n(double E, double sumaszer)
+{
+  double sszer=przel_dlug_z_angstr(sumaszer);
+  if(ustawione=='n')
+    przygobl_n(sszer);
+  double (gain::*wzmoc)(double,double);
+  wzmoc=(tau)?& gain::wzmoc_z_posz_n:& gain::wzmoc0_n;
+  return(this->*wzmoc)(E,sszer);
+}
+/*****************************************************************************/
+double gain::Get_gain_at_n(double E, const ExternalLevels& zewpoziomy, double sumaszer)
 {
   double sszer=przel_dlug_z_angstr(sumaszer);
   if(ustawione=='n')
@@ -1454,11 +1464,11 @@ double gain::Get_bar_gain_at(double E) /// wzmocnienie (absorpcja) w barierze dl
   return g;
 }
 /*****************************************************************************/
-double gain::Get_spont_at(double E) /// emisja spontaniczna (intensywność [W/m^2 ?]) dla energii E
+double gain::Get_spont_at(double E) /// emisja spontaniczna (intensywnosc [W/m^2 ?]) dla energii E
 {
   if(ustawione=='n')
     przygobl();
-  double wynik = (tau)? spont_z_posz(E):spont0(E); // w 1/(s cm^3) ma byæ
+  double wynik = (tau)? spont_z_posz(E):spont0(E); // w 1/(s cm^3) ma być
   return wynik/(przelm*przelm*przelm)*1e24/przels*1e12;
 }
 /*****************************************************************************/
@@ -1550,7 +1560,7 @@ void gain::Set_lifetime(double t)
 {
   tau=przel_czas_z_psek(t);
   ilwyw=0;
-  ustawione='n'; /// wskaźnik, że trzeba coś przeliczyć wewnątrz
+  ustawione='n'; /// wskaznik, ze trzeba cos przeliczyc wewnatrz
 }
 /*****************************************************************************/
 double gain::Get_lifetime()
@@ -1863,5 +1873,8 @@ gain::~gain()
       if(Twzmoc[1]) delete [] Twzmoc [1];
       delete [] Twzmoc;
     }
+  if (!kasuj_poziomy) {
+      el.poziomy = hh.poziomy = lh.poziomy = NULL;
+  }
 }
 
