@@ -3,6 +3,7 @@
 #include <boost/lexical_cast.hpp>
 #include "../utils/stl.h"
 #include "../utils/string.h"
+#include "../log/log.h"
 
 #include <cmath>
 #include <set>
@@ -67,8 +68,11 @@ Tensor2<double> Material::cond(double T) const { throwNotImplemented("cond(doubl
 Material::ConductivityType Material::condtype() const { return CONDUCTIVITY_UNDETERMINED; }
 
 double Material::D(double T) const {
-    // Use Einstein coefficient here
-    return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
+    // Use Einstein relation here
+    double mu;
+    try { mu = mob(T).c00; }
+    catch(plask::NotImplemented) { throwNotImplemented("D(double T)"); }
+    return mu * T * 8.6173423e-5;  // D = µ kB T / e
 }
 
 double Material::dens(double T) const { throwNotImplemented("dens(double T)"); return 0; }

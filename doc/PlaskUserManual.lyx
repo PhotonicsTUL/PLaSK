@@ -6644,7 +6644,7 @@ e
 <mob>
 \family default
 \series default
- Mobility
+ Majority carriers mobility
 \begin_inset Index idx
 status collapsed
 
@@ -6654,7 +6654,7 @@ material!mobility
 
 \end_inset
 
-materi in-plane (lateral) and cross-plane (vertical) direction [
+ in-plane (lateral) and cross-plane (vertical) direction [
 \begin_inset Formula $\mbox{m}^{2}/(\mbox{V}\,\mbox{s})$
 \end_inset
 
@@ -19698,7 +19698,11 @@ Contents
 
  See 
 \family typewriter
-<electrical solver=
+<electrical
+\begin_inset space ~
+\end_inset
+
+solver=
 \begin_inset Quotes erd
 \end_inset
 
@@ -19740,6 +19744,242 @@ Fermi2D
  geometry.
 \end_layout
 
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<geometry/>
+\family default
+\series default
+ Geometry for use by this solver.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the geometry defined in the 
+\family typewriter
+<geometry>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<mesh/>
+\family default
+\series default
+ Optional mesh used by this solver.
+ If it is set then the gain is computed only in the mesh points and interpolated
+ in-between.
+ Otherwise, the full gain calculation is performed in each requested point.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+ref
+\family default
+ Name of the mesh defined in the 
+\family typewriter
+<grids>
+\family default
+ section.
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<config/>
+\family default
+\series default
+ Configuration of the self-consistent loop.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+lifetime
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Carriers lifetime.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+matrix-elem
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Value of the matrix element in gain computations (if not set it is estimated
+ automatically).
+\end_layout
+
+\end_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+\series bold
+<levels/>
+\family default
+\series default
+ Custom energy levels in quantum wells.
+ If this tag is used all levels must be set.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Attributes
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+le
+\family default
+ Comma-separated list of electron levels.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+hh
+\family default
+ Comma-separated list of heavy hole levels.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+lh
+\family default
+ Comma-separated list of light hole levels.
+\end_layout
+
+\end_deeper
+\end_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 
@@ -19764,6 +20004,37 @@ FermiCyl
  geometry.
 \end_layout
 
+\begin_deeper
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+Contents
+\end_layout
+
+\end_inset
+
+ See 
+\family typewriter
+<gain solver=
+\begin_inset Quotes erd
+\end_inset
+
+Fermi2D
+\begin_inset Quotes erd
+\end_inset
+
+>
+\family default
+.
+\end_layout
+
+\end_deeper
 \begin_layout Subsection
 Optical solvers
 \end_layout

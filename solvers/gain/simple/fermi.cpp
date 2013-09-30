@@ -38,10 +38,45 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
         std::string param = reader.getNodeName();
         if (param == "config") {
             mLifeTime = reader.getAttribute<double>("lifetime", mLifeTime);
-            mMatrixElem = reader.getAttribute<double>("matrix_elem", mMatrixElem);
+            mMatrixElem = reader.getAttribute<double>("matrix-elem", mMatrixElem);
             reader.requireTagEnd();
+        } else if (param == "levels") {
+            std::string els, hhs, lhs;
+            if (reader.hasAttribute("el") || reader.hasAttribute("hh") || reader.hasAttribute("lh")) {
+                els = reader.requireAttribute("el");
+                hhs = reader.requireAttribute("hh");
+                lhs = reader.requireAttribute("lh");
+                reader.requireTagEnd();
+            } else {
+                while (reader.requireTagOrEnd()) {
+                    if (reader.getNodeName() == "el") els = reader.requireTextInCurrentTag();
+                    else if (reader.getNodeName() == "hh") hhs = reader.requireTextInCurrentTag();
+                    else if (reader.getNodeName() == "lh") lhs = reader.requireTextInCurrentTag();
+                    else throw XMLUnexpectedElementException(reader, "<el>, <hh>, or <lh>");
+                }
+                if (els == "") throw XMLUnexpectedElementException(reader, "<el>");
+                if (hhs == "") throw XMLUnexpectedElementException(reader, "<hh>");
+                if (lhs == "") throw XMLUnexpectedElementException(reader, "<lh>");
+            }
+            boost::char_separator<char> sep(", ");
+            boost::tokenizer<boost::char_separator<char>> elt(els, sep), hht(hhs, sep), lht(lhs, sep);
+            double *el = nullptr, *hh = nullptr, *lh = nullptr;
+            try {
+                el = new double[std::distance(elt.begin(), elt.end())+1];
+                hh = new double[std::distance(hht.begin(), hht.end())+1];
+                lh = new double[std::distance(lht.begin(), lht.end())+1];
+                double* e = el; for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
+                double* h = hh; for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
+                double* l = lh; for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
+            } catch(...) {
+                delete[] el; delete[] hh; delete[] lh;
+            }
+            if (extern_levels) {
+                delete[] extern_levels->el; delete[] extern_levels->hh; delete[] extern_levels->lh;
+            }
+            extern_levels.reset(QW::ExternalLevels(el, hh, lh));
         } else
-            this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, or <config>");
+            this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <levels>, or <config>");
     }
 }
 
