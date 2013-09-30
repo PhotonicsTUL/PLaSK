@@ -399,6 +399,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
     loadConductivity();
 
     bool noactive = (actd.size() == 0);
+    double minj = 100e-7 * js; // assume no significant heating below this current
 
     do {
         setMatrix(A, potential, bvoltage);   // corr holds RHS now
@@ -436,9 +437,9 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
             current[i] = cur;
         }
         mcur = sqrt(mcur);
-        err = 100. * sqrt(err) / max(mcur,1e-5*js); // minimum considered current density is 100js
+        err = 100. * sqrt(err) / mcur;
         
-        if (err > toterr) toterr = err;
+        if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
 
         ++loopno;
         ++loop;

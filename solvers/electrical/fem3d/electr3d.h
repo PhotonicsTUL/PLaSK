@@ -119,9 +119,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
   public:
 
-    double maxerr;              ///< Maximum voltage correction accepted as convergence
-    double abscorr;             ///< Maximum absolute voltage correction (useful for single calculations managed by external python script)
-    double relcorr;             ///< Maximum relative voltage correction (useful for single calculations managed by external python script)
+    double maxerr;              ///< Maximum relative current density correction accepted as convergence
     Vec<3,double> maxcur;       ///< Maximum current in the structure
 
     HeatMethod heatmet;         ///< Method of heat computation

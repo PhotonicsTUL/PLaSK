@@ -123,7 +123,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   public:
 
-    double maxerr;             ///< Maximum voltage correction accepted as convergence
+    double maxerr;              ///< Maximum relative current density correction accepted as convergence
 
     HeatMethod heatmet;         ///< Method of heat computation
 

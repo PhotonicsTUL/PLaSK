@@ -413,7 +413,8 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
     loadConductivities();
 
     bool noactive = (actd.size() == 0);
-
+    double minj = 100e-7 * js; // assume no significant heating below this current
+    
     do {
         setMatrix(A, potentials, vconst);    // corr holds RHS now
         solveMatrix(A, potentials);
@@ -440,8 +441,9 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
             currents[i] = cur;
         }
         mcur = sqrt(mcur);
-        err = 100. * sqrt(err) / max(mcur,1e-5*js); // minimum considered current density is 100js
-        if (err > toterr) toterr = err;
+        err = 100. * sqrt(err) / mcur;
+        
+        if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
