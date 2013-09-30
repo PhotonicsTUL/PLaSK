@@ -435,14 +435,16 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
             if (delta > err) err = delta;
             current[i] = cur;
         }
-        err = 100. * sqrt(err / max(mcur,1e-7*js));
+        mcur = sqrt(mcur);
+        err = 100. * sqrt(err) / max(mcur,1e-5*js); // minimum considered current density is 100js
+        
         if (err > toterr) toterr = err;
 
         ++loopno;
         ++loop;
 
         this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g %%",
-                       loop, loopno, noactive?"":"@junc", sqrt(mcur), err);
+                       loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
 
