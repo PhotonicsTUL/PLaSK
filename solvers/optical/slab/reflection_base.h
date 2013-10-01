@@ -120,8 +120,8 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
 
     /// Get admittance (A) and discontinuity (M) matrices for the whole structure
     void getFinalMatrix() {
-        getAM(this->stack.size()-1, this->interface+1, false);
-        getAM(0, this->interface, true);
+        getAM(this->stack.size()-1, this->interface, false);
+        getAM(0, this->interface-1, true);
     }
 
     /**

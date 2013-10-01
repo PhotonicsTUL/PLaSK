@@ -29,8 +29,8 @@ void ReflectionSolver<GeometryT>::init()
     fields_determined = false;
     interface_field = nullptr;
 
-    this->writelog(LOG_DETAIL, "Initializing reflection-matrix solver"
-                               " (%1% layers in the stack, interface after %2% layers)", this->stack.size(), this->interface);
+    this->writelog(LOG_DETAIL, "Initializing reflection-matrix solver (%1% layers in the stack, interface after %2% layer%3%)",
+                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
 
     P = cmatrix(N,N);
     phas = cdiagonal(N);
@@ -112,7 +112,6 @@ void ReflectionSolver<GeometryT>::getAM(size_t start, size_t end, bool add, doub
     cdiagonal gamma = diagonalizer->Gamma(this->stack[end]);
 
     double H = (end == 0 || end == this->vbounds.size())? 0. : abs(this->vbounds[end] - this->vbounds[end-1]);
-
     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
 
     mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);     // P = phas * P * phas
@@ -134,18 +133,18 @@ void ReflectionSolver<GeometryT>::getAM(size_t start, size_t end, bool add, doub
     }
 
     // M for the half of the structure
-    mult_matrix_by_matrix(A, diagonalizer->invTE(this->stack[end]), wrk);         // wrk := A * invTE[end]
+    mult_matrix_by_matrix(A, diagonalizer->invTE(this->stack[end]), wrk);    // wrk = A * invTE[end]
 
     zgemm('N','N', N0, N0, N, mfac, diagonalizer->TH(this->stack[end]).data(), N0,
-          work, N, add?1.:0., M.data(), N0);                                   // M := mfac * TH[end] * wrk
+          work, N, add?1.:0., M.data(), N0);                                 // M = mfac * TH[end] * wrk
 }
 
 
 template <typename GeometryT>
 void ReflectionSolver<GeometryT>::findReflection(size_t start, size_t end)
 {
-    // Should be called from 0 to interface
-    // and from count-1 to interface+1
+    // Should be called from 0 to interface-1
+    // and from count-1 to interface
 
     const int inc = (start < end) ? 1 : -1;
 
@@ -167,12 +166,12 @@ void ReflectionSolver<GeometryT>::findReflection(size_t start, size_t end)
     {
         gamma = diagonalizer->Gamma(this->stack[n]);
 
-        int np = n-inc;
-        if (np < 0) np = 0; else if (np >= this->stack.size()) np = this->stack.size()-1;
-        
+        int np = n-1;
+        if (np < 0) np = 0; else if (np >= this->vbounds.size()) np = this->vbounds.size()-1;
+
         double H = abs(this->vbounds[n] - this->vbounds[np]);
 
-        if (n != start) {
+        if (!emitting || n != start) {
             for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
         } else {
             for (int i = 0; i < N; i++) {

@@ -68,9 +68,9 @@ class LayerSet_Test(unittest.TestCase):
 
     def testInterface(self):
         self.solver.set_interface(0.)
-        self.assertEqual( self.solver.interface, 59 )
-        self.solver.set_interface(self.manager.geo.QW)
         self.assertEqual( self.solver.interface, 60 )
+        self.solver.set_interface(self.manager.geo.QW)
+        self.assertEqual( self.solver.interface, 61 )
 
     def testLayers(self):
         self.solver.find_mode(1.)

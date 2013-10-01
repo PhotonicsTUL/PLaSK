@@ -4,6 +4,7 @@ namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
+    interface(1),
     outdist(0.1),
     smooth(0.),
     outLightIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes)

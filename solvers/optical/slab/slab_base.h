@@ -78,9 +78,10 @@ struct SlabSolver: public SolverOver<GeometryT> {
      */
     inline void setInterface(size_t index) {
         if (vbounds.empty()) prepareLayers();
-        if (index >= vbounds.size())
-            throw BadInput(this->getId(), "wrong interface position");
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[index], index);
+        if (index == 0 || index > vbounds.size())
+            throw BadInput(this->getId(), "Cannot set interface to %1% (min: 1, max: %2%)", index, vbounds.size());
+        double pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, index);
         interface = index;
     }
 
@@ -90,10 +91,10 @@ struct SlabSolver: public SolverOver<GeometryT> {
      */
     inline void setInterfaceAt(double pos) {
         if (vbounds.empty()) prepareLayers();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin(); // -1e-12 to compensate for truncation errors
-        if (interface >= vbounds.size()) interface = vbounds.size() - 1;
-        pos = vbounds[interface]; if (abs(pos) < 1e12) pos = 0.;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  pos, interface);
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin() + 1; // -1e-12 to compensate for truncation errors
+        if (interface > vbounds.size()) interface = vbounds.size();
+        pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, interface);
     }
 
     /**
@@ -105,9 +106,10 @@ struct SlabSolver: public SolverOver<GeometryT> {
         if (vbounds.empty()) prepareLayers();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-1e-12) - vbounds.begin();
-        if (interface >= vbounds.size()) interface = vbounds.size() - 1;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-1e-12) - vbounds.begin() + 1;
+        if (interface > vbounds.size()) interface = vbounds.size();
+        double pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
+        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, interface);
     }
 
     /**
@@ -121,8 +123,8 @@ struct SlabSolver: public SolverOver<GeometryT> {
 
     /// Throw exception if the interface position is unsuitable for eigenmode computations
     void ensureInterface() {
-        if (this->interface >= this->stack.size())
-            throw BadInput(this->getId(), "Wrong interface position");
+        if (interface == 0 || interface >= stack.size())
+            throw BadInput(this->getId(), "Wrong interface position %1% (min: 1, max: %2%)", interface, stack.size()-1);
     }
     
     /**
