@@ -47,8 +47,8 @@ class LayerSet_Test(unittest.TestCase):
                 <shelf name="QW">
                   <block name="active" dr="4" dz="0.00500" material="InGaAs"/><block dr="6" dz="0.00500" material="InGaAs"/>
                 </shelf>
-                <zero/>
                 <block dr="10" dz="0.13649" material="GaAs" role="opt-cavity"/>
+                <zero/>
                 <stack name="bottom-dbr" repeat="29">
                   <block dr="10" dz="0.07955" material="AlGaAs"/>
                   <block dr="10" dz="0.06949" material="GaAs"/>
@@ -68,9 +68,9 @@ class LayerSet_Test(unittest.TestCase):
 
     def testInterface(self):
         self.solver.set_interface(0.)
-        self.assertEqual( self.solver.interface, 60 )
+        self.assertEqual( self.solver.interface, 59 )
         self.solver.set_interface(self.manager.geo.QW)
-        self.assertEqual( self.solver.interface, 61 )
+        self.assertEqual( self.solver.interface, 60 )
 
     def testLayers(self):
         self.solver.find_mode(1.)

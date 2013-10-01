@@ -243,8 +243,20 @@ class MainWindow(QtGui.QMainWindow):
                 self.actionXplDan.triggered.connect(lambda: self.runConvert(xpl2dan, 'XPL files (*.xpl)'))
                 self.menuTools.addAction(self.actionXplDan)
             if winsparkle:
+                if dan2xpl or xpl2dan: self.menuTools.addSeparator()
+                try:
+                    self.actionWinSparkleAutoupdate = QtGui.QAction(self)
+                    self.actionWinSparkleAutoupdate.setText(self.tr("Automatic Updates"))
+                    self.actionWinSparkleAutoupdate.setCheckable(True)
+                    self.actionWinSparkleAutoupdate.setChecked(winsparkle.win_sparkle_get_automatic_check_for_updates())
+                    self.actionWinSparkleAutoupdate.triggered.connect(
+                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(int(self.actionWinSparkleAutoupdate.isChecked()))
+                    )
+                    self.menuTools.addAction(self.actionWinSparkleAutoupdate)
+                except AttributeError:
+                    pass
                 self.actionWinSparkle = QtGui.QAction(self)
-                self.actionWinSparkle.setText(self.tr("Check for Updates..."))
+                self.actionWinSparkle.setText(self.tr("Check for Updates Now..."))
                 self.actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
                 self.menuTools.addAction(self.actionWinSparkle)
             self.menubar.addAction(self.menuTools.menuAction())

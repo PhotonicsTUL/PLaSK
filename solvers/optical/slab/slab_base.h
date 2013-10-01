@@ -105,7 +105,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
         if (vbounds.empty()) prepareLayers();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()) - vbounds.begin();
+        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-1e-12) - vbounds.begin();
         if (interface >= vbounds.size()) interface = vbounds.size() - 1;
         this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)",  vbounds[interface], interface);
     }
@@ -117,6 +117,12 @@ struct SlabSolver: public SolverOver<GeometryT> {
      */
     void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints& path) {
         setInterfaceOn(object, &path);
+    }
+
+    /// Throw exception if the interface position is unsuitable for eigenmode computations
+    void ensureInterface() {
+        if (this->interface >= this->stack.size())
+            throw BadInput(this->getId(), "Wrong interface position");
     }
     
     /**
@@ -131,7 +137,6 @@ struct SlabSolver: public SolverOver<GeometryT> {
         else h -= vbounds[n-1];
         return n;
     }
-
 
     /// Get stack
     /// \return layers stack

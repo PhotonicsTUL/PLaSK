@@ -68,14 +68,6 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
         mult_matrix_by_matrix(RH, RE, QE);  // QE = RH * RE
 
-for (int i = 0; i < matrixSize(); ++i) {
-    for (int j = 0; j < matrixSize(); ++j) {
-        std::cerr << RE(i,j) << " ";
-    }
-    std::cerr << "\n";
-}
-std::cerr << "\n";
-
         // This is probably expensive but necessary check to avoid hangs
         int NN = N*N;
         for (int i = 0; i < NN; i++) {

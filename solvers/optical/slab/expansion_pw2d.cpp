@@ -262,7 +262,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
     getMaterialCoefficients(l);
     
     int order = solver->getSize();
-    dcomplex f = 1. / k0, k02 = k0*k0; //TODO or f=I/k0?
+    dcomplex f = 1. / k0, k02 = k0*k0;
     dcomplex b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
 
     if (separated) {

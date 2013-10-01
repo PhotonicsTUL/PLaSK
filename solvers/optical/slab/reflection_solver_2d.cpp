@@ -50,7 +50,8 @@ size_t FourierReflection2D::findMode(dcomplex neff)
     klong =  RootDigger(*this,
                         [this](const dcomplex& x) { this->klong = x; return this->determinant(); },
                         detlog, root)(klong);
-    return 0;
+    outNeff.push_back(klong/k0);
+    return outNeff.size()-1;
 }
 
 
