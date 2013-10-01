@@ -67,6 +67,14 @@ Tensor2<double> GaAs::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(GaAs, VBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::VBO(double T, double e, char point) const {
+    return ( -0.80 );
+}
+
 MI_PROPERTY(GaAs, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")

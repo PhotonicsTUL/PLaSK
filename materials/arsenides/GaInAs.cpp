@@ -69,6 +69,13 @@ Tensor2<double> GaInAs::Mlh(double T, double e) const {
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 
+MI_PROPERTY(GaInAs, VBO,
+            MISource("nonlinear interpolation: GaAs, InAs")
+            )
+double GaInAs::VBO(double T, double e, char point) const {
+    return ( Ga*mGaAs.VBO(T,e,point) + In*mInAs.VBO(T,e,point) - Ga*In*(-0.38) );
+}
+
 MI_PROPERTY(GaInAs, ac,
             MISource("nonlinear interpolation: GaAs, InAs")
             )

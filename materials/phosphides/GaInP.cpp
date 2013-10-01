@@ -69,6 +69,13 @@ Tensor2<double> GaInP::Mlh(double T, double e) const {
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 
+MI_PROPERTY(GaInP, VBO,
+            MISource("linear interpolation: GaP, InP")
+            )
+double GaInP::VBO(double T, double e, char point) const {
+    return ( Ga*mGaP.VBO(T,e,point) + In*mInP.VBO(T,e,point) );
+}
+
 MI_PROPERTY(GaInP, ac,
             MISource("linear interpolation: GaP, InP")
             )

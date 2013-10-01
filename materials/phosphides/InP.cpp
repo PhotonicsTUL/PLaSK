@@ -67,6 +67,14 @@ Tensor2<double> InP::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(InP, VBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::VBO(double T, double e, char point) const {
+    return ( -0.94 );
+}
+
 MI_PROPERTY(InP, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")

@@ -67,6 +67,14 @@ Tensor2<double> GaP::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(GaP, VBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double GaP::VBO(double T, double e, char point) const {
+    return ( -1.27 );
+}
+
 MI_PROPERTY(GaP, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")

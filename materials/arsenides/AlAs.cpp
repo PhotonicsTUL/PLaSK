@@ -67,10 +67,18 @@ Tensor2<double> AlAs::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
-MI_PROPERTY(AlAs, ac,
+MI_PROPERTY(AlAs, VBO,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
+double AlAs::VBO(double T, double e, char point) const {
+    return ( -1.33 );
+}
+
+MI_PROPERTY(AlAs, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+ )
 double AlAs::ac(double T) const {
     return ( -5.64 );
 }

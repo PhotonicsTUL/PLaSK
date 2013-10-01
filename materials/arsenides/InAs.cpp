@@ -67,6 +67,14 @@ Tensor2<double> InAs::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(InAs, VBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::VBO(double T, double e, char point) const {
+    return ( -0.59 );
+}
+
 MI_PROPERTY(InAs, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
