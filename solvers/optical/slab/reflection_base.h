@@ -110,7 +110,7 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
         interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
         k0(NAN), klong(0.), ktran(0.), variable(K_0), detlog("", "modal", "k0", "det"),
-        ipiv(nullptr) {}
+        ipiv(nullptr), emitting(true) {}
 
     /// Initialize memory for calculations
     void init();

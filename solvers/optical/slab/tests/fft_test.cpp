@@ -64,10 +64,10 @@ BOOST_AUTO_TEST_CASE(FullFFT)
     };
     DataVector<dcomplex> data = source.copy();
 
-    FFT::Forward1D(2, 17, FFT::SYMMETRY_NONE, data.data()).execute();
+    FFT::Forward1D(2, 17, FFT::SYMMETRY_NONE).execute(data.data());
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
 
-    FFT::Backward1D(2, 17, FFT::SYMMETRY_NONE, data.data()).execute();
+    FFT::Backward1D(2, 17, FFT::SYMMETRY_NONE).execute(data.data());
     CHECK_CLOSE_COLLECTION(data, source, 1e-16)
 }
 
@@ -96,14 +96,14 @@ BOOST_AUTO_TEST_CASE(EvenFTT)
     };
     DataVector<dcomplex> data = source.copy();
 
-    FFT::Forward1D(2, 8, FFT::SYMMETRY_EVEN, data.data()).execute();
+    FFT::Forward1D(2, 8, FFT::SYMMETRY_EVEN).execute(data.data());
     CHECK_CLOSE_COLLECTION(data, results, 1e-16)
     for (int i = 0; i != 16; i += 2) {
         std::cerr << data[i].real() << " " << results[i].real() << " " << (results[i].real()/data[i].real()) << "\n";
     }
     
 
-    FFT::Backward1D(2, 8, FFT::SYMMETRY_EVEN, data.data()).execute();
+    FFT::Backward1D(2, 8, FFT::SYMMETRY_EVEN).execute(data.data());
     CHECK_CLOSE_COLLECTION(data, source, 1e-16)
 }
 

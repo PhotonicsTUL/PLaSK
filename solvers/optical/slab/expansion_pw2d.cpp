@@ -1,27 +1,32 @@
 #include "expansion_pw2d.h"
 #include "reflection_solver_2d.h"
 
+#define SOLVER static_cast<FourierReflection2D*>(solver)
+
 namespace plask { namespace solvers { namespace slab {
 
+ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver) {}
+
+    
 void ExpansionPW2D::init(bool long_zero, bool tran_zero)
 {
-    auto geometry = solver->getGeometry();
+    auto geometry = SOLVER->getGeometry();
 
     periodic = geometry->isPeriodic(Geometry2DCartesian::DIRECTION_TRAN);
 
     left = geometry->getChild()->getBoundingBox().lower[0];
     right = geometry->getChild()->getBoundingBox().upper[0];
 
-    size_t refine = solver->refine, M;
+    size_t refine = SOLVER->refine, M;
     if (refine == 0) refine = 1;
 
     if (long_zero || tran_zero) {
         // Test for off-diagonal NR components in which case we cannot use neither symmetry nor separation
         bool off_diagonal = false;
-        double dx =  (right-left) / (2 * solver->getSize() * refine);
-        for (const RectilinearAxis& axis1: solver->getLayersPoints()) {
+        double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
+        for (const RectilinearAxis& axis1: SOLVER->getLayersPoints()) {
             for (double x = left+dx/2; x < right; x += dx) {
-                Tensor3<dcomplex> nr = geometry->getMaterial(vec(x,axis1[0]))->NR(real(solver->getWavelength()), 300.);
+                Tensor3<dcomplex> nr = geometry->getMaterial(vec(x,axis1[0]))->NR(real(SOLVER->getWavelength()), 300.);
                 if (nr.c01 != 0. || nr.c10 != 0.) { off_diagonal = true; break; }
             }
             if (off_diagonal) break;
@@ -42,30 +47,30 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
             left = -left; right = -right;
             std::swap(left, right);
         }
-        if (left != 0) throw BadMesh(solver->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
+        if (left != 0) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric) left = -right;
     }
 
     if (!periodic) {
         // Add PMLs
-        if (!symmetric) left -= solver->pml.size + solver->pml.shift;
-        right += solver->pml.size + solver->pml.shift;
+        if (!symmetric) left -= SOLVER->pml.size + SOLVER->pml.shift;
+        right += SOLVER->pml.size + SOLVER->pml.shift;
     }
 
     double L;
                                                             // N = 3  nN = 5  refine = 5  M = 25
     if (!symmetric) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
         L = right - left;                                   //  ^ ^ ^ ^ ^
-        N = 2 * solver->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
-        nN = 4 * solver->getSize() + 1;
+        N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
+        nN = 4 * SOLVER->getSize() + 1;
         M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
         double dx = 0.5 * L * (refine-1) / M;               // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         xmesh = RegularAxis(left-dx, right-dx-L/M, M);      //  ^ ^ ^ ^
         xpoints = RegularAxis(left, right-L/N, N);          // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
     } else {
         L = 2 * right;
-        N = solver->getSize() + 1;
-        nN = 2 * solver->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
+        N = SOLVER->getSize() + 1;
+        nN = 2 * SOLVER->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
         M = refine * nN;                                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
         double dx = 0.25 * L / M;                           //  ^ ^ ^ ^
         xmesh = RegularAxis(left + dx, right - dx, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
@@ -73,10 +78,9 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
         xpoints = RegularAxis(left + dx, right - dx, N);
     }
 
-    solver->writelog(LOG_DETAIL, "Creating expansion with %1% plane-waves (matrix size: %2%)", N, matrixSize());
+    SOLVER->writelog(LOG_DETAIL, "Creating expansion with %1% plane-waves (matrix size: %2%)", N, matrixSize());
 
-    coeffs.reset(nN);
-    matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, reinterpret_cast<dcomplex*>(coeffs.data()));
+    matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -85,18 +89,18 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
     } else {
         DataVector<double> Sy(M, 0.);   // PML coeffs for mu
         // Add PMLs
-        solver->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
-        double pl = left + solver->pml.size, pr = right - solver->pml.size;
+        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
+        double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         if (symmetric) pil = 0;
         else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
         for (size_t i = 0; i != pil; ++i) {
-            double h = (pl - xmesh[i]) / solver->pml.size;
-            Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
+            double h = (pl - xmesh[i]) / SOLVER->pml.size;
+            Sy[i] = SOLVER->pml.extinction * pow(h, SOLVER->pml.order);
         }
         for (size_t i = pir+1; i != xmesh.size(); ++i) {
-            double h = (xmesh[i] - pr) / solver->pml.size;
-            Sy[i] = solver->pml.extinction * pow(h, solver->pml.order);
+            double h = (xmesh[i] - pr) / SOLVER->pml.size;
+            Sy[i] = SOLVER->pml.extinction * pow(h, SOLVER->pml.order);
             dcomplex sy(1., Sy[i]);
         }
         // Average mu
@@ -109,13 +113,13 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
             mag[i] /= refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, reinterpret_cast<dcomplex*>(mag.data())).execute();
+        FFT::Forward1D(2, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
         // Smooth coefficients
-        if (solver->smooth) {
+        if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
                 int k = i; if (k > nN/2) k -= nN;
-                mag[i] *= exp(-solver->smooth * bb4 * k * k);
+                mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
     }
@@ -123,7 +127,7 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
 
 
 size_t ExpansionPW2D::lcount() const {
-    return solver->getLayersPoints().size();
+    return SOLVER->getLayersPoints().size();
 }
 
 
@@ -132,24 +136,24 @@ bool ExpansionPW2D::diagonalQE(size_t l) const {
 }
 
 
-void ExpansionPW2D::getMaterialCoefficients(size_t l)
+DataVector<Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_t l)
 {
-    if (isnan(real(solver->getWavelength())) || isnan(imag(solver->getWavelength())))
-        throw BadInput(solver->getId(), "No wavelength set in solver");
+    if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
+        throw BadInput(SOLVER->getId(), "No wavelength set in SOLVER");
 
-    auto geometry = solver->getGeometry();
-    const RectilinearAxis& axis1 = solver->getLayerPoints(l);
+    auto geometry = SOLVER->getGeometry();
+    const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
 
-    size_t refine = solver->refine;
+    size_t refine = SOLVER->refine;
     size_t M = refine * nN;
 
-    solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
+    SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
 
     DataVector<Tensor3<dcomplex>> NR(M);
 
     RectilinearMesh2D mesh(xmesh, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
-    auto temperature = solver->inTemperature(mesh);
-    double lambda = real(solver->getWavelength());
+    auto temperature = SOLVER->inTemperature(mesh);
+    double lambda = real(SOLVER->getWavelength());
     double maty = axis1[0]; // at each point along any vertical axis material is the same
     for (size_t i = 0; i < M; ++i) {
         auto material = geometry->getMaterial(Vec<2>(xmesh[i],maty));
@@ -165,23 +169,23 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
     // Add PMLs
     if (!periodic) {
         Tensor3<dcomplex> ref;
-        double pl = left + solver->pml.size, pr = right - solver->pml.size;
+        double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         ref = NR[pil];
         for (size_t i = 0; i != pil; ++i) {
-            double h = (pl - xmesh[i]) / solver->pml.size;
-            dcomplex sy(1., solver->pml.extinction * pow(h, solver->pml.order));
+            double h = (pl - xmesh[i]) / SOLVER->pml.size;
+            dcomplex sy(1., SOLVER->pml.extinction * pow(h, SOLVER->pml.order));
             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
         }
         ref = NR[pir];
         for (size_t i = pir+1; i != xmesh.size(); ++i) {
-            double h = (xmesh[i] - pr) / solver->pml.size;
-            dcomplex sy(1., solver->pml.extinction * pow(h, solver->pml.order));
+            double h = (xmesh[i] - pr) / SOLVER->pml.size;
+            dcomplex sy(1., SOLVER->pml.extinction * pow(h, SOLVER->pml.order));
             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
         }
     }
 
     // Average material parameters
-    coeffs.fill(Tensor3<dcomplex>(0.));
+    DataVector<Tensor3<dcomplex>> coeffs(nN, Tensor3<dcomplex>(0.));
     double factor = 1. / refine;
     for (size_t i = 0; i != nN; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
@@ -192,28 +196,25 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
     }
 
     // Perform FFT
-    matFFT.execute();
+    matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()));
 
     // Smooth coefficients
-    if (solver->smooth) {
+    if (SOLVER->smooth) {
         double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
         for (size_t i = 0; i != nN; ++i) {
             int k = i; if (k > nN/2) k -= nN;
-            coeffs[i] *= exp(-solver->smooth * bb4 * k * k);
+            coeffs[i] *= exp(-SOLVER->smooth * bb4 * k * k);
         }
     }
 
-    // Cache coefficients required for field computations
-    //TODO
+    return std::move(coeffs);
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearAxis mesh,
-                                                                InterpolationMethod interp)
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
 {
     double L = right - left;
-    getMaterialCoefficients(l);
-    DataVector<Tensor3<dcomplex>> result;
+    DataVector<Tensor3<dcomplex>> coeffs = getMaterialCoefficients(l), result;
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         result.reset(mesh.size(), Tensor3<dcomplex>(0.));
         if (!symmetric) {
@@ -232,7 +233,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
             }
         }
     } else {
-        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, reinterpret_cast<dcomplex*>(coeffs.data())).execute();
+        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(coeffs.data()));
         RegularAxis cmesh;
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;
@@ -246,7 +247,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
         }
         RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));
         RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
-        result = interpolate(src_mesh, coeffs, WrappedMesh<2>(dst_mesh, solver->getGeometry()), interp);
+        result = interpolate(src_mesh, coeffs, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
     }
     for (Tensor3<dcomplex>& eps: result) {
         eps.c22 = 1. / eps.c22;
@@ -259,9 +260,9 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
 
 void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
 {
-    getMaterialCoefficients(l);
+    DataVector<Tensor3<dcomplex>> coeffs = getMaterialCoefficients(l);
     
-    int order = solver->getSize();
+    int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
     dcomplex b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
 
@@ -277,8 +278,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
                         dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                        RH(iE(i), iH(j)) = - fz * k02 * muxx(ij);
-                        RE(iH(i), iE(j)) =   fz * (gi * gj * imuyy(ij) - k02 * epszz(ij));
+                        RH(iE(i), iH(j)) = - fz * k02 * muxx(coeffs,ij);
+                        RE(iH(i), iE(j)) =   fz * (gi * gj * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij));
                     }
                 }
             } else {
@@ -287,8 +288,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
                         dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
-                        RH(iE(i), iH(j)) = - fx * (gi * gj * iepsyy(ij) + k02 * muzz(ij));
-                        RE(iH(i), iE(j)) =   fx * k02 * epsxx(ij);
+                        RH(iE(i), iH(j)) = - fx * (gi * gj * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij));
+                        RE(iH(i), iE(j)) =   fx * k02 * epsxx(coeffs,ij);
                     }
                 }
             }
@@ -299,8 +300,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RH(iE(i), iH(j)) = - k02 * muxx(ij);
-                        RE(iH(i), iE(j)) =   f * gi * gj * imuyy(ij) - k02 * epszz(ij);
+                        RH(iE(i), iH(j)) = - k02 * muxx(coeffs,ij);
+                        RE(iH(i), iE(j)) =   f * gi * gj * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij);
                     }
                 }
             } else {
@@ -308,8 +309,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RH(iE(i), iH(j)) = - f * gi * gj * iepsyy(ij) + k02 * muzz(ij);
-                        RE(iH(i), iE(j)) =   k02 * epsxx(ij);
+                        RH(iE(i), iH(j)) = - f * gi * gj * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij);
+                        RE(iH(i), iE(j)) =   k02 * epsxx(coeffs,ij);
                     }
                 }
             }
@@ -326,14 +327,14 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     int ij = abs(i-j);
                     dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
                     dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                    RH(iEx(i), iHz(j)) += fx * (-  gi * gj  * iepsyy(ij) + k02 * muzz(ij) ); 
-                    RH(iEz(i), iHz(j)) += fx * (  beta* gj  * iepsyy(ij)                  );
-                    RH(iEx(i), iHx(j)) += fz * (- beta* gi  * iepsyy(ij)                  );
-                    RH(iEz(i), iHx(j)) += fz * (  beta*beta * iepsyy(ij) - k02 * muxx(ij) );
-                    RE(iHz(i), iEx(j)) += fx * (- beta*beta * imuyy(ij) + k02 * epsxx(ij) );
-                    RE(iHx(i), iEx(j)) += fx * (  beta* gi  * imuyy(ij)                   );
-                    RE(iHz(i), iEz(j)) += fz * (- beta* gj  * imuyy(ij)                   );
-                    RE(iHx(i), iEz(j)) += fz * (   gi * gj  * imuyy(ij) - k02 * epszz(ij) );
+                    RH(iEx(i), iHz(j)) += fx * (-  gi * gj  * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij) ); 
+                    RH(iEz(i), iHz(j)) += fx * (  beta* gj  * iepsyy(coeffs,ij)                         );
+                    RH(iEx(i), iHx(j)) += fz * (- beta* gi  * iepsyy(coeffs,ij)                         );
+                    RH(iEz(i), iHx(j)) += fz * (  beta*beta * iepsyy(coeffs,ij) - k02 * muxx(coeffs,ij) );
+                    RE(iHz(i), iEx(j)) += fx * (- beta*beta * imuyy(coeffs,ij) + k02 * epsxx(coeffs,ij) );
+                    RE(iHx(i), iEx(j)) += fx * (  beta* gi  * imuyy(coeffs,ij)                          );
+                    RE(iHz(i), iEz(j)) += fz * (- beta* gj  * imuyy(coeffs,ij)                          );
+                    RE(iHx(i), iEz(j)) += fz * (   gi * gj  * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij) );
                 }
             }
         } else {
@@ -342,14 +343,14 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 dcomplex gi = b * double(i) - kx;
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                    RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(ij) + k02 * muzz(ij) );
-                    RH(iEz(i), iHz(j)) = f * (  beta* gj  * iepsyy(ij)                  );
-                    RH(iEx(i), iHx(j)) = f * (- beta* gi  * iepsyy(ij)                  );
-                    RH(iEz(i), iHx(j)) = f * (  beta*beta * iepsyy(ij) - k02 * muxx(ij) );
-                    RE(iHz(i), iEx(j)) = f * (- beta*beta * imuyy(ij) + k02 * epsxx(ij) );
-                    RE(iHx(i), iEx(j)) = f * (  beta* gi  * imuyy(ij) - k02 * epszx(ij) );
-                    RE(iHz(i), iEz(j)) = f * (- beta* gj  * imuyy(ij) + k02 * epsxz(ij) );
-                    RE(iHx(i), iEz(j)) = f * (   gi * gj  * imuyy(ij) - k02 * epszz(ij) );
+                    RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij) );
+                    RH(iEz(i), iHz(j)) = f * (  beta* gj  * iepsyy(coeffs,ij)                         );
+                    RH(iEx(i), iHx(j)) = f * (- beta* gi  * iepsyy(coeffs,ij)                         );
+                    RH(iEz(i), iHx(j)) = f * (  beta*beta * iepsyy(coeffs,ij) - k02 * muxx(coeffs,ij) );
+                    RE(iHz(i), iEx(j)) = f * (- beta*beta * imuyy(coeffs,ij) + k02 * epsxx(coeffs,ij) );
+                    RE(iHx(i), iEx(j)) = f * (  beta* gi  * imuyy(coeffs,ij) - k02 * epszx(coeffs,ij) );
+                    RE(iHz(i), iEz(j)) = f * (- beta* gj  * imuyy(coeffs,ij) + k02 * epsxz(coeffs,ij) );
+                    RE(iHx(i), iEz(j)) = f * (   gi * gj  * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij) );
                 }
             }
         }

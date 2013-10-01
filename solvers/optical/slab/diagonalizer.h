@@ -86,6 +86,7 @@ class SimpleDiagonalizer : public Diagonalizer
     std::vector<cmatrix> Te, Th;        // matrices TE and TH
     std::vector<cmatrix> Te1, Th1;      // matrices TE^-1 and TH^-1
 
+    cmatrix* tmpmx;                     // QE matrices for temporary storage
 
   public:
     SimpleDiagonalizer(Expansion* g);

@@ -13,20 +13,20 @@ Forward1D::Forward1D(): wsave(nullptr) {}
 Forward1D::Forward1D(Forward1D&& old):
     lot(old.lot), n(old.n), st(old.st),
     symmetry(old.symmetry),
-    data(old.data), wsave(old.wsave) {
+    wsave(old.wsave) {
     old.wsave = nullptr;
 }
 
 Forward1D& Forward1D::operator=(Forward1D&& old) {
     lot = old.lot; n = old.n; st = old.st;
     symmetry = old.symmetry;
-    data = old.data; wsave = old.wsave;
+    wsave = old.wsave;
     old.wsave = nullptr;
     return *this;
 }
 
-Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
-    lot(lot), n(n), st(st), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
+Forward1D::Forward1D(int lot, int n, Symmetry symmetry, int st):
+    lot(lot), n(n), st(st), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try { 
         int ier;
         if (symmetry == SYMMETRY_NONE)
@@ -38,10 +38,6 @@ Forward1D::Forward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Forward1D::Forward1D: %1%", msg);
     }
-}
-
-void Forward1D::execute() {
-    execute(data);
 }
 
 void Forward1D::execute(dcomplex* data) {
@@ -72,20 +68,20 @@ Backward1D::Backward1D(): wsave(nullptr) {}
 Backward1D::Backward1D(Backward1D&& old):
     lot(old.lot), n(old.n), st(old.st),
     symmetry(old.symmetry),
-    data(old.data), wsave(old.wsave) {
+    wsave(old.wsave) {
     old.wsave = nullptr;
 }
 
 Backward1D& Backward1D::operator=(Backward1D&& old) {
     lot = old.lot; n = old.n; st = old.st;
     symmetry = old.symmetry;
-    data = old.data; wsave = old.wsave;
+    wsave = old.wsave;
     old.wsave = nullptr;
     return *this;
 }
 
-Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st):
-    lot(lot), n(n), st(st), symmetry(symmetry), data(data), wsave(aligned_malloc<double>(lensav(n))) {
+Backward1D::Backward1D(int lot, int n, Symmetry symmetry, int st):
+    lot(lot), n(n), st(st), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try { 
         int ier;
         if (symmetry == SYMMETRY_NONE)
@@ -97,10 +93,6 @@ Backward1D::Backward1D(int lot, int n, Symmetry symmetry, dcomplex* data, int st
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Backward1D::Backward1D: %1%", msg);
     }
-}
-
-void Backward1D::execute() {
-    execute(data);
 }
 
 void Backward1D::execute(dcomplex* data) {

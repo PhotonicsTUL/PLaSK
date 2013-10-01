@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <cstring>
 
+#ifdef OPENMP_FOUND
+#include <omp.h>
+#endif
+
+
 namespace plask { namespace  solvers { namespace slab {
 
 
@@ -22,11 +27,26 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         Te[i] = cmatrix(N, N);
         Te1[i] = cmatrix(N, N);
     }
+#ifdef OPENMP_FOUND
+    int nt = omp_get_max_threads();
+    tmpmx = new cmatrix[nt];
+    src->solver->writelog(LOG_DETAIL, "Creating %1% temporary matri%2% for diagonalizer", nt, (nt==1)?"x":"ces");
+    for (size_t i = 0; i != nt; ++i) {
+        *tmpmx = cmatrix(N, N);
+    }
+#else
+    tmpmx = new cmatrix(N, N);
+#endif
 }
 
 
 SimpleDiagonalizer::~SimpleDiagonalizer()
 {
+#ifdef OPENMP_FOUND
+    delete[] tmpmx;
+#else
+    delete tmpmx;
+#endif
 }
 
 
@@ -37,13 +57,17 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
     int N = src->matrixSize();         // Size of each matrix
 
+#ifdef OPENMP_FOUND
+    cmatrix QE = tmpmx[omp_get_thread_num()];
+#else
+    cmatrix QE = *tmpmx;
+#endif
+    
+    
     // First find necessary matrices
     cmatrix RE = Th1[layer], RH = Th[layer];
     
-    #pragma omp critical // expansion may share some memory TODO make it thread safe
     src->getMatrices(layer, k0, Kx, Ky, RE, RH);
-
-    cmatrix QE(N,N);
 
     if (src->diagonalQE(layer)) {
 

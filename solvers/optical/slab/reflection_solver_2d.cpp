@@ -9,6 +9,7 @@ FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSol
     refine(8)
 {
     detlog.global_prefix = this->getId();
+    this->emitting = false;
 }
 
 

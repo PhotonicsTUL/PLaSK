@@ -192,14 +192,16 @@ void ReflectionSolver<GeometryT>::findReflection(size_t start, size_t end)
 
         // hh = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
         for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
+
         // multiply rows of P by -1 where necessary for properly outgoing wave
-        if (n == start) {
+        if (emitting && n == start) {
             for (int i = 0; i < N; i++)
                 if (real(gamma[i]) < -SMALL)
                     for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
         }
-        mult_matrix_by_matrix(diagonalizer->TH(this->stack[n]), P, wrk);            // wrk := TH[n] * P
-        mult_matrix_by_matrix(diagonalizer->invTH(this->stack[n+inc]), wrk, hh);    // hh := invTH[n+1] * wrk (= P)
+        
+        mult_matrix_by_matrix(diagonalizer->TH(this->stack[n]), P, wrk);            // wrk = TH[n] * P
+        mult_matrix_by_matrix(diagonalizer->invTH(this->stack[n+inc]), wrk, hh);    // hh = invTH[n+1] * wrk (= P)
 
         // ee := ee-hh, hh := ee+hh
         for (int i = 0; i < NN; i++) {

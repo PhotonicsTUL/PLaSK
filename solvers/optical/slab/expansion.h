@@ -9,6 +9,11 @@ namespace plask { namespace solvers { namespace slab {
 
 struct Expansion {
 
+    /// Solver which performs calculations (and is the interface to the outside world)
+    Solver* solver;        
+
+    Expansion(Solver* solver): solver(solver) {}
+    
     /**
      * Return number of distinct layers
      * \return number of layers
