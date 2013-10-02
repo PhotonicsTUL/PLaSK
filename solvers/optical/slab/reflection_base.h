@@ -8,11 +8,14 @@
 namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
-class ReflectionSolver: public SlabSolver<GeometryT> {
+struct ReflectionSolver: public SlabSolver<GeometryT> {
+
+    /// Struct containng data for computing field in a layer
+    struct LayerFields {
+        cvector F, B;
+    };
 
   protected:
-
-    enum Variable { K_0, K_TRAN, K_LONG };      ///< Possible variables to dig for
 
     std::unique_ptr<Diagonalizer> diagonalizer; ///< Diagonalizer used to compute matrix of eigenvalues and eigenvectors
 
@@ -30,8 +33,6 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     dcomplex k0,                                ///< Normalized frequency [1/µm]
              klong,                             ///< Longitudinal wavevector [1/µm]
              ktran;                             ///< Transverse wavevector [1/µm]
-
-    Variable variable;                          ///< Which variable to dig for
 
     cmatrix P;                                  ///< current reflection matrix
     bool allP;                                  ///< do we need to keep all the P matrices?
@@ -52,26 +53,11 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
 
     ~ReflectionSolver();
 
-    /// Get currently searched variable
-    Variable getVariable() const { return variable; }
-    /// Set new variable to searched
-    /// \param var new variable
-    void setVariable(Variable var) {
-        variable = var;
-        detlog.resetCounter();
-        switch (var) {
-            case K_0: detlog.axis_arg_name = "k0"; return;
-            case K_LONG: detlog.axis_arg_name = "beta"; return;
-            case K_TRAN: detlog.axis_arg_name = "k"; return;
-        }
-    }
-
     /// Get current wavelength
     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
     /// Set current wavelength
     void setWavelength(dcomplex lambda) {
         k0 = 2e3*M_PI / lambda;
-        // this->invalidate();
     }
 
     /// Get current k0
@@ -79,23 +65,20 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
     /// Set current k0
     void setK0(dcomplex k) {
         k0 = k;
-        // this->invalidate();
     }
 
     /// Get longitudinal wavevector
     dcomplex getKlong() const { return klong; }
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
-        klong = k; 
-        // this->invalidate();
+        klong = k;
     }
 
     /// Get transverse wavevector
     dcomplex getKtran() const { return ktran; }
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
-        ktran = k; 
-        // this->invalidate();
+        ktran = k;
     }
 
     /// Get discontinuity matrix determinant for the current parameters
@@ -103,13 +86,32 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
         this->initCalculation();
         return determinant();
     }
-    
+
+    /// Direction specification for reflection calculations
+    enum IncidentDirection {
+        DIRECTION_UPWARDS,      ///< Incident light propagating upwards
+        DIRECTION_DOWNWARDS     ///< Incident light propagating downwards
+    };
+
+    /**
+     * Get vector of reflection coefficients
+     * \param direction incident light propagation direction
+     * \param incident incident field profile
+     */
+    cvector getReflectionVector(IncidentDirection direction, const cvector& incident);
+
+    /**
+     * Get vector of transmission coefficients
+     * \param direction incident light propagation direction
+     */
+    DataVector<dcomplex> getTransmissionVector(IncidentDirection direction);
+
   protected:
 
     /// Solver constructor
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
         interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
-        k0(NAN), klong(0.), ktran(0.), variable(K_0), detlog("", "modal", "k0", "det"),
+        k0(NAN), klong(0.), ktran(0.), detlog("", "modal", "k0", "det"),
         ipiv(nullptr), emitting(true) {}
 
     /// Initialize memory for calculations

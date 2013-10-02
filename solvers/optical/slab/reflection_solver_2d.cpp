@@ -6,7 +6,8 @@ namespace plask { namespace solvers { namespace slab {
 FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSolver<Geometry2DCartesian>(name),
     size(12),
     expansion(this),
-    refine(8)
+    refine(8),
+    outNeff(this, &FourierReflection2D::getEffectiveIndex, &FourierReflection2D::nummodes)
 {
     detlog.global_prefix = this->getId();
     this->emitting = false;
@@ -30,7 +31,7 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierReflection2D::onInitialize()
 {
     setupLayers();
-    expansion.init(klong == 0., ktran == 0.);
+    expansion.init();
     diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
     init();
 }
@@ -38,6 +39,7 @@ void FourierReflection2D::onInitialize()
 
 void FourierReflection2D::onInvalidate()
 {
+    modes.clear();
     expansion.free();
     diagonalizer.reset();
 }
@@ -45,15 +47,16 @@ void FourierReflection2D::onInvalidate()
 
 size_t FourierReflection2D::findMode(dcomplex neff)
 {
+    if (expansion.polarization != ExpansionPW2D::TEM)
+        throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
     klong = neff * k0;
     if (klong == 0.) klong = 1e-12;
     initCalculation();
-    setVariable(K_LONG);
-    klong =  RootDigger(*this,
-                        [this](const dcomplex& x) { this->klong = x; return this->determinant(); },
-                        detlog, root)(klong);
-    outNeff.push_back(klong/k0);
-    return outNeff.size()-1;
+    detlog.axis_arg_name = "neff";
+    klong =  k0 *
+        RootDigger(*this, [this](const dcomplex& x) { this->klong = x * this->k0; return this->determinant(); },
+                   detlog, root)(neff);
+    return insertMode();
 }
 
 

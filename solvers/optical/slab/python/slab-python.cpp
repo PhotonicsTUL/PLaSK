@@ -3,6 +3,7 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
+#include <boost/python/raw_function.hpp>
 using namespace plask;
 using namespace plask::python;
 
@@ -36,13 +37,64 @@ template <typename Class>
 inline void export_reflection_base(Class solver) {
     export_base(solver);
     typedef typename Class::wrapped_type Solver;
-    solver.def("determinant", &Solver::getDeterminant, "Compute discontinuity matrix determinant for the current settings");
+    py::scope scope = solver;
+    py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
+        .value("UPWARDS", Solver::DIRECTION_UPWARDS)
+        .value("DOWNWARDS", Solver::DIRECTION_DOWNWARDS)
+    ;
+}
+
+
+
+static py::object FourierReflection2D_getSymmetry(const FourierReflection2D& self) {
+    switch (self.getSymmetry()) {
+        case ExpansionPW2D::SYMMETRIC_E_TRAN: return py::object("E"+config.axes.getNameForTran());
+        case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+config.axes.getNameForLong());
+        default: return py::object();
+    }
+    return py::object();
+}
+
+static void FourierReflection2D_setSymmetry(FourierReflection2D& self, py::object symmetry) {
+    if (symmetry == py::object()) { self.setSymmetry(ExpansionPW2D::SYMMETRIC_UNSPECIFIED); }
+    try {
+        std::string sym = py::extract<std::string>(symmetry);
+        if (sym == "tran" || sym == "transverse" || sym == "E"+config.axes.getNameForTran())
+            self.setSymmetry(ExpansionPW2D::SYMMETRIC_E_TRAN);
+        else if (sym == "long" || sym == "negative" || sym == "E"+config.axes.getNameForLong())
+            self.setSymmetry(ExpansionPW2D::SYMMETRIC_E_LONG);
+        else throw py::error_already_set();
+    } catch (py::error_already_set) {
+        throw ValueError("Wrong symmetry specification.");
+    }
+}
+
+void FourierReflection2D_parseKeywords(FourierReflection2D* self, const py::dict& kwargs) {
+    boost::optional<dcomplex> lambda, neff, ktran;
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    for (auto i = begin; i != end; ++i) {
+        if (*i == "lam") lambda.reset(py::extract<dcomplex>(kwargs(*i)));
+        else if (*i == "neff") neff.reset(py::extract<dcomplex>(kwargs(*i)));
+        else if (*i == "k"+config.axes.getNameForTran()) ktran.reset(py::extract<dcomplex>(kwargs(*i)));
+        else throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
+    }
+    if (lambda) self->setWavelength(*lambda);
+    if (neff) self->setKlong(*neff * self->getK0());
+    if (ktran) self->setKtran(*ktran);
 }
 
 
 DataVectorWrap<const Tensor3<dcomplex>,2> FourierReflection2D_getRefractiveIndexProfile(FourierReflection2D& self,
                 const shared_ptr<RectilinearMesh2D>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
     return DataVectorWrap<const Tensor3<dcomplex>,2>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
+}
+
+dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+    FourierReflection2D* self = py::extract<FourierReflection2D*>(args[0]);
+    FourierReflection2D_parseKeywords(self, kwargs);
+    return self->getDeterminant();
 }
 
 BOOST_PYTHON_MODULE(slab)
@@ -55,17 +107,28 @@ BOOST_PYTHON_MODULE(slab)
         METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
+        solver.add_property("symmetry", FourierReflection2D_getSymmetry, FourierReflection2D_setSymmetry, "Mode symmetry");
+        RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization");
         RW_FIELD(refine, "Number of refinemnet points for refractive index averaging");
+        solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
+                   "Compute discontinuity matrix determinant");
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
         // RW_PROPERTY(variable, getVariable, setVariable, "Searched variable");
+
+        py::scope scope = solver;
+        py_enum<ExpansionPW2D::Polarization>("Polarization", "Mode polarization.")
+            .value("TE", ExpansionPW2D::TE)
+            .value("TM", ExpansionPW2D::TM)
+            .value("TEM", ExpansionPW2D::TEM)
+        ;
     }
 
     {CLASS(FourierReflectionCyl, "FourierReflectionCyl",
         "Calculate optical modes and optical field distribution using Fourier slab method\n"
         " and reflection transfer in two-dimensional cylindrical geometry.")
         export_reflection_base(solver);
-        METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
+        METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff"); //TODO
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
     }
 }

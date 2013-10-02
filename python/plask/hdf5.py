@@ -30,7 +30,7 @@ def save_field(field, file, name='', mode='a'):
     msh = field.mesh
     mst = type(msh)
     if mst in (plask.mesh.Rectilinear1D, plask.mesh.Regular1D):
-        axes = (msh.axis,)
+        axes = (msh,)
     if mst in (plask.mesh.Rectilinear2D, plask.mesh.Regular2D):
         axes = msh.axis1, msh.axis0
     elif mst in (plask.mesh.Rectilinear3D, plask.mesh.Regular3D):

@@ -48,9 +48,8 @@ struct FourierReflectionCyl: public ReflectionSolver<Geometry2DCylindrical> {
 
   protected:
 
-    /**
-     * Compute normalized electric field intensity 1/2 E conj(E) / P
-     */
+    size_t nummodes() const { return 1; }
+
     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };

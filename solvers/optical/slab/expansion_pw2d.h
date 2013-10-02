@@ -15,13 +15,15 @@ struct ExpansionPW2D: public Expansion {
     /// Type of the mode symmetry
     enum Symmetry {
         SYMMETRIC_E_TRAN,               ///< E_tran and H_long are symmetric and E_long and H_tran anti-symmetric
-        SYMMETRIC_E_LONG                ///< E_long and H_tran are symmetric and E_tran and H_long anti-symmetric
+        SYMMETRIC_E_LONG,               ///< E_long and H_tran are symmetric and E_tran and H_long anti-symmetric
+        SYMMETRIC_UNSPECIFIED           ///< No symmetry
     };
 
     /// Polarization of separated modes
     enum Polarization {
         TE,                             ///< E_z and H_x exist
-        TM                              ///< H_z and E_x exist
+        TM,                             ///< H_z and E_x exist
+        TEM                             ///< All components exist
     };
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
@@ -34,6 +36,7 @@ struct ExpansionPW2D: public Expansion {
     bool symmetric;                     ///< Indicates if the expansion is a symmetric one
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
     bool separated;                     ///< Indicates whether TE and TM modes can be separated
+    bool initialized;                   ///< Exansion is initialized
 
     Symmetry symmetry;                  ///< Indicates symmetry if `symmetric`
     Polarization polarization;          ///< Indicates polarization if `separated`
@@ -43,23 +46,19 @@ struct ExpansionPW2D: public Expansion {
 
     /// Cached permittivity expansion coefficients
     std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
-           
+
     /**
      * Create new expansion
      * \param solver solver which performs calculations
      */
     ExpansionPW2D(FourierReflection2D* solver);
 
-    /**
-     * Init expansion
-     * \param long_zero \c true if \f$ k_z = 0 \f$)
-     * \param tran_zero \c true if \f$ k_x = 0 \f$)
-     */
-    void init(bool long_zero, bool tran_zero);
+    /// Init expansion
+    void init();
 
     /// Free allocated memory
     void free();
-    
+
     virtual size_t lcount() const;
 
     virtual bool diagonalQE(size_t l) const {

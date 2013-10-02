@@ -155,10 +155,13 @@ namespace detail {
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
 
-        static ValueT __call__(ReceiverT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+        static ValueT __call__n(ReceiverT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+
+        static ValueT __call__0(ReceiverT& self, const ExtraParams&... params) { return self(0, params...); }
 
         RegisterReceiverImpl() {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
+            this->receiver_class.def("__call__", &__call__0, "Get value from the connected provider");
+            this->receiver_class.def("__call__", &__call__n, "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
         }
     };
@@ -242,12 +245,17 @@ namespace detail {
             }
         }
 
-        static DataT __call__(ReceiverT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+        static DataT __call__n(ReceiverT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataT(self(n, *mesh, params..., method), mesh);
         }
 
+        static DataT __call__0(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            return DataT(self(0, *mesh, params..., method), mesh);
+        }
+
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->receiver_class.def("__call__", &__call__n, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->receiver_class.def("__call__", &__call__0, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
         }
 
@@ -527,9 +535,11 @@ namespace detail {
     public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
-        static ValueT __call__(ProviderT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+        static ValueT __call__n(ProviderT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+        static ValueT __call__0(ProviderT& self, const ExtraParams&... params) { return self(0, params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider");
+            this->provider_class.def("__call__", &__call__n, "Get value from the provider");
+            this->provider_class.def("__call__", &__call__0, "Get value from the provider");
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
         }
     };
@@ -556,11 +566,15 @@ namespace detail {
         static const int DIMS = ProviderT::SpaceType::DIM;
         typedef typename ProviderT::ValueType ValueT;
 
-        static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+        static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataVectorWrap<const ValueT,DIMS>(self(n, *mesh, params..., method), mesh);
         }
+        static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            return DataVectorWrap<const ValueT,DIMS>(self(0, *mesh, params..., method), mesh);
+        }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->provider_class.def("__call__", &__call__n, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->provider_class.def("__call__", &__call__0, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
         }
     };

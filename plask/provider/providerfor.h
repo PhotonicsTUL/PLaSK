@@ -513,7 +513,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
         this->ensureHasProvider();
         return this->provider->size();
     }
-    
+
     static_assert(!(std::is_same<SpaceT, void>::value && (PropertyT::propertyType == FIELD_PROPERTY || PropertyT::propertyType == MULTI_FIELD_PROPERTY)),
                   "Receivers for fields properties require SpaceT. Use ReceiverFor<propertyTag, SpaceT>, where SpaceT is one of the classes defined in <plask/geometry/space.h>.");
     static_assert(!(!std::is_same<SpaceT, void>::value && (PropertyT::propertyType == SINGLE_VALUE_PROPERTY || PropertyT::propertyType == MULTI_VALUE_PROPERTY)),
@@ -690,17 +690,17 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
 
         /// Default value
         ProvidedType default_value;
-        
+
         /// Provided values
         std::vector<ProvidedType> values;
 
          /// Construct values
         WithDefaultValue(const std::initializer_list<ProvidedType>& values, const ProvidedType& defval=ProvidedType()): default_value(defval), values(values) {}
-        
+
         /// Construct values from iterator
         template <typename Iterator>
         explicit WithDefaultValue(const Iterator& begin, const Iterator& end, const ProvidedType& defval=ProvidedType()): default_value(defval), values(begin, end) {}
-        
+
        /// Construct default value
         WithDefaultValue(const ProvidedType& defval=ProvidedType()): default_value(defval) {}
 
@@ -729,7 +729,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
                 for (size_t i = n0; i != n; ++i) values[i] = default_value;
             }
         }
-        
+
         /**
          * Get number of values
          * \return number of values
@@ -737,7 +737,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         virtual size_t size() const {
             return values.size();
         }
-        
+
         /**
          * Get provided value.
          * @return provided value
@@ -782,14 +782,14 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
 
         /// Construct values
         WithValue(const std::initializer_list<ProvidedType>& values): values(values) {}
-        
+
         /// Construct values from iterator
         template <typename Iterator>
         explicit WithValue(const Iterator& begin, const Iterator& end): values(begin, end) {}
-        
+
         /// Create empty boost::optional value.
         WithValue() {}
-        
+
         /**
          * Access value value.
          * \param n value index
@@ -807,7 +807,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         void push_back(const ProvidedType& value) {
             values.push_back(value);
         }
-        
+
         /**
          * Add new value
          * \param val new value
@@ -816,7 +816,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         void emplate_back(Args&&... args) {
             values.emplace_back(std::forward<Args>(args)...);
         }
-        
+
         /**
          * Get number of values
          * \return number of values
@@ -824,7 +824,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         virtual size_t size() const {
             return values.size();
         }
-        
+
         /**
          * Get provided value.
          * \return provided value
@@ -843,7 +843,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t, _ExtraParams...)> {
 
         typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t, _ExtraParams...)> Base;
-        
+
         std::function<size_t()> sizeGetter;
 
         /**
@@ -862,7 +862,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         template<typename ClassType, typename MemberType>
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()const): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
-            
+
         /**
          * Create delegate provider
          * \param object object of class with delegate method
@@ -876,7 +876,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         virtual size_t size() const {
             return sizeGetter();
         }
-           
+
     };
 
     /// Used by receivers as const value provider, see Receiver::setConst
@@ -1165,7 +1165,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         void push_back(const ProvidedType& value) {
             values.push_back(value);
         }
-        
+
         /**
          * Get number of values
          * \return number of values
@@ -1173,7 +1173,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         virtual size_t size() const {
             return values.size();
         }
-        
+
         /**
          * Check if this has values of the right size.
          * \param n value index
@@ -1304,9 +1304,9 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
     struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method)> {
-        
+
         typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method)> Base;
-        
+
         std::function<size_t()> sizeGetter;
 
         /**
@@ -1325,7 +1325,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          */
         template<typename ClassType, typename MemberType, typename Sizer>
         Delegate(ClassType* object, MemberType member, Sizer sizer): Base(object, member), sizeGetter(sizer) {}
-            
+
         /**
          * Create delegate provider
          * \param object object of class with delegate method
@@ -1335,7 +1335,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         template<typename ClassType, typename MemberType>
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()const): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
-            
+
         /**
          * Create delegate provider
          * \param object object of class with delegate method
@@ -1345,11 +1345,11 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         template<typename ClassType, typename MemberType>
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
-            
+
         virtual size_t size() const {
             return sizeGetter();
         }
-           
+
     };
 
     /**
@@ -1381,7 +1381,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         virtual ProvidedType operator()(size_t, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
             return ProvidedType(dst_mesh.size(), value);
         }
-        
+
         virtual size_t size() const {
             return 1;
         }

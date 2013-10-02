@@ -5,13 +5,14 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver) {}
+ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver), initialized(false),
+    symmetry(SYMMETRIC_UNSPECIFIED), polarization(TEM) {}
 
 size_t ExpansionPW2D::lcount() const {
     return SOLVER->getLayersPoints().size();
 }
 
-void ExpansionPW2D::init(bool long_zero, bool tran_zero)
+void ExpansionPW2D::init()
 {
     auto geometry = SOLVER->getGeometry();
 
@@ -23,7 +24,8 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
     size_t refine = SOLVER->refine, M;
     if (refine == 0) refine = 1;
 
-    if (long_zero || tran_zero) {
+    symmetric = separated = false;
+    if (symmetry != SYMMETRIC_UNSPECIFIED || polarization != TEM) {
         // Test for off-diagonal NR components in which case we cannot use neither symmetry nor separation
         bool off_diagonal = false;
         double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
@@ -34,15 +36,18 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
             }
             if (off_diagonal) break;
         }
-        if (off_diagonal) {
-            symmetric = separated = false;
-        } else {
-            symmetric = geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN) && tran_zero;
-            separated = long_zero;
+        if (symmetry != SYMMETRIC_UNSPECIFIED) {
+            if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
+                throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
+            if (off_diagonal)
+                throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+            symmetric = true;
         }
-    } else {
-        symmetric = geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN) && tran_zero;
-        separated = long_zero;
+        if (polarization != TEM) {
+            if (off_diagonal)
+                throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+            separated = true;
+        }
     }
 
     if (geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN)) {
@@ -81,7 +86,8 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
         xpoints = RegularAxis(left + dx, right - dx, N);
     }
 
-    SOLVER->writelog(LOG_DETAIL, "Creating expansion with %1% plane-waves (matrix size: %2%)", N, matrixSize());
+    SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
+                     N, matrixSize(), symmetric?" symmetric":"", separated?" separated":"");
 
     matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
@@ -126,7 +132,7 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
             }
         }
     }
-    
+
     // Allocate memory for expansion coefficients
     size_t nlayers = lcount();
     coeffs.resize(nlayers);
@@ -134,10 +140,12 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
     for (size_t l = 0; l < nlayers; ++l)
         getMaterialCoefficients(l);
 
+    initialized = true;
 }
 
 void ExpansionPW2D::free() {
     coeffs.clear();
+    initialized = false;
 }
 
 void ExpansionPW2D::getMaterialCoefficients(size_t l)
@@ -328,7 +336,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     int ij = abs(i-j);
                     dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
                     dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                    RH(iEx(i), iHz(j)) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) ); 
+                    RH(iEx(i), iHz(j)) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
                     RH(iEz(i), iHz(j)) += fx * (  beta* gj  * iepsyy(l,ij)                         );
                     RH(iEx(i), iHx(j)) += fz * (- beta* gi  * iepsyy(l,ij)                         );
                     RH(iEz(i), iHx(j)) += fz * (  beta*beta * iepsyy(l,ij) - k02 * muxx(l,ij) );

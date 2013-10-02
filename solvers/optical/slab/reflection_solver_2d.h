@@ -15,6 +15,25 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
     std::string getClassName() const { return "optical.FourierReflection2D"; }
 
+    struct Mode {
+        FourierReflection2D* solver;                            ///< Solver this mode belongs to
+        ExpansionPW2D::Symmetry symmetry;                       ///< Mode horizontal symmetry
+        ExpansionPW2D::Polarization polarization;               ///< Mode polarization
+        dcomplex k0;                                            ///< Stored mode frequency
+        dcomplex beta;                                          ///< Stored mode effective index
+        dcomplex ktran;                                         ///< Stored mode transverse wavevector
+        double power;                                           ///< Mode power [mW]
+
+        Mode(FourierReflection2D* solver): solver(solver), power(1.) {}
+
+        bool operator==(const Mode& other) const {
+            return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
+                && (!solver->expansion.symmetric || symmetry == other.symmetry)
+                && (!solver->expansion.separated || polarization == other.polarization)
+            ;
+        }
+    };
+
     /// Information about lateral PMLs
     struct PML {
         double extinction;  ///< Extinction of the PMLs
@@ -38,6 +57,9 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
   public:
 
+    /// Computed modes
+    std::vector<Mode> modes;
+
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
 
@@ -45,7 +67,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     PML pml;
 
     /// Provider for computed effective index
-    ProviderFor<EffectiveIndex>::WithValue outNeff;
+    ProviderFor<EffectiveIndex>::Delegate outNeff;
 
     FourierReflection2D(const std::string& name="");
 
@@ -67,17 +89,39 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         invalidate();
     }
 
-    /// \return current wavelength
-    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+    /// Return current mode symmetry
+    ExpansionPW2D::Symmetry getSymmetry() const { return expansion.symmetry; }
+    /// Set new mode symmetry
+    void setSymmetry(ExpansionPW2D::Symmetry symmetry) {
+        if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
+            throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
+        if (expansion.initialized) {
+            if (expansion.symmetric && symmetry == ExpansionPW2D::SYMMETRIC_UNSPECIFIED)
+                throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
+            if (!expansion.symmetric && symmetry != ExpansionPW2D::SYMMETRIC_UNSPECIFIED)
+                throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
+        }
+        expansion.symmetry = symmetry;
+    }
 
-    /**
-     * Set new polarization
-     * \param polar new polarization
-     */
-    void setWavelength(dcomplex wavelength) {
-        k0 = 2e3*M_PI / wavelength;
-        //if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
-        //modes.clear();
+    /// Set transverse wavevector
+    void setKtran(dcomplex k)  {
+        if (expansion.initialized && (expansion.symmetric && k != 0.))
+            throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
+        ktran = k;
+    }
+
+    /// Return current mode polarization
+    ExpansionPW2D::Polarization getPolarization() const { return expansion.polarization; }
+    /// Set new mode polarization
+    void setPolarization(ExpansionPW2D::Polarization polarization) {
+        if (expansion.initialized) {
+            if (expansion.separated && polarization == ExpansionPW2D::TEM)
+                throw Exception("%1%: Cannot remove polarizations separation now -- invalidate the solver first", getId());
+            if (!expansion.separated && polarization != ExpansionPW2D::TEM)
+                throw Exception("%1%: Cannot add polarizations separation now -- invalidate the solver first", getId());
+        }
+        expansion.polarization = polarization;
     }
 
     /**
@@ -88,9 +132,30 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
   protected:
 
+    /// Insert mode to the list or return the index of the exiting one
+    size_t insertMode() {
+        Mode mode(this);
+        mode.k0 = k0; mode.beta = klong; mode.ktran = ktran;
+        mode.symmetry = expansion.symmetry; mode.polarization = expansion.polarization;
+        for (size_t i = 0; i != modes.size(); ++i)
+            if (modes[i] == mode) return i;
+        modes.push_back(mode);
+        outNeff.fireChanged();
+        outLightIntensity.fireChanged();
+        return modes.size()-1;
+    }
+
+    size_t nummodes() const { return outNeff.size(); }
+
     /**
-     * Compute normalized electric field intensity 1/2 E conj(E) / P
+     * Return mode effective index
+     * \param n mode number
      */
+    dcomplex getEffectiveIndex(size_t n) {
+        if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
+        return modes[n].beta / modes[n].k0;
+    }
+
     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };

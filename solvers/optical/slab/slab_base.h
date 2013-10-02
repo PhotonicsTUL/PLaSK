@@ -54,7 +54,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
 
     /// Parameters for main rootdigger
     RootDigger::Params root;
-    
+
     /// Receiver for the temperature
     ReceiverFor<Temperature, GeometryT> inTemperature;
 
@@ -126,7 +126,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
         if (interface == 0 || interface >= stack.size())
             throw BadInput(this->getId(), "Wrong interface position %1% (min: 1, max: %2%)", interface, stack.size()-1);
     }
-    
+
     /**
      * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
      * The bottom infinite layer has always negative coordinate.
@@ -158,9 +158,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
     /**
      * Return number of determined modes
      */
-    size_t nummodes() const {
-        return 1; //TODO
-    }
+    virtual size_t nummodes() const = 0;
 
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
