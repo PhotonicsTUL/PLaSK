@@ -9,6 +9,8 @@ This file contains classes and templates which allow to generate providers and r
 #include "provider.h"
 #include "../utils/stl.h"   // VariadicTemplateTypesHolder
 
+#include "../mesh/rectangular_spline.h"
+
 namespace plask {
 
 /**

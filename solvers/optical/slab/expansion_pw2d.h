@@ -41,6 +41,9 @@ struct ExpansionPW2D: public Expansion {
     size_t pil,                         ///< Index of the beginning of the left PML
            pir;                         ///< Index of the beginning of the right PML
 
+    /// Cached permittivity expansion coefficients
+    std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
+           
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -54,9 +57,14 @@ struct ExpansionPW2D: public Expansion {
      */
     void init(bool long_zero, bool tran_zero);
 
+    /// Free allocated memory
+    void free();
+    
     virtual size_t lcount() const;
 
-    virtual bool diagonalQE(size_t l) const;
+    virtual bool diagonalQE(size_t l) const {
+            return false;
+    }
 
     virtual size_t matrixSize() const { return separated? N : 2*N; }
 
@@ -81,33 +89,32 @@ struct ExpansionPW2D: public Expansion {
     /**
      * Compute expansion coefficients for material parameters
      * \param l layer number
-     * \return material coeffcients
      */
-    DataVector<Tensor3<dcomplex>> getMaterialCoefficients(size_t l);
+    void getMaterialCoefficients(size_t l);
 
     /// Get \f$ \varepsilon_{zz} \f$
-    dcomplex epszz(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return coeffs[(i>=0)?i:i+nN].c00; }
+    dcomplex epszz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c00; }
 
     /// Get \f$ \varepsilon_{xx} \f$
-    dcomplex epsxx(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return coeffs[(i>=0)?i:i+nN].c11; }
+    dcomplex epsxx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c11; }
 
     /// Get \f$ \varepsilon_{yy}^{-1} \f$
-    dcomplex iepsyy(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return coeffs[(i>=0)?i:i+nN].c22; }
+    dcomplex iepsyy(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c22; }
 
     /// Get \f$ \varepsilon_{zx} \f$
-    dcomplex epszx(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return coeffs[(i>=0)?i:i+nN].c01; }
+    dcomplex epszx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c01; }
 
     /// Get \f$ \varepsilon_{xz} \f$
-    dcomplex epsxz(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return coeffs[(i>=0)?i:i+nN].c10; }
+    dcomplex epsxz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c10; }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muzz(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return mag[(i>=0)?i:i+nN].c00; }
+    dcomplex muzz(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return mag[(i>=0)?i:i+nN].c00; }
+    dcomplex muxx(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex imuyy(const DataVector<Tensor3<dcomplex>>& coeffs, int i) { return mag[(i>=0)?i:i+nN].c11; }
+    dcomplex imuyy(size_t l, int i) { return mag[(i>=0)?i:i+nN].c11; }
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }

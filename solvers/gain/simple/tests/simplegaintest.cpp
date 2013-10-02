@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     active1->push_front(barrier);
 
     auto cladding1 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
-    auto cladding2 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.2)GaAs"));
+    auto cladding2 = make_shared<Block<2>>(Vec<2>(10., 20.), materials.get("Al(0.1)GaAs"));
 
     auto nothing = make_shared<Block<2>>(Vec<2>(2., 5.));
     auto shelf1 = make_shared<ShelfContainer2D>();
@@ -76,14 +76,14 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     for (size_t i = 0; i < 5; ++i)
         BOOST_CHECK_EQUAL(solver.regions[0].isQW(i), qw[i]);
 
-    BOOST_CHECK_EQUAL(solver.regions[0].getLayerMaterial(1), well->isSolid());
+    BOOST_CHECK_EQUAL(solver.regions[0].getLayerMaterial(1), well->singleMaterial());
     BOOST_CHECK_EQUAL(solver.regions[0].getLayerBox(1), Box2D(2., 25., 12., 32.));
     BOOST_CHECK_EQUAL(solver.regions[0].getBoundingBox(), Box2D(2., 20., 12., 54.));
     BOOST_CHECK_EQUAL(solver.regions[1].getLayerBox(1), Box2D(0., 79., 10., 86.));
 
     BOOST_CHECK_EQUAL(solver.regions[2].size(), 3);
-    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(0), cladding1->isSolid());
-    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(2), cladding2->isSolid());
+    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(0), cladding1->singleMaterial());
+    BOOST_CHECK_EQUAL(solver.regions[2].getLayerMaterial(2), cladding2->singleMaterial());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

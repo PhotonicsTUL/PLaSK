@@ -38,6 +38,7 @@ void FourierReflection2D::onInitialize()
 
 void FourierReflection2D::onInvalidate()
 {
+    expansion.free();
     diagonalizer.reset();
 }
 

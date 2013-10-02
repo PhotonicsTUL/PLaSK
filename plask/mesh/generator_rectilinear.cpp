@@ -5,10 +5,10 @@
 
 namespace plask {
 
-inline static void addPoints(RectilinearAxis& dst, double lo, double up, bool isSolid, double min_ply, long max_points) {
+inline static void addPoints(RectilinearAxis& dst, double lo, double up, bool singleMaterial, double min_ply, long max_points) {
     dst.addPoint(lo);
     dst.addPoint(up);
-    if (!isSolid) {
+    if (!singleMaterial) {
         const double ply = up - lo;
         const long points = std::min( long(std::ceil(ply / min_ply)), max_points );
         for (long i = points - 1; i > 0; --i) {
@@ -25,7 +25,7 @@ shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::makeGeometryGrid
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
     for (std::size_t i = 0; i < boxes.size(); ++i) {
-        addPoints(mesh->axis, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+        addPoints(mesh->axis, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
     }
 
     /*for (auto& box: boxes) {
@@ -53,8 +53,8 @@ shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
     for (std::size_t i = 0; i < boxes.size(); ++i) {
-        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
     }
 
     /*for (auto& box: boxes) {
@@ -92,9 +92,9 @@ shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
     for (std::size_t i = 0; i < boxes.size(); ++i) {
-        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
-        addPoints(mesh->axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->isSolidInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
+        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+        addPoints(mesh->axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
     }
 
     /*for (auto& box: boxes) {

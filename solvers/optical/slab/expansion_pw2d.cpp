@@ -7,7 +7,10 @@ namespace plask { namespace solvers { namespace slab {
 
 ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver) {}
 
-    
+size_t ExpansionPW2D::lcount() const {
+    return SOLVER->getLayersPoints().size();
+}
+
 void ExpansionPW2D::init(bool long_zero, bool tran_zero)
 {
     auto geometry = SOLVER->getGeometry();
@@ -123,20 +126,21 @@ void ExpansionPW2D::init(bool long_zero, bool tran_zero)
             }
         }
     }
+    
+    // Allocate memory for expansion coefficients
+    size_t nlayers = lcount();
+    coeffs.resize(nlayers);
+    #pragma omp parallel for
+    for (size_t l = 0; l < nlayers; ++l)
+        getMaterialCoefficients(l);
+
 }
 
-
-size_t ExpansionPW2D::lcount() const {
-    return SOLVER->getLayersPoints().size();
+void ExpansionPW2D::free() {
+    coeffs.clear();
 }
 
-
-bool ExpansionPW2D::diagonalQE(size_t l) const {
-    return false;
-}
-
-
-DataVector<Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_t l)
+void ExpansionPW2D::getMaterialCoefficients(size_t l)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
         throw BadInput(SOLVER->getId(), "No wavelength set in SOLVER");
@@ -161,6 +165,7 @@ DataVector<Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_t l)
         double T = 0.; // average temperature in all vertical points
         for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
         T /= axis1.size();
+        #pragma omp critical
         NR[i] = material->NR(lambda, T);
     }
 
@@ -185,69 +190,67 @@ DataVector<Tensor3<dcomplex>> ExpansionPW2D::getMaterialCoefficients(size_t l)
     }
 
     // Average material parameters
-    DataVector<Tensor3<dcomplex>> coeffs(nN, Tensor3<dcomplex>(0.));
+    coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
     double factor = 1. / refine;
     for (size_t i = 0; i != nN; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
-            coeffs[i] += Tensor3<dcomplex>(NR[j].c00, 1./NR[j].c11, NR[j].c22, NR[j].c01, NR[j].c10);
-        coeffs[i] *= factor;
-        coeffs[i].c11 = 1. / coeffs[i].c11; // We were averaging inverses of c11 (xx)
-        coeffs[i].c22 = 1. / coeffs[i].c22; // We need inverse of c22 (yy)
+            coeffs[l][i] += Tensor3<dcomplex>(NR[j].c00, 1./NR[j].c11, NR[j].c22, NR[j].c01, NR[j].c10);
+        coeffs[l][i] *= factor;
+        coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
+        coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
     }
 
     // Perform FFT
-    matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()));
+    matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
 
     // Smooth coefficients
     if (SOLVER->smooth) {
         double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
         for (size_t i = 0; i != nN; ++i) {
             int k = i; if (k > nN/2) k -= nN;
-            coeffs[i] *= exp(-SOLVER->smooth * bb4 * k * k);
+            coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
         }
     }
-
-    return std::move(coeffs);
 }
 
 
 DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
 {
     double L = right - left;
-    DataVector<Tensor3<dcomplex>> coeffs = getMaterialCoefficients(l), result;
+    DataVector<Tensor3<dcomplex>> result;
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         result.reset(mesh.size(), Tensor3<dcomplex>(0.));
         if (!symmetric) {
             for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
                 size_t j = (k>=0)? k : k + nN;
                 for (size_t i = 0; i != mesh.size(); ++i) {
-                    result[i] += coeffs[j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
+                    result[i] += coeffs[l][j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
                 }
             }
         } else {
             for (size_t i = 0; i != mesh.size(); ++i) {
-                result[i] += coeffs[0];
+                result[i] += coeffs[l][0];
                 for (int k = 1; k != nN; ++k) {
-                    result[i] += 2. * coeffs[k] * cos(M_PI * k * mesh[i] / L);
+                    result[i] += 2. * coeffs[l][k] * cos(M_PI * k * mesh[i] / L);
                 }
             }
         }
     } else {
-        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(coeffs.data()));
+        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
         RegularAxis cmesh;
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;
             cmesh.reset(left + dx, right - dx, nN);
         } else {
             cmesh.reset(left, right, nN+1);
-            auto old = coeffs;
-            coeffs.reset(nN+1);
-            std::copy(old.begin(), old.end(), coeffs.begin());
-            coeffs[old.size()] = old[0];
+            auto old = coeffs[l];
+            coeffs[l].reset(nN+1);
+            std::copy(old.begin(), old.end(), coeffs[l].begin());
+            coeffs[l][old.size()] = old[0];
         }
         RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));
         RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
-        result = interpolate(src_mesh, coeffs, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
+        result = interpolate(src_mesh, coeffs[l], WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
     }
     for (Tensor3<dcomplex>& eps: result) {
         eps.c22 = 1. / eps.c22;
@@ -260,8 +263,6 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
 
 void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
 {
-    DataVector<Tensor3<dcomplex>> coeffs = getMaterialCoefficients(l);
-    
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
     dcomplex b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
@@ -278,8 +279,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
                         dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                        RH(iE(i), iH(j)) = - fz * k02 * muxx(coeffs,ij);
-                        RE(iH(i), iE(j)) =   fz * (gi * gj * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij));
+                        RH(iE(i), iH(j)) = - fz * k02 * muxx(l,ij);
+                        RE(iH(i), iE(j)) =   fz * (gi * gj * imuyy(l,ij) - k02 * epszz(l,ij));
                     }
                 }
             } else {
@@ -288,8 +289,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
                         dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
-                        RH(iE(i), iH(j)) = - fx * (gi * gj * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij));
-                        RE(iH(i), iE(j)) =   fx * k02 * epsxx(coeffs,ij);
+                        RH(iE(i), iH(j)) = - fx * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
+                        RE(iH(i), iE(j)) =   fx * k02 * epsxx(l,ij);
                     }
                 }
             }
@@ -300,8 +301,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RH(iE(i), iH(j)) = - k02 * muxx(coeffs,ij);
-                        RE(iH(i), iE(j)) =   f * gi * gj * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij);
+                        RH(iE(i), iH(j)) = - k02 * muxx(l,ij);
+                        RE(iH(i), iE(j)) =   f * gi * gj * imuyy(l,ij) - k02 * epszz(l,ij);
                     }
                 }
             } else {
@@ -309,8 +310,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RH(iE(i), iH(j)) = - f * gi * gj * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij);
-                        RE(iH(i), iE(j)) =   k02 * epsxx(coeffs,ij);
+                        RH(iE(i), iH(j)) = - f * gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij);
+                        RE(iH(i), iE(j)) =   k02 * epsxx(l,ij);
                     }
                 }
             }
@@ -327,14 +328,14 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     int ij = abs(i-j);
                     dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
                     dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                    RH(iEx(i), iHz(j)) += fx * (-  gi * gj  * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij) ); 
-                    RH(iEz(i), iHz(j)) += fx * (  beta* gj  * iepsyy(coeffs,ij)                         );
-                    RH(iEx(i), iHx(j)) += fz * (- beta* gi  * iepsyy(coeffs,ij)                         );
-                    RH(iEz(i), iHx(j)) += fz * (  beta*beta * iepsyy(coeffs,ij) - k02 * muxx(coeffs,ij) );
-                    RE(iHz(i), iEx(j)) += fx * (- beta*beta * imuyy(coeffs,ij) + k02 * epsxx(coeffs,ij) );
-                    RE(iHx(i), iEx(j)) += fx * (  beta* gi  * imuyy(coeffs,ij)                          );
-                    RE(iHz(i), iEz(j)) += fz * (- beta* gj  * imuyy(coeffs,ij)                          );
-                    RE(iHx(i), iEz(j)) += fz * (   gi * gj  * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij) );
+                    RH(iEx(i), iHz(j)) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) ); 
+                    RH(iEz(i), iHz(j)) += fx * (  beta* gj  * iepsyy(l,ij)                         );
+                    RH(iEx(i), iHx(j)) += fz * (- beta* gi  * iepsyy(l,ij)                         );
+                    RH(iEz(i), iHx(j)) += fz * (  beta*beta * iepsyy(l,ij) - k02 * muxx(l,ij) );
+                    RE(iHz(i), iEx(j)) += fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(iHx(i), iEx(j)) += fx * (  beta* gi  * imuyy(l,ij)                          );
+                    RE(iHz(i), iEz(j)) += fz * (- beta* gj  * imuyy(l,ij)                          );
+                    RE(iHx(i), iEz(j)) += fz * (   gi * gj  * imuyy(l,ij) - k02 * epszz(l,ij) );
                 }
             }
         } else {
@@ -343,14 +344,14 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 dcomplex gi = b * double(i) - kx;
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                    RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(coeffs,ij) + k02 * muzz(coeffs,ij) );
-                    RH(iEz(i), iHz(j)) = f * (  beta* gj  * iepsyy(coeffs,ij)                         );
-                    RH(iEx(i), iHx(j)) = f * (- beta* gi  * iepsyy(coeffs,ij)                         );
-                    RH(iEz(i), iHx(j)) = f * (  beta*beta * iepsyy(coeffs,ij) - k02 * muxx(coeffs,ij) );
-                    RE(iHz(i), iEx(j)) = f * (- beta*beta * imuyy(coeffs,ij) + k02 * epsxx(coeffs,ij) );
-                    RE(iHx(i), iEx(j)) = f * (  beta* gi  * imuyy(coeffs,ij) - k02 * epszx(coeffs,ij) );
-                    RE(iHz(i), iEz(j)) = f * (- beta* gj  * imuyy(coeffs,ij) + k02 * epsxz(coeffs,ij) );
-                    RE(iHx(i), iEz(j)) = f * (   gi * gj  * imuyy(coeffs,ij) - k02 * epszz(coeffs,ij) );
+                    RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iEz(i), iHz(j)) = f * (  beta* gj  * iepsyy(l,ij)                         );
+                    RH(iEx(i), iHx(j)) = f * (- beta* gi  * iepsyy(l,ij)                         );
+                    RH(iEz(i), iHx(j)) = f * (  beta*beta * iepsyy(l,ij) - k02 * muxx(l,ij) );
+                    RE(iHz(i), iEx(j)) = f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(iHx(i), iEx(j)) = f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
+                    RE(iHz(i), iEz(j)) = f * (- beta* gj  * imuyy(l,ij) + k02 * epsxz(l,ij) );
+                    RE(iHx(i), iEz(j)) = f * (   gi * gj  * imuyy(l,ij) - k02 * epszz(l,ij) );
                 }
             }
         }

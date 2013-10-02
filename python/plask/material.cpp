@@ -179,7 +179,7 @@ class PythonMaterial : public Material
 
         if (overriden("__eq__")) return py::call_method<bool>(self, "__eq__", oother);
 
-        return *base == *theother.base && oself.attr("__dict__") == oother.attr("__dict__");
+        return *base == *theother.base && oself.attr("__class__") == oother.attr("__class__");
     }
 
     virtual std::string name() const {

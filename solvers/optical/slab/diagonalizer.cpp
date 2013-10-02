@@ -30,9 +30,9 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
 #ifdef OPENMP_FOUND
     int nt = omp_get_max_threads();
     tmpmx = new cmatrix[nt];
-    src->solver->writelog(LOG_DETAIL, "Creating %1% temporary matri%2% for diagonalizer", nt, (nt==1)?"x":"ces");
+    src->solver->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nt, (nt==1)?"x":"ces");
     for (size_t i = 0; i != nt; ++i) {
-        *tmpmx = cmatrix(N, N);
+        tmpmx[i] = cmatrix(N, N);
     }
 #else
     tmpmx = new cmatrix(N, N);
@@ -50,23 +50,33 @@ SimpleDiagonalizer::~SimpleDiagonalizer()
 }
 
 
+void SimpleDiagonalizer::initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky)
+{
+    k0 = ko; Kx = kx, Ky = ky;
+
+    for (int layer = 0; layer < lcount; layer++)
+        diagonalized[layer] = false;
+}
+
+
 void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 {
-    // If diagonalization already done, do not repeat it
     if (diagonalized[layer]) return;
-
+    
     int N = src->matrixSize();         // Size of each matrix
 
-#ifdef OPENMP_FOUND
-    cmatrix QE = tmpmx[omp_get_thread_num()];
-#else
-    cmatrix QE = *tmpmx;
-#endif
-    
-    
+    #ifdef OPENMP_FOUND
+        auto tn = omp_get_thread_num();
+        cmatrix QE = tmpmx[tn];
+        src->solver->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1% in thread %2%", layer, tn);
+    #else
+        cmatrix QE = *tmpmx;
+        src->solver->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1%", layer);
+    #endif
+        
     // First find necessary matrices
     cmatrix RE = Th1[layer], RH = Th[layer];
-    
+
     src->getMatrices(layer, k0, Kx, Ky, RE, RH);
 
     if (src->diagonalQE(layer)) {
@@ -89,7 +99,6 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     } else {
         // We have to make the proper diagonalization
         // TODO: rewrite it to more low-level and more optimized computations
-
         mult_matrix_by_matrix(RH, RE, QE);  // QE = RH * RE
 
         // This is probably expensive but necessary check to avoid hangs
@@ -103,7 +112,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // we use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
         int info;
         zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
-              Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
+            Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
 
         // ...and rewrite the eigenvectors to their final locations
         memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));

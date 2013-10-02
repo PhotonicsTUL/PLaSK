@@ -1,3 +1,5 @@
+#include <mutex>
+
 #include "reflection_base.h"
 #include "fortran.h"
 
@@ -141,7 +143,7 @@ void ReflectionSolver<GeometryT>::getAM(size_t start, size_t end, bool add, doub
 
 
 template <typename GeometryT>
-void ReflectionSolver<GeometryT>::findReflection(size_t start, size_t end)
+void ReflectionSolver<GeometryT>::findReflection(int start, int end)
 {
     // Should be called from 0 to interface-1
     // and from count-1 to interface
@@ -160,75 +162,108 @@ void ReflectionSolver<GeometryT>::findReflection(size_t start, size_t end)
     memset(P.data(), 0, NN*sizeof(dcomplex));
     storeP(start);
 
-    diagonalizer->diagonalizeLayer(this->stack[start]);
+    std::exception_ptr error;
 
-    for (int n = start; n != end; n += inc)
+    #ifdef OPENMP_FOUND    
+        std::vector<std::mutex> layer_locks(diagonalizer->lcount);
+        for (std::mutex& mutex: layer_locks) mutex.lock();
+    #endif
+    
+    #pragma omp parallel
     {
-        gamma = diagonalizer->Gamma(this->stack[n]);
-
-        int np = n-1;
-        if (np < 0) np = 0; else if (np >= this->vbounds.size()) np = this->vbounds.size()-1;
-
-        double H = abs(this->vbounds[n] - this->vbounds[np]);
-
-        if (!emitting || n != start) {
-            for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
-        } else {
-            for (int i = 0; i < N; i++) {
-                dcomplex g = gamma[i];
-                if (real(g) < -SMALL) g = -g;
-                phas[i] = exp(-I*g*H);
+        #pragma omp for schedule(static,1) nowait
+        for (int l = 0; l < diagonalizer->lcount; ++l) {
+            try {
+                if (!error) diagonalizer->diagonalizeLayer(l);
+                #ifdef OPENMP_FOUND    
+                layer_locks[l].unlock();
+                #endif
+            } catch(...) {
+                error = std::current_exception();
             }
-        }
-        mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
-
-        diagonalizer->diagonalizeLayer(this->stack[n+inc]);
-
-        // ee = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
-        for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P.orig + I
-        mult_matrix_by_matrix(diagonalizer->TE(this->stack[n]), P, wrk);            // wrk = TE[n] * P
-        mult_matrix_by_matrix(diagonalizer->invTE(this->stack[n+inc]), wrk, ee);    // ee = invTE[n+1] * wrk (= A)
-
-        // hh = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
-        for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
-
-        // multiply rows of P by -1 where necessary for properly outgoing wave
-        if (emitting && n == start) {
-            for (int i = 0; i < N; i++)
-                if (real(gamma[i]) < -SMALL)
-                    for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
         }
         
-        mult_matrix_by_matrix(diagonalizer->TH(this->stack[n]), P, wrk);            // wrk = TH[n] * P
-        mult_matrix_by_matrix(diagonalizer->invTH(this->stack[n+inc]), wrk, hh);    // hh = invTH[n+1] * wrk (= P)
+        if (!error) {
+            #pragma omp single
+            for (int n = start; n != end; n += inc)
+            {
+                try {
+                    #ifdef OPENMP_FOUND    
+                    layer_locks[this->stack[n]].lock(); layer_locks[this->stack[n]].unlock();
+                    #endif
+                    gamma = diagonalizer->Gamma(this->stack[n]);
 
-        // ee := ee-hh, hh := ee+hh
-        for (int i = 0; i < NN; i++) {
-            dcomplex e = ee[i], h = hh[i];
-            A[i] = e - h;
-            P[i] = e + h;
-        }
+                    int np = n-1;
+                    if (np < 0) np = 0; else if (np >= this->vbounds.size()) np = this->vbounds.size()-1;
 
-        // There might appear a problem if the last layer and the one next to the last are the same.
-        // It may happen that e ~ h and then A matrix is close to singular. This will yield unreliable results.
-        // To avoid this never ever put two identical layers next to each other
+                    double H = abs(this->vbounds[n] - this->vbounds[np]);
 
-        // P = P * inv(A)
-        int info;
-        zgetrf(N, N, A.data(), N, ipiv, info);                                      // A = LU(A)         (= A)
-        if (info > 0) throw ComputationError(this->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
-        ztrsm('R', 'U', 'N', 'N', N, N, 1., A.data(), N, P.data(), N);              // P = P * U^{-1}    (= P)
-        ztrsm('R', 'L', 'N', 'U', N, N, 1., A.data(), N, P.data(), N);              // P = P * L^{-1}
-        // reorder columns (there is no such function in LAPACK)
-        for (int j = N-1; j >=0 ; j--) {
-            int jp = ipiv[j]-1;
-            for (int i = 0; i < N; i++) {
-                register dcomplex t = P(i,j); P(i,j) = P(i,jp); P(i,jp) = t;
+                    if (!emitting || n != start) {
+                        for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
+                    } else {
+                        for (int i = 0; i < N; i++) {
+                            dcomplex g = gamma[i];
+                            if (real(g) < -SMALL) g = -g;
+                            phas[i] = exp(-I*g*H);
+                        }
+                    }
+                    mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
+
+                    // ee = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
+                    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P.orig + I
+                    mult_matrix_by_matrix(diagonalizer->TE(this->stack[n]), P, wrk);            // wrk = TE[n] * P
+                    #ifdef OPENMP_FOUND    
+                    layer_locks[this->stack[n+inc]].lock(); layer_locks[this->stack[n+inc]].unlock();
+                    #endif
+                    mult_matrix_by_matrix(diagonalizer->invTE(this->stack[n+inc]), wrk, ee);    // ee = invTE[n+1] * wrk (= A)
+
+                    // hh = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
+                    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
+
+                    // multiply rows of P by -1 where necessary for properly outgoing wave
+                    if (emitting && n == start) {
+                        for (int i = 0; i < N; i++)
+                            if (real(gamma[i]) < -SMALL)
+                                for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
+                    }
+                    
+                    mult_matrix_by_matrix(diagonalizer->TH(this->stack[n]), P, wrk);            // wrk = TH[n] * P
+                    mult_matrix_by_matrix(diagonalizer->invTH(this->stack[n+inc]), wrk, hh);    // hh = invTH[n+1] * wrk (= P)
+
+                    // ee := ee-hh, hh := ee+hh
+                    for (int i = 0; i < NN; i++) {
+                        dcomplex e = ee[i], h = hh[i];
+                        A[i] = e - h;
+                        P[i] = e + h;
+                    }
+
+                    // There might appear a problem if the last layer and the one next to the last are the same.
+                    // It may happen that e ~ h and then A matrix is close to singular. This will yield unreliable results.
+                    // To avoid this never ever put two identical layers next to each other
+
+                    // P = P * inv(A)
+                    int info;
+                    zgetrf(N, N, A.data(), N, ipiv, info);                                      // A = LU(A)         (= A)
+                    if (info > 0) throw ComputationError(this->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
+                    ztrsm('R', 'U', 'N', 'N', N, N, 1., A.data(), N, P.data(), N);              // P = P * U^{-1}    (= P)
+                    ztrsm('R', 'L', 'N', 'U', N, N, 1., A.data(), N, P.data(), N);              // P = P * L^{-1}
+                    // reorder columns (there is no such function in LAPACK)
+                    for (int j = N-1; j >=0 ; j--) {
+                        int jp = ipiv[j]-1;
+                        for (int i = 0; i < N; i++) {
+                            register dcomplex t = P(i,j); P(i,j) = P(i,jp); P(i,jp) = t;
+                        }
+                    }
+
+                    storeP(n+inc);
+                } catch(...) {
+                    error = std::current_exception();
+                    break;
+                }
             }
         }
-
-        storeP(n+inc);
     }
+    if (error) std::rethrow_exception(error);
 }
 
 template <typename GeometryT>

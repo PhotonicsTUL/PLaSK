@@ -131,7 +131,7 @@ struct MaterialsDB {
          * Get material only if it this factory represents solid material (if operator(double m1_weight) is independent from m1_weight).
          * @return material or nullptr if it is not solid
          */
-        virtual shared_ptr<Material> isSolid() const = 0;
+        virtual shared_ptr<Material> singleMaterial() const = 0;
 
     };
 
@@ -171,7 +171,7 @@ struct MaterialsDB {
             return (*constructor)(mixedComposition(m1_weight), Material::NO_DOPING, 0.0);
         }
 
-        virtual shared_ptr<Material> isSolid() const {
+        virtual shared_ptr<Material> singleMaterial() const {
             return material1composition == material2composition ? (*constructor)(material1composition, Material::NO_DOPING, 0.0) : shared_ptr<Material>();
         }
     };
@@ -208,7 +208,7 @@ struct MaterialsDB {
                                   m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
         }
 
-        virtual shared_ptr<Material> isSolid() const {
+        virtual shared_ptr<Material> singleMaterial() const {
             return (material1composition == material2composition) && (m1DopAmount == m2DopAmount) ?
                         (*constructor)(material1composition, dopAmountType, m1DopAmount) : shared_ptr<Material>();
         }
@@ -242,7 +242,7 @@ struct MaterialsDB {
             return (*constructor)(Material::Composition(), dopAmountType, m1DopAmount * m1_weight + m2DopAmount * (1.0 - m1_weight));
         }
 
-        virtual shared_ptr<Material> isSolid() const {
+        virtual shared_ptr<Material> singleMaterial() const {
             return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), dopAmountType, m1DopAmount) : shared_ptr<Material>();
         }
     };

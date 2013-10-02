@@ -7,7 +7,7 @@ namespace plask { namespace python {
 /// Initialize class GeometryObjectLeaf for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base class for all "," leaves") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
-       .add_property("material", &GeometryObjectLeaf<dim>::isSolid, &GeometryObjectLeaf<dim>::setMaterial,
+       .add_property("material", &GeometryObjectLeaf<dim>::singleMaterial, &GeometryObjectLeaf<dim>::setMaterial,
                      "material of the geometry object (or None if there is no single material for the object)")
     ;
 }

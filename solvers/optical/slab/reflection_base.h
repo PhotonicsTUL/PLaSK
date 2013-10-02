@@ -120,8 +120,8 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
 
     /// Get admittance (A) and discontinuity (M) matrices for the whole structure
     void getFinalMatrix() {
-        getAM(this->stack.size()-1, this->interface, false);
-        getAM(0, this->interface-1, true);
+        getAM(0, this->interface-1, false);
+        getAM(this->stack.size()-1, this->interface, true);
     }
 
     /**
@@ -138,7 +138,7 @@ class ReflectionSolver: public SlabSolver<GeometryT> {
      * \param start starting layer
      * \param end last layer (reflection matrix is computed for this layer)
      */
-    void findReflection(size_t start, size_t end);
+    void findReflection(int start, int end);
 
     /**
      * Store P matrix if we want it for field compuation

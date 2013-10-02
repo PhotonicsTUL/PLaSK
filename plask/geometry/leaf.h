@@ -34,7 +34,7 @@ protected:
          * Get material only if it this provider represents solid material (if getMaterial returns value independent from arguments).
          * @return material or nullptr if it is not solid
          */
-        virtual shared_ptr<Material> isSolid() const = 0;
+        virtual shared_ptr<Material> singleMaterial() const = 0;
 
         virtual MaterialProvider* clone() const = 0;
 
@@ -46,7 +46,7 @@ protected:
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const = 0;
 
-        virtual bool isSolidInBB(Primitive<3>::Direction direction) const = 0;
+        virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const = 0;
 
         virtual ~MaterialProvider() {}
     };
@@ -60,7 +60,7 @@ protected:
             return material;
         }
 
-        virtual shared_ptr<Material> isSolid() const {
+        virtual shared_ptr<Material> singleMaterial() const {
             return material;
         }
 
@@ -72,7 +72,7 @@ protected:
             return material;
         }
 
-        virtual bool isSolidInBB(Primitive<3>::Direction direction) const { return true; }
+        virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const { return true; }
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
@@ -88,7 +88,7 @@ protected:
             return (*materialFactory)((p.vert() - b.lower.vert()) / b.height());
         }
 
-        virtual shared_ptr<Material> isSolid() const {
+        virtual shared_ptr<Material> singleMaterial() const {
             return shared_ptr<Material>();
         }
 
@@ -100,7 +100,7 @@ protected:
             return (*materialFactory)(0.5);
         }
 
-        virtual bool isSolidInBB(Primitive<3>::Direction direction) const { return direction != Primitive<3>::DIRECTION_VERT; }
+        virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const { return direction != Primitive<3>::DIRECTION_VERT; }
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
@@ -111,12 +111,12 @@ public:
 
     GeometryReader & readMaterial(GeometryReader &src);
 
-    //shared_ptr<Material> material;  //TODO support for XML (checking if MixedCompositionFactory is solid), add isSolid
+    //shared_ptr<Material> material;  //TODO support for XML (checking if MixedCompositionFactory is solid), add singleMaterial
 
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): materialProvider(new SolidMaterial(material)) {}
 
-    bool isSolidInBB(Primitive<3>::Direction direction) const override {
-        return materialProvider->isSolidInBB(direction);
+    bool singleMaterialInBB(Primitive<3>::Direction direction) const override {
+        return materialProvider->singleMaterialInBB(direction);
     }
 
     /**
@@ -131,8 +131,8 @@ public:
      * Get material only if it this leaf is solid (has assign exactly one material).
      * @return material or nullptr if it is not solid
      */
-    shared_ptr<Material> isSolid() const {
-        return materialProvider->isSolid();
+    shared_ptr<Material> singleMaterial() const {
+        return materialProvider->singleMaterial();
     }
 
     void setMaterial(shared_ptr<Material> new_material) {

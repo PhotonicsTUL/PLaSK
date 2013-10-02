@@ -236,6 +236,10 @@ static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
     self.axis.reset(self.axis.first(), last, self.size());
 }
 
+template <typename MeshT, typename AxesT>
+static shared_ptr<MeshT> RectangularMesh1D__init__axis(const AxesT& axis) {
+    return make_shared<MeshT>(axis);
+}
 
 
 template <typename MeshT>
@@ -738,6 +742,7 @@ void register_mesh_rectangular()
         ); rectilinear1d
         .def("__init__", py::make_constructor(&__init__empty<RectilinearMesh1D>))
         .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearMesh1D>, py::default_call_policies(), (py::arg("points"))))
+        .def("__init__", py::make_constructor(&RectangularMesh1D__init__axis<RectilinearMesh1D,RectilinearAxis>, py::default_call_policies(), py::arg("axis0")))
         .def("__getitem__", &RectilinearMesh1D__getitem__)
         .def("__delitem__", &RectilinearMesh1D__delitem__)
         .def("__str__", &__str__<RectilinearMesh1D>)
@@ -759,9 +764,9 @@ void register_mesh_rectangular()
         py::no_init
         ); rectilinear2d
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectilinearMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D, RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RectilinearMesh2D,RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh2D, RegularMesh2D>, py::default_call_policies(), py::arg("src")))
+        .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh2D,RegularMesh2D>, py::default_call_policies(), py::arg("src")))
         .def("copy", &Mesh__init__<RectilinearMesh2D, RectilinearMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RectilinearMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RectilinearMesh2D::axis1, "The second (vertical) axis of the mesh")
@@ -812,7 +817,7 @@ void register_mesh_rectangular()
         py::no_init
         ); rectilinear3d
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D, RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D,RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
         .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="012")))
         .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh3D, RegularMesh3D>, py::default_call_policies(), py::arg("src")))
         .def("copy", &Mesh__init__<RectilinearMesh3D, RectilinearMesh3D>, "Make a copy of this mesh")
@@ -887,6 +892,7 @@ void register_mesh_rectangular()
         ); regular1d
         .def("__init__", py::make_constructor(&__init__empty<RegularMesh1D>))
         .def("__init__", py::make_constructor(&Regular__init__params<RegularMesh1D>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
+        .def("__init__", py::make_constructor(&RectangularMesh1D__init__axis<RegularMesh1D,RegularAxis>, py::default_call_policies(), py::arg("axis0")))
         .add_property("start", &RegularMesh1D_getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
         .add_property("stop", RegularMesh1D_getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
         .add_property("step", &RegularMesh1D_getStep)
@@ -908,7 +914,7 @@ void register_mesh_rectangular()
         py::no_init
         ); regular2d
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D, RegularAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
+        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D,RegularAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("copy", &Mesh__init__<RegularMesh2D, RegularMesh2D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh2D::axis1, "The second (vertical) axis of the mesh")
@@ -959,7 +965,7 @@ void register_mesh_rectangular()
         py::no_init
         ); regular3d
         .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D, RegularAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D,RegularAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
         .def("copy", &Mesh__init__<RegularMesh3D, RegularMesh3D>, "Make a copy of this mesh")
         .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
         .def_readwrite("axis1", &RegularMesh3D::axis1, "The second (transverse) axis of the mesh")

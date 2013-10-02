@@ -29,6 +29,8 @@ def save_field(field, file, name='', mode='a'):
     '''
     msh = field.mesh
     mst = type(msh)
+    if mst in (plask.mesh.Rectilinear1D, plask.mesh.Regular1D):
+        axes = (msh.axis,)
     if mst in (plask.mesh.Rectilinear2D, plask.mesh.Regular2D):
         axes = msh.axis1, msh.axis0
     elif mst in (plask.mesh.Rectilinear3D, plask.mesh.Regular3D):
@@ -53,7 +55,7 @@ def save_field(field, file, name='', mode='a'):
     mesh = dest.create_group('mesh')
     mesh.attrs['type'] = mst.__name__
     mesh.attrs['ordering'] = msh.ordering
-    if mst in (plask.mesh.Rectilinear2D, plask.mesh.Rectilinear3D):
+    if mst in (plask.mesh.Rectilinear1D, plask.mesh.Rectilinear2D, plask.mesh.Rectilinear3D):
         for i,ax in enumerate(axes):
             axis = mesh.create_dataset('axis%d' % (n-1-i), data=numpy.array(ax))
             try:
@@ -62,7 +64,7 @@ def save_field(field, file, name='', mode='a'):
                 data.dims[i].attach_scale(axis)
             except AttributeError:
                 pass
-    elif mst in (plask.mesh.Regular2D, plask.mesh.Regular2D):
+    elif mst in (plask.mesh.Regular1D, plask.mesh.Regular2D, plask.mesh.Regular2D):
         dt = numpy.dtype([('start', float), ('stop', float), ('num', int)])
         for i,ax in enumerate(axes):
             axis = mesh.create_dataset('axis%d' % (n-1-i), (1,), dtype=dt)
@@ -94,14 +96,14 @@ def load_field(file, name=''):
 
     mesh = file[name+'/mesh']
     mst = plask.mesh.__dict__[mesh.attrs['type']]
-    if mst in (plask.mesh.Regular2D, plask.mesh.Regular2D):
+    if mst in (plask.mesh.Regular2D, plask.mesh.Regular3D):
         kwargs = dict([ (k, (v[0][0],v[0][1],int(v[0][2]))) for k,v in mesh.items() ])
     else:
         kwargs = dict(mesh.items())
-    kwargs['ordering'] = mesh.attrs['ordering']
     msh = mst(**kwargs)
 
     data = file[name+'/data']
+    data = numpy.array(data)
     result = plask.Data(numpy.array(data), msh)
 
     if close:

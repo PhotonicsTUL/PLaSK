@@ -35,7 +35,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
         shared_ptr<Material> getLayerMaterial(size_t n) const
         {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
-            if (auto m = block->isSolid()) return m;
+            if (auto m = block->singleMaterial()) return m;
             throw plask::Exception("FermiGainSolver requires solid layers.");
         }
 
@@ -80,7 +80,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
             bool lastbarrier = true;
             for (const auto& layer: layers->children) {
                 auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
-                auto material = block->isSolid();
+                auto material = block->singleMaterial();
                 if (!material) throw plask::Exception("FermiGainSolver requires solid layers.");
                 if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW")) {
                     if (!materialQW)
