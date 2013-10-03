@@ -185,10 +185,11 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
      * Method computing the gain on the mesh (called by gain provider)
      * \param dst_mesh destination mesh
      * \param wavelength wavelength to compute gain for
+     * \param interp interpolation method
      * \return gain distribution
      */
-    const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=INTERPOLATION_DEFAULT);
-    const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
     double getLifeTime() const { return mLifeTime; }

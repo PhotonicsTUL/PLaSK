@@ -235,7 +235,14 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
     }
     if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
         throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
-    for (auto& region: regions) region.summarize(this);
+
+    this->writelog(LOG_DETAIL, "Found %1% active region%2%", regions.size(), (regions.size()==1)?"":"s");
+    size_t n = 0;
+    for (auto& region: regions) {
+        region.summarize(this);
+        this->writelog(LOG_DETAIL, "Active region %1%: %2%nm single QW, %3%nm all QW, %4%nm total",
+                       n++, 0.1*region.qwlen, 0.1*region.qwtotallen, 0.1*region.totallen);
+    }
 }
 
 
@@ -244,6 +251,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 {
     QW::gain gainModule;
 
+    if (isnan(n) || n < 0) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
+    
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
@@ -368,8 +377,10 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
 }
 
 template <typename GeometryType>
-const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
+const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
+    if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
+    
     this->writelog(LOG_INFO, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
@@ -383,14 +394,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(src_mesh); // temperature on the mesh
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
     DataVector<double> gainOnMesh(src_mesh.size(), 0.);
-
-    if (regions.size() == 1)
-        this->writelog(LOG_DETAIL, "Found 1 active region");
-    else
-        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
     #pragma omp parallel for
     for (int i = 0; i < geo_mesh.size(); i++)
@@ -406,7 +412,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     }
 
     if (this->mesh) {
-        return interpolate(mesh2, gainOnMesh, dst_mesh, INTERPOLATION_SPLINE);
+        return interpolate(mesh2, gainOnMesh, dst_mesh, interp);
     } else {
         return gainOnMesh;
     }
@@ -414,8 +420,10 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
 
 template <typename GeometryType>
-const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod)
+const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
+    if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
+    
     this->writelog(LOG_INFO, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
@@ -429,14 +437,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 
     WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(src_mesh); // temperature on the mesh
+    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
     DataVector<double> dGdn(src_mesh.size(), 0.);
-
-    if (regions.size() == 1)
-        this->writelog(LOG_DETAIL, "Found 1 active region");
-    else
-        this->writelog(LOG_DETAIL, "Found %1% active regions", regions.size());
 
     #pragma omp parallel for
     for (int i = 0; i < geo_mesh.size(); i++)
@@ -456,7 +459,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     }
 
     if (this->mesh) {
-        return interpolate(mesh2, dGdn, dst_mesh, INTERPOLATION_SPLINE);
+        return interpolate(mesh2, dGdn, dst_mesh, interp);
     } else {
         return dGdn;
     }
