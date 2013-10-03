@@ -290,10 +290,10 @@ class XMLReader {
      */
     struct State {
 
-        /// Line number when fragment begin.
+        /// Line number when fragment begins.
         unsigned lineNr;
 
-        /// Column number in line this->lineNr when fragment begin.
+        /// Column number in line this->lineNr when fragment begins.
         unsigned columnNr;
 
         /// Text or tag name.
@@ -308,8 +308,8 @@ class XMLReader {
         /**
          * Construct state using given data.
          * @param type type of tag
-         * @param lineNr line number when fragment begin
-         * @param columnNr column number (in line @p lineNr) when fragment begin
+         * @param lineNr line number when fragment begins
+         * @param columnNr column number (in line @p lineNr) when fragment begins
          * @param text text or tag name
          */
         State(NodeType type, unsigned lineNr, unsigned columnNr, const std::string& text): lineNr(lineNr), columnNr(columnNr), text(text), type(type) {}
