@@ -627,6 +627,8 @@ class MultiStackContainer: public StackContainer<dim> {
         return StackContainer<dim>::getChildNo(child_no);
     }
 
+    unsigned getRepeatCount() const { return repeat_count; }
+
     void setRepeatCount(unsigned new_repeat_count) {
         if (repeat_count == new_repeat_count) return;
         repeat_count = new_repeat_count;

@@ -136,7 +136,8 @@ void register_geometry_container_stack()
         "    'kwargs' may contain default aligner specification.\n\n"
         "See geometry.Stack2D(...).\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<2>))
-        .def_readwrite("repeats", &MultiStackContainer<2>::repeat_count, "Number of repeats of the stack content")
+        .add_property("repeat", &MultiStackContainer<2>::getRepeatCount, &MultiStackContainer<2>::setRepeatCount,
+                      "Number of repeats of the stack content")
     ;
 
     py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
@@ -146,7 +147,8 @@ void register_geometry_container_stack()
         "    'kwargs' may contain default aligner specification.\n\n"
         "See geometry.Stack3D(...).\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<3>))
-        .def_readwrite("repeats", &MultiStackContainer<3>::repeat_count, "Number of repeats of the stack content")
+        .add_property("repeat", &MultiStackContainer<3>::getRepeatCount, &MultiStackContainer<3>::setRepeatCount,
+                      "Number of repeats of the stack content")
     ;
 
     // Shelf (horizontal stack)
