@@ -18,12 +18,13 @@ double GaAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double GaAs::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = phys::Varshni(1.519, 0.5405e-3, 204., T);
+    else if (point == 'X') tEg = phys::Varshni(1.981, 0.460e-3, 204., T);
+    else if (point == 'L') tEg = phys::Varshni(1.815, 0.605e-3, 204., T);
     return ( tEg );
 }
 
@@ -67,12 +68,23 @@ Tensor2<double> GaAs::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(GaAs, CBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double GaAs::CBO(double T, double e, char point) const {
+    double tCBO( VBO(T,0.,point) + Eg(T,0.,point) );
+    if (!e) return ( tCBO );
+    else return ( tCBO + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
 MI_PROPERTY(GaAs, VBO,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaAs::VBO(double T, double e, char point) const {
-    return ( -0.80 );
+    double tVBO(-0.80);
+    if (!e) return ( tVBO );
+    else return ( tVBO + 2.*av(T)*(1.-c12(T)/c11(T))*e );
 }
 
 MI_PROPERTY(GaAs, ac,
@@ -99,6 +111,14 @@ double GaAs::b(double T) const {
     return ( -2.0 );
 }
 
+MI_PROPERTY(GaAs, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::d(double T) const {
+    return ( -4.8 );
+}
+
 MI_PROPERTY(GaAs, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
@@ -113,6 +133,14 @@ MI_PROPERTY(GaAs, c12,
             )
 double GaAs::c12(double T) const {
     return ( 56.6 );
+}
+
+MI_PROPERTY(GaAs, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::c44(double T) const {
+    return ( 60.0 );
 }
 
 MI_PROPERTY(GaAs, thermk,

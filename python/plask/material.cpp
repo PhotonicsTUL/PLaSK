@@ -228,8 +228,10 @@ class PythonMaterial : public Material
     virtual double ac(double T) const { return override<double>("ac", &Material::ac, T); }
     virtual double av(double T) const { return override<double>("av", &Material::av, T); }
     virtual double b(double T) const { return override<double>("b", &Material::b, T); }
+    virtual double d(double T) const { return override<double>("d", &Material::d, T); }
     virtual double c11(double T) const { return override<double>("c11", &Material::c11, T); }
-    virtual double c12(double T) const {return override<double>("c12", &Material::c12, T); }
+    virtual double c12(double T) const { return override<double>("c12", &Material::c12, T); }
+    virtual double c44(double T) const { return override<double>("c44", &Material::c44, T); }
     virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
     virtual double chi(double T, double e, char point) const { return override<double>("chi", &Material::chi, T, e, point); }
     virtual double Nc(double T, double e, char point) const { return override<double>("Nc", &Material::Nc, T, e, point); }
@@ -612,8 +614,10 @@ void initMaterials() {
         .def("ac", &Material::ac, (py::arg("T")=300.), "Get hydrostatic deformation potential for the conduction band ac [eV]")
         .def("av", &Material::av, (py::arg("T")=300.), "Get hydrostatic deformation potential for the valence band av [eV]")
         .def("b", &Material::b, (py::arg("T")=300.), "Get shear deformation potential b [eV]")
+        .def("d", &Material::d, (py::arg("T")=300.), "Get shear deformation potential d [eV]")
         .def("c11", &Material::c11, (py::arg("T")=300.), "Get elastic constant c11 [GPa]")
         .def("c12", &Material::c12, (py::arg("T")=300.), "Get elastic constant c12 [GPa]")
+        .def("c44", &Material::c44, (py::arg("T")=300.), "Get elastic constant c44 [GPa]")
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
         .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get electron affinity Chi [eV]")
         .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")

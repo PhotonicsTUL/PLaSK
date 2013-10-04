@@ -396,6 +396,13 @@ struct Material {
     virtual double b(double T) const;
 
     /**
+     * Get shear deformation potential d [eV].
+     * @param T temperature [K]
+     * @return shear deformation potential d [eV]
+     */
+    virtual double d(double T) const;
+
+    /**
      * Get elastic constant c11 [GPa].
      * @param T temperature [K]
      * @return elastic constant c11 [GPa]
@@ -408,6 +415,13 @@ struct Material {
      * @return elastic constant c12 [GPa]
      */
     virtual double c12(double T) const;
+
+    /**
+     * Get elastic constant c44 [GPa].
+     * @param T temperature [K]
+     * @return elastic constant c44 [GPa]
+     */
+    virtual double c44(double T) const;
 
     /**
      * Get dielectric constant EpsR [-].
@@ -738,9 +752,13 @@ struct MixedMaterial: public Material {
 
     virtual double b(double T) const;
 
+    virtual double d(double T) const;
+
     virtual double c11(double T) const;
 
     virtual double c12(double T) const;
+
+    virtual double c44(double T) const;
 
     virtual double eps(double T) const;
 

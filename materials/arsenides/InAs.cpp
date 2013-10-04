@@ -18,12 +18,13 @@ double InAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(InAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double InAs::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = phys::Varshni(0.417, 0.276e-3, 93., T);
+    else if (point == 'X') tEg = phys::Varshni(1.433, 0.276e-3, 93., T);
+    else if (point == 'L') tEg = phys::Varshni(1.133, 0.276e-3, 93., T);
     return ( tEg );
 }
 
@@ -67,12 +68,23 @@ Tensor2<double> InAs::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(InAs, CBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double InAs::CBO(double T, double e, char point) const {
+    double tCBO( VBO(T,0.,point) + Eg(T,0.,point) );
+    if (!e) return ( tCBO );
+    else return ( tCBO + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
 MI_PROPERTY(InAs, VBO,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InAs::VBO(double T, double e, char point) const {
-    return ( -0.59 );
+    double tVBO(-0.59);
+    if (!e) return ( tVBO );
+    else return ( tVBO + 2.*av(T)*(1.-c12(T)/c11(T))*e );
 }
 
 MI_PROPERTY(InAs, ac,
@@ -99,6 +111,14 @@ double InAs::b(double T) const {
     return ( -1.8 );
 }
 
+MI_PROPERTY(InAs, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::d(double T) const {
+    return ( -3.6 );
+}
+
 MI_PROPERTY(InAs, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
@@ -113,6 +133,14 @@ MI_PROPERTY(InAs, c12,
             )
 double InAs::c12(double T) const {
     return ( 45.26 );
+}
+
+MI_PROPERTY(InAs, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double InAs::c44(double T) const {
+    return ( 39.59 );
 }
 
 MI_PROPERTY(InAs, thermk,

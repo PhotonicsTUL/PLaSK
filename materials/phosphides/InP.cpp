@@ -18,12 +18,13 @@ double InP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(InP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double InP::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = phys::Varshni(1.4236, 0.363e-3, 162., T);
+    else if (point == 'X') tEg = 2.384-3.7e-4*T;
+    else if (point == 'L') tEg = phys::Varshni(2.014, 0.363e-3, 162., T);
     return ( tEg );
 }
 
@@ -67,12 +68,23 @@ Tensor2<double> InP::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(InP, CBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double InP::CBO(double T, double e, char point) const {
+    double tCBO( VBO(T,0.,point) + Eg(T,0.,point) );
+    if (!e) return ( tCBO );
+    else return ( tCBO + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
 MI_PROPERTY(InP, VBO,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double InP::VBO(double T, double e, char point) const {
-    return ( -0.94 );
+    double tVBO(-0.94);
+    if (!e) return ( tVBO );
+    else return ( tVBO + 2.*av(T)*(1.-c12(T)/c11(T))*e );
 }
 
 MI_PROPERTY(InP, ac,
@@ -99,6 +111,14 @@ double InP::b(double T) const {
     return ( -2.0 );
 }
 
+MI_PROPERTY(InP, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::d(double T) const {
+    return ( -5.0 );
+}
+
 MI_PROPERTY(InP, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
@@ -113,6 +133,14 @@ MI_PROPERTY(InP, c12,
             )
 double InP::c12(double T) const {
     return ( 56.1 );
+}
+
+MI_PROPERTY(InP, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double InP::c44(double T) const {
+    return ( 45.6 );
 }
 
 MI_PROPERTY(InP, thermk,

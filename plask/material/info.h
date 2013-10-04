@@ -34,9 +34,11 @@ struct MaterialInfo {
         ac,         ///< hydrostatic deformation potential for the conduction band
         av,         ///< hydrostatic deformation potential for the valence band
         b,          ///< shear deformation potential
+        d,          ///< shear deformation potential
         c11,        ///< elastic constant
         c12,        ///< elastic constant
-        e,        ///< dielectric constant
+        c44,        ///< elastic constant
+        e,          ///< dielectric constant
         chi,        ///< electron affinity
         Nc,         ///< effective density of states in the conduction band
         Nv,         ///< effective density of states in the valence band

@@ -18,12 +18,13 @@ double GaP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double GaP::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = phys::Varshni(2.896, 0.96e-3, 423., T);
+    else if (point == 'X') tEg = phys::Varshni(2.35, 0.5771e-3, 372., T);
+    else if (point == 'L') tEg = phys::Varshni(2.72, 0.5771e-3, 372., T);
     return ( tEg );
 }
 
@@ -67,12 +68,23 @@ Tensor2<double> GaP::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
+MI_PROPERTY(GaP, CBO,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double GaP::CBO(double T, double e, char point) const {
+    double tCBO( VBO(T,0.,point) + Eg(T,0.,point) );
+    if (!e) return ( tCBO );
+    else return ( tCBO + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
 MI_PROPERTY(GaP, VBO,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
 double GaP::VBO(double T, double e, char point) const {
-    return ( -1.27 );
+    double tVBO(-1.27);
+    if (!e) return ( tVBO );
+    else return ( tVBO + 2.*av(T)*(1.-c12(T)/c11(T))*e );
 }
 
 MI_PROPERTY(GaP, ac,
@@ -99,6 +111,14 @@ double GaP::b(double T) const {
     return ( -1.6 );
 }
 
+MI_PROPERTY(GaP, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double GaP::d(double T) const {
+    return ( -4.6 );
+}
+
 MI_PROPERTY(GaP, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
@@ -113,6 +133,14 @@ MI_PROPERTY(GaP, c12,
             )
 double GaP::c12(double T) const {
     return ( 62.03 );
+}
+
+MI_PROPERTY(GaP, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double GaP::c44(double T) const {
+    return ( 70.33 );
 }
 
 MI_PROPERTY(GaP, thermk,
