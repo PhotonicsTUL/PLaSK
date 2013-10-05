@@ -349,6 +349,16 @@ void EffectiveFrequencyCylSolver::stageOne()
             std::stringstream strn; for (size_t i = 0; i < nng.size(); ++i) strn << ", " << str(nng[i]);
             writelog(LOG_DEBUG, "stripes <nng> = [%1% ]", strn.str().substr(1));
 #       endif
+
+        double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
+        for (auto v: veffs) {
+            dcomplex lam = 2e3*M_PI / (k0 * (1. - v/2.));
+            if (real(lam) < rmin) rmin = real(lam);
+            if (real(lam) > rmax) rmax = real(lam);
+            if (imag(lam) < imin) imin = imag(lam);
+            if (imag(lam) > imax) imax = imag(lam);
+        }
+        writelog(LOG_DETAIL, "Wavelengths should be between %1%nm and %2%nm", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
     }
 }
 

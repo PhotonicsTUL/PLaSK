@@ -406,6 +406,16 @@ void EffectiveIndex2DSolver::stageOne()
         }
 #endif
         recompute_neffs = false;
+
+        double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
+        for (auto eps: epsilons) {
+            dcomplex n = sqrt(eps);
+            if (real(n) < rmin) rmin = real(n);
+            if (real(n) > rmax) rmax = real(n);
+            if (imag(n) < imin) imin = imag(n);
+            if (imag(n) > imax) imax = imag(n);
+        }
+        writelog(LOG_DETAIL, "Effective index should be between %1%nm and %2%nm", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
     }
 }
 

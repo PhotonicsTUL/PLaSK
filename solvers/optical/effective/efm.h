@@ -61,15 +61,15 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         std::vector<FieldR> rfields;        ///< Computed horizontal fields
         dcomplex freqv;                     ///< Stored frequency parameter
         double power;                       ///< Mode power [mW]
-        
+
         Mode(EffectiveFrequencyCylSolver* solver): solver(solver), m(0), have_fields(false), rfields(solver->rsize), power(1.) {}
-        
+
         Mode(EffectiveFrequencyCylSolver* solver, int m): solver(solver), m(m), have_fields(false), rfields(solver->rsize), power(1.) {}
-        
+
         bool operator==(const Mode& other) const {
             return m == other.m && is_zero(freqv - other.freqv);
         }
-        
+
         /// Compute horizontal part of the field
         dcomplex rField(double r) const {
             double Jr, Ji, Hr, Hi;
@@ -90,7 +90,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
             return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
         }
     };
-    
+
   protected:
 
     friend struct RootDigger;
@@ -163,7 +163,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// \param emis new emissjon direction
     void setEmission(Emission emis) {
         emission = emis;
-        for (auto& mode: modes) 
+        for (auto& mode: modes)
             mode.have_fields = false;
     }
 
@@ -247,7 +247,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * \return index of the set mode
      */
     size_t setMode(plask::dcomplex clambda, int m = 0);
-    
+
     /**
      * Set particular value of the effective index, e.g. to one of the values returned by findModes.
      * If it is not proper mode, exception is throw.
@@ -259,7 +259,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     inline size_t setMode(double lambda, double loss, int m=0) {
         return setMode(dcomplex(lambda, -lambda*lambda / (2e7*M_PI) * loss));
     }
-    
+
     /// Receiver for the temperature
     ReceiverFor<Temperature, Geometry2DCylindrical> inTemperature;
 
@@ -279,7 +279,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Do we need to compute gain
     bool need_gain;
-    
+
     /// Initialize the solver
     virtual void onInitialize();
 
@@ -322,7 +322,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     size_t nmodes() const {
         return modes.size();
     }
-    
+
     /**
      * Return mode wavelength
      * \param n mode number
@@ -340,10 +340,10 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
         return imag(2e4 * k0 * (1. - modes[n].freqv/2.));  // 2e4  2/µm -> 2/cm
     }
-    
+
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
-    
+
   private:
     template <typename MeshT>
     bool getLightIntenisty_Efficient(size_t num, const MeshD<2>& dst_mesh, DataVector<double>& results);
