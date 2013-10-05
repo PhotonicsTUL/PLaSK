@@ -252,7 +252,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     QW::gain gainModule;
 
     if (isnan(n) || n < 0) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
-    
+
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
@@ -266,8 +266,19 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         gainModule.Set_split_off(region.materialQW->Dso(T));
         gainModule.Set_bandgap(region.materialQW->Eg(T));
 
-        gainModule.Set_conduction_depth(region.materialBarrier->CBO(T) - region.materialQW->CBO(T));
-        gainModule.Set_valence_depth(region.materialQW->VBO(T) - region.materialBarrier->VBO(T));
+        double cdepth = region.materialBarrier->CBO(T) - region.materialQW->CBO(T);
+        double vdepth = region.materialQW->VBO(T) - region.materialBarrier->VBO(T);
+
+        if (vdepth < 0)
+            throw BadInput(this->getId(), "Valence QW depth negative, check VBO values of materials %1% and %2%",
+                           region.materialQW->name(), region.materialBarrier->name());
+
+        if (cdepth < 0)
+            throw BadInput(this->getId(), "Conduction QW depth negative, check CBO values of materials %1% and %2%",
+                           region.materialQW->name(), region.materialBarrier->name());
+
+        gainModule.Set_conduction_depth(cdepth);
+        gainModule.Set_valence_depth(vdepth);
     }
 
     gainModule.Set_electron_mass_in_plain(qme.c00);
@@ -380,7 +391,7 @@ template <typename GeometryType>
 const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
-    
+
     this->writelog(LOG_INFO, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
@@ -423,7 +434,7 @@ template <typename GeometryType>
 const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
-    
+
     this->writelog(LOG_INFO, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
