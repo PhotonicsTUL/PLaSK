@@ -376,18 +376,16 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
                       [](double, Radiation, Radiation, size_t, size_t, BoundarySide){return 0.;}  // K off-diagonal
                      );
 
-        double kr = ky * elemwidth / 12.;
-
         // set stiffness matrix
-        A(loleftno, loleftno) += r * k11 - kr;
-        A(lorghtno, lorghtno) += r * k22 + kr;
-        A(uprghtno, uprghtno) += r * k33 + kr;
-        A(upleftno, upleftno) += r * k44 - kr;
+        A(loleftno, loleftno) += r * k11;
+        A(lorghtno, lorghtno) += r * k22;
+        A(uprghtno, uprghtno) += r * k33;
+        A(upleftno, upleftno) += r * k44;
 
         A(lorghtno, loleftno) += r * k21;
         A(uprghtno, loleftno) += r * k31;
-        A(upleftno, loleftno) += r * k41 + kr;
-        A(uprghtno, lorghtno) += r * k32 - kr;
+        A(upleftno, loleftno) += r * k41;
+        A(uprghtno, lorghtno) += r * k32;
         A(upleftno, lorghtno) += r * k42;
         A(upleftno, uprghtno) += r * k43;
 

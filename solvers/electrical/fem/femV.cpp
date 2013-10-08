@@ -190,19 +190,18 @@ inline void FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::setLocal
 template<>
 inline void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
-                               double ky, double width, const Vec<2,double>& midpoint) {
+                               double, double, const Vec<2,double>& midpoint) {
         double r = midpoint.rad_r();
-        double dkr = ky * width / 12.;
-        k44 = r * k44 - dkr;
-        k33 = r * k33 + dkr;
-        k22 = r * k22 + dkr;
-        k11 = r * k11 - dkr;
+        k44 = r * k44;
+        k33 = r * k33;
+        k22 = r * k22;
+        k11 = r * k11;
         k43 = r * k43;
         k21 = r * k21;
         k42 = r * k42;
         k31 = r * k31;
-        k32 = r * k32 - dkr;
-        k41 = r * k41 + dkr;
+        k32 = r * k32;
+        k41 = r * k41;
 }
 
 template<typename Geometry2DType> template <typename MatrixT>
