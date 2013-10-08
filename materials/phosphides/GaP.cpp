@@ -68,23 +68,23 @@ Tensor2<double> GaP::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
-MI_PROPERTY(GaP, CBO,
+MI_PROPERTY(GaP, CB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
-double GaP::CBO(double T, double e, char point) const {
-    double tCBO( VBO(T,0.,point) + Eg(T,0.,point) );
-    if (!e) return ( tCBO );
-    else return ( tCBO + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+double GaP::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
+    if (!e) return ( tCB );
+    else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
 }
 
-MI_PROPERTY(GaP, VBO,
+MI_PROPERTY(GaP, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
-double GaP::VBO(double T, double e, char point) const {
-    double tVBO(-1.27);
-    if (!e) return ( tVBO );
-    else return ( tVBO + 2.*av(T)*(1.-c12(T)/c11(T))*e );
+double GaP::VB(double T, double e, char point, char hole) const {
+    double tVB(-1.27);
+    if (!e) return ( tVB );
+    else return ( tVB + 2.*av(T)*(1.-c12(T)/c11(T))*e );
 }
 
 MI_PROPERTY(GaP, ac,

@@ -308,22 +308,23 @@ struct Material {
     virtual double Eg(double T, double e=0., char point='G') const;
 
     /**
-     * Get conduction band offset CBO [eV].
+     * Get conduction band level CB [eV].
      * @param T temperature [K]
      * @param e lateral strain [-]
      * @param point point in the Brillouin zone [-]
-     * @return conduction band offset CBO [eV]
+     * @return conduction band level CB [eV]
      */
-    virtual double CBO(double T, double e=0., char point='G') const;
+    virtual double CB(double T, double e=0., char point='G') const;
 
     /**
-     * Get valence band offset VBO[eV].
+     * Get valence band level VB[eV].
      * @param T temperature [K]
      * @param e lateral strain [-]
      * @param point point in Brillouin zone [-]
-     * @return valence band offset VBO[eV]
+     * @param hole hole type ('H'eavy or 'L'ight) [-]
+     * @return valence band level VB[eV]
      */
-    virtual double VBO(double T, double e=0., char point='G') const;
+    virtual double VB(double T, double e=0., char point='G', char hole='H') const;
 
     /**
      * Get split-off energy Dso [eV].
@@ -693,7 +694,7 @@ struct LiquidCrystal: public Material {
  * MixedMaterial m;
  * // mat1, mat2, mat3 are materials, 2.0, 5.0, 3.0 weights for it:
  * m.add(mat1, 2.0).add(mat2, 5.0).add(mat3, 3.0).normalizeWeights();
- * double avg_VBO = m.VBO(300);
+ * double avg_VB = m.VB(300);
  * @endcode
  */
 struct MixedMaterial: public Material {
@@ -730,9 +731,9 @@ struct MixedMaterial: public Material {
 
     virtual double Eg(double T, double e=0., char point='G') const;
 
-    virtual double CBO(double T, double e=0., char point='G') const;
+    virtual double CB(double T, double e=0., char point='G') const;
 
-    virtual double VBO(double T, double e=0., char point='G') const;
+    virtual double VB(double T, double e=0., char point='G', char hole='H') const;
 
     virtual double Dso(double T, double e=0.) const;
 

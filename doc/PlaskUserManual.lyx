@@ -6041,10 +6041,10 @@ T
 
 \family typewriter
 \series bold
-<CBO>
+<CB>
 \family default
 \series default
- Conduction band offset
+ Conduction band level
 \begin_inset Index idx
 status collapsed
 
@@ -6054,7 +6054,7 @@ material!band offset
 
 \end_inset
 
- CBO [eV] 
+ CB [eV] 
 \begin_inset Newline newline
 \end_inset
 
@@ -7077,10 +7077,10 @@ h
 
 \family typewriter
 \series bold
-<VBO>
+<VB>
 \family default
 \series default
- Valance band offset
+ Valance band level
 \begin_inset Index idx
 status collapsed
 
@@ -7090,7 +7090,7 @@ material!band offset
 
 \end_inset
 
- VBO [eV] 
+ VB [eV] 
 \begin_inset Newline newline
 \end_inset
 
@@ -7102,7 +7102,19 @@ T
 \family typewriter
 e
 \family default
- -- lateral strain [-].
+ -- lateral strain [-], 
+\family typewriter
+hole
+\family default
+ -- hole type ('
+\family typewriter
+H
+\family default
+' or '
+\family typewriter
+L
+\family default
+') [-].
 \end_layout
 
 \end_deeper

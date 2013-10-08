@@ -68,23 +68,23 @@ Tensor2<double> GaAs::Mlh(double T, double e) const {
     return ( tMlh );
 }
 
-MI_PROPERTY(GaAs, CBO,
+MI_PROPERTY(GaAs, CB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
-double GaAs::CBO(double T, double e, char point) const {
-    double tCBO( VBO(T,0.,point) + Eg(T,0.,point) );
-    if (!e) return ( tCBO );
-    else return ( tCBO + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+double GaAs::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
+    if (!e) return ( tCB );
+    else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
 }
 
-MI_PROPERTY(GaAs, VBO,
+MI_PROPERTY(GaAs, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
-double GaAs::VBO(double T, double e, char point) const {
-    double tVBO(-0.80);
-    if (!e) return ( tVBO );
-    else return ( tVBO + 2.*av(T)*(1.-c12(T)/c11(T))*e );
+double GaAs::VB(double T, double e, char point, char hole) const {
+    double tVB(-0.80);
+    if (!e) return ( tVB );
+    else return ( tVB + 2.*av(T)*(1.-c12(T)/c11(T))*e );
 }
 
 MI_PROPERTY(GaAs, ac,

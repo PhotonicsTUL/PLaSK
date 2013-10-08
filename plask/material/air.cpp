@@ -18,7 +18,7 @@ double Air::B(double T) const { throwNotApplicable("B(double T)"); return 0; }
 
 double Air::C(double T) const { throwNotApplicable("C(double T)"); return 0; }
 
-double Air::CBO(double T, double e, char point) const { throwNotApplicable("CBO(double T, double e, char point)"); return 0; }
+double Air::CB(double T, double e, char point) const { throwNotApplicable("CB(double T, double e, char point)"); return 0; }
 
 double Air::chi(double T, double e, char point) const { throwNotApplicable("chi(double T, double e, char point)"); return 0; }
 
@@ -66,7 +66,7 @@ double Air::cp(double T) const { throwNotApplicable("cp(double T)"); return 0; }
 
 Tensor2<double> Air::thermk(double T, double h) const { return 0.024; }
 
-double Air::VBO(double T, double e, char point) const { throwNotApplicable("VBO(double T, double e, char point)"); return 0; }
+double Air::VB(double T, double e, char point, char hole) const { throwNotApplicable("VB(double T, double e, char point, char hole)"); return 0; }
 
 bool Air::isEqual(const Material &other) const {
     return true;

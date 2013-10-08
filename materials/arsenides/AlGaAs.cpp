@@ -69,11 +69,11 @@ Tensor2<double> AlGaAs::Mlh(double T, double e) const {
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 
-MI_PROPERTY(AlGaAs, VBO,
+MI_PROPERTY(AlGaAs, VB,
             MISource("linear interpolation: AlAs, GaAs")
             )
-double AlGaAs::VBO(double T, double e, char point) const {
-    return ( Al*mAlAs.VBO(T,e,point) + Ga*mGaAs.VBO(T,e,point) );
+double AlGaAs::VB(double T, double e, char point, char hole) const {
+    return ( Al*mAlAs.VB(T,e,point,hole) + Ga*mGaAs.VB(T,e,point,hole) );
 }
 
 MI_PROPERTY(AlGaAs, ac,

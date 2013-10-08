@@ -23,8 +23,8 @@ struct MaterialInfo {
         kind,       ///< material kind
         lattC,      ///< lattice constant
         Eg,         ///< energy gap
-        CBO,        ///< conduction band offset
-        VBO,        ///< valence band offset
+        CB,        ///< conduction band offset
+        VB,        ///< valence band offset
         Dso,        ///< split-off energy
         Mso,        ///< split-off mass
         Me,         ///< electron effective mass

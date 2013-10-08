@@ -24,26 +24,26 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::ConductivityType condtype;
 
     PyCodeObject
-        *lattC, *Eg, *CBO, *VBO, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *d, *c11, *c12, *c44, *eps, *chi,
+        *lattC, *Eg, *CB, *VB, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *d, *c11, *c12, *c44, *eps, *chi,
         *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
         *thermk, *dens, *cp, *nr, *absp, *Nr, *NR;
 
     PythonEvalMaterialConstructor(const std::string& name) :
         MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
-        lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
+        lattC(NULL), Eg(NULL), CB(NULL), VB(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), d(NULL), c11(NULL), c12(NULL), c44(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), NR(NULL) {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
-        lattC(NULL), Eg(NULL), CBO(NULL), VBO(NULL), Dso(NULL), Mso(NULL), Me(NULL),
+        lattC(NULL), Eg(NULL), CB(NULL), VB(NULL), Dso(NULL), Mso(NULL), Me(NULL),
         Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), d(NULL), c11(NULL), c12(NULL), c44(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
         EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
         thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), NR(NULL) {}
 
     virtual ~PythonEvalMaterialConstructor() {
-        Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CBO); Py_XDECREF(VBO); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
+        Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CB); Py_XDECREF(VB); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
         Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(ac); Py_XDECREF(av); Py_XDECREF(b); Py_XDECREF(d); Py_XDECREF(c11); Py_XDECREF(c12); Py_XDECREF(c44); Py_XDECREF(eps); Py_XDECREF(chi);
         Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
         Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
@@ -117,13 +117,19 @@ class PythonEvalMaterial : public Material
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; \
         return call<rtype>(cls->fun, locals);
 
+#   define PYTHON_EVAL_CALL_4(rtype, fun, arg1, arg2, arg3, arg4) \
+        if (cls->fun == NULL) return base->fun(arg1, arg2); \
+        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        locals[BOOST_PP_STRINGIZE(arg3)] = arg3; locals[BOOST_PP_STRINGIZE(arg4)] = arg4; \
+        return call<rtype>(cls->fun, locals);
+
     virtual double lattC(double T, char x) const { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
     virtual double Eg(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
-    virtual double CBO(double T, double e, char point) const {
-        try { PYTHON_EVAL_CALL_3(double, CBO, T, e, point) }
-        catch (NotImplemented) { return VBO(T, e, point) + Eg(T, e, point); }
+    virtual double CB(double T, double e, char point) const {
+        try { PYTHON_EVAL_CALL_3(double, CB, T, e, point) }
+        catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }
     }
-    virtual double VBO(double T, double e, char point) const { PYTHON_EVAL_CALL_3(double, VBO, T, e, point) }
+    virtual double VB(double T, double e, char point, char hole) const { PYTHON_EVAL_CALL_4(double, VB, T, e, point, hole) }
     virtual double Dso(double T, double e) const { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
     virtual double Mso(double T, double e) const { PYTHON_EVAL_CALL_2(double, Mso, T, e) }
     virtual Tensor2<double> Me(double T, double e, char point) const { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, e, point) }
@@ -274,8 +280,8 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         if (false);
         COMPILE_PYTHON_MATERIAL_FUNCTION(lattC)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Eg)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(CBO)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(VBO)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(CB)
+        COMPILE_PYTHON_MATERIAL_FUNCTION(VB)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Dso)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Mso)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Me)

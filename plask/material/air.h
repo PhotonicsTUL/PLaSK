@@ -20,8 +20,8 @@ struct Air: public Material {
     virtual Kind kind() const;
     virtual double lattC(double T, char x) const;
     virtual double Eg(double T, double e, char point) const;
-    virtual double CBO(double T, double e, char point) const;
-    virtual double VBO(double T, double e, char point) const;
+    virtual double CB(double T, double e, char point) const;
+    virtual double VB(double T, double e, char point, char hole) const;
     virtual double Dso(double T, double e) const;
     virtual double Mso(double T, double e) const;
     virtual Tensor2<double> Me(double T, double e, char point) const;

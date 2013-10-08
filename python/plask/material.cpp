@@ -214,11 +214,11 @@ class PythonMaterial : public Material
     virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
     virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
     virtual double Eg(double T, double e, char point) const { return override<double>("Eg", &Material::Eg, T, e, point); }
-    virtual double CBO(double T, double e, char point) const {
-        try { return override<double>("CBO", &Material::CBO, T, e, point); }
-        catch (NotImplemented) { return VBO(T, e, point) + Eg(T, e, point); }  // D = µ kB T / e
+    virtual double CB(double T, double e, char point) const {
+        try { return override<double>("CB", &Material::CB, T, e, point); }
+        catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }  // D = µ kB T / e
     }
-    virtual double VBO(double T, double e, char point) const { return override<double>("VBO", &Material::VBO, T, e, point); }
+    virtual double VB(double T, double e, char point, char hole) const { return override<double>("VB", &Material::VB, T, e, point, hole); }
     virtual double Dso(double T, double e) const { return override<double>("Dso", &Material::Dso, T, e); }
     virtual double Mso(double T, double e) const { return override<double>("Mso", &Material::Mso, T, e); }
     virtual Tensor2<double> Me(double T, double e, char point) const { return override<Tensor2<double>>("Me", &Material::Me, T, e, point); }
@@ -603,8 +603,8 @@ void initMaterials() {
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get energy gap Eg [eV]")
-        .def("CBO", &Material::CBO, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get conduction band offset CBO [eV]")
-        .def("VBO", &Material::VBO, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get valance band offset VBO [eV]")
+        .def("CB", &Material::CB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get conduction band level CB [eV]")
+        .def("VB", &Material::VB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G', py::arg("hole")='H'), "Get valance band level VB [eV]")
         .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("e")=0), "Get split-off energy Dso [eV]")
         .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0), "Get split-off mass Mso [m0]")
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get split-off mass Mso [m0]")

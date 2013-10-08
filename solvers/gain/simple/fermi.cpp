@@ -266,15 +266,15 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         gainModule.Set_split_off(region.materialQW->Dso(T));
         gainModule.Set_bandgap(region.materialQW->Eg(T));
 
-        double cdepth = region.materialBarrier->CBO(T) - region.materialQW->CBO(T);
-        double vdepth = region.materialQW->VBO(T) - region.materialBarrier->VBO(T);
+        double cdepth = region.materialBarrier->CB(T) - region.materialQW->CB(T);
+        double vdepth = region.materialQW->VB(T) - region.materialBarrier->VB(T);
 
         if (vdepth < 0)
-            throw BadInput(this->getId(), "Valence QW depth negative, check VBO values of materials %1% and %2%",
+            throw BadInput(this->getId(), "Valence QW depth negative, check VB values of materials %1% and %2%",
                            region.materialQW->name(), region.materialBarrier->name());
 
         if (cdepth < 0)
-            throw BadInput(this->getId(), "Conduction QW depth negative, check CBO values of materials %1% and %2%",
+            throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%",
                            region.materialQW->name(), region.materialBarrier->name());
 
         gainModule.Set_conduction_depth(cdepth);

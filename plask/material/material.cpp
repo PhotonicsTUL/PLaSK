@@ -57,8 +57,8 @@ double Material::B(double T) const { throwNotImplemented("B(double T)"); return 
 
 double Material::C(double T) const { throwNotImplemented("C(double T)"); return 0; }
 
-double Material::CBO(double T, double e, char point) const {
-    return VBO(T, e, point) + Eg(T, e, point);
+double Material::CB(double T, double e, char point) const {
+    return VB(T, e, point) + Eg(T, e, point);
 }
 
 double Material::chi(double T, double e, char point) const { throwNotImplemented("chi(double T, double e, char point)"); return 0; }
@@ -129,7 +129,7 @@ double Material::cp(double T) const { throwNotImplemented("cp(double T)"); retur
 
 Tensor2<double> Material::thermk(double T, double h) const { throwNotImplemented("thermk(double T)"); return 0.; }
 
-double Material::VBO(double T, double e, char point) const { throwNotImplemented("VBO(double T, double e, char point)"); return 0; }
+double Material::VB(double T, double e, char point, char hole) const { throwNotImplemented("VB(double T, double e, char point, char hole)"); return 0; }
 
 void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
@@ -346,8 +346,8 @@ double MixedMaterial::C(double T) const {
     return avg([&](const Material& m) { return m.C(T); });
 }
 
-double MixedMaterial::CBO(double T, double e, char point) const {
-    return avg([&](const Material& m) { return m.CBO(T, e, point); });
+double MixedMaterial::CB(double T, double e, char point) const {
+    return avg([&](const Material& m) { return m.CB(T, e, point); });
 }
 
 double MixedMaterial::chi(double T, double e, char point) const {
@@ -494,8 +494,8 @@ Tensor2<double> MixedMaterial::thermk(double T, double h) const {
     return avg_pairs([&](const Material& m) { return m.thermk(T, h); });
 }
 
-double MixedMaterial::VBO(double T, double e, char point) const  {
-    return avg([&](const Material& m) { return m.VBO(T, e, point); });
+double MixedMaterial::VB(double T, double e, char point, char hole) const  {
+    return avg([&](const Material& m) { return m.VB(T, e, point); });
 }
 
 bool Material::isEqual(const Material &other) const {

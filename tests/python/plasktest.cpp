@@ -32,7 +32,7 @@ struct MyMaterial : public plask::Material {
 
     virtual Material::Kind kind() const { return Material::NONE; }
 
-    virtual double VBO(double T, double e, char P) const { return 0.5*T; }
+    virtual double VB(double T, double e, char P, char h) const { return 0.5*T; }
 
     virtual double chi(double T, double e, char P) const { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
 
@@ -48,9 +48,9 @@ std::string materialName(std::string m, plask::MaterialsDB& DB) {
     return mat->name();
 }
 
-double materialVBO(std::string m, plask::MaterialsDB& DB, double T) {
+double materialVB(std::string m, plask::MaterialsDB& DB, double T) {
     plask::shared_ptr<plask::Material> mat = DB.get(m);
-    return mat->VBO(T);
+    return mat->VB(T);
 }
 
 plask::Tensor2<double> materialThermk1(std::string m, plask::MaterialsDB& DB, double T) {
@@ -225,7 +225,7 @@ BOOST_PYTHON_MODULE(plasktest)
     py::def("add_my_material", &addMyMaterial);
 
     py::def("material_name", &materialName);
-    py::def("material_VBO", &materialVBO);
+    py::def("material_VB", &materialVB);
     py::def("material_thermk", &materialThermk1);
     py::def("material_thermk", &materialThermk2);
 
