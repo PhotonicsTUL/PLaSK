@@ -33,6 +33,9 @@ void register_python_log();
 void register_standard_properties();
 
 // Config
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 AxisNames current_axes = AxisNames::axisNamesRegister.get("xyz");
 
 static LoggingConfig getLoggingConfig(const Config&) {
@@ -47,19 +50,19 @@ void Config::set_axes(std::string axis) {
 }
 
 std::string Config::__str__() const {
-    return  "axes:          " + axes_name()
-          + "\nlog.color:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
-          + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
-          + "\nlog.output:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
+    return  "axes:        " + axes_name()
+        + "\nlog.color:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
+        + "\nlog.level:   " + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
+        + "\nlog.output:  " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__str__")()));
     ;
 }
 
 std::string Config:: __repr__() const {
     return
         format("config.axes = '%s'", axes_name()) +
-            + "\nlog.color = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
-            + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
-            + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
+           + "\nlog.color = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__repr__")()))
+           + "\nlog.level = LOG_" + std::string(py::extract<std::string>(py::object(maxLoglevel).attr("name")))
+           + "\nlog.output = " + std::string(py::extract<std::string>(LoggingConfig().getLoggingDest().attr("__repr__")()));
     ;
 }
 

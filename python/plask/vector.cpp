@@ -19,7 +19,6 @@
 
 namespace plask { namespace python {
 
-extern AxisNames current_axes;
     
 namespace detail {
     template <int dim, typename T> struct MakeVecFromNumpyImpl;

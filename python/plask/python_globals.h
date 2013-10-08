@@ -4,6 +4,11 @@
 #include <cmath>
 #include <vector>
 
+#ifdef _WIN32
+#   define _WIN32_WINNT 0x502
+#   include <windows.h>
+#endif
+
 // ----------------------------------------------------------------------------------------------------------------------
 // Shared pointer
 #include <plask/memory.h>
@@ -219,9 +224,17 @@ struct Config
     std::string __repr__() const;
 };
 
+extern AxisNames current_axes;
+
 inline AxisNames* getCurrentAxes() {
-    py::object plask = py::import("plask");
-    return py::extract<AxisNames*>(plask.attr("config").attr("axes"));
+#ifdef _WIN32
+    //TODO add mangled names for all compiler versions
+    AxisNames* result = (AxisNames*) GetProcAddress(GetModuleHandle(NULL), "_ZN5plask6python12current_axesE");
+    if (!result) throw CriticalException("current_axes cannot be accessed");
+    return result;
+#else
+    return &current_axes;
+#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------

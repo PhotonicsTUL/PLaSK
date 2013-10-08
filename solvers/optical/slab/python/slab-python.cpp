@@ -7,6 +7,10 @@
 using namespace plask;
 using namespace plask::python;
 
+#if defined(_WIN32) && defined(interface)
+#   undef interface
+#endif
+
 #include "../reflection_solver_2d.h"
 #include "../reflection_solver_cyl.h"
 using namespace plask::solvers::slab;

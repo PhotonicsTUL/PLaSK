@@ -16,11 +16,6 @@ namespace py = boost::python;
 #include <plask/python_manager.h>
 #include <plask/utils/string.h>
 
-#ifdef _WIN32
-    #define _WIN32_WINNT 0x502
-    #include <windows.h>
-#endif
-
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
     extern "C" PyObject* PyInit__plask(void);
