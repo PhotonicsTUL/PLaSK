@@ -313,7 +313,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
         ky = ky * elemwidth / elemheight;
 
         // load vector: heat densities
-        double f = 0.25e-12 * elemwidth * elemheight * heatdensities[e.getIndex()]; // 1e-12 -> to transform um*um into m*m
+        double f = 0.25e-12 * r * elemwidth * elemheight * heatdensities[e.getIndex()]; // 1e-12 -> to transform um*um into m*m
 
         // set symmetric matrix components
         double k44, k33, k22, k11, k43, k21, k42, k31, k32, k41;
