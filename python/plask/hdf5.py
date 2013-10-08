@@ -59,7 +59,7 @@ def save_field(field, file, name='', mode='a'):
         for i,ax in enumerate(axes):
             axis = mesh.create_dataset('axis%d' % (n-1-i), data=numpy.array(ax))
             try:
-                data.dims[i].label = plask.config.axes[3-n+i]
+                data.dims[i].label = plask.current_axes[3-n+i]
                 data.dims.create_scale(axis)
                 data.dims[i].attach_scale(axis)
             except AttributeError:

@@ -47,21 +47,23 @@ inline void export_reflection_base(Class solver) {
 
 
 static py::object FourierReflection2D_getSymmetry(const FourierReflection2D& self) {
+    AxisNames* axes = getCurrentAxes();
     switch (self.getSymmetry()) {
-        case ExpansionPW2D::SYMMETRIC_E_TRAN: return py::object("E"+config.axes.getNameForTran());
-        case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+config.axes.getNameForLong());
+        case ExpansionPW2D::SYMMETRIC_E_TRAN: return py::object("E"+axes->getNameForTran());
+        case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+axes->getNameForLong());
         default: return py::object();
     }
     return py::object();
 }
 
 static void FourierReflection2D_setSymmetry(FourierReflection2D& self, py::object symmetry) {
+    AxisNames* axes = getCurrentAxes();
     if (symmetry == py::object()) { self.setSymmetry(ExpansionPW2D::SYMMETRIC_UNSPECIFIED); }
     try {
         std::string sym = py::extract<std::string>(symmetry);
-        if (sym == "tran" || sym == "transverse" || sym == "E"+config.axes.getNameForTran())
+        if (sym == "Etran" || sym == "E"+axes->getNameForTran())
             self.setSymmetry(ExpansionPW2D::SYMMETRIC_E_TRAN);
-        else if (sym == "long" || sym == "negative" || sym == "E"+config.axes.getNameForLong())
+        else if (sym == "Elong" || sym == "E"+axes->getNameForLong())
             self.setSymmetry(ExpansionPW2D::SYMMETRIC_E_LONG);
         else throw py::error_already_set();
     } catch (py::error_already_set) {
@@ -70,12 +72,13 @@ static void FourierReflection2D_setSymmetry(FourierReflection2D& self, py::objec
 }
 
 void FourierReflection2D_parseKeywords(FourierReflection2D* self, const py::dict& kwargs) {
+    AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam") lambda.reset(py::extract<dcomplex>(kwargs(*i)));
         else if (*i == "neff") neff.reset(py::extract<dcomplex>(kwargs(*i)));
-        else if (*i == "k"+config.axes.getNameForTran()) ktran.reset(py::extract<dcomplex>(kwargs(*i)));
+        else if (*i == "k"+axes->getNameForTran()) ktran.reset(py::extract<dcomplex>(kwargs(*i)));
         else throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
     }
     if (lambda) self->setWavelength(*lambda);

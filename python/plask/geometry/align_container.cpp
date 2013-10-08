@@ -5,6 +5,8 @@
 
 namespace plask { namespace python {
 
+extern AxisNames current_axes;
+    
 template <int dim, typename Primitive<dim>::Direction direction>
 static shared_ptr<AlignContainer<dim,direction>> AlignContainer__init__(py::tuple args, py::dict kwargs)
 {
@@ -37,8 +39,8 @@ py::object makeAlignContainer2D(py::tuple args, py::dict kwargs)
         return kwargs.has_key(name)? boost::optional<double>(py::extract<double>(kwargs[name])) : boost::optional<double>();
     };
 
-    auto aligner_tran = align::fromDictionary<TRAN>(dict_fun, config.axes);
-    auto aligner_vert = align::fromDictionary<VERT>(dict_fun, config.axes);
+    auto aligner_tran = align::fromDictionary<TRAN>(dict_fun, current_axes);
+    auto aligner_vert = align::fromDictionary<VERT>(dict_fun, current_axes);
 
     if (!aligner_tran.isNull()) {
         if (!aligner_vert.isNull())
@@ -59,9 +61,9 @@ py::object makeAlignContainer3D(py::tuple args, py::dict kwargs)
         return kwargs.has_key(name)? boost::optional<double>(py::extract<double>(kwargs[name])) : boost::optional<double>();
     };
 
-    auto aligner_long = align::fromDictionary<LONG>(dict_fun, config.axes);
-    auto aligner_tran = align::fromDictionary<TRAN>(dict_fun, config.axes);
-    auto aligner_vert = align::fromDictionary<VERT>(dict_fun, config.axes);
+    auto aligner_long = align::fromDictionary<LONG>(dict_fun, current_axes);
+    auto aligner_tran = align::fromDictionary<TRAN>(dict_fun, current_axes);
+    auto aligner_vert = align::fromDictionary<VERT>(dict_fun, current_axes);
 
     if (!aligner_long.isNull()) {
         if (!aligner_tran.isNull() || !aligner_vert.isNull())
@@ -91,7 +93,7 @@ static void register_geometry_aligncontainer(const std::string& suffix)
         format("Container that aligns its content along axis%1%\n\n"
         "AlignContainer%2%(**kwargs)\n"
         "    Create the container, with its alignment specified in kwargs.\n\n"
-        "See geometry.AlignContainer3D().\n", config.axes[3-dim+int(direction)], suffix).c_str(),
+        "See geometry.AlignContainer3D().\n", current_axes[3-dim+int(direction)], suffix).c_str(),
         py::no_init)
         .def("__init__", raw_constructor(AlignContainer__init__<dim,direction>, 1))
         .def("add", raw_function(AlignContainer_add<dim,direction>), "Add object to the container")

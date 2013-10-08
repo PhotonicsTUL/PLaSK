@@ -47,6 +47,7 @@ namespace plask { namespace python {
 
     shared_ptr<Logger> makePythonLogger();
 
+    extern AxisNames current_axes;
 }}
 
 //******************************************************************************
@@ -363,7 +364,7 @@ int main(int argc, const char *argv[])
                         break;
                     }
                 }
-                if (axes) plask::python::config.axes = *axes;
+                if (axes) plask::python::current_axes = *axes;
 
                 PyObject* result = NULL;
 #               if PY_VERSION_HEX >= 0x03000000

@@ -4,6 +4,8 @@
 
 namespace plask { namespace python {
 
+extern AxisNames current_axes;
+
 /// Initialize class GeometryObjectLeaf for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base class for all "," leaves") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
@@ -34,7 +36,7 @@ static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, shar
 template <size_t dim>
 static double Block__getattr__(const Block<dim>& self, const std::string& name) {
     if (name[0] == 'd') {
-        size_t axis = config.axes[name.substr(1)] + dim-3;
+        size_t axis = current_axes[name.substr(1)] + dim-3;
         if (axis < dim) return self.size[axis];
     }
     throw AttributeError("'Block%1%D' object has no attribute '%2%'", dim, name);
@@ -43,7 +45,7 @@ static double Block__getattr__(const Block<dim>& self, const std::string& name) 
 template <size_t dim>
 static void Block__setattr__(py::object self, const std::string& name, const py::object& value) {
     if (name[0] == 'd') {
-        size_t axis = config.axes[name.substr(1)] + dim-3;
+        size_t axis = current_axes[name.substr(1)] + dim-3;
         if (axis < dim) {
             Block<dim>& block = py::extract<Block<dim>&>(self);
             auto dims = block.size;

@@ -139,7 +139,7 @@ def loadxpl(source, vars={}, sections=None, destination=None):
     # Set default axes if all loaded geometries share the same
     lst = [ g.axes for g in manager.geometrics.values() if isinstance(g, geometry.Geometry) ]
     same = lst and lst.count(lst[0]) == len(lst)
-    if same: config.axes = lst[0]
+    if same: current_axes = lst[0]
 
 def runxpl(source, vars={}):
     '''Load and run the code from the XPL file.

@@ -9,6 +9,8 @@
 
 namespace plask { namespace python {
 
+extern AxisNames current_axes;
+    
 std::string Geometry_getAxes(const Geometry& self) {
     return self.axisNames.str();
 }
@@ -72,7 +74,7 @@ static void _Space_setBorders(Geometry& self, py::dict borders, std::set<std::st
                 boost::optional<std::string>( (borders[str]==py::object()) ? std::string("null") : py::extract<std::string>(borders[str]) ) :
                 boost::optional<std::string>();
         },
-    config.axes);
+    current_axes);
 
     // Test if we have any spurious borders
     py::stl_input_iterator<std::string> begin(borders), end;
@@ -358,7 +360,7 @@ void register_calculation_spaces() {
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
         .def("get_paths", &Geometry2DCartesian::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containg paths to all leafs covering specified point")
-        .def("get_paths", &Space_getMaterial<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
+        .def("get_paths", &Space_getPathsTo<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -391,7 +393,7 @@ void register_calculation_spaces() {
              (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
         .def("get_paths", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
-        .def("get_paths", &Space_getMaterial<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
+        .def("get_paths", &Space_getPathsTo<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

@@ -33,11 +33,17 @@ void register_python_log();
 void register_standard_properties();
 
 // Config
-Config config;
-AxisNames Config::axes = AxisNames::axisNamesRegister.get("xyz");
+AxisNames current_axes = AxisNames::axisNamesRegister.get("xyz");
 
 static LoggingConfig getLoggingConfig(const Config&) {
     return LoggingConfig();
+}
+
+std::string Config::axes_name() const {
+    return current_axes.str();
+}
+void Config::set_axes(std::string axis) {
+    current_axes = AxisNames::axisNamesRegister.get(axis);
 }
 
 std::string Config::__str__() const {
@@ -66,7 +72,7 @@ inline static void register_config()
         .add_property("axes", &Config::axes_name, &Config::set_axes,
                       "String representing axis names")
         .add_property("log", &getLoggingConfig, "Settings of the logging system");
-    py::scope().attr("config") = config;
+    py::scope().attr("config") = Config();
 }
 
 

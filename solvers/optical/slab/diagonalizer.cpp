@@ -18,8 +18,6 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
 {
     int N = src->matrixSize();         // Size of each matrix
 
-    //logger(LOG_BASIC) << "Creating simple diagonalizer...\n\n";
-
     for (int i = 0; i < lcount; i++) {
         gamma[i] = cdiagonal(N);
         Th[i] = cmatrix(N, N);

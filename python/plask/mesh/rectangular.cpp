@@ -20,7 +20,8 @@
 
 namespace plask { namespace python {
 
-
+extern AxisNames current_axes;
+    
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
@@ -536,56 +537,56 @@ namespace detail {
 
 template <int dim>
 void RectilinearMeshDivideGenerator_addRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_addRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_addRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_addRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_removeRefinement1(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_removeRefinement2(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_removeRefinement3(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectilinearMeshDivideGenerator_removeRefinement4(RectilinearMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
@@ -608,7 +609,7 @@ void RectilinearMeshDivideGenerator_removeRefinements3(RectilinearMeshDivideGene
 
 template <int dim>
 py::dict RectilinearMeshDivideGenerator_listRefinements(const RectilinearMeshDivideGenerator<dim>& self, const std::string& axis) {
-    int i = config.axes[axis] - 3 + DIM;
+    int i = current_axes[axis] - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name %1%.", axis);
     py::dict refinements;
     for (auto refinement: self.getRefinements(typename Primitive<DIM>::Direction(i))) {

@@ -5,6 +5,8 @@
 
 namespace plask { namespace python {
 
+extern AxisNames current_axes;
+    
 template <int dim>
 static bool Transfrom__contains__(const GeometryObjectTransform<dim>& self, shared_ptr<typename GeometryObjectTransform<dim>::ChildType> child) {
     if (self.getChild() == child) return true;
@@ -89,17 +91,17 @@ shared_ptr<Cls> Mirror_constructor1(size_t axis, shared_ptr<typename Cls::ChildT
 
 template <typename Cls>
 shared_ptr<Cls> Mirror_constructor2(const std::string& axis, shared_ptr<typename Cls::ChildType> child) {
-    size_t no = config.axes[axis] + Cls::DIM - 3;
+    size_t no = current_axes[axis] + Cls::DIM - 3;
     return make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(no), child);
 }
 
 template <typename Cls>
-std::string getFlipDir(const Cls& self) { return config.axes[self.flipDir]; }
+std::string getFlipDir(const Cls& self) { return current_axes[self.flipDir]; }
 
 template <typename Cls>
 void setFlipDir(Cls& self, py::object val) {
     try {
-        size_t no = config.axes[py::extract<std::string>(val)] + Cls::DIM - 3;
+        size_t no = current_axes[py::extract<std::string>(val)] + Cls::DIM - 3;
         self.flipDir = typename Primitive<Cls::DIM>::Direction(no);
     } catch (py::error_already_set) {
         PyErr_Clear();

@@ -8,6 +8,8 @@
 
 namespace plask { namespace python {
 
+extern AxisNames current_axes;
+    
 namespace detail {
 
     template <align::Direction... directions>
@@ -17,7 +19,7 @@ namespace detail {
 
         static PyObject* convert(const AlignerType& aligner) {
             py::dict dict;
-            for (auto i: aligner.asDict(config.axes)) {
+            for (auto i: aligner.asDict(current_axes)) {
                 dict[i.first] = i.second;
             }
             return py::incref(dict.ptr());
@@ -57,7 +59,7 @@ namespace detail {
                                                             }
                                                             return result;
                                                         },
-                                                        config.axes
+                                                        current_axes
                                                        );
 
         if (!map.empty()) throw TypeError("Got unexpected alignment keyword '%1%'", map.begin()->first);

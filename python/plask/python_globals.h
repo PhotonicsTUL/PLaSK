@@ -210,21 +210,19 @@ struct LoggingConfig
 /// Config class
 struct Config
 {
-    // Current axis names
-    static AxisNames axes;
-
-    std::string axes_name() const {
-        return axes.str();
-    }
-    void set_axes(std::string axis) {
-        axes = AxisNames::axisNamesRegister.get(axis);
-    }
+    std::string axes_name() const;
+    
+    void set_axes(std::string axis);
 
     std::string __str__() const;
 
     std::string __repr__() const;
 };
-extern Config config;
+
+inline AxisNames* getCurrentAxes() {
+    py::object plask = py::import("plask");
+    return py::extract<AxisNames*>(plask.attr("config").attr("axes"));
+}
 
 // ----------------------------------------------------------------------------------------------------------------------
 

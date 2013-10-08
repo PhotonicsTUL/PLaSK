@@ -19,6 +19,8 @@
 
 namespace plask { namespace python {
 
+extern AxisNames current_axes;
+    
 namespace detail {
     template <int dim, typename T> struct MakeVecFromNumpyImpl;
 
@@ -183,11 +185,11 @@ template <int dim, typename T>  py::object vec_list__array__(py::object self, py
 // Access components by name
 template <int dim>
 inline static int vec_attr_indx(const std::string& attr) {
-    int i = config.axes[attr] - 3 + dim;
+    int i = current_axes[attr] - 3 + dim;
     if (i < 0 || i >= dim) {
         if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
             attr == "lon" || attr == "tran" || attr == "up")
-            throw AttributeError("attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, config.axes_name());
+            throw AttributeError("attribute '%s' has no sense for %dD vector if config.axes = '%s'", attr, dim, current_axes.str());
         else
             throw AttributeError("'vector' object has no attribute '%s'", attr);
     }
@@ -311,7 +313,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
                 if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
                 else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
             } catch (AttributeError) {
-                throw TypeError("wrong component name for %dD vector if config.axes = '%s'", n, config.axes_name());
+                throw TypeError("wrong component name for %dD vector if config.axes = '%s'", n, current_axes.str());
             }
 
         }
