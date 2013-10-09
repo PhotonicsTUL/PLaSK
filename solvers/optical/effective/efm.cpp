@@ -101,8 +101,8 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 
 std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
-    stageOne();
     if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
+    stageOne();
 
     if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
         throw BadInput(getId(), "Bad area to browse specified");
@@ -129,7 +129,7 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
             if (v.real() > re1) re1 = v.real();
         }
     }
-    if (imag(lambda1) && imag(lambda2)) {
+    if (imag(lambda1) == 0. && imag(lambda2) == 0.) {
         im0 = 1e30;
         im1 = -1e30;
         for (size_t i = 0; i != rsize; ++i) {
@@ -138,8 +138,8 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
             if (v.imag() > im1) im1 = v.imag();
         }
     }
-    v0 = dcomplex(re0,im0);
-    v1 = dcomplex(re1,im1);
+    v0 = 1.000001 * dcomplex(re0,im0);
+    v1 = 0.999999 * dcomplex(re1,im1);
 
     Mode mode(this, m);
     auto results = findZeros(this, [this,&mode](dcomplex v){return this->detS(v,mode);}, v0, v1, resteps, imsteps, eps);
