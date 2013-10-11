@@ -144,11 +144,11 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     friend struct GainSpectrum<GeometryType>;
     friend class QW::gain;
 
-    double cond_waveguide_depth;///< waveguide conduction band depth [eV]
-    double vale_waveguide_depth;///< waveguide valence band depth [eV]
-    double mLifeTime;///< stimulated emission lifetime [ps]
-    double mMatrixElem;///< optical matrix element [m0*eV]
-    double differenceQuotient;///< difference quotient of dG_dn derivative
+    double cond_waveguide_depth;    ///< waveguide conduction band depth [eV]
+    double vale_waveguide_depth;    ///< waveguide valence band depth [eV]
+    double lifetime;               ///< stimulated emission lifetime [ps]
+    double matrixelem;             ///< optical matrix element [m0*eV]
+    double differenceQuotient;      ///< difference quotient of dG_dn derivative
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;
@@ -159,6 +159,14 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
 
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
 
+    void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
+        if (extern_levels) {
+            gmodule.przygobl_n(*extern_levels, gmodule.przel_dlug_z_angstr(region.qwtotallen));
+        } else {
+            gmodule.przygobl_n(gmodule.przel_dlug_z_angstr(region.qwtotallen));
+        }
+    }
+    
     double nm_to_eV(double wavelength) {
         return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
     }
@@ -192,11 +200,11 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
-    double getLifeTime() const { return mLifeTime; }
-    void setLifeTime(double iLifeTime)  { mLifeTime = iLifeTime; }
+    double getLifeTime() const { return lifetime; }
+    void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
 
-    double getMatrixElem() const { return mMatrixElem; }
-    void setMatrixElem(double iMatrixElem)  { mMatrixElem = iMatrixElem; }
+    double getMatrixElem() const { return matrixelem; }
+    void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
 
     /**
      * Reg gain spectrum object for future use;

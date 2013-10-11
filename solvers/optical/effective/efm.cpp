@@ -108,7 +108,7 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
         throw BadInput(getId(), "Bad area to browse specified");
 
     dcomplex v0 =  2. - 4e3*M_PI / lambda1 / k0;
-    dcomplex v1 =  2. - 4e3*M_PI / lambda1 / k0;
+    dcomplex v1 =  2. - 4e3*M_PI / lambda2 / k0;
 
     if (eps.imag() == 0.) eps.imag(eps.real());
 

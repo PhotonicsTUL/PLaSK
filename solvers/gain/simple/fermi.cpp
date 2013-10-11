@@ -8,8 +8,8 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
     outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
-    mLifeTime = 0.1; // [ps]
-    mMatrixElem = 10.0;
+    lifetime = 0.1; // [ps]
+    matrixelem = 10.0;
     cond_waveguide_depth = 0.26; // [eV]
     vale_waveguide_depth = 0.13; // [eV]
     differenceQuotient = 0.01;  // [%]
@@ -37,8 +37,8 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
     {
         std::string param = reader.getNodeName();
         if (param == "config") {
-            mLifeTime = reader.getAttribute<double>("lifetime", mLifeTime);
-            mMatrixElem = reader.getAttribute<double>("matrix-elem", mMatrixElem);
+            lifetime = reader.getAttribute<double>("lifetime", lifetime);
+            matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
             reader.requireTagEnd();
         } else if (param == "levels") {
             std::string els, hhs, lhs;
@@ -298,8 +298,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
 
-    gainModule.Set_lifetime(mLifeTime);
-    gainModule.Set_momentum_matrix_element(mMatrixElem);
+    gainModule.Set_lifetime(lifetime);
+    gainModule.Set_momentum_matrix_element(matrixelem);
 
     // Now compute levels
     if (extern_levels) {
@@ -405,25 +405,28 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 
     WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
-    DataVector<double> gainOnMesh(src_mesh.size(), 0.);
+    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
+    DataVector<double> gainOnMesh(geo_mesh.size(), 0.);
 
+    std::vector<std::pair<size_t,size_t>> points;
+    for (size_t i = 0; i != geo_mesh.size(); i++)
+        for (size_t r = 0; r != regions.size(); ++r)
+            if (regions[r].contains(geo_mesh[i]) && nOnMesh[i] > 0.)
+                points.push_back(std::make_pair(i,r));
+                                 
     #pragma omp parallel for
-    for (int i = 0; i < geo_mesh.size(); i++)
+    for (int j = 0; j < points.size(); j++)
     {
-        for (const ActiveRegionInfo& region: regions)
-        {
-            if (region.contains(geo_mesh[i]) && nOnMesh[i] > 0.)
-            {
-                QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
-                gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
-            }
-        }
+        size_t i = points[j].first;
+        const ActiveRegionInfo& region = regions[points[j].second];
+        QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
+        gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
     }
 
     if (this->mesh) {
-        return interpolate(mesh2, gainOnMesh, dst_mesh, interp);
+        WrappedMesh<2> geo_dst_mesh(dst_mesh, this->geometry);
+        return interpolate(mesh2, gainOnMesh, geo_dst_mesh, interp);
     } else {
         return gainOnMesh;
     }
@@ -448,29 +451,31 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 
     WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(src_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(src_mesh, interp); // temperature on the mesh
-    DataVector<double> dGdn(src_mesh.size(), 0.);
+    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
+    DataVector<double> dGdn(geo_mesh.size(), 0.);
 
+    std::vector<std::pair<size_t,size_t>> points;
+    for (size_t i = 0; i != geo_mesh.size(); i++)
+        for (size_t r = 0; r != regions.size(); ++r)
+            if (regions[r].contains(geo_mesh[i]) && nOnMesh[i] > 0.)
+                points.push_back(std::make_pair(i,r));
+                                 
     #pragma omp parallel for
-    for (int i = 0; i < geo_mesh.size(); i++)
+    for (int j = 0; j < points.size(); j++)
     {
-        for (const ActiveRegionInfo& region: regions)
-        {
-            if (region.contains(geo_mesh[i]) && nOnMesh[i] > 0.)
-            {
-                double gainOnMesh1 = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region)
-                    .Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
-                double gainOnMesh2 = getGainModule(wavelength, TOnMesh[i] * (1.+differenceQuotient), nOnMesh[i], region)
-                    .Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
-                dGdn[i] = (gainOnMesh2 - gainOnMesh1) / (differenceQuotient*nOnMesh[i]);
-
-            }
-        }
+        size_t i = points[j].first;
+        const ActiveRegionInfo& region = regions[points[j].second];
+        double gainOnMesh1 = getGainModule(wavelength, TOnMesh[i], (1.-0.5*differenceQuotient) * nOnMesh[i], region)
+            .Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
+        double gainOnMesh2 = getGainModule(wavelength, TOnMesh[i], (1.+0.5*differenceQuotient) * nOnMesh[i], region)
+            .Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
+        dGdn[i] = (gainOnMesh2 - gainOnMesh1) / (differenceQuotient*nOnMesh[i]);
     }
 
     if (this->mesh) {
-        return interpolate(mesh2, dGdn, dst_mesh, interp);
+        WrappedMesh<2> geo_dst_mesh(dst_mesh, this->geometry);
+        return interpolate(mesh2, dGdn, geo_dst_mesh, interp);
     } else {
         return dGdn;
     }
