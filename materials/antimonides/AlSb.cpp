@@ -1,0 +1,162 @@
+#include "AlSb.h"
+
+#include <cmath>
+#include <plask/material/db.h>  //MaterialsDB::Register
+#include <plask/material/info.h>    //MaterialInfo::DB::Register
+
+namespace plask { namespace materials {
+
+std::string AlSb::name() const { return NAME; }
+
+MI_PROPERTY(AlSb, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double AlSb::lattC(double T, char x) const {
+    double tLattC(0.);
+    if (x == 'a') tLattC = 6.1355 + 2.60e-5 * (T-300.);
+    return ( tLattC );
+}
+
+MI_PROPERTY(AlSb, Eg,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double AlSb::Eg(double T, double e, char point) const {
+    double tEg(0.);
+    if (point == 'G') tEg = phys::Varshni(2.386, 0.42e-3, 140., T);
+    else if (point == 'X') tEg = phys::Varshni(1.696, 0.39e-3, 140., T);
+    else if (point == 'L') tEg = phys::Varshni(2.329, 0.58e-3, 140., T);
+    return ( tEg );
+}
+
+MI_PROPERTY(AlSb, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::Dso(double T, double e) const {
+    return ( 0.676 );
+}
+
+MI_PROPERTY(AlSb, Me,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MIComment("only for Gamma point"),
+            MIComment("no temperature dependence")
+            )
+Tensor2<double> AlSb::Me(double T, double e, char point) const {
+    Tensor2<double> tMe(0., 0.);
+    if (point == 'G') {
+        tMe.c00 = 0.14;
+        tMe.c11 = 0.14;
+    }
+    return ( tMe );
+}
+
+MI_PROPERTY(AlSb, Mhh,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MIComment("no temperature dependence")
+            )
+Tensor2<double> AlSb::Mhh(double T, double e) const {
+    Tensor2<double> tMhh(0.47, 0.47); // [001]
+    return ( tMhh );
+}
+
+MI_PROPERTY(AlSb, Mlh,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MIComment("no temperature dependence")
+            )
+Tensor2<double> AlSb::Mlh(double T, double e) const {
+    Tensor2<double> tMlh(0.16, 0.16);
+    return ( tMlh );
+}
+
+MI_PROPERTY(AlSb, CB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double AlSb::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point) + Eg(T,0.,point) );
+    if (!e) return ( tCB );
+    else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
+MI_PROPERTY(AlSb, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::VB(double T, double e, char point) const {
+    double tVB(-0.41);
+    if (!e) return ( tVB );
+    else return ( tVB + 2.*av(T)*(1.-c12(T)/c11(T))*e );
+}
+
+MI_PROPERTY(AlSb, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::ac(double T) const {
+    return ( -4.5 );
+}
+
+MI_PROPERTY(AlSb, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::av(double T) const {
+    return ( 1.4 );
+}
+
+MI_PROPERTY(AlSb, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::b(double T) const {
+    return ( -1.35 );
+}
+
+MI_PROPERTY(AlSb, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::d(double T) const {
+    return ( -4.3 );
+}
+
+MI_PROPERTY(AlSb, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::c11(double T) const {
+    return ( 87.69 );
+}
+
+MI_PROPERTY(AlSb, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::c12(double T) const {
+    return ( 43.41 );
+}
+
+MI_PROPERTY(AlSb, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MIComment("no temperature dependence")
+            )
+double AlSb::c44(double T) const {
+    return ( 40.76 );
+}
+
+MI_PROPERTY(AlSb, thermk,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MIArgumentRange(MaterialInfo::T, 300, 945)
+           )
+Tensor2<double> AlSb::thermk(double T, double t) const {
+    double tCondT = (1./0.0175)*pow((300./T),1.42);
+    return ( Tensor2<double>(tCondT, tCondT) );
+}
+
+bool AlSb::isEqual(const Material &other) const {
+    return true;
+}
+
+static MaterialsDB::Register<AlSb> materialDB_register_AlSb;
+
+}} // namespace plask::materials
