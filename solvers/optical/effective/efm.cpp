@@ -507,13 +507,13 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, plask::solvers::ef
         if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", mode.m, str(x1));
         zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
         if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", mode.m, str(x1));
-        for (int i = 0; i < 2; ++i) { J1[i] = dcomplex(Jr[i], Ji[i]); H1[i] = dcomplex(Hr[i], Hi[i]); }
+        for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
 
         zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
         if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", mode.m, str(x2));
         zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
         if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", mode.m, str(x2));
-        for (int i = 0; i < 2; ++i) { J2[i] = dcomplex(Jr[i], Ji[i]); H2[i] = dcomplex(Hr[i], Hi[i]); }
+        for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
 
         MatrixR A(       J1[0],                   H1[0],
                   mode.m*J1[0] - x1*J1[1], mode.m*H1[0] - x1*H1[1]);
@@ -522,7 +522,6 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, plask::solvers::ef
                   mode.m*J2[0] - x2*J2[1], mode.m*H2[0] - x2*H2[1]);
 
         mode.rfields[i-1] = A.solve(B * mode.rfields[i]);
-
     }
 
     if (save) {
