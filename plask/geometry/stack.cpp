@@ -185,7 +185,7 @@ bool ShelfContainer2D::isFlat() const {
     const double height = children[first]->getBoundingBoxSize().vert();
     for (std::size_t i = first+1; i < children.size(); ++i)
         if (children[i]->getChildType() != GeometryObject::TYPE_SEPARATOR &&
-            height != children[i]->getBoundingBoxSize().vert())
+            !is_zero(height - children[i]->getBoundingBoxSize().vert()))
             return false;
     return true;
 }
