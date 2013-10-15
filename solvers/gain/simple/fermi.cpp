@@ -112,6 +112,8 @@ void FermiGainSolver<GeometryType>::onInvalidate() // This will be called when e
 template <typename GeometryType>
 void FermiGainSolver<GeometryType>::detectActiveRegions()
 {
+    regions.clear();
+    
     shared_ptr<RectilinearMesh2D> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
