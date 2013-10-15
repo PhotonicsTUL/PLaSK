@@ -126,11 +126,11 @@ std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& sel
 }
 
 double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {
-    return real(2e3*M_PI / (mode.solver->k0 * (1. - mode.freqv/2.)));
+    return real(mode.lam);
 }
 
 double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSolver::Mode& mode) {
-    return imag(2e4 * mode.solver->k0 * (1. - mode.freqv/2.));
+    return imag(2e4 * 2e3*M_PI / mode.lam);
 }
 
 template <typename SolverT>
@@ -171,7 +171,7 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(emission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
-        METHOD(search_vneffs, searchVeffs, "Find the effective index in the vertical direction within the specified range using global method",
+        METHOD(search_vneff, searchVNeffs, "Find the effective index in the vertical direction within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("find_mode", &EffectiveIndex2DSolver_findMode, "Compute the mode near the specified effective index", (arg("neff"), arg("symmetry")=py::object()));
         solver.def("find_modes", &EffectiveIndex2DSolver_findModes, "Find the modes within the specified range using global method",
@@ -213,6 +213,7 @@ BOOST_PYTHON_MODULE(effective)
         "method in two-dimensional cylindrical space.")
         solver.add_property("mesh", &EffectiveFrequencyCylSolver::getMesh, &Optical_setMesh<EffectiveFrequencyCylSolver>, "Mesh provided to the solver");
         RW_FIELD(k0, "Reference normalized frequency");
+        RW_FIELD(vlam, "'Vertical wavelength' used as a helper for searching vertical modes");
         solver.add_property("lam0", &EffectiveFrequencyCylSolver_getLambda0, &EffectiveFrequencyCylSolver_setLambda0, "Reference wavelength");
         RW_FIELD(outdist, "Distance outside outer borders where material is sampled");
         RO_FIELD(root, "Configuration of the global rootdigger");

@@ -7,11 +7,12 @@ namespace plask { namespace solvers { namespace effective {
 
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
-    log_value(dataLog<dcomplex, dcomplex>("freq", "v", "det")),
+    log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     outdist(0.1),
     perr(1e-3),
     k0(NAN),
+    vlam(0.),
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
     outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes) {
@@ -41,6 +42,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
                 k0 = 2e3*M_PI / *alam0;
             } else if (ak0) k0 = *ak0;
             emission = reader.enumAttribute<Emission>("emission").value("top", TOP).value("bottom", BOTTOM).get(emission);
+            vlam = reader.getAttribute<double>("vlam", real(vlam));
             reader.requireTagEnd();
         } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
@@ -91,10 +93,9 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
-    dcomplex v = 2. - 4e3*M_PI / lambda / k0;
     stageOne();
     Mode mode(this, m);
-    mode.freqv = RootDigger(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, log_value, root)(v);
+    mode.lam = RootDigger(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)(lambda);
     return insertMode(mode);
 }
 
@@ -107,16 +108,16 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
     if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
         throw BadInput(getId(), "Bad area to browse specified");
 
-    dcomplex v0 =  2. - 4e3*M_PI / lambda1 / k0;
-    dcomplex v1 =  2. - 4e3*M_PI / lambda2 / k0;
+    dcomplex lam0 =  lambda1;
+    dcomplex lam1 =  lambda2;
 
     if (eps.imag() == 0.) eps.imag(eps.real());
 
     if (real(eps) <= 0. || imag(eps) <= 0.)
         throw BadInput(this->getId(), "Bad precision specified");
 
-    double re0 = real(v0), im0 = imag(v0);
-    double re1 = real(v1), im1 = imag(v1);
+    double re0 = real(lam0), im0 = imag(lam0);
+    double re1 = real(lam1), im1 = imag(lam1);
     if (re0 > re1) std::swap(re0, re1);
     if (im0 > im1) std::swap(im0, im1);
 
@@ -138,17 +139,17 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
             if (v.imag() > im1) im1 = v.imag();
         }
     }
-    v0 = 1.000001 * dcomplex(re0,im0);
-    v1 = 0.999999 * dcomplex(re1,im1);
+    lam0 = 1.000001 * dcomplex(re0,im0);
+    lam1 = 0.999999 * dcomplex(re1,im1);
 
     Mode mode(this, m);
-    auto results = findZeros(this, [this,&mode](dcomplex v){return this->detS(v,mode);}, v0, v1, resteps, imsteps, eps);
+    auto results = findZeros(this, [this,&mode](dcomplex lam){return this->detS(lam,mode);}, lam0, lam1, resteps, imsteps, eps);
 
     std::vector<size_t> idx(results.size());
 
     if (results.size() != 0) {
-        Data2DLog<dcomplex,dcomplex> logger(getId(), "freq", "v", "det");
-        RootDigger refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
+        log_value.resetCounter();
+        RootDigger refine(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root);
         std::string msg = "Found modes at: ";
         for (auto& z: results) {
             try {
@@ -156,11 +157,9 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
             } catch (ComputationError) {
                 continue;
             }
-            mode.freqv = z;
+            mode.lam = z;
             idx.push_back(insertMode(mode));
-            dcomplex k = k0 * (1. - z/2.); // get modal frequency back from frequency parameter
-            dcomplex lam = 2e3*M_PI / k;
-            msg += str(lam) + ", ";
+            msg += str(z) + ", ";
         }
         writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
     } else
@@ -178,8 +177,8 @@ size_t EffectiveFrequencyCylSolver::setMode(dcomplex clambda, int m)
         stageOne();
     }
     Mode mode(this, m);
-    mode.freqv = 2. - 4e3*M_PI / clambda / k0;
-    double det = abs(detS(mode.freqv, mode));
+    mode.lam = clambda;
+    double det = abs(detS(mode.lam, mode));
     if (det > root.tolf_max)
         writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = %1%)", det);
     writelog(LOG_INFO, "Setting mode at %1%", str(clambda));
@@ -254,7 +253,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 
         double h = 1e6 * sqrt(SMALL);
         double lam1 = lam - h, lam2 = lam + h;
-        double ih2 = 0.5 / h;
+        double i2h = 0.5 / h;
 
         RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
         if (rsize == mesh->axis0.size())
@@ -266,7 +265,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
-        DataVector<const double> gain;
+        DataVector<double> gain;
         DataVector<double> gain_slope;
 
         for (size_t ir = 0; ir != rsize; ++ir) {
@@ -281,22 +280,25 @@ void EffectiveFrequencyCylSolver::stageOne()
                 // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) {
                     nrCache[ir][iz] = material->Nr(lam, T);
-                    ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2;
+                    ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h;
                 } else { // we ignore the material absorption as it should be considered in the gain already
                     need_gain = true;
                     if (!have_gain) {
-                        gain = inGain(midmesh, lam1);
+                        gain = inGain(midmesh, lam1).claim();
                         gain_slope = inGain(midmesh, lam2).claim();
-                        auto g1 = gain_slope.begin();
-                        auto g2 = gain.begin();
-                        for (; g1 != gain_slope.end(); ++g1, ++g2) *g1 = (*g2 - *g1) * ih2;
-                        gain = inGain(midmesh, lam);
+                        auto g1 = gain.begin();
+                        auto gs2 = gain_slope.begin();
+                        for (; gs2 != gain_slope.end(); ++gs2, ++g1) {
+                            double g = 0.5 * (*g1 + *gs2);
+                            *gs2 = (*gs2 - *g1) * i2h;
+                            *g1 = g;
+                        }
                         have_gain = true;
                     }
                     double g = gain[idx];
                     double gs = gain_slope[idx];
                     double nr = real(material->Nr(lam, T));
-                    double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * ih2);
+                    double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
                     nrCache[ir][iz] = dcomplex(nr, 7.95774715459e-09 * lam * g);
                     ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
                 }
@@ -321,7 +323,6 @@ void EffectiveFrequencyCylSolver::stageOne()
                     }
                     writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", i, nrgs.str().substr(1));
 #               endif
-
                 dcomplex same_nr = nrCache[i].front();
                 dcomplex same_ng = ngCache[i].front();
                 bool all_the_same = true;
@@ -331,9 +332,10 @@ void EffectiveFrequencyCylSolver::stageOne()
                     veffs[i] = 1.; // TODO make sure this is so!
                     nng[i] = same_nr * same_ng;
                 } else {
-                    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "veff", "det");
-                    RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[i],ngCache[i]);}, log_stripe, stripe_root);
-                    veffs[i] = rootdigger(1e-5);
+                    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "vlam", "det");
+                    RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
+                    dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
+                    veffs[i] = freqv(rootdigger(start));
                     computeStripeNNg(i);
                 }
             } catch (...) {
@@ -482,8 +484,10 @@ double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode) const
     return 2*M_PI * intr; //TODO consider m <> 0
 }
 
-dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& v, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
+dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
 {
+    dcomplex v = freqv(lam);
+    
     // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
     mode.rfields[rsize-1] = FieldR(0., 1.);
 
@@ -543,7 +547,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
     if (modes.size() <= num || k0 != old_k0) throw NoValue(LightIntensity::NAME);
 
     if (!modes[num].have_fields) {
-        detS(modes[num].freqv, modes[num], true);
+        detS(modes[num].lam, modes[num], true);
 #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)

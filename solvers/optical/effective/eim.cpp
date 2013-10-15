@@ -107,7 +107,7 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
 }
 
 
-std::vector<dcomplex> EffectiveIndex2DSolver::searchVeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<dcomplex> EffectiveIndex2DSolver::searchVNeffs(dcomplex neff1, dcomplex neff2, size_t resteps, size_t imsteps, dcomplex eps)
 {
     updateCache();
 

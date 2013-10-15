@@ -414,7 +414,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
         for (size_t r = 0; r != regions.size(); ++r)
             if (regions[r].contains(geo_mesh[i]) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
-                                 
+
     #pragma omp parallel for
     for (int j = 0; j < points.size(); j++)
     {

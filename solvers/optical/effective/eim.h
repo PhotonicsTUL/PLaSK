@@ -232,7 +232,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> searchVeffs(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
+    std::vector<dcomplex> searchVNeffs(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
      * Find the mode around the specified effective index.
