@@ -44,10 +44,12 @@ const double PI_DOUBLED = 6.28318530717958647692;
 constexpr double SMALL = std::numeric_limits<double>::epsilon(); ///< The numeric precision limit
 constexpr double SMALL2 = SMALL*SMALL; ///< Squared numeric precision limit
 
-/// Check if the real number is almost zero
+/// Check if the real number is almost zero.
 /// \param v number to verify
-inline bool is_zero(double v) {
-    return abs(v) < SMALL;
+/// \param abs_supremum
+/// \return @c true only if abs(v) < abs_supremum
+inline bool is_zero(double v, double abs_supremum = SMALL) {
+    return abs(v) < abs_supremum;
 }
 
 /// Check if the complex number is almost zero
