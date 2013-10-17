@@ -159,7 +159,13 @@ class PythonMaterial : public Material
         }
         PythonMaterial* ptr;
         if (len == 2) {
-            shared_ptr<Material> base = py::extract<shared_ptr<Material>>(args[1]);
+            shared_ptr<Material> base;
+            try {
+                base = MaterialsDB::getDefault().get(py::extract<std::string>(args[1]));
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                base = py::extract<shared_ptr<Material>>(args[1]);
+            }
             ptr = new PythonMaterial(base);
         } else {
             ptr = new PythonMaterial();
