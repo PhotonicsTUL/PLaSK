@@ -88,7 +88,7 @@ static void register_geometry_aligncontainer(const std::string& suffix)
 {
     typedef AlignContainer<dim,direction> AlignContainerT;
 
-    py::class_<AlignContainerT, shared_ptr<AlignContainerT>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>
+    py::class_<AlignContainerT, shared_ptr<AlignContainerT>, py::bases<GeometryObjectContainer<dim>>, boost::noncopyable>
         (("AlignContainer"+suffix).c_str(),
         format("Container that aligns its content along axis%1%\n\n"
         "AlignContainer%2%(**kwargs)\n"

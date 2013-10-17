@@ -33,7 +33,7 @@ void register_python_log();
 void register_standard_properties();
 
 // Config
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)
 #endif
 AxisNames current_axes = AxisNames::axisNamesRegister.get("xyz");

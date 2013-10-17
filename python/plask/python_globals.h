@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define _WIN32_WINNT 0x502
 #   include <windows.h>
 #endif
@@ -24,7 +24,7 @@ namespace boost { namespace python {
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#if defined(_WIN32) && defined(hypot)
+#if (defined(_WIN32) || defined(__WIN32__) || defined(WIN32)) && defined(hypot)
 #   undef hypot
 #endif
 
@@ -227,7 +227,7 @@ struct Config
 extern AxisNames current_axes;
 
 inline AxisNames* getCurrentAxes() {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     //TODO add mangled names for all compiler versions
     AxisNames* result = (AxisNames*) GetProcAddress(GetModuleHandle(NULL), "_ZN5plask6python12current_axesE");
     if (!result) throw CriticalException("current_axes cannot be accessed");

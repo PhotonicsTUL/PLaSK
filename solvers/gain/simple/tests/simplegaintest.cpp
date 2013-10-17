@@ -6,7 +6,7 @@
 using namespace plask;
 using namespace plask::solvers::fermi;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define V "\\"
 #else
 #   define V "/"

@@ -1,7 +1,7 @@
 #ifndef PLASK__UTILS_DYNLIB_LOADER_H
 #define PLASK__UTILS_DYNLIB_LOADER_H
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #define PLASK__UTILS_PLUGIN_WINAPI
 #include <windows.h>
 #else

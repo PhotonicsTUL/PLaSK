@@ -3,7 +3,7 @@ using namespace std;
 
 #include "log.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #    include <windows.h>
 #else
 #   include <unistd.h>
@@ -19,7 +19,7 @@ LogLevel maxLoglevel = LOG_DEBUG;
 
 bool forcedLoglevel = false;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
     /// Class writing colorful log into stderr
     class StderrLogger: public Logger {

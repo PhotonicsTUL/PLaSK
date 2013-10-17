@@ -17,7 +17,7 @@
 #    define F77_MODULE(mod_name,name, mod_NAME,NAME) __##mod_name##_MOD_##name
 #    define F77_MODULE_(mod_name,name, mod_NAME,NAME) __##mod_name##_MOD_##name
 #endif
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #    define F77SUB extern "C" __declspec(dllimport) void
 #    define F77FUN(RT) extern "C" __declspec(dllimport) RT
 #else

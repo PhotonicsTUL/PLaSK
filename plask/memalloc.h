@@ -3,7 +3,7 @@
 
 #include <cstdlib>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <malloc.h>
 #endif
 
@@ -71,7 +71,7 @@ inline void* aligned_malloc(std::size_t size)
     void *result;
 #if PLASK_MALLOC_ALIGNED
     result = std::malloc(size);
-#elif defined _WIN32
+#elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     result = _aligned_malloc(size, 16);
 #else
     result = detail::custom_aligned_malloc(size);
@@ -89,7 +89,7 @@ inline void aligned_free(void *ptr)
     if (!ptr) return;
 #if PLASK_MALLOC_ALIGNED
     std::free(ptr);
-#elif defined _WIN32
+#elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     _aligned_free(ptr);
 #else
     detail::custom_aligned_free(ptr);
@@ -108,7 +108,7 @@ inline void* aligned_realloc(void *ptr, std::size_t new_size, std::size_t old_si
     void *result;
 #if PLASK_MALLOC_ALIGNED
     result = std::realloc(ptr,new_size);
-#elif defined _WIN32
+#elif defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     result = _aligned_realloc(ptr,new_size,16);
 #else
     result = detail::custom_aligned_realloc(ptr,new_size,old_size);

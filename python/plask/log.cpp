@@ -5,7 +5,7 @@
 #include <plask/log/log.h>
 #include <plask/log/data.h>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #    include <windows.h>
 #else
 #   include <unistd.h>
@@ -32,7 +32,7 @@ struct PythonSysLogger: public plask::Logger {
     enum ColorMode {
         COLOR_NONE,
         COLOR_ANSI
-#       ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
         , COLOR_WINDOWS
 #       endif
     };
@@ -45,7 +45,7 @@ struct PythonSysLogger: public plask::Logger {
     ColorMode color;
     Dest dest;
 
-#   ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
         void setcolor(unsigned short fg);
         unsigned short previous_color;
 #   endif
@@ -58,7 +58,7 @@ struct PythonSysLogger: public plask::Logger {
 
 };
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
     PythonSysLogger::PythonSysLogger(): color(PythonSysLogger::COLOR_WINDOWS), dest(DEST_STDERR) {}
 
@@ -123,7 +123,7 @@ const char* PythonSysLogger::head(LogLevel level) {
             case LOG_ERROR_DETAIL:  return ANSI_RED         "ERROR DETAIL  ";
             case LOG_DEBUG:         return ANSI_GRAY        "DEBUG         ";
         }
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     else if (color == PythonSysLogger::COLOR_WINDOWS)
         switch (level) {
             case LOG_ERROR:         setcolor(COL_BRIGHT_RED); return "ERROR         ";
@@ -158,7 +158,7 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
             PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
         else
             PySys_WriteStdout("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     } else if (color == COLOR_WINDOWS) {
         if (dest == DEST_STDERR) {
             PySys_WriteStderr("%s: %s\n", head(level), msg.c_str());
@@ -188,7 +188,7 @@ py::object LoggingConfig::getLoggingColor() const {
         switch (logger->color) {
             case PythonSysLogger::COLOR_ANSI: return py::str("ansi");
             case PythonSysLogger::COLOR_NONE: return py::str("none");
-#           ifdef _WIN32
+#           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
             case PythonSysLogger::COLOR_WINDOWS: return py::str("windows");
 #           endif
         }
@@ -200,7 +200,7 @@ void LoggingConfig::setLoggingColor(std::string color) {
     if (auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger)) {
         if (color == "ansi")
             logger->color = PythonSysLogger::COLOR_ANSI;
-#       ifdef _WIN32
+#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
         else if (color == "windows")
             logger->color = PythonSysLogger::COLOR_WINDOWS;
 #       endif
