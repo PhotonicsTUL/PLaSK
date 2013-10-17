@@ -15,7 +15,7 @@ inline std::pair<std::string, int> el_g(const std::string& g, int p) { return st
 int objectGroup(const std::string& objectName) {
     static const std::map<std::string, int> objectGroups =
         { el_g("Al", 3), el_g("Ga", 3), el_g("In", 3),
-          el_g("N", 5), el_g("P", 5), el_g("As", 5) };
+          el_g("N", 5), el_g("P", 5), el_g("As", 5), el_g("Sb", 5), el_g("Bi", 5) };
     return map_find(objectGroups, objectName, 0);
 }
 
