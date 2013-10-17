@@ -24,7 +24,7 @@ struct AlSb: public Semiconductor {
     virtual Tensor2<double> Mhh(double T, double e) const;
     virtual Tensor2<double> Mlh(double T, double e) const;
     virtual double CB(double T, double e, char point) const;
-    virtual double VB(double T, double e, char point) const;
+    virtual double VB(double T, double e, char point, char hole='H') const;
     virtual double ac(double T) const;
     virtual double av(double T) const;
     virtual double b(double T) const;

@@ -11,7 +11,7 @@ GaInP::GaInP(const Material::Composition& Comp) {
     In = Comp.find("In")->second;
 }
 
-std::string GaInP::str() const { return StringBuilder("Ga")("In", In)("P"); }
+std::string GaInP::str() const { return StringBuilder("In", In)("Ga")("P"); }
 
 std::string GaInP::name() const { return NAME; }
 

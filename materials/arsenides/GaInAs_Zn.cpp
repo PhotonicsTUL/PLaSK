@@ -8,7 +8,7 @@ namespace plask { namespace materials {
 
 std::string GaInAs_Zn::name() const { return NAME; }
 
-std::string GaInAs_Zn::str() const { return StringBuilder("Ga")("In", In)("As").dopant("Zn", NA); }
+std::string GaInAs_Zn::str() const { return StringBuilder("In", In)("Ga")("As").dopant("Zn", NA); }
 
 MI_PARENT(GaInAs_Zn, GaInAs)
 

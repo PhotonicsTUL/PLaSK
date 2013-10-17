@@ -17,7 +17,7 @@ namespace plask { namespace materials {
  */
 struct GaInAs_Sn: public GaInAs {
 
-    static constexpr const char* NAME = "GaInAs:Sn";
+    static constexpr const char* NAME = "InGaAs:Sn";
 
     GaInAs_Sn(const Material::Composition& Comp, DopingAmountType Type, double Val);
     virtual std::string name() const;

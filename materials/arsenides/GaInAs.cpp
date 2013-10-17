@@ -11,7 +11,7 @@ GaInAs::GaInAs(const Material::Composition& Comp) {
     In = Comp.find("In")->second;
 }
 
-std::string GaInAs::str() const { return StringBuilder("Ga")("In", In)("As"); }
+std::string GaInAs::str() const { return StringBuilder("In", In)("Ga")("As"); }
 
 std::string GaInAs::name() const { return NAME; }
 

@@ -82,7 +82,7 @@ MI_PROPERTY(InSb, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
             )
-double InSb::VB(double T, double e, char point) const {
+double InSb::VB(double T, double e, char point, char hole) const {
     double tVB(0.);
     if (!e) return ( tVB );
     else return ( tVB + 2.*av(T)*(1.-c12(T)/c11(T))*e );
