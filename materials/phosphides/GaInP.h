@@ -31,8 +31,10 @@ struct GaInP: public Semiconductor {
     virtual double ac(double T) const;
     virtual double av(double T) const;
     virtual double b(double T) const;
+    virtual double d(double T) const;
     virtual double c11(double T) const;
     virtual double c12(double T) const;
+    virtual double c44(double T) const;
     virtual double A(double T) const;
     virtual double B(double T) const;
     virtual double C(double T) const;

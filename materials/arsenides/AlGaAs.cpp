@@ -26,12 +26,13 @@ double AlGaAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double AlGaAs::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point) - Al*Ga*(-0.127+1.310*Al);
+    else if (point == 'X') tEg = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point) - Al*Ga*(0.055);
+    else if (point == 'L') tEg = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point);
     return ( tEg );
 }
 
@@ -97,6 +98,13 @@ double AlGaAs::b(double T) const {
     return ( Al*mAlAs.b(T) + Ga*mGaAs.b(T) );
 }
 
+MI_PROPERTY(AlGaAs, d,
+            MISource("linear interpolation: AlAs, GaAs")
+            )
+double AlGaAs::d(double T) const {
+    return ( Al*mAlAs.d(T) + Ga*mGaAs.d(T) );
+}
+
 MI_PROPERTY(AlGaAs, c11,
             MISource("linear interpolation: AlAs, GaAs")
             )
@@ -109,6 +117,13 @@ MI_PROPERTY(AlGaAs, c12,
             )
 double AlGaAs::c12(double T) const {
     return ( Al*mAlAs.c12(T) + Ga*mGaAs.c12(T) );
+}
+
+MI_PROPERTY(AlGaAs, c44,
+            MISource("linear interpolation: AlAs, GaAs")
+            )
+double AlGaAs::c44(double T) const {
+    return ( Al*mAlAs.c44(T) + Ga*mGaAs.c44(T) );
 }
 
 MI_PROPERTY(AlGaAs, thermk,

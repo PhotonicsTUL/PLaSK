@@ -26,12 +26,13 @@ double GaInP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double GaInP::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*0.65;
+    else if (point == 'X') tEg = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*0.20;
+    else if (point == 'L') tEg = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*1.03;
     return ( tEg );
 }
 
@@ -97,6 +98,13 @@ double GaInP::b(double T) const {
     return ( Ga*mGaP.b(T) + In*mInP.b(T) );
 }
 
+MI_PROPERTY(GaInP, d,
+            MISource("linear interpolation: GaP, InP")
+            )
+double GaInP::d(double T) const {
+    return ( Ga*mGaP.d(T) + In*mInP.d(T) );
+}
+
 MI_PROPERTY(GaInP, c11,
             MISource("linear interpolation: GaP, InP")
             )
@@ -109,6 +117,13 @@ MI_PROPERTY(GaInP, c12,
             )
 double GaInP::c12(double T) const {
     return ( Ga*mGaP.c12(T) + In*mInP.c12(T) );
+}
+
+MI_PROPERTY(GaInP, c44,
+            MISource("linear interpolation: GaP, InP")
+            )
+double GaInP::c44(double T) const {
+    return ( Ga*mGaP.c44(T) + In*mInP.c44(T) );
 }
 
 MI_PROPERTY(GaInP, A,

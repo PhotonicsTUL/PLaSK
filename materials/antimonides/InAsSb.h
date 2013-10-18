@@ -1,24 +1,24 @@
-#ifndef PLASK__GaInAs_H
-#define PLASK__GaInAs_H
+#ifndef PLASK__InAsSb_H
+#define PLASK__InAsSb_H
 
 /** @file
-This file contains undoped GaInAs
+This file contains undoped InAsSb
 */
 
 #include <plask/material/material.h>
-#include "GaAs.h"
-#include "InAs.h"
+#include "../arsenides/InAs.h"
+#include "InSb.h"
 
 namespace plask { namespace materials {
 
 /**
- * Represent undoped GaInAs, its physical properties.
+ * Represent undoped InAsSb, its physical properties.
  */
-struct GaInAs: public Semiconductor {
+struct InAsSb: public Semiconductor {
 
-    static constexpr const char* NAME = "InGaAs";
+    static constexpr const char* NAME = "InAsSb";
 
-    GaInAs(const Material::Composition& Comp);
+    InAsSb(const Material::Composition& Comp);
     virtual std::string str() const;
     virtual std::string name() const;
     virtual double lattC(double T, char x) const;
@@ -43,14 +43,14 @@ protected:
     virtual bool isEqual(const Material& other) const;
 
 protected:
-    double Ga,
-           In;
+    double As,
+           Sb;
 
-    GaAs mGaAs;
     InAs mInAs;
+    InSb mInSb;
 
 };
 
 }} // namespace plask::materials
 
-#endif	//PLASK__GaInAs_H
+#endif	//PLASK__InAsSb_H

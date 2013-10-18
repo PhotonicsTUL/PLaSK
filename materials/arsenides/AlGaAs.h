@@ -31,8 +31,10 @@ struct AlGaAs: public Semiconductor {
     virtual double ac(double T) const;
     virtual double av(double T) const;
     virtual double b(double T) const;
+    virtual double d(double T) const;
     virtual double c11(double T) const;
     virtual double c12(double T) const;
+    virtual double c44(double T) const;
     virtual Tensor2<double> thermk(double T, double t) const;
     virtual double nr(double wl, double T) const;
     virtual double absp(double wl, double T) const;
