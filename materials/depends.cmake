@@ -1,0 +1,1 @@
+set(depends-antimonides "arsenides")
