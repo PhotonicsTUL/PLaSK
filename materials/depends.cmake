@@ -1,1 +1,0 @@
-set(depends-antimonides "arsenides")

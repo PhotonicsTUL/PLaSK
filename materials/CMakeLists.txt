@@ -3,8 +3,6 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_PATH}/materials)
 
-include("depends.cmake")
-
 # List of all material groups
 file(GLOB materials RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ *)
 
@@ -23,13 +21,6 @@ foreach(material ${materials})
             set_target_properties(materials-${material} PROPERTIES OUTPUT_NAME ${material} PREFIX "")
             target_link_libraries(materials-${material} ${PLaSK_LIBRARIES})
 
-            if(depends-${material})
-                foreach(dep ${depends-${material}})
-                    target_link_libraries(materials-${material} materials-arsenides)
-                endforeach()
-                set_target_properties(materials-${material} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE INSTALL_RPATH "$ORIGIN")
-            endif()
-            
             list(APPEND targets materials-${material})
         endif()
     endif()
