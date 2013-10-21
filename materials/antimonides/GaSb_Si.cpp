@@ -46,6 +46,21 @@ Tensor2<double> GaSb_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+MI_PROPERTY(GaSb, nr,
+            MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"),
+            MIArgumentRange(MaterialInfo::wl, 1800, 2560),
+            MIComment("fit by Lukasz Piskorski")
+            )
+double GaSb_Si::nr(double wl, double T) const {
+    double nR300K = sqrt(3.03+11.03e-6*wl*wl/(1e-6*wl*wl-0.37)); // 1e-3: nm-> um
+    double nR = nR300K - 0.0079*(NA*1e-18); // -7.9e-3 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
+
+    if (wl > 1800.)
+        return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
+    else
+        return 0.;
+}
+
 bool GaSb_Si::isEqual(const Material &other) const {
     const GaSb_Si& o = static_cast<const GaSb_Si&>(other);
     return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && GaSb::isEqual(other);

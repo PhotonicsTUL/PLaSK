@@ -33,9 +33,9 @@ struct GaSb: public Semiconductor {
     virtual double c12(double T) const;
     virtual double c44(double T) const;
     virtual Tensor2<double> thermk(double T, double t) const;
+    virtual double nr(double wl, double T) const;
 
     //TODO qwak: commented out because there is no impl. in .cpp file
-    //virtual double nr(double wl, double T) const;
     //virtual double absp(double wl, double T) const;
     //virtual Tensor2<double> cond(double T) const;
 

@@ -153,6 +153,20 @@ Tensor2<double> GaSb::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(GaSb, nr,
+            MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"),
+            MIArgumentRange(MaterialInfo::wl, 1800, 2560),
+            MIComment("fit by Lukasz Piskorski")
+            )
+double GaSb::nr(double wl, double T) const {
+    double nR300K = sqrt(3.03+11.03e-6*wl*wl/(1e-6*wl*wl-0.37)); // 1e-3: nm-> um
+
+    if (wl > 1800.)
+        return ( nR300K + nR300K*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
+    else
+        return 0.;
+}
+
 bool GaSb::isEqual(const Material &other) const {
     return true;
 }
