@@ -64,7 +64,13 @@ struct InAs: public Semiconductor {
     virtual double VB(double T, double e, char point, char hole) const {
         double tVB(-0.59);
         if (!e) return tVB;
-        else return tVB + 2.*av(T)*(1.-c12(T)/c11(T))*e;
+        else
+        {
+            double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
+            double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
+            if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
+            else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        }
     }
 
     virtual double ac(double T) const {
