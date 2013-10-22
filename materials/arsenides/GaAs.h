@@ -96,7 +96,7 @@ struct GaAs: public Semiconductor {
     }
 
     virtual Tensor2<double> thermk(double T, double t) const {
-        double tCondT = 45.*pow((300./T),1.25);
+        double tCondT = 44.*pow((300./T),1.375);
         return Tensor2<double>(tCondT, tCondT);
     }
 

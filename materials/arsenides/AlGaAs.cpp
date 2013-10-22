@@ -130,9 +130,8 @@ MI_PROPERTY(AlGaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
             )
 Tensor2<double> AlGaAs::thermk(double T, double t) const {
-    double lCondT = 1./(Al/mAlAs.thermk(T,t).c00 + Ga/mGaAs.thermk(T,t).c00 + Al*Ga*0.32),
-           vCondT = 1./(Al/mAlAs.thermk(T,t).c11 + Ga/mAlAs.thermk(T,t).c11 + Al*Ga*0.32);
-    return ( Tensor2<double>(lCondT,vCondT) );
+    double tk = (44. - 179.*Al + 226.*Al*Al) * pow((300./T),1.375);
+    return ( Tensor2<double>(tk,tk) );
 }
 
 MI_PROPERTY(AlGaAs, nr,

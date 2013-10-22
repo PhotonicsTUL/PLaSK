@@ -96,7 +96,8 @@ struct AlAs: public Semiconductor {
     }
 
     virtual Tensor2<double> thermk(double T, double t) const {
-        return(Tensor2<double>(91., 91.));
+        double tk = 91. * pow((300./T),1.375);
+        return(Tensor2<double>(tk, tk));
     }
 
   protected:
