@@ -150,17 +150,16 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             QE(i,j) = Te1[layer](j,i);
     // LU factorization of RE
     int ierr;
-    int* ipiv = new int[N];
-    zgetrf(N, N, RE.data(), N, ipiv, ierr);
+    std::unique_ptr<int[]> ipiv(new int[N]);
+    zgetrf(N, N, RE.data(), N, ipiv.get(), ierr);
     // the QE will contain inv(RE)^T * Te1^T
-    zgetrs('t', N, N, RE.data(), N, ipiv, QE.data(), N, ierr);
+    zgetrs('t', N, N, RE.data(), N, ipiv.get(), QE.data(), N, ierr);
     // compute QE^T and store it in Th1
     for (int j = 0; j < N; j++) {
         dcomplex g = gam[j];
         for (int i = 0; i < N; i++)
             Th1[layer](j,i) = QE(i,j) * g;
     }
-    delete[] ipiv;
 
     // Mark that layer has been diagonalized
     diagonalized[layer] = true;
