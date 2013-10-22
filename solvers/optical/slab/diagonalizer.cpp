@@ -126,8 +126,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     // Make Gamma of Gamma^2
     cdiagonal& gam = gamma[layer];
     for (int j = 0; j < N; j++) {
-        dcomplex g;
-        g = sqrt(gam[j]);
+        dcomplex g = sqrt(gam[j]);
         if (real(g) < -SMALL) g = -g;
         if (imag(g) > SMALL) g = -g;
         gam[j] = g;

@@ -75,15 +75,15 @@ static void FourierReflection2D_setSymmetry(FourierReflection2D& self, py::objec
     }
 }
 
-void FourierReflection2D_parseKeywords(FourierReflection2D* self, const py::dict& kwargs) {
+void FourierReflection2D_parseKeywords(const char* name, FourierReflection2D* self, const py::dict& kwargs) {
     AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam") lambda.reset(py::extract<dcomplex>(kwargs(*i)));
-        else if (*i == "neff") neff.reset(py::extract<dcomplex>(kwargs(*i)));
-        else if (*i == "k"+axes->getNameForTran()) ktran.reset(py::extract<dcomplex>(kwargs(*i)));
-        else throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
+        if (*i == "lam") lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "neff") neff.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "k"+axes->getNameForTran()) ktran.reset(py::extract<dcomplex>(kwargs[*i]));
+        else throw TypeError("%2%() got unexpected keyword argument '%1%'", *i, name);
     }
     if (lambda) self->setWavelength(*lambda);
     if (neff) self->setKlong(*neff * self->getK0());
@@ -100,7 +100,7 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierReflection2D* self = py::extract<FourierReflection2D*>(args[0]);
-    FourierReflection2D_parseKeywords(self, kwargs);
+    FourierReflection2D_parseKeywords("determinant", self, kwargs);
     return self->getDeterminant();
 }
 

@@ -79,7 +79,6 @@ dcomplex ReflectionSolver<GeometryT>::determinant()
     if (info != 0) throw ComputationError(this->getId(), "eigenvalue determination failed");
 
     //TODO add some consideration for degenerate modes
-
     // Find the smallest eigenvalue
     dcomplex val, result;
     double min_mag = 1e32;
