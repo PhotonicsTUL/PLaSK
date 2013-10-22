@@ -606,8 +606,8 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
-    Matrix* matrices;
-    if (save) matrices = aligned_malloc<Matrix>(xend-1);
+    aligned_unique_ptr<Matrix[]> matrices;
+    if (save) matrices.reset(aligned_malloc<Matrix>(xend-1));
 
     Matrix T = Matrix::eye();
     for (size_t i = xbegin; i < xend-1; ++i) {
@@ -643,7 +643,6 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
-        aligned_free(matrices);
     }
 
     if (mode.symmetry == SYMMETRY_POSITIVE) return T.bf + T.bb;      // B0 = F0   Bn = 0

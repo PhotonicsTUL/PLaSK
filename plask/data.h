@@ -73,6 +73,7 @@ struct DataVector {
     void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
         if (gc_ && gc_->count.fetch_sub(1, std::memory_order_release) == 1) {
             std::atomic_thread_fence(std::memory_order_acquire);
+            while (size_) data_[--size_].~T();
             gc_->free(reinterpret_cast<void*>(const_cast<VT*>(data_)));
             delete gc_;
         }

@@ -2,6 +2,7 @@
 #define PLASK__MEMALLOC_H
 
 #include <cstdlib>
+#include <memory>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <malloc.h>
@@ -153,6 +154,15 @@ struct aligned_deleter {
     }
 };
 
+template< class T > struct aligned_deleter<T[]> {
+    void operator()(T* ptr) const {
+        aligned_free<T>(ptr);
+    }
+};
+
+template <typename T>
+using aligned_unique_ptr = std::unique_ptr<T, aligned_deleter<T>>;
+
 /**
  * Create new object with aligned allocation
  * \tparam T object type
@@ -202,7 +212,6 @@ inline void aligned_delete_array(std::size_t num, T* ptr) {
         ptr[--num].~T();
     aligned_free(ptr);
 }
-
 
 /**
  * STL compatible allocator to use with with 16 byte aligned types

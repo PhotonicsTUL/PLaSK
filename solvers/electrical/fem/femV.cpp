@@ -486,23 +486,20 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 {
     int info = 0;
     this->writelog(LOG_DETAIL, "Solving matrix system");
-    int* ipiv = aligned_malloc<int>(A.size);
+    aligned_unique_ptr<int> ipiv(aligned_malloc<int>(A.size));
 
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv, info);
+    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
     if (info < 0) {
-        aligned_free(ipiv);
         throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
-        aligned_free(ipiv);
         throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
     }
 
     // Find solutions
-    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv, B.data(), B.size(), info);
-    aligned_free(ipiv);
+    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions

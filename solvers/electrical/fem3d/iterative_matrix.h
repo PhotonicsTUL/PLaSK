@@ -160,7 +160,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
 
     size_t n = matrix.size;
 
-    double *r = nullptr, *z = nullptr, *p = nullptr;
+    aligned_unique_ptr<double[]> r, z, p;
     double bknum, bkden, bk;
     double akden, ak;
     double toobig; // when error estimate gets this big we signal divergence!
@@ -177,25 +177,19 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     // Check input data and allocate temporary storage.
     if(n < 2) throw DCGError("system size too small");
     try {
-        r = aligned_malloc<double>(n);
-        z = aligned_malloc<double>(n);
-        p = aligned_malloc<double>(n);
+        r.reset(aligned_malloc<double>(n));
+        z.reset(aligned_malloc<double>(n));
+        p.reset(aligned_malloc<double>(n));
     } catch (...) {
-        aligned_free(p); aligned_free(z); aligned_free(r);
         throw DCGError("could not allocate memory for temporary vectors");
     }
 
     // Calculate r = b - Ax and initial error.
-    try {
-        matrix.multiply(x, r);
-    } catch (...) {
-        aligned_free(p); aligned_free(z); aligned_free(r);
-        throw;
-    }
+    matrix.multiply(x, r.get());
+
     for (register int j = 0; j < n; ++j) r[j] = b[j] - r[j];
-    err = ddot(n, r, 1, r, 1) / bnorm2;
+    err = ddot(n, r.get(), 1, r.get(), 1) / bnorm2;
     if (err < eps2) {
-        aligned_free(p); aligned_free(z); aligned_free(r);
         return 0;
     }
     toobig = err * 1.e8;
@@ -204,20 +198,15 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     for (register size_t i = 0; i < itmax; i++) {
 
         // Solve M z = r.
-        try {
-            msolve(z, r);
-        } catch (...) {
-            aligned_free(p); aligned_free(z); aligned_free(r);
-            throw;
-        }
+        msolve(z.get(), r.get());
 
         // Calculate bknum = (z,Mz) and p = z (first iteration).
         if(i == 0) {
-            std::copy_n(z, n, p);
-            bknum = bkden = ddot(n, z, 1, r, 1);
+            std::copy_n(z.get(), n, p.get());
+            bknum = bkden = ddot(n, z.get(), 1, r.get(), 1);
         } else {
             // Calculate bknum = (z, r), bkden and bk.
-            bknum = ddot(n, z, 1, r, 1);
+            bknum = ddot(n, z.get(), 1, r.get(), 1);
             bk    = bknum / bkden;
             bkden = bknum;
 
@@ -226,25 +215,19 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
                 p[j] = fma(bk, p[j], z[j]);
         }
         // Calculate z = Ap, akden = (p,Ap) and ak.
-        try {
-            matrix.multiply(p, z);
-        } catch (...) {
-            aligned_free(p); aligned_free(z); aligned_free(r);
-            throw;
-        }
-        akden = ddot(n, p, 1, z, 1);
+        matrix.multiply(p.get(), z.get());
+
+        akden = ddot(n, p.get(), 1, z.get(), 1);
         ak    = bknum / akden;
 
         // Update x and r. Calculate error.
-        daxpy(n,  ak, p, 1, x, 1);
-        daxpy(n, -ak, z, 1, r, 1);
-        err = ddot(n, r, 1, r, 1) / bnorm2;
+        daxpy(n,  ak, p.get(), 1, x, 1);
+        daxpy(n, -ak, z.get(), 1, r.get(), 1);
+        err = ddot(n, r.get(), 1, r.get(), 1) / bnorm2;
         if(err < eps2) {
-            aligned_free(p); aligned_free(z); aligned_free(r);
             return i+1;
         }
         if(err > toobig) {
-            aligned_free(p); aligned_free(z); aligned_free(r);
             throw DCGError("divergence of iteration detected");
         }
 
@@ -256,7 +239,6 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
         // Update the matrix A
         (matrix.*updatea)(x);
     }
-    aligned_free(p); aligned_free(z); aligned_free(r);
     throw DCGError("iteration limit reached");
     return itmax;
 }
