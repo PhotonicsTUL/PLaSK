@@ -29,6 +29,7 @@ struct AlGaAsSb: public Semiconductor {
     virtual Tensor2<double> Me(double T, double e, char point) const;
     virtual Tensor2<double> Mhh(double T, double e) const;
     virtual Tensor2<double> Mlh(double T, double e) const;
+    virtual double CB(double T, double e, char point) const;
     virtual double VB(double T, double e, char point, char hole) const;
     virtual double ac(double T) const;
     virtual double av(double T) const;

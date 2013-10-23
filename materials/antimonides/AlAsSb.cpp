@@ -70,11 +70,29 @@ Tensor2<double> AlAsSb::Mlh(double T, double e) const {
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 
+MI_PROPERTY(AlAsSb, CB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double AlAsSb::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
+    if (!e) return ( tCB );
+    else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
 MI_PROPERTY(AlAsSb, VB,
             MISource("nonlinear interpolation: AlAs, AlSb")
             )
 double AlAsSb::VB(double T, double e, char point, char hole) const {
-    return ( As*mAlAs.VB(T,e,point,hole) + Sb*mAlSb.VB(T,e,point,hole) - As*Sb*(-1.71) );
+    double tVB( As*mAlAs.VB(T,e,point,hole) + Sb*mAlSb.VB(T,e,point,hole) - As*Sb*(-1.71) );
+    if (!e) return tVB;
+    else
+    {
+        double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
+        double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
+        if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
+        else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        else return 0.;
+    }
 }
 
 MI_PROPERTY(AlAsSb, ac,

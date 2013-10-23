@@ -90,13 +90,31 @@ Tensor2<double> AlGaAsSb::Mlh(double T, double e) const {
     return ( Tensor2<double>(lMlh,vMlh) );
 }
 
+MI_PROPERTY(AlGaAsSb, CB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            )
+double AlGaAsSb::CB(double T, double e, char point) const {
+    double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
+    if (!e) return ( tCB );
+    else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );
+}
+
 MI_PROPERTY(AlGaAsSb, VB,
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::VB(double T, double e, char point, char hole) const {
-    return ( Ga*As*mGaAs.VB(T,e,point,hole) + Ga*Sb*mGaSb.VB(T,e,point,hole)
-             + Al*As*mAlAs.VB(T,e,point,hole) + Al*Sb*mAlSb.VB(T,e,point,hole)
-             - Al*As*Sb*(-1.71) - Ga*As*Sb*(-1.06) );
+    double tVB( Ga*As*mGaAs.VB(T,e,point,hole) + Ga*Sb*mGaSb.VB(T,e,point,hole)
+                + Al*As*mAlAs.VB(T,e,point,hole) + Al*Sb*mAlSb.VB(T,e,point,hole)
+                - Al*As*Sb*(-1.71) - Ga*As*Sb*(-1.06) );
+    if (!e) return tVB;
+    else
+    {
+        double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
+        double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
+        if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
+        else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
+        else return 0.;
+    }
 }
 
 MI_PROPERTY(AlGaAsSb, ac,
