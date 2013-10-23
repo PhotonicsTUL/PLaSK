@@ -61,6 +61,21 @@ double GaSb_Te::nr(double wl, double T) const {
         return 0.;
 }
 
+MI_PROPERTY(GaSb, absp,
+            MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
+            MIArgumentRange(MaterialInfo::wl, 2000, 20000),
+            MIComment("no temperature dependence"),
+            MIComment("fit by Lukasz Piskorski")
+            )
+double GaSb_Te::absp(double wl, double T) const {
+    double N = ND*1e-18;
+    double L = wl*1e-3;
+    double tFCabs = 2.42*N*pow(L,2.16-0.22*N);
+    double tIVCBabs = (24.1*N+12.5)*(1.24/L-(0.094*N+0.12))+(-2.05*N-0.37);
+    if (tIVCBabs>0) return ( tFCabs + tIVCBabs );
+    else return ( tFCabs );
+}
+
 bool GaSb_Te::isEqual(const Material &other) const {
     const GaSb_Te& o = static_cast<const GaSb_Te&>(other);
     return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && GaSb::isEqual(other);

@@ -25,6 +25,7 @@ struct GaSb_Te: public GaSb {
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
     virtual double nr(double wl, double T) const;
+    virtual double absp(double wl, double T) const;
 
 protected:
     virtual bool isEqual(const Material& other) const;
