@@ -216,12 +216,12 @@ template <typename T>
 inline cmatrix operator*(const Matrix<T>& A, const MatrixDiagonal<T>& B) {
     if (A.cols() != B.size()) throw ComputationError("operator*<cmatrix,cdiagonal>", "Cannot multiply: A.cols != B.size");
     cmatrix C(A.rows(), B.size());
-    register int n = 0;
+    int n = 0;
     int r = A.rows(), c = A.cols();
-    for (register int j = 0; j < c; j++)
+    for (int j = 0; j < c; j++)
     {
-        register T b = B[j];
-        for (register int i = 0; i < r; i++, n++)
+        T b = B[j];
+        for (int i = 0; i < r; i++, n++)
             C[n] = A[n] * b;
     }
     return C;
@@ -232,10 +232,10 @@ template <typename T>
 inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
     if (A.size() != B.rows()) throw ComputationError("operator*<cdiagonal,cmatrix>", "Cannot multiply: A.size != B.rows");
     cmatrix C(A.size(), B.cols());
-    register int n = 0;
+    int n = 0;
     int r = B.rows(), c = B.cols();
-    for (register int j = 0; j < c; j++)
-        for (register int i = 0; i < r; i++, n++)
+    for (int j = 0; j < c; j++)
+        for (int i = 0; i < r; i++, n++)
             C[n] = A[i] * B[n];
     return C;
 }
@@ -244,11 +244,11 @@ inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
 template <typename T>
 inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
     if (A.cols() != B.size()) throw ComputationError("mult_matrix_by_diagonal", "Cannot multiply: A.cols != B.size");
-    register int n = 0;
+    int n = 0;
     int r = A.rows(), c = A.cols();
-    for (register int j = 0; j < c; j++) {
-        register T b = B[j];
-        for (register int i = 0; i < r; i++, n++)
+    for (int j = 0; j < c; j++) {
+        T b = B[j];
+        for (int i = 0; i < r; i++, n++)
             A[n] *= b;
     }
 }
@@ -257,10 +257,10 @@ inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
 template <typename T>
 inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
     if (A.size() != B.rows()) throw ComputationError("mult_diagonal_by_matrix", "Cannot multiply: A.size != B.rows");
-    register int n = 0;
+    int n = 0;
     int r = B.rows(), c = B.cols();
-    for (register int j = 0; j < c; j++)
-        for (register int i = 0; i < r; i++, n++)
+    for (int j = 0; j < c; j++)
+        for (int i = 0; i < r; i++, n++)
             B[n] *= A[i];
 }
 

@@ -18,7 +18,7 @@ namespace detail {
 
     template <> struct Hyman<dcomplex> {
         static void filter(dcomplex& data, const dcomplex& a, const dcomplex& b) {
-            register double re = data.real(), im = data.imag();
+            double re = data.real(), im = data.imag();
             Hyman<double>::filter(re, real(a), real(b));
             Hyman<double>::filter(im, real(a), real(b));
             data = dcomplex(re,im);

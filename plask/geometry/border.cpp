@@ -67,8 +67,8 @@ std::string Extend::str() const {
 
 void Periodic::applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&, const Strategy* opposite) const {
     if (opposite->type() == MIRROR) {
-        register double len = bbox_hi - bbox_lo;
-        register double len2 = 2 * len;
+        double len = bbox_hi - bbox_lo;
+        double len2 = 2 * len;
         p = std::fmod(p-bbox_lo, len2) + len2;
         if (p > len) p = len2 - p;
         p += bbox_lo;
@@ -78,8 +78,8 @@ void Periodic::applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Mat
 }
 void Periodic::applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>&, const Strategy* opposite) const {
     if (opposite->type() == MIRROR) {
-        register double len = bbox_hi - bbox_lo;
-        register double len2 = 2 * len;
+        double len = bbox_hi - bbox_lo;
+        double len2 = 2 * len;
         p = std::fmod(p-bbox_lo, len2);
         if (p > len) p = len2 - p;
         p += bbox_lo;

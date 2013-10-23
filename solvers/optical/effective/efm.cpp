@@ -529,7 +529,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
     }
 
     if (save) {
-        register dcomplex f = sqrt(1e12 / integrateBessel(mode));
+        dcomplex f = sqrt(1e12 / integrateBessel(mode));
         for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
     }
 

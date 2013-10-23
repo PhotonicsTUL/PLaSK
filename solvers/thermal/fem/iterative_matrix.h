@@ -80,15 +80,15 @@ struct SparseBandMatrix {
         #pragma omp parallel for
         for (ptrdiff_t r = 0; r < size; ++r) {
             double* datar = data + LDA*r;
-            register double v = 0.;
+            double v = 0.;
             // below diagonal
-            for (register ptrdiff_t i = 4; i > 0; --i) {
-                register ptrdiff_t c = r - bno[i];
+            for (ptrdiff_t i = 4; i > 0; --i) {
+                ptrdiff_t c = r - bno[i];
                 if (c >= 0) v += data[LDA*c+i] * x[c];
             }
             // above diagonal
-            for (register ptrdiff_t i = 0; i < 5; ++i) {
-                register ptrdiff_t c = r + bno[i];
+            for (ptrdiff_t i = 0; i < 5; ++i) {
+                ptrdiff_t c = r + bno[i];
                 if (c < size) v += datar[i] * x[c];
             }
             y[r] = v;
@@ -184,7 +184,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     // Calculate r = b - Ax and initial error.
     matrix.multiply(x, r.get());
 
-    for (register int j = 0; j < n; ++j) r[j] = b[j] - r[j];
+    for (int j = 0; j < n; ++j) r[j] = b[j] - r[j];
     err = ddot(n, r.get(), 1, r.get(), 1) / bnorm2;
     if (err < eps2) {
         return 0;
@@ -192,7 +192,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     toobig = err * 1.e8;
 
     // Iterate!!!
-    for (register size_t i = 0; i < itmax; i++) {
+    for (size_t i = 0; i < itmax; i++) {
 
         // Solve M z = r.
         msolve(z.get(), r.get());
@@ -208,7 +208,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
             bkden = bknum;
 
             // Calculate p = z + bk*p
-            for (register int j = 0; j < n; ++j)
+            for (int j = 0; j < n; ++j)
                 p[j] = fma(bk, p[j], z[j]);
         }
         // Calculate z = Ap, akden = (p,Ap) and ak.

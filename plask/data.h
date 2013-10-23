@@ -333,7 +333,7 @@ struct DataVector {
     void reset(std::size_t size, const T& value) {
         std::unique_ptr<VT[], aligned_deleter<T>>
             data_non_const(aligned_malloc<VT>(size));
-        std::fill_n(data_non_const.get(), size, value);   // this may throw, than our data will not change
+        std::fill_n(data_non_const.get(), size, value);   // this may throw, than our data will not be changed
         dec_ref();
         gc_ = new Gc(1);    //this also may throw
         data_ = data_non_const.release();
@@ -343,14 +343,14 @@ struct DataVector {
     /**
      * Change data of this to copy of range [begin, end).
      *
-     * Same as: DataVector(begin, end).swap(*this);
+     * Same as: DataVector(begin,end).swap(*this);
      * @param begin, end range of data to copy
      */
     template <typename InIterT>
     void reset(InIterT begin, InIterT end) {
         std::unique_ptr<VT[], aligned_deleter<T>>
-            data_non_const(aligned_malloc<VT>(size));
-        std::copy(begin, end, data_non_const.get());    //this may throw, and than our vector will not changed
+            data_non_const(aligned_malloc<VT>(std::distance(begin,end)));
+        std::copy(begin, end, data_non_const.get());    // this may throw, and than our vector will not be changed
         dec_ref();
         gc_ = new Gc(1);
         size_ = std::distance(begin, end);

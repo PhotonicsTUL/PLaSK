@@ -211,7 +211,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, 
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
             A(r,r) = 1.;
-            register double val = B[r] = cond.value;
+            double val = B[r] = cond.value;
             size_t start = (r > A.kd)? r-A.kd : 0;
             size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
             for(size_t c = start; c < r; ++c) {
@@ -234,18 +234,18 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMa
         for (auto r: cond.place) {
             double* rdata = A.data + LDA*r;
             *rdata = 1.;
-            register double val = B[r] = cond.value;
+            double val = B[r] = cond.value;
             // below diagonal
-            for (register ptrdiff_t i = 4; i > 0; --i) {
-                register ptrdiff_t c = r - A.bno[i];
+            for (ptrdiff_t i = 4; i > 0; --i) {
+                ptrdiff_t c = r - A.bno[i];
                 if (c >= 0) {
                     B[c] -= A.data[LDA*c+i] * val;
                     A.data[LDA*c+i] = 0.;
                 }
             }
             // above diagonal
-            for (register ptrdiff_t i = 1; i < 5; ++i) {
-                register ptrdiff_t c = r + A.bno[i];
+            for (ptrdiff_t i = 1; i < 5; ++i) {
+                ptrdiff_t c = r + A.bno[i];
                 if (c < A.size) {
                     B[c] -= rdata[i] * val;
                     rdata[i] = 0.;

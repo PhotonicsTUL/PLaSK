@@ -588,7 +588,7 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
     if (emission == FRONT) sum *= R1;
     else sum *= R2;
 
-    register dcomplex f = sqrt(1e12 / sum);  // 1e12 because intensity in W/m² and integral computed in µm
+    dcomplex f = sqrt(1e12 / sum);  // 1e12 because intensity in W/m² and integral computed in µm
 
     for (size_t i = xbegin; i < xend; ++i) {
         mode.xfields[i] *= f;

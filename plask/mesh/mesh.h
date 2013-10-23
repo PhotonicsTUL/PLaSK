@@ -32,7 +32,7 @@ To implement a new mesh directly you have to write class inherited from the \c p
 You are required to:
 - implement the @ref plask::Mesh::size size and @ref plask::MeshD::at at methods which allow to access to mesh points;
 - implement the @ref plask::MeshD::writeXML method, which writes the mesh to XML;
-- write and register the reading function which reads the mesh from XML.
+- write and the reading function which reads the mesh from XML.
 
 Example implementation of singleton mesh (mesh which represent set with only one point in 3D space):
 @code
@@ -77,7 +77,7 @@ static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
     return make_shared<OnePoint3DMesh>(plask::Vec<3,double>(c0, c1, c2));
 }
 
-// Declare global variable of type RegisterMeshReader in order to register the reader:
+// Declare global variable of type RegisterMeshReader in order to the reader:
 //   the first argument must be the same string which has been written into 'type' attribute in OnePoint3DMesh::writeXML() method,
 //   the second one is the address of your reading function,
 //   variable name does not matter.
@@ -420,7 +420,7 @@ class MeshGeneratorOf: public MeshGenerator
 
 /**
  * Helper which call stores mesh reader when constructed.
- * Each mesh can create one global instance of this class to register its reader.
+ * Each mesh can create one global instance of this class to its reader.
  */
 struct RegisterMeshReader {
     typedef shared_ptr<Mesh> ReadingFunction(XMLReader&);
@@ -433,7 +433,7 @@ struct Manager;
 
 /**
  * Helper which call stores mesh reader when constructed.
- * Each mesh can create one global instance of this class to register its reader.
+ * Each mesh can create one global instance of this class to its reader.
  */
 struct RegisterMeshGeneratorReader {
     typedef shared_ptr<MeshGenerator> ReadingFunction(XMLReader&, const Manager&);
