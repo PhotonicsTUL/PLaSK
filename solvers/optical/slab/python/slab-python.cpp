@@ -21,6 +21,47 @@ static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) 
 template <typename SolverT>
 static const std::vector<RectilinearAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
 
+template <typename SolverT>
+struct PmlWrapper {
+    
+    SolverT* solver;
+    typename SolverT::PML* pml;
+    
+    PmlWrapper(SolverT* solver, typename SolverT::PML* pml): solver(solver), pml(pml) {}
+    
+    double get_extinction() const { return pml->extinction; }
+    void set_extinction(double val) {
+        pml->extinction = val;
+        solver->invalidate();
+    }
+    
+    double get_size() const { return pml->size; }
+    void set_size(double val) {
+        pml->size = val;
+        solver->invalidate();
+    }
+    
+    double get_shift() const { return pml->shift; }
+    void set_shift(double val) {
+        pml->shift = val;
+        solver->invalidate();
+    }
+    
+    double get_order() const { return pml->order; }
+    void set_order(double val) {
+        pml->order = val;
+        solver->invalidate();
+    }
+    
+    std::string __str__() const {
+        return format("<extinction: %1%, size: %2%, shift: %3%, order: %4%>", pml->extinction, pml->size, pml->shift, pml->order);
+    }
+    
+    std::string __repr__() const {
+        return format("PML(extinction=%1%, size=%2%, shift=%3%, order=%4%)", pml->extinction, pml->size, pml->shift, pml->order);
+    }
+};
+
 template <typename Class>
 inline void export_base(Class solver) {
     typedef typename Class::wrapped_type Solver;
@@ -35,6 +76,17 @@ inline void export_base(Class solver) {
     solver.add_receiver("inTemperature", &Solver::inTemperature, "Optical gain in the active region");
     solver.add_receiver("inGain", &Solver::inGain, "Optical gain in the active region");
     solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "Light intensity of the last computed mode");
+
+    py::scope scope = solver;
+
+    py::class_<PmlWrapper<Solver>>("PML", "Perfectly matched layer details", py::no_init)
+        .add_property("extinction", &PmlWrapper<Solver>::get_extinction, &PmlWrapper<Solver>::set_extinction, "PML extinction parameter")
+        .add_property("size", &PmlWrapper<Solver>::get_size, &PmlWrapper<Solver>::set_size, "PML size")
+        .add_property("shift", &PmlWrapper<Solver>::get_shift, &PmlWrapper<Solver>::set_shift, "PML shift from the structure")
+        .add_property("order", &PmlWrapper<Solver>::get_order, &PmlWrapper<Solver>::set_order, "PML shape order")
+        .def("__str__", &PmlWrapper<Solver>::__str__)
+        .def("__repr__", &PmlWrapper<Solver>::__repr__)
+    ;
 }
 
 template <typename Class>
@@ -43,8 +95,8 @@ inline void export_reflection_base(Class solver) {
     typedef typename Class::wrapped_type Solver;
     py::scope scope = solver;
     py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
-        .value("UPWARDS", Solver::DIRECTION_UPWARDS)
-        .value("DOWNWARDS", Solver::DIRECTION_DOWNWARDS)
+        .value("TOP", Solver::DIRECTION_DOWNWARDS)
+        .value("BOTTOM", Solver::DIRECTION_UPWARDS)
     ;
 }
 
@@ -57,7 +109,6 @@ static py::object FourierReflection2D_getSymmetry(const FourierReflection2D& sel
         case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+axes->getNameForLong());
         default: return py::object();
     }
-    return py::object();
 }
 
 static void FourierReflection2D_setSymmetry(FourierReflection2D& self, py::object symmetry) {
@@ -104,6 +155,36 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
     return self->getDeterminant();
 }
 
+PmlWrapper<FourierReflection2D> FourierReflection2D_getPML(FourierReflection2D* self) {
+    return PmlWrapper<FourierReflection2D>(self, &self->pml);
+}
+
+double FourierReflection2D_Mode_Wavelength(const FourierReflection2D::Mode& mode) {
+    return real(2e3 / mode.k0);
+}
+double FourierReflection2D_Mode_ModalLoss(const FourierReflection2D::Mode& mode) {
+    return imag(2e4 * mode.k0);
+}
+double FourierReflection2D_Mode_Beta(const FourierReflection2D::Mode& mode) {
+    return real(mode.beta);
+}
+double FourierReflection2D_Mode_Neff(const FourierReflection2D::Mode& mode) {
+    return real(mode.beta / mode.k0);
+}
+double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
+    return real(mode.ktran);
+}
+py::object FourierReflection2D_Mode_Symmetry(const FourierReflection2D::Mode& mode) {
+    AxisNames* axes = getCurrentAxes();
+    switch (mode.symmetry) {
+        case ExpansionPW2D::SYMMETRIC_E_TRAN: return py::object("E"+axes->getNameForTran());
+        case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+axes->getNameForLong());
+        default: return py::object();
+    }
+}
+
+
+
 BOOST_PYTHON_MODULE(slab)
 {
     {CLASS(FourierReflection2D, "FourierReflection2D",
@@ -121,13 +202,29 @@ BOOST_PYTHON_MODULE(slab)
                    "Compute discontinuity matrix determinant");
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        // RW_PROPERTY(variable, getVariable, setVariable, "Searched variable");
+        solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()), "Side PMLs");
+        RO_PROPERTY(period, getPeriod, "Period for periodic structures");
+        RO_FIELD(modes, "Computed modes");
 
         py::scope scope = solver;
         py_enum<ExpansionPW2D::Polarization>("Polarization", "Mode polarization.")
             .value("TE", ExpansionPW2D::TE)
             .value("TM", ExpansionPW2D::TM)
             .value("TEM", ExpansionPW2D::TEM)
+        ;
+        
+        register_vector_of<FourierReflection2D::Mode>("Modes");
+
+        py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode", py::no_init)
+            .add_property("symmetry", &FourierReflection2D_Mode_Symmetry, "Mode horizontal symmetry")
+            .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization")
+            .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm]")
+            .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm]")
+            .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm]")
+            .add_property("beta", &FourierReflection2D_Mode_Beta, "Mode longitudinal wavevector")
+            .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal wavevector")
+            .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector")
+            .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode")
         ;
     }
 

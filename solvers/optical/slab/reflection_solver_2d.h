@@ -34,15 +34,12 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         }
     };
 
-    /// Information about lateral PMLs
-    struct PML {
-        double extinction;  ///< Extinction of the PMLs
-        double size;        ///< Size of the PMLs
-        double shift;       ///< Distance of the PMLs from defined computational domain
-        int order;          ///< Order of the PMLs
-        PML(): extinction(2.), size(1.), shift(0.5), order(2) {}
+    /// In-plane light polarization
+    enum Polarization {
+        POLARIZATION_TRAN,      ///< E vector polarized in `tran`-`vert` plane
+        POLARIZATION_LONG       ///< E vector polarized along `long` axis
     };
-
+    
   protected:
 
     /// Maximum order of the orthogonal base
@@ -125,11 +122,30 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     }
 
     /**
+     * Get period
+     */
+    double getPeriod() const {
+        return (expansion.right - expansion.left) * (expansion.periodic? 2. : 1.);
+    }
+    
+    /**
      * Get refractive index after expansion
      */
     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh2D& dst_mesh,
                                             InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
+    /**
+     * Get amplitudes of reflected diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     */
+    std::vector<Vec<3,dcomplex>> getReflectedAmplitudes(Polarization polarization);
+    
+    /**
+     * Get reflection coefficient
+     * \param polarization polarization of the perpendicularly incident light
+     */
+    double getReflection(Polarization polarization);
+    
   protected:
 
     /// Insert mode to the list or return the index of the exiting one

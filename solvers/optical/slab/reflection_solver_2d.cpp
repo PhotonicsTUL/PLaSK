@@ -60,7 +60,6 @@ size_t FourierReflection2D::findMode(dcomplex neff)
 }
 
 
-
 DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfile(const RectilinearMesh2D& dst_mesh,
                                                                                    InterpolationMethod interp)
 {
@@ -80,6 +79,22 @@ DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfi
     }
     return result;
 }
+
+
+std::vector<Vec<3,dcomplex>> FourierReflection2D::getReflectedAmplitudes(Polarization polarization)
+{
+}
+
+
+double FourierReflection2D::getReflection(Polarization polarization)
+{
+}
+
+
+
+
+
+
 
 
 const DataVector<const double> FourierReflection2D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)

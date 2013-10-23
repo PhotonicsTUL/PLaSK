@@ -284,7 +284,7 @@ cvector ReflectionSolver<GeometryT>::getReflectionVector(IncidentDirection direc
 //
 //
 // //******************************************************************************
-// /// Find the electric field at the interface after findig the solution
+// /// Find the electric field at the interface after finding the solution
 // /**  The field calculation is correct assuming that last call to char_var returned
 //      the value close enough to 0 (less than 1e-10 or something)
 //      TODO: Add error handling here (check for char_val etc.) */
