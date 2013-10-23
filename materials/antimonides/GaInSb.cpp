@@ -84,14 +84,13 @@ MI_PROPERTY(GaInSb, VB,
             )
 double GaInSb::VB(double T, double e, char point, char hole) const {
     double tVB( Ga*mGaSb.VB(T,e,point,hole) + In*mInSb.VB(T,e,point,hole) );
-    if (!e) return tVB;
-    else
-    {
+    if (e) {
         double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
         if (hole=='H') return ( tVB + DEhy - 0.5*DEsh );
         else if (hole=='L') return ( tVB + DEhy -0.5*Dso(T,e) + 0.25*DEsh + 0.5*sqrt(Dso(T,e)*Dso(T,e)+Dso(T,e)*DEsh+2.25*DEsh*DEsh) );
     }
+    return tVB;
 }
 
 MI_PROPERTY(GaInSb, ac,

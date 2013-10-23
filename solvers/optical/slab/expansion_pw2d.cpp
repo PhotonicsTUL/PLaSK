@@ -136,6 +136,7 @@ void ExpansionPW2D::init()
     // Allocate memory for expansion coefficients
     size_t nlayers = lcount();
     coeffs.resize(nlayers);
+    diagonals.assign(nlayers, false);
     #pragma omp parallel for
     for (size_t l = 0; l < nlayers; ++l)
         getMaterialCoefficients(l);
@@ -219,6 +220,21 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
             coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
         }
     }
+    
+    // Check if layer will have diagonal QH
+    if (periodic) {
+        diagonals[l] = true;
+        for (size_t i = 1; i != nN; ++i) {
+            if (!(is_zero(coeffs[l][i].c00) && is_zero(coeffs[l][i].c11) && is_zero(coeffs[l][i].c22) &&
+                  is_zero(coeffs[l][i].c01) && is_zero(coeffs[l][i].c10))) {
+                diagonals[l] = false;
+                break;
+            }
+        }
+        if (diagonals[l]) {
+            solver->writelog(LOG_DEBUG, "Layer %1% has diagonal Q matrix", l);
+        }
+    }
 }
 
 
@@ -244,7 +260,9 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
             }
         }
     } else {
-        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+        DataVector<Tensor3<dcomplex>> params(symmetric? nN : nN+1);
+        std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
+        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
         RegularAxis cmesh;
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;
@@ -252,13 +270,11 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
         } else {
             cmesh.reset(left, right, nN+1);
             auto old = coeffs[l];
-            coeffs[l].reset(nN+1);
-            std::copy(old.begin(), old.end(), coeffs[l].begin());
-            coeffs[l][old.size()] = old[0];
+            params[nN] = params[0];
         }
         RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));
         RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
-        result = interpolate(src_mesh, coeffs[l], WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
+        result = interpolate(src_mesh, params, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
     }
     for (Tensor3<dcomplex>& eps: result) {
         eps.c22 = 1. / eps.c22;
@@ -273,7 +289,9 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
 {
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
-    dcomplex b = 2*M_PI / (right-left);
+    double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
+
+    // Ez represents -Ez
 
     if (separated) {
         //TODO
@@ -283,22 +301,24 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             std::fill_n(RH.data(), N*N, dcomplex(0.));
             if (polarization == TE) {
                 for (int i = 0; i <= order; ++i) {
-                    dcomplex gi = b * double(i) - kx;
+                    double gi = b * double(i);
                     for (int j = -order; j <= order; ++j) {
-                        int ij = abs(i-j);   dcomplex gj = b * double(j) - kx;
+                        int ij = abs(i-j);   double gj = b * double(j);
                         dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                        RH(iE(i), iH(j)) = - fz * k02 * muxx(l,ij);
-                        RE(iH(i), iE(j)) =   fz * (gi * gj * imuyy(l,ij) - k02 * epszz(l,ij));
+                        int aj = abs(j);
+                        RE(iH(i), iE(aj)) += - fz * (gi * gj * imuyy(l,ij) + k02 * epszz(l,ij));
+                        RH(iE(i), iH(aj)) +=   fz * k02 * muxx(l,ij);
                     }
                 }
             } else {
                 for (int i = 0; i <= order; ++i) {
-                    dcomplex gi = b * double(i) - kx;
+                    double gi = b * double(i);
                     for (int j = -order; j <= order; ++j) {
-                        int ij = abs(i-j);   dcomplex gj = b * double(j) - kx;
+                        int ij = abs(i-j);   double gj = b * double(j);
                         dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
-                        RH(iE(i), iH(j)) = - fx * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
-                        RE(iH(i), iE(j)) =   fx * k02 * epsxx(l,ij);
+                        int aj = abs(j);
+                        RE(iH(i), iE(aj)) +=   fx * k02 * epsxx(l,ij);
+                        RH(iE(i), iH(aj)) += - fx * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
                     }
                 }
             }
@@ -309,8 +329,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RH(iE(i), iH(j)) = - k02 * muxx(l,ij);
-                        RE(iH(i), iE(j)) =   f * gi * gj * imuyy(l,ij) - k02 * epszz(l,ij);
+                        RE(iH(i), iE(j)) = - f * (gi * gj * imuyy(l,ij) + k02 * epszz(l,ij));
+                        RH(iE(i), iH(j)) =   f * k02 * muxx(l,ij);
                     }
                 }
             } else {
@@ -318,35 +338,36 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RH(iE(i), iH(j)) = - f * gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij);
-                        RE(iH(i), iE(j)) =   k02 * epsxx(l,ij);
+                        RE(iH(i), iE(j)) =   f * k02 * epsxx(l,ij);
+                        RH(iE(i), iH(j)) = - f * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
                     }
                 }
             }
         }
-    } else {                    // Ez represents -Ez
+    } else {
         if (symmetric) {
             // Full symmetric
             std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
             std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
             for (int i = 0; i <= order; ++i) {
-                dcomplex gi = b * double(i);
+                double gi = b * double(i);
                 for (int j = -order; j <= order; ++j) {
-                    int ij = abs(i-j);   dcomplex gj = b * double(j);
+                    int ij = abs(i-j);   double gj = b * double(j);
                     dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
                     dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
-                    RH(iEx(i), iHz(j)) +=  fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-                    RH(iEz(i), iHz(j)) += -fx * (  beta* gj  * iepsyy(l,ij)                    );
-                    RH(iEx(i), iHx(j)) +=  fz * (- beta* gi  * iepsyy(l,ij)                    );
-                    RH(iEz(i), iHx(j)) += -fz * (  beta*beta * iepsyy(l,ij) - k02 * muxx(l,ij) );
-                    RE(iHz(i), iEx(j)) +=  fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
-                    RE(iHx(i), iEx(j)) +=  fx * (  beta* gi  * imuyy(l,ij)                     );
-                    RE(iHz(i), iEz(j)) += -fz * (- beta* gj  * imuyy(l,ij)                     );
-                    RE(iHx(i), iEz(j)) += -fz * (   gi * gj  * imuyy(l,ij) - k02 * epszz(l,ij) );
-                    // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
-                    // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
+                    int aj = abs(j);
+                    RE(iHz(i), iEx(aj)) += fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(iHx(i), iEx(aj)) += fx * (  beta* gi  * imuyy(l,ij)                     );
+                    RE(iHz(i), iEz(aj)) += fz * (  beta* gj  * imuyy(l,ij)                     );
+                    RE(iHx(i), iEz(aj)) += fz * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
+                    RH(iEx(i), iHz(aj)) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iEz(i), iHz(aj)) += fx * (- beta* gj  * iepsyy(l,ij)                    );
+                    RH(iEx(i), iHx(aj)) += fz * (- beta* gi  * iepsyy(l,ij)                    );
+                    RH(iEz(i), iHx(aj)) += fz * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
                     // if(RE(iHz(i), iEx(j)) == 0.) RE(iHz(i), iEx(j)) = 1e-32;
                     // if(RE(iHx(i), iEz(j)) == 0.) RE(iHx(i), iEz(j)) = 1e-32;
+                    // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
+                    // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
                 }
             }
         } else {
@@ -355,18 +376,18 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 dcomplex gi = b * double(i) - kx;
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                    RH(iEx(i), iHz(j)) =  f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-                    RH(iEz(i), iHz(j)) = -f * (  beta* gj  * iepsyy(l,ij)                    );
-                    RH(iEx(i), iHx(j)) =  f * (- beta* gi  * iepsyy(l,ij)                    );
-                    RH(iEz(i), iHx(j)) = -f * (  beta*beta * iepsyy(l,ij) - k02 * muxx(l,ij) );
-                    RE(iHz(i), iEx(j)) =  f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
-                    RE(iHx(i), iEx(j)) =  f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
-                    RE(iHz(i), iEz(j)) = -f * (- beta* gj  * imuyy(l,ij) + k02 * epsxz(l,ij) );
-                    RE(iHx(i), iEz(j)) = -f * (   gi * gj  * imuyy(l,ij) - k02 * epszz(l,ij) );
-                    // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
-                    // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
+                    RE(iHz(i), iEx(j)) = f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(iHx(i), iEx(j)) = f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
+                    RE(iHz(i), iEz(j)) = f * (  beta* gj  * imuyy(l,ij) - k02 * epsxz(l,ij) );
+                    RE(iHx(i), iEz(j)) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
+                    RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iEz(i), iHz(j)) = f * (- beta* gj  * iepsyy(l,ij)                    );
+                    RH(iEx(i), iHx(j)) = f * (- beta* gi  * iepsyy(l,ij)                    );
+                    RH(iEz(i), iHx(j)) = f * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
                     // if(RE(iHz(i), iEx(j)) == 0.) RE(iHz(i), iEx(j)) = 1e-32;
                     // if(RE(iHx(i), iEz(j)) == 0.) RE(iHx(i), iEz(j)) = 1e-32;
+                    // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
+                    // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
                 }
             }
         }

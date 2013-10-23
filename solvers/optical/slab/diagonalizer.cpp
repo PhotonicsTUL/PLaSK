@@ -98,6 +98,21 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // We have to make the proper diagonalization
         // TODO: rewrite it to more low-level and more optimized computations
         mult_matrix_by_matrix(RH, RE, QE);  // QE = RH * RE
+        
+        // std::cerr << "\n";
+        // for (int i = 0; i < matrixSize(); ++i) {
+        //     for (int j = 0; j < matrixSize(); ++j) {
+        //         if (abs(RE(i,j)) < 1e-13) RE(i,j) = 0;
+        //         std::cerr << format("%7.3f", real(RE(i,j))) << " ";
+        //     }
+        //     std::cerr << "    #   ";
+        //     for (int j = 0; j < matrixSize(); ++j) {
+        //         if (abs(RH(i,j)) < 1e-13) RH(i,j) = 0;
+        //         std::cerr << format("%7.3f", real(RH(i,j))) << " ";
+        //     }
+        //     std::cerr << "\n";
+        // }
+        // std::cerr << "\n";
 
         // This is probably expensive but necessary check to avoid hangs
         int NN = N*N;

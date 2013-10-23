@@ -272,6 +272,22 @@ class MainWindow(QtGui.QMainWindow):
         self.stopicon.addPixmap(stop_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
 
+    def dragEnterEvent(self, event):
+        data = event.mimeData()
+        urls = data.urls()
+        if (urls and urls[0].scheme() == 'file'):
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        data = event.mimeData()
+        urls = data.urls()
+        if (urls and urls[0].scheme() == 'file'):
+            filepath = str(urls[0].path())
+            self.start_plask(filepath)
+
+
     def __init__(self):
         #self.outputs = []
         self.messages = []
@@ -288,6 +304,8 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
 
         self.setupUi(config)
+
+        self.setAcceptDrops(True)
 
         self.actionQuit.triggered.connect(QtCore.QCoreApplication.instance().quit)
         self.actionRun.triggered.connect(self.runFile)
@@ -446,6 +464,7 @@ class PlaskThread(QtCore.QThread):
         self.proc.terminate()
 
 if __name__ == "__main__":
+    
     try:
         winsparkle = ctypes.CDLL('WinSparkle.dll')
     except OSError:
@@ -461,10 +480,19 @@ if __name__ == "__main__":
         winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
         winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
         winsparkle.win_sparkle_init()
+    
+    try:
+        fname = sys.argv[1]
+    except IndexError:
+        fname = None
+    else:
+        fname = os.path.realpath(fname)
     app = QtGui.QApplication(sys.argv)
     mainwindow = MainWindow()
     app.aboutToQuit.connect(mainwindow.quitting)
     mainwindow.show()
+    if fname:
+        mainwindow.start_plask(fname)
     exit_code = app.exec_()
     if winsparkle:
         winsparkle.win_sparkle_cleanup()

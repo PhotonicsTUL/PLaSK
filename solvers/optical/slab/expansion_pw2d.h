@@ -47,6 +47,9 @@ struct ExpansionPW2D: public Expansion {
     /// Cached permittivity expansion coefficients
     std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
 
+    /// Information if the layer is diagonal
+    std::vector<bool> diagonals;
+    
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -62,7 +65,7 @@ struct ExpansionPW2D: public Expansion {
     virtual size_t lcount() const;
 
     virtual bool diagonalQE(size_t l) const {
-            return false;
+        return diagonals[l];
     }
 
     virtual size_t matrixSize() const { return separated? N : 2*N; }
