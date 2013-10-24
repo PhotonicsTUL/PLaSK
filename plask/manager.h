@@ -331,7 +331,7 @@ private:
      * Load geometry using geometry @p reader.
      * @param reader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
      */
-    void loadGeometry(GeometryReader& reader);
+    virtual void loadGeometry(GeometryReader& reader);
 
     /**
      * Load materials using @p reader.
@@ -345,13 +345,13 @@ private:
      * Load meshes and mesh generators using reader.
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
-    void loadGrids(XMLReader& reader);
+    virtual void loadGrids(XMLReader& reader);
 
     /**
      * Load solvers using reader.
      * @param reader reader to read from, should point to @c \<solver> tag, after read it will be point to @c \</solver> tag
      */
-    void loadSolvers(XMLReader& reader);
+    virtual void loadSolvers(XMLReader& reader);
 
     /**
      * Load solvers intrconnects from the @p reader.
@@ -364,7 +364,7 @@ private:
      * \param reader XMLreader to load from
      * \return read script
      */
-    void loadScript(XMLReader& reader);
+    virtual void loadScript(XMLReader& reader);
 
     /**
      * Load geometry using XML reader.

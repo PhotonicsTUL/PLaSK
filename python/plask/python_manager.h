@@ -20,15 +20,17 @@ struct PythonManager: public Manager {
 
     virtual ~PythonManager() {}
 
-    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name);
+    virtual shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) override;
 
-    virtual void loadDefines(XMLReader& reader);
+    virtual void loadDefines(XMLReader& reader) override;
 
-    virtual void loadConnects(XMLReader& reader);
+    virtual void loadConnects(XMLReader& reader) override;
 
-    virtual void loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource);
+    virtual void loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource) override;
 
     static void export_dict(py::object self, py::dict dict);
+
+    virtual void loadScript(XMLReader& reader) override;
 
     // static std::string removeSpaces(const std::string& source);
 };

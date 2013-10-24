@@ -152,7 +152,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     manager->locals = vars.copy();
     if (!manager->locals.has_key("self")) manager->locals["self"] = self;
 
-    reader.attributeFilter = PythonXMLFilter(manager);
+    reader.setFilter(PythonXMLFilter(manager));
     
     if (filter == py::object()) {
         manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename));
@@ -291,6 +291,11 @@ void PythonManager::export_dict(py::object self, py::dict dict) {
     }
 
     if (ths->script != "") dict["__script__"] = ths->script;
+}
+
+void PythonManager::loadScript(XMLReader &reader) {
+    AssignWithBackup<XMLReader::Filter> backup(reader.contentFilter);   // do not filter script content
+    Manager::loadScript(reader);
 }
 
 

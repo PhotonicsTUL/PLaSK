@@ -86,6 +86,28 @@ std::ostream& printRange(std::ostream& out, ForwadIterator begin, ForwadIterator
     return out;
 }
 
+/**
+ * Assign new value to varible and back the old value in destructor.
+ *
+ * It:
+ * 1. constructs new value using given constructor parameters
+ * 2. swaps values of given variable and constructed one
+ * 3. in destructor: swaps the values back
+ */
+template <typename T>
+struct AssignWithBackup {
+    T& oryginal;
+    T store;
+
+    template <typename... ConstructorArgsT>
+    AssignWithBackup(T& varible_to_back, ConstructorArgsT&&... newValueCtrArgs)
+    : oryginal(varible_to_back), store(std::forward<ConstructorArgsT>(newValueCtrArgs)...) {
+        std::swap(varible_to_back, store);
+    }
+
+    ~AssignWithBackup() { std::swap(oryginal, store); }
+};
+
 /// Don't use this directly, use applyTuple instead.
 
 
