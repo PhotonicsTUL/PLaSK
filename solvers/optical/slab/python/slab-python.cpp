@@ -214,6 +214,8 @@ double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
 
 BOOST_PYTHON_MODULE(slab)
 {
+    plask_import_array();
+
     py::to_python_converter<ExpansionPW2D::Component, PythonComponentConventer2D>();
     py::converter::registry::push_back(&PythonComponentConventer2D::convertible, &PythonComponentConventer2D::construct,
                                        py::type_id<ExpansionPW2D::Component>());
