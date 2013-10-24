@@ -18,6 +18,20 @@ Tensor2<double> aSi::thermk(double T, double h) const {
     return ( Tensor2<double>(tK, tK) );
 }
 
+MI_PROPERTY(aSi, nr,
+            MISource("R.N. Kre et al., International Journal of the Physical Sciences 5 (2010) 675-682"),
+            MIArgumentRange(MaterialInfo::wl, 1050, 2050),
+            MIComment("fit by Lukasz Piskorski")
+            )
+double aSi::nr(double wl, double T) const {
+    double nR300K = 0.27/pow(wl*1e-3,4.1)+3.835; // 1e-3: nm-> um
+
+    if (wl > 1050.)
+        return ( nR300K + (8.5e-5/pow(wl*1e-3,5.9))*(T-300.) ); // fit by L. Piskorski, based on "N. Do et al., Appl. Phys. Lett. 60 (1992) 2186-2188"
+    else
+        return 0.;
+}
+
 bool aSi::isEqual(const Material &other) const {
     return true;
 }

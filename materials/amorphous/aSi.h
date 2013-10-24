@@ -18,6 +18,7 @@ struct aSi: public Dielectric {
 
     virtual std::string name() const;
     virtual Tensor2<double> thermk(double T, double h=INFINITY) const;
+    virtual double nr(double wl, double T) const;
 
 protected:
     virtual bool isEqual(const Material& other) const;

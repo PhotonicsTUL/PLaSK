@@ -81,8 +81,8 @@ MI_PROPERTY(GaAs, c44,
 
 MI_PROPERTY(GaAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
-            MISource("W. Nakwaski, J. Appl. Phys. 64 (1988) 159"), // temperature dependence
-            MIArgumentRange(MaterialInfo::T, 300, 900)
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MIArgumentRange(MaterialInfo::T, 150, 1500)
            )
 
 MI_PROPERTY(GaAs, cond,

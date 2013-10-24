@@ -154,10 +154,17 @@ Tensor2<double> AlAsSb::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlAsSb, nr,
-            MIComment("TODO")
+            MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
+            MIArgumentRange(MaterialInfo::wl, 500, 7000),
+            MIComment("fit by Lukasz Piskorski")
             )
 double AlAsSb::nr(double wl, double T) const {
-    return ( 0. );
+    double nR300K = sqrt(1.+8.75e-6*wl*wl/(1e-6*wl*wl-0.15)); // 1e-3: nm-> um
+
+    if (wl > 500.)
+        return ( nR300K + nR300K*(As*4.6e-5+Sb*1.19e-5)*(T-300.) ); // 4.6e-5, 1.19e-5 - from Adachi (2005) ebook p.243 tab. 10.6
+    else
+        return 0.;
 }
 
 MI_PROPERTY(AlAsSb, absp,

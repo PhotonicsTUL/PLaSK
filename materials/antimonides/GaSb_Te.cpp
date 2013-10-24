@@ -52,7 +52,7 @@ MI_PROPERTY(GaSb, nr,
             MIComment("fit by Lukasz Piskorski")
             )
 double GaSb_Te::nr(double wl, double T) const {
-    double nR300K = sqrt(3.03+11.03e-6*wl*wl/(1e-6*wl*wl-0.37)); // 1e-3: nm-> um
+    double nR300K = sqrt(1.+13.05e-6*wl*wl/(1e-6*wl*wl-0.32)); // 1e-3: nm-> um
     double nR = nR300K - 0.034*(ND*1e-18); // -3.4e-2 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
 
     if (wl > 1800.)
