@@ -65,18 +65,16 @@ class PythonEvalMaterial : public Material
     py::object self;
 
 #if PY_VERSION_HEX >= 0x03000000
-#   define PY_EVAL(fun) PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr())
+#   define PY_EVAL(fun) boost::python::handle<>(PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr()))
 #else
-#   define PY_EVAL(fun) PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr())
+#   define PY_EVAL(fun) boost::python::handle<>(PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr()))
 #endif
 
     template <typename RETURN>
     RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-        PyObject* result = PY_EVAL(fun);
-        if (!result) throw py::error_already_set();
-        RETURN to_return = py::extract<RETURN>(result);
-        Py_XDECREF(result);
-        return to_return;
+        boost::python::object result(PY_EVAL(fun));
+        if (!result.ptr()) throw py::error_already_set();
+        return py::extract<RETURN>(result);
     }
 
     /*template <typename RETURN>
@@ -176,11 +174,9 @@ class PythonEvalMaterial : public Material
     virtual dcomplex Nr(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->Nr != NULL) {
-            PyObject* result = PY_EVAL(cls->Nr);
-            if (!result) throw py::error_already_set();
-            dcomplex to_return = py::extract<dcomplex>(result);
-            Py_XDECREF(result);
-            return to_return;
+            boost::python::object result(PY_EVAL(cls->Nr));
+            if (!result.ptr()) throw py::error_already_set();
+            return py::extract<dcomplex>(result);
         }
         if (cls->nr != NULL || cls->absp != NULL)
             return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
@@ -189,11 +185,9 @@ class PythonEvalMaterial : public Material
     virtual Tensor3<dcomplex> NR(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->NR != NULL) {
-            PyObject* result = PY_EVAL(cls->NR);
-            if (!result) throw py::error_already_set();
-            Tensor3<dcomplex> to_return = py::extract<Tensor3<dcomplex>>(result);
-            Py_XDECREF(result);
-            return to_return;
+            boost::python::object result(PY_EVAL(cls->NR));
+            if (!result.ptr()) throw py::error_already_set();
+            return py::extract<Tensor3<dcomplex>>(result);
         }
         if (cls->Nr != NULL) {
             dcomplex n = Nr(wl, T);
