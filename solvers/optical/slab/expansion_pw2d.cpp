@@ -301,47 +301,47 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             // Separated symmetric
             std::fill_n(RE.data(), N*N, dcomplex(0.));
             std::fill_n(RH.data(), N*N, dcomplex(0.));
-            if (polarization == E_LONG) {
+            if (polarization == E_LONG) {                   // Ez & Hx
                 for (int i = 0; i <= order; ++i) {
                     double gi = b * double(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = abs(i-j);   double gj = b * double(j);
                         dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
                         int aj = abs(j);
-                        RE(iH(i), iE(aj)) += - fz * (gi * gj * imuyy(l,ij) + k02 * epszz(l,ij));
-                        RH(iE(i), iH(aj)) +=   fz * k02 * muxx(l,ij);
+                        RE(iH(i), iE(aj)) += fz * (- gi * gj * imuyy(l,ij) + k02 * epszz(l,ij) );
+                        RH(iE(i), iH(aj)) += fz *                            k02 * muxx(l,ij);
                     }
                 }
-            } else {
+            } else {                                        // Ex & Hz
                 for (int i = 0; i <= order; ++i) {
                     double gi = b * double(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = abs(i-j);   double gj = b * double(j);
                         dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
                         int aj = abs(j);
-                        RE(iH(i), iE(aj)) +=   fx * k02 * epsxx(l,ij);
-                        RH(iE(i), iH(aj)) += - fx * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
+                        RE(iH(i), iE(aj)) += fx *                             k02 * epsxx(l,ij);
+                        RH(iE(i), iH(aj)) += fx * (- gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij) );
                     }
                 }
             }
         } else {
             // Separated asymmetric
-            if (polarization == E_LONG) {
+            if (polarization == E_LONG) {                   // Ez & Hx
                 for (int i = -order; i <= order; ++i) {
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RE(iH(i), iE(j)) = - f * (gi * gj * imuyy(l,ij) + k02 * epszz(l,ij));
-                        RH(iE(i), iH(j)) =   f * k02 * muxx(l,ij);
+                        RE(iH(i), iE(j)) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
+                        RH(iE(i), iH(j)) = f *                              k02 * muxx(l,ij);
                     }
                 }
-            } else {
+            } else {                                        // Ex & Hz
                 for (int i = -order; i <= order; ++i) {
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-                        RE(iH(i), iE(j)) =   f * k02 * epsxx(l,ij);
-                        RH(iE(i), iH(j)) = - f * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
+                        RE(iH(i), iE(j)) = f *                               k02 * epsxx(l,ij);
+                        RH(iE(i), iH(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
                     }
                 }
             }
