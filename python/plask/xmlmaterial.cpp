@@ -74,8 +74,16 @@ class PythonEvalMaterial : public Material
     RETURN call(PyCodeObject *fun, const py::dict& locals) const {
         PyObject* result = PY_EVAL(fun);
         if (!result) throw py::error_already_set();
-        return py::extract<RETURN>(result);
+        RETURN to_return = py::extract<RETURN>(result);
+        Py_XDECREF(result);
+        return to_return;
     }
+
+    /*template <typename RETURN>
+    RETURN call(PyCodeObject *fun, const py::dict& locals) const {
+        boost::python::object result = boost::python::eval(fun, xml_globals, locals);
+        return py::extract<RETURN>(result);
+    }*/
 
   public:
 
@@ -170,7 +178,9 @@ class PythonEvalMaterial : public Material
         if (cls->Nr != NULL) {
             PyObject* result = PY_EVAL(cls->Nr);
             if (!result) throw py::error_already_set();
-            return py::extract<dcomplex>(result);
+            dcomplex to_return = py::extract<dcomplex>(result);
+            Py_XDECREF(result);
+            return to_return;
         }
         if (cls->nr != NULL || cls->absp != NULL)
             return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
@@ -181,7 +191,9 @@ class PythonEvalMaterial : public Material
         if (cls->NR != NULL) {
             PyObject* result = PY_EVAL(cls->NR);
             if (!result) throw py::error_already_set();
-            return py::extract<Tensor3<dcomplex>>(result);
+            Tensor3<dcomplex> to_return = py::extract<Tensor3<dcomplex>>(result);
+            Py_XDECREF(result);
+            return to_return;
         }
         if (cls->Nr != NULL) {
             dcomplex n = Nr(wl, T);
