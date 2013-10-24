@@ -270,13 +270,13 @@ void ReflectionSolver<GeometryT>::storeP(size_t n) {
 
 
 template <typename GeometryT>
-cvector ReflectionSolver<GeometryT>::getReflectionVector(IncidentDirection direction, const cvector& incident)
+cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident, IncidentDirection direction)
 {
     switch (direction) {
-        case DIRECTION_UPWARDS:
-            findReflection(0, this->stack.size()); break;
-        case DIRECTION_DOWNWARDS:
-            findReflection(this->stack.size(), 0); break;
+        case DIRECTION_TOP:
+            findReflection(0, this->stack.size()-1); break;
+        case DIRECTION_BOTTOM:
+            findReflection(this->stack.size()-1, 0); break;
     }
     return P * incident;
 }

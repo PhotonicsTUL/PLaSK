@@ -6,7 +6,7 @@
 namespace plask { namespace solvers { namespace slab {
 
 ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver), initialized(false),
-    symmetry(SYMMETRIC_UNSPECIFIED), polarization(TEM) {}
+    symmetry(E_UNSPECIFIED), polarization(E_UNSPECIFIED) {}
 
 size_t ExpansionPW2D::lcount() const {
     return SOLVER->getLayersPoints().size();
@@ -25,7 +25,7 @@ void ExpansionPW2D::init()
     if (refine == 0) refine = 1;
 
     symmetric = separated = false;
-    if (symmetry != SYMMETRIC_UNSPECIFIED || polarization != TEM) {
+    if (symmetry != E_UNSPECIFIED || polarization != E_UNSPECIFIED) {
         // Test for off-diagonal NR components in which case we cannot use neither symmetry nor separation
         bool off_diagonal = false;
         double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
@@ -36,14 +36,14 @@ void ExpansionPW2D::init()
             }
             if (off_diagonal) break;
         }
-        if (symmetry != SYMMETRIC_UNSPECIFIED) {
+        if (symmetry != E_UNSPECIFIED) {
             if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
                 throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
             if (off_diagonal)
                 throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
             symmetric = true;
         }
-        if (polarization != TEM) {
+        if (polarization != E_UNSPECIFIED) {
             if (off_diagonal)
                 throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             separated = true;
@@ -103,11 +103,11 @@ void ExpansionPW2D::init()
         if (symmetric) pil = 0;
         else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
-        for (size_t i = 0; i != pil; ++i) {
+        for (size_t i = 0; i < pil; ++i) {
             double h = (pl - xmesh[i]) / SOLVER->pml.size;
             Sy[i] = SOLVER->pml.extinction * pow(h, SOLVER->pml.order);
         }
-        for (size_t i = pir+1; i != xmesh.size(); ++i) {
+        for (size_t i = pir+1; i < xmesh.size(); ++i) {
             double h = (xmesh[i] - pr) / SOLVER->pml.size;
             Sy[i] = SOLVER->pml.extinction * pow(h, SOLVER->pml.order);
             dcomplex sy(1., Sy[i]);
@@ -185,13 +185,13 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
         Tensor3<dcomplex> ref;
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         ref = NR[pil];
-        for (size_t i = 0; i != pil; ++i) {
+        for (size_t i = 0; i < pil; ++i) {
             double h = (pl - xmesh[i]) / SOLVER->pml.size;
             dcomplex sy(1., SOLVER->pml.extinction * pow(h, SOLVER->pml.order));
             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
         }
-        ref = NR[pir];
-        for (size_t i = pir+1; i != xmesh.size(); ++i) {
+        ref = NR[min(pir,xmesh.size()-1)];
+        for (size_t i = pir+1; i < xmesh.size(); ++i) {
             double h = (xmesh[i] - pr) / SOLVER->pml.size;
             dcomplex sy(1., SOLVER->pml.extinction * pow(h, SOLVER->pml.order));
             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
@@ -220,7 +220,7 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
             coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
         }
     }
-    
+
     // Check if layer will have diagonal QH
     if (periodic) {
         diagonals[l] = true;
@@ -287,6 +287,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
 
 void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH)
 {
+    assert(initialized);
+
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
@@ -299,12 +301,12 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             // Separated symmetric
             std::fill_n(RE.data(), N*N, dcomplex(0.));
             std::fill_n(RH.data(), N*N, dcomplex(0.));
-            if (polarization == TE) {
+            if (polarization == E_LONG) {
                 for (int i = 0; i <= order; ++i) {
                     double gi = b * double(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = abs(i-j);   double gj = b * double(j);
-                        dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
+                        dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
                         int aj = abs(j);
                         RE(iH(i), iE(aj)) += - fz * (gi * gj * imuyy(l,ij) + k02 * epszz(l,ij));
                         RH(iE(i), iH(aj)) +=   fz * k02 * muxx(l,ij);
@@ -315,7 +317,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                     double gi = b * double(i);
                     for (int j = -order; j <= order; ++j) {
                         int ij = abs(i-j);   double gj = b * double(j);
-                        dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
+                        dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
                         int aj = abs(j);
                         RE(iH(i), iE(aj)) +=   fx * k02 * epsxx(l,ij);
                         RH(iE(i), iH(aj)) += - fx * (gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij));
@@ -324,7 +326,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             }
         } else {
             // Separated asymmetric
-            if (polarization == TE) {
+            if (polarization == E_LONG) {
                 for (int i = -order; i <= order; ++i) {
                     dcomplex gi = b * double(i) - kx;
                     for (int j = -order; j <= order; ++j) {
@@ -353,8 +355,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 double gi = b * double(i);
                 for (int j = -order; j <= order; ++j) {
                     int ij = abs(i-j);   double gj = b * double(j);
-                    dcomplex fx = (j < 0 && symmetry == SYMMETRIC_E_LONG)? -f : f;
-                    dcomplex fz = (j < 0 && symmetry == SYMMETRIC_E_TRAN)? -f : f;
+                    dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
+                    dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
                     int aj = abs(j);
                     RE(iHz(i), iEx(aj)) += fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
                     RE(iHx(i), iEx(aj)) += fx * (  beta* gi  * imuyy(l,ij)                     );

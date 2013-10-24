@@ -47,7 +47,7 @@ void FourierReflection2D::onInvalidate()
 
 size_t FourierReflection2D::findMode(dcomplex neff)
 {
-    if (expansion.polarization != ExpansionPW2D::TEM)
+    if (expansion.polarization != ExpansionPW2D::E_UNSPECIFIED)
         throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
     klong = neff * k0;
     if (klong == 0.) klong = 1e-12;
@@ -81,20 +81,74 @@ DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfi
 }
 
 
-std::vector<Vec<3,dcomplex>> FourierReflection2D::getReflectedAmplitudes(Polarization polarization)
+cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
+                                                    IncidentDirection direction, size_t* savidx)
 {
+    if (!expansion.initialized && klong == 0.)
+        expansion.polarization = polarization;
+    emitting = true;
+    fields_determined = false;
+
+    initCalculation();
+    diagonalizer->initDiagonalization(k0, klong, ktran);
+
+    size_t idx;
+    if (polarization == ExpansionPW2D::E_UNSPECIFIED)
+        throw BadInput(getId(), "Wrong incident polarization specified for reflectivity computation");
+    if (expansion.symmetric) {
+        if (expansion.symmetry == ExpansionPW2D::E_UNSPECIFIED)
+            expansion.symmetry = polarization;
+        else if (expansion.symmetry != polarization)
+            throw BadInput(getId(), "Current symmetry is inconsistent with specified incident polarization");
+    }
+    if (expansion.separated) {
+        expansion.polarization = polarization;
+        idx = expansion.iE(0);
+    } else {
+        idx = (polarization == ExpansionPW2D::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
+    }
+    if (savidx) *savidx = idx;
+
+    cvector incident(expansion.matrixSize(), 0.);
+    incident[idx] = 1.;
+
+    return getReflectionVector(incident, direction);
 }
 
 
-double FourierReflection2D::getReflection(Polarization polarization)
+double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization, IncidentDirection direction)
 {
+    // if (!expansion.periodic)
+    //     throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
+
+    size_t idx;
+    cvector reflected = getReflectedAmplitudes(polarization, direction, &idx).claim();
+
+    size_t n = (direction==DIRECTION_BOTTOM)? 0 : stack.size()-1;
+    size_t l = stack[n];
+    // if (!expansion.diagonalQE(l))
+    //     throw Exception("%1%: %2% layer must be uniform to compute reflection coefficient",
+    //                     getId(), (direction==DIRECTION_BOTTOM)? "Bottom" : "Top");
+
+    auto gamma = diagonalizer->Gamma(l);
+    dcomplex gamma0 = gamma[idx];
+    for (size_t i = 0; i != expansion.matrixSize(); ++i) {
+        reflected[i] = reflected[i] * conj(reflected[i]) * gamma[i] / gamma0;
+    }
+
+    double result = 0.;
+    int N = getSize();
+    if (expansion.separated) {
+        for (int i = -N; i <= N; ++i)
+            result += real(reflected[expansion.iE(i)]);
+    } else {
+        for (int i = -N; i <= N; ++i) {
+            result += real(reflected[expansion.iEx(i)]) + real(reflected[expansion.iEz(i)]);
+        }
+    }
+
+    return result;
 }
-
-
-
-
-
-
 
 
 const DataVector<const double> FourierReflection2D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)

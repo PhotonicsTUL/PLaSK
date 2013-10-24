@@ -89,16 +89,16 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     /// Direction specification for reflection calculations
     enum IncidentDirection {
-        DIRECTION_UPWARDS,      ///< Incident light propagating upwards
-        DIRECTION_DOWNWARDS     ///< Incident light propagating downwards
+        DIRECTION_TOP,      ///< Incident light propagating from top (downwards)
+        DIRECTION_BOTTOM    ///< Incident light propagating from bottom (upwards)
     };
 
     /**
      * Get vector of reflection coefficients
-     * \param direction incident light propagation direction
      * \param incident incident field profile
+     * \param direction incident light propagation direction
      */
-    cvector getReflectionVector(IncidentDirection direction, const cvector& incident);
+    cvector getReflectionVector(const cvector& incident, IncidentDirection direction);
 
     /**
      * Get vector of transmission coefficients

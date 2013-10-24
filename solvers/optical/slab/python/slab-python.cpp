@@ -3,6 +3,7 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
+#include <util/ufunc.h>
 #include <boost/python/raw_function.hpp>
 using namespace plask;
 using namespace plask::python;
@@ -23,40 +24,40 @@ static const std::vector<RectilinearAxis>& SlabSolver_getLayerSets(const SolverT
 
 template <typename SolverT>
 struct PmlWrapper {
-    
+
     SolverT* solver;
     typename SolverT::PML* pml;
-    
+
     PmlWrapper(SolverT* solver, typename SolverT::PML* pml): solver(solver), pml(pml) {}
-    
+
     double get_extinction() const { return pml->extinction; }
     void set_extinction(double val) {
         pml->extinction = val;
         solver->invalidate();
     }
-    
+
     double get_size() const { return pml->size; }
     void set_size(double val) {
         pml->size = val;
         solver->invalidate();
     }
-    
+
     double get_shift() const { return pml->shift; }
     void set_shift(double val) {
         pml->shift = val;
         solver->invalidate();
     }
-    
+
     double get_order() const { return pml->order; }
     void set_order(double val) {
         pml->order = val;
         solver->invalidate();
     }
-    
+
     std::string __str__() const {
         return format("<extinction: %1%, size: %2%, shift: %3%, order: %4%>", pml->extinction, pml->size, pml->shift, pml->order);
     }
-    
+
     std::string __repr__() const {
         return format("PML(extinction=%1%, size=%2%, shift=%3%, order=%4%)", pml->extinction, pml->size, pml->shift, pml->order);
     }
@@ -95,46 +96,68 @@ inline void export_reflection_base(Class solver) {
     typedef typename Class::wrapped_type Solver;
     py::scope scope = solver;
     py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
-        .value("TOP", Solver::DIRECTION_DOWNWARDS)
-        .value("BOTTOM", Solver::DIRECTION_UPWARDS)
+        .value("TOP", Solver::DIRECTION_TOP)
+        .value("BOTTOM", Solver::DIRECTION_BOTTOM)
     ;
 }
 
 
+struct PythonComponentConventer2D {
 
-static py::object FourierReflection2D_getSymmetry(const FourierReflection2D& self) {
-    AxisNames* axes = getCurrentAxes();
-    switch (self.getSymmetry()) {
-        case ExpansionPW2D::SYMMETRIC_E_TRAN: return py::object("E"+axes->getNameForTran());
-        case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+axes->getNameForLong());
-        default: return py::object();
+    // Determine if obj can be converted into an Aligner
+    static void* convertible(PyObject* obj) {
+        if (PyString_Check(obj)) return obj;
+        return nullptr;
     }
-}
 
-static void FourierReflection2D_setSymmetry(FourierReflection2D& self, py::object symmetry) {
-    AxisNames* axes = getCurrentAxes();
-    if (symmetry == py::object()) { self.setSymmetry(ExpansionPW2D::SYMMETRIC_UNSPECIFIED); }
-    try {
-        std::string sym = py::extract<std::string>(symmetry);
-        if (sym == "Etran" || sym == "E"+axes->getNameForTran())
-            self.setSymmetry(ExpansionPW2D::SYMMETRIC_E_TRAN);
-        else if (sym == "Elong" || sym == "E"+axes->getNameForLong())
-            self.setSymmetry(ExpansionPW2D::SYMMETRIC_E_LONG);
-        else throw py::error_already_set();
-    } catch (py::error_already_set) {
-        throw ValueError("Wrong symmetry specification.");
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<ExpansionPW2D::Component>*)data)->storage.bytes;
+        AxisNames* axes = getCurrentAxes();
+        ExpansionPW2D::Component val;
+        if (obj == Py_None) {
+            val = ExpansionPW2D::E_UNSPECIFIED;
+        } else {
+            try {
+                std::string repr = py::extract<std::string>(obj);
+                if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
+                    repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong())
+                    val = ExpansionPW2D::E_TRAN;
+                else if (repr == "Elong" || repr == "El" || repr == "E"+axes->getNameForLong() ||
+                         repr == "Htran" || repr == "Ht" || repr == "H"+axes->getNameForTran())
+                    val = ExpansionPW2D::E_LONG;
+                else
+                    throw py::error_already_set();
+            } catch (py::error_already_set) {
+                throw ValueError("Wrong component specification.");
+            }
+        }
+        new(storage) ExpansionPW2D::Component(val);
+        data->convertible = storage;
     }
-}
+
+    static PyObject* convert(ExpansionPW2D::Component val) {
+        AxisNames* axes = getCurrentAxes();
+        switch (val) {
+            case ExpansionPW2D::E_TRAN: return py::incref(py::object("E"+axes->getNameForTran()).ptr());
+            case ExpansionPW2D::E_LONG: return py::incref(py::object("E"+axes->getNameForLong()).ptr());
+            default: return py::incref(Py_None);
+        }
+    }
+};
 
 void FourierReflection2D_parseKeywords(const char* name, FourierReflection2D* self, const py::dict& kwargs) {
     AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam") lambda.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "neff") neff.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "k"+axes->getNameForTran()) ktran.reset(py::extract<dcomplex>(kwargs[*i]));
-        else throw TypeError("%2%() got unexpected keyword argument '%1%'", *i, name);
+        if (*i == "lam")
+            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "neff")
+            neff.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
+            ktran.reset(py::extract<dcomplex>(kwargs[*i]));
+        else
+            throw TypeError("%2%() got unexpected keyword argument '%1%'", *i, name);
     }
     if (lambda) self->setWavelength(*lambda);
     if (neff) self->setKlong(*neff * self->getK0());
@@ -153,6 +176,18 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
     FourierReflection2D* self = py::extract<FourierReflection2D*>(args[0]);
     FourierReflection2D_parseKeywords("determinant", self, kwargs);
     return self->getDeterminant();
+}
+
+py::object FourierReflection2D_computeReflectivity(FourierReflection2D* self,
+                                                   py::object wavelength,
+                                                   ExpansionPW2D::Component polarization,
+                                                   FourierReflection2D::IncidentDirection direction
+                                                  )
+{
+    return UFUNC<double>([=](double lam)->double {
+        self->setWavelength(lam);
+        return 100. * self->getReflection(polarization, direction);
+    }, wavelength);
 }
 
 PmlWrapper<FourierReflection2D> FourierReflection2D_getPML(FourierReflection2D* self) {
@@ -174,19 +209,15 @@ double FourierReflection2D_Mode_Neff(const FourierReflection2D::Mode& mode) {
 double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
     return real(mode.ktran);
 }
-py::object FourierReflection2D_Mode_Symmetry(const FourierReflection2D::Mode& mode) {
-    AxisNames* axes = getCurrentAxes();
-    switch (mode.symmetry) {
-        case ExpansionPW2D::SYMMETRIC_E_TRAN: return py::object("E"+axes->getNameForTran());
-        case ExpansionPW2D::SYMMETRIC_E_LONG: return py::object("E"+axes->getNameForLong());
-        default: return py::object();
-    }
-}
 
 
 
 BOOST_PYTHON_MODULE(slab)
 {
+    py::to_python_converter<ExpansionPW2D::Component, PythonComponentConventer2D>();
+    py::converter::registry::push_back(&PythonComponentConventer2D::convertible, &PythonComponentConventer2D::construct,
+                                       py::type_id<ExpansionPW2D::Component>());
+
     {CLASS(FourierReflection2D, "FourierReflection2D",
         "Calculate optical modes and optical field distribution using Fourier slab method\n"
         " and reflection transfer in two-dimensional Cartesian space.")
@@ -194,12 +225,17 @@ BOOST_PYTHON_MODULE(slab)
         PROVIDER(outNeff, "Effective index of the last computed mode");
         METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
+        RW_PROPERTY(beta, getKlong, setKlong, "Longitudinal propagation constant of the light");
+        RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
-        solver.add_property("symmetry", FourierReflection2D_getSymmetry, FourierReflection2D_setSymmetry, "Mode symmetry");
+        RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization");
         RW_FIELD(refine, "Number of refinemnet points for refractive index averaging");
         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
                    "Compute discontinuity matrix determinant");
+        solver.def("reflectivity", &FourierReflection2D_computeReflectivity,
+                   "Compute reflectivity on the perpendicuar incidence [%]",
+                   (py::arg("lam"), "polarization", "incidence"));
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
         solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()), "Side PMLs");
@@ -207,16 +243,10 @@ BOOST_PYTHON_MODULE(slab)
         RO_FIELD(modes, "Computed modes");
 
         py::scope scope = solver;
-        py_enum<ExpansionPW2D::Polarization>("Polarization", "Mode polarization.")
-            .value("TE", ExpansionPW2D::TE)
-            .value("TM", ExpansionPW2D::TM)
-            .value("TEM", ExpansionPW2D::TEM)
-        ;
-        
-        register_vector_of<FourierReflection2D::Mode>("Modes");
 
+        register_vector_of<FourierReflection2D::Mode>("Modes");
         py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode", py::no_init)
-            .add_property("symmetry", &FourierReflection2D_Mode_Symmetry, "Mode horizontal symmetry")
+            .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry")
             .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization")
             .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm]")
             .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm]")

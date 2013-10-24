@@ -60,7 +60,7 @@ void SimpleDiagonalizer::initDiagonalization(dcomplex ko, dcomplex kx, dcomplex 
 void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 {
     if (diagonalized[layer]) return;
-    
+
     int N = src->matrixSize();         // Size of each matrix
 
     #ifdef OPENMP_FOUND
@@ -71,7 +71,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         cmatrix QE = *tmpmx;
         src->solver->writelog(LOG_DEBUG, "Diagonalizing matrix for layer %1%", layer);
     #endif
-        
+
     // First find necessary matrices
     cmatrix RE = Th1[layer], RH = Th[layer];
 
@@ -90,15 +90,17 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         }
 
         // Eigenvector matrix is simply a unity matrix
+        std::fill_n(Te[layer].data(), N*N, 0.);
+        std::fill_n(Te1[layer].data(), N*N, 0.);
         for (int i = 0; i < N; i++) {
-                Te[layer](i, i) = Te1[layer](i, i) = 1.;
+                Te[layer](i,i) = Te1[layer](i,i) = 1.;
         }
 
     } else {
         // We have to make the proper diagonalization
         // TODO: rewrite it to more low-level and more optimized computations
         mult_matrix_by_matrix(RH, RE, QE);  // QE = RH * RE
-        
+
         // std::cerr << "\n";
         // for (int i = 0; i < matrixSize(); ++i) {
         //     for (int j = 0; j < matrixSize(); ++j) {

@@ -17,8 +17,8 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
     struct Mode {
         FourierReflection2D* solver;                            ///< Solver this mode belongs to
-        ExpansionPW2D::Symmetry symmetry;                       ///< Mode horizontal symmetry
-        ExpansionPW2D::Polarization polarization;               ///< Mode polarization
+        ExpansionPW2D::Component symmetry;                      ///< Mode horizontal symmetry
+        ExpansionPW2D::Component polarization;                  ///< Mode polarization
         dcomplex k0;                                            ///< Stored mode frequency
         dcomplex beta;                                          ///< Stored mode effective index
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
@@ -34,12 +34,6 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         }
     };
 
-    /// In-plane light polarization
-    enum Polarization {
-        POLARIZATION_TRAN,      ///< E vector polarized in `tran`-`vert` plane
-        POLARIZATION_LONG       ///< E vector polarized along `long` axis
-    };
-    
   protected:
 
     /// Maximum order of the orthogonal base
@@ -87,15 +81,15 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     }
 
     /// Return current mode symmetry
-    ExpansionPW2D::Symmetry getSymmetry() const { return expansion.symmetry; }
+    ExpansionPW2D::Component getSymmetry() const { return expansion.symmetry; }
     /// Set new mode symmetry
-    void setSymmetry(ExpansionPW2D::Symmetry symmetry) {
+    void setSymmetry(ExpansionPW2D::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
         if (expansion.initialized) {
-            if (expansion.symmetric && symmetry == ExpansionPW2D::SYMMETRIC_UNSPECIFIED)
+            if (expansion.symmetric && symmetry == ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric && symmetry != ExpansionPW2D::SYMMETRIC_UNSPECIFIED)
+            if (!expansion.symmetric && symmetry != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
         }
         expansion.symmetry = symmetry;
@@ -109,13 +103,13 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     }
 
     /// Return current mode polarization
-    ExpansionPW2D::Polarization getPolarization() const { return expansion.polarization; }
+    ExpansionPW2D::Component getPolarization() const { return expansion.polarization; }
     /// Set new mode polarization
-    void setPolarization(ExpansionPW2D::Polarization polarization) {
+    void setPolarization(ExpansionPW2D::Component polarization) {
         if (expansion.initialized) {
-            if (expansion.separated && polarization == ExpansionPW2D::TEM)
+            if (expansion.separated && polarization == ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove polarizations separation now -- invalidate the solver first", getId());
-            if (!expansion.separated && polarization != ExpansionPW2D::TEM)
+            if (!expansion.separated && polarization != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add polarizations separation now -- invalidate the solver first", getId());
         }
         expansion.polarization = polarization;
@@ -127,7 +121,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     double getPeriod() const {
         return (expansion.right - expansion.left) * (expansion.periodic? 2. : 1.);
     }
-    
+
     /**
      * Get refractive index after expansion
      */
@@ -137,15 +131,18 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     /**
      * Get amplitudes of reflected diffraction orders
      * \param polarization polarization of the perpendicularly incident light
+     * \param direction incidence direction
+     * \param savidx pointer to which optionally save nonzero incident index
      */
-    std::vector<Vec<3,dcomplex>> getReflectedAmplitudes(Polarization polarization);
-    
+    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection direction, size_t* savidx=nullptr);
+
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
+     * \param direction incidence direction
      */
-    double getReflection(Polarization polarization);
-    
+    double getReflection(ExpansionPW2D::Component polarization, IncidentDirection direction);
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one

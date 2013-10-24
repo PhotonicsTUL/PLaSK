@@ -55,7 +55,7 @@ class Diagonalizer
     bool isDiagonalized(size_t layer) {
         return diagonalized[layer];
     }
-    
+
     /// Return diagnoal matrix of eignevalues
     virtual const cdiagonal& Gamma(size_t layer) const = 0;
 

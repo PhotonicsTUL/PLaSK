@@ -12,18 +12,11 @@ struct FourierReflection2D;
 
 struct ExpansionPW2D: public Expansion {
 
-    /// Type of the mode symmetry
-    enum Symmetry {
-        SYMMETRIC_E_TRAN,               ///< E_tran and H_long are symmetric and E_long and H_tran anti-symmetric
-        SYMMETRIC_E_LONG,               ///< E_long and H_tran are symmetric and E_tran and H_long anti-symmetric
-        SYMMETRIC_UNSPECIFIED           ///< No symmetry
-    };
-
-    /// Polarization of separated modes
-    enum Polarization {
-        TE,                             ///< E_z and H_x exist
-        TM,                             ///< H_z and E_x exist
-        TEM                             ///< All components exist
+    /// Specified component in polarization or symmetry
+    enum Component {
+        E_TRAN,               ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
+        E_LONG,               ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
+        E_UNSPECIFIED         ///< All components exist or no symmetry
     };
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
@@ -38,8 +31,8 @@ struct ExpansionPW2D: public Expansion {
     bool separated;                     ///< Indicates whether TE and TM modes can be separated
     bool initialized;                   ///< Exansion is initialized
 
-    Symmetry symmetry;                  ///< Indicates symmetry if `symmetric`
-    Polarization polarization;          ///< Indicates polarization if `separated`
+    Component symmetry;                 ///< Indicates symmetry if `symmetric`
+    Component polarization;             ///< Indicates polarization if `separated`
 
     size_t pil,                         ///< Index of the beginning of the left PML
            pir;                         ///< Index of the beginning of the right PML
@@ -49,7 +42,7 @@ struct ExpansionPW2D: public Expansion {
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
-    
+
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -93,6 +86,8 @@ struct ExpansionPW2D: public Expansion {
      * \param l layer number
      */
     void getMaterialCoefficients(size_t l);
+
+  public:
 
     /// Get \f$ \varepsilon_{zz} \f$
     dcomplex epszz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c00; }
