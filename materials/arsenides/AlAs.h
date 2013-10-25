@@ -106,6 +106,12 @@ struct AlAs: public Semiconductor {
         return(Tensor2<double>(tk, tk));
     }
 
+    virtual double nr(double wl, double T) const {
+        double L2 = wl*wl*1e-6;
+        double nR296K = sqrt(1.+7.055*L2/(L2-0.068));
+        return ( nR296K + nR296K*4.6e-5*(T-296.) );
+    }
+
   protected:
       
     virtual bool isEqual(const Material &other) const {

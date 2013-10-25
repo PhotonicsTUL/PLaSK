@@ -91,8 +91,9 @@ MI_PROPERTY(GaAs, cond,
            )
 
 MI_PROPERTY(GaAs, nr,
-            MISource(""),
-            MIComment("TODO")
+            MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242"),
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MIComment("fit by Lukasz Piskorski")
            )
 
 MI_PROPERTY(GaAs, absp,

@@ -154,10 +154,15 @@ Tensor2<double> AlGaAs::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlGaAs, nr,
-            MIComment("TODO")
+            MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242"),
+            MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837"),
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MIComment("fit by Lukasz Piskorski")
             )
 double AlGaAs::nr(double wl, double T) const {
-    return ( 0. );
+    double L2 = wl*wl*1e-6;
+    double nR296K = sqrt(1.+(9.659-2.604*Al)*L2/(L2-(0.137-0.069*Al)));
+    return ( nR296K + nR296K*(Al*4.6e-5+Ga*4.5e-5)*(T-296.) );
 }
 
 MI_PROPERTY(AlGaAs, absp,

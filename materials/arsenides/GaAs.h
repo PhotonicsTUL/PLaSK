@@ -112,7 +112,9 @@ struct GaAs: public Semiconductor {
     }
 
     virtual double nr(double wl, double T) const {
-        return 0.;
+        double L2 = wl*wl*1e-6;
+        double nR296K = sqrt(1.+9.659*L2/(L2-0.137));
+        return ( nR296K + nR296K*4.5e-5*(T-296.) );
     }
 
     virtual double absp(double wl, double T) const {

@@ -84,6 +84,12 @@ MI_PROPERTY(AlAs, thermk,
             MIComment("no temperature dependence")
            )
 
+MI_PROPERTY(AlAs, nr,
+            MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837"),
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MIComment("fit by Lukasz Piskorski")
+           )
+
 static MaterialsDB::Register<AlAs> materialDB_register_AlAs;
 
 }}       // namespace plask::materials
