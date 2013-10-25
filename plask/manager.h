@@ -97,7 +97,7 @@ private:
     /**
      * Try load section from external location.
      *
-     * Check if current tag in @p reader has "from" attribute, and if has load section represented by this tag from external location using @p load_from.
+     * Check if current tag in @p reader has "from" attribute, and if it has, load section represented by this tag from external location using @p load_from.
      * @param reader XML data source
      * @param materialsSource source of materials
      * @param load_from
