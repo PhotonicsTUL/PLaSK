@@ -168,7 +168,7 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
 
     #pragma omp parallel
     {
-        #pragma omp for schedule(static,1) nowait
+        #pragma omp for schedule(dynamic,1) nowait
         for (int l = 0; l < diagonalizer->lcount; ++l) {
             try {
                 if (!error) diagonalizer->diagonalizeLayer(l);
