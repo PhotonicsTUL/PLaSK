@@ -551,15 +551,6 @@ cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident
 
 
 // //**************************************************************************
-// #define ee A
-// #define hh P
-//
-// //**************************************************************************
-// /// Function to find reflection matrix for one half of the structure
-//
-//
-//
-// //**************************************************************************
 // /// Determine the diagonalized F and B fields in each layer
 // void ReflectionSolver::determineFields(const dcomplex k0, const dcomplex kx, const dcomplex ky, const double mgain)
 // {

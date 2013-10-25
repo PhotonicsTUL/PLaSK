@@ -209,31 +209,33 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
         coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
     }
 
-    // Perform FFT
-    matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
-
-    // Smooth coefficients
-    if (SOLVER->smooth) {
-        double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
-        for (size_t i = 0; i != nN; ++i) {
-            int k = i; if (k > nN/2) k -= nN;
-            coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
-        }
-    }
-
-    // Check if layer will have diagonal QH
+    // Check if the layer is uniform
     if (periodic) {
         diagonals[l] = true;
-        const double lim = 1e-14;
         for (size_t i = 1; i != nN; ++i) {
-            if (!(is_zero(abs2(coeffs[l][i].c00),lim) && is_zero(abs2(coeffs[l][i].c11),lim) && is_zero(abs2(coeffs[l][i].c22),lim) &&
-                  is_zero(abs2(coeffs[l][i].c01),lim) && is_zero(abs2(coeffs[l][i].c10),lim))) {
+            Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
+            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) &&
+                  is_zero(diff.c01) && is_zero(diff.c10))) {
                 diagonals[l] = false;
                 break;
             }
         }
-        if (diagonals[l]) {
-            solver->writelog(LOG_DEBUG, "Layer %1% has diagonal Q matrix", l);
+    } else
+        diagonals[l] = false;
+
+    if (diagonals[l]) {
+        solver->writelog(LOG_DETAIL, "Layer %1%  uniform", l);
+        for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
+    } else {
+        // Perform FFT
+        matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+        // Smooth coefficients
+        if (SOLVER->smooth) {
+            double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
+            for (size_t i = 0; i != nN; ++i) {
+                int k = i; if (k > nN/2) k -= nN;
+                coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
+            }
         }
     }
 }
