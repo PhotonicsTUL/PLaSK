@@ -224,9 +224,10 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
     // Check if layer will have diagonal QH
     if (periodic) {
         diagonals[l] = true;
+        const double lim = 1e-14;
         for (size_t i = 1; i != nN; ++i) {
-            if (!(is_zero(coeffs[l][i].c00) && is_zero(coeffs[l][i].c11) && is_zero(coeffs[l][i].c22) &&
-                  is_zero(coeffs[l][i].c01) && is_zero(coeffs[l][i].c10))) {
+            if (!(is_zero(abs2(coeffs[l][i].c00),lim) && is_zero(abs2(coeffs[l][i].c11),lim) && is_zero(abs2(coeffs[l][i].c22),lim) &&
+                  is_zero(abs2(coeffs[l][i].c01),lim) && is_zero(abs2(coeffs[l][i].c10),lim))) {
                 diagonals[l] = false;
                 break;
             }

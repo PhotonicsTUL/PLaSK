@@ -118,17 +118,17 @@ cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component pol
 
 double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization, IncidentDirection direction)
 {
-    // if (!expansion.periodic)
-    //     throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
-
     size_t idx;
     cvector reflected = getReflectedAmplitudes(polarization, direction, &idx).claim();
 
+    if (!expansion.periodic)
+        throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
+
     size_t n = (direction==DIRECTION_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
-    // if (!expansion.diagonalQE(l))
-    //     throw Exception("%1%: %2% layer must be uniform to compute reflection coefficient",
-    //                     getId(), (direction==DIRECTION_BOTTOM)? "Bottom" : "Top");
+    if (!expansion.diagonalQE(l))
+        writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
+                              (direction==DIRECTION_BOTTOM)? "Bottom" : "Top");
 
     auto gamma = diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
@@ -139,11 +139,23 @@ double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization,
     double result = 0.;
     int N = getSize();
     if (expansion.separated) {
-        for (int i = -N; i <= N; ++i)
-            result += real(reflected[expansion.iE(i)]);
+        if (expansion.symmetric) {
+            for (int i = 0; i <= N; ++i)
+                result += real(reflected[expansion.iE(i)]);
+            result = 2.*result - real(reflected[expansion.iE(0)]);
+        } else {
+            for (int i = -N; i <= N; ++i)
+                result += real(reflected[expansion.iE(i)]);
+        }
     } else {
-        for (int i = -N; i <= N; ++i) {
-            result += real(reflected[expansion.iEx(i)]) + real(reflected[expansion.iEz(i)]);
+        if (expansion.symmetric) {
+            for (int i = 0; i <= N; ++i)
+                result += real(reflected[expansion.iEx(i)]) + real(reflected[expansion.iEz(i)]);
+            result = 2.*result - real(reflected[expansion.iEx(0)]) - real(reflected[expansion.iEz(0)]);
+        } else {
+            for (int i = -N; i <= N; ++i) {
+                result += real(reflected[expansion.iEx(i)]) + real(reflected[expansion.iEz(i)]);
+            }
         }
     }
 
