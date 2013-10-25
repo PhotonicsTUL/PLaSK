@@ -107,7 +107,7 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
         return exitcode;
     }
 
-    boost::python::object pmessage(boost::python::handle<>(PyObject_Str(value)));
+    PyObject* pmessage = PyObject_Str(value);
     std::string message = py::extract<std::string>(pmessage);
     boost::replace_all(message, "\n", " ");
 
@@ -156,6 +156,7 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
         } else
             plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
     }
+    Py_XDECREF(pmessage);
     return 1;
 }
 
