@@ -366,5 +366,21 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
     }
 }
 
+/*
+Validate positions:
+
+Notatki:
+1. obiekt istotny w geometrii to obiekt mający nazwę, taki że na ścieżce od korzenia (geometrii) do tego obiektu nie ma innego obiektu mającego nazwe
+    mozna je znaleźć przechodząc drzew w głąb aż do napotkania obiektu mającego nazwę (wtedy przestajemy schodzić w głąb)
+2. geometrie są porównywane parami, każda para zwiera:
+     geometrie tych samych typów, takie że jedna nie jest zawarta w drugiej
+3. sprawdzane są tylko obiekty należące do sumy zbiorów obiektów istotnych obu geometrii
+    (uwaga: obiekt który nie jest istotny w geometrii nadal może być w niej obiektem nazwanym)
+4. ustalane i porównywane są pozycje każdego takiego obiektu w obu geometriach i:
+    - jeśli obiekt nie występuje w jednej z geometrii ostrzeżenie NIE jest drukowane
+    - jeśli zbiory pozycji w geometriach są równej wielkości i nie są takie same ostrzeżenie JEST drukowane
+    - jeśli zbiory pozycji w geometriach mają elementy wspólne ostrzeżenie NIE jest drukowane
+    - w pozostałych przypadkach ostrzeżenie JEST drukowane
+*/
 
 } // namespace plask
