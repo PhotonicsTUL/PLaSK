@@ -86,7 +86,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         // double factor;
         double inv_hc;
 
-        double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
+        double global_QW_width;                   // sumaryczna grubosc studni kwantowych [cm];
         int iterations;
 
         std::vector<Box2D> detected_QW;

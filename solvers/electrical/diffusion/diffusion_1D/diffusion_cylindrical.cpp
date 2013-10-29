@@ -265,9 +265,9 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
                         wavelength = real(inWavelength(n));
-                        write_debug("wavelength: %1%", wavelength);
+                        write_debug("wavelength: %1% nm", wavelength);
                         auto Li = inLightIntensity(n, mesh2, interpolation_method);
-                        write_debug("Li[0]: %1%", Li[0]*1.0e-4);
+                        write_debug("Li[0]: %1% W/cm2", Li[0]*1.0e-4);
                         int ile = 0;
                         for (auto n: n_present)
                         {
@@ -275,9 +275,9 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         }
                         write_debug("n < 0: %1% times", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
-                        write_debug("g[0]: %1%", g[0]);
+                        write_debug("g[0]: %1% cm(-1)", g[0]);
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
-                        write_debug("dgdn[0]: %1%", dgdn[0]);
+                        write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
                         auto factor = inv_hc * wavelength;
                         // write_debug("Git2a!");
                         for (size_t i = 0; i != mesh2.size(); ++i)
