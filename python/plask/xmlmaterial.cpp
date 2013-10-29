@@ -4,6 +4,8 @@
 #include <plask/utils/xml/reader.h>
 #include <plask/material/db.h>
 
+#include "utils.h"
+
 namespace plask { namespace python {
 
 /**
@@ -23,33 +25,18 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::Kind kind;
     Material::ConductivityType condtype;
 
-    PyCodeObject
-        *lattC, *Eg, *CB, *VB, *Dso, *Mso, *Me, *Mhh, *Mlh, *Mh, *ac, *av, *b, *d, *c11, *c12, *c44, *eps, *chi,
-        *Nc, *Nv, *Ni, *Nf, *EactD, *EactA, *mob, *cond, *A, *B, *C, *D,
-        *thermk, *dens, *cp, *nr, *absp, *Nr, *NR;
+    PObj<PyCodeObject>
+        lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
+        Nc, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
+        thermk, dens, cp, nr, absp, Nr, NR;
 
     PythonEvalMaterialConstructor(const std::string& name) :
-        MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
-        lattC(NULL), Eg(NULL), CB(NULL), VB(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), d(NULL), c11(NULL), c12(NULL), c44(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
-        EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), NR(NULL) {}
+        MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
+     {}
 
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
-        MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED),
-        lattC(NULL), Eg(NULL), CB(NULL), VB(NULL), Dso(NULL), Mso(NULL), Me(NULL),
-        Mhh(NULL), Mlh(NULL), Mh(NULL), ac(NULL), av(NULL), b(NULL), d(NULL), c11(NULL), c12(NULL), c44(NULL), eps(NULL), chi(NULL), Nc(NULL), Nv(NULL), Ni(NULL), Nf(NULL),
-        EactD(NULL), EactA(NULL), mob(NULL), cond(NULL), A(NULL), B(NULL), C(NULL), D(NULL),
-        thermk(NULL), dens(NULL), cp(NULL), nr(NULL), absp(NULL), Nr(NULL), NR(NULL) {}
-
-    virtual ~PythonEvalMaterialConstructor() {
-        Py_XDECREF(lattC); Py_XDECREF(Eg); Py_XDECREF(CB); Py_XDECREF(VB); Py_XDECREF(Dso); Py_XDECREF(Mso); Py_XDECREF(Me);
-        Py_XDECREF(Mhh); Py_XDECREF(Mlh); Py_XDECREF(Mh); Py_XDECREF(ac); Py_XDECREF(av); Py_XDECREF(b); Py_XDECREF(d); Py_XDECREF(c11); Py_XDECREF(c12); Py_XDECREF(c44); Py_XDECREF(eps); Py_XDECREF(chi);
-        Py_XDECREF(Nc); Py_XDECREF(Nv); Py_XDECREF(Ni); Py_XDECREF(Nf); Py_XDECREF(EactD); Py_XDECREF(EactA);
-        Py_XDECREF(mob); Py_XDECREF(cond); Py_XDECREF(A); Py_XDECREF(B); Py_XDECREF(C); Py_XDECREF(D);
-        Py_XDECREF(thermk); Py_XDECREF(dens); Py_XDECREF(cp);
-        Py_XDECREF(nr); Py_XDECREF(absp); Py_XDECREF(Nr); Py_XDECREF(NR);
-    }
+        MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
+     {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
 };
