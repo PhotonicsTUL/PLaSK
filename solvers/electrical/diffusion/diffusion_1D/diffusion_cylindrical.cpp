@@ -708,10 +708,10 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-writelog(LOG_DEBUG, "product before: %1%", product);
+        write_debug("product before: %1%", product);
         product -= PM[i];
-writelog(LOG_DEBUG, "product after: %1%", product);
-writelog(LOG_DEBUG, "PM[i]: %1%", PM[i]);
+        write_debug("product after: %1%", product);
+        write_debug("PM[i]: %1%", PM[i]);
     }
 
     return product;
