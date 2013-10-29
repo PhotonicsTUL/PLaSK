@@ -83,7 +83,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     PM.reset();
     overthreshold_dgdn.reset();
-//    overthreshold_g.reset();
+    // overthreshold_g.reset();
 
     n_present.reset();
     n_previous.reset();
@@ -140,7 +140,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         }
         if (overthreshold_computation)
         {
-writelog(LOG_DEBUG, "Git0a!");
+            // write_debug("Git0a!");
 
             this->writelog(LOG_DETAIL, "Conducting overthreshold computations");
             convergence = MatrixFEM();
@@ -156,7 +156,7 @@ writelog(LOG_DEBUG, "Git0a!");
 
 template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geometry2DType>::MatrixFEM()
 {
-//    Computation of K*n" - E*n = -F
+    // Computation of K*n" - E*n = -F
     bool _convergence;
     iterations = 0;
 
@@ -209,9 +209,9 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                 C = this->QW_material->C(T);
 
                 double RS = rightSide(i); // instead of rightSide(i, T, 0) ?
-X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*pow(3.0,3./2.)*C*C)+(-27*C*C*RS+9*A*B*C-2*B*B*B)/
-(54*C*C*C)),1./3.)-(3*A*C-B*B)/pow(9*C*C*(sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/
-(2*pow(3.0,3./2.)*C*C)+(-27*C*C*RS+9*A*B*C-2*B*B*B)/(54*C*C*C)),1./3.)-B/(3*C);
+                X_vector[i] = pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*pow(3.0,3./2.)*C*C)+(-27*C*C*RS+9*A*B*C-2*B*B*B)/
+                              (54*C*C*C)),1./3.)-(3*A*C-B*B)/pow(9*C*C*(sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/
+                              (2*pow(3.0,3./2.)*C*C)+(-27*C*C*RS+9*A*B*C-2*B*B*B)/(54*C*C*C)),1./3.)-B/(3*C);
 //                X_vector[i] = -B/(3.0*C) - (pow(2.0,1.0/3.0)*(- B*B + 3.0*A*C))/(3.0*C*pow(-2.0*B*B*B +
 //						9.0*A*B*C + 27.0*C*C*RS + sqrt(4.0*pow(- B*B + 3.0*A*C,3.0) +
 //						pow(-2.0*B*B*B + 9.0*A*B*C + 27.0*C*C*RS,2.0)),1.0/3.0)) +
@@ -260,32 +260,32 @@ X_vector[i]=pow((sqrt(27*C*C*RS*RS+(4*B*B*B-18*A*B*C)*RS+4*A*A*A*C-A*A*B*B)/(2*p
                     // Sum all modes
                     PM = DataVector<double>(mesh2.size(), 0.);
                     overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
-//                    overthreshold_g = DataVector<double>(mesh2.size(), 0.);
+                    // overthreshold_g = DataVector<double>(mesh2.size(), 0.);
 
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
                         wavelength = real(inWavelength(n));
-writelog(LOG_DEBUG, "wavelength: %1%", wavelength);
+                        write_debug("wavelength: %1%", wavelength);
                         auto Li = inLightIntensity(n, mesh2, interpolation_method);
-writelog(LOG_DEBUG, "Li[0]: %1%", Li[0]*1.0e-4);
+                        write_debug("Li[0]: %1%", Li[0]*1.0e-4);
                         int ile = 0;
                         for (auto n: n_present)
                         {
                             if (n <= 0) ile++;
                         }
-writelog(LOG_DEBUG, "ile: %1%", ile);
+                        write_debug("n < 0: %1% times", ile);
                         auto g = inGain(mesh2, wavelength, interpolation_method);
-writelog(LOG_DEBUG, "g[0]: %1%", g[0]);
+                        write_debug("g[0]: %1%", g[0]);
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
-writelog(LOG_DEBUG, "dgdn[0]: %1%", dgdn[0]);
+                        write_debug("dgdn[0]: %1%", dgdn[0]);
                         auto factor = inv_hc * wavelength;
-writelog(LOG_DEBUG, "Git2a!");
+                        // write_debug("Git2a!");
                         for (size_t i = 0; i != mesh2.size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
                             PM[i] += common * g[i];
                             overthreshold_dgdn[i] += common * dgdn[i];
-//                            overthreshold_g[i] += common * g[i];
+                            // overthreshold_g[i] += common * g[i];
                         }
                     }
                 }
@@ -331,10 +331,10 @@ writelog(LOG_DEBUG, "Git2a!");
             }
             else if (fem_method == FEM_PARABOLIC)
             {
-//                double max_error_absolute = 0.0;
+                // double max_error_absolute = 0.0;
                 double max_error_relative = 0.0;
-//                int max_error_point = 0.0;
-//                double max_error_R = 0.0;
+                // int max_error_point = 0.0;
+                // double max_error_R = 0.0;
 
                 _convergence = true;
                 for (int i = 0; i < (current_mesh().size() - 1)/2 ; i++)
@@ -344,16 +344,16 @@ writelog(LOG_DEBUG, "Git2a!");
 
                     absolute_error = abs(L - R);
                     relative_error = abs(absolute_error/R);
-writelog(LOG_DEBUG, "absolute_error: %1%", absolute_error);
-writelog(LOG_DEBUG, "relative_error: %1%", relative_error);
-writelog(LOG_DEBUG, "n_present[0]: %1%", n_present[0]);
-writelog(LOG_DEBUG, "F(0): %1%", F(0));
+                    write_debug("absolute error: %1%", absolute_error);
+                    write_debug("relative error: %1%", relative_error);
+                    write_debug("n_present[0]: %1%", n_present[0]);
+                    write_debug("F(0): %1%", F(0));
 
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
-//                        max_error_absolute = absolute_error;
-//                        max_error_point = current_mesh()[2*i + 1];
-//                        max_error_R = R;
+                        // max_error_absolute = absolute_error;
+                        // max_error_point = current_mesh()[2*i + 1];
+                        // max_error_R = R;
 
                     if ( (relative_accuracy < relative_error) && (absolute_concentration_error < absolute_error) ) // (n_tolerance < absolute_error)
                     {
@@ -367,8 +367,9 @@ writelog(LOG_DEBUG, "F(0): %1%", F(0));
             }
             iterations += 1;
 #ifndef NDEBUG
-if (overthreshold_computation) writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% mW, qw_width: %2% cm", burning_integral(), global_QW_width);
-writelog(LOG_DEBUG, "iteration: %1%", iterations);
+            if (overthreshold_computation)
+                writelog(LOG_DEBUG, "Integral of overthreshold loses: %1% mW, qw_width: %2% cm", burning_integral(), global_QW_width);
+                writelog(LOG_DEBUG, "iteration: %1%", iterations);
 #endif
         }
 

@@ -83,7 +83,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         bool overthreshold_computation;
 
         double wavelength;
-//        double factor;
+        // double factor;
         double inv_hc;
 
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [m];
@@ -98,9 +98,9 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 //        plask::DataVector<const double> g;                    // gain on the mesh
 //        plask::DataVector<const double> dgdn;                 // gain over concentration derivative on the mesh
 
-        plask::DataVector<double> PM;   // Factor for overthreshold computations summed for all modes
+        plask::DataVector<double> PM;                   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
-//        plask::DataVector<double> overthreshold_g;      // Factor for overthreshold computations summed for all modes
+//        plask::DataVector<double> overthreshold_g;    // Factor for overthreshold computations summed for all modes
 
         plask::DataVector<double> n_previous;           // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;            // concentration computed in n -th step vector
