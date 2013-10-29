@@ -36,7 +36,7 @@ py::dict globals;
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
-    int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
+    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
 
     void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
@@ -133,16 +133,11 @@ int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) 
     PyObject* type;
     PyObject* original_traceback;
 
-    PyErr_Fetch(&type, &value,&original_traceback);
+    PyErr_Fetch(&type, &value, &original_traceback);
     PyErr_NormalizeException(&type, &value, &original_traceback);
 
-    int retval = plask::python::printPythonException(type, value, original_traceback, startline, scriptname);
-
-    Py_XDECREF(type);
-    Py_XDECREF(value);
-    Py_XDECREF(original_traceback);
-
-    return retval;
+    py::handle<> value_h(value), type_h(type), original_traceback_h(original_traceback);
+    return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
 }
 
 

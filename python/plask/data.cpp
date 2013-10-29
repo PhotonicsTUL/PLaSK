@@ -109,11 +109,11 @@ static py::object DataVectorWrap_getslice(const DataVectorWrap<T,dim>& self, std
     if (std::size_t(to) > self.size()) to = self.size();
 
     npy_intp dims[] = { to-from, detail::type_dim<T>() };
-    PyObject* arr = PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, detail::typenum<T>());
-    typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA((PyArrayObject*)arr));
+    py::object arr(py::handle<>(PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, detail::typenum<T>())));
+    typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA((PyArrayObject*)arr.ptr()));
     for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
         *arr_data = *i;
-    return py::object(py::handle<>(arr));
+    return arr;
 }
 
 

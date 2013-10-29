@@ -64,24 +64,19 @@ class PythonEvalMaterial : public Material
 
     py::object self;
 
+    static inline PyObject* PY_EVAL(PyCodeObject *fun, const py::dict& locals) {
+        return
 #if PY_VERSION_HEX >= 0x03000000
-#   define PY_EVAL(fun) boost::python::handle<>(PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr()))
+            PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr());
 #else
-#   define PY_EVAL(fun) boost::python::handle<>(PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr()))
+            PyEval_EvalCode(fun, xml_globals.ptr(), locals.ptr());
 #endif
-
-    template <typename RETURN>
-    RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-        boost::python::object result(PY_EVAL(fun));
-        if (!result.ptr()) throw py::error_already_set();
-        return py::extract<RETURN>(result);
     }
 
-    /*template <typename RETURN>
-    RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-        boost::python::object result = boost::python::eval(fun, xml_globals, locals);
-        return py::extract<RETURN>(result);
-    }*/
+    template <typename RETURN>
+    inline RETURN call(PyCodeObject *fun, const py::dict& locals) const {
+        return py::extract<RETURN>(py::handle<>(PY_EVAL(fun, locals)).get());
+    }
 
   public:
 
@@ -174,9 +169,7 @@ class PythonEvalMaterial : public Material
     virtual dcomplex Nr(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->Nr != NULL) {
-            boost::python::object result(PY_EVAL(cls->Nr));
-            if (!result.ptr()) throw py::error_already_set();
-            return py::extract<dcomplex>(result);
+            return py::extract<dcomplex>(py::handle<>(PY_EVAL(cls->Nr, locals)).get());
         }
         if (cls->nr != NULL || cls->absp != NULL)
             return dcomplex(nr(wl, T), -7.95774715459e-09 * absp(wl, T)*wl);
@@ -185,9 +178,7 @@ class PythonEvalMaterial : public Material
     virtual Tensor3<dcomplex> NR(double wl, double T) const {
         py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T;
         if (cls->NR != NULL) {
-            boost::python::object result(PY_EVAL(cls->NR));
-            if (!result.ptr()) throw py::error_already_set();
-            return py::extract<Tensor3<dcomplex>>(result);
+            return py::extract<Tensor3<dcomplex>>(py::handle<>(PY_EVAL(cls->NR, locals)).get());
         }
         if (cls->Nr != NULL) {
             dcomplex n = Nr(wl, T);

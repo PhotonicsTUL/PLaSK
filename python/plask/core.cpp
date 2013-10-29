@@ -84,22 +84,22 @@ py::dict xml_globals;
 
 
 // Print Python exception to PLaSK logging system
-int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false) {
+int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false) {
     PyTypeObject* type = (PyTypeObject*)otype;
     PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
 
     if ((PyObject*)type == PyExc_SystemExit) {
         int exitcode;
-        if (PyExceptionInstance_Check(value)) {
-            PyObject* code = PyObject_GetAttrString(value, "code");
-            if (code) { Py_DECREF(value); value = code; }
+        if (PyExceptionInstance_Check(value.ptr())) {
+            PyObject* code = PyObject_GetAttrString(value.ptr(), "code");
+            if (code) { value = py::object(py::handle<>(code)); }
         }
-        if (PyInt_Check(value))
-            exitcode = (int)PyInt_AsLong(value);
+        if (PyInt_Check(value.ptr()))
+            exitcode = (int)PyInt_AsLong(value.ptr());
         else {
             std::cerr.flush();
             std::cout.flush();
-            PyObject_Print(value, stderr, Py_PRINT_RAW);
+            PyObject_Print(value.ptr(), stderr, Py_PRINT_RAW);
             PySys_WriteStderr("\n");
             exitcode = 1;
         }
@@ -107,8 +107,8 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
         return exitcode;
     }
 
-    PyObject* pmessage = PyObject_Str(value);
-    std::string message = py::extract<std::string>(pmessage);
+
+    std::string message = py::extract<std::string>(py::str(value));
     boost::replace_all(message, "\n", " ");
 
     std::string error_name = type->tp_name;
@@ -156,7 +156,6 @@ int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
         } else
             plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
     }
-    Py_XDECREF(pmessage);
     return 1;
 }
 
