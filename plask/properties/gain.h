@@ -29,7 +29,7 @@ struct Gain : public FieldProperty<double, double> {
 };
 
 /**
- * Derivative of material gain over carriers concentration [1/cm^4].
+ * Derivative of material gain over carriers concentration [cm^2].
  *
  * Providers of material gain derivative should accept additional parameter,
  * which is the wavelength for which the derivative should be computed.

@@ -661,6 +661,131 @@ PLaSK
  In the future this launcher will become a part of a more complex GUI.
 \end_layout
 
+\begin_layout Subsection*
+Command-line parameters
+\end_layout
+
+\begin_layout Standard
+Program 
+\family typewriter
+plask
+\family default
+ may be run with several command-line parameters that---if present---must
+ be specified 
+\bar under
+before
+\bar default
+ the script name.
+ The most useful parameters are:
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 000000000000000
+
+\family typewriter
+-l
+\family default
+\emph on
+
+\begin_inset space ~
+\end_inset
+
+loglevel
+\emph default
+ specify the logging level used during this program run.
+ Log levels set up in the XPL file or Python script are ignored.
+ Possible values are: 
+\emph on
+error
+\emph default
+, 
+\emph on
+error_detail
+\emph default
+, 
+\emph on
+warning
+\emph default
+, 
+\emph on
+info
+\emph default
+, 
+\emph on
+result
+\emph default
+, 
+\emph on
+data
+\emph default
+, 
+\emph on
+detail
+\emph default
+, or 
+\emph on
+debug
+\emph default
+.
+ Mind that it is generally bad idea to set the logging level to anything
+ less than warning.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 000000000000000
+
+\family typewriter
+-c
+\family default
+\emph on
+
+\begin_inset space ~
+\end_inset
+
+command
+\emph default
+ run a single command instead of the script.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 000000000000000
+
+\family typewriter
+-i
+\family default
+ always enter the interactive console, even if there is a script name specified.
+ All the parameters are redirected to the console.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 000000000000000
+
+\family typewriter
+-version
+\family default
+ print PLaSK version and exit.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 000000000000000
+
+\emph on
+variable
+\family typewriter
+\emph default
+=
+\family default
+\emph on
+value
+\emph default
+ set the value of a variable defined in XPL section 
+\family typewriter
+<defines>
+\family default
+.
+ This overrides the value from the file.
+\end_layout
+
 \begin_layout Chapter
 Tutorials and Examples
 \end_layout

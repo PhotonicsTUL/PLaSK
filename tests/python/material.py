@@ -33,7 +33,7 @@ class Material(unittest.TestCase):
             print(kwargs)
             self.kwargs = kwargs
             self.composition = self.complete_composition(kwargs, self.name);
-            print(self.composition)
+            print("Composition: %s" % self.composition)
         def __del__(self):
             ptest.print_ptr(self)
         def VB(self, T=300., e=0., point='G', hole='H'):

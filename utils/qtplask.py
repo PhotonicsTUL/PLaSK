@@ -396,7 +396,8 @@ class MainWindow(QtGui.QMainWindow):
                 if cat == '#006060' and not self.actionData.isChecked(): continue
                 if cat == 'black' and not self.actionDetail.isChecked(): continue
                 if cat == 'gray' and not self.actionDebug.isChecked(): continue
-                self.messagesView.append(line)
+                lines.append(line)
+            self.messagesView.append("<br/>\n".join(lines))
             self.printed_lines = total_lines
             if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)
 

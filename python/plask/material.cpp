@@ -96,26 +96,20 @@ class PythonMaterial : public Material
     shared_ptr<Material> base;
     PyObject* self;
 
-    template <typename T>
-    inline T attr(const char* attribute) const {
-        return py::extract<T>(py::object(py::detail::borrowed_reference(self)).attr(attribute));
-    }
-
-    PyMethodObject* overriden(char const* name) const {
+    bool overriden(char const* name) const {
         py::converter::registration const& r = py::converter::registered<Material>::converters;
         PyTypeObject* class_object = r.get_class_object();
         if (self) {
-            if (PyObject* mo = PyObject_GetAttrString(self, const_cast<char*>(name))) {
-                if (PyMethod_Check(mo)) {
-                    PyMethodObject* m = (PyMethodObject*)mo;
-                    PyObject* borrowed_f = nullptr;
-                    if(m->im_self == self && class_object->tp_dict != 0)
-                        borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
-                    if (borrowed_f != m->im_func) return m;
-                }
+            py::handle<> mh(PyObject_GetAttrString(self, const_cast<char*>(name)));
+            if (mh && PyMethod_Check(mh.get())) {
+                PyMethodObject* mo = (PyMethodObject*)mh.get();
+                PyObject* borrowed_f = nullptr;
+                if(mo->im_self == self && class_object->tp_dict != 0)
+                    borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
+                if (borrowed_f != mo->im_func) return true;
             }
         }
-        return nullptr;
+        return false;
     }
 
     template <typename R, typename F, typename... Args>
@@ -123,28 +117,6 @@ class PythonMaterial : public Material
         if (overriden(name)) return py::call_method<R>(self, name, args...);
         return ((*base).*f)(args...);
     }
-
-    // Tensor2<double> call_thermk(double T, double t) const {
-    //     PyMethodObject* m = overriden("thermk");
-    //     if (m) {
-    //         #if PY_VERSION_HEX >= 0x03000000
-    //         if(PyObject* fc = PyObject_GetAttrString(m->im_func, "__code__")) {
-    //         #else
-    //         if(PyObject* fc = PyObject_GetAttrString(m->im_func, "func_code")) {
-    //         #endif
-    //             if(PyObject* ac = PyObject_GetAttrString(fc, "co_argcount")) {
-    //                 const int count = PyInt_AsLong(ac);
-    //                 if (count == 2) return py::call_method<Tensor2<double>>(self, "thermk", T);
-    //                 else if (count == 3) return py::call_method<Tensor2<double>>(self, "thermk", T, t);
-    //                 else if (count < 2) throw TypeError("thermk() takes at least 2 arguments (%1%) given", count);
-    //                 else throw TypeError("thermk() takes at most 3 arguments (%1%) given", count);
-    //                 Py_DECREF(ac);
-    //             }
-    //             Py_DECREF(fc);
-    //         }
-    //     }
-    //     return base->thermk(T);
-    // }
 
   public:
     PythonMaterial () : base(new EmptyMaterial) {}
@@ -180,8 +152,8 @@ class PythonMaterial : public Material
 
     virtual bool isEqual(const Material& other) const {
         auto theother = static_cast<const PythonMaterial&>(other);
-        py::object oself { py::detail::borrowed_reference(self) },
-                   oother { py::object(py::detail::borrowed_reference(theother.self)) };
+        py::object oself { py::borrowed(self) },
+                   oother { py::object(py::borrowed(theother.self)) };
 
         if (overriden("__eq__")) return py::call_method<bool>(self, "__eq__", oother);
 
@@ -189,7 +161,7 @@ class PythonMaterial : public Material
     }
 
     virtual std::string name() const {
-        py::object cls = py::object(py::detail::borrowed_reference(self)).attr("__class__");
+        py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object oname;
         try {
             oname = cls.attr("__dict__")["name"];
@@ -206,7 +178,7 @@ class PythonMaterial : public Material
     }
 
     virtual Material::ConductivityType condtype() const {
-        py::object cls = py::object(py::detail::borrowed_reference(self)).attr("__class__");
+        py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object octype;
         try {
             octype = cls.attr("__dict__")["condtype"];
@@ -217,7 +189,18 @@ class PythonMaterial : public Material
         return py::extract<Material::ConductivityType>(octype);
     }
 
-    virtual Material::Kind kind() const { return attr<Material::Kind>("kind"); }
+    virtual Material::Kind kind() const { 
+        py::object cls = py::object(py::borrowed(self)).attr("__class__");
+        py::object okind;
+        try {
+            okind = cls.attr("__dict__")["kind"];
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            return base->kind();
+        }
+        return py::extract<Material::Kind>(okind);
+    }
+    
     virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
     virtual double Eg(double T, double e, char point) const { return override<double>("Eg", &Material::Eg, T, e, point); }
     virtual double CB(double T, double e, char point) const {

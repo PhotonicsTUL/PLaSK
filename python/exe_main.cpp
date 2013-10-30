@@ -136,7 +136,7 @@ int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) 
     PyErr_Fetch(&type, &value, &original_traceback);
     PyErr_NormalizeException(&type, &value, &original_traceback);
 
-    py::handle<> value_h(value), type_h(type), original_traceback_h(original_traceback);
+    py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
     return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
 }
 
@@ -171,7 +171,8 @@ int main(int argc, const char *argv[])
     bool force_interactive = false;
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
-   
+    bool python_logger = true;
+    
     std::deque<const char*> defs;
 
     while (argc > 1) {
@@ -214,6 +215,7 @@ int main(int argc, const char *argv[])
         } else if (arg == "-u") {
             setbuf(stdout, NULL);
             setbuf(stderr, NULL);
+            python_logger = false;
             --argc; ++argv;
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
         } else if (arg == "-w") {
@@ -244,10 +246,10 @@ int main(int argc, const char *argv[])
     }
 
     // Set the Python logger
-    plask::default_logger = plask::python::makePythonLogger();
+    if (python_logger) plask::default_logger = plask::python::makePythonLogger();
     if (loglevel) plask::maxLoglevel = *loglevel;
 
-    // Test if we should run commans specified in the command line, use the file or start an interactive mode
+    // Test if we should run command specified in the command line, use the file or start an interactive mode
     if (command) { // run command specified in the command line
 
         try {
