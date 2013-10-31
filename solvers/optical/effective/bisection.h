@@ -72,10 +72,10 @@ struct Contour {
  * \param corner0,corner1 corners of the integral
  * \param resteps,imsteps number of contour points along each real and imaginary axis, respectively
  * \param eps desired precision
- * \return list of found zeros
+ * \return list of found ranges with zeros
  */
-std::vector<dcomplex> findZeros(const Solver* solver, const std::function<dcomplex(dcomplex)>& fun,
-                                dcomplex corner0, dcomplex corner1, size_t resteps, size_t imsteps, dcomplex eps);
+std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const std::function<dcomplex(dcomplex)>& fun,
+                                                    dcomplex corner0, dcomplex corner1, size_t resteps, size_t imsteps, dcomplex eps);
 
 }}} // namespace plask::solvers::effective
 

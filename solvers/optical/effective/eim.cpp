@@ -3,6 +3,8 @@
 
 using plask::dcomplex;
 
+#define DNEFF 1e-9
+
 namespace plask { namespace solvers { namespace effective {
 
 EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
@@ -21,12 +23,10 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;
     root.tolf_max = 1.0e-6;
-    root.maxstep = 0.1;
     root.maxiter = 500;
     stripe_root.tolx = 1.0e-8;
     stripe_root.tolf_min = 1.0e-10;
     stripe_root.tolf_max = 1.0e-6;
-    stripe_root.maxstep = 0.1;
     stripe_root.maxiter = 500;
 }
 
@@ -61,14 +61,14 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
             root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
             root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
-            root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
+            // root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
             root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
             reader.requireTagEnd();
         } else if (param == "stripe-root") {
             stripe_root.tolx = reader.getAttribute<double>("tolx", stripe_root.tolx);
             stripe_root.tolf_min = reader.getAttribute<double>("tolf-min", stripe_root.tolf_min);
             stripe_root.tolf_max = reader.getAttribute<double>("tolf-max", stripe_root.tolf_max);
-            stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
+            // stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
             stripe_root.maxiter = reader.getAttribute<int>("maxiter", stripe_root.maxiter);
             reader.requireTagEnd();
         } else if (param == "mirrors") {
@@ -147,7 +147,9 @@ std::vector<dcomplex> EffectiveIndex2DSolver::searchVNeffs(dcomplex neff1, dcomp
     neff1 = dcomplex(re0,im0);
     neff2 = dcomplex(re1,im1);
 
-    auto results = findZeros(this, [&](const dcomplex& z){return this->detS1(z,nrCache[stripe]);}, neff1, neff2, resteps, imsteps, eps);
+    auto ranges = findZeros(this, [&](const dcomplex& z){return this->detS1(z,nrCache[stripe]);}, neff1, neff2, resteps, imsteps, eps);
+    std::vector<dcomplex> results; results.reserve(ranges.size());
+    for (auto zz: ranges) results.push_back(0.5 * (zz.first+zz.second));
 
     if (maxLoglevel >= LOG_RESULT) {
         if (results.size() != 0) {
@@ -171,7 +173,17 @@ size_t EffectiveIndex2DSolver::findMode(dcomplex neff, Symmetry symmetry)
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
     Mode mode(this, symmetry);
-    mode.neff = RootDigger(*this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)(neff);
+    mode.neff = RootMuller(*this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)(neff-DNEFF, neff+DNEFF);
+    return insertMode(mode);
+}
+
+
+size_t EffectiveIndex2DSolver::findMode(dcomplex neff1, dcomplex neff2, Symmetry symmetry)
+{
+    writelog(LOG_INFO, "Searching for the mode between Neffs %1% and %2%", str(neff1), str(neff2));
+    stageOne();
+    Mode mode(this, symmetry);
+    mode.neff = RootMuller(*this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)(neff1, neff2);
     return insertMode(mode);
 }
 
@@ -219,11 +231,12 @@ std::vector<size_t> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex n
 
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
-        RootDigger refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
+        RootMuller refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
         std::string msg = "Found modes at: ";
-        for (auto z: results) {
+        for (auto zz: results) {
+            dcomplex z;
             try {
-                z = refine(z);
+                z = refine(zz.first, zz.second);
             } catch (ComputationError) {
                 continue;
             }
@@ -378,13 +391,13 @@ void EffectiveIndex2DSolver::stageOne()
 //         }
 // #endif
         Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
-        RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
+        RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
         if (vneff == 0.) {
             dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
                                               [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
             vneff = 0.999 * real(maxn);
         }
-        vneff = rootdigger(vneff);
+        vneff = rootdigger(vneff-DNEFF, vneff+DNEFF);
 
         // Compute field weights
         computeWeights(stripe);
@@ -408,14 +421,14 @@ void EffectiveIndex2DSolver::stageOne()
         recompute_neffs = false;
 
         double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
-        for (auto eps: epsilons) {
-            dcomplex n = sqrt(eps);
+        for (size_t i = xbegin; i < xend; ++i) {
+            dcomplex n = sqrt(epsilons[i]);
             if (real(n) < rmin) rmin = real(n);
             if (real(n) > rmax) rmax = real(n);
             if (imag(n) < imin) imin = imag(n);
             if (imag(n) > imax) imax = imag(n);
         }
-        writelog(LOG_DETAIL, "Effective index should be between %1%nm and %2%nm", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
+        writelog(LOG_DETAIL, "Effective index should be between %1% and %2%", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
     }
 }
 

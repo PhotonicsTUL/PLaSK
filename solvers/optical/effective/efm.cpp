@@ -5,6 +5,8 @@ using plask::dcomplex;
 
 namespace plask { namespace solvers { namespace effective {
 
+#define DLAM 1e-3
+    
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
@@ -20,12 +22,10 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     root.tolx = 1.0e-8;
     root.tolf_min = 1.0e-10;
     root.tolf_max = 2.0e-5;
-    root.maxstep = 0.1;
     root.maxiter = 500;
     stripe_root.tolx = 1.0e-8;
     stripe_root.tolf_min = 1.0e-10;
     stripe_root.tolf_max = 1.0e-5;
-    stripe_root.maxstep = 0.05;
     stripe_root.maxiter = 500;
 }
 
@@ -48,14 +48,14 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
             root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
             root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
-            root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
+            // root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
             root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
             reader.requireTagEnd();
         } else if (param == "stripe-root") {
             stripe_root.tolx = reader.getAttribute<double>("tolx", stripe_root.tolx);
             stripe_root.tolf_min = reader.getAttribute<double>("tolf-min", stripe_root.tolf_min);
             stripe_root.tolf_max = reader.getAttribute<double>("tolf-max", stripe_root.tolf_max);
-            stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
+            // stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
             stripe_root.maxiter = reader.getAttribute<int>("maxiter", stripe_root.maxiter);
             reader.requireTagEnd();
         } else if (param == "outer") {
@@ -95,7 +95,18 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
     if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
     stageOne();
     Mode mode(this, m);
-    mode.lam = RootDigger(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)(lambda);
+    mode.lam = RootMuller(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)(lambda-DLAM, lambda+DLAM);
+    return insertMode(mode);
+}
+
+
+size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda1, dcomplex lambda2, int m)
+{
+    writelog(LOG_INFO, "Searching for the mode between wavelengths %1% and %2%", str(lambda1), str(lambda2));
+    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
+    stageOne();
+    Mode mode(this, m);
+    mode.lam = RootMuller(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)(lambda1, lambda2);
     return insertMode(mode);
 }
 
@@ -149,11 +160,12 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
 
     if (results.size() != 0) {
         log_value.resetCounter();
-        RootDigger refine(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root);
+        RootMuller refine(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root);
         std::string msg = "Found modes at: ";
-        for (auto& z: results) {
+        for (auto& zz: results) {
+            dcomplex z;
             try {
-                z = refine(z);
+                z = refine(zz.first, zz.second);
             } catch (ComputationError) {
                 continue;
             }
@@ -333,9 +345,9 @@ void EffectiveFrequencyCylSolver::stageOne()
                     nng[i] = same_nr * same_ng;
                 } else {
                     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "vlam", "det");
-                    RootDigger rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
+                    RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
                     dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
-                    veffs[i] = freqv(rootdigger(start));
+                    veffs[i] = freqv(rootdigger(start-DLAM, start+DLAM));
                     computeStripeNNg(i);
                 }
             } catch (...) {

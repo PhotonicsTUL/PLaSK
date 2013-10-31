@@ -5,7 +5,7 @@
 
 #include <plask/plask.hpp>
 
-#include "broyden.h"
+#include "muller.h"
 #include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
@@ -96,7 +96,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
   protected:
 
-    friend struct RootDigger;
+    friend struct RootMuller;
 
     size_t xbegin,  ///< First element of horizontal mesh to consider
            xend,    ///< Last element of horizontal mesh to consider
@@ -137,10 +137,10 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     boost::optional<std::pair<double,double>> mirrors;
 
     /// Parameters for main rootdigger
-    RootDigger::Params root;
+    RootMuller::Params root;
 
     /// Parameters for sripe rootdigger
-    RootDigger::Params stripe_root;
+    RootMuller::Params stripe_root;
 
     /// Computed modes
     std::vector<Mode> modes;
@@ -241,6 +241,15 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      * \return index of found mode
      */
     size_t findMode(dcomplex neff, Symmetry symmetry=SYMMETRY_DEFAULT);
+
+    /**
+     * Find the mode between the specified effective indices.
+     * \param neff1 initial effective index to search the mode from
+     * \param neff1 initial effective index to search the mode to
+     * \param symmetry mode symmetry
+     * \return index of found mode
+     */
+    size_t findMode(dcomplex neff1, dcomplex neff2, Symmetry symmetry=SYMMETRY_DEFAULT);
 
     /**
      * Find the modes within the specified range

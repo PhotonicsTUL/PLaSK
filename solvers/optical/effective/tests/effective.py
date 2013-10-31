@@ -38,24 +38,10 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver.polarization = "TE"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.147, 3 )
         self.solver.polarization = "TM"
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.11, '+')].neff, 1.111, 3)
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode([1.10,1.12], '+')].neff, 1.111, 3)
 
     def testMesh(self):
         mesh = self.solver.mesh
-
-    def testField(self):
-        self.solver.wavelength = 1000.
-        self.solver.polarization = "TE"
-        self.solver.find_mode(1.15)
-        axis0 = linspace(-2.75, 2.75, 2000)
-        axis1 = linspace(-2., 2.5, 1000)
-        msh = mesh.Rectilinear2D(axis0, axis1).get_midpoints()
-        dx = (axis0[1] - axis0[0]) * 1e-6
-        dy = (axis1[1] - axis1[0]) * 1e-6
-        field = self.solver.outLightIntensity(0,msh).array
-        integral = sum(field) * dx*dy
-        self.assertAlmostEqual(integral, 14.65, 2)
-
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):
 

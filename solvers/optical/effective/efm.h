@@ -6,7 +6,7 @@
 #include <plask/plask.hpp>
 #include <camos/camos.h>
 
-#include "broyden.h"
+#include "muller.h"
 #include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
@@ -103,7 +103,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     
   protected:
 
-    friend struct RootDigger;
+    friend struct RootMuller;
 
     /// Logger for char_val
     Data2DLog<dcomplex,dcomplex> log_value;
@@ -142,8 +142,8 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     double outdist;
 
     // Parameters for rootdigger
-    RootDigger::Params root;        ///< Parameters for horizontal root digger
-    RootDigger::Params stripe_root; ///< Parameters for vertical root diggers
+    RootMuller::Params root;        ///< Parameters for horizontal root digger
+    RootMuller::Params stripe_root; ///< Parameters for vertical root diggers
 
     /// Allowed relative power integral precision
     double perr;
@@ -202,15 +202,27 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     }
 
     /**
-     * Find the mode around the specified effective index.
+     * Find the mode around the specified effective wavelength.
      *
      * This method remembers the determined mode, for retrieval of the field profiles.
      *
-     * \param lambda0 initial wavelength close to the solution
+     * \param lambda initial wavelength close to the solution
      * \param m number of the LP_mn mode describing angular dependence
      * \return index of the found mode
      */
-    size_t findMode(dcomplex lambda0, int m=0);
+    size_t findMode(dcomplex lambda, int m=0);
+
+    /**
+     * Find the mode between the specified effective wavelengths.
+     *
+     * This method remembers the determined mode, for retrieval of the field profiles.
+     *
+     * \param lambda1 first boundary wavelength close to the solution
+     * \param lambda2 second boundary wavelength close to the solution
+     * \param m number of the LP_mn mode describing angular dependence
+     * \return index of the found mode
+     */
+    size_t findMode(dcomplex lambda1, dcomplex lamda2, int m=0);
 
     /**
      * Find the modes within the specified range

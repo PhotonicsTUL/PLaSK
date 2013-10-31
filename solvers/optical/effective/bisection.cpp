@@ -143,39 +143,39 @@ namespace detail {
 
     struct ContourBisect {
         double reps, ieps;
-        std::vector<dcomplex>& results;
-        ContourBisect(double reps, double ieps, std::vector<dcomplex>& results): reps(reps), ieps(ieps), results(results) {}
+        std::vector<std::pair<dcomplex,dcomplex>>& results;
+        ContourBisect(double reps, double ieps, std::vector<std::pair<dcomplex,dcomplex>>& results): reps(reps), ieps(ieps), results(results) {}
 
         int operator()(const Contour& contour) {
             int wind = contour.winding();
             if (wind == 0)
                 return 0;
-            if (contour.re1-contour.re0 <= reps && contour.im1-contour.im0 <= ieps) {
+            if (wind == 1 && contour.re1-contour.re0 <= reps && contour.im1-contour.im0 <= ieps) {
                 for(int i = 0; i != abs(wind); ++i)
-                    results.push_back(0.5 * dcomplex(contour.re0+contour.re1, contour.im0+contour.im1));
+                    results.push_back(std::make_pair(dcomplex(contour.re0, contour.im0), dcomplex(contour.re1, contour.im1)));
                 return wind;
             }
             auto contours = contour.divide(reps, ieps);
             size_t w1 = (*this)(contours.first);
             size_t w2 = (*this)(contours.second);
-            if (w1 + w2 != wind) {
-                contour.solver->writelog(LOG_WARNING, "Lost zero between %1% and %2%",
-                                         str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
-            }
+            if (w1 + w2 < wind)
+                contour.solver->writelog(LOG_WARNING, "Lost zero between %1% and %2%", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
+            else if (w1 + w2 > wind)
+                contour.solver->writelog(LOG_WARNING, "New zero between %1% and %2%", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
             return wind;
         }
     };
 }
 
-std::vector<dcomplex> findZeros(const Solver* solver, const std::function<dcomplex(dcomplex)>& fun,
-                                dcomplex corner0, dcomplex corner1, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const std::function<dcomplex(dcomplex)>& fun,
+                                                    dcomplex corner0, dcomplex corner1, size_t resteps, size_t imsteps, dcomplex eps)
 {
     // Find first power of 2 not smaller than range/precision
     size_t Nr = 1, Ni = 1;
     for(; resteps > Nr; Nr <<= 1);
     for(; imsteps > Ni; Ni <<= 1);
 
-    std::vector<dcomplex> results;
+    std::vector<std::pair<dcomplex,dcomplex>> results;
     detail::ContourBisect bisection(real(eps), imag(eps), results);
     Contour contour(solver, fun, corner0, corner1, Nr, Ni);
     int zeros = abs(contour.winding());

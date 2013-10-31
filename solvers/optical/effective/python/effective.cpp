@@ -117,12 +117,30 @@ void EffectiveIndex2DSolver_setMirrors(EffectiveIndex2DSolver& self, py::object 
     }
 }
 
-size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, dcomplex neff, py::object symmetry) {
-    return self.findMode(neff, parseSymmetry(symmetry));
+size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, py::object neff, py::object symmetry) {
+    try {
+        return self.findMode(py::extract<dcomplex>(neff), parseSymmetry(symmetry));
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        if (py::len(neff) != 2) throw TypeError("'neff' must be either complex or sequence of two complex");
+        return self.findMode(py::extract<dcomplex>(neff[0]), py::extract<dcomplex>(neff[1]), parseSymmetry(symmetry));
+    }
+    
 }
 
 std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& self, dcomplex neff1, dcomplex neff2, py::object symmetry, size_t resteps, size_t imsteps, dcomplex eps) {
     return self.findModes(neff1, neff2, parseSymmetry(symmetry), resteps, imsteps, eps);
+}
+
+size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, py::object lam, int m) {
+    try {
+        return self.findMode(py::extract<dcomplex>(lam), m);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        if (py::len(lam) != 2) throw TypeError("'lam' must be either complex or sequence of two complex");
+        return self.findMode(py::extract<dcomplex>(lam[0]), py::extract<dcomplex>(lam[1]), m);
+    }
+    
 }
 
 double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {
@@ -221,7 +239,7 @@ BOOST_PYTHON_MODULE(effective)
         RW_PROPERTY(emission, getEmission, setEmission, "Emission direction");
         METHOD(set_simple_mesh, setSimpleMesh, "Set simple mesh based on the geometry objects bounding boxes");
         // METHOD(set_horizontal_mesh, setHorizontalMesh, "Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
-        METHOD(find_mode, findMode, "Compute the mode near the specified wavelength", "wavelength", arg("m")=0);
+        solver.def("find_mode", &EffectiveFrequencyCylSolver_findMode, "Compute the mode near the specified wavelength", "lam", arg("m")=0);
         METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("m")=0, arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",
@@ -257,11 +275,18 @@ BOOST_PYTHON_MODULE(effective)
         ;
     }
 
-    py::class_<RootDigger::Params, boost::noncopyable>("RootdiggerParams", py::no_init)
-        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument")
-        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value")
-        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value")
-        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration")
-        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations")
+    py::class_<RootMuller::Params, boost::noncopyable>("RootParams", py::no_init)
+        .def_readwrite("tolx", &RootMuller::Params::tolx, "Absolute tolerance on the argument")
+        .def_readwrite("tolf_min", &RootMuller::Params::tolf_min, "Sufficient tolerance on the function value")
+        .def_readwrite("tolf_max", &RootMuller::Params::tolf_max, "Required tolerance on the function value")
+        .def_readwrite("maxiter", &RootMuller::Params::maxiter, "Maximum number of iterations")
     ;
+
+    // py::class_<RootBroyden::Params, boost::noncopyable>("RootParams", py::no_init)
+    //     .def_readwrite("tolx", &RootBroyden::Params::tolx, "Absolute tolerance on the argument")
+    //     .def_readwrite("tolf_min", &RootBroyden::Params::tolf_min, "Sufficient tolerance on the function value")
+    //     .def_readwrite("tolf_max", &RootBroyden::Params::tolf_max, "Required tolerance on the function value")
+    //     .def_readwrite("maxstep", &RootBroyden::Params::maxstep, "Maximum step in one iteration")
+    //     .def_readwrite("maxiter", &RootBroyden::Params::maxiter, "Maximum number of iterations")
+    // ;
 }
