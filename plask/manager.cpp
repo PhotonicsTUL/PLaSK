@@ -416,6 +416,7 @@ struct ImportantObjects {
     }
 
     // returns true if there are (probably) no mistakes and false in other cases
+    // TODO what with NaNs in vectors?
     template <typename VectorType>
     bool compare_vec(std::vector<VectorType> v1, std::vector<VectorType> v2) {
         if (v1.empty() || v2.empty()) return true;
