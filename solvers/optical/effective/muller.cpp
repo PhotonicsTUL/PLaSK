@@ -19,10 +19,11 @@ dcomplex RootMuller::operator()(dcomplex first, dcomplex second) const
     
     dcomplex f2 = val_function(x2); log_value(x2, f2);
     dcomplex f1 = val_function(x1); log_value(x1, f1);
-std::cerr << str(x0) << "\n";
     dcomplex f0 = val_function(x0); log_value.count(x0, f0);
     
     for (unsigned i = 0; i < params.maxiter; ++i) {
+        if (isnan(real(f0)) || isnan(imag(f0)))
+            throw ComputationError(solver.getId(), "Computed value is NaN");
         dcomplex q = (x0 - x1) / (x1 - x2);
         dcomplex A = q * f0 - q*(q+1.) * f1 + q*q * f2;
         dcomplex B = (2.*q+1.) * f0 - (q+1.)*(q+1.) * f1 + q*q * f2;

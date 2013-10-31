@@ -20,12 +20,12 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     k0(2e3*M_PI/980) {
     inTemperature = 300.;
     inGain = NAN;
-    root.tolx = 1.0e-8;
-    root.tolf_min = 1.0e-10;
+    root.tolx = 1.0e-6;
+    root.tolf_min = 1.0e-8;
     root.tolf_max = 1.0e-6;
     root.maxiter = 500;
     stripe_root.tolx = 1.0e-8;
-    stripe_root.tolf_min = 1.0e-10;
+    stripe_root.tolf_min = 1.0e-8;
     stripe_root.tolf_max = 1.0e-6;
     stripe_root.maxiter = 500;
 }
