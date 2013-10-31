@@ -383,4 +383,95 @@ Notatki:
     - w pozostałych przypadkach ostrzeżenie JEST drukowane
 */
 
+struct ImportantObjects {
+
+    typedef std::map<const GeometryObject*, const char*> GeomToName;
+
+    typedef std::set<const GeometryObject*> Set;
+
+    GeomToName& geom_to_name;
+
+    std::map<const Geometry*, Set> cache;
+
+    ImportantObjects(GeomToName& geom_to_name): geom_to_name(geom_to_name) {}
+
+    Set& get(const Geometry* geometry) {
+        auto it = cache.find(geometry);
+        if (it != cache.end())
+            return it->second;
+        Set& res = cache[geometry];
+        fill(geometry->getObject3D().get(), res);
+        return res;
+    }
+
+    void fill(const GeometryObject* obj, Set& s) {
+        if (!obj) return;
+        if (geom_to_name.count(obj))
+            s.insert(obj);
+        else {
+            std::size_t c = obj->getRealChildrenCount();
+            for (std::size_t i = 0; i < c; ++i)
+                fill(obj->getChildNo(i).get(), s);
+        }
+    }
+
+    // returns true if there are (probably) no mistakes and false in other cases
+    template <typename VectorType>
+    bool compare_vec(std::vector<VectorType> v1, std::vector<VectorType> v2) {
+        if (v1.empty() || v2.empty()) return true;
+        std::sort(v2.begin(), v2.end());
+        if (v1.size() == v2.size()) { std::sort(v1.begin(), v1.end()); return v1 == v2; }
+        for (VectorType point: v1)
+            if (std::binary_search(v2.begin(), v2.end(), point))
+                return true;
+        return false;
+    }
+
+    template <typename GeomType>
+    void compare_d(const GeomType* geom1, const GeomType* geom2) {
+        auto c1 = geom1->getChildUnsafe();
+        auto c2 = geom2->getChildUnsafe();
+        if (!c1 || !c2) return; //one geom. is empty
+        if (geom1->hasInSubtree(*c2) || geom2->hasInSubtree(*c1)) return;
+        Set obj_to_check = get(geom1);
+        Set& obj_to_check_g2 = get(geom2);
+        obj_to_check.insert(obj_to_check_g2.begin(), obj_to_check_g2.end());    //TODO: nlogn union, but n is possible
+        for (auto o: obj_to_check)
+            if (!compare_vec(geom1->getObjectPositions(*o), geom2->getObjectPositions(*o))) {
+                //found problem, for obj geom_to_name[o]
+                //TODO raport
+            }
+    }
+
+    void compare(const Geometry* g1, const Geometry* g2) {
+        if (const GeometryD<2>* g1_2d = dynamic_cast<const GeometryD<2>*>(g1))
+            compare_d(g1_2d, static_cast<const GeometryD<2>*>(g2));
+        if (const GeometryD<3>* g1_3d = dynamic_cast<const GeometryD<3>*>(g1))
+            compare_d(g1_3d, static_cast<const GeometryD<3>*>(g2));
+    }
+};
+
+void Manager::validatePositions() const {
+    // split geometries by types, we will compare each pairs of geometries of the same type:
+    typedef std::map<std::type_index, std::set<const Geometry*> > GeomToType;
+    GeomToType geometries_by_type;
+    for (auto& geom: roots)
+        geometries_by_type[std::type_index(typeid(geom.get()))].insert(geom.get());
+    if (std::find_if(geometries_by_type.begin(), geometries_by_type.end(), [] (GeomToType::value_type& v) { return v.second.size() > 1; }) == geometries_by_type.end())
+        return; // no 2 geometries of the same type
+
+    ImportantObjects::GeomToName geom_to_name;
+    for (auto& i: geometrics)
+        geom_to_name[i.second.get()] = i.first.c_str();
+    ImportantObjects important_obj(geom_to_name);
+
+    for (auto& geom_set: geometries_by_type)
+        for (auto it = geom_set.second.begin(); it != geom_set.second.end(); ++it) {
+            auto it2 = it;
+            ++it2;
+            for (; it2 != geom_set.second.end(); ++it2)
+                important_obj.compare(*it, *it2);
+        }
+}
+
 } // namespace plask

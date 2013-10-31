@@ -517,6 +517,8 @@ private:
         load(XMLreader, materialsSource, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
     }
 
+    void validatePositions() const;
+
 };
 
 // Specialization for most types

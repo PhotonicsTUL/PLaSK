@@ -318,6 +318,21 @@ struct Vec<3,T> {
         return out << '[' << to_print.c0 << ", " << to_print.c1 << ", " << to_print.c2 << ']';
     }
 
+    /**
+     * A lexical comparison of two vectors, allow to use vector in std::set and std::map as key type.
+     * @param v vectors to compare
+     * @return @c true only if @c this is smaller than the @p v
+     */
+    template<class OT>
+    bool operator< (Vec<3, OT> const& v) const {
+        if (this->c0 < v.c0) return true;
+        if (this->c0 > v.c0) return false;
+        if (this->c1 < v.c1) return true;
+        if (this->c1 > v.c1) return false;
+        return this->c2 < v.c2;
+    }
+
+
 };
 
 /**
