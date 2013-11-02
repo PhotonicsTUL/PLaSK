@@ -457,7 +457,7 @@ void Manager::validatePositions() const {
     typedef std::map<std::type_index, std::set<const Geometry*> > GeomToType;
     GeomToType geometries_by_type;
     for (auto& geom: roots)
-        geometries_by_type[std::type_index(typeid(geom.get()))].insert(geom.get());
+        geometries_by_type[std::type_index(typeid(*geom))].insert(geom.get());
     if (std::find_if(geometries_by_type.begin(), geometries_by_type.end(), [] (GeomToType::value_type& v) { return v.second.size() > 1; }) == geometries_by_type.end())
         return; // no 2 geometries of the same type
 
