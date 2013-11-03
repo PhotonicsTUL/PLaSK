@@ -6,7 +6,7 @@ using plask::dcomplex;
 namespace plask { namespace solvers { namespace effective {
 
 #define DLAM 1e-3
-    
+
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
@@ -425,14 +425,16 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
     }
 
     if (saveto) {
+        dcomplex f;
         if (emission == TOP) {
-            dcomplex f = 1. / (*saveto)[zsize-1].F;
+            f = 1. / (*saveto)[zsize-1].F / sqrt(NG[zsize-1]);
             (*saveto)[zsize-1] = FieldZ(1., 0.);
-            for (size_t i = zbegin; i < zsize-1; ++i) (*saveto)[i] *= f;
         } else {
-            (*saveto)[zsize-1].B = 0.;
             // we dont have to scale fields as we have already set (*saveto)[zbegin] = FieldZ(0., 1.)
+            f = 1. / sqrt(NG[zbegin]);
+            (*saveto)[zsize-1].B = 0.;
         }
+        for (size_t i = zbegin; i < zsize-1; ++i) (*saveto)[i] *= f;
 // #ifndef NDEBUG
 //         {
 //             std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
@@ -499,7 +501,7 @@ double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode) const
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
 {
     dcomplex v = freqv(lam);
-    
+
     // In the outermost layer, there is only an outgoing wave, so the solution is only the Hankel function
     mode.rfields[rsize-1] = FieldR(0., 1.);
 
