@@ -20924,6 +20924,71 @@ Approximate normalized frequency.
  (float [1/µm])
 \end_layout
 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+emission
+\emph on
+ 
+\family default
+\emph default
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt 
+\end_layout
+
+\end_inset
+
+Direction of emission, necessary for over-threshold power computations (
+\emph on
+top
+\emph default
+ or 
+\emph on
+bottom
+\emph default
+)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\family typewriter
+vlam
+\family default
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+opt
+\end_layout
+
+\end_inset
+
+``vertical wavelength
+\begin_inset Quotes erd
+\end_inset
+
+ i.
+\begin_inset space \thinspace{}
+\end_inset
+
+e.
+ the wavelength what would be in the absence of lateral confinement; setting
+ this value helps to find models in very long resonators (float [nm])
+\end_layout
+
 \begin_layout Standard
 Attributes 
 \family typewriter
