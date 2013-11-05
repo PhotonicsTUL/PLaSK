@@ -517,7 +517,16 @@ private:
         load(XMLreader, materialsSource, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
     }
 
-    void validatePositions() const;
+    /**
+     * Try to find mistake in position of objects.
+     *
+     * Raports (by calling @p callback) when some object has, probably by mistake, different position in two geometries.
+     * @param callback call for each pair of geometries in which objects with different (by mistake) positions have been found. Details are passed in parameters:
+     *  - 2 geometries of the same type,
+     *  - non-empty vector of objects with different positions in the geometries,
+     *  - map that allow to obtain name of object or geometry (all object from the passed vector are in this map, but some of the passed geometries can be not).
+     */
+    void validatePositions(const std::function<void(const Geometry*, const Geometry*, std::vector<const GeometryObject*>&&, const std::map<const GeometryObject*, const char*>&)>& callback) const;
 
 };
 

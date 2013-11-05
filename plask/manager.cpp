@@ -387,7 +387,8 @@ struct ImportantObjects {
 
     typedef std::map<const GeometryObject*, const char*> GeomToName;
 
-    typedef std::set<const GeometryObject*> Set;
+    // always sorted
+    typedef std::vector<const GeometryObject*> Set;
 
     GeomToName& geom_to_name;
 
@@ -401,13 +402,14 @@ struct ImportantObjects {
             return it->second;
         Set& res = cache[geometry];
         fill(geometry->getObject3D().get(), res);
+        std::sort(res.begin(), res.end());
         return res;
     }
 
     void fill(const GeometryObject* obj, Set& s) {
         if (!obj) return;
         if (geom_to_name.count(obj))
-            s.insert(obj);
+            s.push_back(obj);
         else {
             std::size_t c = obj->getRealChildrenCount();
             for (std::size_t i = 0; i < c; ++i)
@@ -415,7 +417,11 @@ struct ImportantObjects {
         }
     }
 
-    // returns true if there are (probably) no mistakes and false in other cases
+    /**
+     * Compare two vectors of positions.
+     * @param v1, v2 vectors to compare
+     * @return @c true if there are (probably) no mistakes and @c false in other cases
+     */
     // TODO what with NaNs in vectors?
     template <typename VectorType>
     bool compare_vec(std::vector<VectorType> v1, std::vector<VectorType> v2) {
@@ -428,31 +434,45 @@ struct ImportantObjects {
         return false;
     }
 
+    /**
+     * Compare positions of important objects in two geometries of the same type.
+     * @param geom1, geom2 geometries
+     * @return set of such objects that by mistake have other positions in @p geom1 and @p geom2
+     */
     template <typename GeomType>
-    void compare_d(const GeomType* geom1, const GeomType* geom2) {
+    Set compare_d(const GeomType* geom1, const GeomType* geom2) {
         auto c1 = geom1->getChildUnsafe();
         auto c2 = geom2->getChildUnsafe();
-        if (!c1 || !c2) return; //one geom. is empty
-        if (geom1->hasInSubtree(*c2) || geom2->hasInSubtree(*c1)) return;
-        Set obj_to_check = get(geom1);
-        Set& obj_to_check_g2 = get(geom2);
-        obj_to_check.insert(obj_to_check_g2.begin(), obj_to_check_g2.end());    //TODO: nlogn union, but n is possible
+        if (!c1 || !c2) return {}; //one geom. is empty
+        if (geom1->hasInSubtree(*c2) || geom2->hasInSubtree(*c1)) return {};
+        Set obj_to_check;
+        {
+            Set og1 = get(geom1);
+            Set og2 = get(geom2);
+            std::set_union(og1.begin(), og1.end(), og2.begin(), og2.end(), std::back_inserter(obj_to_check));
+        }
+        Set result;
         for (auto o: obj_to_check)
             if (!compare_vec(geom1->getObjectPositions(*o), geom2->getObjectPositions(*o))) {
                 //found problem, for obj geom_to_name[o]
-                //TODO raport
+                result.push_back(o);
             }
+        return result;
     }
 
-    void compare(const Geometry* g1, const Geometry* g2) {
+    Set compare(const Geometry* g1, const Geometry* g2) {
         if (const GeometryD<2>* g1_2d = dynamic_cast<const GeometryD<2>*>(g1))
-            compare_d(g1_2d, static_cast<const GeometryD<2>*>(g2));
+            return compare_d(g1_2d, static_cast<const GeometryD<2>*>(g2));
         if (const GeometryD<3>* g1_3d = dynamic_cast<const GeometryD<3>*>(g1))
-            compare_d(g1_3d, static_cast<const GeometryD<3>*>(g2));
+            return compare_d(g1_3d, static_cast<const GeometryD<3>*>(g2));
+        return {};
     }
 };
 
-void Manager::validatePositions() const {
+void Manager::validatePositions(
+        const std::function<void(const Geometry*, const Geometry*, std::vector<const GeometryObject*>&&, const std::map<const GeometryObject*, const char*>&)>& callback
+    ) const
+{
     // split geometries by types, we will compare each pairs of geometries of the same type:
     typedef std::map<std::type_index, std::set<const Geometry*> > GeomToType;
     GeomToType geometries_by_type;
@@ -470,8 +490,11 @@ void Manager::validatePositions() const {
         for (auto it = geom_set.second.begin(); it != geom_set.second.end(); ++it) {
             auto it2 = it;
             ++it2;
-            for (; it2 != geom_set.second.end(); ++it2)
-                important_obj.compare(*it, *it2);
+            for (; it2 != geom_set.second.end(); ++it2) {
+                ImportantObjects::Set objs = important_obj.compare(*it, *it2);
+                if (!objs.empty())
+                    callback(*it, *it2, std::move(objs), geom_to_name);
+            }
         }
 }
 
