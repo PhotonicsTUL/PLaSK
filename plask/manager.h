@@ -528,6 +528,20 @@ private:
      */
     void validatePositions(const std::function<void(const Geometry*, const Geometry*, std::vector<const GeometryObject*>&&, const std::map<const GeometryObject*, const char*>&)>& callback) const;
 
+    /**
+     * Try to find mistake in position of objects.
+     *
+     * Raports in returned string when some object has, probably by mistake, different position in two geometries.
+     * @return raport, can be multiple-line, empty only if no problems have been found
+     */
+    std::string validatePositions() const;
+
+    /**
+     * Get index of geometry in root.
+     * @param geom geometry to get index
+     * @return index of @p geom in root vector, equal to size() if not found
+     */
+    std::size_t getRootIndex(const Geometry* geom) const;
 };
 
 // Specialization for most types

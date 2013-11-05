@@ -383,7 +383,7 @@ Notatki:
     - w pozostałych przypadkach ostrzeżenie JEST drukowane
 */
 
-struct ImportantObjects {
+struct PositionValidator {
 
     typedef std::map<const GeometryObject*, const char*> GeomToName;
 
@@ -394,7 +394,7 @@ struct ImportantObjects {
 
     std::map<const Geometry*, Set> cache;
 
-    ImportantObjects(GeomToName& geom_to_name): geom_to_name(geom_to_name) {}
+    PositionValidator(GeomToName& geom_to_name): geom_to_name(geom_to_name) {}
 
     Set& get(const Geometry* geometry) {
         auto it = cache.find(geometry);
@@ -481,21 +481,61 @@ void Manager::validatePositions(
     if (std::find_if(geometries_by_type.begin(), geometries_by_type.end(), [] (GeomToType::value_type& v) { return v.second.size() > 1; }) == geometries_by_type.end())
         return; // no 2 geometries of the same type
 
-    ImportantObjects::GeomToName geom_to_name;
+    PositionValidator::GeomToName geom_to_name;
     for (auto& i: geometrics)
         geom_to_name[i.second.get()] = i.first.c_str();
-    ImportantObjects important_obj(geom_to_name);
+    PositionValidator important_obj(geom_to_name);
 
     for (auto& geom_set: geometries_by_type)
         for (auto it = geom_set.second.begin(); it != geom_set.second.end(); ++it) {
             auto it2 = it;
             ++it2;
             for (; it2 != geom_set.second.end(); ++it2) {
-                ImportantObjects::Set objs = important_obj.compare(*it, *it2);
+                PositionValidator::Set objs = important_obj.compare(*it, *it2);
                 if (!objs.empty())
                     callback(*it, *it2, std::move(objs), geom_to_name);
             }
         }
+}
+
+static std::string geomName(const Manager& m, const Geometry* g, const std::map<const GeometryObject*, const char*>& names) {
+    std::string r = "[";
+    r += boost::lexical_cast<std::string>(m.getRootIndex(g));
+    r += ']';
+    auto it = names.find(g);
+    if (it != names.end()) {
+        r += ' ';
+        r += it->second;
+    }
+    return r;
+}
+
+std::string Manager::validatePositions() const {
+    bool first = true;
+    std::string result;
+    validatePositions(
+    [&] (const Geometry* g1, const Geometry* g2, std::vector<const GeometryObject*>&& objs, const std::map<const GeometryObject*, const char*>& names) {
+        if (first)
+            result += "Some objects, probably by mistake, have different positions in geometries (geometry 1 - geometry 2: name of objects...):";
+        result += "\n ";
+        result += geomName(*this, g1, names);
+        result += " - ";
+        result += geomName(*this, g2, names);
+        result += ':';
+        for (auto o: objs) {
+            result += ' ';
+            result += names.find(o)->second;
+        }
+        result += ';';
+    }
+    );
+    return result;
+}
+
+std::size_t Manager::getRootIndex(const Geometry *geom) const {
+    for (std::size_t result = 0; result < roots.size(); ++result)
+        if (roots[result].get() == geom) return result;
+    return roots.size();
 }
 
 } // namespace plask
