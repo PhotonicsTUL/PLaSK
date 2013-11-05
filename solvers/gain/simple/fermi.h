@@ -109,6 +109,8 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
         }
     };
 
+    shared_ptr<Material> materialSubstrate;   ///< Substrate material
+
     ///< List of active regions
     std::vector<ActiveRegionInfo> regions;
 
@@ -166,7 +168,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
             gmodule.przygobl_n(gmodule.przel_dlug_z_angstr(region.qwtotallen));
         }
     }
-    
+
     double nm_to_eV(double wavelength) {
         return (plask::phys::h_eV*plask::phys::c)/(wavelength*1e-9);
     }

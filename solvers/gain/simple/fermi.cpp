@@ -113,7 +113,7 @@ template <typename GeometryType>
 void FermiGainSolver<GeometryType>::detectActiveRegions()
 {
     regions.clear();
-    
+
     shared_ptr<RectilinearMesh2D> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
 
@@ -132,6 +132,15 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
             auto tags = this->geometry->getRolesAt(point);
             bool active = tags.find("active") != tags.end();
             bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
+            bool substrate = tags.find("substrate") != tags.end();
+
+            if (substrate)
+            {
+                if (!materialSubstrate)
+                    materialSubstrate = this->geometry->getMaterial(point);
+                else if (*materialSubstrate != *this->geometry->getMaterial(point))
+                    throw Exception("%1%: Non-uniform substrate layer.", this->getId());
+            }
 
             if (QW && !active)
                 throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
@@ -258,18 +267,28 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
+    double strain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+//    write_debug("a_QW: %1%", region.materialQW->lattC(T,'a'));
+//    write_debug("a_sub: %1%", materialSubstrate->lattC(T,'a'));
+//    write_debug("strain: %1%", strain);
+
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
 
     #pragma omp critical // necessary as the material may be defined in Python
     {
-        qme = region.materialQW->Me(T); qmhh = region.materialQW->Mhh(T); qmlh = region.materialQW->Mlh(T);
-        bme = region.materialBarrier->Me(T); bmhh = region.materialBarrier->Mhh(T); bmlh = region.materialBarrier->Mlh(T);
-        gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
-        gainModule.Set_split_off(region.materialQW->Dso(T));
-        gainModule.Set_bandgap(region.materialQW->Eg(T));
+        qme = region.materialQW->Me(T,strain);
+        qmhh = region.materialQW->Mhh(T,strain);
+        qmlh = region.materialQW->Mlh(T,strain);
+        bme = region.materialBarrier->Me(T,strain);
+        bmhh = region.materialBarrier->Mhh(T,strain);
+        bmlh = region.materialBarrier->Mlh(T,strain);
 
-        double cdepth = region.materialBarrier->CB(T) - region.materialQW->CB(T);
-        double vdepth = region.materialQW->VB(T) - region.materialBarrier->VB(T);
+        gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
+        gainModule.Set_split_off(region.materialQW->Dso(T,strain));
+        gainModule.Set_bandgap(region.materialQW->Eg(T,strain));
+
+        double cdepth = region.materialBarrier->CB(T,strain) - region.materialQW->CB(T,strain);
+        double vdepth = region.materialQW->VB(T,strain) - region.materialBarrier->VB(T,strain);
 
         if (vdepth < 0)
             throw BadInput(this->getId(), "Valence QW depth negative, check VB values of materials %1% and %2%",
@@ -462,7 +481,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
         for (size_t r = 0; r != regions.size(); ++r)
             if (regions[r].contains(geo_mesh[i]) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
-                                 
+
     #pragma omp parallel for
     for (int j = 0; j < points.size(); j++)
     {

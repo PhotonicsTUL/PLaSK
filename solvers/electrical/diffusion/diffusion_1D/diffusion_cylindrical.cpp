@@ -344,10 +344,10 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 
                     absolute_error = abs(L - R);
                     relative_error = abs(absolute_error/R);
-                    write_debug("absolute error: %1%", absolute_error);
-                    write_debug("relative error: %1%", relative_error);
-                    write_debug("n_present[0]: %1%", n_present[0]);
-                    write_debug("F(0): %1%", F(0));
+//                    write_debug("absolute error: %1%", absolute_error);
+//                    write_debug("relative error: %1%", relative_error);
+//                    write_debug("n_present[0]: %1%", n_present[0]);
+//                    write_debug("F(0): %1%", F(0));
 
                     if ( max_error_relative < relative_error )
                         max_error_relative = relative_error;
@@ -708,10 +708,10 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
     if (overthreshold_computation)
     {
-        write_debug("product before: %1%", product);
+//        write_debug("product before: %1%", product);
         product -= PM[i];
-        write_debug("product after: %1%", product);
-        write_debug("PM[i]: %1%", PM[i]);
+//        write_debug("product after: %1%", product);
+//        write_debug("PM[i]: %1%", PM[i]);
     }
 
     return product;
