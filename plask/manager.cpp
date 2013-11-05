@@ -516,7 +516,7 @@ std::string Manager::validatePositions() const {
     validatePositions(
     [&] (const Geometry* g1, const Geometry* g2, std::vector<const GeometryObject*>&& objs, const std::map<const GeometryObject*, const char*>& names) {
         if (first)
-            result += "Some objects, probably by mistake, have different positions in geometries (geometry 1 - geometry 2: name of objects...):";
+            result += "Some objects, possibly by mistake, have different positions in geometries (geometry 1 - geometry 2: name of objects...):";
         result += "\n ";
         result += geomName(*this, g1, names);
         result += " - ";
