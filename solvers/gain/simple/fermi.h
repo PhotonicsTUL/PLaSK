@@ -202,6 +202,9 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
+
+    bool if_strain;                 ///< Consider strain in QW?
+
     double getLifeTime() const { return lifetime; }
     void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
 

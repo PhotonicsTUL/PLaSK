@@ -13,6 +13,7 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
     cond_waveguide_depth = 0.26; // [eV]
     vale_waveguide_depth = 0.13; // [eV]
     differenceQuotient = 0.01;  // [%]
+    if_strain = false;
     inTemperature.changedConnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
     inCarriersConcentration.changedConnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
 }
@@ -267,7 +268,13 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
-    double strain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+    double strain = 0.0;
+
+    if (if_strain == true)
+    {
+        strain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+    }
+
 //    write_debug("a_QW: %1%", region.materialQW->lattC(T,'a'));
 //    write_debug("a_sub: %1%", materialSubstrate->lattC(T,'a'));
 //    write_debug("strain: %1%", strain);
