@@ -164,6 +164,14 @@ struct Vec<3,T> {
     constexpr bool operator==(const Vec<3,OtherT>& p) const { return p.c0 == c0 && p.c1 == c1 && p.c2 == c2; }
 
     /**
+     * Compare two vectors, this and @p p.
+     * @param p vector to compare
+     * @param abs_supremum maximal allowed difference for one coordinate
+     * @return @c true only if this vector and @p p have almost equals coordinates
+     */
+    constexpr bool equal(const Vec<3, T>& p, const T& abs_supremum = SMALL) const { return is_zero(p.c0 - c0, abs_supremum) && is_zero(p.c1 - c1, abs_supremum) && is_zero(p.c2 - c2, abs_supremum); }
+
+    /**
      * Compare two vectors, @c this and @p p.
      * @param p vector to compare
      * @return true only if this vector and @p p don't have equals coordinates

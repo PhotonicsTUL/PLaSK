@@ -427,8 +427,12 @@ struct PositionValidator {
     bool compare_vec(std::vector<VectorType> v1, std::vector<VectorType> v2) {
         if (v1.empty() || v2.empty()) return true;
         std::sort(v2.begin(), v2.end());
-        if (v1.size() == v2.size()) { std::sort(v1.begin(), v1.end()); return v1 == v2; }
-        for (VectorType point: v1)
+        if (v1.size() == v2.size()) {
+            std::sort(v1.begin(), v1.end());
+            return std::equal(v1.begin(), v1.end(), v2.begin(),
+                              [](const VectorType& x1, const VectorType& x2) { return x1.equal(x2, 1e-11); });
+        }
+        for (VectorType point: v1)  //TODO porównywać w sposób przybliżony, używając equal: posortować oba, wyszukiwać liniowo kolejnych poczynając od pozycju poprzednio znalezionego
             if (std::binary_search(v2.begin(), v2.end(), point))
                 return true;
         return false;
