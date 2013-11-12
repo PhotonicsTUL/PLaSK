@@ -15,6 +15,8 @@ Welcome to PLaSK's documentation!
 
 .. highlight:: python
 
+
+
 ****************
 PLaSK User Guide
 ****************
@@ -23,15 +25,198 @@ PLaSK User Guide
 
 .. include:: introduction.rst
 
+
+
 Tutorials and Examples
 ======================
 
 .. include:: tutorial Thermo-electrical modeling of simple edge-emitting diode.rst
 
+.. include:: tutorial Optical analysis of a step-profile VCSEL.rst
+
+
+Finding threshold current of gallium-arsenide VCSEL
+---------------------------------------------------
+
+putting all the above together
+
+manual refinements of divide mesh generator
+
+diffusion, gain
+
+real-time structure modifications
+
+
+Searching threshold of a gallium-nitride array
+----------------------------------------------
+
+multiple geometries
+
+repeating objects
+
+paths
+
+filters
+
+
+Optical analysis of photonic crystal slab waveguide
+---------------------------------------------------
+
+3D
+
+variables in XPL file
+
+lattice
+
+
+Finding threshold current of photonic crystal VCSEL
+---------------------------------------------------
+
+combining 2D and 3D geometries with filters
+
+
+Using high-level algorithms
+---------------------------
+
+
+
+
+*************************
+General Concepts of PLaSK
+*************************
+
+Definitions
+===========
+
+.. _sec-geometry:
+**********************
+Geometry Specification
+**********************
+
+Specifying geometry in XPL file
+===============================
+
+Creating geometry from Python
+=============================
+
+Reference of geometry objects
+=============================
+See :ref:`Python API for Geometry`
+
+
+.. _sec-materials:
+******************
+Managing Materials
+******************
+
+Materials in PLaSK
+==================
+
+Compiled material libraries
+===========================
+
+Custom material class in Python
+===============================
+
+If custom __init__ ALWAYS call superclass __init__.
+
+
+Custom materials in XPL
+=======================
+
+.. _sec-meshes:
+*****************
+Specifying Meshes
+*****************
+
+Concept of meshes and generators
+================================
+
+Rectangular meshes
+==================
+
+Triangular meshes
+=================
+
+Other meshes
+============
+
+
+.. _sec-solvers:
+*********************
+Computational Solvers
+*********************
+
+Solvers overview
+================
+
+Specifying solvers in XPL file
+==============================
+
+Creating and managing solvers from Python
+=========================================
+
+Running computations
+====================
+
+
+*********************
+High-level algorithms
+*********************
+
+
+**********************
+Other Useful Utilities
+**********************
+
+Creating plots of the results
+=============================
+
+Storing and retrieving results
+==============================
+
+
+************************
+Graphical User Interface
+************************
+
+Thermal model
+=============
+
+Electrical model
+================
+
+.. _sec-Solver-electrical-beta:
+Phenomenological junction :math:`\beta` model
+=============================================
+
+Gain model
+==========
+
+Optical model
+=============
+
+Strain model
+============
+
+Dynamic models
+==============
+
+
+.. _sec-units-in-plask:
+**************
+Units in PLaSK
+**************
+
+.. include:: XPL.rst
+
+
+
 ****************
 PLaSK Python API
 ****************
 
+.. _sec-API-geometry
 geometry
 ========
 .. automodule:: plask.geometry
