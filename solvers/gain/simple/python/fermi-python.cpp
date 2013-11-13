@@ -107,7 +107,7 @@ BOOST_PYTHON_MODULE(simple)
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCartesian>),
                    "Determine quasi-Fermi levels and carriers levels inside QW");
-        solver.def_readwrite("strain", &__Class__::if_strain, "Consider strain in QW? (True or False)");
+        solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
         solver.add_receiver("inTemperature",
                             reinterpret_cast<ReceiverFor<Temperature,Geometry2DCartesian>__Class__::*>(&__Class__::inTemperature),
                             "Temperature distribution");
@@ -137,7 +137,7 @@ BOOST_PYTHON_MODULE(simple)
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCylindrical>),
                    "Determine quasi-Fermi levels and carriers levels inside QW");
-        solver.def_readwrite("strain", &__Class__::if_strain, "Consider strain in QW? (True or False)");
+        solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
         RECEIVER(inTemperature, "Temperature distribution");
         RECEIVER(inCarriersConcentration, "Carrier pairs concentration");
         PROVIDER(outGain, "Optical gain in the active region");

@@ -277,7 +277,7 @@ if(BUILD_PYTHON)
     endforeach()
 
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
-    
+
     if(WIN32)
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
@@ -485,7 +485,7 @@ find_package(Doxygen)
 if(BUILD_DEVEL_DOC)
     if(DOXYGEN_FOUND)
         file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
-        add_custom_target(doc ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
+        add_custom_target(dox ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
         install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION ${doc_dest}/devel COMPONENT dev-doc
                 PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
     else()
@@ -494,7 +494,7 @@ if(BUILD_DEVEL_DOC)
 else()
     if(DOXYGEN_FOUND)
         file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
-        add_custom_target(doc ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
+        add_custom_target(dox ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
     endif()
 endif()
 
@@ -508,6 +508,8 @@ if(BUILD_MANUAL)
     file(GLOB examples ${CMAKE_SOURCE_DIR}/doc/*.xpl ${CMAKE_SOURCE_DIR}/doc/*.py)
     install(FILES ${examples} DESTINATION ${doc_dest} COMPONENT doc)
 endif()
+
+add_subdirectory(doc)
 
 # ----------===== Optional tools =====--------------------------------------------
 

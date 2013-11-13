@@ -12,21 +12,21 @@ After :term:`reading a very brief introduction to XML syntax <XML>`, you start w
 .. code-block:: xml
 
     <plask>
-    
+
         <!-- Here you will put all the content of your file. -->
-    
+
     </plask>
 
 The strange characters ``<!--`` and ``-->`` in the above example mark the beginning and the end of the comment, respectively. So you can use them in your file to write your notes, or to temporarily disable any part of the file.
 
 Inside the main tag you may define the following sections: ``materials``, ``geometry``, ``grids``, ``solvers``, ``connects``, and ``script``. All these sections are optional, however, if present, they must follow in the order specified above. You will learn the roles of these sections in this and the following tutorials. In details, they are described further in this manual.
 
-    
+
 Geometry
 ^^^^^^^^
 
 .. _fig-tutorial1-geometry:
-.. figure:: tutorial1-geometry.svg
+.. figure:: tutorial1-geometry.*
    :align: center
 
    Simple edge-emitting gallium-arsenide diode modeled in :file:`tutorial1.xpl` file.
@@ -77,7 +77,7 @@ Three of the blocks are given names ``"top-layer"``, ``"substrate"``, and ``"jun
 You might have also noticed another attribute ``role="active"`` in one of the blocks. This is an information for the phenomenological electrical solver, which we are going to use for this structure, that the marked object is the active layer and the voltage drop on this layer should be computed using the diode equation instead on the Ohm's law. In general ``role`` attributes can be used to provide additional information about the roles of some objects (or groups -- the role could be given to the whole stack if desired) and are interpreted by solvers. You should refer to the particular solver documentation for the details of what roles should be given to what objects.
 
 
-    
+
 Mesh definition
 ^^^^^^^^^^^^^^^
 
@@ -140,9 +140,9 @@ The other solver we use is ``electrical.Shockley2D``. Its configuration is very 
           </condition>
         </voltage>
       </electrical>
-    
+
     </solvers>
-    
+
 You notice the additional tag ``<junction>`` with attributes ``Shockley`` and ``js``. These are custom parameters of ``Shockley2D`` electrical solver and they set values for phenomenological junction coefficient :math:`\beta` and reverse current density :math:`j_{s}`. Their meaning is described in section :ref`sec-Solver-electrical-beta`. At this moment just leave their values as in the example.
 
 Next, we have two boundary conditions, specifying electric potential (voltage) at the top side of the object named ``"top-layer"`` (1V) and at the bottom side of the ``"substrate"`` (0V). Take a look at the geometry section to see which objects are these. As the definition of the location of boundary conditions is not a single word, we had to use the separate tag ``<place>`` as a content of the ``<condition>`` tag instead of its place attribute. If you wonder why we could not simple specify 1V potential at the top of the whole structure similarly as it was done for thermal solver, notice that the top layer has width of only 1.5µm and there is 4998.5µm of air adjacent to it. You would not want to put voltage to the air.
@@ -170,7 +170,7 @@ Running computations
 	.. code-block:: xml
 
 	    <plask>
-	    
+
 	    <geometry>
 	      <cartesian2d axes="xy" left="mirror" length="1000" name="main">
 		<stack>
@@ -186,13 +186,13 @@ Running computations
 		</stack>
 	      </cartesian2d>
 	    </geometry>
-	    
+
 	    <grids>
 	      <generator type="rectilinear2d" method="divide" name="default">
 		<postdiv by="2"/>
 	      </generator>
 	    </grids>
-	    
+
 	    <solvers>
 	      <thermal solver="Static2D" name="therm">
 		<geometry ref="main"/>
@@ -215,18 +215,18 @@ Running computations
 		</voltage>
 	      </electrical>
 	    </solvers>
-	    
+
 	    <connects>
 	      <connect in="electr.inTemperature" out="therm.outTemperature"/>
 	      <connect in="therm.inHeat" out="electr.outHeat"/>
 	    </connects>
-	    
+
 	    <script>
 	    <!-- Here will go the script presented in the rest of this tutorial -->
 	    </script>
-	    
+
 	    </plask>
-    
+
 At this point, you have prepared all the data needed to perform thermo-electrical analysis of the sample device. :ref:`Listing of tutorial1.xpl <lis-Listing-of-tutorial1.xpl>` shows the review of what we have created so far. The only missing part is the ``<script>`` section, which should be the last section of the file. In this section you define operations you want to perform: computations and presentation of the results. It is a script written in very easy-to-learn programming language Python. If you want to be able to write advanced programs for analysis of your structures (e. g. automatic optimization) you can find useful tutorials in the internet. A good starting point would be: http://docs.python.org/2/tutorial/, which covers Python basics.
 
 Other useful resources are:
@@ -244,7 +244,7 @@ In our tutorial we want to self-consistently compute temperature and electric cu
 
     verr = electr.compute(1)
     terr = therm.compute(1)
-    
+
 As Python uses indentation to indicate blocks of the code, it is important not to insert any spaces in the beginning of the two above lines. Their meaning is as follows:
 1. run single computations of the solver *electr* and store the maximum change of computed voltage in variable *verr*,
 2. run single computations of the solver *therm* and store the maximum change of computed voltage in variable *terr*.
@@ -256,9 +256,9 @@ After initial calculations, we may run further computations in a loop, which is 
     while terr > therm.maxerr or verr > electr.maxerr:
         verr = electr.compute(6)
         terr = therm.compute(1)
-    
+
     print_log(LOG_INFO, "Calculations finished!")
-    
+
 Notice that the content of the loop is indented after the semicolon. This is how Python knows what should go inside the loop. The line without indentation will be executed after the loop and, in this case, it simply prints a custom log message.
 
 This time we allow to run maximum 6 loop iterations of the electrical solver interchanged with a single iteration of the thermal one. The reason for such a choice is the fact that the electrical solver converges much slower than the thermal one, so we need to let it run more times. You are free to change the limit and see how quickly the whole system converges. You may even skip the limit at all (i.e. type ``"electr.compute()"``), in which case the electrical computations will be performed until convergence is reached for the current temperature.
@@ -267,12 +267,14 @@ This time we allow to run maximum 6 loop iterations of the electrical solver int
 
 Having whole written the input file (including script) so far I suggest you to save it and run the computations with PLaSK in a way described in section :ref:`sec-Running-plask` i.e.
  - In Linux shell or MACOS terminal:
-   
+
    .. code-block:: bash
 
       joe@cray:~/tutorials$ plask tutorial1.xpl
-   
- - In Windows from the Command Prompt (assuming you have installed PLaSK in "C:\Program Files\PLaSK\")::
+
+ - In Windows from the Command Prompt (assuming you have installed PLaSK in "C:\\Program Files\\PLaSK\\"):
+
+   .. code-block:: bat
 
       C:\Users\joe\tutorials> "C:\Program Files\PLaSK\bin\plask.exe" tutorial1.xpl
 
@@ -366,7 +368,7 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
 	.. code-block:: python
 
 		verr = electr.compute(1)
-		terr = therm.compute(1) 
+		terr = therm.compute(1)
 
 		while terr > therm.maxerr or verr > electr.maxerr:
 		    verr = electr.compute(6)

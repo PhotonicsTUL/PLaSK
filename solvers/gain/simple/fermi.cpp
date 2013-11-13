@@ -40,6 +40,7 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
         if (param == "config") {
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
+            if_strain = reader.getAttribute<bool>("strained", if_strain);
             reader.requireTagEnd();
         } else if (param == "levels") {
             std::string els, hhs, lhs;
