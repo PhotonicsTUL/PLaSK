@@ -1,7 +1,7 @@
 .. _sec-Introduction:
-
+************
 Introduction
-============
+************
 
 .. _sec-Instalation:
 

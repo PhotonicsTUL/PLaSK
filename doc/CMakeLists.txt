@@ -12,15 +12,26 @@ set(ALLSPHINXOPTS -d ${CMAKE_CURRENT_BINARY_DIR}/doctrees ${PAPEROPT_${SPHINX_PA
 # the i18n builder cannot share the environment and doctrees with the others
 set(I18NSPHINXOPTS ${PAPEROPT_${SPHINX_PAPER}} ${SPHINX_OPTIONS} ${CMAKE_CURRENT_SOURCE_DIR})
 
-find_program(INKSCAPE inkscape)
-message(STATUS ${INKSCAPE})
+find_program(MAKE make)
 
-#TODO make it system independent
-set(make make)
+# Make PDFs out from SVG
+find_program(INKSCAPE inkscape)
+if (INKSCAPE)
+    foreach(svg ${svg_files})
+        get_filename_component(base ${svg} NAME_WE)
+        set(pdf ${CMAKE_CURRENT_SOURCE_DIR}/${base}.pdf)
+        add_custom_command(OUTPUT ${pdf}
+            COMMAND ${INKSCAPE} -f ${svg} -A ${pdf}
+            DEPENDS ${svg}
+        )
+        list(APPEND pdf_images ${pdf})
+    endforeach()
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/plaskconf.py.in ${CMAKE_CURRENT_BINARY_DIR}/plaskconf.py)
 
 #TODO get rid of this is stubs are created for us automatically
-# set(sphinx plask ${SPHINX_EXECUTABLE})
-set(sphinx "/usr/local/bin/plask" ${SPHINX_EXECUTABLE})
+set(sphinx export CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR} COMMAND plask ${SPHINX_EXECUTABLE})
 
 if(SPHINX_FOUND)
 
@@ -98,25 +109,13 @@ if(SPHINX_FOUND)
         DEPENDS ${rst_files} ${svg_files} conf.py
     )
 
-    if (INKSCAPE)
-        foreach(svg ${svg_files})
-            get_filename_component(base ${svg} NAME_WE)
-            set(pdf ${CMAKE_CURRENT_SOURCE_DIR}/${base}.pdf)
-            add_custom_command(OUTPUT ${pdf}
-                COMMAND ${INKSCAPE} -f ${svg} -A ${pdf}
-                DEPENDS ${svg}
-            )
-            list(APPEND pdf_images ${pdf})
-        endforeach()
-
-        add_custom_target(sphinx-latexpdf
-            COMMAND ${sphinx} -b latex ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/latex
-            COMMAND echo "Running LaTeX files through pdflatex..." VERBATIM
-            COMMAND ${make} -C ${CMAKE_CURRENT_BINARY_DIR}/latex all-pdf
-            COMMAND echo "pdflatex finished; the PDF files are in ${CMAKE_CURRENT_BINARY_DIR}/latex." VERBATIM
-            DEPENDS ${rst_files} ${pdf_images} conf.py
-        )
-    endif()
+    add_custom_target(sphinx-latexpdf
+        COMMAND ${sphinx} -b latex ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/latex
+        COMMAND echo "Running LaTeX files through pdflatex..." VERBATIM
+        COMMAND ${MAKE} -C ${CMAKE_CURRENT_BINARY_DIR}/latex all-pdf
+        COMMAND echo "pdflatex finished; the PDF files are in ${CMAKE_CURRENT_BINARY_DIR}/latex." VERBATIM
+        DEPENDS ${rst_files} ${pdf_images} conf.py
+    )
 
     add_custom_target(sphinx-text
         COMMAND ${sphinx} -b text ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/text
@@ -141,7 +140,7 @@ if(SPHINX_FOUND)
     add_custom_target(sphinx-info
         COMMAND ${sphinx} -b texinfo ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/texinfo
         COMMAND echo "Running Texinfo files through makeinfo..." VERBATIM
-        COMMAND ${make} -C ${CMAKE_CURRENT_BINARY_DIR}/texinfo info
+        COMMAND ${MAKE} -C ${CMAKE_CURRENT_BINARY_DIR}/texinfo info
         COMMAND echo "makeinfo finished; the Info files are in ${CMAKE_CURRENT_BINARY_DIR}/texinfo." VERBATIM
         DEPENDS ${rst_files} ${svg_files} conf.py
     )
