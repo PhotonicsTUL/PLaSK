@@ -55,7 +55,7 @@ In Linux :term:`shell` or MACOS terminal:
 
 In Windows from the Command Prompt:
 
-.. code-block:: bash
+.. code-block:: bat
 
 	C:\Users\joe\laser> "C:\Program Files\PLaSK\bin\plask.exe" vcsel.xpl 10
 
@@ -67,13 +67,19 @@ Such command-line invocation can be used to run PLaSK locally, but is also usefu
 
 If you run PLaSK without any parameters, you enter interactive mode. Do so and once you see the prompt type (type only commands, not the prompt [#IPython-prompt]_):
 
-	In[1]: help(plask)
+.. code-block:: python
 
-You will see a Python documentation for PLaSK. Press ``'q'`` to return back to the interactive shell. In the interactive mode you can run the script in any XPL file by typing::
+    In[1]: help(plask)
 
-	In[2]: runxpl("your_file.xpl")
+You will see a Python documentation for PLaSK. Press ``'q'`` to return back to the interactive shell. In the interactive mode you can run the script in any XPL file by typing:
 
-To exit the shell type::
+.. code-block:: python
+
+	In[2]: runxpl('your_file.xpl')
+
+To exit the shell type:
+
+.. code-block:: python
 
 	In[3]: exit()
 

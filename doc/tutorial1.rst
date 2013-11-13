@@ -143,7 +143,7 @@ The other solver we use is ``electrical.Shockley2D``. Its configuration is very 
 
     </solvers>
 
-You notice the additional tag ``<junction>`` with attributes ``Shockley`` and ``js``. These are custom parameters of ``Shockley2D`` electrical solver and they set values for phenomenological junction coefficient :math:`\beta` and reverse current density :math:`j_{s}`. Their meaning is described in section :ref`sec-Solver-electrical-beta`. At this moment just leave their values as in the example.
+You notice the additional tag ``<junction>`` with attributes ``Shockley`` and ``js``. These are custom parameters of ``Shockley2D`` electrical solver and they set values for phenomenological junction coefficient :math:`\beta` and reverse current density :math:`j_{s}`. Their meaning is described in section :ref:`sec-Solver-electrical-beta`. At this moment just leave their values as in the example.
 
 Next, we have two boundary conditions, specifying electric potential (voltage) at the top side of the object named ``"top-layer"`` (1V) and at the bottom side of the ``"substrate"`` (0V). Take a look at the geometry section to see which objects are these. As the definition of the location of boundary conditions is not a single word, we had to use the separate tag ``<place>`` as a content of the ``<condition>`` tag instead of its place attribute. If you wonder why we could not simple specify 1V potential at the top of the whole structure similarly as it was done for thermal solver, notice that the top layer has width of only 1.5µm and there is 4998.5µm of air adjacent to it. You would not want to put voltage to the air.
 
@@ -160,9 +160,6 @@ Receiver specification is always *solver_name.inReceivedQuantity*, where *solver
 
 After you have specified the above connections, bi-directional data exchange between the solvers will be done automatically and you need not worry about it during your calculations. If you want, you may connect a single provider with multiple receivers, however, not the opposite. Also, PLaSK will report an error if you try to connect providers and receivers of the incompatible type (e.g. ``inTemperature`` and ``outHeatDensity``).
 
-
-Running computations
-^^^^^^^^^^^^^^^^^^^^
 
 .. topic:: Listing of :file:`tutorial1.xpl` with empty script section.
 
@@ -227,6 +224,9 @@ Running computations
 
 	    </plask>
 
+Running computations
+^^^^^^^^^^^^^^^^^^^^
+
 At this point, you have prepared all the data needed to perform thermo-electrical analysis of the sample device. :ref:`Listing of tutorial1.xpl <lis-Listing-of-tutorial1.xpl>` shows the review of what we have created so far. The only missing part is the ``<script>`` section, which should be the last section of the file. In this section you define operations you want to perform: computations and presentation of the results. It is a script written in very easy-to-learn programming language Python. If you want to be able to write advanced programs for analysis of your structures (e. g. automatic optimization) you can find useful tutorials in the internet. A good starting point would be: http://docs.python.org/2/tutorial/, which covers Python basics.
 
 Other useful resources are:
@@ -249,7 +249,7 @@ As Python uses indentation to indicate blocks of the code, it is important not t
 1. run single computations of the solver *electr* and store the maximum change of computed voltage in variable *verr*,
 2. run single computations of the solver *therm* and store the maximum change of computed voltage in variable *terr*.
 
-Both used solvers apply finite element method for their computations. However, the temperature dependence of the thermal and electrical conductivities and current dependence of the effective electrical conductivity in the active region make the whole problem a nonlinear one. Hence, the finite-element computations have to be repeated until the convergence is achieved. The values returned by compute methods of both solvers indicate error of such convergence i.e. you should keep computing as long as any of them is larger than some desired limit. Solvers can do this automatically, but as we want to achieve mutual convergence of two connected solvers, we have to take the control ourselves. For this reason we pass integer number *n=1* as arguments of the methods, which means: do not perform more than *n* loops, even if the convergence is not achieved.
+Both used solvers apply finite element method for their computations. However, the temperature dependence of the thermal and electrical conductivities and current dependence of the effective electrical conductivity in the active region make the whole problem a nonlinear one. Hence, the finite-element computations have to be repeated until the convergence is achieved. The values returned by compute methods of both solvers indicate error of such convergence i.e. you should keep computing as long as any of them is larger than some desired limit. Solvers can do this automatically, but as we want to achieve mutual convergence of two connected solvers, we have to take the control ourselves. For this reason we pass integer number *n* = 1 as arguments of the methods, which means: do not perform more than *n* loops, even if the convergence is not achieved.
 
 After initial calculations, we may run further computations in a loop, which is repeated until both returned errors are smaller than the default limits::
 
@@ -266,17 +266,18 @@ This time we allow to run maximum 6 loop iterations of the electrical solver int
 ``therm.maxerr`` and ``electr.maxerr`` are default values of the convergence limits for the solvers (they can be adjuster either in the ``<solvers>`` section or in the Python script). Hence, we repeat the loop until any of the returned errors is larger than the appropriate limit.
 
 Having whole written the input file (including script) so far I suggest you to save it and run the computations with PLaSK in a way described in section :ref:`sec-Running-plask` i.e.
- - In Linux shell or MACOS terminal:
 
-   .. code-block:: bash
+- In Linux shell or MACOS terminal:
 
-      joe@cray:~/tutorials$ plask tutorial1.xpl
+  .. code-block:: bash
 
- - In Windows from the Command Prompt (assuming you have installed PLaSK in "C:\\Program Files\\PLaSK\\"):
+     joe@cray:~/tutorials$ plask tutorial1.xpl
 
-   .. code-block:: bat
+- In Windows from the Command Prompt (assuming you have installed PLaSK in ``C:\Program Files\PLaSK\``):
 
-      C:\Users\joe\tutorials> "C:\Program Files\PLaSK\bin\plask.exe" tutorial1.xpl
+  .. code-block:: bat
+
+     C:\Users\joe\tutorials> "C:\Program Files\PLaSK\bin\plask.exe" tutorial1.xpl
 
 You should see a lot of logs, but no results. This is not strange as we did not give any instructions to output the results. However, take a look at the end of the logs:
 
@@ -297,7 +298,7 @@ You should see a lot of logs, but no results. This is not strange as we did not 
 	RESULT        : therm:thermal.Static2D: Loop 1(14): max(T) = 345.393 K, error = 0.00553302 K
 	INFO          : Calculations finished!
 
-In the last line you can see the message "Calculations finished!", which you printed yourself in the script. Before this, there is a lot of information given by the solvers. The very interesting one is the one before the last, reported by the thermal solver (see ``therm:thermal.Static2D:`` in this line) which gives the number of iterations, number of total iterations, the maximum computed temperature in the structure, and the maximum temperature update since the last call to the ``compute`` method. The convergence is achieved, since the default temperature change limit is *0.05K*.
+In the last line you can see the message "Calculations finished!", which you printed yourself in the script. Before this, there is a lot of information given by the solvers. The very interesting one is the one before the last, reported by the thermal solver (see ``therm:thermal.Static2D:`` in this line) which gives the number of iterations, number of total iterations, the maximum computed temperature in the structure, and the maximum temperature update since the last call to the ``compute`` method. The convergence is achieved, since the default temperature change limit is 0.05K.
 
 
 Showing results
@@ -331,7 +332,7 @@ In order to see the plots, you should add the command at the end of your script 
 
 When you run the file with PLaSK, you should see two windows with the plots. You can use the controls available in this windows to zoom or move the figure (try zooming the top left corner, where the actual diode active structure is located). You can also click the button with a small disk shown on it, to save the currently visible image to disk.
 
-Before concluding this tutorial, let us make a second figure. This time, it will be two-dimensional plot of the current density in the active region. For this we need to know the vertical position of the active layer. We could compute it manually, knowing that we have set bottom of the *GaAs* substrate at level *0*. By summing the layer thicknesses we get that the bottom edge of the active layer is located at position :math:`y=301.650\,\text{\textmu m}`. However, much better approach would be to determine this value automatically. You may remember that we have given the name junction to the active layer. In Python script we can refer to it as ``GEO["junction"]``. We can obtain the position of the bottom left corner of this block by adding command (put it directly before the ``show()``)::
+Before concluding this tutorial, let us make a second figure. This time, it will be two-dimensional plot of the current density in the active region. For this we need to know the vertical position of the active layer. We could compute it manually, knowing that we have set bottom of the *GaAs* substrate at level *0*. By summing the layer thicknesses we get that the bottom edge of the active layer is located at position *y* = 301.650 µm. However, much better approach would be to determine this value automatically. You may remember that we have given the name junction to the active layer. In Python script we can refer to it as ``GEO["junction"]``. We can obtain the position of the bottom left corner of this block by adding command (put it directly before the ``show()``)::
 
 	pos = GEO["main"].get_object_positions(GEO["junction"])[0]
 
@@ -341,7 +342,7 @@ Now, we can extract the vertical component of the active layer position as ``pos
 
 	junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
 
-Frankly speaking the created mesh is still a two-dimensional mesh, however, it has only one row. The thing that looks like a function invocation mesh.Rectilinear2D is a two-dimensinal rectilinear mesh class [#mesh-is-module]_ and by invoking it as a function, we create a particular instance of this class. Provided arguments are lists of the mesh points along *x* and *y* axes. If you have used Matlab, you should be familiar with the function ``linspace``. It returns a list of ``1000`` points (indicated by its third argument) spanning from *–150µm* to *150µm* (first and second arguments). Along *y* axis we have only one point at the level of the active layer. Mind that you can correctly get fields for negative values of *x*, because you have specified ``left="mirror"`` in the geometry declaration.
+Frankly speaking the created mesh is still a two-dimensional mesh, however, it has only one row. The thing that looks like a function invocation mesh.Rectilinear2D is a two-dimensinal rectilinear mesh class [#mesh-is-module]_ and by invoking it as a function, we create a particular instance of this class. Provided arguments are lists of the mesh points along *x* and *y* axes. If you have used Matlab, you should be familiar with the function ``linspace``. It returns a list of ``1000`` points (indicated by its third argument) spanning from –150 µm to 150 µm (first and second arguments). Along *y* axis we have only one point at the level of the active layer. Mind that you can correctly get fields for negative values of *x*, because you have specified ``left="mirror"`` in the geometry declaration.
 
 Now, we can obtain the current density from the receiver of solver ``electr``::
 
@@ -360,7 +361,7 @@ The above line means: make list consisting of absolute values of ``j.y``, where 
 
 junction.axis0 gives the list of points in the horizontal axis of the two-dimensional mesh i.e. axis *x*. The last two lines add labels to the plot axes (see, you can use basic LaTeX in the labels).
 
-Ensure that the commands to create the last figure are before ``show()``. Save your file (for your reference :ref:`the whole script is shown in listng <lis-Listing-of-tutorial1-script>`) and run it wih PLaSK. You should see three figures now. Zoom them to your liking and save the images, successfully finishing this tutorial.
+Ensure that the commands to create the last figure are before ``show()``. Save your file (for your reference :ref:`the whole script is shown in listing <lis-Listing-of-tutorial1-script>`) and run it wih PLaSK. You should see three figures now. Zoom them to your liking and save the images, successfully finishing this tutorial.
 
 .. topic:: Content of the script section from the file :file:`tutorial1.xpl`.
 

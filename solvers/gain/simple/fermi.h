@@ -69,7 +69,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
         double totallen;                        ///< Total active region thickness [Å]
 
         /**
-         * Summarize active region, check for approprietness and compute some values
+         * Summarize active region, check for appropriateness and compute some values
          * \param solver solver
          */
         void summarize(const FermiGainSolver<GeometryType>* solver) {

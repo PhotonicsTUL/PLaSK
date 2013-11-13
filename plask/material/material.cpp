@@ -58,7 +58,9 @@ double Material::B(double T) const { throwNotImplemented("B(double T)"); return 
 double Material::C(double T) const { throwNotImplemented("C(double T)"); return 0; }
 
 double Material::CB(double T, double e, char point) const {
-    return VB(T, e, point) + Eg(T, e, point);
+    if (e == 0.)
+        return VB(T, 0., point) + Eg(T, 0., point);
+    return max(VB(T, e, point, 'H'), VB(T, e, point, 'L')) + Eg(T, e, point);
 }
 
 double Material::chi(double T, double e, char point) const { throwNotImplemented("chi(double T, double e, char point)"); return 0; }
