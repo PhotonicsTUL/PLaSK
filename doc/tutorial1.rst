@@ -48,29 +48,29 @@ In this tutorial we start with the geometry section. It describes the geometry o
 
 The ``axes`` attribute of means that we will use the *xy* axes in our geometry definition i.e. *x* is the name of the horizontal axis and *y* of the vertical one. As the structure has mirror symmetry in the *x*-direction, it is sufficient to model only half of it and the left edge of the computational domain is the mirror, which is indicated by the ``left="mirror"`` attribute. The length of the chip in the third *z* direction is set to 1 mm (``length="1000"``, where the value is specified in microns as all geometrical dimensions in PLaSK). The last attribute ``name`` simply gives the geometry name (``"main"``) for later reference.
 
-Due to the nature of the structure, it is the most natural to describe it as a stack of layers. Each layer is shifted to the left side of the stack (i.e. to the symmetry plane), which is a default. Hence, the structure definition will be (from now on we will skip ``<plask>…</plask>`` main tag from listings, although you must remember to keep them in your file):
+Due to the nature of the structure, it is the most natural to describe it as a stack of layers. Each layer is shifted to the left side of the stack (i.e. to the symmetry plane), which is a default. Hence, the structure definition will be (from now on we will skip ``<plask>...</plask>`` main tag from listings, although you must remember to keep them in your file):
 
 .. code-block:: xml
 
-	<geometry>
-	  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
-	    <stack>
-	      <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20 name="top-layer""/>
-	      <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
-	      <block dx="150" dy="0.150" material="GaAs"/>
-	      <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
-	      <block dx="150" dy="0.150" material="GaAs"/>
-	      <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
-	      <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
-	      <zero/>
-	      <block dx="1000" dy="1000" material="Cu"/>
-	    </stack>
-	  </cartesian2d>
-	</geometry>
+    <geometry>
+      <cartesian2d axes="xy" left="mirror" length="1000" name="main">
+        <stack>
+          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
+          <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
+          <block dx="150" dy="0.150" material="GaAs"/>
+          <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
+          <block dx="150" dy="0.150" material="GaAs"/>
+          <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+          <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
+          <zero/>
+          <block dx="1000" dy="1000" material="Cu"/>
+        </stack>
+      </cartesian2d>
+    </geometry>
 
-In the above listing, two new tags appeared. One is ``<stack>`` and means that its whole content should be organized in the vertical :ref:`stack <geometry-object-stack>, starting from top to bottom. By default, the stack coordinate system is set in a such way that *y=0* is at the bottom of the stack. However, we want to have *y=0*, at the top of the heatsink, so indicate this by the tag ``<zero/>`` between substrate and heatsink blocks.
+In the above listing, two new tags appeared. One is ``<stack>`` and means that its whole content should be organized in the vertical :ref:`stack` <geometry-object-stack>, starting from top to bottom. By default, the stack coordinate system is set in a such way that *y=0* is at the bottom of the stack. However, we want to have *y=0*, at the top of the heatsink, so indicate this by the tag ``<zero/>`` between substrate and heatsink blocks.
 
-Another new tag is ``<block>``, which means a :ref:`rectangular block <geometry-object-block>`. As this tag has no further content, is is finished with ``/>``. ``dx`` and ``dy`` attributes give dimensions of the blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. At this point it is important to say that PLaSK uses fixed units for all physical quantities and they are summarized in Appendix :ref:`sec-Units-in-PLaSK`. For example all spatial dimensions must be given in micrometers, as this matches the typical dimensions of most photonic devices. Look back at the any `<block>` tag. Its attribute ``material`` gives information about the material of each block. As there is no materials section in our input file, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means :math:`Al_{0.3}Ga_{0.7}As` (missing amount of gallium is computed automatically) doped with carbon and dopant concentration :math:`1\!\times\!10^{20}\,\mathrm{cm}^{-3}` (doping concentration is always given in :math:`\mathrm{cm}^{-3}`).
+Another new tag is ``<block>``, which means a :ref:`rectangular block <geometry-object-block>`. As this tag has no further content, is is finished with ``/>``. ``dx`` and ``dy`` attributes give dimensions of the blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. At this point it is important to say that PLaSK uses fixed units for all physical quantities and they are summarized in Appendix :ref:`sec-Units-in-PLaSK`. For example all spatial dimensions must be given in micrometers, as this matches the typical dimensions of most photonic devices. Look back at the any `<block>` tag. Its attribute ``material`` gives information about the material of each block. As there is no materials section in our input file, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means Al\ :sub:`0.3`\ Ga\ :sub:`0.7`\ As (missing amount of gallium is computed automatically) doped with carbon and dopant concentration 1×10\ :sup:`20` cm\ :sup:`-3` (doping concentration is always given in cm\ :sup:`-3`).
 
 Three of the blocks are given names ``"top-layer"``, ``"substrate"``, and ``"junction"`` for the future reference. `Top-layer` and `substrate` will be used to specify boundary conditions for the electrical solver at the edges of these blocks, while we will need junction to make plots of the computed current a little easier.
 
