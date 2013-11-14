@@ -57,6 +57,18 @@ Tensor2<double> AlGaAs_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+MI_PROPERTY(AlGaAs_Si, absp,
+            MISource("fit by Lukasz Piskorski"), // TODO
+            MIComment("no temperature dependence")
+            )
+double AlGaAs_Si::absp(double wl, double T) const {
+    double tWl = wl*1e-3;
+    double tAbsp(0.);
+    if (tWl < 6000.) // 0.85-6 um
+        tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0169)+4.67+0.00211*pow(tWl,4.80));
+    return ( tAbsp*(1.-0.5*Al) );
+}
+
 bool AlGaAs_Si::isEqual(const Material &other) const {
     const AlGaAs_Si& o = static_cast<const AlGaAs_Si&>(other);
     return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && AlGaAs::isEqual(other);

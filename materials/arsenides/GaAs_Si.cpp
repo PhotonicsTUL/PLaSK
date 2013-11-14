@@ -45,19 +45,14 @@ Tensor2<double> GaAs_Si::cond(double T) const {
 }
 
 MI_PROPERTY(GaAs_Si, absp,
-            MISource("fit to ..."), // TODO
+            MISource("fit by Lukasz Piskorski"), // TODO
             MIComment("no temperature dependence")
             )
 double GaAs_Si::absp(double wl, double T) const {
+    double tWl = wl*1e-3;
     double tAbsp(0.);
-    if ((wl > 1200.) && (wl < 1400.)) // only for 1300 nm TODO
-        tAbsp = 3.2 * pow(Nf_RT/1e18, 1.3);
-    else if ((wl > 1450.) && (wl < 1650.)) // only for 1550 nm TODO
-        tAbsp = 3.2 * pow(Nf_RT/1e18, 1.4);
-    else if ((wl > 2230.) && (wl < 2430.)) // only for 2330 nm TODO
-        tAbsp = 5.1 * pow(Nf_RT/1e18, 1.3);
-    else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
-        tAbsp = 67. * pow(Nf_RT/1e18, 1.2);
+    if (tWl < 6000.) // 0.85-6 um
+        tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0169)+4.67+0.00211*pow(tWl,4.80));
     return ( tAbsp );
 }
 
