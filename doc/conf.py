@@ -102,7 +102,7 @@ html_theme = 'agogo'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'linkcolor': '#bf0303',
+    'linkcolor': '#7f1111',
     'headerlinkcolor': '#fc573d'
 }
 

@@ -36,15 +36,15 @@ In this tutorial we start with the geometry section. It describes the geometry o
 
 .. code-block:: xml
 
-	<plask>
+    <plask>
 
-	<geometry>
-	  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
-	    <!-- Here we put the geometry definition. -->
-	  </cartesian2d>
-	</geometry>
+    <geometry>
+      <cartesian2d axes="xy" left="mirror" length="1000" name="main">
+        <!-- Here we put the geometry definition. -->
+      </cartesian2d>
+    </geometry>
 
-	</plask>
+    </plask>
 
 The ``axes`` attribute of means that we will use the *xy* axes in our geometry definition i.e. *x* is the name of the horizontal axis and *y* of the vertical one. As the structure has mirror symmetry in the *x*-direction, it is sufficient to model only half of it and the left edge of the computational domain is the mirror, which is indicated by the ``left="mirror"`` attribute. The length of the chip in the third *z* direction is set to 1 mm (``length="1000"``, where the value is specified in microns as all geometrical dimensions in PLaSK). The last attribute ``name`` simply gives the geometry name (``"main"``) for later reference.
 
@@ -91,11 +91,11 @@ The generator definition in XPL file is done using ``<generator>`` tag and looks
 
 .. code-block:: xml
 
-	<grids>
-	  <generator type="rectilinear2d" method="divide" name="default">
-	    <postdiv by="2"/>
-	  </generator>
-	</grids>
+    <grids>
+      <generator type="rectilinear2d" method="divide" name="default">
+        <postdiv by="2"/>
+      </generator>
+    </grids>
 
 Here we have defined the generator for a mesh of type ``"rectilinear2d"``, using ``"divide"`` method (i.e. *DivideGenerator*). We will refer to this generator later on using the specified name "default". As in solver configuration the meshes and generators are indistinguishable by the type, each of them must have unique name.
 
@@ -109,15 +109,15 @@ As the structure geometry and the mesh generator is defined, it is time to creat
 
 .. code-block:: xml
 
-	<solvers>
+    <solvers>
 
-	  <thermal solver="Static2D" name="therm">
-	    <geometry ref="main"/>
-	    <mesh ref="default"/>
-	    <temperature>
-	      <condition value="300.0" place="bottom"/>
-	    </temperature>
-	  </thermal>
+      <thermal solver="Static2D" name="therm">
+        <geometry ref="main"/>
+        <mesh ref="default"/>
+        <temperature>
+          <condition value="300.0" place="bottom"/>
+        </temperature>
+      </thermal>
 
 The tag name in the solvers section specified the type of the solver and the ``solver`` attribute its particular type. So in the example above we have created the ``thermal.Static2D`` solver and named it *therm*. This solver will be visible as a variable in the Python script and its name will be exactly the name specified here in the attribute ``name``. Hence, the value of this attribute must be a proper identifier i.e. must begin with a letter and contain only letters (lower or capital), digits and '_' character.
 
@@ -163,66 +163,66 @@ After you have specified the above connections, bi-directional data exchange bet
 
 .. topic:: Listing of :file:`tutorial1.xpl` with empty script section.
 
-	.. _lis-Listing-of-tutorial1.xpl:
-	.. code-block:: xml
+    .. _lis-Listing-of-tutorial1.xpl:
+    .. code-block:: xml
 
-	    <plask>
+        <plask>
 
-	    <geometry>
-	      <cartesian2d axes="xy" left="mirror" length="1000" name="main">
-		<stack>
-		  <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
-		  <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
-		  <block dx="150" dy="0.150" material="GaAs"/>
-		  <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
-		  <block dx="150" dy="0.150" material="GaAs"/>
-		  <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
-		  <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
-		  <zero/>
-		  <block dx="1000" dy="1000" material="Cu"/>
-		</stack>
-	      </cartesian2d>
-	    </geometry>
+        <geometry>
+          <cartesian2d axes="xy" left="mirror" length="1000" name="main">
+        <stack>
+          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
+          <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
+          <block dx="150" dy="0.150" material="GaAs"/>
+          <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
+          <block dx="150" dy="0.150" material="GaAs"/>
+          <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
+          <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
+          <zero/>
+          <block dx="1000" dy="1000" material="Cu"/>
+        </stack>
+          </cartesian2d>
+        </geometry>
 
-	    <grids>
-	      <generator type="rectilinear2d" method="divide" name="default">
-		<postdiv by="2"/>
-	      </generator>
-	    </grids>
+        <grids>
+          <generator type="rectilinear2d" method="divide" name="default">
+        <postdiv by="2"/>
+          </generator>
+        </grids>
 
-	    <solvers>
-	      <thermal solver="Static2D" name="therm">
-		<geometry ref="main"/>
-		<mesh ref="default"/>
-		<temperature>
-		  <condition value="300.0" place="bottom"/>
-		</temperature>
-	      </thermal>
-	      <electrical solver="Shockley2D" name="electr">
-		<geometry ref="main"/>
-		<mesh ref="default"/>
-		<junction Shockley="19" js="1"/>
-		<voltage>
-		  <condition value="1.0">
-		    <place object="top-layer" side="top"/>
-		  </condition>
-		  <condition value="0.0">
-		    <place object="substrate" side="bottom"/>
-		  </condition>
-		</voltage>
-	      </electrical>
-	    </solvers>
+        <solvers>
+          <thermal solver="Static2D" name="therm">
+        <geometry ref="main"/>
+        <mesh ref="default"/>
+        <temperature>
+          <condition value="300.0" place="bottom"/>
+        </temperature>
+          </thermal>
+          <electrical solver="Shockley2D" name="electr">
+        <geometry ref="main"/>
+        <mesh ref="default"/>
+        <junction Shockley="19" js="1"/>
+        <voltage>
+          <condition value="1.0">
+            <place object="top-layer" side="top"/>
+          </condition>
+          <condition value="0.0">
+            <place object="substrate" side="bottom"/>
+          </condition>
+        </voltage>
+          </electrical>
+        </solvers>
 
-	    <connects>
-	      <connect in="electr.inTemperature" out="therm.outTemperature"/>
-	      <connect in="therm.inHeat" out="electr.outHeat"/>
-	    </connects>
+        <connects>
+          <connect in="electr.inTemperature" out="therm.outTemperature"/>
+          <connect in="therm.inHeat" out="electr.outHeat"/>
+        </connects>
 
-	    <script>
-	    <!-- Here will go the script presented in the rest of this tutorial -->
-	    </script>
+        <script>
+        <!-- Here will go the script presented in the rest of this tutorial -->
+        </script>
 
-	    </plask>
+        </plask>
 
 Running computations
 ^^^^^^^^^^^^^^^^^^^^
@@ -283,20 +283,20 @@ You should see a lot of logs, but no results. This is not strange as we did not 
 
 .. code-block:: none
 
-	INFO          : electr:electrical.Shockley2D: Running electrical calculations
-	DETAIL        : therm:thermal.Static2D: Getting temperatures
-	DETAIL        : interpolate: Running LINEAR interpolation
-	DETAIL        : electr:electrical.Shockley2D: Setting up matrix system (size=1675, bands=27{28})
-	DETAIL        : electr:electrical.Shockley2D: Solving matrix system
-	RESULT        : electr:electrical.Shockley2D: Loop 1(71): max(j@junc) = 8.88 kA/cm2, error = 0.0435 %
-	INFO          : therm:thermal.Static2D: Running thermal calculations
-	DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675, bands=27{28})
-	DETAIL        : electr:electrical.Shockley2D: Getting heat density
-	DETAIL        : electr:electrical.Shockley2D: Computing heat densities
-	DETAIL        : interpolate: Running LINEAR interpolation
-	DETAIL        : therm:thermal.Static2D: Solving matrix system
-	RESULT        : therm:thermal.Static2D: Loop 1(14): max(T) = 345.393 K, error = 0.00553302 K
-	INFO          : Calculations finished!
+    INFO          : electr:electrical.Shockley2D: Running electrical calculations
+    DETAIL        : therm:thermal.Static2D: Getting temperatures
+    DETAIL        : interpolate: Running LINEAR interpolation
+    DETAIL        : electr:electrical.Shockley2D: Setting up matrix system (size=1675, bands=27{28})
+    DETAIL        : electr:electrical.Shockley2D: Solving matrix system
+    RESULT        : electr:electrical.Shockley2D: Loop 1(71): max(j@junc) = 8.88 kA/cm2, error = 0.0435 %
+    INFO          : therm:thermal.Static2D: Running thermal calculations
+    DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675, bands=27{28})
+    DETAIL        : electr:electrical.Shockley2D: Getting heat density
+    DETAIL        : electr:electrical.Shockley2D: Computing heat densities
+    DETAIL        : interpolate: Running LINEAR interpolation
+    DETAIL        : therm:thermal.Static2D: Solving matrix system
+    RESULT        : therm:thermal.Static2D: Loop 1(14): max(T) = 345.393 K, error = 0.00553302 K
+    INFO          : Calculations finished!
 
 In the last line you can see the message "Calculations finished!", which you printed yourself in the script. Before this, there is a lot of information given by the solvers. The very interesting one is the one before the last, reported by the thermal solver (see ``therm:thermal.Static2D:`` in this line) which gives the number of iterations, number of total iterations, the maximum computed temperature in the structure, and the maximum temperature update since the last call to the ``compute`` method. The convergence is achieved, since the default temperature change limit is 0.05K.
 
@@ -308,56 +308,56 @@ In order to show the results, we need to retrieve the relevant information from 
 
 For now, let us obtain the temperature on the same mesh it was computed. So, add the following line at the end of the script section::
 
-	temp = therm.outTemperature(therm.mesh)
+    temp = therm.outTemperature(therm.mesh)
 
 This will assign the temperature distribution on the working mesh of the solver ``therm`` (given by ``therm.mesh``) to the variable ``temp``. Having done this we can get the maximum temperature simply as ``maxtemp = max(temp)``, save it to :term:`HDF5` file, or plot as a color map. Let us do the latter, using 12 color bands to indicate temperature. In addition we plot the wireframe of the analyzed structure, so we have some visual location reference, and add the temperature color-bar::
 
-	plot_field(temp, 12)
-	plot_geometry(GEO["main"], color="w")
-	colorbar()
+    plot_field(temp, 12)
+    plot_geometry(GEO["main"], color="w")
+    colorbar()
 
 In the second line above, there is a global dictionary ``GEO``, which contains all geometries and geometry objects defined in the XPL file, with keys matching the value of the attribute ``name`` of each geometry. Hence, ``GEO["main"]`` is simply Python representation of our diode geometry described in the beginning of this tutorial [#GEO.name]_. Additional parameter color of the ``plot_geometry`` command makes the geometry wireframe plotted white instead of the default black. The rest of the code responsible for plotting the temperature should be self-explanatory.
 
 Apart from the results it may be also useful to see the computational mesh. In order to do this, we create a new plot window using ``figure()`` command and plot the structure together with the computational mesh (actually the mesh is the same for both solvers, so you may get it from either one)::
 
-	figure()
-	plot_geometry(GEO["main"], set_limits=True)
-	plot_mesh(electr.mesh)
+    figure()
+    plot_geometry(GEO["main"], set_limits=True)
+    plot_mesh(electr.mesh)
 
 Additional argument ``set_limits`` of ``plot_geometry`` set to ``true`` ensures that the axes limits will be adjusted to match the whole structure. In the previous figure it was automatically done by ``plot_field`` [#plot_field-limit]_.
 
 In order to see the plots, you should add the command at the end of your script [#show]_::
 
-	show()
+    show()
 
 When you run the file with PLaSK, you should see two windows with the plots. You can use the controls available in this windows to zoom or move the figure (try zooming the top left corner, where the actual diode active structure is located). You can also click the button with a small disk shown on it, to save the currently visible image to disk.
 
-Before concluding this tutorial, let us make a second figure. This time, it will be two-dimensional plot of the current density in the active region. For this we need to know the vertical position of the active layer. We could compute it manually, knowing that we have set bottom of the *GaAs* substrate at level *0*. By summing the layer thicknesses we get that the bottom edge of the active layer is located at position *y* = 301.650 µm. However, much better approach would be to determine this value automatically. You may remember that we have given the name junction to the active layer. In Python script we can refer to it as ``GEO["junction"]``. We can obtain the position of the bottom left corner of this block by adding command (put it directly before the ``show()``)::
+Before concluding this tutorial, let us make a second figure. This time, it will be two-dimensional plot of the current density in the active region. For this we need to know the vertical position of the active layer. We could compute it manually, knowing that we have set bottom of the GaAs substrate at level 0. By summing the layer thicknesses we get that the bottom edge of the active layer is located at position *y* = 301.650 µm. However, much better approach would be to determine this value automatically. You may remember that we have given the name junction to the active layer. In Python script we can refer to it as ``GEO["junction"]``. We can obtain the position of the bottom left corner of this block by adding command (put it directly before the ``show()``)::
 
-	pos = GEO["main"].get_object_positions(GEO["junction"])[0]
+    pos = GEO["main"].get_object_positions(GEO["junction"])[0]
 
 ``get_object_positions`` is a method of the geometry, which returns the list of positions of geometry object given as its argument. Is is a list and not a single value, as a single object may appear in the geometry several times (we will investigate such situation in the next tutorial). Hence, zero in brackets ``[0]`` at the end of the line extracts the first element of this list (in Python all lists are indexed starting from zero). In this way, ``pos`` is the two-dimensional vector indicating the position of the active layer.
 
 Now, we can extract the vertical component of the active layer position as ``pos.y``. Next, we want to create a one-dimensional mesh spanning all over the active region::
 
-	junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+    junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
 
-Frankly speaking the created mesh is still a two-dimensional mesh, however, it has only one row. The thing that looks like a function invocation mesh.Rectilinear2D is a two-dimensinal rectilinear mesh class [#mesh-is-module]_ and by invoking it as a function, we create a particular instance of this class. Provided arguments are lists of the mesh points along *x* and *y* axes. If you have used Matlab, you should be familiar with the function ``linspace``. It returns a list of ``1000`` points (indicated by its third argument) spanning from –150 µm to 150 µm (first and second arguments). Along *y* axis we have only one point at the level of the active layer. Mind that you can correctly get fields for negative values of *x*, because you have specified ``left="mirror"`` in the geometry declaration.
+Frankly speaking the created mesh is still a two-dimensional mesh, however, it has only one row. The thing that looks like a function invocation mesh.Rectilinear2D is a two-dimensinal rectilinear mesh class [#mesh-is-module]_ and by invoking it as a function, we create a particular instance of this class. Provided arguments are lists of the mesh points along *x* and *y* axes. If you have used Matlab, you should be familiar with the function ``linspace``. It returns a list of ``1000`` points (indicated by its third argument) spanning from –150 µm to 150 µm (first and second arguments). Along *y* axis we have only one point at the level of the active layer. Mind that you can correctly get fields for negative values of *x*, because you have specified ``left="mirror"`` in the geometry declaration.
 
 Now, we can obtain the current density from the receiver of solver ``electr``::
 
-	current = electr.outCurrentDensity(junction_mesh)
+    current = electr.outCurrentDensity(junction_mesh)
 
 Now current can be considered as a one-dimesional array. However, it contains all the components of the current density vector, while we want to plot only the vertical component, which is perpendicular to the junction. So we may use Python so called list comprehension construct to transform one list into another::
 
-	curry = [ abs(j.y) for j in current ]
+    curry = [ abs(j.y) for j in current ]
 
 The above line means: make list consisting of absolute values of ``j.y``, where ``j`` becomes consequently each element of the array current and store the resulting list in variable curry. Now, we can make a new figure and plot current density versus *x*-axis::
 
-	figure()
-	plot(junction_mesh.axis0, curry)
-	xlabel("$x [um]")
-	ylabel("current density [kA/cm$^2$]")
+    figure()
+    plot(junction_mesh.axis0, curry)
+    xlabel("$x [um]")
+    ylabel("current density [kA/cm$^2$]")
 
 junction.axis0 gives the list of points in the horizontal axis of the two-dimensional mesh i.e. axis *x*. The last two lines add labels to the plot axes (see, you can use basic LaTeX in the labels).
 
@@ -365,37 +365,37 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
 
 .. topic:: Content of the script section from the file :file:`tutorial1.xpl`.
 
-	.. _lis-Listing-of-tutorial1-script:
-	.. code-block:: python
+    .. _lis-Listing-of-tutorial1-script:
+    .. code-block:: python
 
-		verr = electr.compute(1)
-		terr = therm.compute(1)
+        verr = electr.compute(1)
+        terr = therm.compute(1)
 
-		while terr > therm.maxerr or verr > electr.maxerr:
-		    verr = electr.compute(6)
-		    terr = therm.compute(1)
+        while terr > therm.maxerr or verr > electr.maxerr:
+            verr = electr.compute(6)
+            terr = therm.compute(1)
 
-		print_log(LOG_INFO, "Calculations finished!")
+        print_log(LOG_INFO, "Calculations finished!")
 
-		temp = therm.outTemperature(therm.mesh)
-		plot_field(temp, 12)
-		plot_geometry(GEO["main"], color="w")
-		colorbar()
+        temp = therm.outTemperature(therm.mesh)
+        plot_field(temp, 12)
+        plot_geometry(GEO["main"], color="w")
+        colorbar()
 
-		figure()
-		plot_geometry(GEO["main"], set_limits=True)
-		plot_mesh(electr.mesh)
+        figure()
+        plot_geometry(GEO["main"], set_limits=True)
+        plot_mesh(electr.mesh)
 
-		pos = GEO["main"].get_object_positions(GEO["junction"])[0]
-		junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
-		current = electr.outCurrentDensity(junction_mesh)
-		curry = [ abs(j.y) for j in current ]
-		figure()
-		plot(junction_mesh.axis0, curry)
-		xlabel("$x [um]")
-		ylabel("current density [kA/cm$^2$]")
+        pos = GEO["main"].get_object_positions(GEO["junction"])[0]
+        junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+        current = electr.outCurrentDensity(junction_mesh)
+        curry = [ abs(j.y) for j in current ]
+        figure()
+        plot(junction_mesh.axis0, curry)
+        xlabel("$x [um]")
+        ylabel("current density [kA/cm$^2$]")
 
-		show()
+        show()
 
 .. rubric:: Footnotes
 .. [#run-py-file] Actually it is possible to run the computations without creating :term:`XPL` file at all, as everything can be defined using Python, however, this option will be presented later.
