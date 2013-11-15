@@ -12,9 +12,9 @@ After :term:`reading a very brief introduction to XML syntax <XML>`, you start w
 .. code-block:: xml
 
     <plask>
-
+    
         <!-- Here you will put all the content of your file. -->
-
+    
     </plask>
 
 The strange characters ``<!--`` and ``-->`` in the above example mark the beginning and the end of the comment, respectively. So you can use them in your file to write your notes, or to temporarily disable any part of the file.
