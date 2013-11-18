@@ -17,7 +17,7 @@ from sphinx.locale import l_, _
 from sphinx.directives import ObjectDescription
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
-from sphinx.util.docfields import TypedField
+from sphinx.util.docfields import TypedField, Field
 
 # name description [context]
 # name is required and can be in brackets <>
@@ -48,6 +48,11 @@ class XMLTag(ObjectDescription):
         TypedField('attributes', label=l_('Attributes'),
                    names=('attribute', 'attr', 'parameter', 'param'),
                    typerolename='tag', typenames=('attrtype', 'paramtype', 'type')),
+        #GroupedField('attributes', label=l_('Attributes'), rolename='tag',
+        #             names=('attribute', 'attr', 'parameter', 'param'),
+        #             can_collapse=True),
+        Field('contents', label=l_('Contents'), has_arg=False,
+              names=('contents', 'content', 'Contents', 'Content'))
     ]
 
     def add_target_and_index(self, name, sig, signode):

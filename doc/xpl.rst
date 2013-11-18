@@ -20,11 +20,8 @@ This section allows to define some constant parameters (that can be later overri
 
     Definition of a parameter for use in the rest of the file.
 
-
-
-    :attr name (required): Name of the parameter (each name must be unique).
-
-    :attr value (required): Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
+    :attr required name: Name of the parameter (each name must be unique).
+    :attr required value: Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
 
 
 Section <materials>
@@ -36,11 +33,11 @@ This section contains specification of custom materials that can be used togethe
 
     Definition of a custom material.
 
-    :attr name: (required) Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
-    :attr kind: (either kind or base is required) Kind of the new material. Any of: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid crystal*.
-    :attr base: (either kind or base is required) Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used.
+    :attr required name: Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
+    :attr kind: (either **kind** or **base** is required) Kind of the new material. Any of: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid crystal*.
+    :attr base: (either **kind** or **base** is required) Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used.
 
-    .. rubric:: Content:
+    :Contents:
 
     The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``dc`` or ``cc`` that will contain the user specified doping amounts: dopant or carriers concentration, respectively (at most one of ``cc`` or ``dc`` is defined, never both).
 
@@ -308,9 +305,7 @@ Available elements
     :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
     :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-    .. rubric:: Contents:
-
-    Any object from section :ref:`sec-XPL-Geometry-objects-2D`.
+    :Contents: Any object from section :ref:`sec-XPL-Geometry-objects-2D`.
 
 
 .. xml:tag:: cylindrical2d
@@ -325,9 +320,7 @@ Available elements
     :attr name: Geometry name for further reference. (unique identifier string)
     :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-    .. rubric:: Contents:
-
-    Any object from section :ref:`sec-XPL-Geometry-objects-2D`. If ``length`` was not given, ref:`tag-extrusion` is also accepted.
+    :Contents: Any object from section :ref:`sec-XPL-Geometry-objects-2D`. If ``length`` was not given, xml:tag:`extrusion` is also accepted.
 
 
 
@@ -344,9 +337,7 @@ Available elements
     :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
     :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-    .. rubric:: Contents:
-     Any object from section :ref:`sec-XPL-Geometry-objects-3D`.
-
+    :Contents: Any object from section :ref:`sec-XPL-Geometry-objects-3D`.
 
 
 .. _sec-XPL-Geometry-objects-2D:
@@ -378,8 +369,9 @@ Containers
 
     Exactly one of the ``left``, ``right``, ``trancenter``, ``Xcenter``, ``X``, ``top``, ``bottom``, ``vertcenter``, ``Ycenter``, and ``Y`` attributes must be given.
 
-    .. rubric:: Contents:
-     The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+    :Contents:
+
+    The content of this element can any number of other two-dimensional geometry *object* or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
 
     *object*
 
@@ -390,10 +382,9 @@ Containers
         Tag that allows to specify additional item attributes.
 
         :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-        :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, *X*\ ``center``, *X*, ``top``, ``bottom``, ``vertcenter``, *Y*\ ``center``, *Y*). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
+        :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, **X**\ ``center``, **X**, ``top``, ``bottom``, ``vertcenter``, **Y**\ ``center``, **Y**). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
 
-        .. rubric:: Contents:
-         A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+        :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
 .. rubric:: Footnotes
