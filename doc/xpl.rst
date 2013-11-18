@@ -2,7 +2,7 @@
 XPL File Reference
 ******************
 
-:term:`XPL` files follow :term:`XML` specification. Thus all the general rules of creating correct XML files apply top XPL ones as well. Please refer to the external documentation for information on XML syntax and grammar [#XML-tutoruals]_. Details specific to XPL are covered in this chapter.
+:term:`XPL` files follow :term:`XML` specification. Thus all the general rules of creating correct XML files apply top XPL ones as well. Please refer to the external documentation for information on XML syntax and grammar [#XML-tutoruals]_. Details specific to XPL are covered in this chapter.
 
 First of all each XML document must have a parent tag. In XPL files such tag is named ``<plask>``. Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: ``<defines>``, ``<materials>``, ``<geometry>``, ``<grids>``, ``<solvers>``, ``<connects>``, and ``<script>``. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
 
@@ -18,269 +18,282 @@ This section allows to define some constant parameters (that can be later overri
 
 .. object:: <define>
 
-	Definition of a parameter for use in the rest of the file.
+    Definition of a parameter for use in the rest of the file.
 
-	.. rubric:: Attributes:
+    .. rubric:: Attributes:
 
-	.. object:: name (required)
+    .. object:: name (required)
 
-		Name of the parameter (each name must be unique).
+        Name of the parameter (each name must be unique).
 
-	.. object:: value (required)
+    .. object:: value (required)
 
-		Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
+        Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
 
 
 Section <materials>
 ===================
 
-This section contains specification of custom materials that can be used together with the library materials in the structure geometry. The only allowed tag in this section -- that can, however, appear more than once -- is the tag ``<material>``:
+This section contains specification of custom materials that can be used together with the library materials in the structure geometry. The only allowed tag in this section — that can, however, appear more than once — is the tag ``<material>``:
 
 .. object:: <material>
 
-	Definition of a custom material.
+    Definition of a custom material.
 
-	.. rubric:: Attributes:
+    .. rubric:: Attributes:
 
-	.. object:: name (required)
+    .. object:: name (required)
 
-		Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
+        Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
 
-	.. object:: kind (either kind or base is required)
+    .. object:: kind (either kind or base is required)
 
-		Kind of the new material. Any of: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid crystal*.
+        Kind of the new material. Any of: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid crystal*.
 
-	.. object:: base (either kind or base is required)
+    .. object:: base (either kind or base is required)
 
-		Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used.
+        Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used.
 
-	.. rubric:: Content:
+    .. rubric:: Content:
 
-	The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``dc`` or ``cc`` that will contain the user specified doping amounts: dopant or carriers concentration, respectively (at most one of ``cc`` or ``dc`` is defined, never both).
+    The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``dc`` or ``cc`` that will contain the user specified doping amounts: dopant or carriers concentration, respectively (at most one of ``cc`` or ``dc`` is defined, never both).
 
-	Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
+    Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
 
-	The accepted material properties are as follows:
+    The accepted material properties are as follows:
 
-	.. object:: <A>
+    .. object:: <A>
 
-			Monomolecular recombination coefficient coefficient :math:`A` :math:`[1/s]`.
+            Monomolecular recombination coefficient coefficient *A* [1/s].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <absb>
+    .. object:: <absb>
 
-			Absorption coefficient :math:`\alpha` :math:`[cm^{-1}]`.
+            Absorption coefficient *α* [cm\ :sup:`-1`].
 
-			Variables: ``wl`` -- wavelength :math:`[nm]`, ``T`` -- temperature :math:`[K]`.
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-	.. object:: <ac>
+    .. object:: <ac>
 
-			Hydrostatic deformation potential for the conduction band :math:`a_{c}` :math:`[eV]`.
+            Hydrostatic deformation potential for the conduction band *a*\ :sub:`c` [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <av>
+    .. object:: <av>
 
-			Hydrostatic deformation potential for the valence band :math:`a_{v}` :math:`[eV]`.
+            Hydrostatic deformation potential for the valence band *a*\ :sub:`v` [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <B>
+    .. object:: <B>
 
-			Radiative recombination coefficient :math:`B` :math:`[m^{3}/s]`.
+            Radiative recombination coefficient *B* [m\ :sup:`3`/s].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <b>
+    .. object:: <b>
 
-			Radiative recombination coefficient :math:`b` :math:`[m^{3}/s]`.
+            Radiative recombination coefficient *b* [m\ :sup:`3`/s].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <C>
+    .. object:: <C>
 
-			Auger recombination coefficient :math:`C` :math:`[m^{6}/s]`.
+            Auger recombination coefficient *C* [m\ :sup:`6`/s].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <c11>
+    .. object:: <c11>
 
-			Elastic constant :math:`c_{11}` :math:`[GPa]`.
+            Elastic constant *c*\ :sub:`11` [GPa].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <c12>
+    .. object:: <c12>
 
-			Elastic constant :math:`c_{12}` :math:`[GPa]`.
+            Elastic constant *c*\ :sub:`12` [GPa].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <CB>
+    .. object:: <CB>
 
-			Conduction band level :math:`CB` :math:`[eV]`.
+            Conduction band level *CB* [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`, e -- lateral strain :math:`[-]`, point -- point in the Brillouin zone :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
-	.. object:: <chi>
+    .. object:: <chi>
 
-			Electron affinity :math:`\chi` :math:`[eV]`.
+            Electron affinity *χ* [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`, e -- lateral strain :math:`[-]`, point -- point in the Brillouin zone :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
-	.. object:: <cond>
+    .. object:: <cond>
 
-			Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction :math:`[S/m]`.
+            Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <condtype>
+    .. object:: <condtype>
 
-			Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.
+            Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.
 
-	.. object:: <cp>
+    .. object:: <cp>
 
-			Specific heat heat at constant pressure :math:`[J/(kg K)]`.
+            Specific heat heat at constant pressure [J/(kg K)].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <D>
+    .. object:: <D>
 
-			Ambipolar diffusion coefficient :math:`D` :math:`[m^2/s]`.
+            Ambipolar diffusion coefficient *D* [m\ :sup:`2`/s].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <dens>
+    .. object:: <dens>
 
-			Density :math:`[kg/m^3]`.
+            Density [kg/m\ :sup:`3`].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <Dso>
+    .. object:: <Dso>
 
-			Split-off energy :math:`D_{so}` :math:`[eV]`.
+            Split-off energy *D*\ :sub:`so` [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-	.. object:: <EactA>
+    .. object:: <EactA>
 
-			Acceptor ionization energy :math:`E_{\mathrm{act\, A}}` :math:`[eV]`.
+            Acceptor ionization energy *E*\ :sub:`actA` [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <EactD>
+    .. object:: <EactD>
 
-			Donor ionization energy :math:`E_{\mathrm{act\, D}}` :math:`[eV]`.
+            Donor ionization energy *E*\ :sub:`actD` [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <Eg>
+    .. object:: <Eg>
 
-			Energy gap :math:`E_g` :math:`[eV]`.
+            Energy gap *E*\ :sub:`g` [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`, e -- lateral strain :math:`[-]`, point -- point in the Brillouin zone :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
-	.. object:: <eps>
+    .. object:: <eps>
 
-			Donor ionization energy :math:`\epsilon_{R}` :math:`[-]`.
+            Donor ionization energy *ε*\ :sub:`R` [-].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <lattC>
+    .. object:: <lattC>
 
-			Lattice constant :math:`[Å]`.
+            Lattice constant [Å].
 
-			Variables: ``T`` -- temperature :math:`[K]`, x -- lattice parameter :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``x`` — lattice parameter [-].
 
-	.. object:: <Me>
+    .. object:: <Me>
 
-			Electron effective mass :math:`M_{e}` in in-plane (lateral) and cross-plane (vertical) direction :math:`[m_{0}]`.
+            Electron effective mass *M*\ :sub:`e` in in-plane (lateral)
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`, ``point`` -- point in the irreducible Brillouin zone :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the irreducible Brillouin zone [-].
 
-	.. object:: <Mh>
+    .. object:: <Mh>
 
-			Hole effective mass :math:`M_{h}` in in-plane (lateral) and cross-plane (vertical) direction :math:`[m_{0}]`.
+            Hole effective mass *M*\ :sub:`h` in in-plane (lateral)
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-	.. object:: <Mhh>
+    .. object:: <Mhh>
 
-			Heavy hole effective massmaterial!effective mass :math:`M_{hh}` in in-plane (lateral) and cross-plane (vertical) direction :math:`[m_{0}]`.
+            Heavy hole effective mass *M*\ :sub:`hh` in in-plane (lateral)
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-	.. object:: <Mlh>
+    .. object:: <Mlh>
 
-			Light hole effective mass :math:`M_{lh}` in in-plane (lateral) and cross-plane (vertical) direction :math:`[m_{0}]`.
+            Light hole effective mass *M*\ :sub:`lh` in in-plane (lateral)
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-	.. object:: <mob>
+    .. object:: <mob>
 
-			Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction :math:`[\mbox{m}^{2}/(\mbox{V}\,\mbox{s})]`.
+            Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction
+            [m\ :sup:`2`/(V s)].
 
-			Variables: T -- temperature :math:`[K]`.
+            Variables: T — temperature [K].
 
-	.. object:: <Mso>
+    .. object:: <Mso>
 
-			Split-off mass :math:`M_{so}` :math:`[m_{0}]`.
+            Split-off mass *M*\ :sub:`so`` [*m*\ :sub:`0`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-	.. object:: <Nc>
+    .. object:: <Nc>
 
-			Effective density of states in the conduction band :math:`N_{c}` :math:`[cm^{-3}]`.
+            Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`, ``point`` -- point in the Brillouin zone :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
-	.. object:: <Nf>
+    .. object:: <Nf>
 
-			Free carrier concentration :math:`N` :math:`[cm^{-3}]`.
+            Free carrier concentration *N* [cm\ :sup:`-3`].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <Ni>
+    .. object:: <Ni>
 
-			Intrinsic carrier concentration :math:`N_{i}` :math:`[cm^{-3}]`.
+            Intrinsic carrier concentration *N*\ :sub:`i` [cm\ :sup:`-3`].
 
-			Variables: ``T`` -- temperature :math:`[K]`.
+            Variables: ``T`` — temperature [K].
 
-	.. object:: <Nr>
+    .. object:: <Nr>
 
-			Complex refractive index :math:`n_{R}` :math:`[-]`.
+            Complex refractive index *n*\ :sub:`R` [-].
 
-			Variables: ``wl`` -- wavelength :math:`[nm]`, ``T`` -- temperature :math:`[K]`.
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-	.. object:: <nr>
+    .. object:: <nr>
 
-			Real refractive index :math:`n_{R}` :math:`[-]`.
+            Real refractive index *n*\ :sub:`R` [-].
 
-			Variables: ``wl`` -- wavelength :math:`[nm]`, ``T`` -- temperature :math:`[K]`.
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-	.. object:: <Nr-tensor>
+    .. object:: <Nr-tensor>
 
-			Anisotropic complex refractive index tensor :math:`n_{R}` :math:`[-]`. Tensor must have the form :math:`\left[n_{0}, n_{3}, 0 \Big/ n_{4}, n_{1}, 0 \Big/ 0, 0, n_{2}\right]` where :math:`n_{i}` is :math:`i`-th object of the returned tuple.
+            Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
+            Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
-			Variables: ``wl`` -- wavelength :math:`[nm]`, ``T`` -- temperature :math:`[K]`.
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-	.. object:: <Nv>
+    .. object:: <Nv>
 
-			Effective density of states in the valance band :math:`N_{v}` :math:`[cm^{-3}]`.
+            Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`, ``point`` -- point in the Brillouin zone :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
-	.. object:: <thermk>
+    .. object:: <thermk>
 
-			Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction :math:`k` :math:`[W/(m K)]`.
+            Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction *k* [W/(m K)].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``h`` -- layer thickness :math:`[µm]`.
+            Variables: ``T`` — temperature [K], ``h`` — layer thickness [µm].
 
-	.. object:: <VB>
+    .. object:: <VB>
 
-			Valance band level offset :math:`VB` :math:`[eV]`.
+            Valance band level offset *VB* [eV].
 
-			Variables: ``T`` -- temperature :math:`[K]`, ``e`` -- lateral strain :math:`[-]`, ``hole`` -- hole type (``'H'`` or ``'L'``) :math:`[-]`.
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``hole`` — hole type (``'H'`` or ``'L'``) [-].
 
 
 
@@ -293,130 +306,130 @@ In this section geometries of the analyze structures are defined. More than one 
 
 .. object:: axes
 
-	Default value of axes attribute for all geometries defined in this section.
+    Default value of axes attribute for all geometries defined in this section.
 
 Available elements
 ^^^^^^^^^^^^^^^^^^
 
 .. object:: <cartesian2d>
 
-	Two-dimensional Cartesian geometry.
+    Two-dimensional Cartesian geometry.
 
-	.. rubric:: Attributes:
+    .. rubric:: Attributes:
 
-	.. object:: axes
+    .. object:: axes
 
-		Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+        Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
 
 .. TODO wszystkie możliwości
 
-	.. object:: bottom
+    .. object:: bottom
 
-		Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: left
+    .. object:: left
 
-		Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: name
+    .. object:: name
 
-		Geometry name for further reference. (unique identifier string)
+        Geometry name for further reference. (unique identifier string)
 
-	.. object:: right
+    .. object:: right
 
-		Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: top
+    .. object:: top
 
-		Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. rubric:: Contents:
+    .. rubric:: Contents:
 
-	Any object from section :ref:`sec-XPL-Geometry-objects-2D`.
+    Any object from section :ref:`sec-XPL-Geometry-objects-2D`.
 
 
 .. object:: <cylindrical2d>
 
-	Two-dimensional cylindrical geometry.
+    Two-dimensional cylindrical geometry.
 
-	.. rubric:: Attributes:
+    .. rubric:: Attributes:
 
-	.. object:: axes
+    .. object:: axes
 
-		Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).wszystkie możliwości
+        Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).wszystkie możliwości
 
-	.. object:: bottom
+    .. object:: bottom
 
-		Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: inner
+    .. object:: inner
 
-		Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: length
+    .. object:: length
 
-		Longitudinal dimension of the geometry (float [µm]).
+        Longitudinal dimension of the geometry (float [µm]).
 
-		Default value is: :math:`+\infty`.
+        Default value is: *+\infty*.
 
-	.. object:: outer
+    .. object:: outer
 
-		Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: name
+    .. object:: name
 
-		Geometry name for further reference. (unique identifier string)
+        Geometry name for further reference. (unique identifier string)
 
-	.. object:: top
+    .. object:: top
 
-		Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. rubric:: Contents:
+    .. rubric:: Contents:
 
-	Any object from section :ref:`sec-XPL-Geometry-objects-2D`. If ``length`` was not given, ref:`tag-extrusion` is also accepted.
+    Any object from section :ref:`sec-XPL-Geometry-objects-2D`. If ``length`` was not given, ref:`tag-extrusion` is also accepted.
 
 
 
 .. object:: <cartesian3d>
 
-	Three-dimensional Cartesian geometry.
+    Three-dimensional Cartesian geometry.
 
-	.. rubric:: Attributes:
+    .. rubric:: Attributes:
 
-	.. object:: axes
+    .. object:: axes
 
-		Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+        Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
 
-	.. object:: back
+    .. object:: back
 
-		Specification of the back border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the back border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: bottom
+    .. object:: bottom
 
-		Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: front
+    .. object:: front
 
-		Specification of the front border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the front border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: left
+    .. object:: left
 
-		Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: name
+    .. object:: name
 
-		Geometry name for further reference. (unique identifier string)
+        Geometry name for further reference. (unique identifier string)
 
-	.. object:: right
+    .. object:: right
 
-		Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. object:: top
+    .. object:: top
 
-		Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+        Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
-	.. rubric:: Contents:
-	Any object from section :ref:`sec-XPL-Geometry-objects-3D`.
+    .. rubric:: Contents:
+    Any object from section :ref:`sec-XPL-Geometry-objects-3D`.
 
 
 
@@ -432,91 +445,91 @@ Containers
 
 .. object:: <align>
 
-	Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
+    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
-	.. rubric:: Attributes:
+    .. rubric:: Attributes:
 
-	.. object:: name
+    .. object:: name
 
-		Object name for further reference.
+        Object name for further reference.
 
-	.. object:: role
+    .. object:: role
 
-		Object role. Important for some solvers.
+        Object role. Important for some solvers.
 
-	.. object:: left
+    .. object:: left
 
-		Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+        Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
 
-	.. object:: right
+    .. object:: right
 
-		Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+        Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
 
-	.. object:: trancenter
+    .. object:: trancenter
 
-		Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+        Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
 
-	.. object:: Xcenter
+    .. object:: Xcenter
 
-		(where **X** is the transverse axis name)
+        (where *X* is the transverse axis name)
 
-		Alias for ``trancenter``.
+        Alias for ``trancenter``.
 
-	.. object:: X
+    .. object:: X
 
-		(where **X** is the transverse axis name)
+        (where *X* is the transverse axis name)
 
-		Horizontal alignment specification: position of the origin of each element. (float [µm])
+        Horizontal alignment specification: position of the origin of each element. (float [µm])
 
-	.. object:: top
+    .. object:: top
 
-		Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
+        Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
 
-	.. object:: bottom
+    .. object:: bottom
 
-		Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
+        Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
 
-	.. object:: vertcenter
+    .. object:: vertcenter
 
-		Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+        Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
 
-	.. object:: Ycenter
+    .. object:: Ycenter
 
-		(where **Y** is the vertical axis name)
+        (where *Y* is the vertical axis name)
 
-		Alias for *vertcenter*.
+        Alias for *vertcenter*.
 
-	.. object:: Y
+    .. object:: Y
 
-		(where **Y** is the vertical axis name)
+        (where *Y* is the vertical axis name)
 
-		Vertical alignment specification: position of the origin of each element. (float [µm])
+        Vertical alignment specification: position of the origin of each element. (float [µm])
 
-	Exactly one of the ``left``, ``right``, ``trancenter``, ``Xcenter``, ``X``, ``top``, ``bottom``, ``vertcenter``, ``Ycenter``, and ``Y`` attributes must be given.
+    Exactly one of the ``left``, ``right``, ``trancenter``, ``Xcenter``, ``X``, ``top``, ``bottom``, ``vertcenter``, ``Ycenter``, and ``Y`` attributes must be given.
 
-	.. rubric:: Contents:
-	The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+    .. rubric:: Contents:
+    The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
 
-	*object*
+    *object*
 
-		:ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+        :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-	.. object:: <item>
+    .. object:: <item>
 
-		Tag that allows to specify additional item attributes.
+        Tag that allows to specify additional item attributes.
 
-		.. rubric:: Attributes:
+        .. rubric:: Attributes:
 
-		.. object:: path
+        .. object:: path
 
-			Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+            Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
 
-		*alignment*
+        *alignment*
 
-			Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, **X**\ ``center``, **X**, ``top``, ``bottom``, ``vertcenter``, **Y**\ ``center``, **Y**). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
+            Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, *X*\ ``center``, *X*, ``top``, ``bottom``, ``vertcenter``, *Y*\ ``center``, *Y*). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
 
-		.. rubric:: Contents:
-		A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+        .. rubric:: Contents:
+        A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
 .. rubric:: Footnotes

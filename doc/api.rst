@@ -13,6 +13,11 @@ mesh
 .. automodule:: plask.mesh
    :members:
 
+material
+========
+.. automodule:: plask.material
+   :members:
+
 pylab
 =====
 .. automodule:: plask.pylab
