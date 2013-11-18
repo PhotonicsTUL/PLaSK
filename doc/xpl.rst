@@ -20,15 +20,11 @@ This section allows to define some constant parameters (that can be later overri
 
     Definition of a parameter for use in the rest of the file.
 
-    .. rubric:: Attributes:
 
-    .. object:: name (required)
 
-        Name of the parameter (each name must be unique).
+    :attr name (required): Name of the parameter (each name must be unique).
 
-    .. object:: value (required)
-
-        Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
+    :attr value (required): Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
 
 
 Section <materials>
@@ -40,19 +36,9 @@ This section contains specification of custom materials that can be used togethe
 
     Definition of a custom material.
 
-    .. rubric:: Attributes:
-
-    .. object:: name (required)
-
-        Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
-
-    .. object:: kind (either kind or base is required)
-
-        Kind of the new material. Any of: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid crystal*.
-
-    .. object:: base (either kind or base is required)
-
-        Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used.
+    :attr name: (required) Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
+    :attr kind: (either kind or base is required) Kind of the new material. Any of: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid crystal*.
+    :attr base: (either kind or base is required) Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used.
 
     .. rubric:: Content:
 
@@ -300,13 +286,13 @@ This section contains specification of custom materials that can be used togethe
 Section <geometry>
 ==================
 
-In this section geometries of the analyze structures are defined. More than one geometry can be specified. Inside each geometry tag there must be a single geometry object: usually it is some container.
+In this section geometries of the analyze structures are defined. More than one geometry can be specified.
 
-.. rubric:: Attributes:
+.. xml:tag:: geometry
 
-.. object:: axes
+    Inside each geometry tag there must be a single geometry object: usually it is some container.
 
-    Default value of axes attribute for all geometries defined in this section.
+    :attr: axes Default value of axes attribute for all geometries defined in this section.
 
 Available elements
 ^^^^^^^^^^^^^^^^^^
@@ -315,33 +301,12 @@ Available elements
 
     Two-dimensional Cartesian geometry.
 
-    .. rubric:: Attributes:
-
-    .. object:: axes
-
-        Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
-
-.. TODO wszystkie możliwości
-
-    .. object:: bottom
-
-        Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: left
-
-        Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: name
-
-        Geometry name for further reference. (unique identifier string)
-
-    .. object:: right
-
-        Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: top
-
-        Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr name: Geometry name for further reference. (unique identifier string)
+    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
     .. rubric:: Contents:
 
@@ -352,37 +317,13 @@ Available elements
 
     Two-dimensional cylindrical geometry.
 
-    .. rubric:: Attributes:
-
-    .. object:: axes
-
-        Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).wszystkie możliwości
-
-    .. object:: bottom
-
-        Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: inner
-
-        Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: length
-
-        Longitudinal dimension of the geometry (float [µm]).
-
-        Default value is: *+\infty*.
-
-    .. object:: outer
-
-        Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: name
-
-        Geometry name for further reference. (unique identifier string)
-
-    .. object:: top
-
-        Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).wszystkie możliwości
+    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr inner: Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr length: Longitudinal dimension of the geometry (float [µm]).: Default value is: *+\infty*.
+    :attr outer: Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr name: Geometry name for further reference. (unique identifier string)
+    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
     .. rubric:: Contents:
 
@@ -394,42 +335,17 @@ Available elements
 
     Three-dimensional Cartesian geometry.
 
-    .. rubric:: Attributes:
-
-    .. object:: axes
-
-        Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
-
-    .. object:: back
-
-        Specification of the back border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: bottom
-
-        Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: front
-
-        Specification of the front border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: left
-
-        Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: name
-
-        Geometry name for further reference. (unique identifier string)
-
-    .. object:: right
-
-        Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-
-    .. object:: top
-
-        Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+    :attr back: Specification of the back border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr front: Specification of the front border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr name: Geometry name for further reference. (unique identifier string)
+    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
     .. rubric:: Contents:
-    Any object from section :ref:`sec-XPL-Geometry-objects-3D`.
+     Any object from section :ref:`sec-XPL-Geometry-objects-3D`.
 
 
 
@@ -443,93 +359,41 @@ The following elements are specifying two-dimensional geometry objects for use w
 Containers
 ^^^^^^^^^^
 
-.. object:: <align>
+.. xml:tag:: align
 
     Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
-    .. rubric:: Attributes:
-
-    .. object:: name
-
-        Object name for further reference.
-
-    .. object:: role
-
-        Object role. Important for some solvers.
-
-    .. object:: left
-
-        Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-
-    .. object:: right
-
-        Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-
-    .. object:: trancenter
-
-        Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
-
-    .. object:: Xcenter
-
-        (where *X* is the transverse axis name)
-
-        Alias for ``trancenter``.
-
-    .. object:: X
-
-        (where *X* is the transverse axis name)
-
-        Horizontal alignment specification: position of the origin of each element. (float [µm])
-
-    .. object:: top
-
-        Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
-
-    .. object:: bottom
-
-        Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
-
-    .. object:: vertcenter
-
-        Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
-
-    .. object:: Ycenter
-
-        (where *Y* is the vertical axis name)
-
-        Alias for *vertcenter*.
-
-    .. object:: Y
-
-        (where *Y* is the vertical axis name)
-
-        Vertical alignment specification: position of the origin of each element. (float [µm])
+    :attr name: Object name for further reference.
+    :attr role: Object role. Important for some solvers.
+    :attr left: Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+    :attr right: Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+    :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+    :attr {X}center: (where **{X}** is the transverse axis name): Alias for ``trancenter``.
+    :attr {X}: (where **{X}** is the transverse axis name): Horizontal alignment specification: position of the origin of each element. (float [µm])
+    :attr top: Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
+    :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
+    :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+    :attr {Y}center: (where **{Y}** is the vertical axis name): Alias for *vertcenter*.
+    :attr {Y}: (where **{Y}** is the vertical axis name): Vertical alignment specification: position of the origin of each element. (float [µm])
 
     Exactly one of the ``left``, ``right``, ``trancenter``, ``Xcenter``, ``X``, ``top``, ``bottom``, ``vertcenter``, ``Ycenter``, and ``Y`` attributes must be given.
 
     .. rubric:: Contents:
-    The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+     The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
 
     *object*
 
         :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-    .. object:: <item>
+    .. xml:tag:: item
 
         Tag that allows to specify additional item attributes.
 
-        .. rubric:: Attributes:
-
-        .. object:: path
-
-            Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-
-        *alignment*
-
-            Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, *X*\ ``center``, *X*, ``top``, ``bottom``, ``vertcenter``, *Y*\ ``center``, *Y*). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
+        :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+        :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, *X*\ ``center``, *X*, ``top``, ``bottom``, ``vertcenter``, *Y*\ ``center``, *Y*). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
 
         .. rubric:: Contents:
-        A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+         A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
 .. rubric:: Footnotes
