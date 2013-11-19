@@ -328,16 +328,18 @@ struct Vec<3,T> {
 
     /**
      * A lexical comparison of two vectors, allow to use vector in std::set and std::map as key type.
+     *
+     * It supports NaN-s (which, due to this method, is greater than all other numbers).
      * @param v vectors to compare
      * @return @c true only if @c this is smaller than the @p v
      */
     template<class OT>
     bool operator< (Vec<3, OT> const& v) const {
-        if (this->c0 < v.c0) return true;
-        if (this->c0 > v.c0) return false;
-        if (this->c1 < v.c1) return true;
-        if (this->c1 > v.c1) return false;
-        return this->c2 < v.c2;
+        if (dbl_compare_lt(this->c0, v.c0)) return true;
+        if (dbl_compare_gt(this->c0, v.c0)) return false;
+        if (dbl_compare_lt(this->c1, v.c1)) return true;
+        if (dbl_compare_gt(this->c1, v.c1)) return false;
+        return dbl_compare_lt(this->c2, v.c2);
     }
 
 

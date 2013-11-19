@@ -133,6 +133,62 @@ typedef double v2double __attribute__((vector_size(16)));
 /// View allowing access to elements of v2double
 typedef union { v2double simd; double v[2]; } v2double_view;
 
+
+// Total order double comparision with NaN greater than all other numbers:
+
+/**
+ * Check if two doubles are equals.
+ *
+ * It differs from standard == operator in case of comparing NaN-s: dbl_compare_eq(NaN, NaN) is @c true.
+ * @param x, y numbers to compare
+ * @return @c true only if @p x equals to @p y
+ */
+inline bool dbl_compare_eq(double x, double y) {
+    if (std::isnan(x)) return std::isnan(y);
+    return x == y;
+}
+
+/**
+ * Check if @p x is less than @p y.
+ *
+ * It differs from standard \< operator in case of comparing NaN-s: NaN is greater than all other numbers.
+ * It is fine to use this to sort doubles or store doubles in standard containers (which is not true in case of standard \< operator).
+ * @param x, y numbers to compare
+ * @return @c true only if @p x is less than @p y
+ */
+inline bool dbl_compare_lt(double x, double y) {
+      if (std::isnan(y)) return !std::isnan(x);
+      return x < y;
+}
+
+/**
+ * Check if @p x is greater than @p y.
+ *
+ * It differs from standard \> operator in case of comparing NaN-s: NaN is greater than all other numbers.
+ * It is fine to use this to sort doubles or store doubles in standard containers (which is not true in case of standard \> operator).
+ * @param x, y numbers to compare
+ * @return @c true only if @p x is greater than @p y
+ */
+inline bool dbl_compare_gt(double x, double y) { return dbl_compare_lt(y, x); }
+
+/**
+ * Check if @p x is less or equals to @p y.
+ *
+ * It differs from standard \>= operator in case of comparing NaN-s: NaN is greater than all other numbers.
+ * @param x, y numbers to compare
+ * @return @c true only if @p x is less or equals to @p y.
+ */
+inline bool dbl_compare_lteq(double x, double y) { return !dbl_compare_gt(x, y); }
+
+/**
+ * Check if @p x is greater or equals to @p y.
+ *
+ * It differs from standard \<= operator in case of comparing NaN-s: NaN is greater than all other numbers.
+ * @param x, y numbers to compare
+ * @return @c true only if @p x is greater or equals to @p y.
+ */
+inline bool dbl_compare_gteq(double x, double y) { return !dbl_compare_lt(x, y); }
+
 } // namespace plask
 
 #endif // PLASK__NUMBERS_H
