@@ -2,7 +2,7 @@
 XPL File Reference
 ******************
 
-:term:`XPL` files follow :term:`XML` specification. Thus all the general rules of creating correct XML files apply top XPL ones as well. Please refer to the external documentation for information on XML syntax and grammar [#XML-tutoruals]_. Details specific to XPL are covered in this chapter.
+:term:`XPL` files follow :term:`XML` specification. Thus all the general rules of creating correct XML files apply top XPL ones as well. Please refer to the external documentation for information on XML syntax and grammar [#XML-tutoruals]_. Details specific to XPL are covered in this chapter.
 
 First of all each XML document must have a parent tag. In XPL files such tag is named ``<plask>``. Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: ``<defines>``, ``<materials>``, ``<geometry>``, ``<grids>``, ``<solvers>``, ``<connects>``, and ``<script>``. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
 
@@ -47,77 +47,77 @@ This section contains specification of custom materials that can be used togethe
 
     .. xml:tag:: A
 
-            Monomolecular recombination coefficient coefficient *A* [1/s].
+            Monomolecular recombination coefficient coefficient *A* [1/s].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: absb
 
-            Absorption coefficient *α* [cm\ :sup:`-1`].
+            Absorption coefficient *α* [cm\ :sup:`-1`].
 
-            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
     .. xml:tag:: ac
 
-            Hydrostatic deformation potential for the conduction band *a*\ :sub:`c` [eV].
+            Hydrostatic deformation potential for the conduction band *a*\ :sub:`c` [eV].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: av
 
-            Hydrostatic deformation potential for the valence band *a*\ :sub:`v` [eV].
+            Hydrostatic deformation potential for the valence band *a*\ :sub:`v` [eV].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: B
 
-            Radiative recombination coefficient *B* [m\ :sup:`3`/s].
+            Radiative recombination coefficient *B* [m\ :sup:`3`/s].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: b
 
-            Radiative recombination coefficient *b* [m\ :sup:`3`/s].
+            Radiative recombination coefficient *b* [m\ :sup:`3`/s].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: C
 
-            Auger recombination coefficient *C* [m\ :sup:`6`/s].
+            Auger recombination coefficient *C* [m\ :sup:`6`/s].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: c11
 
-            Elastic constant *c*\ :sub:`11` [GPa].
+            Elastic constant *c*\ :sub:`11` [GPa].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: c12
 
-            Elastic constant *c*\ :sub:`12` [GPa].
+            Elastic constant *c*\ :sub:`12` [GPa].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: CB
 
-            Conduction band level *CB* [eV].
+            Conduction band level *CB* [eV].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``point`` — point in the Brillouin zone [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
     .. xml:tag:: chi
 
-            Electron affinity *χ* [eV].
+            Electron affinity *χ* [eV].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``point`` — point in the Brillouin zone [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
     .. xml:tag:: cond
 
-            Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
+            Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: condtype
 
@@ -125,158 +125,158 @@ This section contains specification of custom materials that can be used togethe
 
     .. xml:tag:: cp
 
-            Specific heat heat at constant pressure [J/(kg K)].
+            Specific heat heat at constant pressure [J/(kg K)].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: D
 
-            Ambipolar diffusion coefficient *D* [m\ :sup:`2`/s].
+            Ambipolar diffusion coefficient *D* [m\ :sup:`2`/s].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: dens
 
-            Density [kg/m\ :sup:`3`].
+            Density [kg/m\ :sup:`3`].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: Dso
 
-            Split-off energy *D*\ :sub:`so` [eV].
+            Split-off energy *D*\ :sub:`so` [eV].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
     .. xml:tag:: EactA
 
-            Acceptor ionization energy *E*\ :sub:`actA` [eV].
+            Acceptor ionization energy *E*\ :sub:`actA` [eV].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: EactD
 
-            Donor ionization energy *E*\ :sub:`actD` [eV].
+            Donor ionization energy *E*\ :sub:`actD` [eV].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: Eg
 
-            Energy gap *E*\ :sub:`g` [eV].
+            Energy gap *E*\ :sub:`g` [eV].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``point`` — point in the Brillouin zone [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
     .. xml:tag:: eps
 
-            Donor ionization energy *ε*\ :sub:`R` [-].
+            Donor ionization energy *ε*\ :sub:`R` [-].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: lattC
 
-            Lattice constant [Å].
+            Lattice constant [Å].
 
-            Variables: ``T`` — temperature [K], ``x`` — lattice parameter [-].
+            Variables: ``T`` — temperature [K], ``x`` — lattice parameter [-].
 
     .. xml:tag:: Me
 
             Electron effective mass *M*\ :sub:`e` in in-plane (lateral)
-            and cross-plane (vertical) direction [*m*\ :sub:`0`].
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``point`` — point in the irreducible Brillouin zone [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the irreducible Brillouin zone [-].
 
     .. xml:tag:: Mh
 
             Hole effective mass *M*\ :sub:`h` in in-plane (lateral)
-            and cross-plane (vertical) direction [*m*\ :sub:`0`].
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
     .. xml:tag:: Mhh
 
             Heavy hole effective mass *M*\ :sub:`hh` in in-plane (lateral)
-            and cross-plane (vertical) direction [*m*\ :sub:`0`].
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
     .. xml:tag:: Mlh
 
             Light hole effective mass *M*\ :sub:`lh` in in-plane (lateral)
-            and cross-plane (vertical) direction [*m*\ :sub:`0`].
+            and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
     .. xml:tag:: mob
 
             Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction
-            [m\ :sup:`2`/(V s)].
+            [m\ :sup:`2`/(V s)].
 
-            Variables: T — temperature [K].
+            Variables: T — temperature [K].
 
     .. xml:tag:: Mso
 
-            Split-off mass *M*\ :sub:`so`` [*m*\ :sub:`0`].
+            Split-off mass *M*\ :sub:`so`` [*m*\ :sub:`0`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
     .. xml:tag:: Nc
 
-            Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
+            Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``point`` — point in the Brillouin zone [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
     .. xml:tag:: Nf
 
-            Free carrier concentration *N* [cm\ :sup:`-3`].
+            Free carrier concentration *N* [cm\ :sup:`-3`].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: Ni
 
-            Intrinsic carrier concentration *N*\ :sub:`i` [cm\ :sup:`-3`].
+            Intrinsic carrier concentration *N*\ :sub:`i` [cm\ :sup:`-3`].
 
-            Variables: ``T`` — temperature [K].
+            Variables: ``T`` — temperature [K].
 
     .. xml:tag:: Nr
 
-            Complex refractive index *n*\ :sub:`R` [-].
+            Complex refractive index *n*\ :sub:`R` [-].
 
-            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
     .. xml:tag:: nr
 
-            Real refractive index *n*\ :sub:`R` [-].
+            Real refractive index *n*\ :sub:`R` [-].
 
-            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
     .. xml:tag:: Nr-tensor
 
-            Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
-            Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
+            Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
+            Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
-            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+            Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
     .. xml:tag:: Nv
 
-            Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
+            Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``point`` — point in the Brillouin zone [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``point`` — point in the Brillouin zone [-].
 
     .. xml:tag:: thermk
 
-            Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction *k* [W/(m K)].
+            Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction *k* [W/(m K)].
 
-            Variables: ``T`` — temperature [K], ``h`` — layer thickness [µm].
+            Variables: ``T`` — temperature [K], ``h`` — layer thickness [µm].
 
     .. xml:tag:: VB
 
-            Valance band level offset *VB* [eV].
+            Valance band level offset *VB* [eV].
 
-            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-            ``hole`` — hole type (``'H'`` or ``'L'``) [-].
+            Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+            ``hole`` — hole type (``'H'`` or ``'L'``) [-].
 
 
 
@@ -315,7 +315,7 @@ Available elements
     :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).wszystkie możliwości
     :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
     :attr inner: Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-    :attr length: Longitudinal dimension of the geometry (float [µm]).: Default value is: *+\infty*.
+    :attr length: Longitudinal dimension of the geometry (float [µm]).: Default value is: *+\infty*.
     :attr outer: Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
     :attr name: Geometry name for further reference. (unique identifier string)
     :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
@@ -356,18 +356,18 @@ Containers
 
     :attr name: Object name for further reference.
     :attr role: Object role. Important for some solvers.
-    :attr left: Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-    :attr right: Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-    :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+    :attr left: Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+    :attr right: Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+    :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
     :attr {X}center: (where **{X}** is the transverse axis name): Alias for ``trancenter``.
-    :attr {X}: (where **{X}** is the transverse axis name): Horizontal alignment specification: position of the origin of each element. (float [µm])
-    :attr top: Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
-    :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
-    :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+    :attr {X}: (where **{X}** is the transverse axis name): Horizontal alignment specification: position of the origin of each element. (float [µm])
+    :attr top: Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
+    :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
+    :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
     :attr {Y}center: (where **{Y}** is the vertical axis name): Alias for *vertcenter*.
-    :attr {Y}: (where **{Y}** is the vertical axis name): Vertical alignment specification: position of the origin of each element. (float [µm])
+    :attr {Y}: (where **{Y}** is the vertical axis name): Vertical alignment specification: position of the origin of each element. (float [µm])
 
-    Exactly one of the ``left``, ``right``, ``trancenter``, ``Xcenter``, ``X``, ``top``, ``bottom``, ``vertcenter``, ``Ycenter``, and ``Y`` attributes must be given.
+    Exactly one of the ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** attributes must be given.
 
     :Contents:
 
@@ -386,6 +386,90 @@ Containers
 
         :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
+
+.. xml:tag:: container
+
+    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
+
+    :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+    :attr left: Horizontal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
+    :attr right: Horizontal alignment specification: position of the right edge of the bounding box of the element. (float [µm])
+    :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of the element. (float [µm])
+    :attr {X}center: where **{X}** is the transverse axis name: Alias for ``trancenter``.
+    :attr {X}: where **{X}** is the transverse axis name: Horizontal alignment specification: position of the origin of the element. (float [µm])
+    :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float [µm])
+    :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float [µm])
+    :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of the element. (float [µm])
+    :attr {Y}center: where **{Y}** is the vertical axis name: Alias for vertcenter.
+    :attr {Y}: where **{Y}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
+
+    Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At least one alignment specification for each axis must be given.
+
+    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+
+.. xml:tag:: shelf
+
+    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
+
+    :attr name: Object name for further reference.
+    :attr role: Object role. Important for some solvers.
+    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
+
+    :Contents:
+    
+    The content of this element can any number of other two-dimensional geometry object which are organized horizontally adjacent to each other, starting from the left.
+
+    *object*
+
+        :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+        
+    .. xml:tag:: gap
+    
+        Horizontal gap between two objects. The size of the gap can be specified either as the absolute value in µm or as the total horizontal size of the shelf.
+    
+        :attr size: Size of the gap. (float [µm])
+        :attr total: Total size of the shelf. The gap will adjust automatically. (float [µm])
+
+        Exactly one of the above attributes must be specified and only one ``gap`` in the shelf can have the ``total`` attribute.
+        
+        
+.. xml:tag:: stack
+
+    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
+    
+    :attr name: Object name for further reference.
+    :attr role: Object role. Important for some solvers.
+    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
+    :attr shift: Vertical position of the stack bottom edge in its local coordinates. This attribute really makes sense only if the stack is the main element of the geometry, as in such case its local coordinates define global geometry coordinate system. Defaults to 0. (float [µm])
+    :attr left: Default horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+    :attr right: Default horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+    :attr trancenter: Default horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+    :attr {X}center: where **{X}** is the transverse axis name: Alias for ``trancenter``.
+    :attr {X}: where **{X}** is the transverse axis name: Default horizontal alignment specification: position of the origin of the element. (float [µm])
+
+    Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center`` and **{X}** are mutually exclusive. Default alignment is ``left="0"``.
+
+    :Contents:
+    
+    The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+
+    *object*
+
+        :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+    .. xml:tag:: item
+
+        Tag that allows to specify additional item attributes.
+
+        :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+        :attr {alignment}: Any of the stack alignment specification attributes (``left``, ``right``, ``trancenter``, **X**\ ``center``, **X**) that overrides the stack default for the particular item.
+
+        :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+    .. xml:tag:: zero
+
+        This tag can appear as stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
 .. rubric:: Footnotes
 .. [#XML-tutoruals] Good resources are http://www.w3.org/TR/REC-xml/, http://en.wikipedia.org/wiki/XML, and http://www.w3schools.com/xml/.
