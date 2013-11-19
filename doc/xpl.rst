@@ -289,7 +289,7 @@ In this section geometries of the analyze structures are defined. More than one 
 
     Inside each geometry tag there must be a single geometry object: usually it is some container.
 
-    :attr: axes Default value of axes attribute for all geometries defined in this section.
+    :attr axes: Default value of axes attribute for all geometries defined in this section.
 
 Available elements
 ^^^^^^^^^^^^^^^^^^
@@ -470,6 +470,49 @@ Containers
     .. xml:tag:: zero
 
         This tag can appear as stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+
+
+Transforms
+^^^^^^^^^^
+
+Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
+
+.. xml:tag:: flip
+
+    Mirror reflection of the object along specified axis.
+
+    :attr name: Object name for further reference.
+    :attr role: Object role. Important for some solvers.
+    :attr axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
+
+    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+.. xml:tag:: mirror
+
+    Object mirrored along specified axis. In other words this is transformed object together with its flipped version. The bounding box of the object cannot span at bot sides of zero along inverted axis.
+
+    :attr name: Object name for further reference.
+    :attr role: Object role. Important for some solvers.
+    :attr axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
+
+    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+.. xml:tag:: translation
+
+    :attr name: Object name for further reference.
+    :attr role: Object role. Important for some solvers.
+    :attr {X}: where **{X}** is the transverse axis name: Horizontal position of the origin of transformed element. (float [µm])
+    :attr {Y}: where **{Y}** is the vertical axis name: Vertical position of the origin of transformed element. (float [µm])
+
+    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+Physical objects
+^^^^^^^^^^^^^^^^
+
+Physical objects are the leafs of the geometry tree. They represent actual objects that have some shape and defined material.
+
+
+
 
 .. rubric:: Footnotes
 .. [#XML-tutoruals] Good resources are http://www.w3.org/TR/REC-xml/, http://en.wikipedia.org/wiki/XML, and http://www.w3schools.com/xml/.
