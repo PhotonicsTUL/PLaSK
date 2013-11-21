@@ -266,7 +266,16 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     {
                         wavelength = real(inWavelength(n));
                         write_debug("wavelength: %1% nm", wavelength);
-                        auto Li = inLightIntensity(n, mesh2, interpolation_method);
+
+                        plask::RectilinearMesh2D mesh_Li;         ///< Computational Light intensity mesh
+
+                        mesh_Li.axis0 = current_mesh();
+                        mesh_Li.axis1 = plask::RectilinearAxis(getZQWCoordinates());
+
+//                        auto Li = inLightIntensity(n, mesh2, interpolation_method);
+                        auto initial_Li = inLightIntensity(n, mesh_Li, interpolation_method);
+                        auto Li = averageLi(initial_Li, mesh_Li);
+
                         write_debug("Li[0]: %1% W/cm2", Li[0]*1.0e-4);
                         int ile = 0;
                         for (auto n: n_present)
@@ -827,6 +836,24 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return coordinate;
 }
 
+template<typename Geometry2DType> std::vector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinates()
+{
+    int no_QW = detected_QW.size();
+    std::vector<double> coordinates(no_QW);
+
+    if (no_QW > 0)
+    {
+        for (int i=0; i<no_QW; i++)
+        {
+            coordinates[i] = (detected_QW[i].lower[1] + detected_QW[i].upper[1]) / 2.0;
+        }
+    }
+    else
+        throw Exception("No quantum wells defined");
+
+    return coordinates;
+}
+
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::determineQwWidth()
 {
     global_QW_width = 0.;
@@ -835,6 +862,24 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         global_QW_width += ( this->detected_QW[i].upper[1] - this->detected_QW[i].lower[1] );
     }
     global_QW_width *= 1e-4;
+}
+
+template<typename Geometry2DType> plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::DataVector<const double> initLi, plask::RectilinearMesh2D mesh_Li)
+{
+    plask::DataVector<double> Li(current_mesh().size());
+
+    for (int i=0; i<current_mesh().size(); i++)
+    {
+        double current_Li = 0.0;
+
+        for (int j=0; j<detected_QW.size(); j++)
+        {
+            int k = mesh_Li.index(i,j);
+            current_Li += initLi[k];
+        }
+        Li[i] = current_Li;
+    }
+    return Li;
 }
 
 template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "Diffusion2D"; }

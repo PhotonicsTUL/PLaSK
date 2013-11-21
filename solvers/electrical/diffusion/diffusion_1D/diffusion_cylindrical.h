@@ -143,6 +143,10 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 
         std::vector<Box2D> detectQuantumWells();
         double getZQWCoordinate();
+        std::vector<double> getZQWCoordinates();
+
+        plask::DataVector<const double> averageLi(plask::DataVector<const double>, plask::RectilinearMesh2D mesh_Li);
+
         virtual void onInitialize();
         virtual void onInvalidate();
 
