@@ -877,7 +877,7 @@ template<typename Geometry2DType> plask::DataVector<const double> FiniteElementM
             int k = mesh_Li.index(i,j);
             current_Li += initLi[k];
         }
-        Li[i] = current_Li;
+        Li[i] = current_Li/(detected_QW.size()+1.0);
     }
     return Li;
 }
