@@ -19,25 +19,35 @@ from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.util.docfields import TypedField, Field
 
-# name description [context]
-# name is required and can be in brackets <>
-# both description and [context] are optional
-# TODO support for context and <>
-tag_sig_re = re.compile(r'(\S*)\s*(.*)$')	#(?:\s+\[(.*?)\])
-
 def parse_tag(tagstr):
     """Parse a tag signature.
 
-    Returns (tag name, description, context) string tuple.
-    Empty string as description or context if are not available.
+    Returns:
+      name, display name, extra info, context (in [])
     """
     s = tagstr.strip()
-    m = tag_sig_re.match(s)
-    if not m:
-        self.state_machine.reporter.warning('bad format for XML tag: %s' % tagstr)
-        return (s, '', '')
-    name, desc = m.groups()
-    return (name, desc, '')
+    extra = ''
+    if s.startswith('<'):
+      displ_name, sep, extra = s.partition('>')
+      if len(sep) == 0:
+        self.state_machine.reporter.warning('bad format for XML tag, missing \'>\' in: %s' % tagstr)
+        name = s
+      else:
+        name = displ_name.strip('<>/').split(None, 1)[0]
+        displ_name += sep
+    else:
+      l = s.split(None, 1)
+      name = l[0]
+      displ_name = '<%s>' % name
+      if len(l) > 1: extra = l[1]
+    extra = extra.strip()
+    context = ''
+    if extra.endswith(']'):
+      before, sep, c = extra.rpartition('[')
+      if len(sep) > 0:
+        extra = before.strip()
+        context = sep + c
+    return (name, displ_name, extra, context)
 
 class XMLTag(ObjectDescription):
     """
@@ -56,6 +66,7 @@ class XMLTag(ObjectDescription):
     ]
 
     def add_target_and_index(self, name, sig, signode):
+        # name is returned by handle_signature
         targetname = self.objtype + '-' + name
         if targetname not in self.state.document.ids:
             signode['names'].append(targetname)
@@ -73,8 +84,7 @@ class XMLTag(ObjectDescription):
             objects[key] = self.env.docname
         indextext = self.get_index_text(self.objtype, name)
         if indextext:
-            self.indexnode['entries'].append(('single', indextext,
-                                              targetname, ''))
+            self.indexnode['entries'].append(('single', indextext, targetname, ''))
 
     def get_index_text(self, objectname, name):
         if self.objtype == 'tag':
@@ -83,14 +93,13 @@ class XMLTag(ObjectDescription):
         return ''
 
     def handle_signature(self, sig, signode):
-        name, desc, context = parse_tag(sig)
-        name_in_tag = '<%s>' % name
+        name, name_in_tag, desc, context = parse_tag(sig)
         signode += addnodes.desc_name(name_in_tag, name_in_tag)
         if len(desc) > 0:
             desc = ' ' + desc
             signode += addnodes.desc_addname(desc, desc)
         if len(context) > 0:
-            return '%s [%s]' % name_in_tag, context
+            return '%s %s' % (name_in_tag, context)
         return name_in_tag
 
 
@@ -126,8 +135,7 @@ class XMLDomain(Domain):
             if doc == docname:
                 del self.data['objects'][typ, name]
 
-    def resolve_xref(self, env, fromdocname, builder, typ, target, node,
-                     contnode):
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
         objects = self.data['objects']
         objtypes = self.objtypes_for_role(typ)
         for objtype in objtypes:

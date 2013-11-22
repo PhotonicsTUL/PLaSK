@@ -4,7 +4,7 @@ XPL File Reference
 
 :term:`XPL` files follow :term:`XML` specification. Thus all the general rules of creating correct XML files apply top XPL ones as well. Please refer to the external documentation for information on XML syntax and grammar [#XML-tutoruals]_. Details specific to XPL are covered in this chapter.
 
-First of all each XML document must have a parent tag. In XPL files such tag is named ``<plask>``. Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: ``<defines>``, ``<materials>``, ``<geometry>``, ``<grids>``, ``<solvers>``, ``<connects>``, and ``<script>``. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
+First of all each XML document must have a parent tag. In XPL files such tag is named ``<plask>``. Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: :xml:tag:`<defines>`, :xml:tag:`<materials>`, :xml:tag:`<geometry>`, :xml:tag:`<grids>`, :xml:tag:`<solvers>`, :xml:tag:`<connects>`, and :xml:tag:`<script>`. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
 
 
 ``<plask>`` section can take an optional attribute ``loglevel``, which value is the name of any valid log level. Any log message with its priority lower than the specified value will not be printed by the logging system. The default value is ``"detail"``.
@@ -16,7 +16,7 @@ Section <defines>
 
 This section allows to define some constant parameters (that can be later overridden either in the command line or while reading the XPL file from Python). Each parameter is defined with the only tag allowed in this section:
 
-.. xml:tag:: define
+.. xml:tag:: defines
 
    Definition of a parameter for use in the rest of the file.
 
@@ -121,7 +121,7 @@ This section contains specification of custom materials that can be used togethe
 
    .. xml:tag:: condtype
 
-      Electrical conductivity type. In semiconductors this indicates what type of carriers :ref:`Nf` refers to.
+      Electrical conductivity type. In semiconductors this indicates what type of carriers :xml:tag:`<Nf>` refers to.
 
    .. xml:tag:: cp
 
@@ -352,7 +352,7 @@ The following elements are specifying two-dimensional geometry objects for use w
 Containers
 ^^^^^^^^^^
 
-.. xml:tag:: align
+.. xml:tag:: align2D (or <align>)
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
@@ -379,9 +379,9 @@ Containers
 
       :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-   .. xml:tag:: item
+   .. xml:tag:: item [in <align2D>]
 
-   Tag that allows to specify additional item attributes.
+      Tag that allows to specify additional item attributes.
 
       :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
       :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, **X**\ ``center``, **X**, ``top``, ``bottom``, ``vertcenter``, **Y**\ ``center``, **Y**). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
@@ -389,28 +389,35 @@ Containers
       :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
-.. xml:tag:: container
+.. xml:tag:: container2D (or <container>)
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
-   :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-   :attr left: Horizontal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
-   :attr right: Horizontal alignment specification: position of the right edge of the bounding box of the element. (float [µm])
-   :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of the element. (float [µm])
-   :attr {X}center: where **{X}** is the transverse axis name: Alias for ``trancenter``.
-   :attr {X}: where **{X}** is the transverse axis name: Horizontal alignment specification: position of the origin of the element. (float [µm])
-   :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float [µm])
-   :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float [µm])
-   :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of the element. (float [µm])
-   :attr {Y}center: where **{Y}** is the vertical axis name: Alias for vertcenter.
-   :attr {Y}: where **{Y}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
 
-   Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At least one alignment specification for each axis must be given.
+   :Contents:
 
-   :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+   .. xml:tag:: <item> [in <container2D>]
+
+      :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+      :attr left: Horizontal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
+      :attr right: Horizontal alignment specification: position of the right edge of the bounding box of the element. (float [µm])
+      :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of the element. (float [µm])
+      :attr {X}center: where **{X}** is the transverse axis name: Alias for ``trancenter``.
+      :attr {X}: where **{X}** is the transverse axis name: Horizontal alignment specification: position of the origin of the element. (float [µm])
+      :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float [µm])
+      :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float [µm])
+      :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of the element. (float [µm])
+      :attr {Y}center: where **{Y}** is the vertical axis name: Alias for vertcenter.
+      :attr {Y}: where **{Y}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
+
+      Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At least one alignment specification for each axis must be given.
+
+      :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
-.. xml:tag:: shelf
+.. xml:tag:: shelf2D (or shelf)
 
    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
 
@@ -426,7 +433,7 @@ Containers
 
      :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
      
-   .. xml:tag:: gap
+   .. xml:tag:: <gap/> [in <shelf2D>]
    
       Horizontal gap between two objects. The size of the gap can be specified either as the absolute value in µm or as the total horizontal size of the shelf.
    
@@ -434,9 +441,12 @@ Containers
      :attr total: Total size of the shelf. The gap will adjust automatically. (float [µm])
 
       Exactly one of the above attributes must be specified and only one ``gap`` in the shelf can have the ``total`` attribute.
-     
-     
-.. xml:tag:: stack
+
+   .. xml:tag:: <zero/> [in <shelf2D>]
+
+      This tag can appear as stack content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+
+.. xml:tag:: stack2D (or <stack>)
 
    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
    
@@ -460,7 +470,7 @@ Containers
 
       :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-   .. xml:tag:: item
+   .. xml:tag:: item [in <stack2D>]
 
       Tag that allows to specify additional item attributes.
 
@@ -469,7 +479,7 @@ Containers
 
       :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-   .. xml:tag:: zero
+   .. xml:tag:: <zero/> [in <stack2D>]
 
       This tag can appear as stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
@@ -485,7 +495,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :attr name: Object name for further reference.
    :attr role: Object role. Important for some solvers.
-   :attr axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
+   :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
@@ -495,7 +505,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :attr name: Object name for further reference.
    :attr role: Object role. Important for some solvers.
-   :attr axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
+   :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
@@ -512,6 +522,150 @@ Physical objects
 ^^^^^^^^^^^^^^^^
 
 Physical objects are the leafs of the geometry tree. They represent actual objects that have some shape and defined material.
+
+.. xml:tag:: <block/>
+
+   Rectangular block. Its origin is located at the lower left corner.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr material: Definition of the block material (for solid blocks).
+   :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the block (see also ``material-bottom``).
+   :attr required d{X}: where **{X}** is the transverse axis name: Horizontal dimension of the rectangle. (float [µm])
+   :attr required d{Y}: where **{Y}** is the transverse axis name: Vertical dimension of the rectangle. (float [µm])
+   :attr width: Alias for ``d{X}``.
+   :attr height: Alias for ``d{Y}``.
+
+   Either ``material`` or both ``material-top`` and ``material-bottom`` are required.
+
+.. xml:tag:: <rectangle/>
+
+   Alias for :xml:tag:`<block/>`.
+
+Other
+^^^^^
+
+.. xml:tag:: <again/>
+
+   This tag can be used to insert any previously defined and named (with the name attribute) two-dimensional object again in the geometry tree.
+   :attr required ref: Name of the referenced object.
+
+.. xml:tag:: <copy>
+
+   Modified copy of any previously defined and named (with the name attribute) two-dimensional object.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr required from: Name of the source two-dimensional object to make modified copy of. Usually it is some container that has some other named its items or sub-items.
+
+   :Contents:
+
+   The content of this element contains the tags specifying desired modifications of the source object. The source object remains unchanged, but its copy has alternations described by the following tags:
+
+   .. xml:tag:: <delete/>
+
+      Delete some item or sub-item of the copied object.
+      :attr required object: Name of the object to delete.
+
+   .. xml:tag:: <replace/>
+
+      Replace some item or sub-item of the copied object with some other named object specified anywhere earlier in the geometry.
+      :attr required object: Name of the object to delete.
+      :attr with: Name of the object to replace with. This object does not need to be located in the subtree of the copied object.
+      :contents: A new geometry object to replace the original one. Must be specified if and only if the with attribute is not provided.
+
+   .. xml:tag:: <toblock/>
+
+      Replace some item or sub-item of the copied object with uniform block that has dimensions exactly equal to the bounding box of the original element.
+      :attr required object: Name of the object to replace with the the solid block.
+      :attr required material: Material of the solid block.
+
+
+
+
+.. _sec-XPL-Geometry-objects-3D:
+
+Geometry objects 3D
+===================
+
+Containers
+^^^^^^^^^^
+
+Containers are objects that contain multiple other geometry objects as their items. They organize them spatially in different manners depending on the type of the container.
+
+.. xml:tag:: align3D (or <align>)
+
+   Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
+   :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
+   :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
+   :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of each element. (float [µm])
+   :attr left: Transversal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+   :attr right: Transversal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+   :attr trancenter: Transversal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
+   :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of each element. (float [µm])
+   :attr top: Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
+   :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
+   :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {Z}center: where **{Z}** is the vertical axis name: Alias for ``vertcenter``.
+   :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of each element. (float [µm])
+
+   Exactly one of the ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, and **{Y}**, ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, and **{Z}** attributes must be given.
+
+   :Contents:
+
+   The content of this element can any number of other three-dimensional geometry *object* or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom.
+
+   *object*
+
+      :ref:`Three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+   .. xml:tag:: item [in <align3D>]
+
+      Tag that allows to specify additional item attributes.
+
+      :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+      :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, and **{Y}**, ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, **{Z}**). Specifies alignment of the item in the remaining direction. Defaults to ``back=0``, ``left="0"`` or ``bottom="0"`` (excluding the alignment of the container from the list).
+
+      :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+.. xml:tag:: container3D (or <container>)
+
+   Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+
+   :Contents:
+
+   .. xml:tag:: <item> [in <container3D>]
+
+      :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+      :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of the element. (float [µm])
+      :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of the element. (float [µm])
+      :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of the element. (float [µm])
+      :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
+      :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of the element. (float [µm])
+      :attr left: Transversal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
+      :attr right: Transversal alignment specification: position of the right edge of the bounding box of the element. (float [µm])
+      :attr trancenter: Transversal alignment specification: position of the center of the bounding box of the element. (float [µm])
+      :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
+      :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of the element. (float [µm])
+      :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float [µm])
+      :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float [µm])
+      :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+      :attr {Z}center: where **{Z}** is the vertical axis name: Alias for ``vertcenter``.
+      :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
+
+      Attributes ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, and **{Z}** are mutually exclusive. At least one alignment specification for each axis must be given.
+
+      :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
 
 
