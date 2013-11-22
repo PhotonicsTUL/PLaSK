@@ -95,11 +95,14 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
                 } else {
                     if (!materialBarrier)
                         materialBarrier = material;
-                    else if (material->Me(300) != materialBarrier->Me(300) ||
-                             material->Mhh(300) != materialBarrier->Mhh(300) ||
-                             material->Mlh(300) != materialBarrier->Mlh(300) ||
-                             material->CB(300) != materialBarrier->CB(300) ||
-                             material->VB(300) != materialBarrier->VB(300))
+                    else if (!is_zero(material->Me(300).c00 - materialBarrier->Me(300).c00) ||
+                             !is_zero(material->Me(300).c11 - materialBarrier->Me(300).c11) ||
+                             !is_zero(material->Mhh(300).c00 - materialBarrier->Mhh(300).c00) ||
+                             !is_zero(material->Mhh(300).c11 - materialBarrier->Mhh(300).c11) ||
+                             !is_zero(material->Mlh(300).c00 - materialBarrier->Mlh(300).c00) ||
+                             !is_zero(material->Mlh(300).c11 - materialBarrier->Mlh(300).c11) ||
+                             !is_zero(material->CB(300) - materialBarrier->CB(300)) ||
+                             !is_zero(material->VB(300) - materialBarrier->VB(300)))
                         throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());
                     lastbarrier = true;
                 }

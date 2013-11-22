@@ -1,5 +1,5 @@
 #ifndef PLASK__AlN_Mg_H
-#define PLASK__ALN_Mg_H
+#define PLASK__AlN_Mg_H
 
 /** @file
 This file contains Mg-doped AlN
