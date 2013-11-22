@@ -29,7 +29,7 @@ Section <materials>
 
 This section contains specification of custom materials that can be used together with the library materials in the structure geometry. The only allowed tag in this section — that can, however, appear more than once — is the tag ``<material>``:
 
-.. xml:tag:: material
+.. xml:tag:: materials
 
    Definition of a custom material.
 
