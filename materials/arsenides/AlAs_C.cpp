@@ -53,6 +53,22 @@ Tensor2<double> AlAs_C::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+MI_PROPERTY(AlAs_C, absp,
+            MISource("fit by Lukasz Piskorski") // TODO
+            )
+double AlAs_C::absp(double wl, double T) const {
+    double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., 300.);
+    double tEgT = Eg(T,0.,'X');
+    double tDWl = 1240.*(tEgRef300-tEgT)/(tEgRef300*tEgT);
+    double tWl = (wl-tDWl)*1e-3;
+    double tAbsp(0.);
+    if (tWl <= 6.) // 0.85-6 um
+        tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0173)+0.114*pow(tWl,4.00)+73.*exp(-0.76*pow(tWl-2.74,2.)));
+    else if (tWl <= 27.) // 6-27 um
+        tAbsp = (Nf_RT/1e18)*(0.589*pow(tWl,3.)-22.87*pow(tWl,2.)+308.*tWl-1004.14);
+    return ( tAbsp );
+}
+
 bool AlAs_C::isEqual(const Material &other) const {
     const AlAs_C& o = static_cast<const AlAs_C&>(other);
     return o.NA == this->NA && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && AlAs::isEqual(other);

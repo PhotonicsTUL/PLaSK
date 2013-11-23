@@ -51,19 +51,16 @@ Tensor2<double> GaAs_C::cond(double T) const {
 }
 
 MI_PROPERTY(GaAs_C, absp,
-            MISource("fit to ..."), // TODO
-            MIComment("no temperature dependence")
+            MISource("fit by Lukasz Piskorski") // TODO
             )
 double GaAs_C::absp(double wl, double T) const {
+    double tDWl = 1240.*(Eg(300.,0.,'G')-Eg(T,0.,'G'))/(Eg(300.,0.,'G')*Eg(T,0.,'G'));
+    double tWl = (wl-tDWl)*1e-3;
     double tAbsp(0.);
-    if ((wl > 1200.) && (wl < 1400.)) // only for 1300 nm TODO
-        tAbsp = 9. * pow(Nf_RT/1e18, 1.33);
-    else if ((wl > 1450.) && (wl < 1650.)) // only for 1550 nm TODO
-        tAbsp = 25. * pow(Nf_RT/1e18, 1.1);
-    else if ((wl > 2230.) && (wl < 2430.)) // only for 2330 nm TODO
-        tAbsp = 320. * pow(Nf_RT/1e18, 0.7);
-    else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
-        tAbsp = 1340. * pow(Nf_RT/1e18, 0.7);
+    if (tWl <= 6.) // 0.85-6 um
+        tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0173)+0.114*pow(tWl,4.00)+73.*exp(-0.76*pow(tWl-2.74,2.)));
+    else if (tWl <= 27.) // 6-27 um
+        tAbsp = (Nf_RT/1e18)*(0.589*pow(tWl,3.)-22.87*pow(tWl,2.)+308.*tWl-1004.14);
     return ( tAbsp );
 }
 

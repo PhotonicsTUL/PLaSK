@@ -68,9 +68,9 @@ double AlGaAs_Si::absp(double wl, double T) const {
     double tDWl = 1240.*(tEgRef300-tEgT)/(tEgRef300*tEgT);
     double tWl = (wl-tDWl)*1e-3;
     double tAbsp(0.);
-    if (tWl <= 6000.) // 0.85-6 um
+    if (tWl <= 6.) // 0.85-6 um
         tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0169)+4.67+0.00211*pow(tWl,4.80));
-    else if (tWl <= 27000.) // 6-27 um
+    else if (tWl <= 27.) // 6-27 um
         tAbsp = (Nf_RT/1e18)*(-8.4+0.233*pow(tWl,2.6));
     return ( tAbsp );
 }

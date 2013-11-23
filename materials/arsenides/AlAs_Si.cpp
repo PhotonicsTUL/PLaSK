@@ -53,6 +53,22 @@ Tensor2<double> AlAs_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
+MI_PROPERTY(AlAs_Si, absp,
+            MISource("fit by Lukasz Piskorski") // TODO
+            )
+double AlAs_Si::absp(double wl, double T) const {
+    double tEgRef300 = phys::Varshni(1.519, 0.5405e-3, 204., T);
+    double tEgT = Eg(T,0.,'X');
+    double tDWl = 1240.*(tEgRef300-tEgT)/(tEgRef300*tEgT);
+    double tWl = (wl-tDWl)*1e-3;
+    double tAbsp(0.);
+    if (tWl <= 6.) // 0.85-6 um
+        tAbsp = (Nf_RT/1e18)*(1e24*exp(-tWl/0.0169)+4.67+0.00211*pow(tWl,4.80));
+    else if (tWl <= 27.) // 6-27 um
+        tAbsp = (Nf_RT/1e18)*(-8.4+0.233*pow(tWl,2.6));
+    return ( tAbsp );
+}
+
 bool AlAs_Si::isEqual(const Material &other) const {
     const AlAs_Si& o = static_cast<const AlAs_Si&>(other);
     return o.ND == this->ND && o.Nf_RT == this->Nf_RT && o.mob_RT == this->mob_RT && AlAs::isEqual(other);
