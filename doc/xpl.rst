@@ -31,6 +31,8 @@ This section contains specification of custom materials that can be used togethe
 
 .. xml:tag:: materials
 
+   Corresponding Python class: :py:class:`Material`.
+
    Definition of a custom material.
 
    :attr required name: Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
@@ -298,6 +300,8 @@ Available elements
 
 .. xml:tag:: cartesian2d
 
+   Corresponding Python class: :py:class:`plask.geometry.Cartesian2D`.
+
    Two-dimensional Cartesian geometry.
 
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
@@ -311,6 +315,8 @@ Available elements
 
 
 .. xml:tag:: cylindrical2d
+
+   Corresponding Python class: :py:class:`plask.geometry.Cylindrical2D`.
 
    Two-dimensional cylindrical geometry.
 
@@ -327,6 +333,8 @@ Available elements
 
 
 .. xml:tag:: cartesian3d
+
+   Corresponding Python class: :py:class:`plask.geometry.Cartesian3D`.
 
    Three-dimensional Cartesian geometry.
 
@@ -353,6 +361,8 @@ Containers
 ^^^^^^^^^^
 
 .. xml:tag:: align2D (or <align>)
+
+   Corresponding Python classes: :py:class:`plask.geometry.AlignContainerTran2D`, :py:class:`plask.geometry.AlignContainerVert2D`.
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
@@ -391,6 +401,8 @@ Containers
 
 .. xml:tag:: container2D (or <container>)
 
+   Corresponding Python class: :py:class:`plask.geometry.TranslationContainer2D`.
+
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
    :attr name: Object name for further reference.
@@ -418,6 +430,8 @@ Containers
 
 
 .. xml:tag:: shelf2D (or shelf)
+
+   Corresponding Python class: :py:class:`plask.geometry.Shelf2D`.
 
    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
 
@@ -447,6 +461,8 @@ Containers
       This tag can appear as stack content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
 .. xml:tag:: stack2D (or <stack>)
+
+   Corresponding Python classes: :py:class:`plask.geometry.SingleStack2D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack2D` (if ``repeat``\ >1).
 
    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
    
@@ -489,7 +505,9 @@ Transforms
 
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
-.. xml:tag:: flip
+.. xml:tag:: flip2D (or <flip>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Flip2D`.
 
    Mirror reflection of the object along specified axis.
 
@@ -499,7 +517,9 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-.. xml:tag:: mirror
+.. xml:tag:: mirror2D (or <mirror>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Mirror2D`.
 
    Object mirrored along specified axis. In other words this is transformed object together with its flipped version. The bounding box of the object cannot span at bot sides of zero along inverted axis.
 
@@ -509,7 +529,11 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-.. xml:tag:: translation
+.. xml:tag:: translation2D (or <translation>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Translation2D`.
+
+   A simple shift of the object. Note that the bounding box is shifted as well, so in containers that place their items basing on their bounding boxes, this transformation will have no effect.
 
    :attr name: Object name for further reference.
    :attr role: Object role. Important for some solvers.
@@ -523,7 +547,9 @@ Physical objects
 
 Physical objects are the leafs of the geometry tree. They represent actual objects that have some shape and defined material.
 
-.. xml:tag:: <block/>
+.. xml:tag:: <block2D/> (or <block/>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Block2D`.
 
    Rectangular block. Its origin is located at the lower left corner.
 
@@ -541,7 +567,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
 .. xml:tag:: <rectangle/>
 
-   Alias for :xml:tag:`<block/>`.
+   Alias for :xml:tag:`<block2D/>`.
 
 Other
 ^^^^^
@@ -596,6 +622,8 @@ Containers are objects that contain multiple other geometry objects as their ite
 
 .. xml:tag:: align3D (or <align>)
 
+   Corresponding Python classes: :py:class:`plask.geometry.AlignContainerLong3D`, :py:class:`plask.geometry.AlignContainerTran3D`, :py:class:`plask.geometry.AlignContainerVert3D`.
+
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
    :attr name: Object name for further reference.
@@ -636,6 +664,8 @@ Containers are objects that contain multiple other geometry objects as their ite
       :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
 .. xml:tag:: container3D (or <container>)
+
+   Corresponding Python class: :py:class:`plask.geometry.TranslationContainer3D`.
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
