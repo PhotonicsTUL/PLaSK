@@ -296,7 +296,7 @@ In this section geometries of the analyze structures are defined. More than one 
    :attr axes: Default value of axes attribute for all geometries defined in this section.
 
 Available elements
-^^^^^^^^^^^^^^^^^^
+------------------
 
 .. xml:tag:: cartesian2d
 
@@ -353,7 +353,7 @@ Available elements
 .. _sec-XPL-Geometry-objects-2D:
 
 Geometry objects 2D
-===================
+-------------------
 
 The following elements are specifying two-dimensional geometry objects for use with 2D geometries. Each of them can have an optional attribute name, which allows to give the name to the object for further reference (either in the geometry specification or in the computational script). The correct value of the object name is unique identifier string.
 
@@ -572,48 +572,13 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 Other
 ^^^^^
 
-.. xml:tag:: <again/>
-
-   This tag can be used to insert any previously defined and named (with the name attribute) two-dimensional object again in the geometry tree.
-   :attr required ref: Name of the referenced object.
-
-.. xml:tag:: <copy>
-
-   Modified copy of any previously defined and named (with the name attribute) two-dimensional object.
-
-   :attr name: Object name for further reference.
-   :attr role: Object role. Important for some solvers.
-   :attr required from: Name of the source two-dimensional object to make modified copy of. Usually it is some container that has some other named its items or sub-items.
-
-   :Contents:
-
-   The content of this element contains the tags specifying desired modifications of the source object. The source object remains unchanged, but its copy has alternations described by the following tags:
-
-   .. xml:tag:: <delete/>
-
-      Delete some item or sub-item of the copied object.
-      :attr required object: Name of the object to delete.
-
-   .. xml:tag:: <replace/>
-
-      Replace some item or sub-item of the copied object with some other named object specified anywhere earlier in the geometry.
-      :attr required object: Name of the object to delete.
-      :attr with: Name of the object to replace with. This object does not need to be located in the subtree of the copied object.
-      :contents: A new geometry object to replace the original one. Must be specified if and only if the with attribute is not provided.
-
-   .. xml:tag:: <toblock/>
-
-      Replace some item or sub-item of the copied object with uniform block that has dimensions exactly equal to the bounding box of the original element.
-      :attr required object: Name of the object to replace with the the solid block.
-      :attr required material: Material of the solid block.
-
-
+2D geometry object can be also obtained by refer to previously defined 2D object (see :xml:tag:`<again/>`) or copy of previously defined 2D object (see :xml:tag:`<copy>`). See section :ref:`sec-XPL-Geometry-objects-copy-ref` for more details.
 
 
 .. _sec-XPL-Geometry-objects-3D:
 
 Geometry objects 3D
-===================
+-------------------
 
 Containers
 ^^^^^^^^^^
@@ -697,7 +662,277 @@ Containers are objects that contain multiple other geometry objects as their ite
 
       :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
+.. xml:tag:: stack3D (or <stack>)
 
+   Corresponding Python classes: :py:class:`plask.geometry.SingleStack3D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack3D` (if ``repeat``\ >1).
+
+   Stack organizing its elements on top of the other. Horizontal alignments of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
+   
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
+   :attr shift: Vertical position of the stack bottom edge in its local coordinates. This attribute really makes sense only if the stack is the main element of the geometry, as in such case its local coordinates define global geometry coordinate system. Defaults to 0. (float [µm])
+   :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
+   :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
+   :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
+   :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of each element. (float [µm])
+   :attr left: Transversal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+   :attr right: Transversal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+   :attr trancenter: Transversal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
+   :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of each element. (float [µm])
+
+   Attributes ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**, are mutually exclusive. Default alignment is ``left="0"`` and ``back="0"``.
+
+   :Contents:
+   
+   The content of this element can any number of other three-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+
+   *object*
+
+      :ref:`Three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+   .. xml:tag:: item [in <stack3D>]
+
+      Tag that allows to specify additional item attributes.
+
+      :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+      :attr {alignment}: Any of the stack alignment specification attributes (``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**) that overrides the stack default for the particular item.
+
+      :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+   .. xml:tag:: <zero/> [in <stack3D>]
+
+      This tag can appear as stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+
+Transforms
+^^^^^^^^^^
+
+Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
+
+.. xml:tag:: extrusion
+
+   Corresponding Python class: :py:class:`plask.geometry.Extrusion`.
+
+   Extrusion of two-dimensional object into third dimension. 2D objects are defined in the plane defined by the transverse and vertical axes. Hence, the extrusion is performed into the longitudinal direction.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr required length: Length of the extrusion.
+
+   :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
+
+.. xml:tag:: flip3D (or <flip>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Flip3D`.
+
+   Mirror reflection of the object along specified axis.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
+
+   :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+.. xml:tag:: revolution
+
+   Corresponding Python class: :py:class:`plask.geometry.Revolution`.
+
+   Revolution of the two-dimensional object around its local vertical axis. The horizontal axis of the 2D object becomes a radial axis of the resulting compound cylinder. Vertical axes of the 2D object remains the vertical axis of the resulting block.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+
+   :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`. All the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane.
+
+.. xml:tag:: mirror3D (or <mirror>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Mirror3D`.
+
+   Object mirrored along specified axis. In other words this is transformed object together with its flipped version. The bounding box of the object cannot span at bot sides of zero along inverted axis.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
+
+   :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+.. xml:tag:: translation3D (or <translation>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Translation3D`.
+
+   A simple shift of the object. Note that the bounding box is shifted as well, so in containers that place their items basing on their bounding boxes, this transformation will have no effect.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal position of the origin of transformed element. (float [µm])
+   :attr {Y}: where **{Y}** is the transverse axis name: Transversal position of the origin of transformed element. (float [µm])
+   :attr {Z}: where **{Z}** is the vertical axis name: Vertical position of the origin of transformed element. (float [µm])
+
+   :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
+
+Physical objects
+^^^^^^^^^^^^^^^^
+
+Physical objects are the leafs of the geometry tree. They represent actual objects that have some shape and defined material.
+
+.. xml:tag:: <block3D/> (or <block/>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Block3D`.
+
+   Rectangular block. Its origin is located in the lower back left corner.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr material: Definition of the block material (for solid blocks).
+   :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the block (see also ``material-bottom``).
+   :attr required d{X}: where **{X}** is the longitudinal axis name: Longitudinal dimension of the cuboid. (float [µm])
+   :attr required d{Y}: where **{Y}** is the transverse axis name: Transversal dimension of the cuboid. (float [µm])
+   :attr required d{Z}: where **{Z}** is the vertical axis name: Vertical dimension of the cuboid. (float [µm])
+   :attr depth: Alias for ``d{X}``.
+   :attr width: Alias for ``d{Y}``.
+   :attr height: Alias for ``d{Z}``.
+
+   Either ``material`` or both ``material-top`` and ``material-bottom`` are required.
+
+.. xml:tag:: <cuboid/>
+
+   Alias for :xml:tag:`<block3D/>`.
+
+.. xml:tag:: <cylinder/>
+
+   Corresponding Python class: :py:class:`plask.geometry.Cylinder`.
+
+   Cylinder with its base lying in the horizontal plane. Its origin is located at the center of the lower circular base.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr material: Definition of the cylinder material (for solid cylinders).
+   :attr material-bottom: Definition of the material of the bottom of the cylinder (for cylinders which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the cylinder (see also ``material-bottom``).
+   :attr radius: Radius of the cylinder base.
+   :attr height: Height of the cylinder.
+
+Other
+^^^^^
+
+3D geometry object can be also obtained by refer to previously defined 3D object (see :xml:tag:`<again/>`) or copy of previously defined 3D object (see :xml:tag:`<copy>`). See section :ref:`sec-XPL-Geometry-objects-copy-ref` for more details.
+
+
+.. _sec-XPL-Geometry-objects-copy-ref:
+
+Copies and references to geometry objects
+-----------------------------------------
+
+.. xml:tag:: <again/>
+
+   This tag can be used to insert any previously defined and named (with the name attribute) two or three dimensional object again in the geometry tree.
+
+   :attr required ref: Name of the referenced object.
+
+.. xml:tag:: <copy>
+
+   Modified copy of any previously defined and named (with the name attribute) two or three dimensional object.
+
+   :attr name: Object name for further reference.
+   :attr role: Object role. Important for some solvers.
+   :attr required from: Name of the source two or three dimensional object to make modified copy of. Usually it is some container that has some other named its items or sub-items.
+
+   :Contents:
+
+   The content of this element contains the tags specifying desired modifications of the source object. The source object remains unchanged, but its copy has alternations described by the following tags:
+
+   .. xml:tag:: <delete/>
+
+      Delete some item or sub-item of the copied object.
+      :attr required object: Name of the object to delete.
+
+   .. xml:tag:: <replace/>
+
+      Replace some item or sub-item of the copied object with some other named object specified anywhere earlier in the geometry.
+      :attr required object: Name of the object to delete.
+      :attr with: Name of the object to replace with. This object does not need to be located in the subtree of the copied object.
+      :contents: A new geometry object to replace the original one. Must be specified if and only if the with attribute is not provided.
+
+   .. xml:tag:: <toblock/>
+
+      Replace some item or sub-item of the copied object with uniform block that has dimensions exactly equal to the bounding box of the original element.
+      :attr required object: Name of the object to replace with the the solid block.
+      :attr required material: Material of the solid block.
+
+
+.. _sec-grids:
+
+Section <grids>
+===============
+
+In this section one can define computational meshes for use by solvers. It can be done by one of the two ways: either by specifying the mesh directly or, by creating a generator that will automatically construct the required mesh basing on the structure geometry when the calculations in the solver using particular generator are about to begin. Hence the two allowed tags in this section are ``<mesh>`` and ``<generator>``. The contents of these tags are determined by the particular mesh or generator type, while their attributes are always the same:
+
+.. xml:tag:: generator
+
+   Specification of the mesh generator.
+
+   :attr required name: Object name for further reference.
+   :attr required type: Type of the mesh to generate.
+   :attr required method: Generation method i.e. the type of the generator.
+
+   :Contents: The content of this element depends on the values of the type and method tag. It specifies generator configuration (if any). See below for details.
+
+.. xml:tag:: mesh
+
+   Specification of the mesh.
+
+   :attr required name: Name of the mesh for reference in configuration of the solvers.
+   :attr required type: Type of the mesh.
+
+   :Contents: The content of this element depends on the value of the type tag. See below for details.
+
+Possible <mesh> contents for different types
+--------------------------------------------
+
+.. xml:tag:: <mesh type="rectilinear1d">
+
+   One-dimensional rectangular mesh with regular intervals.
+
+   :Contents:
+
+   .. xml:tag:: axis
+
+      Specification of the horizontal axis.
+
+      If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+
+      :attr start: Position of the first point on the axis. (float [µm])
+      :attr stop: Position of the last point on the axis. (float [µm])
+      :attr num: Number of the equally distributed points along the axis. (integer)
+
+      :Contents: Comma-separated list of the mesh points along this axis.
+
+.. xml:tag:: <mesh type="rectilinear2d">
+
+   Two-dimensional rectangular mesh with regular intervals.
+
+   :Contents:
+
+   .. xml:tag:: axis0
+
+      Specification of the horizontal axis.
+
+      If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+
+      :attr start: Position of the first point on the axis. (float [µm])
+      :attr stop: Position of the last point on the axis. (float [µm])
+      :attr num: Number of the equally distributed points along the axis. (integer)
+
+      :Contents: Comma-separated list of the mesh points along this axis.
+
+   .. xml:tag:: axis1
+
+      Specification of the vertical axis.
+
+      Attributes and contents are in the same format as in :xml:tag:`<axis0>`.
 
 
 .. rubric:: Footnotes
