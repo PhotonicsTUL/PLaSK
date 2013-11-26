@@ -19,6 +19,27 @@ from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.util.docfields import TypedField, Field
 
+class ParsedName:
+   def __init__(self, name, displ_name, desc, context):
+      self.name = name              # raw tag name
+      self.displ_name = displ_name  # display name, in format given by user
+      self.desc = desc              # extra information
+      self.context = context        # context in []
+
+   def displ_name_with_desc(self):
+      if len(self.desc) > 0: return "%s %s" % (self.displ_name, self.desc)
+      return self.displ_name
+
+   def ref_target(self):
+        if not self.has_ref():
+            return None
+        if len(self.context) > 0:
+            return '%s %s' % (self.name, self.context)
+        return self.name
+
+   def has_ref(self):
+      return self.context != '[]'
+
 def parse_tag(tagstr):
     """Parse a tag signature.
 
@@ -37,8 +58,7 @@ def parse_tag(tagstr):
         displ_name += sep
     else:
       l = s.split(None, 1)
-      name = l[0]
-      displ_name = '<%s>' % name
+      name = displ_name = l[0]
       if len(l) > 1: extra = l[1]
     extra = extra.strip()
     context = ''
@@ -47,7 +67,7 @@ def parse_tag(tagstr):
       if len(sep) > 0:
         extra = before.strip()
         context = sep + c
-    return (name, displ_name, extra, context)
+    return ParsedName(name, displ_name, extra, context)
 
 class XMLTag(ObjectDescription):
     """
@@ -67,6 +87,7 @@ class XMLTag(ObjectDescription):
 
     def add_target_and_index(self, name, sig, signode):
         # name is returned by handle_signature
+        if name == None: return
         targetname = self.objtype + '-' + name
         if targetname not in self.state.document.ids:
             signode['names'].append(targetname)
@@ -87,24 +108,24 @@ class XMLTag(ObjectDescription):
             self.indexnode['entries'].append(('single', indextext, targetname, ''))
 
     def get_index_text(self, objectname, name):
-        if self.objtype == 'tag':
-            return name
-            #return _('%s (XML tag)') % name
+        if self.objtype == 'tag' and name:
+            return _('%s (XML tag)') % name
         return ''
 
     def handle_signature(self, sig, signode):
-        name, name_in_tag, desc, context = parse_tag(sig)
-        signode += addnodes.desc_name(name_in_tag, name_in_tag)
-        if len(desc) > 0:
-            desc = ' ' + desc
-            signode += addnodes.desc_addname(desc, desc)
-        if len(context) > 0:
-            return '%s %s' % (name_in_tag, context)
-        return name_in_tag
+        p = parse_tag(sig)
+        signode += addnodes.desc_name(p.displ_name, p.displ_name)
+        if len(p.desc) > 0:
+            p.desc = ' ' + p.desc
+            signode += addnodes.desc_addname(p.desc, p.desc)
+        return p.ref_target()
 
-
-
-
+class XMLRefRole(XRefRole):
+   def process_link(self, env, refnode, has_explicit_title, title, target):
+      p = parse_tag(target)
+      target = p.ref_target()
+      if has_explicit_title: return title, target
+      return p.displ_name_with_desc(), target
 
 #class ReSTRole(ReSTMarkup):
 #    def handle_signature(self, sig, signode):
@@ -124,7 +145,7 @@ class XMLDomain(Domain):
         'tag': XMLTag,
     }
     roles = {
-        'tag':  XRefRole(),
+        'tag':  XMLRefRole(),
     }
     initial_data = {
         'objects': {},  # fullname -> docname, objtype

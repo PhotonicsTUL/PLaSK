@@ -16,7 +16,7 @@ Section <defines>
 
 This section allows to define some constant parameters (that can be later overridden either in the command line or while reading the XPL file from Python). Each parameter is defined with the only tag allowed in this section:
 
-.. xml:tag:: defines
+.. xml:tag:: <defines>
 
    Definition of a parameter for use in the rest of the file.
 
@@ -27,9 +27,11 @@ This section allows to define some constant parameters (that can be later overri
 Section <materials>
 ===================
 
+.. xml:tag:: <materials>
+
 This section contains specification of custom materials that can be used together with the library materials in the structure geometry. The only allowed tag in this section — that can, however, appear more than once — is the tag ``<material>``:
 
-.. xml:tag:: materials
+.. xml:tag:: <material>
 
    Corresponding Python class: :py:class:`Material`.
 
@@ -47,140 +49,140 @@ This section contains specification of custom materials that can be used togethe
 
    The accepted material properties are as follows:
 
-   .. xml:tag:: A
+   .. xml:tag:: <A>
 
       Monomolecular recombination coefficient coefficient *A* [1/s].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: absb
+   .. xml:tag:: <absb>
 
       Absorption coefficient *α* [cm\ :sup:`-1`].
 
       Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-   .. xml:tag:: ac
+   .. xml:tag:: <ac>
 
       Hydrostatic deformation potential for the conduction band *a*\ :sub:`c` [eV].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: av
+   .. xml:tag:: <av>
 
       Hydrostatic deformation potential for the valence band *a*\ :sub:`v` [eV].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: B
+   .. xml:tag:: <B>
 
       Radiative recombination coefficient *B* [m\ :sup:`3`/s].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: b
+   .. xml:tag:: <b>
 
-      Radiative recombination coefficient *b* [m\ :sup:`3`/s].
+      Shear deformation potential *b* [eV].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: C
+   .. xml:tag:: <C>
 
       Auger recombination coefficient *C* [m\ :sup:`6`/s].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: c11
+   .. xml:tag:: <c11>
 
       Elastic constant *c*\ :sub:`11` [GPa].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: c12
+   .. xml:tag:: <c12>
 
       Elastic constant *c*\ :sub:`12` [GPa].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: CB
+   .. xml:tag:: <CB>
 
       Conduction band level *CB* [eV].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
       ``point`` — point in the Brillouin zone [-].
 
-   .. xml:tag:: chi
+   .. xml:tag:: <chi>
 
       Electron affinity *χ* [eV].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
       ``point`` — point in the Brillouin zone [-].
 
-   .. xml:tag:: cond
+   .. xml:tag:: <cond>
 
       Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: condtype
+   .. xml:tag:: <condtype>
 
       Electrical conductivity type. In semiconductors this indicates what type of carriers :xml:tag:`<Nf>` refers to.
 
-   .. xml:tag:: cp
+   .. xml:tag:: <cp>
 
       Specific heat heat at constant pressure [J/(kg K)].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: D
+   .. xml:tag:: <D>
 
       Ambipolar diffusion coefficient *D* [m\ :sup:`2`/s].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: dens
+   .. xml:tag:: <dens>
 
       Density [kg/m\ :sup:`3`].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: Dso
+   .. xml:tag:: <Dso>
 
       Split-off energy *D*\ :sub:`so` [eV].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-   .. xml:tag:: EactA
+   .. xml:tag:: <EactA>
 
       Acceptor ionization energy *E*\ :sub:`actA` [eV].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: EactD
+   .. xml:tag:: <EactD>
 
       Donor ionization energy *E*\ :sub:`actD` [eV].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: Eg
+   .. xml:tag:: <Eg>
 
       Energy gap *E*\ :sub:`g` [eV].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
       ``point`` — point in the Brillouin zone [-].
 
-   .. xml:tag:: eps
+   .. xml:tag:: <eps>
 
       Donor ionization energy *ε*\ :sub:`R` [-].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: lattC
+   .. xml:tag:: <lattC>
 
       Lattice constant [Å].
 
       Variables: ``T`` — temperature [K], ``x`` — lattice parameter [-].
 
-   .. xml:tag:: Me
+   .. xml:tag:: <Me>
 
       Electron effective mass *M*\ :sub:`e` in in-plane (lateral)
       and cross-plane (vertical) direction [*m*\ :sub:`0`].
@@ -188,41 +190,41 @@ This section contains specification of custom materials that can be used togethe
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
       ``point`` — point in the irreducible Brillouin zone [-].
 
-   .. xml:tag:: Mh
+   .. xml:tag:: <Mh>
 
       Hole effective mass *M*\ :sub:`h` in in-plane (lateral)
       and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-   .. xml:tag:: Mhh
+   .. xml:tag:: <Mhh>
 
       Heavy hole effective mass *M*\ :sub:`hh` in in-plane (lateral)
       and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-   .. xml:tag:: Mlh
+   .. xml:tag:: <Mlh>
 
       Light hole effective mass *M*\ :sub:`lh` in in-plane (lateral)
       and cross-plane (vertical) direction [*m*\ :sub:`0`].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-   .. xml:tag:: mob
+   .. xml:tag:: <mob>
 
       Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction
       [m\ :sup:`2`/(V s)].
 
       Variables: T — temperature [K].
 
-   .. xml:tag:: Mso
+   .. xml:tag:: <Mso>
 
       Split-off mass *M*\ :sub:`so`` [*m*\ :sub:`0`].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
-   .. xml:tag:: Nc
+   .. xml:tag:: <Nc>
 
       Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
 
@@ -231,51 +233,51 @@ This section contains specification of custom materials that can be used togethe
 
    .. _Nf:
    
-   .. xml:tag:: Nf
+   .. xml:tag:: <Nf>
    
       Free carrier concentration *N* [cm\ :sup:`-3`].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: Ni
+   .. xml:tag:: <Ni>
 
       Intrinsic carrier concentration *N*\ :sub:`i` [cm\ :sup:`-3`].
 
       Variables: ``T`` — temperature [K].
 
-   .. xml:tag:: Nr
+   .. xml:tag:: <Nr>
 
       Complex refractive index *n*\ :sub:`R` [-].
 
       Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-   .. xml:tag:: nr
+   .. xml:tag:: <nr>
 
       Real refractive index *n*\ :sub:`R` [-].
 
       Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-   .. xml:tag:: Nr-tensor
+   .. xml:tag:: <Nr-tensor>
 
       Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
       Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
       Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
 
-   .. xml:tag:: Nv
+   .. xml:tag:: <Nv>
 
       Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
 
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
       ``point`` — point in the Brillouin zone [-].
 
-   .. xml:tag:: thermk
+   .. xml:tag:: <thermk>
 
       Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction *k* [W/(m K)].
 
       Variables: ``T`` — temperature [K], ``h`` — layer thickness [µm].
 
-   .. xml:tag:: VB
+   .. xml:tag:: <VB>
 
       Valance band level offset *VB* [eV].
 
@@ -289,7 +291,7 @@ Section <geometry>
 
 In this section geometries of the analyze structures are defined. More than one geometry can be specified.
 
-.. xml:tag:: geometry
+.. xml:tag:: <geometry>
 
    Inside each geometry tag there must be a single geometry object: usually it is some container.
 
@@ -298,7 +300,7 @@ In this section geometries of the analyze structures are defined. More than one 
 Available elements
 ------------------
 
-.. xml:tag:: cartesian2d
+.. xml:tag:: <cartesian2d>
 
    Corresponding Python class: :py:class:`plask.geometry.Cartesian2D`.
 
@@ -314,7 +316,7 @@ Available elements
    :Contents: Any object from section :ref:`sec-XPL-Geometry-objects-2D`.
 
 
-.. xml:tag:: cylindrical2d
+.. xml:tag:: <cylindrical2d>
 
    Corresponding Python class: :py:class:`plask.geometry.Cylindrical2D`.
 
@@ -332,7 +334,7 @@ Available elements
 
 
 
-.. xml:tag:: cartesian3d
+.. xml:tag:: <cartesian3d>
 
    Corresponding Python class: :py:class:`plask.geometry.Cartesian3D`.
 
@@ -360,7 +362,7 @@ The following elements are specifying two-dimensional geometry objects for use w
 Containers
 ^^^^^^^^^^
 
-.. xml:tag:: align2D (or <align>)
+.. xml:tag:: <align2D> (or <align>)
 
    Corresponding Python classes: :py:class:`plask.geometry.AlignContainerTran2D`, :py:class:`plask.geometry.AlignContainerVert2D`.
 
@@ -389,7 +391,7 @@ Containers
 
       :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-   .. xml:tag:: item [in <align2D>]
+   .. xml:tag:: <item> [in <align2D>]
 
       Tag that allows to specify additional item attributes.
 
@@ -399,7 +401,7 @@ Containers
       :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
-.. xml:tag:: container2D (or <container>)
+.. xml:tag:: <container2D> (or <container>)
 
    Corresponding Python class: :py:class:`plask.geometry.TranslationContainer2D`.
 
@@ -429,7 +431,7 @@ Containers
       :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
 
-.. xml:tag:: shelf2D (or shelf)
+.. xml:tag:: <shelf2D> (or shelf)
 
    Corresponding Python class: :py:class:`plask.geometry.Shelf2D`.
 
@@ -460,7 +462,7 @@ Containers
 
       This tag can appear as stack content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
-.. xml:tag:: stack2D (or <stack>)
+.. xml:tag:: <stack2D> (or <stack>)
 
    Corresponding Python classes: :py:class:`plask.geometry.SingleStack2D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack2D` (if ``repeat``\ >1).
 
@@ -486,7 +488,7 @@ Containers
 
       :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-   .. xml:tag:: item [in <stack2D>]
+   .. xml:tag:: <item> [in <stack2D>]
 
       Tag that allows to specify additional item attributes.
 
@@ -505,7 +507,7 @@ Transforms
 
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
-.. xml:tag:: flip2D (or <flip>)
+.. xml:tag:: <flip2D> (or <flip>)
 
    Corresponding Python class: :py:class:`plask.geometry.Flip2D`.
 
@@ -517,7 +519,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-.. xml:tag:: mirror2D (or <mirror>)
+.. xml:tag:: <mirror2D> (or <mirror>)
 
    Corresponding Python class: :py:class:`plask.geometry.Mirror2D`.
 
@@ -529,7 +531,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-.. xml:tag:: translation2D (or <translation>)
+.. xml:tag:: <translation2D> (or <translation>)
 
    Corresponding Python class: :py:class:`plask.geometry.Translation2D`.
 
@@ -585,7 +587,7 @@ Containers
 
 Containers are objects that contain multiple other geometry objects as their items. They organize them spatially in different manners depending on the type of the container.
 
-.. xml:tag:: align3D (or <align>)
+.. xml:tag:: <align3D> (or <align>)
 
    Corresponding Python classes: :py:class:`plask.geometry.AlignContainerLong3D`, :py:class:`plask.geometry.AlignContainerTran3D`, :py:class:`plask.geometry.AlignContainerVert3D`.
 
@@ -619,7 +621,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
       :ref:`Three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
-   .. xml:tag:: item [in <align3D>]
+   .. xml:tag:: <item> [in <align3D>]
 
       Tag that allows to specify additional item attributes.
 
@@ -628,7 +630,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
       :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
-.. xml:tag:: container3D (or <container>)
+.. xml:tag:: <container3D> (or <container>)
 
    Corresponding Python class: :py:class:`plask.geometry.TranslationContainer3D`.
 
@@ -662,7 +664,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
       :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
-.. xml:tag:: stack3D (or <stack>)
+.. xml:tag:: <stack3D> (or <stack>)
 
    Corresponding Python classes: :py:class:`plask.geometry.SingleStack3D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack3D` (if ``repeat``\ >1).
 
@@ -693,7 +695,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
       :ref:`Three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
-   .. xml:tag:: item [in <stack3D>]
+   .. xml:tag:: <item> [in <stack3D>]
 
       Tag that allows to specify additional item attributes.
 
@@ -711,7 +713,7 @@ Transforms
 
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
-.. xml:tag:: extrusion
+.. xml:tag:: <extrusion>
 
    Corresponding Python class: :py:class:`plask.geometry.Extrusion`.
 
@@ -723,7 +725,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
 
-.. xml:tag:: flip3D (or <flip>)
+.. xml:tag:: <flip3D> (or <flip>)
 
    Corresponding Python class: :py:class:`plask.geometry.Flip3D`.
 
@@ -735,7 +737,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
-.. xml:tag:: revolution
+.. xml:tag:: <revolution>
 
    Corresponding Python class: :py:class:`plask.geometry.Revolution`.
 
@@ -746,7 +748,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`. All the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane.
 
-.. xml:tag:: mirror3D (or <mirror>)
+.. xml:tag:: <mirror3D> (or <mirror>)
 
    Corresponding Python class: :py:class:`plask.geometry.Mirror3D`.
 
@@ -758,7 +760,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :Contents: A single :ref:`three-dimensional geometry object <sec-XPL-Geometry-objects-3D>`.
 
-.. xml:tag:: translation3D (or <translation>)
+.. xml:tag:: <translation3D> (or <translation>)
 
    Corresponding Python class: :py:class:`plask.geometry.Translation3D`.
 
@@ -868,9 +870,11 @@ Copies and references to geometry objects
 Section <grids>
 ===============
 
+.. xml:tag:: <grids>
+
 In this section one can define computational meshes for use by solvers. It can be done by one of the two ways: either by specifying the mesh directly or, by creating a generator that will automatically construct the required mesh basing on the structure geometry when the calculations in the solver using particular generator are about to begin. Hence the two allowed tags in this section are ``<mesh>`` and ``<generator>``. The contents of these tags are determined by the particular mesh or generator type, while their attributes are always the same:
 
-.. xml:tag:: generator
+.. xml:tag:: <generator>
 
    Specification of the mesh generator.
 
@@ -880,7 +884,7 @@ In this section one can define computational meshes for use by solvers. It can b
 
    :Contents: The content of this element depends on the values of the type and method tag. It specifies generator configuration (if any). See below for details.
 
-.. xml:tag:: mesh
+.. xml:tag:: <mesh>
 
    Specification of the mesh.
 
@@ -892,13 +896,13 @@ In this section one can define computational meshes for use by solvers. It can b
 Possible <mesh> contents for different types
 --------------------------------------------
 
-.. xml:tag:: <mesh type="rectilinear1d">
+.. xml:tag:: <mesh type="rectilinear1d"> [rectilinear1d]
 
    One-dimensional rectangular mesh with regular intervals.
 
    :Contents:
 
-   .. xml:tag:: axis
+   .. xml:tag:: <axis> [in rectilinear1d mesh]
 
       Specification of the horizontal axis.
 
@@ -910,13 +914,13 @@ Possible <mesh> contents for different types
 
       :Contents: Comma-separated list of the mesh points along this axis.
 
-.. xml:tag:: <mesh type="rectilinear2d">
+.. xml:tag:: <mesh type="rectilinear2d"> [rectilinear2d]
 
    Two-dimensional rectangular mesh with regular intervals.
 
    :Contents:
 
-   .. xml:tag:: axis0 [in rectilinear2d mesh]
+   .. xml:tag:: <axis0> [in rectilinear2d mesh]
 
       Specification of the horizontal axis.
 
@@ -928,19 +932,19 @@ Possible <mesh> contents for different types
 
       :Contents: Comma-separated list of the mesh points along this axis.
 
-   .. xml:tag:: axis1 [in rectilinear2d mesh]
+   .. xml:tag:: <axis1> [in rectilinear2d mesh]
 
       Specification of the vertical axis.
 
-      Attributes and contents are in the same format as in :xml:tag:`<axis0>`.
+      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear2d mesh]`.
 
-.. xml:tag:: <mesh type="rectilinear3d">
+.. xml:tag:: <mesh type="rectilinear3d"> [rectilinear3d]
 
    Three-dimensional rectangular mesh with regular intervals.
 
    :Contents:
 
-   .. xml:tag:: axis0 [in rectilinear3d mesh]
+   .. xml:tag:: <axis0> [in rectilinear3d mesh]
 
       Specification of the longitudinal axis.
 
@@ -952,18 +956,467 @@ Possible <mesh> contents for different types
 
       :Contents: Comma-separated list of the mesh points along this axis.
 
-   .. xml:tag:: axis1 [in rectilinear3d mesh]
+   .. xml:tag:: <axis1> [in rectilinear3d mesh]
 
       Specification of the transversal axis.
 
       Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
 
-   .. xml:tag:: axis2 [in rectilinear3d mesh]
+   .. xml:tag:: <axis2> [in rectilinear3d mesh]
 
       Specification of the vertical axis.
 
-      Attributes and contents are in the same format as in :xml:tag:`<axis0>`.
+      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
+
+.. xml:tag:: <mesh type="regular1d"> [regular1d]
+
+   One-dimensional rectangular mesh with regular intervals.
+
+   :Contents:
+
+   .. xml:tag:: <axis> [in regular1d mesh]
+
+      Specification of the horizontal axis.
+
+      :attr required start: Position of the first point on the axis. (float [µm])
+      :attr required stop: Position of the last point on the axis. (float [µm])
+      :attr required num: Number of the equally distributed points along the axis. (integer)
+
+.. xml:tag:: <mesh type="regular2d"> [regular2d]
+
+   Two-dimensional rectangular mesh with regular intervals.
+
+   :Contents:
+
+   .. xml:tag:: <axis0> [in regular2d mesh]
+
+      Specification of the horizontal axis.
+
+      :attr required start: Position of the first point on the axis. (float [µm])
+      :attr required stop: Position of the last point on the axis. (float [µm])
+      :attr required num: Number of the equally distributed points along the axis. (integer)
+
+   .. xml:tag:: <axis1> [in regular2d mesh]
+
+      Specification of the vertical axis.
+
+      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in regular2d mesh]`.
+
+.. xml:tag:: <mesh type="regular3d">
+
+   Three-dimensional rectangular mesh with regular intervals.
+
+   :Contents:
+
+   .. xml:tag:: <axis0> [in regular3d mesh]
+
+      Specification of the longitudinal axis.
+
+      :attr required start: Position of the first point on the axis. (float [µm])
+      :attr required stop: Position of the last point on the axis. (float [µm])
+      :attr required num: Number of the equally distributed points along the axis. (integer)
+
+   .. xml:tag:: <axis1> [in regular3d mesh]
+
+      Specification of the transversal axis.
+
+      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in regular3d mesh]`.
+
+   .. xml:tag:: <axis2> [in regular3d mesh]
+
+      Specification of the vertical axis.
+
+      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in regular3d mesh]`.
+
+
+Possible <generator> contents for different types and methods
+-------------------------------------------------------------
+
+.. xml:tag:: <generator type="rectilinear1d" method="divide"> [rectilinear1d, divide]
+
+   Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
+
+   :Contents:
+
+   .. xml:tag:: <no-gradual/> [in rectilinear1d, divide generator]
+
+      Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+   .. xml:tag:: <prediv/> [in rectilinear1d, divide generator]
+
+      Set number of the initial divisions of each geometry object.
+
+      :attr by: Number of parts each object is divided into along horizontal axis.
+
+   .. xml:tag:: <postdiv/> [in rectilinear1d, divide generator]
+
+      Set number of the final divisions of each geometry object.
+
+      :attr by: Number of parts each object is divided into along horizontal axis.
+
+   .. xml:tag:: <refinements> [in rectilinear1d, divide generator]
+
+      Specify list of additional refinements of the generated mesh.
+
+      :Contents:
+
+      .. xml:tag:: <axis0/> [in rectilinear1d, divide generator]
+
+         Add refinement to the horizontal axis.
+
+         :attr required object: Name of the geometry object to add additional division to.
+         :attr path: Path name, specifying particular instance of the object given in the object attribute.
+         :attr at: If this attribute is present, a single refinement line is placed at the position specified in it (in the local object coordinates).
+         :attr by: If this attribute is present, multiple refinement lines are placed dividing the object into a specified number of equal parts.
+         :attr every: If this attribute is present, multiple refinement lines are places at distance from each other specified in the attribute value.
+
+         Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
+
+   .. xml:tag:: <warnings/>
+
+      Control printing of the warnings.
+
+      :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
+      :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
+      :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+
+.. xml:tag:: <generator type="rectilinear1d" method="simple"> [rectilinear1d, simple]
+
+   Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+
+.. xml:tag:: <generator type="rectilinear2d" method="divide"> [rectilinear1d, divide]
+
+   Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
+
+   :Contents:
+
+   .. xml:tag:: <no-gradual/> [in rectilinear2d, divide generator]
+
+      Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+   .. xml:tag:: <prediv/> [in rectilinear2d, divide generator]
+
+      Set number of the initial divisions of each geometry object.
+
+      :attr by0: Number of parts each object is divided into along horizontal axis.
+      :attr by1: Number of parts each object is divided into along vertical axis.
+      :attr by: Set values of ``by0`` and ``by1`` both at once. It this attribute is specified, no other ones are allowed.
+
+   .. xml:tag:: <postdiv/> [in rectilinear2d, divide generator]
+
+      Set number of the final divisions of each geometry object.
+
+      It has same attributes as :xml:tag:`<prediv/> [in rectilinear2d, divide generator]`.
+
+   .. xml:tag:: <refinements> [in rectilinear2d, divide generator]
+
+      Specify list of additional refinements of the generated mesh.
+
+      :Contents:
+
+      .. xml:tag:: <axis0/> [in rectilinear2d, divide generator]
+
+         Add refinement to the horizontal axis.
+
+         :attr required object: Name of the geometry object to add additional division to.
+         :attr path: Path name, specifying particular instance of the object given in the object attribute.
+         :attr at: If this attribute is present, a single refinement line is placed at the position specified in it (in the local object coordinates).
+         :attr by: If this attribute is present, multiple refinement lines are placed dividing the object into a specified number of equal parts.
+         :attr every: If this attribute is present, multiple refinement lines are places at distance from each other specified in the attribute value.
+
+         Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
+
+      .. xml:tag:: <axis1/> [in rectilinear2d, divide generator]
+
+         Add refinement to the vertical axis.
+
+         It has same attributes as :xml:tag:`<axis0/> [in rectilinear2d, divide generator]`.
+
+   .. xml:tag:: <warnings/>
+
+      Control printing of the warnings.
+
+      :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
+      :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
+      :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+
+.. xml:tag:: <generator type="rectilinear2d" method="simple"> [rectilinear2d, simple]
+
+   Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+
+.. xml:tag:: <generator type=”rectilinear3d” method=”divide”> [rectilinear3d, divide]
+
+   Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
+
+   :Contents:
+
+   .. xml:tag:: <no-gradual/> [in rectilinear3d, divide generator]
+
+      Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+   .. xml:tag:: <prediv/> [in rectilinear3d, divide generator]
+
+      Set number of the initial divisions of each geometry object.
+
+      :attr by0: Number of parts each object is divided into along longitudinal axis.
+      :attr by1: Number of parts each object is divided into along trnasverse axis.
+      :attr by2: Number of parts each object is divided into along vertical axis.
+      :attr by: Set values of ``by0``, ``by1`` and ``by2`` at once. It this attribute is specified, no other ones are allowed.
+
+   .. xml:tag:: <postdiv/> [in rectilinear3d, divide generator]
+
+      Set number of the final divisions of each geometry object.
+
+      It has same attributes as :xml:tag:`<prediv/> [in rectilinear3d, divide generator]`.
+
+   .. xml:tag:: <refinements> [in rectilinear3d, divide generator]
+
+      Specify list of additional refinements of the generated mesh.
+
+      :Contents:
+
+      .. xml:tag:: <axis0/> [in rectilinear3d, divide generator]
+
+         Add refinement to the longitudinal axis.
+
+         :attr required object: Name of the geometry object to add additional division to.
+         :attr path: Path name, specifying particular instance of the object given in the object attribute.
+         :attr at: If this attribute is present, a single refinement line is placed at the position specified in it (in the local object coordinates).
+         :attr by: If this attribute is present, multiple refinement lines are placed dividing the object into a specified number of equal parts.
+         :attr every: If this attribute is present, multiple refinement lines are places at distance from each other specified in the attribute value.
+
+         Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
+
+      .. xml:tag:: <axis1/> [in rectilinear3d, divide generator]
+
+         Add refinement to the transverse axis.
+
+         It has same attributes as :xml:tag:`<axis0/> [in rectilinear3d, divide generator]`.
+
+      .. xml:tag:: <axis2/> [in rectilinear3d, divide generator]
+
+         Add refinement to the vertical axis.
+
+         It has same attributes as :xml:tag:`<axis0/> [in rectilinear3d, divide generator]`.
+
+   .. xml:tag:: <warnings/>
+
+      Control printing of the warnings.
+
+      :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
+      :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
+      :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+
+.. xml:tag:: <generator type="rectilinear3d" method="simple"> [rectilinear3d, simple]
+
+   Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+
+
+.. _sec-solvers:
+
+Section <solvers>
+=================
+
+.. xml:tag:: <solvers>
+
+In this section used computational solvers are defined and configured. Also here, the data filters are set-up, as in general, they are only special kinds of solvers. Each XML element in this section correspond to separate solver. The content of such element depends strongly on particular solver, while its name and attributes are standard (although there are differences in attributes of strict computational solvers and data filters). The details of XML content of this section is presented below.
+
+The computational solvers are declared with an XML tag, which name is the category of the solver, e.g. *thermal*, *electrical*, *gain*, or *optical* and that has the standard set of attributes:
+
+.. xml:tag:: <category> []
+
+   Definition of computational solver.
+
+   :attr required name: Solver name. In Python script there is a automatically created solver object with such name. (identifier string)
+   :attr required solver: Actual solver type. In Python script this defines the class of the solver object.
+   :attr lib: Library in which this solver is implemented. For most standard solvers, PLaSK can automatically determine its proper value. For other solver types this attribute is required.
+
+   :contents: The contents of each solver depends on the category and the solver type (i.e. the tag name and the value of the solver attribute). It is specified in the following subsections.
+
+
+.. _sec-Boundary-conditions:
+
+Boundary conditions
+-------------------
+
+Most of the solvers have some boundary conditions. They differ by name or type, but all share the same structure: some value is set at mesh points in some region (usually the edge of the whole geometry, or the edge of some geometrical object. Hence, the structure of boundary conditions is usually the same and looks as follows [#different-boundary-conditions]_:
+
+.. xml:tag:: <boundary_conditions> []
+
+   Some boundary conditions specifications.
+
+   .. xml:tag:: <condition>
+
+      Specification of one boundary condition.
+
+      :attr required value: Value of the boundary condition. In some boundary condition value is given in different attributes. In such case, this attribute should be replaced with the specific ones.
+      :attr placename: Name of the boundary condition location for further reference.
+      :attr placeref: Set location of boundary conditions to some location previously named with ``placename``.
+      :attr place: Set one of standard location of boundary condition. The value of this attribute depends on the mesh.
+
+      :contents:
+
+      .. xml:tag:: <place>
+
+         Set location of boundary condition. This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required. Its attributes are mesh-specific. Below there are most common examples of attribute sets for rectangular meshes:
+
+         **Boundary conditions at the side of some object:**
+
+         :attr required object: Name of the geometry object to set boundary conditions at.
+         :attr path: Path name, specifying particular instance of the object given in the object attribute.
+         :attr required side: Side of the object to set boundary conditions at. (``left``, ``right``, ``top``, ``bottom``, ``back``, ``front``)
+
+         **Boundary conditions at some line (2D meshes):**
+
+         :attr required line: Direction of the line. (``vertical`` or ``horizontal``)
+         :attr required at: Location of the line i.e. its position on the perpendicular axis.
+         :attr required start: Position of the start of the line on the parallel axis.
+         :attr required stop: Position of the end of the line on the parallel axis.
+
+
+Thermal solvers
+---------------
+
+.. xml:tag:: <thermal solver="Static2D"> [Static2D]
+
+   Two-dimensional static thermal solver in Cartesian geometry, based on finite-element method.
+
+   :contents:
+
+   .. xml:tag:: <geometry/> [in Static2D thermal solver]
+
+      Geometry for use by this solver.
+
+      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+
+   .. xml:tag:: <mesh/> [in Static2D thermal solver]
+
+      Mesh used by this solver.
+
+      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+
+   .. xml:tag:: <loop/> [in Static2D thermal solver]
+
+      Configuration of the self-consistent loop.
+
+      :attr inittemp: Initial temperature. (float [K])
+      :attr maxerr: Maximum allowed error. (float [K])
+
+   .. xml:tag:: <matrix/> [in Static2D thermal solver]
+
+      Configuration of the matrix solver.
+
+      :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
+      :attr itererr: Allowed residual error for the iterative algorithm.
+      :attr iterlim: Maximum number of iterations for the iterative algorithm.
+      :attr logfreq: Frequency of logging iterative solver progress.
+      .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
+
+   .. xml:tag:: <temperature> [in Static2D thermal solver]
+
+      Boundary conditions: constant temperature. See subsection :ref:`sec-Boundary-conditions`.
+
+   .. xml:tag:: <heatflux> [in Static2D thermal solver]
+
+      Boundary conditions: constant heat flux. See subsection :ref:`sec-Boundary-conditions`.
+
+   .. xml:tag:: <convection> [in Static2D thermal solver]
+
+      Boundary conditions: convection. See subsection :ref:`sec-Boundary-conditions`.
+
+      This boundary condition does not have ``value`` attribute. Use ``coeff`` for convection coefficient and ``ambient`` for ambient temperature instead.
+
+   .. xml:tag:: <radiation> [in Static2D thermal solver]
+
+      Boundary conditions: radiation. See subsection :ref:`sec-Boundary-conditions`.
+
+      This boundary condition does not have ``value`` attribute. Use ``emissivity`` for surface emissivity and ``ambient`` for ambient temperature instead.
+
+.. xml:tag:: <thermal solver="StaticCyl"> [StaticCyl]
+
+      Two-dimensional static thermal solver in cylindrical geometry, based on finite-element method.
+
+      :contents: See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
+
+.. xml:tag:: <thermal solver="Static3D"> [Static3D]
+
+      Three-dimensional static thermal solver, based on finite-element method.
+
+      :contents: See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
+
+
+Electrical solvers
+------------------
+
+.. xml:tag:: <electrical solver="Shockley2D"> [Shockley2D]
+
+   Two-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
+
+   :contents:
+
+   .. xml:tag:: <geometry/> [in Shockley2D electrical solver]
+
+      Geometry for use by this solver.
+
+      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+
+   .. xml:tag:: <mesh/> [in Shockley2D electrical solver]
+
+      Mesh used by this solver.
+
+      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+
+   .. xml:tag:: <loop/> [in Shockley2D electrical solver]
+
+      Configuration of the self-consistent loop.
+
+      :attr maxerr: Maximum allowed error. (float [%])
+
+   .. xml:tag:: <matrix/> [in Shockley2D electrical solver]
+
+      Configuration of the matrix solver.
+
+      :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
+      :attr itererr: Allowed residual error for the iterative algorithm.
+      :attr iterlim: Maximum number of iterations for the iterative algorithm.
+      :attr logfreq: Frequency of logging iterative solver progress.
+      .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
+
+   .. xml:tag:: <junction/> [in Shockley2D electrical solver]
+
+      Configuration of the effective model of p-n junction.
+
+      :attr js: Reverse bias current density. (float :math:`[A/m^{2}]`)
+      :attr Shockley: Junction coefficient.
+      :attr pnjcond: Initial vertical conductivity of the junction. (float [S/m])
+      :attr heat: Method of determination of the heat generated in the junction. (``joules`` or ``wavelength``)
+      :attr wavelength: Emitted wavelength if ``heat`` is set to ``wavelength``.
+
+   .. xml:tag:: <contacts/> [in Shockley2D electrical solver]
+
+      Properties of the contacts.
+
+      :attr pcond: p-contact conductivity. (float [S/m])
+      :attr ncond: n-contact conductivity. (float [S/m])
+
+   .. xml:tag:: <voltage> [in Shockley2D electrical solver]
+
+      Boundary conditions: electric potential. See subsection :ref:`sec-Boundary-conditions`.
+
+.. xml:tag:: <electrical solver="ShockleyCyl"> [ShockleyCyl]
+
+      Two-dimensional phenomenological solver in cylindrical geometry, based on finite-element method.
+
+      :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
+
+.. xml:tag:: <electrical solver="Shockley3D"> [Shockley3D]
+
+      Three-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
+
+      :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
+
 
 
 .. rubric:: Footnotes
 .. [#XML-tutoruals] Good resources are http://www.w3.org/TR/REC-xml/, http://en.wikipedia.org/wiki/XML, and http://www.w3schools.com/xml/.
+.. [#different-boundary-conditions] In some cases where structure of boundary conditions description is different, it is shown in the reference of particular solver.
