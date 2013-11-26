@@ -1310,7 +1310,7 @@ Thermal solvers
       :attr itererr: Allowed residual error for the iterative algorithm.
       :attr iterlim: Maximum number of iterations for the iterative algorithm.
       :attr logfreq: Frequency of logging iterative solver progress.
-      .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
+.. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
 
    .. xml:tag:: <temperature> [in Static2D thermal solver]
 
@@ -1380,7 +1380,7 @@ Electrical solvers
       :attr itererr: Allowed residual error for the iterative algorithm.
       :attr iterlim: Maximum number of iterations for the iterative algorithm.
       :attr logfreq: Frequency of logging iterative solver progress.
-      .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
+.. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
 
    .. xml:tag:: <junction/> [in Shockley2D electrical solver]
 
@@ -1415,6 +1415,232 @@ Electrical solvers
 
       :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
 
+.. xml:tag:: <electrical solver="Diffusion2D"> [Diffusion2D]
+
+   Two-dimensional diffusion solver in Cartesian geometry.
+
+   :contents:
+
+   .. xml:tag:: <geometry/> [in Diffusion2D electrical solver]
+
+      Geometry for use by this solver.
+
+      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+
+   .. xml:tag:: <mesh/> [in Diffusion2D electrical solver]
+
+      One-dimensional horizontal initial mesh used by this solver.
+
+      :attr required start: Position of the first mesh point. (float [µm])
+      :attr required stop: Position of the last mesh point. (float [µm])
+      :attr required num: Number of the mesh points. (integer)
+
+   .. xml:tag:: <config/> [in Diffusion2D electrical solver]
+
+      :attr fem-method: Order of the finite-element method. (``linear`` or ``parabolic``)
+      :attr accuracy: Required relative accuracy. (float [%])
+      :attr abs-accuracy: Required absolute minimal concentration accuracy. (float :math:`[cm^{-3}]`)
+      :attr interpolation: Current density interpolation method name.
+      :attr maxiters: Maximum number of allowed iterations before attempting to refine mesh. (integer)
+      :attr maxrefines: Maximum number of allowed mesh refinements. (integer)
+
+.. xml:tag:: <electrical solver="DiffusionCyl"> [DiffusionCyl]
+
+      Two-dimensional diffusion solver in cylindrical geometry.
+
+      :contents: See :xml:tag:`<electrical solver="Diffusion2D"> [Diffusion2D]`.
+
+
+Gain solvers
+------------
+
+.. xml:tag:: <gain solver="Fermi2D"> [Fermi2D]
+
+   Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
+
+   :contents:
+
+   .. xml:tag:: <geometry/> [in Fermi2D gain solver]
+
+      Geometry for use by this solver.
+
+      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+
+   .. xml:tag:: <mesh/> [in Fermi2D gain solver]
+
+      Optional mesh used by this solver. If it is set then the gain is computed only in the mesh points and interpolated in-between. Otherwise, the full gain calculation is performed in each requested point.
+
+      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+
+   .. xml:tag:: <config/> [in Fermi2D gain solver]
+
+      Configuration of the self-consistent loop.
+
+      :attr lifetime: Carriers lifetime.
+      :attr matrix-elem: Value of the matrix element in gain computations (if not set it is estimated automatically).
+
+   .. xml:tag:: <levels/> [in Fermi2D gain solver]
+
+      Custom energy levels in quantum wells. If this tag is used all levels must be set.
+
+      :attr required le: Comma-separated list of electron levels.
+      :attr required hh: Comma-separated list of heavy hole levels.
+      :attr required lh: Comma-separated list of light hole levels.
+
+.. xml:tag:: <gain solver="FermiCyl"> [FermiCyl]
+
+   Simple gain solver based on Fermi Golden Rule for two-dimensional cylindrical geometry.
+
+   :contents: See :xml:tag:`<gain solver="Fermi2D"> [Fermi2D]`.
+
+
+Optical solvers
+---------------
+
+.. xml:tag:: <optical solver=”EffectiveIndex2D”> [EffectiveIndex2D]
+
+   Scalar optical solver based on effective index method.
+
+   .. xml:tag:: <geometry/> [in EffectiveIndex2D optical solver]
+
+      Geometry for use by this solver.
+
+      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+
+   .. xml:tag:: <mesh/> [in EffectiveIndex2D optical solver]
+
+      Mesh used by this solver.
+
+      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+
+   .. xml:tag:: <mode> [in EffectiveIndex2D optical solver]
+
+      Mode properties.
+
+      :attr polarization: Light polatization. (``TE`` or ``TM``)
+      :attr symmetry: Mode symmetry with respect to vertical symmetry axis (if present). (``none``, ``positive``, or ``negative``)
+      :attr wavelength: Light wavelength. (float [nm])
+
+   .. xml:tag:: <root> [in EffectiveIndex2D optical solver]
+
+      Parameters of the global root-finding algorithm.
+
+      :attr tolx: Tolerance on effective index. (float [-])
+      :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
+      :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
+      :attr maxstep: Maximum step in one iteration of root finding. (float [-])
+      :attr maxiter: Maximum number of root finding iterations. (integer)
+
+   .. xml:tag:: <stripe-root> [in EffectiveIndex2D optical solver]
+
+      Parameters of root-finding algorithm for one stripe.
+
+      It has same attributes as :xml:tag:`<root> [in EffectiveIndex2D optical solver]`.
+
+   .. xml:tag:: <mirrors> [in EffectiveIndex2D optical solver]
+
+      Mirror losses.
+
+      :attr required R1: Reflectivity of the first mirror. (float [-])
+      :attr required R2: Reflectivity of the second mirror. (float [-])
+
+   .. xml:tag:: <outer> [in EffectiveIndex2D optical solver]
+
+      Configuration of handling area outside of the computational domain.
+
+      :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
+
+.. xml:tag:: <optical solver=”EffectiveFrequencyCyl”> [EffectiveFrequencyCyl]
+
+   Scalar optical solver based on effective index method.
+
+   .. xml:tag:: <geometry/> [in EffectiveFrequencyCyl optical solver]
+
+      Geometry for use by this solver.
+
+      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+
+   .. xml:tag:: <mesh/> [in EffectiveFrequencyCyl optical solver]
+
+      Mesh used by this solver.
+
+      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+
+   .. xml:tag:: <mode> [in EffectiveFrequencyCyl optical solver]
+
+      Mode properties.
+
+      :attr lam0: Approximate wavelength. (float [nm])
+      :attr k0: Approximate normalized frequency. (float [1/µm])
+      :attr emission: Direction of emission, necessary for over-threshold power computations (``top`` or ``bottom``)
+      :attr vlam: "vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators (float [nm])
+
+      Attributes ``lam0`` and ``k0`` are mutually exclusive.
+
+   .. xml:tag:: <root> [in EffectiveFrequencyCyl optical solver]
+
+      Parameters of the global root-finding algorithm.
+
+      :attr tolx: Tolerance on effective index. (float [-])
+      :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
+      :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
+      :attr maxstep: Maximum step in one iteration of root finding. (float [-])
+      :attr maxiter: Maximum number of root finding iterations. (integer)
+
+   .. xml:tag:: <stripe-root> [in EffectiveFrequencyCyl optical solver]
+
+      Parameters of root-finding algorithm for one stripe.
+
+      It has same attributes as :xml:tag:`<root> [in EffectiveFrequencyCyl optical solver]`.
+
+   .. xml:tag:: <outer> [in EffectiveFrequencyCyl optical solver]
+
+      Configuration of handling area outside of the computational domain.
+
+      :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
+
+
+.. _sec-data-filters:
+
+Data filters
+------------
+
+
+.. _sec-connects:
+
+Section <connects>
+==================
+
+.. xml:tag:: <connects>
+
+The purpose of this section is to define the relations between solvers i.e. the connections of providers and receivers. There is only one type of tags allowed in this section:
+
+.. xml:tag:: <connect>
+
+   Connect provider to receiver.
+
+   :attr required out: Provider to connect in the format "solver_name.outProviderName".
+   :attr required in: Receiver to connect in the format "solver_name.inReceiverName". If *solver_name* is a :ref:`filter <sec-data-filters>`, this attribute should have form "solver_name[object]" or "solver_name[geometry@path]", where object (optionally specified by *path*) is the geometry in which the provider specified in ``out`` attribute provides data.
+
+
+
+.. _sec-script:
+
+Section <script>
+================
+
+This section contains only Python script that is run to do the computations. No attributes nor other XML tags inside this section are allowed, just the script. You must remember that, as in Python the text indentation matters, the first line of the script must begin in the first column (i. e. it cannot be indented in any way).
+
+In order to be able to easily use ``<`` and ``&`` characters in the script, it is recommended to put its content as XML CDATA element as in the following example:
+
+.. code-block:: xml
+
+   <script><![CDATA[
+
+   if 42 <= 6*9:
+       print_log(LOG_RESULT, "Life, the Universe and Everything!")
+
+   ]]></script>
 
 
 .. rubric:: Footnotes
