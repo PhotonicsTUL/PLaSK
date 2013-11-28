@@ -231,8 +231,6 @@ This section contains specification of custom materials that can be used togethe
       Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
       ``point`` — point in the Brillouin zone [-].
 
-   .. _Nf:
-   
    .. xml:tag:: <Nf>
    
       Free carrier concentration *N* [cm\ :sup:`-3`].
@@ -849,11 +847,13 @@ Copies and references to geometry objects
    .. xml:tag:: <delete/>
 
       Delete some item or sub-item of the copied object.
+      
       :attr required object: Name of the object to delete.
 
    .. xml:tag:: <replace/>
 
       Replace some item or sub-item of the copied object with some other named object specified anywhere earlier in the geometry.
+      
       :attr required object: Name of the object to delete.
       :attr with: Name of the object to replace with. This object does not need to be located in the subtree of the copied object.
       :contents: A new geometry object to replace the original one. Must be specified if and only if the with attribute is not provided.
@@ -861,6 +861,7 @@ Copies and references to geometry objects
    .. xml:tag:: <toblock/>
 
       Replace some item or sub-item of the copied object with uniform block that has dimensions exactly equal to the bounding box of the original element.
+      
       :attr required object: Name of the object to replace with the the solid block.
       :attr required material: Material of the solid block.
 

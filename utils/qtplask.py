@@ -285,6 +285,8 @@ class MainWindow(QtGui.QMainWindow):
         urls = data.urls()
         if (urls and urls[0].scheme() == 'file'):
             filepath = str(urls[0].path())
+            if os.name == 'nt':
+                filepath = filepath[1:]
             self.start_plask(filepath)
 
 

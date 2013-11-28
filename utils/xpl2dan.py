@@ -115,7 +115,7 @@ def write_dan(name, manager, geo, allm=True):
         lines = []
         if solver is not None:
             for i,(bound,value) in enumerate(eval("solver.%s_boundary" % name)):
-                points = [ solver.mesh[i] for i in bound(solver.mesh) ]
+                points = [ solver.mesh[i] for i in bound(solver.mesh, solver.geometry) ]
                 if points:
                     xx = [ p[0] for p in points ]
                     yy = [ p[1] for p in points ]
