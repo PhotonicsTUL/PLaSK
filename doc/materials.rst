@@ -1,4 +1,5 @@
 .. _sec-materials:
+
 ******************
 Managing Materials
 ******************

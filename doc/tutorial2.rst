@@ -26,7 +26,7 @@ Because of the axial symmetry of the device, the natural coordinate system used 
     <geometry>
       <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
       
-The empty ``<materials>`` section will be discussed and expanded later. Geometry of the type ``cylindrical2d`` means a set of axi-symmetrical disk created by rotating all two-dimensional objects around the vertical axis (*z* in this case). Its attributes top and bottom specify materials directly below and above the defined structure. ``outer="extend"`` tells PLaSK that all the outermost objects in the defined cylinder should be extended to infinity. This way we are able to simulate infinite lateral layers with only an oxide aperture located at the origin having some finite radius of 8µm. The objects outside of this aperture need to have some dimension defined, but it will be ignored as long as the outer radius of each layer is equal (we set it to 10µm).
+The empty :xml:tag:`<materials>` section will be discussed and expanded later. Geometry of the type :xml:tag:`cylindrical2d` means a set of axi-symmetrical disk created by rotating all two-dimensional objects around the vertical axis (*z* in this case). Its attributes top and bottom specify materials directly below and above the defined structure. ``outer="extend"`` tells PLaSK that all the outermost objects in the defined cylinder should be extended to infinity. This way we are able to simulate infinite lateral layers with only an oxide aperture located at the origin having some finite radius of 8µm. The objects outside of this aperture need to have some dimension defined, but it will be ignored as long as the outer radius of each layer is equal (we set it to 10µm).
 
 Again, the most convenient way of defining the geometry is creating the stack and specifying the consecutive layers starting from the top. First we need to define 24 pairs of identical quarter-wavelength layers of DBR. As doing it by hand would be a tedious task, we may create another stack (within the original one) and tell PLaSK to repeat its contents 24 times:
 
@@ -60,7 +60,7 @@ Next, according to Figure :ref:`fig-tutorial2-geometry` we complete the definiti
       </cylindrical2d>
     </geometry>
 
-Note that there are no materials named *active* and *inactive* in the materials database. We may define these materials ourselves and set its refractive index and absorption to some arbitrary value. This way PLaSK offers big flexibility in analysis of new systems, where, for example, some unknown materials parameters need to be fitted to the experimental data. This is what the mysterious ``<materials>`` section is used for. Please move back to this section and fill it with the following content:
+Note that there are no materials named *active* and *inactive* in the materials database. We may define these materials ourselves and set its refractive index and absorption to some arbitrary value. This way PLaSK offers big flexibility in analysis of new systems, where, for example, some unknown materials parameters need to be fitted to the experimental data. This is what the mysterious :xml:tag:`<materials>` section is used for. Please move back to this section and fill it with the following content:
 
 .. code-block:: xml
     
@@ -74,9 +74,9 @@ Note that there are no materials named *active* and *inactive* in the materials 
       </material>
     </materials>
 
-This defines two materials with names given in name attribute of the material tags. These tags must also have the second attribute which is either kind or base. The former one is used for creating completely new materials and specifies to which group it belongs. Allowed values are *"semiconductor"*, *"dielectric"*, *"oxide"*, *"metal"*, or *"liquid crystal"*. The in the following internal tags you have to specify all the material properties used in the simulation (see chapter :ref:`sec-Materials` for the complete list). In our case, we will perform only optical simulations, so the refractive index and the absorption are sufficient.
+This defines two materials with names given in name attribute of the material tags. These tags must also have the second attribute which is either ``kind`` or ``base``. The former one is used for creating completely new materials and specifies to which group it belongs. Allowed values are *"semiconductor"*, *"dielectric"*, *"oxide"*, *"metal"*, or *"liquid crystal"*. The in the following internal tags you have to specify all the material properties used in the simulation (see chapter :ref:`sec-Materials` for the complete list). In our case, we will perform only optical simulations, so the refractive index and the absorption are sufficient.
 
-The second defined material has the base attribute instead of kind. This tells PLaSK that we want to define the modification of the existing material. The base value must be a proper material specification, as used e.g. in the geometry section. In this case every undefined property, will be looked up in the base material. Hence, in this example, the *inactive* material will have exactly the same refractive index as the *active* one.
+The second defined material has the ``base`` attribute instead of ``kind``. This tells PLaSK that we want to define the modification of the existing material. The ``base`` value must be a proper material specification, as used e.g. in the geometry section. In this case every undefined property, will be looked up in the base material. Hence, in this example, the *inactive* material will have exactly the same refractive index as the *active* one.
 
 The whole XPL file with VCSEL geometry specification is presented in :ref:`Listing of tutorial2.xpl <lis-Listing-of-tutorial2.xpl>`.
 
@@ -121,7 +121,7 @@ The first line of this file is a Python command telling it to import the standar
     efm = optical.EffectiveFrequencyCyl("efm")
     efm.geometry = GEO.main
     
-This two commands are equivalent to the following definition in the ``<solvers>`` section of the XPL file:
+This two commands are equivalent to the following definition in the :xml:tag:`<solvers>` section of the XPL file:
 
 .. code-block:: xml
 

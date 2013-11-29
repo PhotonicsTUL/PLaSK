@@ -61,7 +61,7 @@ This section contains specification of custom materials that can be used togethe
 
    .. xml:tag:: <A>
 
-      Monomolecular recombination coefficient coefficient *A* [1/s].
+      Monomolecular recombination coefficient *A* [1/s].
 
       Variables: ``T`` — temperature [K].
 
@@ -139,7 +139,7 @@ This section contains specification of custom materials that can be used togethe
 
    .. xml:tag:: <cp>
 
-      Specific heat heat at constant pressure [J/(kg K)].
+      Specific heat at constant pressure [J/(kg K)].
 
       Variables: ``T`` — temperature [K].
 
