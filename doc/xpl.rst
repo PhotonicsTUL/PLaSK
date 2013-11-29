@@ -1,15 +1,23 @@
+.. _sec-XPL:
+
 ******************
 XPL File Reference
 ******************
 
 :term:`XPL` files follow :term:`XML` specification. Thus all the general rules of creating correct XML files apply top XPL ones as well. Please refer to the external documentation for information on XML syntax and grammar [#XML-tutoruals]_. Details specific to XPL are covered in this chapter.
 
-First of all each XML document must have a parent tag. In XPL files such tag is named ``<plask>``. Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: :xml:tag:`<defines>`, :xml:tag:`<materials>`, :xml:tag:`<geometry>`, :xml:tag:`<grids>`, :xml:tag:`<solvers>`, :xml:tag:`<connects>`, and :xml:tag:`<script>`. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
+First of all each XML document must have a parent tag. In XPL files such tag is named:
+
+.. xml:tag:: <plask>
+
+Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: :xml:tag:`<defines>`, :xml:tag:`<materials>`, :xml:tag:`<geometry>`, :xml:tag:`<grids>`, :xml:tag:`<solvers>`, :xml:tag:`<connects>`, and :xml:tag:`<script>`. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
 
 
 ``<plask>`` section can take an optional attribute ``loglevel``, which value is the name of any valid log level. Any log message with its priority lower than the specified value will not be printed by the logging system. The default value is ``"detail"``.
 Instead of the section content, it is possible to use it as a single tag with the attribute ``external``, which has a name of some XPL file as its value. In such a case, the content of the relevant section is read from this external file.
 
+
+.. _sec-XPL-defines:
 
 Section <defines>
 =================
@@ -23,6 +31,8 @@ This section allows to define some constant parameters (that can be later overri
    :attr required name: Name of the parameter (each name must be unique).
    :attr required value: Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.
 
+
+.. _sec-XPL-materials:
 
 Section <materials>
 ===================
@@ -283,6 +293,7 @@ This section contains specification of custom materials that can be used togethe
       ``hole`` — hole type (``'H'`` or ``'L'``) [-].
 
 
+.. _sec-XPL-geometry:
 
 Section <geometry>
 ==================
@@ -866,7 +877,7 @@ Copies and references to geometry objects
       :attr required material: Material of the solid block.
 
 
-.. _sec-grids:
+.. _sec-XPL-grids:
 
 Section <grids>
 ===============
@@ -1213,7 +1224,7 @@ Possible <generator> contents for different types and methods
    Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
 
 
-.. _sec-solvers:
+.. _sec-XPL-solvers:
 
 Section <solvers>
 =================
@@ -1235,7 +1246,7 @@ The computational solvers are declared with an XML tag, which name is the catego
    :contents: The contents of each solver depends on the category and the solver type (i.e. the tag name and the value of the solver attribute). It is specified in the following subsections.
 
 
-.. _sec-Boundary-conditions:
+.. _sec-XPL-Boundary-conditions:
 
 Boundary conditions
 -------------------
@@ -1315,21 +1326,21 @@ Thermal solvers
 
    .. xml:tag:: <temperature> [in Static2D thermal solver]
 
-      Boundary conditions: constant temperature. See subsection :ref:`sec-Boundary-conditions`.
+      Boundary conditions: constant temperature. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
    .. xml:tag:: <heatflux> [in Static2D thermal solver]
 
-      Boundary conditions: constant heat flux. See subsection :ref:`sec-Boundary-conditions`.
+      Boundary conditions: constant heat flux. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
    .. xml:tag:: <convection> [in Static2D thermal solver]
 
-      Boundary conditions: convection. See subsection :ref:`sec-Boundary-conditions`.
+      Boundary conditions: convection. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
       This boundary condition does not have ``value`` attribute. Use ``coeff`` for convection coefficient and ``ambient`` for ambient temperature instead.
 
    .. xml:tag:: <radiation> [in Static2D thermal solver]
 
-      Boundary conditions: radiation. See subsection :ref:`sec-Boundary-conditions`.
+      Boundary conditions: radiation. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
       This boundary condition does not have ``value`` attribute. Use ``emissivity`` for surface emissivity and ``ambient`` for ambient temperature instead.
 
@@ -1402,7 +1413,7 @@ Electrical solvers
 
    .. xml:tag:: <voltage> [in Shockley2D electrical solver]
 
-      Boundary conditions: electric potential. See subsection :ref:`sec-Boundary-conditions`.
+      Boundary conditions: electric potential. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
 .. xml:tag:: <electrical solver="ShockleyCyl"> [ShockleyCyl]
 
@@ -1607,7 +1618,7 @@ Data filters
 ------------
 
 
-.. _sec-connects:
+.. _sec-XPL-connects:
 
 Section <connects>
 ==================
@@ -1625,10 +1636,12 @@ The purpose of this section is to define the relations between solvers i.e. the 
 
 
 
-.. _sec-script:
+.. _sec-XPL-script:
 
 Section <script>
 ================
+
+.. xml:tag:: <script>
 
 This section contains only Python script that is run to do the computations. No attributes nor other XML tags inside this section are allowed, just the script. You must remember that, as in Python the text indentation matters, the first line of the script must begin in the first column (i. e. it cannot be indented in any way).
 
