@@ -2,7 +2,7 @@
 
 Optical analysis of a step-profile VCSEL
 ----------------------------------------
-   
+
 Analyzed structure
 ^^^^^^^^^^^^^^^^^^
 
@@ -19,13 +19,13 @@ Because of the axial symmetry of the device, the natural coordinate system used 
 .. code-block:: xml
 
     <plask>
-    
+
     <materials>
     </materials>
-    
+
     <geometry>
       <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
-      
+
 The empty :xml:tag:`<materials>` section will be discussed and expanded later. Geometry of the type :xml:tag:`cylindrical2d` means a set of axi-symmetrical disk created by rotating all two-dimensional objects around the vertical axis (*z* in this case). Its attributes top and bottom specify materials directly below and above the defined structure. ``outer="extend"`` tells PLaSK that all the outermost objects in the defined cylinder should be extended to infinity. This way we are able to simulate infinite lateral layers with only an oxide aperture located at the origin having some finite radius of 8µm. The objects outside of this aperture need to have some dimension defined, but it will be ignored as long as the outer radius of each layer is equal (we set it to 10µm).
 
 Again, the most convenient way of defining the geometry is creating the stack and specifying the consecutive layers starting from the top. First we need to define 24 pairs of identical quarter-wavelength layers of DBR. As doing it by hand would be a tedious task, we may create another stack (within the original one) and tell PLaSK to repeat its contents 24 times:
@@ -37,7 +37,7 @@ Again, the most convenient way of defining the geometry is creating the stack an
             <block dr="10" dz="###" material="GaAs"/>
             <block dr="10" dz="###" material="Al(0.##)GaAs/>
           </stack>
-          
+
 Next, according to Figure :ref:`fig-tutorial2-geometry` we complete the definition of the geometry by specifying the cavity with the oxide and the active region, followed by the bottom DBR.
 
 .. code-block:: xml
@@ -63,7 +63,7 @@ Next, according to Figure :ref:`fig-tutorial2-geometry` we complete the definiti
 Note that there are no materials named *active* and *inactive* in the materials database. We may define these materials ourselves and set its refractive index and absorption to some arbitrary value. This way PLaSK offers big flexibility in analysis of new systems, where, for example, some unknown materials parameters need to be fitted to the experimental data. This is what the mysterious :xml:tag:`<materials>` section is used for. Please move back to this section and fill it with the following content:
 
 .. code-block:: xml
-    
+
     <materials>
       <material name="active" kind="semiconductor">
         <nr>3.6</nr>
@@ -86,7 +86,7 @@ The whole XPL file with VCSEL geometry specification is presented in :ref:`Listi
     .. code-block:: xml
 
         <plask>
-        
+
         <materials>
           <material name="active" kind="semiconductor">
             <nr>3.6</nr>
@@ -96,7 +96,7 @@ The whole XPL file with VCSEL geometry specification is presented in :ref:`Listi
             <absp>1000.</absp>
           </material>
         </materials>
-        
+
         <geometry>
           <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
           </cylindrical2d>
@@ -120,7 +120,7 @@ The first line of this file is a Python command telling it to import the standar
 
     efm = optical.EffectiveFrequencyCyl("efm")
     efm.geometry = GEO.main
-    
+
 This two commands are equivalent to the following definition in the :xml:tag:`<solvers>` section of the XPL file:
 
 .. code-block:: xml
@@ -128,7 +128,7 @@ This two commands are equivalent to the following definition in the :xml:tag:`<s
     <optical solver="EffectiveFrequencyCyl" name="efm">
       <geometry ref="main"/>
     </optical>
-    
+
 Mind that, while defining a solver in the Python script, we should put its name (``"efm"`` in this case) as an argument of the solver constructor. It does not need to match the variable name, but it is a good idea to keep them consistent. Otherwise any logs and error messages might be hard to read.
 
 The next line assigns the geometry named ``"main"`` present in the XPL file to the solver. This time we refer to it trough attribute access of the global dictionary ``GEO``, which is simply a shorter form of ``GEO["main"]`` [#hyphens-in-py]_. Naturally, we have assumed here that the XPL file has the geometry *"main"* defined. Luckily this is the case with our file :file:`tutorial2.xpl`.
@@ -137,9 +137,9 @@ Effective frequency solver does not need to have a mesh defined, as it will come
 
     profile = StepProfile(GEO.main)
     profile[GEO.gain_region] = 500.
-    
+
     efm.inGain = ProviderForGain(profile)
-    
+
 The first line of the above snippet creates the ``profile`` object. ``StepProfile`` class takes a geometry in which the profile is defined as an argument. In the next line, we specify that there is a step gain of :math:`500 cm^{-1}` (default units for the gain in PLaSK) at the object named gain-region in the XPL file (``-`` in names is replaced with ``_`` when using the attribute access to geometry objects). Finally we create the temporary custom gain provider and connect it to the ``efm.inGain`` receiver.
 
 Now we can perform the computations. First we set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) and then we look for the mode with the wavelength closest to 981nm, storing the result in the variable lam and then writing it to the log.
@@ -166,15 +166,15 @@ In this case the string ``tutorial2.xpl`` is the program argument that will be r
         import sys
         filename = sys.argv[1]
         loadxpl(filename)
-        
+
         efm = optical.EffectiveFrequencyCyl("efm")
         efm.geometry = GEO.main
-        
+
         profile = StepProfile(GEO.main)
         profile[GEO.gain_region] = 500.
-        
+
         efm.inGain = ProviderForGain(profile)
-        
+
         efm.lam0 = 980.
         lam = efm.compute(981.)
         print_log(LOG_INFO, "Found resonant wavelength " + str(lam))

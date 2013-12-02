@@ -467,7 +467,7 @@ class PlaskThread(QtCore.QThread):
         self.proc.terminate()
 
 if __name__ == "__main__":
-    
+
     try:
         winsparkle = ctypes.CDLL('WinSparkle.dll')
     except OSError:
@@ -483,7 +483,7 @@ if __name__ == "__main__":
         winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
         winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
         winsparkle.win_sparkle_init()
-    
+
     try:
         fname = sys.argv[1]
     except IndexError:
