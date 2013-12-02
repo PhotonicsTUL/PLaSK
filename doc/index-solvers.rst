@@ -9,6 +9,7 @@ Electrical model
 ================
 
 .. _sec-Solver-electrical-beta:
+
 Phenomenological junction :math:`\beta` model
 =============================================
 

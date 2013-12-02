@@ -1231,7 +1231,7 @@ Section <solvers>
 
 .. xml:tag:: <solvers>
 
-In this section used computational solvers are defined and configured. Also here, the data filters are set-up, as in general, they are only special kinds of solvers. Each XML element in this section correspond to separate solver. The content of such element depends strongly on particular solver, while its name and attributes are standard (although there are differences in attributes of strict computational solvers and data filters). The details of XML content of this section is presented below.
+In this section used computational solvers are defined and configured. Also here, the :ref:`data filters <sec-data-filters>` are set-up, as in general, they are only special kinds of solvers. Each XML element in this section correspond to separate solver. The content of such element depends strongly on particular solver, while its name and attributes are standard (although there are differences in attributes of strict computational solvers and :ref:`data filters <sec-data-filters>`). The details of XML content of this section is presented below.
 
 The computational solvers are declared with an XML tag, which name is the category of the solver, e.g. *thermal*, *electrical*, *gain*, or *optical* and that has the standard set of attributes:
 
@@ -1617,6 +1617,20 @@ Optical solvers
 Data filters
 ------------
 
+.. xml:tag:: <filter/>
+
+   Filter is a special kind of solver which "solves" the problem using another solvers.
+
+   It calculates its output using input of similar type and changing it in some way,
+   for example translating it from one space to another (2D -> 3D, 3D -> 2D, etc.).
+
+   Typically filter has one or more inputs and one output (output provider, named ``out``).
+
+   :attr required name: Solver (filter) name. In Python script there is a automatically created solver object with such name. (identifier string)
+   :attr required for: name of property type that this filter will pass (``out`` will provide data of this type), e.g.: ``temperature``.
+   :attr required geometry: Name of the geometry defined in the :xml:tag:`<geometry>` section. Filter will provide data in coordinates of given geometry.
+
+   Some information about connecting filters with solvers are in :xml:tag:`connects` sections.
 
 .. _sec-XPL-connects:
 
@@ -1631,7 +1645,7 @@ The purpose of this section is to define the relations between solvers i.e. the 
 
    Connect provider to receiver.
 
-   :attr required out: Provider to connect in the format "solver_name.outProviderName".
+   :attr required out: Provider to connect in the format "solver_name.outProviderName" (or "filter_name.out").
    :attr required in: Receiver to connect in the format "solver_name.inReceiverName". If *solver_name* is a :ref:`filter <sec-data-filters>`, this attribute should have form "solver_name[object]" or "solver_name[geometry@path]", where object (optionally specified by *path*) is the geometry in which the provider specified in ``out`` attribute provides data.
 
 
