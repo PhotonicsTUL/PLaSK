@@ -22,14 +22,16 @@ AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, d
         else ND = mGaAs_Si.Dop()*fx1B;
     }
     else {
-        if (Al < 0.35) Nf_RT = mGaAs_Si.Nf(300.)*fx1A;
-        else Nf_RT = mGaAs_Si.Nf(300.)*fx1B;
         ND = Val;
+        double Nf_GaAs_Si_RT = ND; // = 1.00*ND
+        if (Al < 0.35) Nf_RT = Nf_GaAs_Si_RT*fx1A;
+        else Nf_RT = Nf_GaAs_Si_RT*fx1B;
     }
+    double mob_GaAs_Si_RT = 6600e-4/(1+pow((Nf_RT/5e17),0.53));
     double fx2A = exp(-16.*Al*Al); // x < 0.5
     double fx2B = 0.054*Al-0.009; // else
-    if (Al < 0.5) mob_RT = mGaAs_Si.mob(300.).c00 * fx2A;
-    else mob_RT = mGaAs_Si.mob(300.).c00 * fx2B;
+    if (Al < 0.5) mob_RT = mob_GaAs_Si_RT * fx2A;
+    else mob_RT = mob_GaAs_Si_RT * fx2B;
 }
 
 MI_PROPERTY(AlGaAs_Si, mob,
@@ -37,7 +39,8 @@ MI_PROPERTY(AlGaAs_Si, mob,
             MISource("based on Si-doped GaAs")
             )
 Tensor2<double> AlGaAs_Si::mob(double T) const {
-    return ( Tensor2<double>(mob_RT, mob_RT) );
+    double mob_T = mob_RT * pow(300./T,1.4);
+    return ( Tensor2<double>(mob_T, mob_T) );
 }
 
 MI_PROPERTY(AlGaAs_Si, Nf,

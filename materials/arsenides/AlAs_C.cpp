@@ -31,7 +31,8 @@ MI_PROPERTY(AlAs_C, mob,
             MIComment("TODO")
             )
 Tensor2<double> AlAs_C::mob(double T) const {
-    return ( Tensor2<double>(mob_RT,mob_RT) );
+    double mob_T = mob_RT * pow(300./T,1.25);
+    return ( Tensor2<double>(mob_T,mob_T) );
 }
 
 MI_PROPERTY(AlAs_C, Nf,

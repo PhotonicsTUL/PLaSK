@@ -14,18 +14,18 @@ MI_PARENT(AlGaAs_C, AlGaAs)
 
 AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAs(Comp), mGaAs_C(Type,Val), mAlAs_C(Type,Val)
 {
-    //double act_GaAs = 0.92;
-    //double fx1 = 1.;
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
         NA = mGaAs_C.Dop(); // mGaAs_C.Dop()*fx1;
     }
     else {
-        Nf_RT = mGaAs_C.Nf(300.); // mGaAs_C.Nf(300.)*fx1;
         NA = Val;
+        //double Nf_GaAs_C_RT = 0.92*NA; do not delete this!
+        Nf_RT = 0.92*NA/*Nf_GaAs_C_RT*/; // fx1 = 1
     }
-    double fx2 = 0.66 / (1. + pow(Al/0.21,3.)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.)) + 0.34;
-    mob_RT = mGaAs_C.mob(300.).c00 * fx2;
+    double mob_GaAs_C_RT = 530e-4/(1+pow((Nf_RT/1e17),0.30));
+    double fx = 0.66 / (1. + pow(Al/0.21,3.0)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.0)) + 0.34;
+    mob_RT = mob_GaAs_C_RT * fx;
 }
 
 MI_PROPERTY(AlGaAs_C, mob,
@@ -33,7 +33,8 @@ MI_PROPERTY(AlGaAs_C, mob,
             MISource("based on C-doped GaAs")
             )
 Tensor2<double> AlGaAs_C::mob(double T) const {
-    return ( Tensor2<double>(mob_RT, mob_RT) );
+    double mob_T = mob_RT * pow(300./T,1.25);
+    return ( Tensor2<double>(mob_T, mob_T) );
 }
 
 MI_PROPERTY(AlGaAs_C, Nf,
