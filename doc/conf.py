@@ -11,7 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys, os, re   #re for processing signatures
 
 sys.path.append(os.environ['CMAKE_CURRENT_BINARY_DIR'])
 sys.path.insert(0, os.path.abspath('./_libs'))
@@ -249,3 +249,16 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+
+# -- Autodoc output impovments ---------------------------------------------------
+# http://sphinx-doc.org/ext/autodoc.html
+
+def fix_signature(app, what, name, obj, options, signature, return_annotation):
+   if not signature or what != 'method': return (signature, return_annotation)
+   signature = re.sub(r'\((\w*?)\)', r'\1 ', signature)
+   return (signature, return_annotation)
+
+def setup(app):
+   app.connect('autodoc-process-signature', fix_signature)
+

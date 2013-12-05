@@ -1,12 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.domains.rst
-    ~~~~~~~~~~~~~~~~~~
+   Sphinx XML domain
+   ~~~~~~~~~~~~~~~~~
 
-    The reStructuredText domain.
+   Simple sphinx XML domain.
 
-    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
-    :license: BSD, see LICENSE for details.
+   It provides xml:tag directive and role (for reference), that get arguments in form::
+
+      XML_TAG EXTRA [CONTEXT]
+
+   - ``XML_TAG`` is required and it is a one word ``TAG`` or has form ``<TAG ...>``.
+     ``TAG`` is a tag name that together with ``[CONTEXT]`` allow to reference and is putted in index in form: TAG [CONTEXT]
+     ``XML_TAG`` is printed in unchanged form.
+   - ``EXTRA`` is optional string printed in unchanged form
+   - ``[CONTEXT]`` is optional, printed only in index and used for reference,
+     it is useful if you have to document two or more tags with the same name
+
+   In xml:tag directive description, ``attribute`` (``attr``) and ``contents`` (``content``) can be used.
+
+   :copyright: Copyright 2013 by the Piotr Beling.
+   :license: BSD, see LICENSE for details.
 """
 
 import re
@@ -19,6 +32,8 @@ from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.util.docfields import TypedField, Field
 
+# hold parsed version of string: XML_TAG EXTRA [CONTEXT]
+# name = TAG, displ_name = XML_TAG. desc = EXTRA, context = [CONTEXT]
 class ParsedName:
    def __init__(self, name, displ_name, desc, context):
       self.name = name              # raw tag name
@@ -126,12 +141,6 @@ class XMLRefRole(XRefRole):
       target = p.ref_target()
       if has_explicit_title: return title, target
       return p.displ_name_with_desc(), target
-
-#class ReSTRole(ReSTMarkup):
-#    def handle_signature(self, sig, signode):
-#        signode += addnodes.desc_name(':%s:' % sig, ':%s:' % sig)
-#        return sig
-
 
 class XMLDomain(Domain):
     """XML domain."""
