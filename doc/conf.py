@@ -254,11 +254,27 @@ texinfo_documents = [
 # -- Autodoc output impovments ---------------------------------------------------
 # http://sphinx-doc.org/ext/autodoc.html
 
-def fix_signature(app, what, name, obj, options, signature, return_annotation):
-   if not signature or what != 'method': return (signature, return_annotation)
+def fix_signature(signature):
+   # remove first argument, which is self named as arg1:
+   signature = re.sub(r'\( \(\w*?\)arg1(, )?', r'( ', signature) # remove "(sth)arg1" and "(sth)arg1, "
+   # change: (type)var -> type var:
    signature = re.sub(r'\((\w*?)\)', r'\1 ', signature)
-   return (signature, return_annotation)
+   return signature
+
+def process_signature(app, what, name, obj, options, signature, return_annotation):
+   if not signature or what != 'method': return (signature, return_annotation)
+   return (fix_signature(signature), return_annotation)
+
+looks_like_signature_pattern = re.compile(r"\w*\(.*\) -> \w* :$")
+
+def process_docstr(app, what, name, obj, options, lines):
+   if not lines or what != 'method': return
+   for index, l in enumerate(lines):
+      if looks_like_signature_pattern.match(l):
+         l = fix_signature(l)
+         lines[index] = re.sub(r'(\w*)\(', r'**\1**\ (', l, 1)
 
 def setup(app):
-   app.connect('autodoc-process-signature', fix_signature)
+   app.connect('autodoc-process-docstring', process_docstr)
+   app.connect('autodoc-process-signature', process_signature)
 
