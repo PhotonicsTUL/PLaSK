@@ -112,7 +112,7 @@ struct RegisterBoundaryConditions {
     {
         if (py::converter::registry::lookup(py::type_id<BoundaryConditionsT>()).m_class_object == nullptr) {
 
-            py::class_<BoundaryConditionsT, boost::noncopyable> bc("BoundaryConditions"); bc
+            py::class_<BoundaryConditionsT, boost::noncopyable> bc("BoundaryConditions", "Set of boundary conditions."); bc
                 .def("__getitem__", &__getitem__, py::return_value_policy<py::reference_existing_object>())
                 .def("__setitem__", &__setitem__1)
                 .def("__setitem__", &__setitem__2)
