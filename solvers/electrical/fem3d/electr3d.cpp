@@ -199,7 +199,7 @@ void FiniteElementMethodElectrical3DSolver::loadConductivity()
 
         auto roles = geometry->getRolesAt(midpoint);
         if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-            size_t n = std::upper_bound(acthi.begin(), acthi.end(), mesh->index2(i)) - acthi.begin();
+            size_t n = std::upper_bound(acthi.begin(), acthi.end(), e.getIndex2()) - acthi.begin();
             assert(n < acthi.size());
             conds[i] = Tensor2<double>(0., junction_conductivity[(n * (mesh->axis1.size()-1) + e.getIndex1()) * (mesh->axis0.size()-1) + e.getIndex0()]);
         } else if (roles.find("p-contact") != roles.end()) {
@@ -438,7 +438,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
         }
         mcur = sqrt(mcur);
         err = 100. * sqrt(err) / mcur;
-        
+
         if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
 
         ++loopno;

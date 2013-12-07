@@ -356,7 +356,7 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 
         auto roles = this->geometry->getRolesAt(midpoint);
         if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-            size_t n = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(i)) - acthi.begin();
+            size_t n = std::upper_bound(acthi.begin(), acthi.end(), e.getIndex1()) - acthi.begin();
             assert(n < acthi.size());
             conds[i] = Tensor2<double>(0., junction_conductivity[n * (this->mesh->axis0.size()-1) + e.getIndex0()]);
         } else if (roles.find("p-contact") != roles.end()) {
@@ -413,7 +413,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
     bool noactive = (actd.size() == 0);
     double minj = 100e-7 * js; // assume no significant heating below this current
-    
+
     do {
         setMatrix(A, potentials, vconst);    // corr holds RHS now
         solveMatrix(A, potentials);
@@ -441,7 +441,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
         }
         mcur = sqrt(mcur);
         err = 100. * sqrt(err) / mcur;
-        
+
         if ((loop != 0 || mcur >= minj) && err > toterr) toterr = err;
 
         ++loopno;

@@ -1,4 +1,5 @@
 .. _sec-Introduction:
+
 ************
 Introduction
 ************
@@ -29,7 +30,7 @@ Run the following commands:
 	  cmake cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev \
 	  liblapacke-dev libfftw3-dev python python-numpy python-scipy \
 	  python-matplotlib python-h5py python-pyside ipython libqt4-dev
-	$ cd Your/choosen/directory/for/project
+	$ cd your/choosen/directory/for/project
 	$ svn checkout https://phys.p.lodz.pl/svn/plask/trunk .
 	$ mkdir build
 	$ cd build

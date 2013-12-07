@@ -27,10 +27,10 @@ class Shockley3D_Test(unittest.TestCase):
         space = geometry.Cartesian3D(stack)
         self.solver = Shockley3D("electrical3d")
         self.solver.geometry = space
-        self.solver.mesh = mesh.Rectilinear3D.DivideGenerator(prediv=(2,2,1), gradual=False)
+        self.solver.mesh = mesh.Rectilinear3D.DivideGenerator(prediv=(2,2,2), gradual=False)
         self.solver.beta = 10.
         self.solver.js = 1.
-        self.solver.maxerr = 1e-3
+        self.solver.maxerr = 1e-5
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
 
