@@ -12,9 +12,9 @@ First of all each XML document must have a parent tag. In XPL files such tag is 
 
 Thus, the all information in the data file are content of this tag and have to be located between ``<plask>`` and ``</plask>`` tags. Inside there are several sections that can be included in the XPL file: :xml:tag:`<defines>`, :xml:tag:`<materials>`, :xml:tag:`<geometry>`, :xml:tag:`<grids>`, :xml:tag:`<solvers>`, :xml:tag:`<connects>`, and :xml:tag:`<script>`. Each of them is optional, however, if present, they must be specified in the order shown in the previous sentence. Formal specification of each section is presented below.
 
+Instead of the section content, it is possible to use it as a single tag with the attribute ``external``, which has a name of some XPL file as its value. In such a case, the content of the relevant section is read from this external file.
 
 ``<plask>`` section can take an optional attribute ``loglevel``, which value is the name of any valid log level. Any log message with its priority lower than the specified value will not be printed by the logging system. The default value is ``"detail"``.
-Instead of the section content, it is possible to use it as a single tag with the attribute ``external``, which has a name of some XPL file as its value. In such a case, the content of the relevant section is read from this external file.
 
 
 .. _sec-XPL-defines:
@@ -242,7 +242,7 @@ This section contains specification of custom materials that can be used togethe
       ``point`` — point in the Brillouin zone [-].
 
    .. xml:tag:: <Nf>
-   
+
       Free carrier concentration *N* [cm\ :sup:`-3`].
 
       Variables: ``T`` — temperature [K].
@@ -394,7 +394,7 @@ Containers
 
    :Contents:
 
-   The content of this element can any number of other two-dimensional geometry *object* or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+   The content of this element can any number of other two-dimensional geometry *object* or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom.
 
    *object*
 
@@ -451,17 +451,17 @@ Containers
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
 
    :Contents:
-   
+
    The content of this element can any number of other two-dimensional geometry object which are organized horizontally adjacent to each other, starting from the left.
 
    *object*
 
      :ref:`Two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`.
-     
+
    .. xml:tag:: <gap/> [in <shelf2D>]
-   
+
       Horizontal gap between two objects. The size of the gap can be specified either as the absolute value in µm or as the total horizontal size of the shelf.
-   
+
      :attr size: Size of the gap. (float [µm])
      :attr total: Total size of the shelf. The gap will adjust automatically. (float [µm])
 
@@ -476,7 +476,7 @@ Containers
    Corresponding Python classes: :py:class:`plask.geometry.SingleStack2D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack2D` (if ``repeat``\ >1).
 
    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
-   
+
    :attr name: Object name for further reference.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
@@ -490,8 +490,8 @@ Containers
    Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center`` and **{X}** are mutually exclusive. Default alignment is ``left="0"``.
 
    :Contents:
-   
-   The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+
+   The content of this element can any number of other two-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom.
 
    *object*
 
@@ -678,7 +678,7 @@ Containers are objects that contain multiple other geometry objects as their ite
    Corresponding Python classes: :py:class:`plask.geometry.SingleStack3D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack3D` (if ``repeat``\ >1).
 
    Stack organizing its elements on top of the other. Horizontal alignments of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
-   
+
    :attr name: Object name for further reference.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
@@ -697,8 +697,8 @@ Containers are objects that contain multiple other geometry objects as their ite
    Attributes ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**, are mutually exclusive. Default alignment is ``left="0"`` and ``back="0"``.
 
    :Contents:
-   
-   The content of this element can any number of other three-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom. 
+
+   The content of this element can any number of other three-dimensional geometry object or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom.
 
    *object*
 
@@ -858,13 +858,13 @@ Copies and references to geometry objects
    .. xml:tag:: <delete/>
 
       Delete some item or sub-item of the copied object.
-      
+
       :attr required object: Name of the object to delete.
 
    .. xml:tag:: <replace/>
 
       Replace some item or sub-item of the copied object with some other named object specified anywhere earlier in the geometry.
-      
+
       :attr required object: Name of the object to delete.
       :attr with: Name of the object to replace with. This object does not need to be located in the subtree of the copied object.
       :contents: A new geometry object to replace the original one. Must be specified if and only if the with attribute is not provided.
@@ -872,7 +872,7 @@ Copies and references to geometry objects
    .. xml:tag:: <toblock/>
 
       Replace some item or sub-item of the copied object with uniform block that has dimensions exactly equal to the bounding box of the original element.
-      
+
       :attr required object: Name of the object to replace with the the solid block.
       :attr required material: Material of the solid block.
 

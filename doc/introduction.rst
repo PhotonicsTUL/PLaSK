@@ -21,7 +21,9 @@ Linux systems
 
 DEB based distros (Debian, Ubuntu, Mint, etc.)
 """"""""""""""""""""""""""""""""""""""""""""""
-Run the following commands::
+Run the following commands:
+
+.. code-block:: bash
 
 	$ sudo apt-get install g++ libboost-all-dev libexpat1-dev subversion \
 	  cmake cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev \
