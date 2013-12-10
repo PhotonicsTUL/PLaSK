@@ -256,9 +256,11 @@ texinfo_documents = [
 
 def fix_signature(signature):
    # remove first argument, which is self named as arg1:
-   signature = re.sub(r'\( \(\w*?\)arg1(, )?', r'( ', signature) # remove "(sth)arg1" and "(sth)arg1, "
+   signature = re.sub(r'\( \(\w*?\)arg1(, )?', r'(', signature) # remove "(sth)arg1" and "(sth)arg1, "
    # change: (type)var -> type var:
    signature = re.sub(r'\((\w*?)\)', r'\1 ', signature)
+   # remove all "_plask." prefixes, _plask module is loaded by default in plask
+   signature = re.sub(r'_plask\.', r'', signature)
    return signature
 
 def process_signature(app, what, name, obj, options, signature, return_annotation):

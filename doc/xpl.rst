@@ -1291,6 +1291,8 @@ Thermal solvers
 
 .. xml:tag:: <thermal solver="Static2D"> [Static2D]
 
+   Corresponding Python class: :py:class:`thermal.fem.Static2D`.
+
    Two-dimensional static thermal solver in Cartesian geometry, based on finite-element method.
 
    :contents:
@@ -1346,11 +1348,15 @@ Thermal solvers
 
 .. xml:tag:: <thermal solver="StaticCyl"> [StaticCyl]
 
+      Corresponding Python class: :py:class:`thermal.fem.StaticCyl`.
+
       Two-dimensional static thermal solver in cylindrical geometry, based on finite-element method.
 
       :contents: See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
 
 .. xml:tag:: <thermal solver="Static3D"> [Static3D]
+
+      Corresponding Python class: :py:class:`thermal.fem3d.Static3D`.
 
       Three-dimensional static thermal solver, based on finite-element method.
 
@@ -1361,6 +1367,8 @@ Electrical solvers
 ------------------
 
 .. xml:tag:: <electrical solver="Shockley2D"> [Shockley2D]
+
+   Corresponding Python class: :py:class:`electrical.fem.Shockley2D`.
 
    Two-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
 
@@ -1417,17 +1425,23 @@ Electrical solvers
 
 .. xml:tag:: <electrical solver="ShockleyCyl"> [ShockleyCyl]
 
+      Corresponding Python class: :py:class:`electrical.fem.ShockleyCyl`.
+
       Two-dimensional phenomenological solver in cylindrical geometry, based on finite-element method.
 
       :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
 
 .. xml:tag:: <electrical solver="Shockley3D"> [Shockley3D]
 
+      Corresponding Python class: :py:class:`electrical.fem3d.Shockley3D`.
+
       Three-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
 
       :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
 
 .. xml:tag:: <electrical solver="Diffusion2D"> [Diffusion2D]
+
+   Corresponding Python class: :py:class:`electrical.diffusion.Diffusion2D`.
 
    Two-dimensional diffusion solver in Cartesian geometry.
 
@@ -1458,6 +1472,8 @@ Electrical solvers
 
 .. xml:tag:: <electrical solver="DiffusionCyl"> [DiffusionCyl]
 
+      Corresponding Python class: :py:class:`electrical.diffusion.DiffusionCyl`.
+
       Two-dimensional diffusion solver in cylindrical geometry.
 
       :contents: See :xml:tag:`<electrical solver="Diffusion2D"> [Diffusion2D]`.
@@ -1467,6 +1483,8 @@ Gain solvers
 ------------
 
 .. xml:tag:: <gain solver="Fermi2D"> [Fermi2D]
+
+   Corresponding Python class: :py:class:`gain.simple.Fermi2D`.
 
    Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
 
@@ -1501,6 +1519,8 @@ Gain solvers
 
 .. xml:tag:: <gain solver="FermiCyl"> [FermiCyl]
 
+   Corresponding Python class: :py:class:`gain.simple.FermiCyl`.
+
    Simple gain solver based on Fermi Golden Rule for two-dimensional cylindrical geometry.
 
    :contents: See :xml:tag:`<gain solver="Fermi2D"> [Fermi2D]`.
@@ -1510,6 +1530,8 @@ Optical solvers
 ---------------
 
 .. xml:tag:: <optical solver=”EffectiveIndex2D”> [EffectiveIndex2D]
+
+   Corresponding Python class: :py:class:`optical.effective.EffectiveIndex2D`.
 
    Scalar optical solver based on effective index method.
 
@@ -1563,6 +1585,8 @@ Optical solvers
       :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
 
 .. xml:tag:: <optical solver=”EffectiveFrequencyCyl”> [EffectiveFrequencyCyl]
+
+   Corresponding Python class: :py:class:`optical.effective.EffectiveFrequencyCyl`.
 
    Scalar optical solver based on effective index method.
 
