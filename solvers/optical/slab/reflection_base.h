@@ -38,7 +38,8 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     bool allP;                                  ///< do we need to keep all the P matrices?
 
     bool fields_determined;                     ///< Are the diagonalized fields determined for all layers?
-
+    std::vector<LayerFields> fields;            ///< Vector of fields computed for each layer
+    
     Data2DLog<dcomplex,dcomplex> detlog;        ///< Determinant logger
 
   private:
@@ -104,8 +105,35 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * Get vector of transmission coefficients
      * \param direction incident light propagation direction
      */
-    DataVector<dcomplex> getTransmissionVector(IncidentDirection direction);
+    cvector getTransmissionVector(IncidentDirection direction);
 
+    /**
+     * Get current expansion coefficients at the matching interface
+     * \return vector of current expansion coefficients at the interface
+     */
+    cvector getInterfaceVector();
+    
+    /**
+     * Determine coefficients in each layer necessary for fields calculations
+     */
+    void determineFields();
+    
+    /**
+     * Compute electric field coefficients for given \a z
+     * \param z position within the layer
+     * \param n layer number
+     * \return electric field coefficients
+     */
+    cvector getFieldVectorE(double z, int n);
+    
+    /**
+     * Compute magnetic field coefficients for given \a z
+     * \param z position within the layer
+     * \param n layer number
+     * \return magnetic field coefficients
+     */
+    cvector getFieldVectorH(double z, int n);
+    
   protected:
 
     /// Solver constructor

@@ -163,6 +163,8 @@ double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization,
 }
 
 
+
+
 const DataVector<const double> FourierReflection2D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
 //    if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
