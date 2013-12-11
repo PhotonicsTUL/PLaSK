@@ -16,7 +16,7 @@ def _parse_material(mat):
     dp, dc = mat[1].split('=')
     if len(dp) > 1 and dp[-2] == ' ':
         dp = dp[:-2] # there is no common way to get dopant concentration from carriers concentration
-    return mat[0], dp, float(dc)
+    return mat[0], dp, float(dc) * 1e6
 
 
 def write_dan(name, manager, geo, allm=True):
