@@ -177,6 +177,7 @@ struct __InterpolateMeta__<SrcMeshT, SrcT, DstT, __ILLEGAL_INTERPOLATION_METHOD_
  * @param src_vec the vector of known field values in points described by @a sec_mesh
  * @param dst_mesh requested set of points, in which the field values should be calculated (interpolated)
  * @param method interpolation method to use
+ * @param verbose if true, the log message is written
  * @return vector of the field values in points described by @a dst_mesh, can be equal to @a src_vec
  *         if @a src_mesh and @a dst_mesh are the same mesh
  * @throw NotImplemented if given interpolation method is not implemented for used source mesh type
@@ -185,17 +186,40 @@ struct __InterpolateMeta__<SrcMeshT, SrcT, DstT, __ILLEGAL_INTERPOLATION_METHOD_
  */
 template <typename SrcMeshT, typename SrcT, typename DstT=SrcT>
 DataVector<DstT> interpolate(const SrcMeshT& src_mesh, const DataVector<SrcT>& src_vec,
-                             const MeshD<SrcMeshT::DIM>& dst_mesh, InterpolationMethod method = INTERPOLATION_DEFAULT)
+                             const MeshD<SrcMeshT::DIM>& dst_mesh,
+                             InterpolationMethod method=INTERPOLATION_DEFAULT, bool verbose=true)
 {
     if (src_mesh.size() != src_vec.size())
         throw BadMesh("interpolate", "Mesh size (%2%) and values size (%1%) do not match", src_vec.size(), src_mesh.size());
-
     if (&src_mesh == &dst_mesh) return src_vec; // meshes are identical, so just return src_vec
-
     DataVector<typename std::remove_const<DstT>::type> result(dst_mesh.size());
-    writelog(LOG_DETAIL, std::string("interpolate: Running ") + interpolationMethodNames[method] + " interpolation");
+    if (verbose) writelog(LOG_DETAIL, std::string("interpolate: Running ") + interpolationMethodNames[method] + " interpolation");
     __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, result, method);
     return result;
+}
+
+/**
+ * Perform interpolation of a field of some physical properties in requested points of (\a dst_mesh)
+ * if values of this field in points of (\a src_mesh) are known.
+ * \param src_mesh set of points in which fields values are known
+ * \param src_vec the vector of known field values in points described by \a sec_mesh
+ * \param dst_mesh requested set of points, in which the field values should be calculated (interpolated)
+ * \param dst_vec vector of the field values in points described by \a dst_mesh
+ * \param method interpolation method to use
+ * \param verbose if true, the log message is written
+ * \throw NotImplemented if given interpolation method is not implemented for used source mesh type
+ * \throw CriticalException if given interpolation method is not valid
+ * \see \ref meshes_interpolation
+ */
+template <typename SrcMeshT, typename SrcT, typename DstT=typename std::remove_const<SrcT>::type>
+void interpolateTo(const SrcMeshT& src_mesh, const DataVector<SrcT>& src_vec,
+                   const MeshD<SrcMeshT::DIM>& dst_mesh, DataVector<DstT>& dst_vec,
+                   InterpolationMethod method=INTERPOLATION_DEFAULT, bool verbose=true)
+{
+    if (src_mesh.size() != src_vec.size())
+        throw BadMesh("interpolate", "Mesh size (%2%) and values size (%1%) do not match", src_vec.size(), src_mesh.size());
+    if (verbose) writelog(LOG_DETAIL, std::string("interpolate: Running ") + interpolationMethodNames[method] + " interpolation");
+    __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, dst_vec, method);
 }
 
 } // namespace plask

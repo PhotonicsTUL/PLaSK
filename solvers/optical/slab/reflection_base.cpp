@@ -2,6 +2,7 @@
 
 #include "reflection_base.h"
 #include "fortran.h"
+#include "mesh_adapter.h"
 
 #define ee A
 #define hh P
@@ -499,6 +500,57 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
 }
 
 
+template <typename GeometryT>
+DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldE(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+{
+/*    
+    
+    
+    
+    LayeredMeshAdapter<GeometryT::DIM> target(dst_mesh);
+    
+    for (auto& level: target.levels) {
+        double z = level.vert;
+        size_t n = this->getLayerFor(z);
+        level.layer = this->stack[n];
+        level.E = getFieldVectorE(z, n);
+        level.H = getFieldVectorH(z, n);
+        if (n >= this->interface) for (auto& h: level.H) h = -h;
+    }
+    return diagonalizer->source()->fieldE();*/
+    
+//     int zsize = Z.size();
+//     int xysize = X.size() * Y.size();
+//     for (int i = 0; i < zsize; i++) {
+//         double z = Z[i];
+//         int n = this->getLayerFor(z);
+//         int layer = this->stack[n];
+//         dcomplex *field = outVectorField3D + 3 * i*xysize;
+//         cvector E = getFieldVectorE(z, n), H = getFieldVectorH(z, n);
+//         if (n >= interface || (interface==count && Z[i]>0))
+//             { int N = H.size(); for (int j = 0; j < N; j++) H[j] = -H[j]; }
+//         diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
+//     }
+}
+
+
+template <typename GeometryT>
+DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldH(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+{
+//     int zsize = Z.size();
+//     int xysize = X.size() * Y.size();
+//     for (int i = 0; i < zsize; i++) {
+//         double z = Z[i];
+//         int n = layer_of_z(z);
+//         int layer = this->stack[n];
+//         dcomplex *field = outVectorField3D + 3 * i*xysize;
+//         cvector E = getFieldVectorE(z, n), H = getFieldVectorH(z, n);
+//         if (n >= interface || (interface==count && Z[i]>0))
+//             { int N = H.size(); for (int j = 0; j < N; j++) H[j] = -H[j]; }
+//         diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
+//     }
+}
+
 
 // cvector ReflectionSolver::getBackwardFieldVectorE(double z, int n)
 // {
@@ -801,44 +853,6 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
 // }
 
 
-// //******************************************************************************
-// // Return the electic field components on a given grid
-// void SlabSolverBase::fieldE(const vector<double> X, const vector<double> Y, const vector<double> Z,
-//                            dcomplex* outVectorField3D)
-// {
-//     int zsize = Z.size();
-//     int xysize = X.size() * Y.size();
-//     for (int i = 0; i < zsize; i++) {
-//         double z = Z[i];
-//         int n = layer_of_z(z);
-//         int layer = this->stack[n];
-//         dcomplex *field = outVectorField3D + 3 * i*xysize;
-//         cvector E = getFieldVectorE(z, n), H = getFieldVectorH(z, n);
-//         if (n >= interface || (interface==count && Z[i]>0))
-//             { int N = H.size(); for (int j = 0; j < N; j++) H[j] = -H[j]; }
-//         diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
-//     }
-// }
-//
-// 
-// //------------------------------------------------------------------------------
-// // Return the magnetic field components on a given grid
-// void SlabSolverBase::fieldH(const vector<double> X, const vector<double> Y, const vector<double> Z,
-//                            dcomplex* outVectorField3D)
-// {
-//     int zsize = Z.size();
-//     int xysize = X.size() * Y.size();
-//     for (int i = 0; i < zsize; i++) {
-//         double z = Z[i];
-//         int n = layer_of_z(z);
-//         int layer = this->stack[n];
-//         dcomplex *field = outVectorField3D + 3 * i*xysize;
-//         cvector E = getFieldVectorE(z, n), H = getFieldVectorH(z, n);
-//         if (n >= interface || (interface==count && Z[i]>0))
-//             { int N = H.size(); for (int j = 0; j < N; j++) H[j] = -H[j]; }
-//         diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
-//     }
-// }
 
 
 //

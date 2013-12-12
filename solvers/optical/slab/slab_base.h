@@ -1,5 +1,5 @@
-#ifndef PLASK__OPTICAL_MODAL_H
-#define PLASK__OPTICAL_MODAL_H
+#ifndef PLASK__SOLVER_SLAB_SLABBASE_H
+#define PLASK__SOLVER_SLAB_SLABBASE_H
 
 #include <plask/plask.hpp>
 #include "broyden.h"
@@ -179,5 +179,5 @@ struct SlabSolver: public SolverOver<GeometryT> {
 
 }}} // namespace
 
-#endif
+#endif // PLASK__SOLVER_SLAB_SLABBASE_H
 

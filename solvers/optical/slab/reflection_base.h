@@ -176,6 +176,19 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      */
     void storeP(size_t n);
 
+    /** 
+     * Compute electric field at the given mesh
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<Vec<3,dcomplex>>getFieldE(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
+
+    /** 
+     * Compute magnetic field at the given mesh
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<Vec<3,dcomplex>>getFieldH(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
 
 };
 
