@@ -5,6 +5,9 @@ Solvers
 
 Related XML section: :ref:`<solvers> <sec-XPL-solvers>`.
 
+.. automodule:: _plask
+   :members: Solver
+
 .. toctree::
 
    API_solvers_thermal
