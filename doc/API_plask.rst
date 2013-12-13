@@ -1,9 +1,11 @@
 .. _sec-API-plask:
 
-plask
-=====
+Global
+======
 
 .. automodule:: _plask
    :members:
    :show-inheritance:
    :undoc-members:
+
+
