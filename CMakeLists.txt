@@ -237,35 +237,6 @@ add_subdirectory(materials)
 
 if(BUILD_PYTHON)
 
-    include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
-
-    add_executable(plask python/exe_main.cpp ${python_plask_src} ${plask_manifest})
-    if(WIN32)
-            # For some reason MinGW wants to create import library for executable,
-            # which overwrites libplask.dll.a. With this hack we name this useless
-            # stuff libplask.exe.dll.a
-            set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
-    endif()
-    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask)
-
-    if(BUILD_PYTHON_MODULE)
-        if(WIN32)
-            add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
-            set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
-            #install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
-            #                       LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
-        else()
-            add_library(_plask MODULE ${python_plask_src} ${plask_manifest})
-            #install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
-        endif()
-        target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
-        set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
-    endif()
-
-    if(DEFINED no_strict_aliasing_flag)
-        set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
-    endif()
-
     foreach(py_file ${python_plask_py})
         get_filename_component(py_file_base ${py_file} NAME)
         list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_base})
@@ -283,6 +254,37 @@ if(BUILD_PYTHON)
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
         install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
         install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
+    endif()
+
+    include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+
+    add_executable(plask python/exe_main.cpp ${python_plask_src} ${plask_manifest})
+    if(WIN32)
+            # For some reason MinGW wants to create import library for executable,
+            # which overwrites libplask.dll.a. With this hack we name this useless
+            # stuff libplask.exe.dll.a
+            set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+    endif()
+    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask)
+    add_dependencies(plask python-scripts)
+    
+    if(BUILD_PYTHON_MODULE)
+        if(WIN32)
+            add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
+            set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
+            #install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
+            #                       LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
+        else()
+            add_library(_plask MODULE ${python_plask_src} ${plask_manifest})
+            #install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
+        endif()
+        target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+        set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
+        add_dependencies(_plask python-scripts)
+    endif()
+
+    if(DEFINED no_strict_aliasing_flag)
+        set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
     endif()
 
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)

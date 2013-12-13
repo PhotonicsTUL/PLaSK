@@ -36,7 +36,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testComputations(self):
         self.solver.wavelength = 1000.
         self.solver.polarization = "TE"
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.147, 3 )
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.1465, 3 )
         self.solver.polarization = "TM"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode([1.10,1.12], '+')].neff, 1.111, 3)
 
