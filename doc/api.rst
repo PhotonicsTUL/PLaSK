@@ -7,6 +7,7 @@ PLaSK Python API
 .. toctree::
    :maxdepth: 3
 
+   API_plask
    API_geometry
    API_mesh
    API_material
