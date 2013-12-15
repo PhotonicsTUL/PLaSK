@@ -31,6 +31,26 @@ struct LightIntensitySumProvider: public FieldSumProvider<LightIntensity, SpaceT
 
 
 /**
+ * Profile of the optical electric field [V/m].
+ *
+ * Additional integer parameter is mode number.
+ */
+struct OpticalElectricField: public MultiFieldProperty<Vec<3,dcomplex>> {
+    static constexpr const char* NAME = "electric field";
+};
+
+
+/**
+ * Profile of the optical magnetic field [A/m].
+ *
+ * Additional integer parameter is mode number.
+ */
+struct OpticalMagneticField: public MultiFieldProperty<Vec<3,dcomplex>> {
+    static constexpr const char* NAME = "magnetic field";
+};
+
+
+/**
  * Wavelength [nm]. It can be either computed by some optical solvers or set by the user.
  *
  * It is a complex number, so it can contain information about both the wavelength and losses.

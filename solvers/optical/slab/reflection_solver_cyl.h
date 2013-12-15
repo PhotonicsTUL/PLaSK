@@ -50,6 +50,10 @@ struct FourierReflectionCyl: public ReflectionSolver<Geometry2DCylindrical> {
 
     size_t nummodes() const { return 1; }
 
+    const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+    const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+
     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };

@@ -400,6 +400,18 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
 }
 
 
+DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
+                                                 const cvector& E, const cvector& H, InterpolationMethod method)
+{
+    return DataVector<Vec<3,dcomplex>>(dst_mesh.size(), Vec<3,dcomplex>(0.,0.,0.));
+}
+
+
+DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
+                                                 const cvector& E, const cvector& H, InterpolationMethod method)
+{
+    return DataVector<Vec<3,dcomplex>>(dst_mesh.size(), Vec<3,dcomplex>(0.,0.,0.));
+}
 
 
 }}} // namespace plask

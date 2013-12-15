@@ -70,8 +70,14 @@ struct SlabSolver: public SolverOver<GeometryT> {
     /// Receiver for the gain
     ReceiverFor<Gain, GeometryT> inGain;
 
-    /// Provider of optical field
+    /// Provider of the optical field intensity
     typename ProviderFor<LightIntensity, GeometryT>::Delegate outLightIntensity;
+
+    /// Provider of the optical electric field
+    typename ProviderFor<OpticalElectricField, GeometryT>::Delegate outElectricField;
+
+    /// Provider of the optical magnetic field
+    typename ProviderFor<OpticalMagneticField, GeometryT>::Delegate outMagneticField;
 
     SlabSolver(const std::string& name="");
 
@@ -170,7 +176,26 @@ struct SlabSolver: public SolverOver<GeometryT> {
     virtual size_t nummodes() const = 0;
 
     /**
+     * Compute electric field
+     * \param num mode number
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    virtual const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
+
+    /**
+     * Compute magnetic field
+     * \param num mode number
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    virtual const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
+
+    /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
+     * \param num mode number
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
      */
     virtual const DataVector<const double> getIntensity(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
 

@@ -65,6 +65,12 @@ struct ExpansionPW2D: public Expansion {
 
     virtual void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH);
 
+    virtual DataVector<Vec<3,dcomplex>> fieldE(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
+                                           const cvector& E, const cvector& H, InterpolationMethod method);
+
+    virtual DataVector<Vec<3,dcomplex>> fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
+                                               const cvector& E, const cvector& H, InterpolationMethod method);
+
     /**
      * Get refractive index back from expansion
      * \param l layer number

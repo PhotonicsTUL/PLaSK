@@ -39,7 +39,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     bool fields_determined;                     ///< Are the diagonalized fields determined for all layers?
     std::vector<LayerFields> fields;            ///< Vector of fields computed for each layer
-    
+
     Data2DLog<dcomplex,dcomplex> detlog;        ///< Determinant logger
 
   private:
@@ -112,12 +112,12 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \return vector of current expansion coefficients at the interface
      */
     cvector getInterfaceVector();
-    
+
     /**
      * Determine coefficients in each layer necessary for fields calculations
      */
     void determineFields();
-    
+
     /**
      * Compute electric field coefficients for given \a z
      * \param z position within the layer
@@ -125,7 +125,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \return electric field coefficients
      */
     cvector getFieldVectorE(double z, int n);
-    
+
     /**
      * Compute magnetic field coefficients for given \a z
      * \param z position within the layer
@@ -133,7 +133,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \return magnetic field coefficients
      */
     cvector getFieldVectorH(double z, int n);
-    
+
   protected:
 
     /// Solver constructor
@@ -176,20 +176,27 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      */
     void storeP(size_t n);
 
-    /** 
+    /**
      * Compute electric field at the given mesh
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>>getFieldE(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>>getFieldE(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
 
-    /** 
+    /**
      * Compute magnetic field at the given mesh
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>>getFieldH(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>>getFieldH(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
 
+    /**
+     * Compute light intensity
+     * \param power mode power
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    DataVector<double> getFieldIntensity(double power, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
 };
 
 

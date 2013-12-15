@@ -312,7 +312,7 @@ cvector ReflectionSolver<GeometryT>::getInterfaceVector()
             mag = abs2(evals[i]);
             if (mag < min_mag) { min_mag = mag; n = i; }
         }
-        
+
         // Error handling
         if (min_mag > this->root.tolf_max * this->root.tolf_max)
             throw BadInput(this->getId(), "getInterfaceVector: determinant not sufficiently close to 0");
@@ -333,7 +333,7 @@ template <typename GeometryT>
 void ReflectionSolver<GeometryT>::determineFields()
 {
     if (fields_determined) return;
-    
+
     this->writelog(LOG_INFO, "Determining optical fields");
 
     int N = diagonalizer->matrixSize();
@@ -343,7 +343,7 @@ void ReflectionSolver<GeometryT>::determineFields()
     cdiagonal gamma;
 
     size_t count = this->stack.size();
-    
+
     // Assign the space for the field vectors
     fields.resize(count);
     // Obtain the physical fields at the last layer
@@ -501,54 +501,52 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
 
 
 template <typename GeometryT>
-DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldE(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldE(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
 {
-/*    
-    
-    
-    
-    LayeredMeshAdapter<GeometryT::DIM> target(dst_mesh);
-    
-    for (auto& level: target.levels) {
-        double z = level.vert;
+    DataVector<Vec<3,dcomplex>> destination(dst_mesh.size());
+    auto levels = LevelsGenerator<GeometryT::DIM>(dst_mesh);
+    while (auto level = levels->yield()) {
+        double z = level->vpos();
         size_t n = this->getLayerFor(z);
-        level.layer = this->stack[n];
-        level.E = getFieldVectorE(z, n);
-        level.H = getFieldVectorH(z, n);
-        if (n >= this->interface) for (auto& h: level.H) h = -h;
+        size_t layer = this->stack[n];
+        cvector E = getFieldVectorE(z, n);
+        cvector H = getFieldVectorH(z, n);
+        if (n >= this->interface) for (auto& h: H) h = -h;
+        auto dest = diagonalizer->source()->fieldE(layer, *level, k0, klong, ktran, E, H, method);
+        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
-    return diagonalizer->source()->fieldE();*/
-    
-//     int zsize = Z.size();
-//     int xysize = X.size() * Y.size();
-//     for (int i = 0; i < zsize; i++) {
-//         double z = Z[i];
-//         int n = this->getLayerFor(z);
-//         int layer = this->stack[n];
-//         dcomplex *field = outVectorField3D + 3 * i*xysize;
-//         cvector E = getFieldVectorE(z, n), H = getFieldVectorH(z, n);
-//         if (n >= interface || (interface==count && Z[i]>0))
-//             { int N = H.size(); for (int j = 0; j < N; j++) H[j] = -H[j]; }
-//         diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
-//     }
+    return destination;
 }
 
 
 template <typename GeometryT>
-DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldH(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldH(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
 {
-//     int zsize = Z.size();
-//     int xysize = X.size() * Y.size();
-//     for (int i = 0; i < zsize; i++) {
-//         double z = Z[i];
-//         int n = layer_of_z(z);
-//         int layer = this->stack[n];
-//         dcomplex *field = outVectorField3D + 3 * i*xysize;
-//         cvector E = getFieldVectorE(z, n), H = getFieldVectorH(z, n);
-//         if (n >= interface || (interface==count && Z[i]>0))
-//             { int N = H.size(); for (int j = 0; j < N; j++) H[j] = -H[j]; }
-//         diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
-//     }
+    DataVector<Vec<3,dcomplex>> destination(dst_mesh.size());
+    auto levels = LevelsGenerator<GeometryT::DIM>(dst_mesh);
+    while (auto level = levels->yield()) {
+        double z = level->vpos();
+        size_t n = this->getLayerFor(z);
+        size_t layer = this->stack[n];
+        cvector E = getFieldVectorE(z, n);
+        cvector H = getFieldVectorH(z, n);
+        if (n >= this->interface) for (auto& h: H) h = -h;
+        auto dest = diagonalizer->source()->fieldH(layer, *level, k0, klong, ktran, E, H, method);
+        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
+    }
+    return destination;
+}
+
+
+template <typename GeometryT>
+DataVector<double> ReflectionSolver<GeometryT>::getFieldIntensity(double power, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+{
+    auto E = getFieldE(dst_mesh, method);
+    DataVector<double> result(E.size());
+    for (size_t i = 0; i != E.size(); ++i) {
+        result[i] = power * abs2(E[i]);
+    }
+    return result;
 }
 
 

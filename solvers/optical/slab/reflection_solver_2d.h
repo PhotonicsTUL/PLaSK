@@ -169,6 +169,28 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         return modes[n].beta / modes[n].k0;
     }
 
+    /**
+     * Compute electric field
+     * \param num mode number
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+    /**
+     * Compute magnetic field
+     * \param num mode number
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+    /**
+     * Compute light intensity
+     * \param num mode number
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
 };

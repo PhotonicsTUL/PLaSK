@@ -31,6 +31,16 @@ size_t FourierReflectionCyl::findMode(dcomplex neff) {
 }
 
 
+const DataVector<const Vec<3,dcomplex>> FourierReflectionCyl::getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method) {
+    return DataVector<const Vec<3,dcomplex>>(dst_mesh.size(), vec(0., 0., 0.));
+}
+
+
+const DataVector<const Vec<3,dcomplex>> FourierReflectionCyl::getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method) {
+    return DataVector<const Vec<3,dcomplex>>(dst_mesh.size(), vec(0., 0., 0.));
+}
+
+
 const DataVector<const double> FourierReflectionCyl::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method) {
     return DataVector<const double>(dst_mesh.size(), 0.);
 }
