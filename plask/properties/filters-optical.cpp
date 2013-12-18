@@ -9,5 +9,6 @@ namespace plask {
 
 // Optical
 //TODO FiltersFactory::RegisterStandard<LightIntensity> registerLightIntensityFilters;
+FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
 
 }   // namespace plask

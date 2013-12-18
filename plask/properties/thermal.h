@@ -83,6 +83,13 @@ struct Heat: public ScalarFieldProperty {
 template <typename SpaceT>
 struct HeatSumProvider: public FieldSumProvider<Heat, SpaceT> {};
 
+/**
+ * Thermal conductivity [W/m*K]
+ */
+struct ThermalConductivity: FieldProperty<Tensor2<double>> {
+    static constexpr const char* NAME = "thermal conductivity";
+};
+
 } // namespace plask
 
 #endif // PLASK__TEMPERATURE_H

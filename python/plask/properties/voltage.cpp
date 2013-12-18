@@ -10,4 +10,4 @@ void register_standard_properties_voltage()
     registerProperty<Potential>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

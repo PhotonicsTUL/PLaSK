@@ -10,4 +10,4 @@ void register_standard_properties_concentration_carriers()
     registerProperty<CarriersConcentration>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

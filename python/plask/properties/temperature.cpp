@@ -10,4 +10,4 @@ void register_standard_properties_temperature()
     registerProperty<Temperature>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

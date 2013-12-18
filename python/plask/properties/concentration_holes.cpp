@@ -10,5 +10,5 @@ void register_standard_properties_concentration_holes()
     registerProperty<HolesConcentration>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python
 

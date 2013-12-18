@@ -9,6 +9,13 @@
 namespace plask {
 
 /**
+ * Refractive index tensor
+ */
+struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>> {
+    static constexpr const char* NAME = "refractive index";
+};
+
+/**
  * Profile of the optical field 1/2 E × conj(E) / Z0 [W/m²].
  *
  * Additional integer parameter is mode number.

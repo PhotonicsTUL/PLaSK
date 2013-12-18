@@ -42,6 +42,13 @@ struct HolesConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "holes concentration";
 };
 
+/**
+ * Electrical conductivity [S/m]
+ */
+struct ElectricalConductivity: FieldProperty<Tensor2<double>> {
+    static constexpr const char* NAME = "electrical conductivity";
+};
+
 } // namespace plask
 
 #endif // PLASK__ELECTRICAL_H

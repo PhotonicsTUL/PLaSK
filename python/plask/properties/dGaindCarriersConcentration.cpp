@@ -15,4 +15,4 @@ void register_standard_properties_GainOverCarriersConcentration()
     registerProperty<GainOverCarriersConcentration>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

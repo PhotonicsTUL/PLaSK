@@ -14,7 +14,8 @@ FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std
     iterlim(10000),
     logfreq(500),
     outTemperature(this, &FiniteElementMethodThermal3DSolver::getTemperatures),
-    outHeatFlux(this, &FiniteElementMethodThermal3DSolver::getHeatFluxes)
+    outHeatFlux(this, &FiniteElementMethodThermal3DSolver::getHeatFluxes),
+    outThermalConductivity(this, &FiniteElementMethodThermal3DSolver::getThermalConductivity)
 {
     temperatures.reset();
     fluxes.reset();
@@ -469,5 +470,25 @@ DataVector<const Vec<3> > FiniteElementMethodThermal3DSolver::getHeatFluxes(cons
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     return interpolate(*((this->mesh)->getMidpointsMesh()), fluxes, WrappedMesh<3>(dst_mesh, this->geometry), method);
 }
+
+
+DataVector<const Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method) const {
+    this->writelog(LOG_DETAIL, "Getting thermal conductivities");
+    auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
+    DataVector<const double> temps;
+    if (temperatures) temps = interpolate(*(this->mesh), temperatures, target_mesh, method);
+    else DataVector<const double>(dst_mesh.size(), inittemp);
+    DataVector<Tensor2<double>> result(dst_mesh.size());
+    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+        auto point = target_mesh[i];
+        auto material = this->geometry->getMaterial(point);
+        double temp = temps[i];
+        auto leaf = dynamic_pointer_cast<const GeometryObjectD<3>>(this->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf));
+        if (leaf) result[i] = material->thermk(temp, leaf->getBoundingBox().height());
+        else result[i] = material->thermk(temp);
+    }
+    return result;
+}
+
 
 }}} // namespace plask::solvers::thermal

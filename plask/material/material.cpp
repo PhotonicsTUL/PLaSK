@@ -489,9 +489,6 @@ double MixedMaterial::cp(double T) const {
     return avg([&](const Material& m) { return m.cp(T); });
 }
 
-Tensor2<double> MixedMaterial::thermk(double T) const {
-    return avg_pairs([&](const Material& m) { return m.thermk(T); });
-}
 Tensor2<double> MixedMaterial::thermk(double T, double h) const {
     return avg_pairs([&](const Material& m) { return m.thermk(T, h); });
 }

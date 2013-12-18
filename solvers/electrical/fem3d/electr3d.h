@@ -139,6 +139,8 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
 
     typename ProviderFor<Heat,Geometry3D>::Delegate outHeat;
 
+    typename ProviderFor<ElectricalConductivity,Geometry3D>::Delegate outConductivity;
+
     ReceiverFor<Temperature,Geometry3D> inTemperature;
 
     ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
@@ -248,6 +250,8 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     DataVector<const Vec<3>> getCurrentDensity(const MeshD<3>& dst_mesh, InterpolationMethod method);
 
     DataVector<const double> getHeatDensity(const MeshD<3>& dst_mesh, InterpolationMethod method);
+
+    DataVector<const Tensor2<double>> getConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method);
 };
 
 }}} //namespaces

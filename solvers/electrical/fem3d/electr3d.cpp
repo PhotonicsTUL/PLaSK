@@ -15,7 +15,8 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     logfreq(500),
     outPotential(this, &FiniteElementMethodElectrical3DSolver::getPotential),
     outCurrentDensity(this, &FiniteElementMethodElectrical3DSolver::getCurrentDensity),
-    outHeat(this, &FiniteElementMethodElectrical3DSolver::getHeatDensity)
+    outHeat(this, &FiniteElementMethodElectrical3DSolver::getHeatDensity),
+    outConductivity(this, &FiniteElementMethodElectrical3DSolver::getConductivity)
 {
     potential.reset();
     current.reset();
@@ -637,6 +638,15 @@ DataVector<const double> FiniteElementMethodElectrical3DSolver::getHeatDensity(c
     for (size_t i = 0; i < result.size(); ++i)
         if (!geometry->getChildBoundingBox().contains(dest_mesh[i])) result[i] = 0.;
     return result;
+}
+
+
+DataVector<const Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+    initCalculation();
+    this->writelog(LOG_DETAIL, "Getting conductivities");
+    loadConductivity();
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+    return interpolate(*(mesh->getMidpointsMesh()), conds, WrappedMesh<3>(dst_mesh, geometry), method);
 }
 
 }}} // namespace plask::solvers::electrical

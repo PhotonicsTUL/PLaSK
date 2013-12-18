@@ -95,6 +95,8 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
     typename ProviderFor<HeatFlux, Geometry2DType>::Delegate outHeatFlux;
 
+    typename ProviderFor<ThermalConductivity, Geometry2DType>::Delegate outThermalConductivity;
+
     ReceiverFor<Heat, Geometry2DType> inHeat;
 
     double maxerr;          ///< Maximum temperature correction accepted as convergence
@@ -128,6 +130,8 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
     DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method);
+
+    DataVector<const Tensor2<double>> getThermalConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
 
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {

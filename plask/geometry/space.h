@@ -583,7 +583,7 @@ public:
      * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
      *          @c nullptr if there is not such object
      */
-    inline shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point, const plask::PathHints* path = 0) {
+    inline shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point, const plask::PathHints* path = 0) const {
         return getChild()->hasRoleAt(role_name, point, path);
     }
 
@@ -606,7 +606,7 @@ public:
      * @param path path hints filtering out some objects
      * @return calculated set
      */
-    inline std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) {
+    inline std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints* path = 0) const {
         return getChild()->getRolesAt(point, path);
     }
 

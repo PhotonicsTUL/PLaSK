@@ -115,6 +115,8 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
 
     typename ProviderFor<HeatFlux,Geometry3D>::Delegate outHeatFlux;
 
+    typename ProviderFor<ThermalConductivity,Geometry3D>::Delegate outThermalConductivity;
+
     ReceiverFor<Heat,Geometry3D> inHeat;
 
     /**
@@ -149,6 +151,8 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     DataVector<const double> getTemperatures(const MeshD<3>& dst_mesh, InterpolationMethod method) const;
 
     DataVector<const Vec<3>> getHeatFluxes(const MeshD<3>& dst_mesh, InterpolationMethod method);
+
+    DataVector<const Tensor2<double>> getThermalConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method) const;
 };
 
 }} //namespaces

@@ -10,5 +10,5 @@ void register_standard_properties_concentration_electrons()
     registerProperty<ElectronsConcentration>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python
 

@@ -10,4 +10,4 @@ void register_standard_properties_heatflux()
     registerProperty<HeatFlux>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

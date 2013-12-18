@@ -76,10 +76,11 @@ BOOST_PYTHON_MODULE(fem3d)
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inWavelength, "Wavelength specifying the bad-gap");
         RECEIVER(inTemperature, "Receiver of temperature");
-        PROVIDER(outPotential, "Provider of potential");
-        PROVIDER(outCurrentDensity, "Provider of current density");
-        PROVIDER(outHeat, "Provider of heat density");
+        PROVIDER(outPotential, "Provider of the potential");
+        PROVIDER(outCurrentDensity, "Provider of the current density");
+        PROVIDER(outHeat, "Provider of the heat densities");
         solver.setattr("outHeatDensity", solver.attr("outHeat"));
+        PROVIDER(outConductivity, "Provider of the electrical conductivity");
         BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
         RW_FIELD(maxerr, "Limit for the potential updates");
         RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");

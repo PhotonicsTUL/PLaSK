@@ -153,29 +153,6 @@ void GeometryObject_setRoles(GeometryObject& self, py::object roles) {
 }
 
 
-template <int dim> struct GeometryObjectD_vector_args;
-
-template<> struct GeometryObjectD_vector_args<2> {
-    static inline const py::detail::keywords<2> args() {
-        return py::arg("c0"), py::arg("c1");
-    }
-    template <size_t nargs>
-    static inline py::detail::keywords<nargs+2> args(const py::detail::keywords<nargs>& other) {
-        return other, py::arg("c0"), py::arg("c1");
-    }
-};
-
-template<> struct GeometryObjectD_vector_args<3> {
-    static inline const py::detail::keywords<3> args() {
-        return py::arg("c0"), py::arg("c1"), py::arg("c2");
-    }
-    template <size_t nargs>
-    static inline const py::detail::keywords<nargs+3> args(const py::detail::keywords<nargs>& other) {
-        return other, py::arg("c0"), py::arg("c1"), py::arg("c2");
-    }
-};
-
-
 /// Initialize class GeometryObjectD for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for "," geometry objects") {
 

@@ -15,4 +15,4 @@ void register_standard_properties_gain()
     registerProperty<Gain>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

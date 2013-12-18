@@ -1,5 +1,5 @@
 #ifndef PLASK__AlN_Si_H
-#define PLASK__ALN_Si_H
+#define PLASK__AlN_Si_H
 
 /** @file
 This file contains Si-doped AlN

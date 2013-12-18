@@ -2,7 +2,8 @@
 
 namespace plask { namespace solvers { namespace electrical {
 
-template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
+template<typename Geometry2DType>
+FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
     js(1.),
     beta(20.),
@@ -15,6 +16,7 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     outPotential(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials),
     outCurrentDensity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities),
     outHeat(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities),
+    outConductivity(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity),
     algorithm(ALGORITHM_CHOLESKY),
     itererr(1e-8),
     iterlim(10000),
@@ -25,7 +27,8 @@ template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry
     junction_conductivity.reset(1, default_junction_conductivity);
 }
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
 {
     while (source.requireTagOrEnd())
     {
@@ -77,10 +80,12 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> FiniteElementMethodElectrical2DSolver<Geometry2DType>::~FiniteElementMethodElectrical2DSolver() {
+template<typename Geometry2DType>
+FiniteElementMethodElectrical2DSolver<Geometry2DType>::~FiniteElementMethodElectrical2DSolver() {
 }
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 {
     if (!this->geometry || !this->mesh) {
         if (junction_conductivity.size() != 1) {
@@ -155,7 +160,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
@@ -171,7 +177,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInvalidate() {
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInvalidate() {
     conds.reset();
     potentials.reset();
     currents.reset();
@@ -204,7 +211,8 @@ inline void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setLoc
         k41 = r * k41;
 }
 
-template<typename Geometry2DType> template <typename MatrixT>
+template<typename Geometry2DType>
+template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
                                                                     const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
     // boundary conditions of the first kind
@@ -256,7 +264,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMa
 }
 
 /// Set stiffness matrix + load vector
-template<typename Geometry2DType> template <typename MatrixT>
+template<typename Geometry2DType>
+template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
                                                                       const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage)
 {
@@ -344,7 +353,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 {
     auto midmesh = (this->mesh)->getMidpointsMesh();
     auto temperature = inTemperature(midmesh);
@@ -368,7 +378,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     }
 }
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
 {
     for (size_t n = 0; n < getActNo(); ++n)
         for (size_t i = 0, j = (actlo[n]+acthi[n])/2; i != this->mesh->axis0.size()-1; ++i)
@@ -376,7 +387,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(unsigned loops) {
+template<typename Geometry2DType>
+double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(unsigned loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
@@ -385,7 +397,8 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
     return 0.;
 }
 
-template<typename Geometry2DType> template <typename MatrixT>
+template<typename Geometry2DType>
+template <typename MatrixT>
 double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned loops)
 {
     this->initCalculation();
@@ -462,7 +475,8 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
 
@@ -482,7 +496,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     // now A contains factorized matrix and B the solutions
 }
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
     this->writelog(LOG_DETAIL, "Solving matrix system");
@@ -505,7 +520,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
     // now A contains factorized matrix and B the solutions
 }
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -526,7 +542,8 @@ template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geo
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
+template<typename Geometry2DType>
+void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
@@ -606,7 +623,8 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
+template<typename Geometry2DType>
+double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 {
     if (nact >= actlo.size()) throw BadInput(this->getId(), "Wrong active region number");
     // Find the average of the active region
@@ -615,7 +633,8 @@ template<typename Geometry2DType> double FiniteElementMethodElectrical2DSolver<G
 }
 
 
-template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const
+template<typename Geometry2DType>
+DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const
 {
     if (!potentials) throw NoValue("Potential");
     this->writelog(LOG_DETAIL, "Getting potentials");
@@ -624,7 +643,8 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
 }
 
 
-template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
+template<typename Geometry2DType>
+DataVector<const Vec<2> > FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
     if (!potentials) throw NoValue("Current density");
     this->writelog(LOG_DETAIL, "Getting current densities");
@@ -637,7 +657,9 @@ template<typename Geometry2DType> DataVector<const Vec<2> > FiniteElementMethodE
     return result;
 }
 
-template<typename Geometry2DType> DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
+
+template<typename Geometry2DType>
+DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
     if (!potentials) throw NoValue("Heat density");
     this->writelog(LOG_DETAIL, "Getting heat density");
@@ -648,6 +670,16 @@ template<typename Geometry2DType> DataVector<const double> FiniteElementMethodEl
     for (size_t i = 0; i < result.size(); ++i)
         if (!this->geometry->getChildBoundingBox().contains(dest_mesh[i])) result[i] = 0.;
     return result;
+}
+
+
+template<typename Geometry2DType>
+DataVector<const Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method) {
+    this->initCalculation();
+    this->writelog(LOG_DETAIL, "Getting conductivities");
+    loadConductivities();
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+    return interpolate(*(this->mesh->getMidpointsMesh()), conds, WrappedMesh<2>(dst_mesh, this->geometry), method);
 }
 
 

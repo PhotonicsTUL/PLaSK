@@ -10,4 +10,4 @@ void register_standard_properties_potential()
     registerProperty<Potential>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

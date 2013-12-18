@@ -10,7 +10,7 @@
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
-    
+
 std::string Geometry_getAxes(const Geometry& self) {
     return self.axisNames.str();
 }
@@ -278,6 +278,39 @@ static BordersProxy Geometry3D_getBorders(const Geometry2DCartesian& self) {
     return borders;
 }
 
+template <typename GeometryT>
+static py::list Geometry_getRolesAt(const GeometryT& self, const typename GeometryObjectD<GeometryT::DIM>::DVec& point) {
+    py::list result;
+    for (auto role: self.getRolesAt(point)) result.append(py::object(role));
+    return result;
+}
+
+template <typename GeometryT>
+static py::list Geometry2D_getRolesAt(const GeometryT& self, double c0, double c1) {
+    py::list result;
+    for (auto role: self.getRolesAt(vec(c0,c1))) result.append(py::object(role));
+    return result;
+}
+
+static py::list Geometry3D_getRolesAt(const Geometry3D& self, double c0, double c1, double c2) {
+    py::list result;
+    for (auto role: self.getRolesAt(vec(c0,c1,c2))) result.append(py::object(role));
+    return result;
+}
+
+template <typename GeometryT>
+static bool Geometry_hasRoleAt(const GeometryT& self, const std::string& role, const typename GeometryObjectD<GeometryT::DIM>::DVec& point) {
+    return self.hasRoleAt(role, point) != nullptr;
+}
+
+template <typename GeometryT>
+static bool Geometry2D_hasRoleAt(const GeometryT& self, const std::string& role, double c0, double c1) {
+    return self.hasRoleAt(role, vec(c0,c1)) != nullptr;
+}
+
+static bool Geometry3D_hasRoleAt(const Geometry3D& self, const std::string& role, double c0, double c1, double c2) {
+    return self.hasRoleAt(role, vec(c0,c1,c2)) != nullptr;
+}
 
 // template <typename S>
 // static shared_ptr<S> Space_getSubspace(py::tuple args, py::dict kwargs) {
@@ -361,6 +394,10 @@ void register_calculation_spaces() {
         .def("get_paths", &Geometry2DCartesian::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containg paths to all leafs covering specified point")
         .def("get_paths", &Space_getPathsTo<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
+        .def("get_roles", &Geometry_getRolesAt<Geometry2DCartesian>, py::arg("point"), "Return roles of objects at specified point")
+        .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCartesian>, (py::arg("c0"), "c1"), "Return roles of objects at specified point")
+        .def("has_role", &Geometry_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "point"), "Return true if the specified point has given role")
+        .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "c0", "c1"), "Return true if the specified point has given role")
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -394,6 +431,10 @@ void register_calculation_spaces() {
         .def("get_paths", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
         .def("get_paths", &Space_getPathsTo<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
+        .def("get_roles", &Geometry_getRolesAt<Geometry2DCylindrical>, py::arg("point"), "Return roles of objects at specified point")
+        .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCylindrical>, (py::arg("c0"), "c1"), "Return roles of objects at specified point")
+        .def("has_role", &Geometry_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "point"), "Return true if the specified point has given role")
+        .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "c0", "c1"), "Return true if the specified point has given role")
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -426,6 +467,10 @@ void register_calculation_spaces() {
         .def("get_paths", &Geometry3D::getPathsAt, (py::arg("point"), py::arg("all")=false),
              "Return subtree containing paths to all leafs covering specified point")
         .def("get_paths", &Space_getMaterial<Geometry3D>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("c2"), py::arg("all")=false))
+        .def("get_roles", &Geometry_getRolesAt<Geometry3D>, py::arg("point"), "Return roles of objects at specified point")
+        .def("get_roles", &Geometry3D_getRolesAt, (py::arg("c0"), "c1", "c2"), "Return roles of objects at specified point")
+        .def("has_role", &Geometry_hasRoleAt<Geometry3D>, (py::arg("role"), "point"), "Return true if the specified point has given role")
+        .def("has_role", &Geometry3D_hasRoleAt, (py::arg("role"), "c0", "c1", "c2"), "Return true if the specified point has given role")
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

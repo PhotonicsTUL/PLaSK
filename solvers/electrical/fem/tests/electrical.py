@@ -11,7 +11,7 @@ from electrical.fem import Shockley2D, ShockleyCyl
 @material.simple
 class Conductor(material.Material):
     def cond(self, T):
-        return 1e+9
+        return (1e+9, 1e+9)
 
 
 class Shockley2D_Test(unittest.TestCase):
@@ -41,8 +41,6 @@ class Shockley2D_Test(unittest.TestCase):
         correct_current = 1e-3 * self.solver.js * (exp(self.solver.beta) - 1)
         self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
 
-
-
 class ShockleyCyl_Test(unittest.TestCase):
 
     def setUp(self):
@@ -70,3 +68,8 @@ class ShockleyCyl_Test(unittest.TestCase):
         correct_current = 1e-3 * pi * self.solver.js * (exp(self.solver.beta) - 1)
         self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
 
+    def testConductivity(self):
+        msh = self.solver.mesh.get_midpoints()
+        geo = self.solver.geometry
+        conds = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
+        self.assertListEqual( list(self.solver.outConductivity(msh)), conds )

@@ -25,4 +25,4 @@ void register_standard_properties_optical()
     registerProperty<EffectiveIndex>();
 }
 
-}} // namespace plask>();
+}} // namespace plask::python

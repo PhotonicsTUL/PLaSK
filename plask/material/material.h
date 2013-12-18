@@ -791,8 +791,6 @@ struct MixedMaterial: public Material {
 
     virtual double D(double T) const;
 
-    virtual Tensor2<double> thermk(double T) const;
-
     virtual Tensor2<double> thermk(double T, double h) const;
 
     virtual double dens(double T) const;

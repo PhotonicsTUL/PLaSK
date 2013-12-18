@@ -136,6 +136,8 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
 
+    typename ProviderFor<ElectricalConductivity, Geometry2DType>::Delegate outConductivity;
+
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 
     ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
@@ -236,6 +238,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     DataVector<const Vec<2>> getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
 
+    DataVector<const Tensor2<double>> getConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method);
 };
 
 }} //namespaces

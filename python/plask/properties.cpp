@@ -8,12 +8,15 @@ namespace plask { namespace python {
 void register_standard_properties_gain();
 void register_standard_properties_GainOverCarriersConcentration();
 void register_standard_properties_optical();
+void register_standard_properties_refractive();
 
 
+void register_standard_properties_thermal();
 void register_standard_properties_temperature();
 void register_standard_properties_heatdensity();
 void register_standard_properties_heatflux();
 
+void register_standard_properties_electrical();
 void register_standard_properties_voltage();
 void register_standard_properties_current();
 
@@ -27,12 +30,12 @@ void register_standard_properties_concentration_holes();
  */
 void register_standard_properties()
 {
-    // register_standard_properties_thermal();
+    register_standard_properties_thermal();
     register_standard_properties_temperature();
     register_standard_properties_heatdensity();
     register_standard_properties_heatflux();
 
-    // register_standard_properties_electrical();
+    register_standard_properties_electrical();
     register_standard_properties_voltage();
     register_standard_properties_current();
     register_standard_properties_concentration_carriers();
@@ -43,6 +46,7 @@ void register_standard_properties()
     register_standard_properties_GainOverCarriersConcentration();
 
     register_standard_properties_optical();
+    register_standard_properties_refractive();
 }
 
 }} // namespace plask>();
