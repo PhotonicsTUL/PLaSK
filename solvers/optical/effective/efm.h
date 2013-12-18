@@ -300,6 +300,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Provider of optical field
     ProviderFor<LightIntensity, Geometry2DCylindrical>::Delegate outLightIntensity;
 
+    /// Provider for refractive index
+    ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
+    
   protected:
 
     /// Do we need to compute gain
@@ -310,6 +313,11 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Invalidate the data
     virtual void onInvalidate();
+
+    /**
+     * Update refractive index cache
+     */
+    bool updateCache();
 
     /**
      * Fist stage of computations
@@ -368,6 +376,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+
+    /// Get used refractive index
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const MeshD<2>& dst_mesh, double, InterpolationMethod);
 
   private:
     template <typename MeshT>

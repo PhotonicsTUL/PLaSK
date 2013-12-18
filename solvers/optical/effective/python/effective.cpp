@@ -207,6 +207,7 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "Optical gain in the active region");
         PROVIDER(outNeff, "Effective index of the last computed mode");
         PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
+        PROVIDER(outRefractiveIndex, "Refractive index used in the computations");
         RO_FIELD(modes, "Computed modes");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
@@ -254,6 +255,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outWavelength, "Wavelength of the computed mode [nm]");
         PROVIDER(outLoss, "Modal loss of the computed mode [1/cm]");
         PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
+        PROVIDER(outRefractiveIndex, "Refractive index used in the computations");
         RO_FIELD(modes, "Computed modes");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 

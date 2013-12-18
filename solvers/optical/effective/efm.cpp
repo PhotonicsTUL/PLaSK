@@ -17,7 +17,8 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     vlam(0.),
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
-    outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes) {
+    outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes),
+    outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex) {
     inTemperature = 300.;
     root.tolx = 1.0e-6;
     root.tolf_min = 1.0e-7;
@@ -242,10 +243,9 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 /********* Here are the computations *********/
 
-void EffectiveFrequencyCylSolver::stageOne()
+bool EffectiveFrequencyCylSolver::updateCache()
 {
     bool fresh = !initCalculation();
-
     // Some additional checks
     for (auto x: mesh->axis0) {
         if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
@@ -320,7 +320,15 @@ void EffectiveFrequencyCylSolver::stageOne()
                 ngCache[ir][0] = ngCache[ir][1];
             }
         }
+        
+        return true;
+    }
+    return false;
+}
 
+void EffectiveFrequencyCylSolver::stageOne()
+{
+    if (updateCache()) {
         // Compute effective frequencies for all stripes
         std::exception_ptr error; // needed to handle exceptions from OMP loop
         #pragma omp parallel for
@@ -702,6 +710,22 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const 
     }
 
     return false;
+}
+
+
+DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double, InterpolationMethod) {
+    this->writelog(LOG_DETAIL, "Getting refractive indices");
+    updateCache();
+    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
+    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+        auto point = target_mesh[i];
+        size_t r = std::lower_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
+        size_t z = std::lower_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
+        if (r != 0) --r;
+        result[i] = Tensor3<dcomplex>(nrCache[r][z]);
+    }
+    return result;
 }
 
 

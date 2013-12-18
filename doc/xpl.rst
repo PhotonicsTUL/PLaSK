@@ -18,7 +18,6 @@ Instead of the section content, it is possible to use it as a single tag with th
 
 
 .. toctree::
-   :maxdepth: 2
 
    XPL_defines
    XPL_materials

@@ -11,8 +11,9 @@ namespace plask {
 /**
  * Refractive index tensor
  */
-struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>> {
+struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>,double> {
     static constexpr const char* NAME = "refractive index";
+    static inline Tensor3<dcomplex> getDefaultValue() { return Tensor3<dcomplex>(1.); }
 };
 
 /**

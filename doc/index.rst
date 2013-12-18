@@ -10,7 +10,7 @@ PLaSK User Guide
 .. highlight:: python
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    preface
    introduction

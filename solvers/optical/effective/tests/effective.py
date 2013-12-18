@@ -43,6 +43,14 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testMesh(self):
         mesh = self.solver.mesh
 
+    def testRefractiveIndex(self):
+        self.solver.set_simple_mesh()
+        msh = self.solver.mesh.get_midpoints()
+        geo = self.solver.geometry
+        refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
+        self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh, 0.)], refr )
+
+
 class EffectiveFrequencyCyl_Test(unittest.TestCase):
 
     def setUp(self):
@@ -114,4 +122,9 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         integral = 2e-12 * pi * sum(field * msh.axis0) * dr
         self.assertAlmostEqual(integral, 2., 4)
 
-
+    def testRefractiveIndex(self):
+        self.solver.set_simple_mesh()
+        msh = self.solver.mesh.get_midpoints()
+        geo = self.solver.geometry
+        refr = [geo.get_material(point).Nr(980., 300.) for point in msh]
+        self.assertEqual( [str(complex(nr[0])) for nr in self.solver.outRefractiveIndex(msh, 0.)], [str(complex(r)) for r in refr] )

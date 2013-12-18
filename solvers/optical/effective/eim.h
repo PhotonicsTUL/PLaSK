@@ -303,6 +303,9 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /// Provider of optical field
     ProviderFor<LightIntensity, Geometry2DCartesian>::Delegate outLightIntensity;
 
+    /// Provider for refractive index
+    ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
+    
   protected:
 
     /// Initialize the solver
@@ -396,6 +399,9 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Method computing the distribution of light intensity
     DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+
+    /// Get used refractive index
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const MeshD<2>& dst_mesh, double, InterpolationMethod);
 
   private:
     template <typename MeshT>

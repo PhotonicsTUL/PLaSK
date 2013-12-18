@@ -17,6 +17,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     outdist(0.1),
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
     outLightIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
+    outRefractiveIndex(this, &EffectiveIndex2DSolver::getRefractiveIndex),
     k0(2e3*M_PI/980) {
     inTemperature = 300.;
     inGain = NAN;
@@ -799,6 +800,22 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask
     }
 
     return false;
+}
+
+
+DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double, InterpolationMethod) {
+    this->writelog(LOG_DETAIL, "Getting refractive indices");
+    updateCache();
+    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
+    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+        auto point = target_mesh[i];
+        size_t x = std::lower_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
+        size_t y = std::lower_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
+        if (x < xbegin) x = xbegin;
+        result[i] = Tensor3<dcomplex>(nrCache[x][y]);
+    }
+    return result;
 }
 
 
