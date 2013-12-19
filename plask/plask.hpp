@@ -6,7 +6,7 @@ This file allows for easy include all plask features.
 
 It also contains manual main page in doxygen format.
 
-\mainpage PLaSK developer manual
+\mainpage PLaSK Developer Manual
 
 \section plask_about About
 \b PLaSK (<b>P</b>hotonic <b>La</b>ser <b>S</b>imulation <b>K</b>it) is a complete software for performing simulations of semiconductor lasers and some other photonic devices.
