@@ -5,7 +5,7 @@
 This file contains base class for geometries objects.
 */
 
-/** @defgroup GEOMETRY_OBJ Geometry Objects classes
+/** @defgroup GEOMETRY_OBJ Geometry Objects
 */
 
 #include <vector>
