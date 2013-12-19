@@ -674,12 +674,22 @@ DataVector<const double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::
 
 
 template<typename Geometry2DType>
-DataVector<const Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method) {
+DataVector<const Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getConductivity(const MeshD<2>& dst_mesh, InterpolationMethod) {
     this->initCalculation();
     this->writelog(LOG_DETAIL, "Getting conductivities");
     loadConductivities();
-    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(*(this->mesh->getMidpointsMesh()), conds, WrappedMesh<2>(dst_mesh, this->geometry), method);
+    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    DataVector<Tensor2<double>> result(dst_mesh.size());
+    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+        auto point = target_mesh[i];
+        size_t x = std::upper_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
+        size_t y = std::upper_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
+        if (x == 0 || y == 0 || x == this->mesh->axis0.size() || y == this->mesh->axis1.size())
+            result[i] = Tensor2<double>(NAN);
+        else
+            result[i] = conds[this->mesh->elements(x-1, y-1).getIndex()];
+    }
+    return result;
 }
 
 

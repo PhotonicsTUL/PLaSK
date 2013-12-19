@@ -619,20 +619,29 @@ DataVector<const Vec<2> > FiniteElementMethodThermal2DSolver<Geometry2DType>::ge
 
 
 template<typename Geometry2DType>
-DataVector<const Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method) const {
+DataVector<const Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity(const MeshD<2>& dst_mesh, InterpolationMethod) const {
     this->writelog(LOG_DETAIL, "Getting thermal conductivities");
-    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    auto element_mesh = this->mesh->getMidpointsMesh();
     DataVector<const double> temps;
-    if (temperatures) temps = interpolate(*(this->mesh), temperatures, target_mesh, method);
-    else DataVector<const double>(dst_mesh.size(), inittemp);
+    if (temperatures) temps = interpolate(*(this->mesh), temperatures, *element_mesh, INTERPOLATION_LINEAR);
+    else DataVector<const double>(element_mesh->size(), inittemp);
     DataVector<Tensor2<double>> result(dst_mesh.size());
+    auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        auto material = this->geometry->getMaterial(point);
-        double temp = temps[i];
-        auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf));
-        if (leaf) result[i] = material->thermk(temp, leaf->getBoundingBox().height());
-        else result[i] = material->thermk(temp);
+        size_t x = std::upper_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
+        size_t y = std::upper_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
+        if (x == 0 || y == 0 || x == this->mesh->axis0.size() || y == this->mesh->axis1.size())
+            result[i] = Tensor2<double>(NAN);
+        else {
+            size_t idx = element_mesh->index(x-1, y-1);
+            auto point = element_mesh->at(idx);
+            auto material = this->geometry->getMaterial(point);
+            if (auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(this->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf)))
+                result[i] = material->thermk(temps[idx], leaf->getBoundingBox().height());
+            else
+                result[i] = material->thermk(temps[idx]);
+        }
     }
     return result;
 }
