@@ -7,7 +7,7 @@ This section allows to define some constant parameters (that can be later overri
 
 .. xml:tag:: <defines>
 
-   Definition of a parameter for use in the rest of the file.
+   Definition of a parameter for use in the rest of the file. In :xml:tag:`script` section, the parameter is available by ``DEF`` table, which is indexed by names of parameters.
 
    :attr required name: Name of the parameter (each name must be unique).
    :attr required value: Value of the parameter. Any valid Python function can be used here, as well as any previously defined parameter.

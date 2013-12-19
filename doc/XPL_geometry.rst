@@ -23,7 +23,7 @@ Available elements
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr name: Geometry name for further reference. (unique identifier string)
+   :attr name: Geometry name for further reference. In :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
@@ -41,7 +41,7 @@ Available elements
    :attr inner: Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr length: Longitudinal dimension of the geometry (float [µm]).: Default value is: *+\infty*.
    :attr outer: Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr name: Geometry name for further reference. (unique identifier string)
+   :attr name: Geometry name for further reference. In :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
    :Contents: Any object from section :ref:`sec-XPL-Geometry-objects-2D`. If ``length`` was not given, xml:tag:`extrusion` is also accepted.
@@ -59,7 +59,7 @@ Available elements
    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr front: Specification of the front border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr name: Geometry name for further reference. (unique identifier string)
+   :attr name: Geometry name for further reference. In :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
@@ -82,7 +82,7 @@ Containers
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr left: Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
    :attr right: Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
@@ -121,7 +121,7 @@ Containers
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
 
    :Contents:
@@ -151,7 +151,7 @@ Containers
 
    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
 
@@ -182,7 +182,7 @@ Containers
 
    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
    :attr shift: Vertical position of the stack bottom edge in its local coordinates. This attribute really makes sense only if the stack is the main element of the geometry, as in such case its local coordinates define global geometry coordinate system. Defaults to 0. (float [µm])
@@ -227,7 +227,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Mirror reflection of the object along specified axis.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
@@ -239,7 +239,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Object mirrored along specified axis. In other words this is transformed object together with its flipped version. The bounding box of the object cannot span at bot sides of zero along inverted axis.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
@@ -251,7 +251,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    A simple shift of the object. Note that the bounding box is shifted as well, so in containers that place their items basing on their bounding boxes, this transformation will have no effect.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr {X}: where **{X}** is the transverse axis name: Horizontal position of the origin of transformed element. (float [µm])
    :attr {Y}: where **{Y}** is the vertical axis name: Vertical position of the origin of transformed element. (float [µm])
@@ -269,7 +269,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
    Rectangular block. Its origin is located at the lower left corner.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the block material (for solid blocks).
    :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
@@ -307,7 +307,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
    :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
@@ -350,7 +350,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
 
    :Contents:
@@ -384,7 +384,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
    Stack organizing its elements on top of the other. Horizontal alignments of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
    :attr shift: Vertical position of the stack bottom edge in its local coordinates. This attribute really makes sense only if the stack is the main element of the geometry, as in such case its local coordinates define global geometry coordinate system. Defaults to 0. (float [µm])
@@ -433,7 +433,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Extrusion of two-dimensional object into third dimension. 2D objects are defined in the plane defined by the transverse and vertical axes. Hence, the extrusion is performed into the longitudinal direction.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required length: Length of the extrusion.
 
@@ -445,7 +445,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Mirror reflection of the object along specified axis.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
@@ -457,7 +457,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Revolution of the two-dimensional object around its local vertical axis. The horizontal axis of the 2D object becomes a radial axis of the resulting compound cylinder. Vertical axes of the 2D object remains the vertical axis of the resulting block.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
 
    :Contents: A single :ref:`two-dimensional geometry object <sec-XPL-Geometry-objects-2D>`. All the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane.
@@ -480,7 +480,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    A simple shift of the object. Note that the bounding box is shifted as well, so in containers that place their items basing on their bounding boxes, this transformation will have no effect.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal position of the origin of transformed element. (float [µm])
    :attr {Y}: where **{Y}** is the transverse axis name: Transversal position of the origin of transformed element. (float [µm])
@@ -499,7 +499,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
    Rectangular block. Its origin is located in the lower back left corner.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the block material (for solid blocks).
    :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
@@ -523,7 +523,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
    Cylinder with its base lying in the horizontal plane. Its origin is located at the center of the lower circular base.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the cylinder material (for solid cylinders).
    :attr material-bottom: Definition of the material of the bottom of the cylinder (for cylinders which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
@@ -552,7 +552,7 @@ Copies and references to geometry objects
 
    Modified copy of any previously defined and named (with the name attribute) two or three dimensional object.
 
-   :attr name: Object name for further reference.
+   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required from: Name of the source two or three dimensional object to make modified copy of. Usually it is some container that has some other named its items or sub-items.
 
