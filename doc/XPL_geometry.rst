@@ -154,6 +154,7 @@ Containers
    :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
+   :attr shift: Horizontal position of the shelf left edge in its local coordinates. Defaults to 0. (float [µm])
 
    :Contents:
 
@@ -174,7 +175,7 @@ Containers
 
    .. xml:tag:: <zero/> [in <shelf2D>]
 
-      This tag can appear as stack content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+      This tag can appear as a shelf content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
 .. xml:tag:: <stack2D> (or <stack>)
 
@@ -185,7 +186,7 @@ Containers
    :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
-   :attr shift: Vertical position of the stack bottom edge in its local coordinates. This attribute really makes sense only if the stack is the main element of the geometry, as in such case its local coordinates define global geometry coordinate system. Defaults to 0. (float [µm])
+   :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])
    :attr left: Default horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
    :attr right: Default horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
    :attr trancenter: Default horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
@@ -213,7 +214,7 @@ Containers
 
    .. xml:tag:: <zero/> [in <stack2D>]
 
-      This tag can appear as stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+      This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
 
 Transforms
@@ -387,7 +388,7 @@ Containers are objects that contain multiple other geometry objects as their ite
    :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
-   :attr shift: Vertical position of the stack bottom edge in its local coordinates. This attribute really makes sense only if the stack is the main element of the geometry, as in such case its local coordinates define global geometry coordinate system. Defaults to 0. (float [µm])
+   :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])
    :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
    :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
    :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of each element. (float [µm])
@@ -420,7 +421,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
    .. xml:tag:: <zero/> [in <stack3D>]
 
-      This tag can appear as stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+      This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
 Transforms
 ^^^^^^^^^^
