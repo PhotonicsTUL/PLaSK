@@ -16,13 +16,13 @@ def save_field(field, file, name='', mode='a'):
 
            save_field(field, file, name='', mode='a')
 
-       'file' is either a filename to save to or a h5py.File object open for writing.
-       'field' is plask.Data object returned by providers/receivers.
+       'file' is either a filename to save to or a h5py.File object opened for writing.
+       'field' is a plask.Data object returned by providers/receivers.
 
-       If 'file' is string, a new HDF5 file is opened with mode specified by 'mode'.
-       Then both the data and its mesh are written to this file under a group specified
-       by 'name' argument. It can contain slashes ('/'), in which case corresponding
-       hierarchy is created in HDF5 file.
+       If 'file' is a string, a new HDF5 file is opened with the mode specified by 'mode'.
+       Then both the data and its mesh are written to this file under the group specified
+       by the 'name' argument. It can contain slashes ('/'), in which case a corresponding
+       hierarchy is created in the HDF5 file.
 
        Saved data can later be restored by any HDF5-aware application, or by load_field
        function of PLaSK.
@@ -82,9 +82,9 @@ def load_field(file, name=''):
        'file' is either a filename to load from or a h5py.File object open for reading.
 
        If 'file' is string, a new HDF5 file is opened for reading. Then both the data
-       and its mesh are read fromthis file from a group specified by 'name' argument.
-       It can contain slashes ('/'), in which case corresponding hierarchy in HDF5 file
-       is used.
+       and its mesh are read from this file from the group specified by the 'name' argument.
+       'name' can contain slashes ('/'), in which case the corresponding hierarchy in the
+       HDF5 file is used.
 
        Funtion returns read plask.Data object
     '''

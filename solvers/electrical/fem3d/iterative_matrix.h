@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
-#define PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
+#ifndef PLASK__SOLVER__ELECTR3D_ITERATIVE_MATRIX_H
+#define PLASK__SOLVER__ELECTR3D_ITERATIVE_MATRIX_H
 
 #include <algorithm>
 #include <plask/plask.hpp>
@@ -246,4 +246,4 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
 
 }}} // namespace plask::solvers::electrical3d
 
-#endif // PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H
+#endif // PLASK__SOLVER__ELECTR3D_ITERATIVE_MATRIX_H

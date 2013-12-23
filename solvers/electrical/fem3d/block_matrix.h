@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_BLOCK_MATRIX_H
-#define PLASK__MODULE_THERMAL_BLOCK_MATRIX_H
+#ifndef PLASK__SOLVER__ELECTR3D_BLOCK_MATRIX_H
+#define PLASK__SOLVER__ELECTR3D_BLOCK_MATRIX_H
 
 #include <cstddef>
 #include <plask/plask.hpp>
@@ -87,4 +87,4 @@ struct DpbMatrix {
 
 }}} // namespace plask::solver::electrical3d
 
-#endif // PLASK__MODULE_THERMAL_BLOCK_MATRIX_H
+#endif // PLASK__SOLVER__ELECTR3D_BLOCK_MATRIX_H

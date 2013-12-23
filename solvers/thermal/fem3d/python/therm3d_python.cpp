@@ -23,6 +23,7 @@ BOOST_PYTHON_MODULE(fem3d)
 {
     py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
+        .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 

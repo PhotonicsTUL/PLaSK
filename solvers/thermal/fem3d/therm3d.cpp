@@ -54,6 +54,7 @@ void FiniteElementMethodThermal3DSolver::loadConfiguration(XMLReader &source, Ma
         else if (param == "matrix") {
             algorithm = source.enumAttribute<Algorithm>("algorithm")
                 .value("cholesky", ALGORITHM_CHOLESKY)
+                .value("gauss", ALGORITHM_GAUSS)
                 .value("iterative", ALGORITHM_ITERATIVE)
                 .get(algorithm);
             itererr = source.getAttribute<double>("itererr", itererr);
@@ -240,9 +241,9 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
     applyBC(A, B, btemperature);
 }
 
-template <>
-void FiniteElementMethodThermal3DSolver::applyBC<DpbMatrix>(DpbMatrix& A, DataVector<double>& B,
-                                                            const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
+template <typename MatrixT>
+void FiniteElementMethodThermal3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
+                                                 const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {
@@ -346,6 +347,7 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
 double FiniteElementMethodThermal3DSolver::compute(int loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
+        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
         case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
     }
     return 0.;
@@ -369,6 +371,30 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<do
     // Find solutions
     dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
     if (info < 0) throw CriticalException("%1%: Argument %2% of dpbtrs has illegal value", this->getId(), -info);
+
+    // now A contains factorized matrix and B the solutions
+}
+
+
+void FiniteElementMethodThermal3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
+{
+    int info = 0;
+    this->writelog(LOG_DETAIL, "Solving matrix system");
+    aligned_unique_ptr<int> ipiv(aligned_malloc<int>(A.size));
+
+    A.mirror();
+
+    // Factorize matrix
+    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
+    if (info < 0) {
+        throw CriticalException("%1%: Argument %2% of dgbtrf has illegal value", this->getId(), -info);
+    } else if (info > 0) {
+        throw ComputationError(this->getId(), "Matrix is singlar (at %1%)", info);
+    }
+
+    // Find solutions
+    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    if (info < 0) throw CriticalException("%1%: Argument %2% of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
 }

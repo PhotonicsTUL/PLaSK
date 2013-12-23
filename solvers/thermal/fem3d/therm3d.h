@@ -4,6 +4,7 @@
 #include <plask/plask.hpp>
 
 #include "block_matrix.h"
+#include "gauss_matrix.h"
 #include "iterative_matrix.h"
 
 namespace plask { namespace solvers { namespace thermal3d {
@@ -30,6 +31,7 @@ struct Radiation
 /// Choice of matrix factorization algorithms
 enum Algorithm {
     ALGORITHM_CHOLESKY, ///< block algorithm (thrice faster, however a little prone to failures)
+    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
     ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
 };
 
@@ -79,10 +81,13 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     /// Create 3D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
 
-    /// Matrix solver for block algorithm
+    /// Matrix solver for the block cholesky algorithm
     void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
-    /// Matrix solver for iterative algorithm
+    /// Matrix solver for the block gauss algorithm
+    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
+
+    /// Matrix solver for the iterative algorithm
     void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver

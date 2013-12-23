@@ -33,6 +33,7 @@ class Shockley3D_Test(unittest.TestCase):
         self.solver.maxerr = 1e-5
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)
+        self.solver.algorithm = 'gauss'
 
     def testComputations(self):
         self.solver.compute(1000)

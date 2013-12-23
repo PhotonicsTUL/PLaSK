@@ -4,6 +4,7 @@
 #include <plask/plask.hpp>
 
 #include "block_matrix.h"
+#include "gauss_matrix.h"
 #include "iterative_matrix.h"
 
 namespace plask { namespace solvers { namespace electrical3d {
@@ -11,6 +12,7 @@ namespace plask { namespace solvers { namespace electrical3d {
 /// Choice of matrix factorization algorithms
 enum Algorithm {
     ALGORITHM_CHOLESKY, ///< block algorithm (thrice faster, however a little prone to failures)
+    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
     ALGORITHM_ITERATIVE ///< iterative algorithm using preconditioned conjugate gradient method
 };
 
@@ -62,9 +64,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     template <typename MatrixT>
     void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bvoltage);
 
-    /**
-     * Apply boundary conditions of the first kind
-     */
+    /// Apply boundary conditions of the first kind
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bvoltage);
 
@@ -77,10 +77,13 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     /// Create 3D-vector with calculated heat density
     void saveHeatDensity();
 
-    /// Matrix solver for block algorithm
+    /// Matrix solver for the block cholesky algorithm
     void solveMatrix(DpbMatrix& A, DataVector<double>& B);
 
-    /// Matrix solver for iterative algorithm
+    /// Matrix solver for the block gauss algorithm
+    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
+
+    /// Matrix solver for the iterative algorithm
     void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
