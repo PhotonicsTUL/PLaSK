@@ -32,4 +32,4 @@ class Reflection2D_Test(unittest.TestCase):
 
     def testComputations(self):
         self.solver.wavelength = 1000.
-        #self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15)].neff, 1.147, 3 )
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15)].neff, 1.147, 3 )
