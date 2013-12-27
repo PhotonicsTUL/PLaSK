@@ -267,7 +267,7 @@ static BordersProxy Geometry2DCylindrical_getBorders(const Geometry2DCylindrical
     return borders;
 }
 
-static BordersProxy Geometry3D_getBorders(const Geometry2DCartesian& self) {
+static BordersProxy Geometry3D_getBorders(const Geometry3D& self) {
     BordersProxy borders;
     borders["back"] = _border(self, Geometry::DIRECTION_LONG, false);
     borders["front"] = _border(self, Geometry::DIRECTION_LONG, true);

@@ -251,7 +251,14 @@ texinfo_documents = [
 #texinfo_show_urls = 'footnote'
 
 
-# -- Autodoc output impovments ---------------------------------------------------
+# -- Options for Texinfo output ------------------------------------------------
+
+epub_author = 'M. Dems, P. Beling'
+
+epub_publisher = 'Lodz University of Technology'
+
+
+# -- Autodoc output improvements ---------------------------------------------------
 # http://sphinx-doc.org/ext/autodoc.html
 
 def fix_plask_namespace(signature):

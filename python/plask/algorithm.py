@@ -6,7 +6,17 @@ in computations of semiconductor lasers.
 TODO doc
 
 '''
+import os
 import plask
+
+# Get unique suffix for savefiles
+if 'JOB_ID' in os.environ:
+    _suffix = "-" + os.environ['JOB_ID']
+elif 'PBS_JOBID' in os.environ:
+    _suffix = "-" + os.environ['PBS_JOBID']
+else:
+    import time
+    _suffix = time.strftime("-%Y%m%d-%H%M", time.gmtime())
 
 
 class ThermoElectric(object):
@@ -52,13 +62,21 @@ class ThermoElectric(object):
         self.tfreq = tfreq
 
 
-    def run(self):
+    def run(self, save=True):
         '''
         Execute the algorithm.
 
         In the beginning the solvers are invalidated and next, the thermo-
         electric algorithm is executed until both solvers converge to the
         value specified in their configuration in the `maxerr` property.
+
+        Parameters
+        ----------
+        save : bool or str
+            If `True` the computed fields are saved to the HDF5 file named
+            after the script name with the suffix denoting either the batch job
+            id or the current time if no batch system is used. The filename can
+            be overriden by setting this parameted as a string.
         '''
         self.thermal.invalidate()
         self.electrical.invalidate()
@@ -70,9 +88,39 @@ class ThermoElectric(object):
             verr = self.electrical.compute(self.tfreq)
             terr = self.thermal.compute(1)
 
+        if save:
+            self.save(None if save is True else save)
 
-    def save(self, filename):
-        raise NotImplementedError('save')
+    def save(self, filename=None, group='ThermoElectric'):
+        '''
+        Save the comutation results to the HDF5 file.
+
+        Parameters
+        ----------
+        filename : str
+            The file name to save to. If omitted, the file name is generated
+            automatically based on the script name with suffix denoting either
+            the batch job id or the current time if no batch system is used.
+        group : str
+            HDF5 group to save the data under.
+        '''
+        if filename is None:
+            import sys
+            filename = sys.argv[0]
+            if filename.endswith('.py'): filename = filename[:-3]
+            elif filename.endswith('.xpl'): filename = filename[:-4]
+            filename += _suffix + '.h5'
+        tmesh = self.thermal.mesh
+        vmesh = self.thermal.mesh
+        jmesh = vmesh.get_midpoints()
+        temp = self.thermal.outTemperature(tmesh)
+        volt = self.electrical.outVoltage(vmesh)
+        curr = self.electrical.outCurrentDensity(jmesh)
+        import h5py
+        h5file = h5py.File(filename, 'a')
+        plask.save_field(temp, h5file, group + '/Temperature')
+        plask.save_field(volt, h5file, group + '/Potential')
+        plask.save_field(curr, h5file, group + '/CurrentDensity')
 
 
     def plot_temperature(self, geometry_color='w', mesh_color=None):

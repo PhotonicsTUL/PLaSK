@@ -14,3 +14,4 @@ PLaSK Python API
    API_pylab
    API_hdf5
    API_solvers
+   API_algorithm

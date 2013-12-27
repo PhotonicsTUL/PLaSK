@@ -213,16 +213,16 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
     if type(geometry) == plask.geometry.Cartesian3D:
         if plane is None:
             raise ValueError("for 3D geometry plane must be specified")
-        ax = tuple(i for i,c in enumerate(plask.current_axes) if c in plane)
+        ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
         if len(ax) != 2:
             raise ValueError("bad plane specified")
         dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
     else:
         ax = (0,1)
-        dirs = (("left", "right"), ("top", "bottom"))
+        dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
+                ("top", "bottom"))
 
-    hmirror = mirror and ((dirs[0][0] == "left" and type(geometry) == plask.geometry.Cylindrical2D) or \
-                          geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror')
+    hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
     vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
 
     for leaf,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
@@ -280,7 +280,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
     elif type(mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
         if plane is None:
             raise ValueError("for 3D mesh plane must be specified")
-        axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i,c in enumerate(plask.current_axes) if c in plane)
+        axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i,c in enumerate(plask.config.axes) if c in plane)
         if len(axis) != 2:
             raise ValueError("bad plane specified")
 
@@ -312,7 +312,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
     if isinstance(mesh, plask.mesh.Mesh3D):
         if plane is None:
             raise ValueError("for 3D mesh plane must be specified")
-        ax = tuple(i for i,c in enumerate(plask.current_axes) if c in plane)
+        ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
         if len(ax) != 2:
             raise ValueError("bad plane specified")
     else:
