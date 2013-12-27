@@ -27,22 +27,22 @@ class ThermoElectric(object):
     It computes electric current flow and tempereture distribution in a self-
     consistent loop until desired convergence is reached.
 
-    ThermoElectric(thermal, electrical, tfreq=6)
+        ThermoElectric(thermal, electrical, tfreq=6)
 
     Parameters
     ----------
-    thermal : thermal solver
+    thermal: thermal solver
         Configured thermal solver. In must have `outTemperature` provider and
         `inHeat` receiver. Temperature computations are done with `compute`
         method, which takes maximum number of iterations as input and returns
         maximum convergence error.
-    electrical : electrical solver
+    electrical: electrical solver
         Configured electrical solver. It must have `outHeat` provider and
         `inTemperature` receiver. Computations are done with `compute` method,
         which takes maximum number of iterations as input and returns maximum
         convergence error. Solver specific parameters (e.g. `beta`) should
         already be set before execution of the algorithm.
-    tfreq : integer, optional
+    tfreq: integer, optional
         Number of electrical iterations per single thermal step. As temperature
         tends to converge faster, it is reasonable to repeat thermal solution
         less frequently.

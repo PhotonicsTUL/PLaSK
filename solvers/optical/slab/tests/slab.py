@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.slab import FourierReflectionCyl
+from optical.slab import FourierReflection2D
 
 
 class LayerSet_Test(unittest.TestCase):
@@ -32,7 +32,7 @@ class LayerSet_Test(unittest.TestCase):
             </material>
             </materials>
             <geometry>
-              <cylindrical axes="rz" name="vcsel" outer="extend" bottom="GaAs">
+              <cartesian2d axes="rz" name="vcsel" left="mirror" right="extend" bottom="GaAs">
                 <stack name="layers">
                 <block dr="10" dz="0.06949" material="GaAs"/>
                 <stack name="top-dbr" repeat="24">
@@ -55,15 +55,16 @@ class LayerSet_Test(unittest.TestCase):
                 </stack>
                 <block dr="10" dz="0.07955" material="AlGaAs"/>
                 </stack>
-              </cylindrical>
+              </cartesian2d>
             </geometry>
             <solvers>
-              <optical name="pwrt" solver="FourierReflectionCyl">
+              <optical name="pwrt" solver="FourierReflection2D">
                 <geometry ref="vcsel"/>
               </optical>
             </solvers>
           </plask>''')
         self.solver = self.manager.slv.pwrt
+        self.solver.wavelength = 1000.
         self.mat = self.manager.geo.vcsel.get_material
 
     def testInterface(self):
@@ -73,7 +74,7 @@ class LayerSet_Test(unittest.TestCase):
         self.assertEqual( self.solver.interface, 61 )
 
     def testLayers(self):
-        self.solver.find_mode(1.)
+        self.solver.determinant() # only to trigger solver initialization
         layers = [ ' '.join(set([ "%s/%s" % (self.mat(2,z), self.mat(7,z)) for z in l ])) for l in self.solver.layer_sets ]
         stack = list(self.solver.stack)[-1::-1]
         for i in enumerate(layers):

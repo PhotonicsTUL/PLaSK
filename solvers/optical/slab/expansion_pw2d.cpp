@@ -1,5 +1,5 @@
 #include "expansion_pw2d.h"
-#include "reflection_solver_2d.h"
+#include "fourier_reflection_2d.h"
 #include "mesh_adapter.h"
 
 #define SOLVER static_cast<FourierReflection2D*>(solver)
@@ -437,27 +437,51 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
         }
     }
     
-    DataVector<Vec<3,dcomplex>> dst(dst_mesh.size());
-    
     if (symmetric) {
+        return DataVector<Vec<3,dcomplex>>();
     } else {
         FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
         fft.execute(reinterpret_cast<dcomplex*>(src.data()));
         src[N] = src[0];
         RegularMesh2D src_mesh(RegularAxis(vpos, vpos, 1), RegularAxis(left, right, N+1));
-        interpolateTo(src_mesh, src,
-                      WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()), dst,
-                      defInterpolation<INTERPOLATION_SPLINE>(method));
+        return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
+                           defInterpolation<INTERPOLATION_SPLINE>(method), false);
     }
-
-    return dst;
 }
 
 
 DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
                                                  const cvector& E, const cvector& H, InterpolationMethod method)
 {
-    return DataVector<Vec<3,dcomplex>>(dst_mesh.size(), Vec<3,dcomplex>(0.,0.,0.));
+//     return DataVector<Vec<3,dcomplex>>(dst_mesh.size(), Vec<3,dcomplex>(0.,0.,0.));
+    int order = SOLVER->getSize();
+    double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
+    DataVector<Vec<3,dcomplex>> src(N+1);
+    assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
+    double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
+    
+    if (separated) {
+    } else {
+        if (symmetric) {
+        } else {
+            for (int i = -order; i <= order; ++i) {
+                src[iH(i)].lon() = H[iHz(i)];
+                src[iH(i)].tran() = H[iHx(i)];
+                src[iH(i)].vert() = 0.;
+            }
+        }
+    }
+    
+    if (symmetric) {
+        return DataVector<Vec<3,dcomplex>>();
+    } else {
+        FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
+        fft.execute(reinterpret_cast<dcomplex*>(src.data()));
+        src[N] = src[0];
+        RegularMesh2D src_mesh(RegularAxis(vpos, vpos, 1), RegularAxis(left, right, N+1));
+        return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
+                           defInterpolation<INTERPOLATION_SPLINE>(method), false);
+    }
 }
 
 

@@ -12,8 +12,7 @@ using namespace plask::python;
 #   undef interface
 #endif
 
-#include "../reflection_solver_2d.h"
-#include "../reflection_solver_cyl.h"
+#include "../fourier_reflection_2d.h"
 using namespace plask::solvers::slab;
 
 template <typename SolverT>
@@ -77,6 +76,8 @@ inline void export_base(Class solver) {
     solver.add_receiver("inTemperature", &Solver::inTemperature, "Optical gain in the active region");
     solver.add_receiver("inGain", &Solver::inGain, "Optical gain in the active region");
     solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "Light intensity of the last computed mode");
+    solver.add_provider("outElectricField", &Solver::outElectricField, "Electric field for the last computed mode");
+    solver.add_provider("outMagneticField", &Solver::outMagneticField, "Magnetic field for the last computed mode");
 
     py::scope scope = solver;
 
@@ -258,14 +259,6 @@ BOOST_PYTHON_MODULE(slab)
             .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector")
             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode")
         ;
-    }
-
-    {CLASS(FourierReflectionCyl, "FourierReflectionCyl",
-        "Calculate optical modes and optical field distribution using Fourier slab method\n"
-        " and reflection transfer in two-dimensional cylindrical geometry.")
-        export_reflection_base(solver);
-        METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff"); //TODO
-        RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
     }
 }
 

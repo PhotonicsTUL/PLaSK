@@ -189,7 +189,7 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 #endif
                 gamma = diagonalizer->Gamma(this->stack[n]);
 
-                double H = (n == start)? 0. : abs(this->vbounds[n] - this->vbounds[n-1]);
+                double H = (n == start)? 0. : (this->vbounds[n] - this->vbounds[n-1]);
 
                 if (!emitting || n != start) {
                     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
@@ -362,7 +362,7 @@ void ReflectionSolver<GeometryT>::determineFields()
             case 0: start = this->interface-1; end = 0;       inc = -1; break;
             case 1: start = this->interface;   end = count-1; inc = +1; break;
         }
-
+        
         fields[start].F = cvector(N);
         fields[start].B = cvector(N);
 
@@ -370,7 +370,7 @@ void ReflectionSolver<GeometryT>::determineFields()
         int curr = this->stack[start];
 
         gamma = diagonalizer->Gamma(curr);
-        double H = (start == 0 || start == count-1)? 0. : abs(this->vbounds[start] - this->vbounds[start-1]);
+        double H = (start == 0 || start == count-1)? 0. : (this->vbounds[start] - this->vbounds[start-1]);
         for (int i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
@@ -408,9 +408,9 @@ void ReflectionSolver<GeometryT>::determineFields()
             mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
             mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * E
             // multiply rows of invTH by -1 where necessary for the outer layer
-            if (n+inc == end) {
+            if (n+inc == end && emitting) {
                 for (int i = 0; i < N; i++)
-                    if (real(gamma[i]) < SMALL) B2[i] = -B2[i];
+                    if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
             }
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];              // F2 := F1 + B1
@@ -418,29 +418,28 @@ void ReflectionSolver<GeometryT>::determineFields()
             zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
                   tmp.data(), N0, -1., B2.data(), N);                       // B2 := invTE * tmp - B2
 
-            double H = (n+inc == end)? 0. : abs(this->vbounds[n+inc] - this->vbounds[n+inc-1]);
-            if (n+inc != end) {
+            double H = (n+inc == end)? 0. : (this->vbounds[n+inc] - this->vbounds[n+inc-1]);
+            if (n+inc != end || !emitting) {
                 for (int i = 0; i < N; i++)
                     B2[i] *= 0.5 * exp(-I*gamma[i]*H);                      // B2 := 1/2 * phas * B2
             } else {
                 for (int i = 0; i < N; i++) {
                     dcomplex g = gamma[i];
-                    if (real(g) < SMALL) g = -g;
+                    if (real(g) < -SMALL) g = -g;
                     B2[i] *= 0.5 * exp(-I*g*H);                             // B2 := 1/2 * phas * B2
                 }
             }
         }
 
-        //mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
-        for (int i = 0; i < N; ++i) fields[end].F[i] = 0.;
+        // mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
+        for (int i = 0; i < N; ++i) fields[end].F[i] = 0.; // in the outer layer there is no incoming field
 
         // In the outer layers replace F and B where necessary for consistent gamma handling
-        cvector& F2 = fields[end].F;
-        cvector& B2 = fields[end].B;
-        for (int i = 0; i < N; i++) {
-            if (real(gamma[i]) < -SMALL) {
-                dcomplex t = B2[i]; B2[i] =  F2[i]; F2[i] = t;
-            }
+        if (emitting) {
+            cvector& F2 = fields[end].F;
+            cvector& B2 = fields[end].B;
+            for (int i = 0; i < N; i++)
+                if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
         }
     }
 
@@ -457,6 +456,12 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorE(double z, int n)
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
+    if (n >= this->interface) {
+        z = - z;
+        if (n != 0 && n != this->vbounds.size())
+            z += this->vbounds[n] - this->vbounds[n-1];
+    }
+    
     cdiagonal gamma = diagonalizer->Gamma(this->stack[n]);
 
     int N = gamma.size();
@@ -479,6 +484,12 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
+    if (n >= this->interface) {
+        z = - z;
+        if (n != 0 && n != this->vbounds.size())
+            z += this->vbounds[n] - this->vbounds[n-1];
+    }
+    
     cdiagonal gamma = diagonalizer->Gamma(this->stack[n]);
 
     int N = gamma.size();
@@ -486,10 +497,10 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
 
     for (int i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
-        H[i] = (FF[i] * exp(phi) - BB[i] * exp(-phi));
+        H[i] = FF[i] * exp(phi) - BB[i] * exp(-phi);
     }
 
-    if (n == 0 || n == this->stack.size()-1) {
+    if (emitting && (n == 0 || n == this->vbounds.size())) {
         cdiagonal gamma = diagonalizer->Gamma(this->stack[n]);
         // In the outer layers multiply H by -1 where necessary for propagating wave
         for (int i = 0; i < N; i++)
@@ -508,10 +519,10 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldE(const MeshD<G
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = this->getLayerFor(z);
-        size_t layer = this->stack[n];
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
         if (n >= this->interface) for (auto& h: H) h = -h;
+        size_t layer = this->stack[n];
         auto dest = diagonalizer->source()->fieldE(layer, *level, k0, klong, ktran, E, H, method);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
@@ -527,10 +538,10 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldH(const MeshD<G
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = this->getLayerFor(z);
-        size_t layer = this->stack[n];
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
         if (n >= this->interface) for (auto& h: H) h = -h;
+        size_t layer = this->stack[n];
         auto dest = diagonalizer->source()->fieldH(layer, *level, k0, klong, ktran, E, H, method);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }

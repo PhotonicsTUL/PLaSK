@@ -1,6 +1,6 @@
 .. _sec-API-geometry:
 
-Geometry
+geometry
 ========
 
 Related XML section: :ref:`<geometry> <sec-XPL-geometry>`.

@@ -1,4 +1,4 @@
-#include "reflection_solver_2d.h"
+#include "fourier_reflection_2d.h"
 #include "expansion_pw2d.h"
 
 namespace plask { namespace solvers { namespace slab {

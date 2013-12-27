@@ -4,7 +4,7 @@ algorithm
 =========
 
 This is a reference of available algorithm classes. For general
-information on algorithms see section :ref:`_sec-algorithms`.
+information on algorithms see section :ref:`sec-algorithms`.
 
 .. automodule:: plask.algorithm
    :members:

@@ -1,6 +1,6 @@
 .. _sec-API-mesh:
 
-Mesh
+mesh
 ====
 
 Related XML section: :ref:`<grids> <sec-XPL-grids>`.
