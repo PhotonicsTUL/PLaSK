@@ -15,7 +15,7 @@
 }
 
 body {
-  font-family: "Verdana", Arial, sans-serif;
+  font-family: sans-serif;
   line-height: 1.4em;
   color: black;
   background-color: #eeeeec;
@@ -70,7 +70,7 @@ div.bodywrapper a, div.footer a {
 }
 
 h1, h2, h3, h4 {
-  font-family: "Georgia", "Times New Roman", serif;
+  font-family: "Georgia", serif;
   font-weight: normal;
   color: #3465a4;
   margin-bottom: .8em;
@@ -121,6 +121,10 @@ dt:target, .highlighted {
   background-color: #fbe54e;
 }
 
+dl.xml-contents dt {
+  font-weight: bold;
+}
+
 /* Header */
 
 div.header {
@@ -129,7 +133,7 @@ div.header {
 }
 
 div.header .headertitle {
-  font-family: "Georgia", "Times New Roman", serif;
+  font-family: "Georgia", serif;
   font-weight: normal;
   font-size: 180%;
   letter-spacing: .08em;
@@ -459,7 +463,7 @@ img.toggler {
 
 .viewcode-back {
     float: right;
-    font-family:: "Verdana", Arial, sans-serif;
+    font-family: sans-serif;
 }
 
 div.viewcode-block:target {

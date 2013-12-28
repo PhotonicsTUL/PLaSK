@@ -17,7 +17,9 @@ The computational solvers are declared with an XML tag, which name is the catego
    :attr required solver: Actual solver type. In Python script this defines the class of the solver object.
    :attr lib: Library in which this solver is implemented. For most standard solvers, PLaSK can automatically determine its proper value. For other solver types this attribute is required.
 
-   :contents: The contents of each solver depends on the category and the solver type (i.e. the tag name and the value of the solver attribute). It is specified in the following subsections.
+   .. xml.. xml:contents::
+
+       The contents of each solver depends on the category and the solver type (i.e. the tag name and the value of the solver attribute). It is specified in the following subsections.
 
 
 .. _sec-XPL-Boundary-conditions:
@@ -40,24 +42,24 @@ Most of the solvers have some boundary conditions. They differ by name or type, 
       :attr placeref: Set location of boundary conditions to some location previously named with ``placename``.
       :attr place: Set one of standard location of boundary condition. The value of this attribute depends on the mesh.
 
-      :contents:
+      .. xml:contents::
 
-      .. xml:tag:: <place>
+         .. xml:tag:: <place>
 
-         Set location of boundary condition. This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required. Its attributes are mesh-specific. Below there are most common examples of attribute sets for rectangular meshes:
+            Set location of boundary condition. This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required. Its attributes are mesh-specific. Below there are most common examples of attribute sets for rectangular meshes:
 
-         **Boundary conditions at the side of some object:**
+            **Boundary conditions at the side of some object:**
 
-         :attr required object: Name of the geometry object to set boundary conditions at.
-         :attr path: Path name, specifying particular instance of the object given in the object attribute.
-         :attr required side: Side of the object to set boundary conditions at. (``left``, ``right``, ``top``, ``bottom``, ``back``, ``front``)
+            :attr required object: Name of the geometry object to set boundary conditions at.
+            :attr path: Path name, specifying particular instance of the object given in the object attribute.
+            :attr required side: Side of the object to set boundary conditions at. (``left``, ``right``, ``top``, ``bottom``, ``back``, ``front``)
 
-         **Boundary conditions at some line (2D meshes):**
+            **Boundary conditions at some line (2D meshes):**
 
-         :attr required line: Direction of the line. (``vertical`` or ``horizontal``)
-         :attr required at: Location of the line i.e. its position on the perpendicular axis.
-         :attr required start: Position of the start of the line on the parallel axis.
-         :attr required stop: Position of the end of the line on the parallel axis.
+            :attr required line: Direction of the line. (``vertical`` or ``horizontal``)
+            :attr required at: Location of the line i.e. its position on the perpendicular axis.
+            :attr required start: Position of the start of the line on the parallel axis.
+            :attr required stop: Position of the end of the line on the parallel axis.
 
 
 Thermal solvers
@@ -69,56 +71,56 @@ Thermal solvers
 
    Two-dimensional static thermal solver in Cartesian geometry, based on finite-element method.
 
-   :contents:
+   .. xml:contents::
 
-   .. xml:tag:: <geometry/> [in Static2D thermal solver]
+      .. xml:tag:: <geometry/> [in Static2D thermal solver]
 
-      Geometry for use by this solver.
+         Geometry for use by this solver.
 
-      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+         :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-   .. xml:tag:: <mesh/> [in Static2D thermal solver]
+      .. xml:tag:: <mesh/> [in Static2D thermal solver]
 
-      Mesh used by this solver.
+         Mesh used by this solver.
 
-      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+         :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
 
-   .. xml:tag:: <loop/> [in Static2D thermal solver]
+      .. xml:tag:: <loop/> [in Static2D thermal solver]
 
-      Configuration of the self-consistent loop.
+         Configuration of the self-consistent loop.
 
-      :attr inittemp: Initial temperature. (float [K])
-      :attr maxerr: Maximum allowed error. (float [K])
+         :attr inittemp: Initial temperature. (float [K])
+         :attr maxerr: Maximum allowed error. (float [K])
 
-   .. xml:tag:: <matrix/> [in Static2D thermal solver]
+      .. xml:tag:: <matrix/> [in Static2D thermal solver]
 
-      Configuration of the matrix solver.
+         Configuration of the matrix solver.
 
-      :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
-      :attr itererr: Allowed residual error for the iterative algorithm.
-      :attr iterlim: Maximum number of iterations for the iterative algorithm.
-      :attr logfreq: Frequency of logging iterative solver progress.
-.. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
+         :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
+         :attr itererr: Allowed residual error for the iterative algorithm.
+         :attr iterlim: Maximum number of iterations for the iterative algorithm.
+         :attr logfreq: Frequency of logging iterative solver progress.
+         .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
 
-   .. xml:tag:: <temperature> [in Static2D thermal solver]
+      .. xml:tag:: <temperature> [in Static2D thermal solver]
 
-      Boundary conditions: constant temperature. See subsection :ref:`sec-XPL-Boundary-conditions`.
+         Boundary conditions: constant temperature. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
-   .. xml:tag:: <heatflux> [in Static2D thermal solver]
+      .. xml:tag:: <heatflux> [in Static2D thermal solver]
 
-      Boundary conditions: constant heat flux. See subsection :ref:`sec-XPL-Boundary-conditions`.
+         Boundary conditions: constant heat flux. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
-   .. xml:tag:: <convection> [in Static2D thermal solver]
+      .. xml:tag:: <convection> [in Static2D thermal solver]
 
-      Boundary conditions: convection. See subsection :ref:`sec-XPL-Boundary-conditions`.
+         Boundary conditions: convection. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
-      This boundary condition does not have ``value`` attribute. Use ``coeff`` for convection coefficient and ``ambient`` for ambient temperature instead.
+         This boundary condition does not have ``value`` attribute. Use ``coeff`` for convection coefficient and ``ambient`` for ambient temperature instead.
 
-   .. xml:tag:: <radiation> [in Static2D thermal solver]
+      .. xml:tag:: <radiation> [in Static2D thermal solver]
 
-      Boundary conditions: radiation. See subsection :ref:`sec-XPL-Boundary-conditions`.
+         Boundary conditions: radiation. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
-      This boundary condition does not have ``value`` attribute. Use ``emissivity`` for surface emissivity and ``ambient`` for ambient temperature instead.
+         This boundary condition does not have ``value`` attribute. Use ``emissivity`` for surface emissivity and ``ambient`` for ambient temperature instead.
 
 .. xml:tag:: <thermal solver="StaticCyl"> [StaticCyl]
 
@@ -126,7 +128,9 @@ Thermal solvers
 
       Two-dimensional static thermal solver in cylindrical geometry, based on finite-element method.
 
-      :contents: See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
+      .. xml.. xml:contents::
+
+          See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
 
 .. xml:tag:: <thermal solver="Static3D"> [Static3D]
 
@@ -134,7 +138,9 @@ Thermal solvers
 
       Three-dimensional static thermal solver, based on finite-element method.
 
-      :contents: See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
+      .. xml.. xml:contents::
+
+          See :xml:tag:`<thermal solver="Static2D"> [Static2D]`.
 
 
 Electrical solvers
@@ -146,56 +152,56 @@ Electrical solvers
 
    Two-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
 
-   :contents:
+   .. xml:contents::
 
-   .. xml:tag:: <geometry/> [in Shockley2D electrical solver]
+      .. xml:tag:: <geometry/> [in Shockley2D electrical solver]
 
-      Geometry for use by this solver.
+         Geometry for use by this solver.
 
-      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+         :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-   .. xml:tag:: <mesh/> [in Shockley2D electrical solver]
+      .. xml:tag:: <mesh/> [in Shockley2D electrical solver]
 
-      Mesh used by this solver.
+         Mesh used by this solver.
 
-      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+         :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
 
-   .. xml:tag:: <loop/> [in Shockley2D electrical solver]
+      .. xml:tag:: <loop/> [in Shockley2D electrical solver]
 
-      Configuration of the self-consistent loop.
+         Configuration of the self-consistent loop.
 
-      :attr maxerr: Maximum allowed error. (float [%])
+         :attr maxerr: Maximum allowed error. (float [%])
 
-   .. xml:tag:: <matrix/> [in Shockley2D electrical solver]
+      .. xml:tag:: <matrix/> [in Shockley2D electrical solver]
 
-      Configuration of the matrix solver.
+         Configuration of the matrix solver.
 
-      :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
-      :attr itererr: Allowed residual error for the iterative algorithm.
-      :attr iterlim: Maximum number of iterations for the iterative algorithm.
-      :attr logfreq: Frequency of logging iterative solver progress.
-.. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
+         :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
+         :attr itererr: Allowed residual error for the iterative algorithm.
+         :attr iterlim: Maximum number of iterations for the iterative algorithm.
+         :attr logfreq: Frequency of logging iterative solver progress.
+         .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
 
-   .. xml:tag:: <junction/> [in Shockley2D electrical solver]
+      .. xml:tag:: <junction/> [in Shockley2D electrical solver]
 
-      Configuration of the effective model of p-n junction.
+         Configuration of the effective model of p-n junction.
 
-      :attr js: Reverse bias current density. (float :math:`[A/m^{2}]`)
-      :attr Shockley: Junction coefficient.
-      :attr pnjcond: Initial vertical conductivity of the junction. (float [S/m])
-      :attr heat: Method of determination of the heat generated in the junction. (``joules`` or ``wavelength``)
-      :attr wavelength: Emitted wavelength if ``heat`` is set to ``wavelength``.
+         :attr js: Reverse bias current density. (float [A/m\ :sup:`2`])
+         :attr Shockley: Junction coefficient.
+         :attr pnjcond: Initial vertical conductivity of the junction. (float [S/m])
+         :attr heat: Method of determination of the heat generated in the junction. (``joules`` or ``wavelength``)
+         :attr wavelength: Emitted wavelength if ``heat`` is set to ``wavelength``.
 
-   .. xml:tag:: <contacts/> [in Shockley2D electrical solver]
+      .. xml:tag:: <contacts/> [in Shockley2D electrical solver]
 
-      Properties of the contacts.
+         Properties of the contacts.
 
-      :attr pcond: p-contact conductivity. (float [S/m])
-      :attr ncond: n-contact conductivity. (float [S/m])
+         :attr pcond: p-contact conductivity. (float [S/m])
+         :attr ncond: n-contact conductivity. (float [S/m])
 
-   .. xml:tag:: <voltage> [in Shockley2D electrical solver]
+      .. xml:tag:: <voltage> [in Shockley2D electrical solver]
 
-      Boundary conditions: electric potential. See subsection :ref:`sec-XPL-Boundary-conditions`.
+         Boundary conditions: electric potential. See subsection :ref:`sec-XPL-Boundary-conditions`.
 
 .. xml:tag:: <electrical solver="ShockleyCyl"> [ShockleyCyl]
 
@@ -203,7 +209,9 @@ Electrical solvers
 
       Two-dimensional phenomenological solver in cylindrical geometry, based on finite-element method.
 
-      :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
+      .. xml.. xml:contents::
+
+          See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
 
 .. xml:tag:: <electrical solver="Shockley3D"> [Shockley3D]
 
@@ -211,7 +219,9 @@ Electrical solvers
 
       Three-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
 
-      :contents: See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
+      .. xml.. xml:contents::
+
+          See :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`.
 
 .. xml:tag:: <electrical solver="Diffusion2D"> [Diffusion2D]
 
@@ -219,30 +229,30 @@ Electrical solvers
 
    Two-dimensional diffusion solver in Cartesian geometry.
 
-   :contents:
+   .. xml:contents::
 
-   .. xml:tag:: <geometry/> [in Diffusion2D electrical solver]
+      .. xml:tag:: <geometry/> [in Diffusion2D electrical solver]
 
-      Geometry for use by this solver.
+         Geometry for use by this solver.
 
-      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+         :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-   .. xml:tag:: <mesh/> [in Diffusion2D electrical solver]
+      .. xml:tag:: <mesh/> [in Diffusion2D electrical solver]
 
-      One-dimensional horizontal initial mesh used by this solver.
+         One-dimensional horizontal initial mesh used by this solver.
 
-      :attr required start: Position of the first mesh point. (float [µm])
-      :attr required stop: Position of the last mesh point. (float [µm])
-      :attr required num: Number of the mesh points. (integer)
+         :attr required start: Position of the first mesh point. (float [µm])
+         :attr required stop: Position of the last mesh point. (float [µm])
+         :attr required num: Number of the mesh points. (integer)
 
-   .. xml:tag:: <config/> [in Diffusion2D electrical solver]
+      .. xml:tag:: <config/> [in Diffusion2D electrical solver]
 
-      :attr fem-method: Order of the finite-element method. (``linear`` or ``parabolic``)
-      :attr accuracy: Required relative accuracy. (float [%])
-      :attr abs-accuracy: Required absolute minimal concentration accuracy. (float :math:`[cm^{-3}]`)
-      :attr interpolation: Current density interpolation method name.
-      :attr maxiters: Maximum number of allowed iterations before attempting to refine mesh. (integer)
-      :attr maxrefines: Maximum number of allowed mesh refinements. (integer)
+         :attr fem-method: Order of the finite-element method. (``linear`` or ``parabolic``)
+         :attr accuracy: Required relative accuracy. (float [%])
+         :attr abs-accuracy: Required absolute minimal concentration accuracy. (float [cm\ :sup:`-3`])
+         :attr interpolation: Current density interpolation method name.
+         :attr maxiters: Maximum number of allowed iterations before attempting to refine mesh. (integer)
+         :attr maxrefines: Maximum number of allowed mesh refinements. (integer)
 
 .. xml:tag:: <electrical solver="DiffusionCyl"> [DiffusionCyl]
 
@@ -250,7 +260,9 @@ Electrical solvers
 
       Two-dimensional diffusion solver in cylindrical geometry.
 
-      :contents: See :xml:tag:`<electrical solver="Diffusion2D"> [Diffusion2D]`.
+      .. xml.. xml:contents::
+
+          See :xml:tag:`<electrical solver="Diffusion2D"> [Diffusion2D]`.
 
 
 Gain solvers
@@ -262,34 +274,34 @@ Gain solvers
 
    Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian geometry.
 
-   :contents:
+   .. xml:contents::
 
-   .. xml:tag:: <geometry/> [in Fermi2D gain solver]
+      .. xml:tag:: <geometry/> [in Fermi2D gain solver]
 
-      Geometry for use by this solver.
+         Geometry for use by this solver.
 
-      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+         :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-   .. xml:tag:: <mesh/> [in Fermi2D gain solver]
+      .. xml:tag:: <mesh/> [in Fermi2D gain solver]
 
-      Optional mesh used by this solver. If it is set then the gain is computed only in the mesh points and interpolated in-between. Otherwise, the full gain calculation is performed in each requested point.
+         Optional mesh used by this solver. If it is set then the gain is computed only in the mesh points and interpolated in-between. Otherwise, the full gain calculation is performed in each requested point.
 
-      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+         :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
 
-   .. xml:tag:: <config/> [in Fermi2D gain solver]
+      .. xml:tag:: <config/> [in Fermi2D gain solver]
 
-      Configuration of the self-consistent loop.
+         Configuration of the self-consistent loop.
 
-      :attr lifetime: Carriers lifetime.
-      :attr matrix-elem: Value of the matrix element in gain computations (if not set it is estimated automatically).
+         :attr lifetime: Carriers lifetime.
+         :attr matrix-elem: Value of the matrix element in gain computations (if not set it is estimated automatically).
 
-   .. xml:tag:: <levels/> [in Fermi2D gain solver]
+      .. xml:tag:: <levels/> [in Fermi2D gain solver]
 
-      Custom energy levels in quantum wells. If this tag is used all levels must be set.
+         Custom energy levels in quantum wells. If this tag is used all levels must be set.
 
-      :attr required le: Comma-separated list of electron levels.
-      :attr required hh: Comma-separated list of heavy hole levels.
-      :attr required lh: Comma-separated list of light hole levels.
+         :attr required le: Comma-separated list of electron levels.
+         :attr required hh: Comma-separated list of heavy hole levels.
+         :attr required lh: Comma-separated list of light hole levels.
 
 .. xml:tag:: <gain solver="FermiCyl"> [FermiCyl]
 
@@ -297,7 +309,9 @@ Gain solvers
 
    Simple gain solver based on Fermi Golden Rule for two-dimensional cylindrical geometry.
 
-   :contents: See :xml:tag:`<gain solver="Fermi2D"> [Fermi2D]`.
+   .. xml.. xml:contents::
+
+       See :xml:tag:`<gain solver="Fermi2D"> [Fermi2D]`.
 
 
 Optical solvers
@@ -309,54 +323,56 @@ Optical solvers
 
    Scalar optical solver based on effective index method.
 
-   .. xml:tag:: <geometry/> [in EffectiveIndex2D optical solver]
+   .. xml.. xml:contents::
 
-      Geometry for use by this solver.
+      .. xml:tag:: <geometry/> [in EffectiveIndex2D optical solver]
 
-      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+         Geometry for use by this solver.
 
-   .. xml:tag:: <mesh/> [in EffectiveIndex2D optical solver]
+         :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-      Mesh used by this solver.
+      .. xml:tag:: <mesh/> [in EffectiveIndex2D optical solver]
 
-      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+         Mesh used by this solver.
 
-   .. xml:tag:: <mode> [in EffectiveIndex2D optical solver]
+         :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
 
-      Mode properties.
+      .. xml:tag:: <mode> [in EffectiveIndex2D optical solver]
 
-      :attr polarization: Light polatization. (``TE`` or ``TM``)
-      :attr symmetry: Mode symmetry with respect to vertical symmetry axis (if present). (``none``, ``positive``, or ``negative``)
-      :attr wavelength: Light wavelength. (float [nm])
+         Mode properties.
 
-   .. xml:tag:: <root> [in EffectiveIndex2D optical solver]
+         :attr polarization: Light polatization. (``TE`` or ``TM``)
+         :attr symmetry: Mode symmetry with respect to vertical symmetry axis (if present). (``none``, ``positive``, or ``negative``)
+         :attr wavelength: Light wavelength. (float [nm])
 
-      Parameters of the global root-finding algorithm.
+      .. xml:tag:: <root> [in EffectiveIndex2D optical solver]
 
-      :attr tolx: Tolerance on effective index. (float [-])
-      :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
-      :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
-      :attr maxstep: Maximum step in one iteration of root finding. (float [-])
-      :attr maxiter: Maximum number of root finding iterations. (integer)
+         Parameters of the global root-finding algorithm.
 
-   .. xml:tag:: <stripe-root> [in EffectiveIndex2D optical solver]
+         :attr tolx: Tolerance on effective index. (float [-])
+         :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
+         :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
+         :attr maxstep: Maximum step in one iteration of root finding. (float [-])
+         :attr maxiter: Maximum number of root finding iterations. (integer)
 
-      Parameters of root-finding algorithm for one stripe.
+      .. xml:tag:: <stripe-root> [in EffectiveIndex2D optical solver]
 
-      It has same attributes as :xml:tag:`<root> [in EffectiveIndex2D optical solver]`.
+         Parameters of root-finding algorithm for one stripe.
 
-   .. xml:tag:: <mirrors> [in EffectiveIndex2D optical solver]
+         It has same attributes as :xml:tag:`<root> [in EffectiveIndex2D optical solver]`.
 
-      Mirror losses.
+      .. xml:tag:: <mirrors> [in EffectiveIndex2D optical solver]
 
-      :attr required R1: Reflectivity of the first mirror. (float [-])
-      :attr required R2: Reflectivity of the second mirror. (float [-])
+         Mirror losses.
 
-   .. xml:tag:: <outer> [in EffectiveIndex2D optical solver]
+         :attr required R1: Reflectivity of the first mirror. (float [-])
+         :attr required R2: Reflectivity of the second mirror. (float [-])
 
-      Configuration of handling area outside of the computational domain.
+      .. xml:tag:: <outer> [in EffectiveIndex2D optical solver]
 
-      :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
+         Configuration of handling area outside of the computational domain.
+
+         :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
 
 .. xml:tag:: <optical solver=”EffectiveFrequencyCyl”> [EffectiveFrequencyCyl]
 
@@ -364,50 +380,52 @@ Optical solvers
 
    Scalar optical solver based on effective index method.
 
-   .. xml:tag:: <geometry/> [in EffectiveFrequencyCyl optical solver]
+   .. xml.. xml:contents::
 
-      Geometry for use by this solver.
+      .. xml:tag:: <geometry/> [in EffectiveFrequencyCyl optical solver]
 
-      :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
+         Geometry for use by this solver.
 
-   .. xml:tag:: <mesh/> [in EffectiveFrequencyCyl optical solver]
+         :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-      Mesh used by this solver.
+      .. xml:tag:: <mesh/> [in EffectiveFrequencyCyl optical solver]
 
-      :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
+         Mesh used by this solver.
 
-   .. xml:tag:: <mode> [in EffectiveFrequencyCyl optical solver]
+         :attr required ref: Name of the mesh defined in the :xml:tag:`<grids>` section.
 
-      Mode properties.
+      .. xml:tag:: <mode> [in EffectiveFrequencyCyl optical solver]
 
-      :attr lam0: Approximate wavelength. (float [nm])
-      :attr k0: Approximate normalized frequency. (float [1/µm])
-      :attr emission: Direction of emission, necessary for over-threshold power computations (``top`` or ``bottom``)
-      :attr vlam: "vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators (float [nm])
+         Mode properties.
 
-      Attributes ``lam0`` and ``k0`` are mutually exclusive.
+         :attr lam0: Approximate wavelength. (float [nm])
+         :attr k0: Approximate normalized frequency. (float [1/µm])
+         :attr emission: Direction of emission, necessary for over-threshold power computations (``top`` or ``bottom``)
+         :attr vlam: "vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators (float [nm])
 
-   .. xml:tag:: <root> [in EffectiveFrequencyCyl optical solver]
+         Attributes ``lam0`` and ``k0`` are mutually exclusive.
 
-      Parameters of the global root-finding algorithm.
+      .. xml:tag:: <root> [in EffectiveFrequencyCyl optical solver]
 
-      :attr tolx: Tolerance on effective index. (float [-])
-      :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
-      :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
-      :attr maxstep: Maximum step in one iteration of root finding. (float [-])
-      :attr maxiter: Maximum number of root finding iterations. (integer)
+         Parameters of the global root-finding algorithm.
 
-   .. xml:tag:: <stripe-root> [in EffectiveFrequencyCyl optical solver]
+         :attr tolx: Tolerance on effective index. (float [-])
+         :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
+         :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
+         :attr maxstep: Maximum step in one iteration of root finding. (float [-])
+         :attr maxiter: Maximum number of root finding iterations. (integer)
 
-      Parameters of root-finding algorithm for one stripe.
+      .. xml:tag:: <stripe-root> [in EffectiveFrequencyCyl optical solver]
 
-      It has same attributes as :xml:tag:`<root> [in EffectiveFrequencyCyl optical solver]`.
+         Parameters of root-finding algorithm for one stripe.
 
-   .. xml:tag:: <outer> [in EffectiveFrequencyCyl optical solver]
+         It has same attributes as :xml:tag:`<root> [in EffectiveFrequencyCyl optical solver]`.
 
-      Configuration of handling area outside of the computational domain.
+      .. xml:tag:: <outer> [in EffectiveFrequencyCyl optical solver]
 
-      :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
+         Configuration of handling area outside of the computational domain.
+
+         :attr required distance: Distance from the computational domain boundaries where material for the outermost layer is sampled. (float [µm])
 
 
 .. _sec-data-filters:

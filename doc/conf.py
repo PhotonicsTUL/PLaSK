@@ -31,7 +31,7 @@ sys.path.insert(0, plaskconf.python_path)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax', 'sphinx_domain_xml']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax', 'sphinx_domain_xml', 'sphinx.ext.autosummary']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -186,14 +186,17 @@ latex_elements = {
 #'pointsize': '10pt',
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'preamble': r'''
+\usepackage{enumitem}
+\setlistdepth{99}
+\setlist[itemize]{labelsep=0.5em}
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PLaSK.tex', u'PLaSK Documentation',
-   u'M. Dems, P. Beling', 'manual'),
+  ('index', 'PLaSK.tex', u'PLaSK Documentation', u'M. Dems, P. Beling', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -286,7 +289,7 @@ def process_docstr(app, what, name, obj, options, lines):
       l = fix_plask_namespace(l)
       if (what == 'method' or what == 'function') and looks_like_signature_pattern.match(l):
          l = fix_signature(l)
-         l = re.sub(r'(\w*)\(', r'**\1**\ (', l, 1)	#bold method/function name
+         l = re.sub(r'(\w*)\(', r'**\1**\ (', l, 1)	# bold method/function name
       lines[index] = l
 
 def setup(app):

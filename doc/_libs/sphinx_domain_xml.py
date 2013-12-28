@@ -24,6 +24,9 @@
 
 import re
 
+from docutils import nodes
+from docutils.parsers.rst.directives.admonitions import BaseAdmonition
+
 from sphinx import addnodes
 from sphinx.domains import Domain, ObjType
 from sphinx.locale import l_, _
@@ -84,6 +87,65 @@ def parse_tag(tagstr):
         context = sep + c
     return ParsedName(name, displ_name, extra, context)
 
+
+class xmlcontents_node(nodes.Admonition, nodes.Element): pass
+
+def visit_xmlcontents_html(self, node):
+    self.body.append('<dl class="xml-contents"><dt>Contents:</dt>\n')
+    self.body.append(self.starttag(node, 'dd', ''))
+    self.set_first_last(node)
+
+def depart_xmlcontents_html(self, node):
+    self.body.append('</dd><dl>\n')
+
+def visit_xmlcontents_latex(self, node):
+    self.body.append('\\begin{fulllineitems}\n\\pysigline{\\bf Contents}\\hfill\n\n\\nopagebreak[4]')
+    #self.body.append('\n\n\\begin{quote}{\\bf Contents}\n\n\\nopagebreak[4]')
+
+def depart_xmlcontents_latex(self, node):
+    self.body.append('\\end{fulllineitems}\n')
+    #self.body.append('\\end{quote}\n')
+
+def visit_xmlcontents_text(self, node):
+    self.add_text('Contents:\n')
+
+def depart_xmlcontents_text(self, node):
+    pass
+
+def visit_xmlcontents_man(self, node):
+    self.body.append('.sp\n')
+    name = '%s%s%s\n\n' % (
+            self.defs['strong'][0],
+            self.language.labels.get("Contents", "Contents"),
+            self.defs['strong'][1],
+        )
+    self.body.append(name)
+    self.visit_block_quote(node)
+
+def depart_xmlcontents_man(self, node):
+    self.depart_block_quote(node)
+
+def visit_xmlcontents_texinfo(self, node):
+    self.visit_admonition(node)
+
+def depart_xmlcontents_texinfo(self, node):
+    self.depart_admonition(node)
+
+def visit_field_list(self, node):
+    self.body.append('\\begin{description}\n')
+    if self.table:
+        self.table.has_problematic = True
+def depart_field_list(self, node):
+    self.body.append('\\end{description}\n')
+
+
+class XMLContents(BaseAdmonition):
+    '''
+    Directive for XML node contents
+    '''
+    node_class = xmlcontents_node
+
+
 class XMLTag(ObjectDescription):
     """
     Description of XML tag.
@@ -96,8 +158,8 @@ class XMLTag(ObjectDescription):
         #GroupedField('attributes', label=l_('Attributes'), rolename='tag',
         #             names=('attribute', 'attr', 'parameter', 'param'),
         #             can_collapse=True),
-        Field('contents', label=l_('Contents'), has_arg=False,
-              names=('contents', 'content', 'Contents', 'Content'))
+        #Field('contents', label=l_('Contents'), has_arg=False,
+        #      names=('contents', 'content', 'Contents', 'Content'))
     ]
 
     def add_target_and_index(self, name, sig, signode):
@@ -135,12 +197,14 @@ class XMLTag(ObjectDescription):
             signode += addnodes.desc_addname(p.desc, p.desc)
         return p.ref_target()
 
+
 class XMLRefRole(XRefRole):
    def process_link(self, env, refnode, has_explicit_title, title, target):
       p = parse_tag(target)
       target = p.ref_target()
       if has_explicit_title: return title, target
       return p.displ_name_with_desc(), target
+
 
 class XMLDomain(Domain):
     """XML domain."""
@@ -152,6 +216,7 @@ class XMLDomain(Domain):
     }
     directives = {
         'tag': XMLTag,
+        'contents': XMLContents,
     }
     roles = {
         'tag':  XMLRefRole(),
@@ -181,4 +246,14 @@ class XMLDomain(Domain):
 
 def setup(app):
     app.add_domain(XMLDomain)
+    app.add_node(xmlcontents_node,
+                 html=(visit_xmlcontents_html, depart_xmlcontents_html),
+                 latex=(visit_xmlcontents_latex, depart_xmlcontents_latex),
+                 text=(visit_xmlcontents_text, depart_xmlcontents_text),
+                 man=(visit_xmlcontents_man, depart_xmlcontents_man),
+                 texinfo=(visit_xmlcontents_texinfo, depart_xmlcontents_texinfo))
 
+    # Modify LaTeX output
+    from sphinx.writers.latex import LaTeXTranslator
+    LaTeXTranslator.visit_field_list = visit_field_list
+    LaTeXTranslator.depart_field_list = depart_field_list

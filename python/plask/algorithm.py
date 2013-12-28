@@ -27,22 +27,20 @@ class ThermoElectric(object):
     It computes electric current flow and tempereture distribution in a self-
     consistent loop until desired convergence is reached.
 
-        ThermoElectric(thermal, electrical, tfreq=6)
+        ``ThermoElectric(thermal, electrical, tfreq=6)``
 
-    Parameters
-    ----------
-    thermal: thermal solver
-        Configured thermal solver. In must have `outTemperature` provider and
-        `inHeat` receiver. Temperature computations are done with `compute`
+    :param solver thermal:
+        Configured thermal solver. In must have ``outTemperature`` provider and
+        ``inHeat`` receiver. Temperature computations are done with ``compute``
         method, which takes maximum number of iterations as input and returns
         maximum convergence error.
-    electrical: electrical solver
-        Configured electrical solver. It must have `outHeat` provider and
-        `inTemperature` receiver. Computations are done with `compute` method,
+    :param solver electrical:
+        Configured electrical solver. It must have ``outHeat`` provider and
+        ``inTemperature`` receiver. Computations are done with ``compute`` method,
         which takes maximum number of iterations as input and returns maximum
-        convergence error. Solver specific parameters (e.g. `beta`) should
+        convergence error. Solver specific parameters (e.g. ``beta``) should
         already be set before execution of the algorithm.
-    tfreq: integer, optional
+    :param integer tfreq:
         Number of electrical iterations per single thermal step. As temperature
         tends to converge faster, it is reasonable to repeat thermal solution
         less frequently.
@@ -50,7 +48,7 @@ class ThermoElectric(object):
     Solvers specified on construction of this algorithm are automatically
     connected. Then the computations can be executed using `run` method, after
     which the results may be save to the HDF5 file with `save` or presented
-    visually using `plot_`... methods.
+    visually using ``plot_...`` methods.
 
     '''
 
@@ -70,13 +68,12 @@ class ThermoElectric(object):
         electric algorithm is executed until both solvers converge to the
         value specified in their configuration in the `maxerr` property.
 
-        Parameters
-        ----------
-        save : bool or str
+        :param save:
             If `True` the computed fields are saved to the HDF5 file named
             after the script name with the suffix denoting either the batch job
             id or the current time if no batch system is used. The filename can
             be overriden by setting this parameted as a string.
+        :type save: bool or str
         '''
         self.thermal.invalidate()
         self.electrical.invalidate()
@@ -95,13 +92,11 @@ class ThermoElectric(object):
         '''
         Save the comutation results to the HDF5 file.
 
-        Parameters
-        ----------
-        filename : str
+        :param str filename:
             The file name to save to. If omitted, the file name is generated
             automatically based on the script name with suffix denoting either
             the batch job id or the current time if no batch system is used.
-        group : str
+        :param str group:
             HDF5 group to save the data under.
         '''
         if filename is None:
@@ -127,18 +122,18 @@ class ThermoElectric(object):
         '''
         Plot computed temperature to the current axes.
 
-        Parameters
-        ----------
-        geometry_color : string or None
+        :param geometry_color:
             Matplotlib color specification of the geometry. If None, structure
             is not plotted.
-        mesh_color : string or None
+        :type geometry_color: str or None
+        :param mesh_color:
             Matplotlib color specification of the mesh. If None, the mesh is
             not plotted.
+        :type mesh_color: str or None
 
-        See Also
-        --------
-        plask.plot_field : Plot any field obtained from receivers
+        .. seealso::
+
+            plask.plot_field : Plot any field obtained from receivers
         '''
         field = self.thermal.outTemperature(self.thermal.mesh)
         plask.plot_field(field)
@@ -157,18 +152,18 @@ class ThermoElectric(object):
         '''
         Plot computed voltage to the current axes.
 
-        Parameters
-        ----------
-        geometry_color : string or None
+        :param geometry_color:
             Matplotlib color specification of the geometry. If None, structure
             is not plotted.
-        mesh_color : string or None
+        :type geometry_color: str or None
+        :param mesh_color:
             Matplotlib color specification of the mesh. If None, the mesh is
             not plotted.
+        :type mesh_color: str or None
 
-        See Also
-        --------
-        plask.plot_field : Plot any field obtained from receivers
+        .. seealso::
+
+            plask.plot_field : Plot any field obtained from receivers
         '''
         field = self.electrical.outVoltage(self.electrical.mesh)
         plask.plot_field(field)
@@ -187,9 +182,7 @@ class ThermoElectric(object):
         '''
         Plot computed voltage along the vertical axis
 
-        Parameters
-        ----------
-        at : float, optional
+        :param float at:
             Horizontal position of the axis at which the voltage is plotted.
         '''
         mesh = plask.mesh.Rectilinear2D([at], self.electrical.mesh.axis1)
