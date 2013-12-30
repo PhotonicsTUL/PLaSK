@@ -494,3 +494,39 @@ th.field-name {
 p.rubric {
     font-weight: bold;
 }
+
+
+/* Lines increasing legibility */
+
+dl.tag>dd {
+    margin-left: 0em;
+    padding-left: 1.2em;
+    margin-top: 0em;
+    padding-top: 0.4em;
+    border-left: solid 2px #eee;
+}
+
+dl.class {
+    padding-left: 4px;
+    border-top: solid 10px #eee;
+    border-left: solid 2px #eee;
+}
+
+dl.method {
+    padding-left: 4px;
+    border-top: solid 1px #fee;
+    border-left: solid 1px #fee;
+}
+
+dl.attribute {
+    padding-left: 4px;
+    border-top: solid 1px #eef;
+    border-left: solid 1px #eef;
+}
+
+dl.function {
+    padding-left: 4px;
+    border-top: solid 2px #eee;
+    border-left: solid 2px #eee;
+}
+

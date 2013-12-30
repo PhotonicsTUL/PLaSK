@@ -29,9 +29,9 @@ struct PmlWrapper {
 
     PmlWrapper(SolverT* solver, typename SolverT::PML* pml): solver(solver), pml(pml) {}
 
-    double get_extinction() const { return pml->extinction; }
-    void set_extinction(double val) {
-        pml->extinction = val;
+    dcomplex get_factor() const { return pml->factor; }
+    void set_factor(dcomplex val) {
+        pml->factor = val;
         solver->invalidate();
     }
 
@@ -54,11 +54,11 @@ struct PmlWrapper {
     }
 
     std::string __str__() const {
-        return format("<extinction: %1%, size: %2%, shift: %3%, order: %4%>", pml->extinction, pml->size, pml->shift, pml->order);
+        return format("<factor: %1%, size: %2%, shift: %3%, order: %4%>", pml->factor, pml->size, pml->shift, pml->order);
     }
 
     std::string __repr__() const {
-        return format("PML(extinction=%1%, size=%2%, shift=%3%, order=%4%)", pml->extinction, pml->size, pml->shift, pml->order);
+        return format("PML(factor=%1%, size=%2%, shift=%3%, order=%4%)", pml->factor, pml->size, pml->shift, pml->order);
     }
 };
 
@@ -82,7 +82,7 @@ inline void export_base(Class solver) {
     py::scope scope = solver;
 
     py::class_<PmlWrapper<Solver>>("PML", "Perfectly matched layer details", py::no_init)
-        .add_property("extinction", &PmlWrapper<Solver>::get_extinction, &PmlWrapper<Solver>::set_extinction, "PML extinction parameter")
+        .add_property("factor", &PmlWrapper<Solver>::get_factor, &PmlWrapper<Solver>::set_factor, "PML scaling factor")
         .add_property("size", &PmlWrapper<Solver>::get_size, &PmlWrapper<Solver>::set_size, "PML size")
         .add_property("shift", &PmlWrapper<Solver>::get_shift, &PmlWrapper<Solver>::set_shift, "PML shift from the structure")
         .add_property("order", &PmlWrapper<Solver>::get_order, &PmlWrapper<Solver>::set_order, "PML shape order")

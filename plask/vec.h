@@ -25,10 +25,10 @@ inline double abs2(const Vec<dim,T>& v) { return dot(v,v); }
 #ifndef DOXYGEN
 
 template <>
-inline double abs2<2,dcomplex>(const Vec<2,dcomplex>& v) { return dot(v,conj(v)).real(); }
+inline double abs2<2,dcomplex>(const Vec<2,dcomplex>& v) { return dot(v,v).real(); }
 
 template <>
-inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,conj(v)).real(); }
+inline double abs2<3,dcomplex>(const Vec<3,dcomplex>& v) { return dot(v,v).real(); }
 
 #endif // DOXYGEN
 

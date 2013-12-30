@@ -14,11 +14,11 @@ struct SlabSolver: public SolverOver<GeometryT> {
 
     /// Information about lateral PMLs
     struct PML {
-        double extinction;  ///< Extinction of the PMLs
-        double size;        ///< Size of the PMLs
-        double shift;       ///< Distance of the PMLs from defined computational domain
-        double order;       ///< Order of the PMLs
-        PML(): extinction(2.), size(1.), shift(0.5), order(2) {}
+        dcomplex factor;  ///< PML factor
+        double size;      ///< Size of the PMLs
+        double shift;     ///< Distance of the PMLs from defined computational domain
+        double order;     ///< Order of the PMLs
+        PML(): factor(1.,0.), size(1.), shift(0.5), order(2) {}
     };
 
   protected:

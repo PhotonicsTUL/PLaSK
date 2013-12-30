@@ -406,7 +406,7 @@ void ReflectionSolver<GeometryT>::determineFields()
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];              // F2 := F1 - B1
             mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
-            mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * E
+            mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
             // multiply rows of invTH by -1 where necessary for the outer layer
             if (n+inc == end && emitting) {
                 for (int i = 0; i < N; i++)
@@ -501,7 +501,6 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
     }
 
     if (emitting && (n == 0 || n == this->vbounds.size())) {
-        cdiagonal gamma = diagonalizer->Gamma(this->stack[n]);
         // In the outer layers multiply H by -1 where necessary for propagating wave
         for (int i = 0; i < N; i++)
             if (real(gamma[i]) < -SMALL) H[i] = - H[i];

@@ -97,7 +97,7 @@ void ExpansionPW2D::init()
     if (periodic) {
         mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
     } else {
-        DataVector<double> Sy(M, 0.);   // PML coeffs for mu
+        DataVector<dcomplex> Sy(M, 1.);   // PML coeffs for mu
         // Add PMLs
         SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
@@ -106,19 +106,17 @@ void ExpansionPW2D::init()
         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
         for (size_t i = 0; i < pil; ++i) {
             double h = (pl - xmesh[i]) / SOLVER->pml.size;
-            Sy[i] = SOLVER->pml.extinction * pow(h, SOLVER->pml.order);
+            Sy[i] = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
         }
         for (size_t i = pir+1; i < xmesh.size(); ++i) {
             double h = (xmesh[i] - pr) / SOLVER->pml.size;
-            Sy[i] = SOLVER->pml.extinction * pow(h, SOLVER->pml.order);
-            dcomplex sy(1., Sy[i]);
+            Sy[i] = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
         }
         // Average mu
         std::fill(mag.begin(), mag.end(), Tensor2<dcomplex>(0.));
         for (size_t i = 0; i != nN; ++i) {
             for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-                dcomplex sy(1., Sy[j]);
-                mag[i] += Tensor2<dcomplex>(sy, 1./sy);
+                mag[i] += Tensor2<dcomplex>(Sy[j], 1./Sy[j]);
             }
             mag[i] /= refine;
         }
@@ -188,13 +186,13 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
         ref = NR[pil];
         for (size_t i = 0; i < pil; ++i) {
             double h = (pl - xmesh[i]) / SOLVER->pml.size;
-            dcomplex sy(1., SOLVER->pml.extinction * pow(h, SOLVER->pml.order));
+            dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
         }
         ref = NR[min(pir,xmesh.size()-1)];
         for (size_t i = pir+1; i < xmesh.size(); ++i) {
             double h = (xmesh[i] - pr) / SOLVER->pml.size;
-            dcomplex sy(1., SOLVER->pml.extinction * pow(h, SOLVER->pml.order));
+            dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
         }
     }
@@ -443,7 +441,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
         FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
         fft.execute(reinterpret_cast<dcomplex*>(src.data()));
         src[N] = src[0];
-        RegularMesh2D src_mesh(RegularAxis(vpos, vpos, 1), RegularAxis(left, right, N+1));
+        RegularMesh2D src_mesh(RegularAxis(left, right, N+1), RegularAxis(vpos, vpos, 1));
         return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
                            defInterpolation<INTERPOLATION_SPLINE>(method), false);
     }
@@ -478,7 +476,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh
         FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
         fft.execute(reinterpret_cast<dcomplex*>(src.data()));
         src[N] = src[0];
-        RegularMesh2D src_mesh(RegularAxis(vpos, vpos, 1), RegularAxis(left, right, N+1));
+        RegularMesh2D src_mesh(RegularAxis(left, right, N+1), RegularAxis(vpos, vpos, 1));
         return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
                            defInterpolation<INTERPOLATION_SPLINE>(method), false);
     }

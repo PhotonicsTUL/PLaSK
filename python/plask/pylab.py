@@ -21,7 +21,7 @@ import matplotlib.patches
 
 import matplotlib.pylab
 from matplotlib.pylab import *
-__doc__ += matplotlib.pylab.__doc__
+# __doc__ += matplotlib.pylab.__doc__
 
 # Easier rc handling. Make conditional on matplotlib version if I manage to introduce it there
 if True:
@@ -146,20 +146,35 @@ if True:
 
 import plask
 
-def plot_field(field, levels=16, fill=True, antialiased=False, **kwargs):
+def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor=1.0, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
 
+    data = field.array
+    
+    if type(comp) == str:
+        comp = plask.config.axes.index(comp)
+    
     if type(field.mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         axis0 = field.mesh.axis0
         axis1 = field.mesh.axis1
-        data = field.array.transpose()
+        if len(data.shape) == 3:
+            if comp is None:
+                raise TypeError("specify vector component to plot")
+            else:
+                data = data[:,:,comp]
+        data = data.transpose()
     elif type(field.mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
         axes = [ axis for axis in (field.mesh.axis0, field.mesh.axis1, field.mesh.axis2) if len(axis) > 1 ]
         if len(axes) != 2:
             raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
         axis0, axis1 = axes
-        data = field.array.reshape((len(axis0), len(axis1))).transpose()
+        if len(data.shape) == 4:
+            if comp is None:
+                raise TypeError("specify vector component to plot")
+            else:
+                data = data[:,:,:,comp]
+        data = data.reshape((len(axis0), len(axis1))).transpose()
     else:
         raise NotImplementedError("mesh type not supported")
 
@@ -168,7 +183,7 @@ def plot_field(field, levels=16, fill=True, antialiased=False, **kwargs):
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
     if fill:
-        result = contourf(axis0, axis1, data, levels, antialiased=antialiased, **kwargs)
+        result = contourf(axis0, axis1, data*factor, levels, antialiased=antialiased, **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
             result = contour(axis0, axis1, data, levels, colors='k', antialiased=antialiased, **kwargs)
@@ -180,26 +195,54 @@ def plot_field(field, levels=16, fill=True, antialiased=False, **kwargs):
 def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
     '''Plot vector field'''
     #TODO documentation
+    
     m = field.mesh
-    quiver(array(m.axis0), array(m.axis1), field.array[:,:,0], field.array[:,:,1],
-           angles=angles, scale_units=scale_units, **kwargs)
+    
+    if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+        axis0, axis1 = m.axis0, m.axis1
+        i0, i1 = -2, -1
+        data = field.array.transpose()
+    elif type(m) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+        iaxes = [ iaxis for iaxis in enumerate,(m.axis0, m.axis1, m.axis2) if len(axis) > 1 ]
+        if len(axes) != 2:
+            raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
+        (i0, axis0), (i1, axis1) = iaxes
+        data = field.array.reshape((len(axis0), len(axis1), field.array.shape[-1]))[:,:,[i0,i1]].transpose((1,0,2))
+    else:
+        raise NotImplementedError("mesh type not supported")
+
+    quiver(array(axis0), array(axis1), data[:,:,0], data[:,:,1], angles=angles, scale_units=scale_units, **kwargs)
 
 
 def plot_stream(field, scale=8.0, color='k', **kwargs):
     '''Plot vector field as a streamlines'''
     #TODO documentation
+    
     m = field.mesh
-    m0, m1 = meshgrid(array(m.axis0), array(m.axis1))
-    arr = field.array.transpose((1,0,2))
+    
+    if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+        axis0, axis1 = m.axis0, m.axis1
+        i0, i1 = -2, -1
+        data = field.array.transpose()
+    elif type(m) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+        iaxes = [ iaxis for iaxis in enumerate,(m.axis0, m.axis1, m.axis2) if len(axis) > 1 ]
+        if len(axes) != 2:
+            raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
+        (i0, axis0), (i1, axis1) = iaxes
+        data = field.array.reshape((len(axis0), len(axis1), field.array.shape[-1]))[:,:,[i0,i1]].transpose()
+    else:
+        raise NotImplementedError("mesh type not supported")
+
+    m0, m1 = meshgrid(array(axis0), array(axis1))
     if scale or color == 'norm':
-        norm = sum(arr**2, 2)
+        norm = sum(data**2, 2)
         norm /= norm.max()
     if color == 'norm':
         color = norm
     if scale:
-        streamplot(m0, m1, arr[:,:,0], arr[:,:,1], linewidth=scale*norm, color=color, **kwargs)
+        streamplot(m0, m1, data[:,:,0], data[:,:,1], linewidth=scale*norm, color=color, **kwargs)
     else:
-        streamplot(m0, m1, arr[:,:,0], arr[:,:,1], color=color, **kwargs)
+        streamplot(m0, m1, data[:,:,0], data[:,:,1], color=color, **kwargs)
 
 
 
