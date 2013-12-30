@@ -21,9 +21,18 @@ The computational solvers are declared with an XML tag, which name is the catego
 
        The contents of each solver depends on the category and the solver type (i.e. the tag name and the value of the solver attribute). It is specified in the following subsections.
 
+Most solvers need to have boundary conditions specified in a some way. This is always done in a consistent method described below:
+
 .. toctree::
 
    xpl_solvers_boundary_conditions
+
+The available solvers are as follows:
+
+.. toctree::
+
+   xpl_solvers_boundary_conditions
+
    xpl_solvers_thermal
    xpl_solvers_electrical
    xpl_solvers_gain
