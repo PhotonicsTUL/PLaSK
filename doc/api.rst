@@ -1,4 +1,4 @@
-.. _sec-API:
+.. _sec-api:
 
 ****************
 PLaSK Python API
@@ -7,11 +7,11 @@ PLaSK Python API
 .. toctree::
    :maxdepth: 3
 
-   API_plask
-   API_geometry
-   API_mesh
-   API_material
-   API_pylab
-   API_hdf5
-   API_solvers
-   API_algorithm
+   api_plask
+   api_geometry
+   api_mesh
+   api_material
+   api_pylab
+   api_hdf5
+   api_solvers
+   api_algorithm

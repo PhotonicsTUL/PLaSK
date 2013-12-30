@@ -27,28 +27,44 @@ class ThermoElectric(object):
     It computes electric current flow and tempereture distribution in a self-
     consistent loop until desired convergence is reached.
 
-        ``ThermoElectric(thermal, electrical, tfreq=6)``
+    Args:
+        thermal (solver): Configured thermal solver.
+            It must have ``outTemperature`` provider and ``inHeat`` receiver.
+            Temperature computations are done with ``compute`` method, which
+            takes maximum number of iterations as input and returns maximum
+            convergence error.
 
-    :param solver thermal:
-        Configured thermal solver. In must have ``outTemperature`` provider and
-        ``inHeat`` receiver. Temperature computations are done with ``compute``
-        method, which takes maximum number of iterations as input and returns
-        maximum convergence error.
-    :param solver electrical:
-        Configured electrical solver. It must have ``outHeat`` provider and
-        ``inTemperature`` receiver. Computations are done with ``compute`` method,
-        which takes maximum number of iterations as input and returns maximum
-        convergence error. Solver specific parameters (e.g. ``beta``) should
-        already be set before execution of the algorithm.
-    :param integer tfreq:
-        Number of electrical iterations per single thermal step. As temperature
-        tends to converge faster, it is reasonable to repeat thermal solution
-        less frequently.
+        electrical (solver): Configured electrical solver.
+            It must have ``outHeat`` provider and ``inTemperature`` receiver.
+            Computations are done with ``compute`` method, which takes maximum
+            number of iterations as input and returns maximum convergence error.
+            Solver specific parameters (e.g. ``beta``) should already be set
+            before execution of the algorithm.
+
+        tfreq (int): Number of electrical iterations per single thermal step.
+            As temperature tends to converge faster, it is reasonable to repeat
+            thermal solution less frequently.
 
     Solvers specified on construction of this algorithm are automatically
     connected. Then the computations can be executed using `run` method, after
     which the results may be save to the HDF5 file with `save` or presented
-    visually using ``plot_...`` methods.
+    visually using ``plot_...`` methods. If the ``save`` parameter is *True*
+    the fields are saved automatically after the computations. The file name
+    is based on the name of the executed script with suffix denoting either
+    the launch time or the identifief of a batch job if a batch system (like
+    OpenPBS or SGE) is used.
+
+    Example:
+
+        The typical usage scenario of this algorithm is as follows:
+
+        >>> task = algorithm.ThermoElectric(therm, electr)
+        >>> task.run()
+        >>> task.plot_junction_current()
+
+        The code above launches the computations, assuming that `therm` is
+        a configured thermal solver and ``electr`` an electrical one. Then the
+        current density distribution along the junction is plotted.
 
     '''
 
@@ -68,12 +84,12 @@ class ThermoElectric(object):
         electric algorithm is executed until both solvers converge to the
         value specified in their configuration in the `maxerr` property.
 
-        :param save:
-            If `True` the computed fields are saved to the HDF5 file named
-            after the script name with the suffix denoting either the batch job
-            id or the current time if no batch system is used. The filename can
-            be overriden by setting this parameted as a string.
-        :type save: bool or str
+        Args:
+            save (bool or str): If `True` the computed fields are saved to the
+                HDF5 file named after the script name with the suffix denoting
+                either the batch job id or the current time if no batch system
+                is used. The filename can be overriden by setting this parameted
+                as a string.
         '''
         self.thermal.invalidate()
         self.electrical.invalidate()
@@ -92,12 +108,13 @@ class ThermoElectric(object):
         '''
         Save the comutation results to the HDF5 file.
 
-        :param str filename:
-            The file name to save to. If omitted, the file name is generated
-            automatically based on the script name with suffix denoting either
-            the batch job id or the current time if no batch system is used.
-        :param str group:
-            HDF5 group to save the data under.
+        Args:
+            filename (str): The file name to save to.
+                If omitted, the file name is generated automatically based on
+                the script name with suffix denoting either the batch job id or
+                the current time if no batch system is used.
+
+            group (str): HDF5 group to save the data under.
         '''
         if filename is None:
             import sys
@@ -122,18 +139,15 @@ class ThermoElectric(object):
         '''
         Plot computed temperature to the current axes.
 
-        :param geometry_color:
-            Matplotlib color specification of the geometry. If None, structure
-            is not plotted.
-        :type geometry_color: str or None
-        :param mesh_color:
-            Matplotlib color specification of the mesh. If None, the mesh is
-            not plotted.
-        :type mesh_color: str or None
+        Args:
+            geometry_color (str or ``None``): Matplotlib color specification for
+                the geometry. If ``None``, structure is not plotted.
 
-        .. seealso::
+            mesh_color (str or ``None``): Matplotlib color specification for
+                the mesh. If ``None``, the mesh is not plotted.
 
-            plask.plot_field : Plot any field obtained from receivers
+        See also:
+            :func:`plask.pylab.plot_field` : Plot any field obtained from receivers
         '''
         field = self.thermal.outTemperature(self.thermal.mesh)
         plask.plot_field(field)
@@ -152,18 +166,16 @@ class ThermoElectric(object):
         '''
         Plot computed voltage to the current axes.
 
-        :param geometry_color:
-            Matplotlib color specification of the geometry. If None, structure
-            is not plotted.
-        :type geometry_color: str or None
-        :param mesh_color:
-            Matplotlib color specification of the mesh. If None, the mesh is
-            not plotted.
-        :type mesh_color: str or None
+        Args:
+            geometry_color (str or ``None``): Matplotlib color specification
+                for the geometry. If ``None``, structure is not plotted.
 
-        .. seealso::
+            mesh_color (str or ``None``): Matplotlib color specification for
+                the mesh. If ``None``, the mesh is not plotted.
 
-            plask.plot_field : Plot any field obtained from receivers
+
+        See also:
+            :func:`plask.pylab.plot_field` : Plot any field obtained from receivers
         '''
         field = self.electrical.outVoltage(self.electrical.mesh)
         plask.plot_field(field)
@@ -182,8 +194,9 @@ class ThermoElectric(object):
         '''
         Plot computed voltage along the vertical axis
 
-        :param float at:
-            Horizontal position of the axis at which the voltage is plotted.
+        Args:
+            at (float): Horizontal position of the axis at which the voltage
+                        is plotted.
         '''
         mesh = plask.mesh.Rectilinear2D([at], self.electrical.mesh.axis1)
         field = self.electrical.outVoltage(mesh)
@@ -197,11 +210,9 @@ class ThermoElectric(object):
         '''
         Plot current density at the active region.
 
-        Parameters
-        ----------
-        refine : integer, optional
-            Numeber of points in the plot between each two points in
-            the computational mesh.
+        Args:
+            refine (int): Number of points in the plot between each two points
+                          in the computational mesh.
         '''
         # A little magic to get junction position first
         points = self.electrical.mesh.get_midpoints()
@@ -251,63 +262,64 @@ class ThresholdSearch(ThermoElectric):
     the volatage and electric current ensuring no optical loss in the
     laser cavity.
 
-    ThresholdSearch(thermal, electrical, diffusion, gain, optical,
-                    ivolt, vmin, vmax, approx_mode, mode='auto', tfreq=6,
-                    quick=False)
+    Args:
+         thermal (solver): Configured thermal solver.
+             It must have ``outTemperature`` provider and ``inHeat`` receiver.
+             Temperature computations are done with ``compute`` method, which
+             takes maximum number of iterations as input and returns maximum
+             convergence error.
 
-    Parameters
-    ----------
-    thermal : thermal solver
-        Configured thermal solver. In must have `outTemperature` provider and
-        `inHeat` receiver. Temperature computations are done with `compute`
-        method, which takes maximum number of iterations as input and returns
-        maximum convergence error.
-    electrical : electrical solver
-        Configured electrical solver. It must have providers `outHeat` and
-        `outCurrentDensity` as well as `inTemperature` receiver. Computations
-        are done with `compute` method, which takes maximum number of iterations
-        as input and returns maximum convergence error. Solver specific parameters
-        (e.g. `beta`) should already be set before execution of the algorithm.
-    diffusion : diffusion solver or None
-        Configured solver computing carriers diffusion. It must have one provider:
-        `outCarriersConcentration` and two receivers: `inTemperature` and
-        `inCurrentDensity`. Under-threshold computations are done with `compute`
-        method. If this parameter is None then it is assumed that its functionality
-        is already ensured by the electrical solvers, which in such a case should
-        have its own `outCarriersConcentration` provider.
-    gain : gain solver
-        Configured gain solver. TODO
-    optical : optical solver
-        Configured optical solver. It is required to have `inTemperature` and
-        `inGain` receivers and `outLightIntensity` provider that is necessary only
-        for plotting electromagnetic field profile. This solver needs to have
-        `find_mode` method if `quick` is false or `get_detrminant` and `set_mode`
-        methods is `quick` is true. TODO
-    ivolt : integer
-        Index in the `voltage_boundary` boundary conditions list in the
-        `electrical` solver that
-    vmin : float
-        TODO
-    vmax : float
-        TODO
-    approx_mode : float
-        Approximation of the optical mode (either the effective index or
-        the wavelength) needed for optical computation.
-    mode : string, optional
-        TODO: 'neff', 'wavelength' or 'auto'
-    tfreq : integer, optional
-        Number of electrical iterations per single thermal step. As temperature
-        tends to converge faster, it is reasonable to repeat thermal solution
-        less frequently.
-    quick : bool, optional
-        If this parameter is True, the algorithm tries to find the threshold
-        the easy way i.e. by computing only the optical determinant in each
-        iteration.
+         electrical (solver): Configured electrical solver.
+             It must have providers ``outHeat`` and ``outCurrentDensity`` as
+             well as ``inTemperature`` receiver. Computations are done with
+             ``compute`` method, which takes maximum number of iterations as
+             input and returns maximum convergence error. Solver specific
+             parameters (e.g. ``beta``) should already be set before execution
+             of the algorithm.
+
+         diffusion (solver or ``None``): Configured diffusion solver.
+             It must have one provider ``outCarriersConcentration`` and two
+             receivers: ``inTemperature`` and ``inCurrentDensity``. Under-
+             threshold computations are done with ``compute`` method. If this
+             parameter is ``None`` then it is assumed that its functionality is
+             already ensured by the electrical solvers, which in such a case
+             should have its own ``outCarriersConcentration`` provider.
+
+         gain (solver): Configured gain solver. TODO
+
+         optical (solver): Configured optical solver.
+             It is required to have ``inTemperature`` and ``inGain`` receivers
+             and ``outLightIntensity`` provider that is necessary only for
+             plotting electromagnetic field profile. This solver needs to have
+             ``find_mode`` method if ``quick`` is false or ``get_detrminant`` and
+             ``set_mode`` methods is ``quick`` is true. TODO
+
+         ivolt (int): Index in the ``voltage_boundary`` boundary conditions list
+             in the ``electrical`` solver that is varied in order to find the
+             threshold.
+
+         vmin (float): TODO
+
+         vmax (float): TODO
+
+         approx_mode (float): Approximation of the optical mode
+             (either the effective index or the wavelength) needed for optical
+             computations.
+
+         mode (str): TODO: 'neff', 'wavelength' or 'auto'
+
+         tfreq (int): Number of electrical iterations per single thermal step.
+             As temperature tends to converge faster, it is reasonable to repeat
+             thermal solution less frequently.
+
+         quick (bool): If this parameter is True, the algorithm tries to find
+             the threshold the easy way i.e. by computing only the optical
+             determinant in each iteration.
 
     Solvers specified on construction of this algorithm are automatically
-    connected. Then the computations can be executed using `run` method, after
-    which the results may be save to the HDF5 file with `save` or presented
-    visually using `plot_`... methods.
+    connected. Then the computations can be executed using ``run`` method, after
+    which the results may be save to the HDF5 file with ``save`` or presented
+    visually using ``plot_``... methods.
 
     '''
 
@@ -348,11 +360,9 @@ class ThresholdSearch(ThermoElectric):
         are run within the root-finding algorithm until the mode is found
         with zero optical losses.
 
-        Returns
-        -------
-        float
-            The voltage set to `ivolt` boundary condition for the threshold.
-            The threshold current can be then obtained by calling
+        Returns:
+            The voltage set to ``ivolt`` boundary condition for the threshold.
+            The threshold current can be then obtained by calling:
 
             >>> electrical.get_total_current()
             123.0

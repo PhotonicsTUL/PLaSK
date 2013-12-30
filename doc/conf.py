@@ -14,7 +14,7 @@
 import sys, os, re   #re for processing signatures
 
 sys.path.append(os.environ['CMAKE_CURRENT_BINARY_DIR'])
-sys.path.insert(0, os.path.abspath('./_libs'))
+sys.path.insert(0, os.path.abspath('./_lib'))
 
 import plaskconf
 
@@ -31,7 +31,19 @@ sys.path.insert(0, plaskconf.python_path)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax', 'sphinx_domain_xml', 'sphinx.ext.autosummary']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
+              'sphinx.ext.autosummary', 'sphinx_domain_xml']
+
+try:
+    import sphinxcontrib.napoleon
+except ImportError:
+    import warnings
+    warnings.warn("No napolen installed. API doc will not be properly formatted!")
+else:
+    extensions.append('sphinxcontrib.napoleon')
+    napoleon_use_param = True
+    napoleon_use_admonition_for_examples = True
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -253,7 +265,6 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
 
-
 # -- Options for Texinfo output ------------------------------------------------
 
 epub_author = 'M. Dems, P. Beling'
@@ -270,7 +281,7 @@ def fix_plask_namespace(signature):
 
 def fix_signature(signature):
    # remove first argument, which is self named as arg1:
-   signature = re.sub(r'\( \(\w*?\)arg1(, )?', r'(', signature) # remove "(sth)arg1" and "(sth)arg1, "
+   signature = re.sub(r'\( \(\w*?\)arg1(, )?', r'(self, ', signature) # remove "(sth)arg1" and "(sth)arg1, "
    # change: (type)var -> type var:
    signature = re.sub(r'\((\w*?)\)', r'\1 ', signature)
    return signature

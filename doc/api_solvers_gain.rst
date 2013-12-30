@@ -1,9 +1,9 @@
-.. _sec-API-solvers-gain:
+.. _sec-api-solvers-gain:
 
 Gain
 ----
 
-.. _sec-API-solvers-gain-simple:
+.. _sec-api-solvers-gain-simple:
 
 simple
 ^^^^^^

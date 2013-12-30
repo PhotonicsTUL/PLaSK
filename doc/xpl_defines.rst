@@ -1,4 +1,4 @@
-.. _sec-XPL-defines:
+.. _sec-xpl-defines:
 
 Section <defines>
 =================

@@ -1,4 +1,4 @@
-.. _sec-XPL-materials:
+.. _sec-xpl-materials:
 
 Section <materials>
 ===================

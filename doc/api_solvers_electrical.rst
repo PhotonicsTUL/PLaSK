@@ -1,10 +1,10 @@
-.. _sec-API-solvers-electrical:
+.. _sec-api-solvers-electrical:
 
 Electrical
 ----------
 
 
-.. _sec-API-solvers-electrical-fem:
+.. _sec-api-solvers-electrical-fem:
 
 fem
 ^^^
@@ -17,7 +17,7 @@ Related XML tags: :xml:tag:`<electrical solver="Shockley2D"> [Shockley2D]`, :xml
    :undoc-members:
 
 
-.. _sec-API-solvers-electrical-fem3d:
+.. _sec-api-solvers-electrical-fem3d:
 
 fem3d
 ^^^^^
@@ -30,7 +30,7 @@ Related XML tag: :xml:tag:`<electrical solver="Shockley3D"> [Shockley3D]`.
    :undoc-members:
 
 
-.. _sec-API-solvers-electrical-diffusion:
+.. _sec-api-solvers-electrical-diffusion:
 
 Diffusion
 ^^^^^^^^^

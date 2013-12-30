@@ -1,9 +1,9 @@
-.. _sec-API-mesh:
+.. _sec-api-mesh:
 
 mesh
 ====
 
-Related XML section: :ref:`<grids> <sec-XPL-grids>`.
+Related XML section: :ref:`<grids> <sec-xpl-grids>`.
 
 .. automodule:: plask.mesh
    :members:

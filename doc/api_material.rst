@@ -1,9 +1,9 @@
-.. _sec-API-material:
+.. _sec-api-material:
 
 material
 ========
 
-Related XML section: :ref:`<materials> <sec-XPL-materials>`.
+Related XML section: :ref:`<materials> <sec-xpl-materials>`.
 
 .. automodule:: plask.material
    :members:

@@ -1,4 +1,4 @@
-.. _sec-API-hdf5:
+.. _sec-api-hdf5:
 
 hdf5
 ====

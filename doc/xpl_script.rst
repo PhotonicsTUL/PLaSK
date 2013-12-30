@@ -1,4 +1,4 @@
-.. _sec-XPL-script:
+.. _sec-xpl-script:
 
 Section <script>
 ================
@@ -17,8 +17,3 @@ In order to be able to easily use ``<`` and ``&`` characters in the script, it i
        print_log(LOG_RESULT, "Life, the Universe and Everything!")
 
    ]]></script>
-
-
-.. rubric:: Footnotes
-.. [#XML-tutoruals] Good resources are http://www.w3.org/TR/REC-xml/, http://en.wikipedia.org/wiki/XML, and http://www.w3schools.com/xml/.
-.. [#different-boundary-conditions] In some cases where structure of boundary conditions description is different, it is shown in the reference of particular solver.

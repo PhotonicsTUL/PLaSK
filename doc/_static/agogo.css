@@ -121,10 +121,6 @@ dt:target, .highlighted {
   background-color: #fbe54e;
 }
 
-dl.xml-contents dt {
-  font-weight: bold;
-}
-
 /* Header */
 
 div.header {
@@ -472,4 +468,29 @@ div.viewcode-block:target {
     background-color: #f4debf;
     border-top: 1px solid #ac9;
     border-bottom: 1px solid #ac9;
+}
+
+/* -- PLaSK customizations -------------------------------------------------- */
+
+body {
+    font-size: 12pt;
+}
+
+pre, code, kbd, samp, tt {
+    /* monospace font size fix */
+    font-family: monospace,monospace;
+    font-size: 1em;
+}
+
+dl.xml-contents dt {
+    font-weight: bold;
+}
+
+th.field-name {
+    white-space: nowrap;
+    padding-right: 0.25em;
+}
+
+p.rubric {
+    font-weight: bold;
 }

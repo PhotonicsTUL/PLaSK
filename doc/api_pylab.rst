@@ -1,4 +1,4 @@
-.. _sec-API-pylab:
+.. _sec-api-pylab:
 
 pylab
 =====

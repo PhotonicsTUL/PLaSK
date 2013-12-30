@@ -1,4 +1,4 @@
-.. _sec-API-plask:
+.. _sec-api-plask:
 
 Global
 ======

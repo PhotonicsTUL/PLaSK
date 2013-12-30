@@ -1,9 +1,9 @@
-.. _sec-API-solvers:
+.. _sec-api-solvers:
 
 Solvers
 =======
 
-Related XML section: :ref:`<solvers> <sec-XPL-solvers>`.
+Related XML section: :ref:`<solvers> <sec-xpl-solvers>`.
 
 .. automodule:: _plask
    :members: Solver

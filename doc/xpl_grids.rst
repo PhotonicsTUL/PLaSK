@@ -1,4 +1,4 @@
-.. _sec-XPL-grids:
+.. _sec-xpl-grids:
 
 Section <grids>
 ===============

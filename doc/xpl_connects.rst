@@ -1,4 +1,4 @@
-.. _sec-XPL-connects:
+.. _sec-xpl-connects:
 
 Section <connects>
 ==================

@@ -244,6 +244,7 @@ class XMLDomain(Domain):
         for (typ, name), docname in self.data['objects'].items():
             yield name, name, typ, docname, typ + '-' + name, 1
 
+
 def setup(app):
     app.add_domain(XMLDomain)
     app.add_node(xmlcontents_node,

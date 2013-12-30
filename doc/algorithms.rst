@@ -4,4 +4,5 @@
 High-level algorithms
 *********************
 
-See section :ref:`sec-API-algorithm`.
+See section :ref:`sec-api-algorithm`.
+

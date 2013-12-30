@@ -1,9 +1,9 @@
-.. _sec-API-solvers-thermal:
+.. _sec-api-solvers-thermal:
 
 Thermal
 -------
 
-.. _sec-API-solvers-thermal-fem:
+.. _sec-api-solvers-thermal-fem:
 
 fem
 ^^^
@@ -16,7 +16,7 @@ Related XML tags: :xml:tag:`<thermal solver="Static2D"> [Static2D]`, :xml:tag:`<
    :undoc-members:
 
 
-.. _sec-API-solvers-thermal-fem3d:
+.. _sec-api-solvers-thermal-fem3d:
 
 fem3d
 ^^^^^

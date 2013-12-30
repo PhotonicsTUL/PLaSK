@@ -1,9 +1,9 @@
-.. _sec-API-geometry:
+.. _sec-api-geometry:
 
 geometry
 ========
 
-Related XML section: :ref:`<geometry> <sec-XPL-geometry>`.
+Related XML section: :ref:`<geometry> <sec-xpl-geometry>`.
 
 .. automodule:: plask.geometry
    :members:

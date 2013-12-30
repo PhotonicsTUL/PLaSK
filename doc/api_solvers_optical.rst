@@ -1,10 +1,10 @@
 
-.. _sec-API-solvers-optical:
+.. _sec-api-solvers-optical:
 
 Optical
 -------
 
-.. _sec-API-solvers-optical-effective:
+.. _sec-api-solvers-optical-effective:
 
 effective
 ^^^^^^^^^
@@ -17,7 +17,7 @@ Related XML tags: :xml:tag:`<optical solver=”EffectiveIndex2D”> [EffectiveIn
    :undoc-members:
 
 
-.. _sec-API-solvers-optical-slab:
+.. _sec-api-solvers-optical-slab:
 
 slab
 ^^^^

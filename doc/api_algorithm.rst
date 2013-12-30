@@ -1,4 +1,4 @@
-.. _sec-API-algorithm:
+.. _sec-api-algorithm:
 
 algorithm
 =========
