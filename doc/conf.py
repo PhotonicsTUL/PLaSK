@@ -13,7 +13,9 @@
 
 import sys, os, re   #re for processing signatures
 
-sys.path.append(os.environ['CMAKE_CURRENT_BINARY_DIR'])
+CMAKE_CURRENT_BINARY_DIR = os.environ['CMAKE_CURRENT_BINARY_DIR']
+
+sys.path.append(CMAKE_CURRENT_BINARY_DIR)
 sys.path.insert(0, os.path.abspath('./_lib'))
 
 import plaskconf
@@ -32,7 +34,8 @@ sys.path.insert(0, plaskconf.python_path)
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
-              'sphinx.ext.autosummary', 'sphinx_domain_xml']
+              'sphinx.ext.autosummary', 'sphinx.ext.inheritance_diagram',
+              'sphinx_domain_xml']
 
 try:
     import sphinxcontrib.napoleon
@@ -82,7 +85,7 @@ release = plaskconf.release
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_api*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -103,6 +106,11 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
+
+
+# -- Autosummary options -------------------------------------------------------
+
+autosummary_generate = True
 
 
 # -- Options for HTML output ---------------------------------------------------

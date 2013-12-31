@@ -340,8 +340,8 @@ inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c
  * @return dot product v1·v2
  */
 template <>
-inline auto dot(const Vec<2,double>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
-    return fma(v1.c0, conj(v2.c0), v1.c1 * conj(v2.c1));
+inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,double>& v2) -> decltype(v1.c0*v2.c0) {
+    return fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);
 }
 
 /**
@@ -351,8 +351,8 @@ inline auto dot(const Vec<2,double>& v1, const Vec<2,complex<double>>& v2) -> de
  * @return dot product v1·v2
  */
 template <>
-inline auto dot(const Vec<2,complex<double>>& v1, const Vec<2,complex<double>>& v2) -> decltype(v1.c0*v2.c0) {
-    return fma(v1.c0, conj(v2.c0), v1.c1 * conj(v2.c1));
+inline auto dot(const Vec<2,dcomplex>& v1, const Vec<2,dcomplex>& v2) -> decltype(v1.c0*v2.c0) {
+    return fma(conj(v1.c0), v2.c0, conj(v1.c1) * v2.c1);
 }
 
 /**

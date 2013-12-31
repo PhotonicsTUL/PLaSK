@@ -307,10 +307,6 @@ dl.glossary dt {
     font-size: 110%;
 }
 
-dl.xml-contents dt {
-  font-weight: bold;
-}
-
 .field-list ul {
     margin: 0;
     padding-left: 1em;
@@ -465,5 +461,11 @@ table .link-target {
     font-weight: bold;
     src: url("res:///Data/fonts/LiberationNarrow-BoldItalic.otf")
         format("opentype");
+}
+
+/* -- PLaSK customizations -------------------------------------------------- */
+
+dl.xml-contents dt {
+  font-weight: bold;
 }
 

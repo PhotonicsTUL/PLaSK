@@ -1,4 +1,5 @@
-.. _sec-Preface:
+.. _sec-preface:
+
 *******
 Preface
 *******

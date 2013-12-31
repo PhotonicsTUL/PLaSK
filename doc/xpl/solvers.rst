@@ -31,10 +31,10 @@ The available solvers are as follows:
 
 .. toctree::
 
-   xpl_solvers_boundary_conditions
+   solvers/boundary_conditions
 
-   xpl_solvers_thermal
-   xpl_solvers_electrical
-   xpl_solvers_gain
-   xpl_solvers_optical
-   xpl_solvers_filters
+   solvers/thermal
+   solvers/electrical
+   solvers/gain
+   solvers/optical
+   solvers/filters

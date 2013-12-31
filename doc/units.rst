@@ -1,4 +1,4 @@
-.. _sec-units-in-plask:
+.. _sec-units:
 
 **************
 Units in PLaSK

@@ -9,7 +9,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Extrusion of two-dimensional object into third dimension. 2D objects are defined in the plane defined by the transverse and vertical axes. Hence, the extrusion is performed into the longitudinal direction.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required length: Length of the extrusion.
 
@@ -23,7 +23,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Mirror reflection of the object along specified axis.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
@@ -37,7 +37,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    Revolution of the two-dimensional object around its local vertical axis. The horizontal axis of the 2D object becomes a radial axis of the resulting compound cylinder. Vertical axes of the 2D object remains the vertical axis of the resulting block.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
 
    .. xml:contents::
@@ -64,7 +64,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    A simple shift of the object. Note that the bounding box is shifted as well, so in containers that place their items basing on their bounding boxes, this transformation will have no effect.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal position of the origin of transformed element. (float [µm])
    :attr {Y}: where **{Y}** is the transverse axis name: Transversal position of the origin of transformed element. (float [µm])

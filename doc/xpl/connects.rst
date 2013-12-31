@@ -12,4 +12,4 @@ The purpose of this section is to define the relations between solvers i.e. the 
    Connect provider to receiver.
 
    :attr required out: Provider to connect in the format "solver_name.outProviderName" (or "filter_name.out").
-   :attr required in: Receiver to connect in the format "solver_name.inReceiverName". If *solver_name* is a :ref:`filter <sec-data-filters>`, this attribute should have form "solver_name[object]" or "solver_name[geometry@path]", where object (optionally specified by *path*) is the geometry in which the provider specified in ``out`` attribute provides data.
+   :attr required in: Receiver to connect in the format "solver_name.inReceiverName". If *solver_name* is a :ref:`filter <sec-data-filters>`, this attribute should have form "solver_name[object]" or "solver_name[object\@path]", where object (optionally specified by *path*) is the geometry in which the provider specified in ``out`` attribute provides data.

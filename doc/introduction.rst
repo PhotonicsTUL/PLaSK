@@ -1,4 +1,4 @@
-.. _sec-Introduction:
+.. _sec-introduction:
 
 ************
 Introduction

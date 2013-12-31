@@ -6,6 +6,49 @@ analysis of semiconductor lasers, as it allows to perform simulations of various
 physical phenomena with different models: thermal, electrical, quantum and optical.
 PLaSK takes care of considering mutual interactions between these models and
 allows to easily perform complex self-consistent analysis of complete devices.
+
+Modules
+=======
+
+.. autosummary::
+   :toctree: api/
+   :template: module.rst
+
+   geometry
+   mesh
+   material
+   algorithm
+
+Classes
+=======
+
+.. autosummary::
+   :nosignatures:
+
+   Data
+   vector
+   config
+
+Functions
+=========
+
+.. autosummary::
+
+   loadxpl
+   runxpl
+   print_log
+
+   save_field
+   load_field
+
+   plot_field
+   plot_vectors
+   plot_stream
+   plot_geometry
+   plot_mesh
+   plot_boundary
+   plot_material_param
+
 '''
 
 copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
@@ -33,9 +76,11 @@ _sys.path.insert(2, _os.path.join(lib_path, "solvers"))
 materialdb = material.database = material.MaterialsDB.get_default()
 
 def update_factories():
-    '''For each material in default database make factory in plask.material'''
+    '''For each material in default database make factory in ``plask.material``.'''
     def factory(name):
-        return lambda **kwargs: materialdb.get(name, **kwargs)
+        func = lambda **kwargs: materialdb.get(name, **kwargs)
+        func.__doc__ = "Create %s material." % name
+        return func
     for mat in material.database:
         if mat == 'air': continue
         name = mat.split(":")[0]
@@ -50,8 +95,8 @@ material.Air = lambda: material.air
 materialdb.load_all()
 material.update_factories()
 
-def register_material(cls=None, name=None, complex=False, DB=None):
-    '''Register a custom Python material'''
+def register_material(cls=None, name=None, is_complex=False, DB=None):
+    '''Register a custom Python material.'''
 
     # A trick allowing passing arguments to decorator
     if cls is None:
@@ -70,7 +115,7 @@ def register_material(cls=None, name=None, complex=False, DB=None):
     if DB is None:
         DB = material.database
 
-    if complex:
+    if is_complex:
         material._register_material_complex(cls.name, cls, DB)
     else:
         material._register_material_simple(cls.name, cls, DB)
@@ -80,8 +125,10 @@ def register_material(cls=None, name=None, complex=False, DB=None):
 material.register_material = register_material
 del register_material
 
-material.simple = lambda mat, **kwargs: material.register_material(mat, complex=False, **kwargs)
-material.complex = lambda mat, **kwargs: material.register_material(mat, complex=True, **kwargs)
+material.simple = lambda mat, **kwargs: material.register_material(mat, is_complex=False, **kwargs)
+material.simple.__doc__ = """Decorator for simple custom material class."""
+material.complex = lambda mat, **kwargs: material.register_material(mat, is_complex=True, **kwargs)
+material.complex.__doc__ = """Decorator for complex custom material class."""
 
 
 ## ## plask.geometry ## ##
@@ -120,7 +167,7 @@ del Stack3D
 ## ## plask.manager ## ##
 
 def loadxpl(source, vars={}, sections=None, destination=None):
-    #TODO documentation
+    '''Load the XPL file.'''
 
     if destination is None:
         try:
@@ -211,7 +258,7 @@ class StepProfile(object):
 ## ##  ## ##
 
 try:
-    from plask.pylab import *
+    from .pylab import *
 except ImportError:
     from numpy import *
     print_log(LOG_WARNING, "plask.pylab could not be imported. You will not be able to make professionally-looking plots. Install matplotlib to resolve this issue.")
@@ -220,7 +267,7 @@ else:
     has_pylab = True
 
 try:
-    from plask.hdf5 import *
+    from .hdf5 import *
 except ImportError:
     print_log(LOG_WARNING, "plask.hdf5 could not be imported. Your will not be able to save fields to HDF5 files. Install h5py to resolve this issue.")
     has_hdf5 = False

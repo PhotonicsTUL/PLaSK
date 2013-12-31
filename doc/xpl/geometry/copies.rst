@@ -13,7 +13,7 @@ Copies and references to geometry objects
 
    Modified copy of any previously defined and named (with the name attribute) two or three dimensional object.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required from: Name of the source two or three dimensional object to make modified copy of. Usually it is some container that has some other named its items or sub-items.
 

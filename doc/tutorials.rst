@@ -1,3 +1,5 @@
+.. _sec-tutorials:
+
 **********************
 Tutorials and Examples
 **********************

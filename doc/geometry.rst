@@ -13,10 +13,10 @@ See section :ref:`sec-xpl-geometry`.
 Creating geometry from Python
 =============================
 
-See section :ref:`sec-api-geometry`.
+See section :mod:`plask.geometry`.
 
 
 Reference of geometry objects
 =============================
 
-See sections :ref:`sec-xpl-geometry` and :ref:`sec-api-geometry`.
+See sections :ref:`sec-xpl-geometry` and :mod:`plask.geometry`.

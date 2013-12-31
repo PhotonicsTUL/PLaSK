@@ -18,13 +18,13 @@ Instead of the section content, it is possible to use it as a single tag with th
 
 .. toctree::
 
-   xpl_defines
-   xpl_materials
-   xpl_geometry
-   xpl_grids
-   xpl_solvers
-   xpl_connects
-   xpl_script
+   xpl/defines
+   xpl/materials
+   xpl/geometry
+   xpl/grids
+   xpl/solvers
+   xpl/connects
+   xpl/script
 
 .. rubric:: Footnotes
 

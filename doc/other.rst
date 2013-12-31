@@ -1,3 +1,5 @@
+.. _sec-other:
+
 **********************
 Other Useful Utilities
 **********************

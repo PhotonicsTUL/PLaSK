@@ -7,7 +7,7 @@ Containers
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr left: Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
    :attr right: Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
@@ -48,7 +48,7 @@ Containers
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
 
    .. xml:contents::
@@ -80,7 +80,7 @@ Containers
 
    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
    :attr shift: Horizontal position of the shelf left edge in its local coordinates. Defaults to 0. (float [µm])
@@ -112,7 +112,7 @@ Containers
 
    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
    :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])

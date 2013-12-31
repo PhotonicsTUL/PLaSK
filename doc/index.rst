@@ -10,7 +10,7 @@ PLaSK User Guide
 .. highlight:: python
 
 .. toctree::
-   :maxdepth: 4
+   :hidden:
 
    preface
    introduction
@@ -28,3 +28,20 @@ PLaSK User Guide
    xpl
    api
    glossary
+
+* :doc:`preface` 
+* :doc:`introduction`
+* :doc:`tutorials`
+* :doc:`general`
+* :doc:`geometry`
+* :doc:`materials`
+* :doc:`meshes`
+* :doc:`solvers`
+* :doc:`algorithms`
+* :doc:`other`
+* :doc:`gui`
+* :doc:`units`
+* :doc:`index-solvers`
+* :doc:`xpl`
+* :doc:`api`
+* :doc:`glossary`

@@ -4,5 +4,5 @@
 High-level algorithms
 *********************
 
-See section :ref:`sec-api-algorithm`.
+See section :mod:`plask.algorithm`.
 

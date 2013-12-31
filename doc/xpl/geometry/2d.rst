@@ -8,6 +8,6 @@ The following elements are specifying two-dimensional geometry objects for use w
 .. toctree::
    :maxdepth: 2
 
-   xpl_geometry_2d_containers
-   xpl_geometry_2d_transforms
-   xpl_geometry_2d_objects
+   2d/containers
+   2d/transforms
+   2d/objects

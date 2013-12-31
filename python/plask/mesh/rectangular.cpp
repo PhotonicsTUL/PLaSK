@@ -21,7 +21,7 @@
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
-    
+
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
@@ -417,7 +417,7 @@ namespace detail {
         py::tuple __div__(int f) const;
 
         std::string __str__() const;
-        
+
         struct Iter {
             const ThisT& obj;
             int i;
@@ -649,7 +649,7 @@ void register_divide_generator() {
             "    create generator without initial division of geometry objects", dim).c_str(), py::no_init); dividecls
             .def("__init__", py::make_constructor(&RectilinearMeshDivideGenerator__init__<dim>, py::default_call_policies(),
                  (py::arg("prediv")=py::object(), py::arg("postdiv")=py::object(), py::arg("gradual")=true,
-                  py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))      
+                  py::arg("warn_multiple")=true, py::arg("warn_missing")=true, py::arg("warn_outside")=true)))
             .add_property("gradual", &RectilinearMeshDivideGenerator<dim>::getGradual, &RectilinearMeshDivideGenerator<dim>::setGradual, "Limit maximum adjacent objects size change to the factor of two")
             .def_readwrite("warn_multiple", &RectilinearMeshDivideGenerator<dim>::warn_multiple, "Warn if refining path points to more than one object")
             .def_readwrite("warn_missing", &RectilinearMeshDivideGenerator<dim>::warn_missing, "Warn if refining path does not point to any object")
@@ -744,6 +744,7 @@ void register_mesh_rectangular()
         .def("__init__", py::make_constructor(&__init__empty<RectilinearMesh1D>))
         .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearMesh1D>, py::default_call_policies(), (py::arg("points"))))
         .def("__init__", py::make_constructor(&RectangularMesh1D__init__axis<RectilinearMesh1D,RectilinearAxis>, py::default_call_policies(), py::arg("axis0")))
+        .def_readonly("axis", &RectilinearMesh1D::axis, "Axis of the mesh")
         .def("__getitem__", &RectilinearMesh1D__getitem__)
         .def("__delitem__", &RectilinearMesh1D__delitem__)
         .def("__str__", &__str__<RectilinearMesh1D>)
@@ -894,6 +895,7 @@ void register_mesh_rectangular()
         .def("__init__", py::make_constructor(&__init__empty<RegularMesh1D>))
         .def("__init__", py::make_constructor(&Regular__init__params<RegularMesh1D>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
         .def("__init__", py::make_constructor(&RectangularMesh1D__init__axis<RegularMesh1D,RegularAxis>, py::default_call_policies(), py::arg("axis0")))
+        .def_readonly("axis", &RegularMesh1D::axis, "Axis of the mesh")
         .add_property("start", &RegularMesh1D_getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
         .add_property("stop", RegularMesh1D_getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
         .add_property("step", &RegularMesh1D_getStep)

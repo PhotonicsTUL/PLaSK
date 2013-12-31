@@ -147,7 +147,7 @@ class ThermoElectric(object):
                 the mesh. If ``None``, the mesh is not plotted.
 
         See also:
-            :func:`plask.pylab.plot_field` : Plot any field obtained from receivers
+            :func:`plask.plot_field` : Plot any field obtained from receivers
         '''
         field = self.thermal.outTemperature(self.thermal.mesh)
         plask.plot_field(field)
@@ -175,7 +175,7 @@ class ThermoElectric(object):
 
 
         See also:
-            :func:`plask.pylab.plot_field` : Plot any field obtained from receivers
+            :func:`plask.plot_field` : Plot any field obtained from receivers
         '''
         field = self.electrical.outVoltage(self.electrical.mesh)
         plask.plot_field(field)

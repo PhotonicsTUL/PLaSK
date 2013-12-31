@@ -9,7 +9,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
    Rectangular block. Its origin is located in the lower back left corner.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the block material (for solid blocks).
    :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
@@ -33,7 +33,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
    Cylinder with its base lying in the horizontal plane. Its origin is located at the center of the lower circular base.
 
-   :attr name: Object name for further reference. In :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the cylinder material (for solid cylinders).
    :attr material-bottom: Definition of the material of the bottom of the cylinder (for cylinders which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
