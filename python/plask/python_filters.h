@@ -9,6 +9,8 @@
 
 namespace plask { namespace python {
 
+extern py::object filter_module;
+
 namespace detail {
 
     static inline void filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points) {
@@ -65,7 +67,7 @@ namespace detail {
     };
 
     template <typename PropertyT, typename GeometryT> struct FilterIn;
-    
+
     template <typename PropertyT> struct FilterIn<PropertyT,Geometry2DCartesian> {
         template <typename Fun, typename... Args>
         static PyObject* __getsetitem__(const py::object& self, const py::object& key, Args... value) {
@@ -153,15 +155,22 @@ namespace detail {
     py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
     registerFilterImpl(const char* suffix)
     {
+        py::scope scope = filter_module;
+
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
-        filter_class(("FilterFor"+type_name<PropertyT>()+suffix).c_str(),
-                     ("Data filter for "+std::string(PropertyT::NAME)+" for use in 3D solvers.").c_str(),
-                     py::init<shared_ptr<GeometryT>>()
+        filter_class((type_name<PropertyT>()+suffix).c_str(),
+                     format(
+                         "Data filter for %1% into %2% geometry.\n\n"
+                         "Args:\n"
+                         "    geometry (geometry.%2%): Target geometry.\n\n"
+                         "See also:\n    :mod:`plask.filter` for details on filter usage.",
+                         std::string(PropertyT::NAME), spaceName<GeometryT>()).c_str(),
+                     py::init<shared_ptr<GeometryT>>((py::arg("geometry")))
                     );
         filter_class
             .def_readonly("out",
                           reinterpret_cast<ProviderFor<PropertyT, GeometryT> Filter<PropertyT,GeometryT>::*>(&Filter<PropertyT,GeometryT>::out),
-                          "Filter output provider")
+                          format("Filter output provider.\n\nExample:\n    >>> some_solver.in%1% = my_filter.out\n", type_name<PropertyT>()).c_str())
             .def("__getitem__", &FilterIn<PropertyT,GeometryT>::template __getsetitem__<FilterinGetitemResult>)
             .def("__setitem__", &FilterIn<PropertyT,GeometryT>::template __getsetitem__<FilterinSetitemResult, py::object>)
         ;

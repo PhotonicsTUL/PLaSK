@@ -283,35 +283,82 @@ epub_publisher = 'Lodz University of Technology'
 # -- Autodoc output improvements ---------------------------------------------------
 # http://sphinx-doc.org/ext/autodoc.html
 
+arg1_in_signature_pattern = re.compile(r'\( \(\w*?\)(arg1|self)(, )?')
+var_type_pattern = re.compile(r'\(\w*?\)(\w+)')
+
+looks_like_signature_pattern = re.compile(r"^\s*\w*\(.*\) -> \w* :$")
+
 def fix_plask_namespace(signature):
    # remove all "_plask." prefixes, _plask module is loaded by default in plask
-   return re.sub(r'_plask\.', r'', signature)
+   return signature.replace('_plask', '')
 
-def fix_signature(signature):
-   # remove first argument, which is self named as arg1:
-   signature = re.sub(r'\( \(\w*?\)arg1(, )?', r'(self, ', signature) # remove "(sth)arg1" and "(sth)arg1, "
-   # change: (type)var -> type var:
-   signature = re.sub(r'\((\w*?)\)', r'\1 ', signature)
-   return signature
+def fix_signature(what, signature):
+    signature = signature.replace(' [,', ',').replace('[', '').replace(']', '')
+    # remove first argument, which is self named as arg1:
+    if (what == 'method' or what == 'class'):
+        signature = re.sub(arg1_in_signature_pattern, r'(', signature) # remove "(sth)arg1" and "(sth)arg1, "
+    # change: (type)var -> var:
+    signature = re.sub(var_type_pattern, r'\1', signature)
+    return signature
 
 def process_signature(app, what, name, obj, options, signature, return_annotation):
-   if not signature: return (signature, return_annotation)
-   signature = fix_plask_namespace(signature)
-   if (what != 'method' and what != 'function'): return (signature, return_annotation)
-   return (fix_signature(signature), return_annotation)
-
-looks_like_signature_pattern = re.compile(r"\w*\(.*\) -> \w* :$")
+    if not signature: return (signature, None)
+    print "%s %s -> %s" % (name, signature, fix_signature(what, signature))
+    signature = fix_plask_namespace(signature)
+    if (what != 'class' and what != 'method' and what != 'function'): return (signature, None)
+    return (fix_signature(what, signature), None)
 
 def process_docstr(app, what, name, obj, options, lines):
-   if not lines: return
-   for index, l in enumerate(lines):
-      l = fix_plask_namespace(l)
-      if (what == 'method' or what == 'function') and looks_like_signature_pattern.match(l):
-         l = fix_signature(l)
-         l = re.sub(r'(\w*)\(', r'**\1**\ (', l, 1)	# bold method/function name
-      lines[index] = l
+    if not lines: return
+    for index, l in enumerate(lines):
+        l = fix_plask_namespace(l)
+        if (what == 'class' or what == 'method' or what == 'function') and looks_like_signature_pattern.match(l):
+            l = fix_signature(what, l)
+            l = re.sub(r'(\w*)\(', r'**\1**\ (', l, 1)	# bold method/function name
+        lines[index] = l
+
+
+# -- Exec directive that allows to execute artbitray Python code--------------------
+# http://stackoverflow.com/questions/7250659/python-code-to-generate-part-of-sphinx-documentation-is-it-possible
+
+import sys
+from os.path import basename
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+from sphinx.util.compat import Directive
+from docutils import nodes, statemachine
+
+class ExecDirective(Directive):
+    """Execute the specified python code and insert the output into the document"""
+    has_content = True
+
+    def run(self):
+        oldStdout, sys.stdout = sys.stdout, StringIO()
+
+        tab_width = self.options.get('tab-width', self.state.document.settings.tab_width)
+        source = self.state_machine.input_lines.source(self.lineno - self.state_machine.input_offset - 1)
+
+        try:
+            exec('\n'.join(self.content), globals(), {'app': ExecDirective.app})
+            text = sys.stdout.getvalue()
+            lines = statemachine.string2lines(text, tab_width, convert_whitespace=True)
+            self.state_machine.insert_input(lines, source)
+            return []
+        except Exception:
+            return [nodes.error(None, nodes.paragraph(text = "Unable to execute python code at %s:%d:" % (basename(source), self.lineno)), nodes.paragraph(text = str(sys.exc_info()[1])))]
+        finally:
+            sys.stdout = oldStdout
+
+
+# -- Register custom elements ------------------------------------------------------
 
 def setup(app):
-   app.connect('autodoc-process-docstring', process_docstr)
-   app.connect('autodoc-process-signature', process_signature)
+    app.connect('autodoc-process-docstring', process_docstr)
+    app.connect('autodoc-process-signature', process_signature)
+    app.add_directive('exec', ExecDirective)
+    ExecDirective.app = app
 

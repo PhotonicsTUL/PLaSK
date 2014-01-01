@@ -1,8 +1,8 @@
-.. _sec-other:
+.. _sec-results:
 
-**********************
-Other Useful Utilities
-**********************
+********************
+Working with Results
+********************
 
 Creating plots of the results
 =============================

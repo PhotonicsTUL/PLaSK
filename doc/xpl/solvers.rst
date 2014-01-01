@@ -5,7 +5,7 @@ Section <solvers>
 
 .. xml:tag:: <solvers>
 
-In this section used computational solvers are defined and configured. Also here, the :ref:`data filters <sec-data-filters>` are set-up, as in general, they are only special kinds of solvers. Each XML element in this section correspond to separate solver. The content of such element depends strongly on particular solver, while its name and attributes are standard (although there are differences in attributes of strict computational solvers and :ref:`data filters <sec-data-filters>`). The details of XML content of this section is presented below.
+This section contains definitions and configuation of the computational solvers and :ref:`data filters <sec-solvers-filters>` used in the computations. Each such a solver is declared in the separate XML element of this section. The content of such element depends strongly on the particular solver, while its name and attributes are standarized (although there are differences in attributes of strict computational solvers and :ref:`data filters <sec-solvers-filters>`). The details of this standard representation of XML elements are presented below.
 
 The computational solvers are declared with an XML tag, which name is the category of the solver, e.g. *thermal*, *electrical*, *gain*, or *optical* and that has the standard set of attributes:
 
@@ -25,13 +25,11 @@ Most solvers need to have boundary conditions specified in a some way. This is a
 
 .. toctree::
 
-   xpl_solvers_boundary_conditions
+   solvers/boundary_conditions
 
 The available solvers are as follows:
 
 .. toctree::
-
-   solvers/boundary_conditions
 
    solvers/thermal
    solvers/electrical

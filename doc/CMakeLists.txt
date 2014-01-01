@@ -35,8 +35,8 @@ set(sphinx export CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR} COMMAND p
 
 if(SPHINX_FOUND)
 
-    file(GLOB_RECURSE rst_files *.rst)
-    file(GLOB_RECURSE svg_files *.svg)
+    file(GLOB rst_files *.rst xpl/*.rst xpl/geometry/*.rst xpl/geometry/2d/*.rst xpl/geometry/3d/*.rst xpl/solvers/*.rst)
+    file(GLOB svg_files *.svg)
 
     add_custom_target(doc-html
         COMMAND ${sphinx} -b html ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/html

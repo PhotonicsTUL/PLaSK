@@ -6,15 +6,9 @@ PLaSK Python API
 
 .. automodule:: plask
 
+
 Descriptions
 ============
-
-.. rubric:: Class Details
-
-.. autoclass::   Data
-.. autoclass::   vector
-.. autoclass::   config
-
 
 .. rubric:: Function Details
 

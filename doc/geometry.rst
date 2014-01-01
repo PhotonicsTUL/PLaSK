@@ -10,6 +10,8 @@ Specifying geometry in XPL file
 See section :ref:`sec-xpl-geometry`.
 
 
+.. _sec-geometry-python:
+
 Creating geometry from Python
 =============================
 

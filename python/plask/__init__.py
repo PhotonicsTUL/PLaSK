@@ -17,17 +17,8 @@ Modules
    geometry
    mesh
    material
+   filter
    algorithm
-
-Classes
-=======
-
-.. autosummary::
-   :nosignatures:
-
-   Data
-   vector
-   config
 
 Functions
 =========
@@ -48,6 +39,17 @@ Functions
    plot_mesh
    plot_boundary
    plot_material_param
+
+Classes
+=======
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   Data
+   vector
+   config
 
 '''
 

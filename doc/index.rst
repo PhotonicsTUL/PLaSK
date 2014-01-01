@@ -21,7 +21,7 @@ PLaSK User Guide
    meshes
    solvers
    algorithms
-   other
+   results
    gui
    units
    index-solvers
@@ -29,7 +29,7 @@ PLaSK User Guide
    api
    glossary
 
-* :doc:`preface` 
+* :doc:`preface`
 * :doc:`introduction`
 * :doc:`tutorials`
 * :doc:`general`
@@ -38,7 +38,7 @@ PLaSK User Guide
 * :doc:`meshes`
 * :doc:`solvers`
 * :doc:`algorithms`
-* :doc:`other`
+* :doc:`results`
 * :doc:`gui`
 * :doc:`units`
 * :doc:`index-solvers`
