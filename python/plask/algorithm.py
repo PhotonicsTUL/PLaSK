@@ -44,6 +44,9 @@ class ThermoElectric(object):
         tfreq (int): Number of electrical iterations per single thermal step.
             As temperature tends to converge faster, it is reasonable to repeat
             thermal solution less frequently.
+            
+        connect (bool): If True, solvers are automatically connected by the
+            alogrithm in its constructor.
 
     Solvers specified on construction of this algorithm are automatically
     connected. Then the computations can be executed using `run` method, after
@@ -68,13 +71,15 @@ class ThermoElectric(object):
 
     '''
 
-    def __init__(self, thermal, electrical, tfreq=6):
+    def __init__(self, thermal, electrical, tfreq=6, connect=True):
         electrical.inTemperature = thermal.outTemperature
         thermal.inHeat = electrical.outHeat
         self.thermal = thermal
         self.electrical = electrical
         self.tfreq = tfreq
-
+        if connect:
+            self.electrical.inTemperature = self.thermal.outTemperature
+            self.thermal.inHeat = self.electrical.outHeat
 
     def run(self, save=True):
         '''
@@ -263,58 +268,61 @@ class ThresholdSearch(ThermoElectric):
     laser cavity.
 
     Args:
-         thermal (solver): Configured thermal solver.
-             It must have ``outTemperature`` provider and ``inHeat`` receiver.
-             Temperature computations are done with ``compute`` method, which
-             takes maximum number of iterations as input and returns maximum
-             convergence error.
+        thermal (solver): Configured thermal solver.
+            It must have ``outTemperature`` provider and ``inHeat`` receiver.
+            Temperature computations are done with ``compute`` method, which
+            takes maximum number of iterations as input and returns maximum
+            convergence error.
 
-         electrical (solver): Configured electrical solver.
-             It must have providers ``outHeat`` and ``outCurrentDensity`` as
-             well as ``inTemperature`` receiver. Computations are done with
-             ``compute`` method, which takes maximum number of iterations as
-             input and returns maximum convergence error. Solver specific
-             parameters (e.g. ``beta``) should already be set before execution
-             of the algorithm.
+        electrical (solver): Configured electrical solver.
+            It must have providers ``outHeat`` and ``outCurrentDensity`` as
+            well as ``inTemperature`` receiver. Computations are done with
+            ``compute`` method, which takes maximum number of iterations as
+            input and returns maximum convergence error. Solver specific
+            parameters (e.g. ``beta``) should already be set before execution
+            of the algorithm.
 
-         diffusion (solver or ``None``): Configured diffusion solver.
-             It must have one provider ``outCarriersConcentration`` and two
-             receivers: ``inTemperature`` and ``inCurrentDensity``. Under-
-             threshold computations are done with ``compute`` method. If this
-             parameter is ``None`` then it is assumed that its functionality is
-             already ensured by the electrical solvers, which in such a case
-             should have its own ``outCarriersConcentration`` provider.
+        diffusion (solver or ``None``): Configured diffusion solver.
+            It must have one provider ``outCarriersConcentration`` and two
+            receivers: ``inTemperature`` and ``inCurrentDensity``. Under-
+            threshold computations are done with ``compute`` method. If this
+            parameter is ``None`` then it is assumed that its functionality is
+            already ensured by the electrical solvers, which in such a case
+            should have its own ``outCarriersConcentration`` provider.
 
-         gain (solver): Configured gain solver. TODO
+        gain (solver): Configured gain solver. TODO
 
-         optical (solver): Configured optical solver.
-             It is required to have ``inTemperature`` and ``inGain`` receivers
-             and ``outLightIntensity`` provider that is necessary only for
-             plotting electromagnetic field profile. This solver needs to have
-             ``find_mode`` method if ``quick`` is false or ``get_detrminant`` and
-             ``set_mode`` methods is ``quick`` is true. TODO
+        optical (solver): Configured optical solver.
+            It is required to have ``inTemperature`` and ``inGain`` receivers
+            and ``outLightIntensity`` provider that is necessary only for
+            plotting electromagnetic field profile. This solver needs to have
+            ``find_mode`` method if ``quick`` is false or ``get_detrminant`` and
+            ``set_mode`` methods is ``quick`` is true. TODO
 
-         ivolt (int): Index in the ``voltage_boundary`` boundary conditions list
-             in the ``electrical`` solver that is varied in order to find the
-             threshold.
+        ivolt (int): Index in the ``voltage_boundary`` boundary conditions list
+            in the ``electrical`` solver that is varied in order to find the
+            threshold.
 
-         vmin (float): TODO
+        vmin (float): TODO
 
-         vmax (float): TODO
+        vmax (float): TODO
 
-         approx_mode (float): Approximation of the optical mode
-             (either the effective index or the wavelength) needed for optical
-             computations.
+        approx_mode (float): Approximation of the optical mode
+            (either the effective index or the wavelength) needed for optical
+            computations.
 
-         mode (str): TODO: 'neff', 'wavelength' or 'auto'
+        mode (str): TODO: 'neff', 'wavelength' or 'auto'
 
-         tfreq (int): Number of electrical iterations per single thermal step.
-             As temperature tends to converge faster, it is reasonable to repeat
-             thermal solution less frequently.
+        tfreq (int): Number of electrical iterations per single thermal step.
+            As temperature tends to converge faster, it is reasonable to repeat
+            thermal solution less frequently.
 
-         quick (bool): If this parameter is True, the algorithm tries to find
-             the threshold the easy way i.e. by computing only the optical
-             determinant in each iteration.
+        quick (bool): If this parameter is True, the algorithm tries to find
+            the threshold the easy way i.e. by computing only the optical
+            determinant in each iteration.
+
+        connect (bool): If True, solvers are automatically connected by the
+            alogrithm in its constructor.
 
     Solvers specified on construction of this algorithm are automatically
     connected. Then the computations can be executed using ``run`` method, after
@@ -325,14 +333,20 @@ class ThresholdSearch(ThermoElectric):
 
     def __init__(self, thermal, electrical, diffusion, gain, optical,
                  ivolt, vmin, vmax, approx_mode, mode='auto', tfreq=6,
-                 quick=False):
-        ThermoElectric.__init__(self, thermal, electrical, tfreq)
+                 quick=False, connect=True):
+        ThermoElectric.__init__(self, thermal, electrical, tfreq, connect)
         if diffusion is not None:
-            diffusion.inTemperature = thermal.outTemperature
-            diffusion.inCurrentDensity = electrical.outCurrentDensity
             self.diffusion = diffusion
+            if connect:
+                diffusion.inTemperature = thermal.outTemperature
+                diffusion.inCurrentDensity = electrical.outCurrentDensity
         else:
             self.diffusion = electrical
+        if connect:
+            gain.inTemperature = thermal.outTemperature
+            gain.inCarriersConcentration = diffusion.outCarriersConcentration
+            optical.inTemperature = thermal.outTemperature
+            optical.inGain = gain.outGain
         self.gain = gain
         self.optical = optical
         self.ab = vmin,vmax
@@ -340,9 +354,9 @@ class ThresholdSearch(ThermoElectric):
         self.optstart = approx_mode
         self.quick = quick
         if mode == 'auto':
-            if type(otpical.geometry) == plask.geometry.Cartesian2D:
+            if type(optical.geometry) == plask.geometry.Cartesian2D:
                 self.mode = 'neff'
-            elif type(otpical.geometry) == plask.geometry.Cylindrical2D:
+            elif type(optical.geometry) == plask.geometry.Cylindrical2D:
                 self.mode = 'wavelength'
             else:
                 raise TypeError("unable to determine the mode automatically in 3D")
