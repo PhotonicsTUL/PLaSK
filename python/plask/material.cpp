@@ -49,7 +49,6 @@ namespace detail {
         }
     };
 
-
     struct ComplexTensor_fromto_Python
     {
         ComplexTensor_fromto_Python() {
@@ -85,6 +84,34 @@ namespace detail {
             return boost::python::incref(tuple.ptr());
         }
     };
+    
+    struct StringFromMaterial
+    {
+        StringFromMaterial() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<std::string>());
+        }
+
+        static void* convertible(PyObject* obj) {
+            return boost::python::converter::implicit_rvalue_convertible_from_python(obj, boost::python::converter::registered<Material>::converters)? obj : 0;
+        }
+
+        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+            void* storage = (( boost::python::converter::rvalue_from_python_storage<std::string>*)data)->storage.bytes;
+            py::arg_from_python<Material*> get_source(obj);
+            bool convertible = get_source.convertible();
+            BOOST_VERIFY(convertible);
+            new (storage) std::string(get_source()->str());
+            data->convertible = storage;
+        }
+
+        static PyObject* convert(const Tensor2<double>& pair)  {
+            py::tuple tuple = py::make_tuple(pair.c00, pair.c11);
+            return boost::python::incref(tuple.ptr());
+        }
+    };
+
+
+
 }
 
 /**
@@ -657,6 +684,8 @@ void initMaterials() {
         .value("UNDETERMINED", Material::CONDUCTIVITY_UNDETERMINED)
     ;
 
+    detail::StringFromMaterial();
+    
     py::def("_register_material_simple", &registerSimpleMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new simple material class to the database");
 

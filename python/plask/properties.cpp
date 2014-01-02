@@ -56,16 +56,16 @@ void register_standard_properties()
         "that can be used for connecting the source data.\n\n"
 
         ">>> temp_filter[some_object_in_mygeometry2d]\n"
-        "<_plask.ReceiverForTemperature2D at 0x43a5210>\n"
-        ">> temp_filter[mygeometry2d.extrusion]\n"
-        "<_plask.ReceiverForTemperature3D at 0x44751a0>\n\n"
+        "<plask.ReceiverForTemperature2D at 0x43a5210>\n"
+        ">>> temp_filter[mygeometry2d.extrusion]\n"
+        "<plask.ReceiverForTemperature3D at 0x44751a0>\n\n"
         ">>> temp_filter[mygeometry2d.extrusion] = thermal_solver_3d.outTemperature\n\n"
 
         "After connecting the source, the tranlated data can be obtained using the filter\n"
         "member ``out``, which is a provider that can be connected to other solvers.\n\n"
 
         ">>> temp_filter.out\n"
-        "<_plask.ProviderForTemperature2D at 0x43a5fa0>\n"
+        "<plask.ProviderForTemperature2D at 0x43a5fa0>\n"
         ">>> other_solver_in_2d.inTemperature = temp_filter.out\n\n"
 
         "After the connection the filter does its job automatically.\n\n"
