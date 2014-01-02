@@ -151,10 +151,10 @@ def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor
     #TODO documentation
 
     data = field.array
-    
+
     if type(comp) == str:
         comp = plask.config.axes.index(comp)
-    
+
     if type(field.mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         axis0 = field.mesh.axis0
         axis1 = field.mesh.axis1
@@ -195,9 +195,9 @@ def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor
 def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
     '''Plot vector field'''
     #TODO documentation
-    
+
     m = field.mesh
-    
+
     if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         axis0, axis1 = m.axis0, m.axis1
         i0, i1 = -2, -1
@@ -217,9 +217,9 @@ def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
 def plot_stream(field, scale=8.0, color='k', **kwargs):
     '''Plot vector field as a streamlines'''
     #TODO documentation
-    
+
     m = field.mesh
-    
+
     if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         axis0, axis1 = m.axis0, m.axis1
         i0, i1 = -2, -1

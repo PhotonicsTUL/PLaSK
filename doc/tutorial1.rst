@@ -12,9 +12,9 @@ After :term:`reading a very brief introduction to XML syntax <XML>`, you start w
 .. code-block:: xml
 
     <plask>
-    
+
         <!-- Here you will put all the content of your file. -->
-    
+
     </plask>
 
 The strange characters ``<!--`` and ``-->`` in the above example mark the beginning and the end of the comment, respectively. So you can use them in your file to write your notes, or to temporarily disable any part of the file.
@@ -70,7 +70,7 @@ Due to the nature of the structure, it is the most natural to describe it as a s
 
 In the above listing, two new tags appeared. One is :xml:tag:`<stack> <stack2D>` and means that its whole content should be organized in the vertical stack, starting from top to bottom. By default, the stack coordinate system is set in a such way that *y=0* is at the bottom of the stack. However, we want to have *y=0*, at the top of the heatsink, so indicate this by the tag :xml:tag:`<zero/> [in <stack2D>]` between substrate and heatsink blocks.
 
-Another new tag is :xml:tag:`<block> <block2D>`, which means a *rectangular block*. As this tag has no further content, is is finished with ``/>``. ``dx`` and ``dy`` attributes give dimensions of the blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. At this point it is important to say that PLaSK uses fixed units for all physical quantities and they are summarized in Appendix :ref:`sec-Units-in-PLaSK`. For example all spatial dimensions must be given in micrometers, as this matches the typical dimensions of most photonic devices. Look back at the any :xml:tag:`<block> <block2D>` tag. Its attribute ``material`` gives information about the material of each block. As there is no materials section in our input file, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means Al\ :sub:`0.3`\ Ga\ :sub:`0.7`\ As (missing amount of gallium is computed automatically) doped with carbon and dopant concentration 1×10\ :sup:`20` cm\ :sup:`-3` (doping concentration is always given in cm\ :sup:`-3`).
+Another new tag is :xml:tag:`<block> <block2D>`, which means a *rectangular block*. As this tag has no further content, is is finished with ``/>``. ``dx`` and ``dy`` attributes give dimensions of the blocks. Their positions is determined automatically to form a compact left-aligned stack. As different layers have different widths, the empty space will be automatically filled with air to form a rectangular computational domain [#rect-mesh-skip-empty]_. At this point it is important to say that PLaSK uses fixed units for all physical quantities and they are summarized in Appendix :ref:`sec-units`. For example all spatial dimensions must be given in micrometers, as this matches the typical dimensions of most photonic devices. Look back at the any :xml:tag:`<block> <block2D>` tag. Its attribute ``material`` gives information about the material of each block. As there is no materials section in our input file, the material parameters will be taken from default database (more on this in chapter :ref:`sec-Materials`). The value of this attribute contains the name of the material, composition of tertiary compounds and doping information. For example ``Al(0.3)GaAs:C=1e20`` means Al\ :sub:`0.3`\ Ga\ :sub:`0.7`\ As (missing amount of gallium is computed automatically) doped with carbon and dopant concentration 1×10\ :sup:`20` cm\ :sup:`-3` (doping concentration is always given in cm\ :sup:`-3`).
 
 Three of the blocks are given names ``"top-layer"``, ``"substrate"``, and ``"junction"`` for the future reference. `Top-layer` and `substrate` will be used to specify boundary conditions for the electrical solver at the edges of these blocks, while we will need junction to make plots of the computed current a little easier.
 

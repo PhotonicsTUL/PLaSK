@@ -465,12 +465,6 @@ div.viewcode-block:target {
 
 /* -- PLaSK customizations -------------------------------------------------- */
 
-div.sidebar li.toctree-l4 a { margin-left: 3em; }
-div.sidebar li.toctree-l5 a { margin-left: 4em; }
-div.sidebar li.toctree-l6 a { margin-left: 5em; }
-div.sidebar li.toctree-l7 a { margin-left: 6em; }
-div.sidebar li.toctree-l8 a { margin-left: 7em; }
-
 body {
     font-size: 11pt;
 }
@@ -479,6 +473,16 @@ pre, kbd, samp, tt {
     /* monospace font size fix */
     font-family: monospace,monospace;
     font-size: 1em;
+}
+
+div.sidebar li.toctree-l4 a { margin-left: 3em; }
+div.sidebar li.toctree-l5 a { margin-left: 4em; }
+div.sidebar li.toctree-l6 a { margin-left: 5em; }
+div.sidebar li.toctree-l7 a { margin-left: 6em; }
+div.sidebar li.toctree-l8 a { margin-left: 7em; }
+
+div.document li.toctree-l1 ul {
+  margin-top: 0.5em;
 }
 
 div#plask-user-guide.section em {

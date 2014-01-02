@@ -363,26 +363,6 @@ foreach(solv ${solver_lists})
 endforeach()
 
 # Scan solver categories for solvers.lst and process them
-if(BUILD_PYTHON)
-    file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/solvers_lst.py
-        "import sys\n"
-        "import os.path as pth\n"
-        "out = open(pth.join(sys.argv[1], sys.argv[2], '__init__.py'), 'w')\n"
-        "out.write('# Automatically generated. All your changes will be lost on recompilation!\\n')\n"
-        "lst = open(pth.join(sys.argv[1], sys.argv[2], 'solvers.lst'), 'r')\n"
-        "for l in lst:\n"
-        "    l = l.strip()\n"
-        "    if not l: continue\n"
-        "    data = { 'cat': sys.argv[2].split('/')[1] }\n"
-        "    data['lib'], data['cls'] = l.split('.')\n"
-        "    out.write('''\n"
-        "def %(cls)s(*args, **kwargs):\n"
-        "    \\'\\'\\'Create %(cls)s solver\\'\\'\\'\n"
-        "    import %(cat)s.%(lib)s\n"
-        "    return %(cat)s.%(lib)s.%(cls)s(*args, **kwargs)\n"
-        "''' % data)\n"
-    )
-endif()
 file(GLOB_RECURSE lst_lists RELATIVE ${CMAKE_SOURCE_DIR} solvers/*solvers.lst)
 foreach(lst ${lst_lists})
     add_custom_command(OUTPUT ${PLASK_PATH}/${lst}
@@ -393,7 +373,7 @@ foreach(lst ${lst_lists})
     install(FILES ${PLASK_PATH}/${lst} DESTINATION lib/plask/${lst_dir} COMPONENT solvers)
     if(BUILD_PYTHON)
         add_custom_command(OUTPUT ${PLASK_PATH}/${lst_dir}/__init__.py
-                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_BINARY_DIR}/CMakeFiles/solvers_lst.py ${PLASK_PATH} ${lst_dir}
+                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/solvers_lst.py ${PLASK_PATH} ${lst_dir}
                            DEPENDS ${PLASK_PATH}/${lst})
         list(APPEND solvers_lst_files ${PLASK_PATH}/${lst_dir}/__init__.py)
     endif()

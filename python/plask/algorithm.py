@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-This module contains the set of high-level PLaSK algorithm typically used
-in computations of semiconductor lasers.
+High-level PLaSK algorithms for computations of semiconductor lasers.
 
 TODO doc
 

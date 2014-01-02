@@ -85,7 +85,7 @@ release = plaskconf.release
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_api*']
+exclude_patterns = ['_api*', '_templates']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -303,9 +303,9 @@ def fix_signature(what, signature):
 
 def process_signature(app, what, name, obj, options, signature, return_annotation):
     if not signature: return (signature, None)
-    print "%s %s -> %s" % (name, signature, fix_signature(what, signature))
     signature = fix_plask_namespace(signature)
     if (what != 'class' and what != 'method' and what != 'function'): return (signature, None)
+    print name,
     return (fix_signature(what, signature), None)
 
 def process_docstr(app, what, name, obj, options, lines):
