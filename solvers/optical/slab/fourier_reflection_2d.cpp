@@ -10,7 +10,6 @@ FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSol
     outNeff(this, &FourierReflection2D::getEffectiveIndex, &FourierReflection2D::nummodes)
 {
     detlog.global_prefix = this->getId();
-    this->emitting = false;
 }
 
 

@@ -95,6 +95,7 @@ template <typename Class>
 inline void export_reflection_base(Class solver) {
     export_base(solver);
     typedef typename Class::wrapped_type Solver;
+    solver.add_property("emitting", &Solver::getEmitting, &Solver::setEmitting, "Should emitted field be computed?");
     py::scope scope = solver;
     py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
         .value("TOP", Solver::DIRECTION_TOP)

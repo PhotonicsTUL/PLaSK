@@ -11,5 +11,5 @@ This section contains API reference manual of both these parts. Its content is a
 .. toctree::
    :maxdepth: 2
 
-   api-plask
-   api-solvers
+   api/plask
+   api/solvers

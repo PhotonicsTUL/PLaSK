@@ -19,7 +19,7 @@
 
 namespace plask { namespace python {
 
-    
+
 namespace detail {
     template <int dim, typename T> struct MakeVecFromNumpyImpl;
 
@@ -350,6 +350,8 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
 // Python doc
 const static std::string __doc__ =
 
+    "vector(*args, **kwargs)\n"
+
     "Create PLaSK vector.\n\n"
 
     "vector(#, #[, #])\n"
@@ -374,26 +376,25 @@ const static std::string __doc__ =
     "config.axes = 'lon,tran,up' (equivalent is 'absolute'):\n"
     "   2D vectors: [tran,up], 3D vectors: [lon,tran,up]\n"
 
-    "Examples\n"
-    "--------\n\n"
-    ">>> vector(1, 2)\n"
-    "vector(1, 2)\n    \n"
-    "Create two-dimensional vector.\n    \n"
+    "Examples:\n"
+    "    Create two-dimensional vector.\n"
+    "    >>> vector(1, 2)\n"
+    "    vector(1, 2)\n    \n"
 
-    ">>> config.axes = 'xy'\n"
-    ">>> vector(x=1, y=2, z=3)\n"
-    "vector(3, 2, 1)\n    \n"
-    "Create 3D vector specifying components in rotated coordinate system.\n    \n"
+    "    Create 3D vector specifying components in rotated coordinate system.\n"
+    "    >>> config.axes = 'xy'\n"
+    "    >>> vector(x=1, y=2, z=3)\n"
+    "    vector(3, 2, 1)\n    \n"
 
-    ">>> config.axes = 'xyz'\n"
-    ">>> vector(x=1, z=2, y=3)\n"
-    "vector(1, 3, 2)\n    \n"
-    "Create 3D vector specifying components.\n    \n"
+    "    Create 3D vector specifying components.\n"
+    "    >>> config.axes = 'xyz'\n"
+    "    >>> vector(x=1, z=2, y=3)\n"
+    "    vector(1, 3, 2)\n    \n"
 
-    ">>> config.axes = 'rz'\n"
-    ">>> vector(r=2, z=0, dtype=complex)\n"
-    "vector(2, 0)\n    \n"
-    "Create 2D vector in cylindrical coordinates, specifying dtype.\n"
+    "    Create 2D vector in cylindrical coordinates, specifying dtype.\n"
+    "    >>> config.axes = 'rz'\n"
+    "    >>> vector(r=2, z=0, dtype=complex)\n"
+    "    vector(2, 0)\n"
 
     ;
 

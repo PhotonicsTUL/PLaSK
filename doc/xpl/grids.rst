@@ -39,19 +39,19 @@ Possible <mesh> contents for different types
 
    .. xml:contents::
 
-   .. xml:tag:: <axis> [in rectilinear1d mesh]
+      .. xml:tag:: <axis> [in rectilinear1d mesh]
 
-      Specification of the horizontal axis.
+         Specification of the horizontal axis.
 
-      If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+         If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
 
-      :attr start: Position of the first point on the axis. (float [µm])
-      :attr stop: Position of the last point on the axis. (float [µm])
-      :attr num: Number of the equally distributed points along the axis. (integer)
+         :attr start: Position of the first point on the axis. (float [µm])
+         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr num: Number of the equally distributed points along the axis. (integer)
 
-      .. xml:contents::
+         .. xml:contents::
 
-         Comma-separated list of the mesh points along this axis.
+            Comma-separated list of the mesh points along this axis.
 
 .. xml:tag:: <mesh type="rectilinear2d"> [rectilinear2d]
 
@@ -85,31 +85,31 @@ Possible <mesh> contents for different types
 
    .. xml:contents::
 
-   .. xml:tag:: <axis0> [in rectilinear3d mesh]
+      .. xml:tag:: <axis0> [in rectilinear3d mesh]
 
-      Specification of the longitudinal axis.
+         Specification of the longitudinal axis.
 
-      If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+         If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
 
-      :attr start: Position of the first point on the axis. (float [µm])
-      :attr stop: Position of the last point on the axis. (float [µm])
-      :attr num: Number of the equally distributed points along the axis. (integer)
+         :attr start: Position of the first point on the axis. (float [µm])
+         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr num: Number of the equally distributed points along the axis. (integer)
 
-      .. xml:contents::
+         .. xml:contents::
 
-         Comma-separated list of the mesh points along this axis.
+            Comma-separated list of the mesh points along this axis.
 
-   .. xml:tag:: <axis1> [in rectilinear3d mesh]
+      .. xml:tag:: <axis1> [in rectilinear3d mesh]
 
-      Specification of the transversal axis.
+         Specification of the transversal axis.
 
-      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
 
-   .. xml:tag:: <axis2> [in rectilinear3d mesh]
+      .. xml:tag:: <axis2> [in rectilinear3d mesh]
 
-      Specification of the vertical axis.
+         Specification of the vertical axis.
 
-      Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
 
 .. xml:tag:: <mesh type="regular1d"> [regular1d]
 

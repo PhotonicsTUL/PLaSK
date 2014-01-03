@@ -18,7 +18,7 @@
 
    In xml:tag directive description, ``attribute`` (``attr``) and ``contents`` (``content``) can be used.
 
-   :copyright: Copyright 2013 by the Piotr Beling.
+   :copyright: Copyright 2013 Piotr Beling.
    :license: BSD, see LICENSE for details.
 """
 

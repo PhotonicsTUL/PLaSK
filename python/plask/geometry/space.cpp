@@ -349,10 +349,10 @@ void register_calculation_spaces() {
     py::class_<Geometry, shared_ptr<Geometry>, py::bases<GeometryObject>, boost::noncopyable>("Geometry",
         "Base class for all geometries", py::no_init)
         .def("__eq__", __is__<Geometry>)
-        .add_property<>("axes", Geometry_getAxes, Geometry_getAxes, "Names of axes for this geometry")
+        .add_property<>("axes", Geometry_getAxes, Geometry_getAxes, "Names of axes for this geometry.")
     ;
 
-    py::class_<BordersProxy>("BordersProxy")
+    py::class_<BordersProxy>("_BordersProxy")
         .def(py::map_indexing_suite<BordersProxy, true>())
         .def("__setitem__", &BordersProxy::__setitem__)
         .def("__repr__", &BordersProxy::__repr__)
@@ -361,26 +361,41 @@ void register_calculation_spaces() {
     ;
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
-        "Geometry in 2D Cartesian space\n\n"
-        "Cartesian2D(geometry, length=infty, **borders)\n"
-        "    Create a space around the two-dimensional geometry object with given length.\n\n"
-        "    'geometry' can be either a 2D geometry object or plask.geometry.Extrusion, in which case\n"
-        "    the 'length' parameter should be skipped, as it is read directly from extrusion.\n"
-        "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
+        "Geometry in 2D Cartesian space.\n\n"
+        "Cartesian2D(geometry, length=infty, **borders)\n\n"
+        "Create a space around the two-dimensional geometry object with given length.\n\n"
+        "Args:\n"
+        "    geometry (GeometryObject2D Extrusion): Root object of the geometry.\n"
+        "        If this parameters is an extrusion, the `length` should be skipped,\n"
+        "        as it is read directly from extrusion.\n\n"
+        "    length (float): Length of the geometry.\n"
+        "        This information is required by some solvers. Furthermore it is\n"
+        "        necessary if you want to use :mod:`plask.filters` to translate the\n"
+        "        data between this geometry and the :class:`Cartesian3D` geometry.\n\n"
+        "    borders (dict): Optional borders specification.\n"
+        "        Borders are given as additional constructor keyword arguments. Available\n"
+        "        keys are `left`, `right`, `top`, and `bottom` and their values must be\n"
+        "        strings specifying the border (either a material name or `mirror`,\n"
+        "        `periodic`, or `extend`).\n\n"
+        "Example:\n"
+        "    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
+        "    >>> geometry.Cartesian2D(block, length=10, left='mirror', bottom='AlAs')\n"
+        "    <plask.geometry.Cartesian2D object at (0x3dd6c70)>",
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCartesian__init__, 1))
-        .add_property("item", &Geometry2DCartesian::getChild, "GeometryObject2D at the root of the tree")
-        .add_property("extrusion", &Geometry2DCartesian::getExtrusion, "Extrusion object at the very root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>, "Minimal rectangle which contains all points of the geometry object")
-        .def_readwrite("default_material", &Geometry2DCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry")
+        .add_property("item", &Geometry2DCartesian::getChild, ":class:`GeometryObject2D` at the root of the tree.")
+        .add_property("extrusion", &Geometry2DCartesian::getExtrusion, ":class:`Extrusion` object at the very root of the tree.")
+        .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>, "Minimal rectangle which contains all object inside the geometry.")
+        .def_readwrite("default_material", &Geometry2DCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry.")
         .add_property("front_material", &Geometry2DCartesian::getFrontMaterial, &Geometry2DCartesian::setFrontMaterial,
-                      "Material on the positive side of the axis along the extrusion")
+                      "Material at the positive side of the axis along the extrusion.")
         .add_property("back_material", &Geometry2DCartesian::getBackMaterial, &Geometry2DCartesian::setBackMaterial,
-                      "Material on the negative side of the axis along the extrusion")
+                      "Material at the negative side of the axis along the extrusion.")
         .add_property("borders", &Geometry2DCartesian_getBorders, &Space_setBorders,
-                      "Dictionary specifying the type of the surroundings around the structure")
-        .def("get_material", &Geometry2DCartesian::getMaterial, "Return material at given point", (py::arg("point")))
-        .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
+                      "Dictionary specifying the geometry borders.")
+        .def("get_material", &Geometry2DCartesian::getMaterial, (py::arg("point")))
+        .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, (py::arg("c0"), py::arg("c1")),
+             "Return the material at the given point.")
         .def("get_leafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
         .def("get_leafs_positions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsPositions,
              (py::arg("path")=py::object()), "Calculate positions of all leafs")

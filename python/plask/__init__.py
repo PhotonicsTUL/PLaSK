@@ -11,7 +11,7 @@ Modules
 =======
 
 .. autosummary::
-   :toctree: api/
+   :toctree: plask
    :template: module.rst
 
    geometry
@@ -40,16 +40,15 @@ Functions
    plot_boundary
    plot_material_param
 
-Classes
-=======
+Special data types
+==================
 
 .. autosummary::
-   :toctree: api/
+   :toctree: plask
    :nosignatures:
 
-   Data
    vector
-   config
+   Data
 
 '''
 

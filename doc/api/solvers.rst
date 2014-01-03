@@ -9,7 +9,7 @@ Solvers are organized into packages named after solver category. Each package co
 The available packages are as follows:
 
 .. autosummary::
-   :toctree: api/solvers
+   :toctree: solvers
    :template: module.rst
 
    thermal

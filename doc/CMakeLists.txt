@@ -135,5 +135,11 @@ if(SPHINX_FOUND)
         DEPENDS ${rst_files} ${svg_files} conf.py
     )
 
+    # Remove generated files
+    add_custom_target(doc-clean
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/api/plask
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/api/solvers
+    )
+
 endif()
 

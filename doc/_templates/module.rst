@@ -11,7 +11,7 @@ Modules
 -------
 
 .. autosummary::
-   :toctree: {{ objname }}/
+   :toctree: {{ objname }}
    :template: module.rst
 
 {% for item in submodules %}

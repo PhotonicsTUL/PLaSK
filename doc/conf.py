@@ -35,7 +35,7 @@ sys.path.insert(0, plaskconf.python_path)
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
               'sphinx.ext.autosummary', 'sphinx.ext.inheritance_diagram',
-              'sphinx_domain_xml']
+              'sphinx_domain_xml', 'sphinx_autodoc_cpp']
 
 try:
     import sphinxcontrib.napoleon
@@ -176,7 +176,7 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -280,42 +280,9 @@ epub_author = 'M. Dems, P. Beling'
 epub_publisher = 'Lodz University of Technology'
 
 
-# -- Autodoc output improvements ---------------------------------------------------
-# http://sphinx-doc.org/ext/autodoc.html
+# -- Options for inheritance diagram -------------------------------------------
 
-arg1_in_signature_pattern = re.compile(r'\( \(\w*?\)(arg1|self)(, )?')
-var_type_pattern = re.compile(r'\(\w*?\)(\w+)')
-
-looks_like_signature_pattern = re.compile(r"^\s*\w*\(.*\) -> \w* :$")
-
-def fix_plask_namespace(signature):
-   # remove all "_plask." prefixes, _plask module is loaded by default in plask
-   return signature.replace('_plask', '')
-
-def fix_signature(what, signature):
-    signature = signature.replace(' [,', ',').replace('[', '').replace(']', '')
-    # remove first argument, which is self named as arg1:
-    if (what == 'method' or what == 'class'):
-        signature = re.sub(arg1_in_signature_pattern, r'(', signature) # remove "(sth)arg1" and "(sth)arg1, "
-    # change: (type)var -> var:
-    signature = re.sub(var_type_pattern, r'\1', signature)
-    return signature
-
-def process_signature(app, what, name, obj, options, signature, return_annotation):
-    if not signature: return (signature, None)
-    signature = fix_plask_namespace(signature)
-    if (what != 'class' and what != 'method' and what != 'function'): return (signature, None)
-    print name,
-    return (fix_signature(what, signature), None)
-
-def process_docstr(app, what, name, obj, options, lines):
-    if not lines: return
-    for index, l in enumerate(lines):
-        l = fix_plask_namespace(l)
-        if (what == 'class' or what == 'method' or what == 'function') and looks_like_signature_pattern.match(l):
-            l = fix_signature(what, l)
-            l = re.sub(r'(\w*)\(', r'**\1**\ (', l, 1)	# bold method/function name
-        lines[index] = l
+#inheritance_graph_attrs = dict(rankdir="TB", size='""')
 
 
 # -- Exec directive that allows to execute artbitray Python code--------------------
@@ -357,8 +324,6 @@ class ExecDirective(Directive):
 # -- Register custom elements ------------------------------------------------------
 
 def setup(app):
-    app.connect('autodoc-process-docstring', process_docstr)
-    app.connect('autodoc-process-signature', process_signature)
     app.add_directive('exec', ExecDirective)
     ExecDirective.app = app
 
