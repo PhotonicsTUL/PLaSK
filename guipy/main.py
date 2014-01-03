@@ -127,7 +127,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(200, 200, 550, 450)
         self.setWindowTitle('Main window')  
         
-        self.model.loadFromFile('/home/qwak/plask/trunk/doc/tutorial1.xpl')
+        #self.model.loadFromFile('/home/qwak/plask/trunk/doc/tutorial1.xpl')
         self.modelIsNew()
           
         self.show()

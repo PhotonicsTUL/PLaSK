@@ -1,5 +1,6 @@
-from base import *
+from models.base import SectionModel
 from PyQt4 import QtCore
+from xml.etree import ElementTree
 #from guis import DefinesEditor
 
 class DefinesModel(SectionModel, QtCore.QAbstractTableModel):
