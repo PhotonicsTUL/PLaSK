@@ -398,75 +398,118 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
     }
 }
 
+// TODO fields must be carefullty verified
 
 DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex beta, dcomplex kx,
                                                  const cvector& E, const cvector& H, InterpolationMethod method)
 {
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-    DataVector<Vec<3,dcomplex>> src(N+1);
+    DataVector<Vec<3,dcomplex>> src(N + (symmetric? 0 : 1));
     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
+    double mleft, mright;
     
     if (separated) {
-    } else {
-        if (symmetric) {
-            for (int i = 0; i <= order; ++i) {
-                src[iE(i)].lon() = E[iEz(i)];
-                src[iE(i)].tran() = E[iEx(i)];
-                src[iE(i)].vert() = 0.;
-//                 TODO
-//                 for (int j = -order; j <= order; ++j) {
-//                     int aj = abs(j);
-//                     dcomplex gj = b * double(j);
-//                     src[iE(i)].vert() = - iepsyy(l, abs(i-j)) * (gj*H[iHz[aj]] + beta*H[iHx[aj]]);
-//                 }
+        if (polarization == E_TRAN) {
+            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                src[iE(i)].lon() = src[iE(i)].vert() = 0.;
+                src[iE(i)].tran() = E[iE(i)];
             }
         } else {
-            for (int i = -order; i <= order; ++i) {
-                src[iE(i)].lon() = E[iEz(i)];
-                src[iE(i)].tran() = E[iEx(i)];
-                src[iE(i)].vert() = - iepsyy(l, i) * beta * H[iHx(i)];
-                for (int j = -order; j <= order; ++j) {
-                    dcomplex gj = b * double(j) - kx;
-                    src[iE(i)].vert() -= iepsyy(l, i-j) * gj * H[iHz(j)];
-                }
+            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                src[iE(i)].tran() = 0.;
+                src[iE(i)].lon() = E[iE(i)];
+                src[iE(i)].vert() = - iepsyy(l, i) * beta * H[iH(i)] / k0;
             }
         }
+    } else {
+        for (int i = symmetric? 0 : -order; i <= order; ++i) {
+            src[iE(i)].lon() = E[iEz(i)];
+            src[iE(i)].tran() = E[iEx(i)];
+            src[iE(i)].vert() = - iepsyy(l, i) * beta * H[iHx(i)];
+            if (symmetric) {
+                if (symmetry == E_LONG) {
+                    for (int j = -order; j <= order; ++j)
+                        src[iE(i)].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(abs(j))];
+                } else {
+                    for (int j = 0; j <= order; ++j)
+                        src[iE(i)].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(j)];
+                    for (int j = -order; j < 0; ++j)
+                        src[iE(i)].vert() -= iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(-j)];
+                }
+            } else {
+                for (int j = -order; j <= order; ++j)
+                    src[iE(i)].vert() += iepsyy(l, i-j) * (b*double(j)-kx) * H[iHz(j)];
+            }
+            src[iE(i)].vert() /= k0;
+        }
     }
-    
+
     if (symmetric) {
-        return DataVector<Vec<3,dcomplex>>();
+        {
+            FFT::Backward1D fft_x(1, N, (symmetry=E_TRAN)? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_ODD, 3);
+            fft_x.execute(reinterpret_cast<dcomplex*>(src.data()));
+        }{
+            FFT::Backward1D fft_yz(2, N, (symmetry=E_TRAN)? FFT::SYMMETRY_ODD : FFT::SYMMETRY_EVEN, 3);
+            fft_yz.execute(reinterpret_cast<dcomplex*>(src.data())+1);
+        }
+        double dx = 0.5 * (right-left) / N;
+        mleft = left+dx; mright = right-dx;
     } else {
         FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
         fft.execute(reinterpret_cast<dcomplex*>(src.data()));
         src[N] = src[0];
-        RegularMesh2D src_mesh(RegularAxis(left, right, N+1), RegularAxis(vpos, vpos, 1));
-        return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
-                           defInterpolation<INTERPOLATION_SPLINE>(method), false);
+        mleft = left; mright = right;
     }
+    RegularMesh2D src_mesh(RegularAxis(mleft, mright, src.size()), RegularAxis(vpos, vpos, 1));
+    return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
+                    defInterpolation<INTERPOLATION_SPLINE>(method), false);
 }
 
 
-DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
+DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex beta, dcomplex kx,
                                                  const cvector& E, const cvector& H, InterpolationMethod method)
 {
-//     return DataVector<Vec<3,dcomplex>>(dst_mesh.size(), Vec<3,dcomplex>(0.,0.,0.));
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
     DataVector<Vec<3,dcomplex>> src(N+1);
     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
-    
+
     if (separated) {
-    } else {
-        if (symmetric) {
-        } else {
-            for (int i = -order; i <= order; ++i) {
-                src[iH(i)].lon() = H[iHz(i)];
-                src[iH(i)].tran() = H[iHx(i)];
-                src[iH(i)].vert() = 0.;
+        if (polarization == E_LONG) {
+            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                src[iH(i)].lon() = src[iH(i)].vert() = 0.;
+                src[iH(i)].tran() = E[iH(i)];
             }
+        } else {
+            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                src[iH(i)].tran() = 0.;
+                src[iH(i)].lon() = E[iH(i)];
+                src[iH(i)].vert() = - imuyy(l, i) * beta * E[iE(i)] / k0;
+            }
+        }
+    } else {
+        for (int i = symmetric? 0 : -order; i <= order; ++i) {
+            src[iH(i)].lon() = H[iHz(i)];
+            src[iH(i)].tran() = H[iHx(i)];
+            src[iH(i)].vert() = - imuyy(l, i) * beta * H[iEx(i)];
+            if (symmetric) {
+                if (symmetry == E_TRAN) {
+                    for (int j = -order; j <= order; ++j)
+                        src[iE(i)].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(abs(j))];
+                } else {
+                    for (int j = 0; j <= order; ++j)
+                        src[iE(i)].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(j)];
+                    for (int j = -order; j < 0; ++j)
+                        src[iE(i)].vert() -= imuyy(l, abs(i-j)) * b*double(j) * H[iEz(-j)];
+                }
+            } else {
+                for (int j = -order; j <= order; ++j)
+                    src[iE(i)].vert() += imuyy(l, i-j) * (b*double(j)-kx) * H[iEz(j)];
+            }
+            src[iH(i)].vert() /= k0;
         }
     }
     

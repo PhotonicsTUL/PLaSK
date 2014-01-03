@@ -88,6 +88,8 @@ enum InterpolationMethod: unsigned {
     INTERPOLATION_NEAREST,      ///< Nearest neighbor interpolation
     INTERPOLATION_LINEAR,       ///< Linear interpolation
     INTERPOLATION_SPLINE,       ///< Spline interpolation with parabolic derivatives and Hyman monotonic filter
+    INTERPOLATION_SMOOTH_SPLINE,///< Spline interpolation with continous second derivatives
+    INTERPOLATION_PERIODIC_SPLINE,///< Spline interpolation with continous second derivatives and periodic edges (1D only)
     INTERPOLATION_FOURIER,      ///< Fourier transform interpolation
     // ...add new interpolation algorithms here...
 #   ifndef DOXYGEN
@@ -100,6 +102,8 @@ static constexpr const char* interpolationMethodNames[] = {
     "NEAREST",
     "LINEAR",
     "SPLINE",
+    "SMOOTH_SPLINE",
+    "PERIODIC_SPLINE",
     "FOURIER",
     // ...attach new interpolation algorithm names here...
     "ILLEGAL"

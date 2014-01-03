@@ -21,7 +21,7 @@ find_package(PLaSK)
 
 find_package(LAPACK REQUIRED)
 
-set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} fftpacx)
 
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
@@ -29,26 +29,6 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 # commit to the repository.
 
 #find_package(Eigen3)
-
-option(USE_FFTW "Use FFTW library (impossible for published app)" OFF)
-if(USE_FFTW)
-    if (OPENMP_FOUND)
-        find_package(FFTW3 COMPONENTS double openmp)
-        set(USE_PARALLEL_FFT YES)
-    else()
-        find_package(FFTW3)
-    endif()
-    if(FFTW3_FOUND)
-        list(APPEND SOLVER_LINK_LIBRARIES ${FFTW3_LIBRARIES})
-        list(APPEND SOLVER_INCLUDE_DIRECTORIES ${FFTW3_INCLUDE_DIR})
-    else()
-        set(USE_FFTW OFF)
-    endif()
-endif()
-
-if(NOT USE_FFTW)
-    list(APPEND SOLVER_LINK_LIBRARIES fftpacx)
-endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.h)
 
@@ -94,3 +74,5 @@ add_python_test(solvers/optical/slab/refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/re
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
 make_default()
+
+### Last revision with FFTW: r1879

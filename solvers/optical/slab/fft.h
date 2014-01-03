@@ -34,9 +34,9 @@ struct Forward1D {
      * \param lot number of arrays to transform
      * \param n size of a single array
      * \param symmetry symmetry of the transform
-     * \param st data stride
+     * \param strid data stride (defaults to \c lot)
      */
-    Forward1D(int lot, int n, Symmetry symmetry, int st=1);
+    Forward1D(int lot, int n, Symmetry symmetry, int strid=0);
     ~Forward1D();
     /** Execute transform
      * \param data data to execute FFT
@@ -45,7 +45,7 @@ struct Forward1D {
   private:
     int lot;
     int n;
-    int st;
+    int strid;
     Symmetry symmetry;
 #ifdef USE_FFTW
     fftw_plan plan;
@@ -66,9 +66,9 @@ struct Forward2D {
      * \param lot number of arrays to transform
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
-     * \param st data stride
+     * \param strid data stride (defaults to \c lot)
      */
-    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int st=1);
+    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0);
     ~Forward2D();
     /** Execute transform
      * \param data data to execute FFT
@@ -77,7 +77,7 @@ struct Forward2D {
   private:
     int lot;
     int n1, n2;
-    int st;
+    int strid;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;
@@ -98,9 +98,9 @@ struct Backward1D {
      * \param lot number of arrays to transform
      * \param n size of a single array
      * \param symmetry symmetry of the transform
-     * \param st data stride
+     * \param strid data stride (defaults to \c lot)
      */
-    Backward1D(int lot, int n, Symmetry symmetry, int st=1);
+    Backward1D(int lot, int n, Symmetry symmetry, int strid=0);
     ~Backward1D();
     /** Execute transform
      * \param data data to execute FFT
@@ -109,7 +109,7 @@ struct Backward1D {
   private:
     int lot;
     int n;
-    int st;
+    int strid;
     Symmetry symmetry;
 #ifdef USE_FFTW
     fftw_plan plan;
@@ -130,9 +130,9 @@ struct Backward2D {
      * \param lot number of arrays to transform
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
-     * \param st data stride
+     * \param strid data stride (defaults to \c lot)
      */
-    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int st=1);
+    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0);
     ~Backward2D();
     /// Execute transform
     void execute();
@@ -143,7 +143,7 @@ struct Backward2D {
   private:
     int lot;
     int n1, n2;
-    int st;
+    int strid;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;

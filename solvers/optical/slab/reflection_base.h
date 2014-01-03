@@ -42,6 +42,8 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     Data2DLog<dcomplex,dcomplex> detlog;        ///< Determinant logger
 
+    bool emitting;                              ///< \c True if the structure is emitting vertically.
+
   private:
 
     cdiagonal phas;                             ///< current phase shift matrix
@@ -49,8 +51,6 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     std::vector<cmatrix> memP;                  ///< reflection matrices for each layer
 
   public:
-
-    bool emitting;                              ///< \c True if the structure is emitting vertically.
 
     ~ReflectionSolver();
 
@@ -134,6 +134,14 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      */
     cvector getFieldVectorH(double z, int n);
 
+    /// Get \c emitting attribute
+    bool getEmitting() const { return emitting; }
+    /// Set \c emitting attribute
+    void setEmitting(bool value) {
+        emitting = value;
+        this->invalidate();
+    }
+    
   protected:
 
     /// Solver constructor
