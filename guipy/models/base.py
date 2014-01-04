@@ -1,5 +1,4 @@
 from xml.etree import ElementTree
-from utils import toPythonStr
 from PyQt4 import QtGui
 from qhighlighter.XML import XMLHighlighter
 
@@ -21,7 +20,7 @@ class SectionModel(object):
         #return ElementTree.tostring(self.getXMLElement())
         
     def setText(self, text):
-        self.setXMLElement(ElementTree.fromstringlist(['<?xml version="1.0"?>\n<', self.tagname, '>', toPythonStr(text), '</', self.tagname, '>']))
+        self.setXMLElement(ElementTree.fromstringlist(['<?xml version="1.0"?>\n<', self.tagname, '>', text, '</', self.tagname, '>']))
         
     def createSourceEditor(self):
         ed = QtGui.QTextEdit()
@@ -40,7 +39,7 @@ class SectionModel(object):
     
     # when editor is turn off, model should be update
     def afterEdit(self, editor):
-        self.setText(self.getSourceEditor().toPlainText())
+        self.setText(self.getSourceEditor().toPlainText()) #TODO getSourceEditor() nadpisze zawartość edytora, bez sensu
 
 
 class SectionModelTreeBased(SectionModel):

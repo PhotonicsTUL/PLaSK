@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+# use new v2 API, Python types instead of Qt 
+import sip
+for n in ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"]: sip.setapi(n, 2)
+
 import sys
 from PyQt4 import QtGui
 from PyQt4.QtCore import SIGNAL
@@ -33,7 +37,7 @@ class MainWindow(QtGui.QMainWindow):
         
     def open(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self, "Choose the name of experiment file to open", ".", "XPL (*.xpl)");
-        if fileName.isEmpty(): return;
+        if not fileName: return;
         self.model.loadFromFile(fileName)
         
     def updateModel(self):
@@ -127,7 +131,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(200, 200, 550, 450)
         self.setWindowTitle('Main window')  
         
-        #self.model.loadFromFile('/home/qwak/plask/trunk/doc/tutorial1.xpl')
+        self.model.loadFromFile('../doc/tutorial1.xpl')
         self.modelIsNew()
           
         self.show()
