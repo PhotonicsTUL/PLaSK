@@ -34,7 +34,9 @@ Classes
    :template: class.rst
 
 {% for item in classes %}
+{% if not item.endswith('_list') and not item.endswith('_entry') %}
    {{ item }}
+{% endif %}
 {%- endfor %}
 
 {% endif %}

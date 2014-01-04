@@ -158,7 +158,7 @@ namespace detail {
         py::scope scope = filter_module;
 
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
-        filter_class((type_name<PropertyT>()+suffix).c_str(),
+        filter_class((type_name<PropertyT>()+"Filter"+suffix).c_str(),
                      format(
                          "Data filter for %1% into %2% geometry.\n\n"
                          "Args:\n"

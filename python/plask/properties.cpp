@@ -24,6 +24,7 @@ void register_standard_properties_concentration_carriers();
 void register_standard_properties_concentration_electrons();
 void register_standard_properties_concentration_holes();
 
+py::object property_module;
 py::object filter_module;
 
 /**
@@ -31,6 +32,59 @@ py::object filter_module;
  */
 void register_standard_properties()
 {
+    property_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
+    py::scope().attr("flow") = property_module;
+    property_module.attr("__doc__") =
+        "Data flow classes for standard properties.\n\n"
+
+        "This module contains providers and receivers for standard properties. These\n"
+        "classes are present in binary solvers, but you may also use them in your custom\n"
+        "Python solvers.\n\n"
+
+        "Existing providers can be connected to receivers by using a simple assignment\n"
+        "operator:\n\n"
+
+        ">>> first_solver.inTemperature = second_solver.outTemperature\n\n"
+
+        "You can manually retrieve data from any provider or a connected receiver by\n"
+        "calling it like a function:\n\n"
+
+        ">>> second_solver.outTemperature(mymesh)\n"
+        "<plask.Data at 0x584c140>\n"
+        ">>> first_solver.inTemperature(mymesh, 'spline')\n"
+        "<plask.Data at 0x584c140>\n\n"
+
+        "Providers and receivers of most quantities give spatial distributions of the\n"
+        "corresponding fields and, thus, require the target mesh as its argument. In\n"
+        "addition you may specify the interpolation method as in the example above.\n"
+        "If the interpolation method is omitted, its default value, depending is assumed\n"
+        "by the solver automatically.\n\n"
+
+        "Some properties (e.g. the light intensity) require the result number given as\n"
+        "the first argument (this is e.g. the consecutive mode number). Others take some\n"
+        "optional arguments that are specified at the end (e.g. the gain requires to be\n"
+        "given the wavelength at which the gain is computed.\n\n"
+
+        "In PLaSK you can create your custom Python solvers. They may contain the default\n"
+        "providers and receivers defined here. Receivers are simple objects that can be\n"
+        "attached to providers later and read as shown above. On the contrary, providers\n"
+        "require you to create a callable that returns the data to be provided when\n"
+        "requested.\n\n"
+
+        "Example:\n"
+        "    To create the solver that get a temperature from another source and\n"
+        "    increases it by 100K, use the following class:\n\n"
+
+        "    >>> class Hotter(object):\n"
+        "    ...     def __init__(self):\n"
+        "    ...         self.inTemperature = flow.TemperatureReceiver2D()\n"
+        "    ...         self.outTemperature = flow.TemperatureProvider2D(\n"
+        "    ...             lambda mehs, meth: self.get_data(mesh, meth))\n"
+        "    ...     def get_data(self, mesh, method):\n"
+        "    ...         temp = self.inTemperature(mesh, method)\n"
+        "    ...         return temp.array + 100\n\n"
+    ;
+
     filter_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.filter"))));
     py::scope().attr("filter") = filter_module;
     filter_module.attr("__doc__") =

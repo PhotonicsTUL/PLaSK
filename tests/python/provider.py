@@ -53,7 +53,7 @@ class ReceiverTest(unittest.TestCase):
        self.assertEqual( len(self.solver.inIntensity), 2 )
        self.assertEqual( list(self.solver.inIntensity(0,self.mesh2)), list(data0) )
        self.assertEqual( list(self.solver.inIntensity(1,self.mesh2)), list(data1) )
-       
+
        inout = plasktest.solvers.InOut("inout")
        inout.inWavelength = [1., 2., 3.]
        self.assertEqual( len(inout.inWavelength), 3 )
@@ -66,8 +66,8 @@ class PythonProviderTest(unittest.TestCase):
     class CustomSolver(object):
         def __init__(self, parent):
             self.parent = parent
-            self.outGain = plask.ProviderForGain2D(lambda *args: self.get_gain(*args))
-            self._receiver = plask.ReceiverForGain2D()
+            self.outGain = plask.flow.GainProvider2D(lambda *args: self.get_gain(*args))
+            self._receiver = plask.flow.GainReceiver2D()
         inGain = property(lambda self: self._receiver, lambda self,provider: self._receiver.connect(provider))
         def get_gain(self, mesh, wavelength, interp):
             self.parent.assertEqual(interp, plask.interpolation.SPLINE)
@@ -78,7 +78,7 @@ class PythonProviderTest(unittest.TestCase):
         self.solver.inGain = self.solver.outGain
 
     def testAll(self):
-        self.assertEqual( type(self.solver.inGain), plask.ReceiverForGain2D )
+        self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
         msh = plask.mesh.Regular2D((0.,1., 2), (0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
         self.assertEqual(list(res), [0., 10., 20., 30., 40., 50.])

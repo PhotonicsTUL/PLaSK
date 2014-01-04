@@ -11,6 +11,8 @@
 
 namespace plask { namespace python {
 
+extern py::object property_module;
+
 template <typename T, int dim>
 struct DataVectorWrap : public DataVector<T> {
     shared_ptr<MeshD<dim>> mesh;
@@ -75,7 +77,7 @@ namespace detail {
 
         RegisterReceiverBase(const std::string& suffix="") :
             property_name(type_name<typename ReceiverT::PropertyTag>()),
-            receiver_class(("ReceiverFor" + property_name + suffix).c_str()) {
+            receiver_class((property_name + "Receiver" + suffix).c_str()) {
             receiver_class.def("connect", &connect, "Connect provider to the receiver", py::arg("provider"));
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
             receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>, "Assign constant value to the receiver", py::arg("value"));
@@ -508,9 +510,9 @@ namespace detail {
         py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable> provider_class;
         RegisterProviderBase(const std::string& suffix="") :
             property_name (type_name<typename ProviderT::PropertyTag>()),
-            provider_class(("ProviderFor" + property_name + suffix).c_str(), py::no_init) {
+            provider_class((property_name + "Provider" + suffix).c_str(), py::no_init) {
             py::class_<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>,
-                       py::bases<ProviderT>, boost::noncopyable>(("ProviderFor" + property_name + suffix).c_str(),
+                       py::bases<ProviderT>, boost::noncopyable>((property_name + "Provider" + suffix).c_str(),
                        ("Provider class for " + property_name + " in Geometry" + suffix).c_str(), // TODO documentation
                        py::no_init)
                        .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>));
@@ -614,6 +616,7 @@ namespace detail {
 template <typename ReceiverT>
 inline void registerReceiver() {
     if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
+        py::scope scope = property_module;
         detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>();
     }
 }
@@ -621,6 +624,7 @@ inline void registerReceiver() {
 template <typename ProviderT>
 void registerProvider() {
     if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
+        py::scope scope = property_module;
         detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
     }
 }
