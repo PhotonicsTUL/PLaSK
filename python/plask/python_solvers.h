@@ -64,6 +64,9 @@ namespace detail {
 
 } // namespace detail
 
+extern const char* docstring_attr_receiver;
+extern const char* docstring_attr_provider;
+
 /**
  * This class should be instantiated to export a solver to Python.
  *
@@ -83,26 +86,32 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
     template <typename ProviderT, typename ClassT>
     typename std::enable_if<std::is_base_of<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>, ProviderT>::value, ExportSolver>::type&
-    add_provider(const char* name, ProviderT ClassT::* field, const char* help) {
+    add_provider(const char* name, ProviderT ClassT::* field, const char* addhelp) {
 
         typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ClassT::* BaseTypePtr;
 
-        this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field), help);
+        this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field),
+            format(docstring_attr_provider, type_name<typename ProviderT::PropertyTag>(),
+                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME, addhelp).c_str()
+        );
         return *this;
     }
 
     template <typename ProviderT, typename ClassT>
     typename std::enable_if<!std::is_base_of<ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>, ProviderT>::value, ExportSolver>::type&
-    add_provider(const char* name, ProviderT ClassT::* field, const char* help) {
+    add_provider(const char* name, ProviderT ClassT::* field, const char* addhelp) {
 
         static_assert(std::is_base_of<Provider, ProviderT>::value, "add_provider used for non-provider type");
 
-        this->def_readonly(name, field, help);
+        this->def_readonly(name, field,
+            format(docstring_attr_provider, type_name<typename ProviderT::PropertyTag>(),
+                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME, addhelp).c_str()
+        );
         return *this;
     }
 
     template <typename ReceiverT, typename ClassT>
-    ExportSolver& add_receiver(const char* name, ReceiverT ClassT::* field, const char* help) {
+    ExportSolver& add_receiver(const char* name, ReceiverT ClassT::* field, const char* addhelp) {
 
         //TODO maybe introduce some base class for receiver?
         static_assert(std::is_base_of<ReceiverBase, ReceiverT>::value, "add_receiver used for non-receiver type");
@@ -112,7 +121,9 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
                                              py::default_call_policies(),
                                              boost::mpl::vector3<void, Class&, py::object>()
                                             ),
-                           help
+                           format(docstring_attr_receiver, type_name<typename ReceiverT::ProviderType::PropertyTag>(),
+                                  spaceSuffix<typename ReceiverT::SpaceType>(), ReceiverT::ProviderType::PropertyTag::NAME,
+                                  addhelp).c_str()
                           );
         return *this;
     }
@@ -135,8 +146,8 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 #define RW_PROPERTY(name, get, set, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, &__Class__::set, help)
 #define RO_FIELD(name, help) solver.def_readonly(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 #define RW_FIELD(name, help) solver.def_readwrite(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-#define PROVIDER(name, help) solver.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
-#define RECEIVER(name, help) solver.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
+#define PROVIDER(name, addhelp) solver.add_provider(BOOST_PP_STRINGIZE(name), &__Class__::name, addhelp)
+#define RECEIVER(name, addhelp) solver.add_receiver(BOOST_PP_STRINGIZE(name), &__Class__::name, addhelp)
 #define BOUNDARY_CONDITIONS(name, help) solver.add_boundary_conditions(BOOST_PP_STRINGIZE(name), &__Class__::name, help)
 
 

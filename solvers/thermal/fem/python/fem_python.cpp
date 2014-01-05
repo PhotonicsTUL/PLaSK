@@ -49,11 +49,11 @@ BOOST_PYTHON_MODULE(fem)
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D", "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
-        RECEIVER(inHeat, "Receiver of heat density");
+        RECEIVER(inHeat, "");
         solver.setattr("inHeatDensity", solver.attr("inHeat"));
-        PROVIDER(outTemperature, "Provider of the temperatures");
-        PROVIDER(outHeatFlux, "Provider of the heat flux");
-        PROVIDER(outThermalConductivity, "Provider of the current thermal conductivity");
+        PROVIDER(outTemperature, "");
+        PROVIDER(outHeatFlux, "");
+        PROVIDER(outThermalConductivity, "");
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
@@ -69,11 +69,11 @@ BOOST_PYTHON_MODULE(fem)
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
-        RECEIVER(inHeat, "Receiver of heat density");
+        RECEIVER(inHeat, "");
         solver.setattr("inHeatDensity", solver.attr("inHeat"));
-        PROVIDER(outTemperature, "Provider of the temperatures");
-        PROVIDER(outHeatFlux, "Provider of the heat flux");
-        PROVIDER(outThermalConductivity, "Provider of the current thermal conductivity");
+        PROVIDER(outTemperature, "");
+        PROVIDER(outHeatFlux, "");
+        PROVIDER(outThermalConductivity, "");
         BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
         BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
         BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");

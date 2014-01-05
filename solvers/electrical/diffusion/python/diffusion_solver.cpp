@@ -35,14 +35,14 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");
         solver.def_readwrite("maxrefines", &__Class__::max_mesh_changes, "Maximum number of allowed mesh refinements");
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
-        RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
-        RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
-        RECEIVER(inGain, "Gain distribution"); // receiver in the solver
-        RECEIVER(inWavelength, "Wavelength"); // receiver in the solver
-        RECEIVER(inGainOverCarriersConcentration, "Gain over carriers concentration derivative distribution"); // receiver in the solver
-        RECEIVER(inLightIntensity, "Light intensity distribution"); // receiver in the solver
-        PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
-        METHOD(get_total_burning, burning_integral, "Compute power burned over threshold [mW]");
+        RECEIVER(inCurrentDensity, "");
+        RECEIVER(inTemperature, "");
+        RECEIVER(inGain, "");
+        RECEIVER(inWavelength, "It is required only for the overthreshold computations.");
+        RECEIVER(inGainOverCarriersConcentration, "It is required only for the overthreshold computations.");
+        RECEIVER(inLightIntensity, "It is required only for the overthreshold computations.");
+        PROVIDER(outCarriersConcentration, "");
+        METHOD(get_total_burning, burning_integral, "Compute power burned over threshold [mW].");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
@@ -75,12 +75,12 @@ BOOST_PYTHON_MODULE(diffusion)
         solver.def_readwrite("interpolation", &__Class__::interpolation_method, "Interpolation method used for injection current");
         solver.def_readwrite("maxrefines", &__Class__::max_mesh_changes, "Maximum number of allowed mesh refinements");
         solver.def_readwrite("maxiters", &__Class__::max_iterations, "Maximum number of allowed iterations before attempting to refine mesh");
-        RECEIVER(inCurrentDensity, "Current density vector perpendicular to the active region"); // receiver in the solver
-        RECEIVER(inTemperature, "Temperature distribution"); // receiver in the solver
-        RECEIVER(inGain, "Gain distribution"); // receiver in the solver
-        RECEIVER(inGainOverCarriersConcentration, "Gain over carriers concentration derivative distribution"); // receiver in the solver
-        RECEIVER(inLightIntensity, "Light intensity distribution"); // receiver in the solver
-        PROVIDER(outCarriersConcentration, "Carrier pairs concentration in the active region"); // provider in the solver
+        RECEIVER(inCurrentDensity, "");
+        RECEIVER(inTemperature, "");
+        RECEIVER(inGain, "It is required only for the overthreshold computations.");
+        RECEIVER(inGainOverCarriersConcentration, "It is required only for the overthreshold computations.");
+        RECEIVER(inLightIntensity, "It is required only for the overthreshold computations.");
+        PROVIDER(outCarriersConcentration, "");
         METHOD(get_total_burning, burning_integral, "Compute power burned over threshold [mW]");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property

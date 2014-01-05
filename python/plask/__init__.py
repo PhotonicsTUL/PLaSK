@@ -20,37 +20,6 @@ Modules
    algorithm
    filter
    flow
-
-Functions
-=========
-
-.. autosummary::
-
-   loadxpl
-   runxpl
-   print_log
-
-   save_field
-   load_field
-
-   plot_field
-   plot_vectors
-   plot_stream
-   plot_geometry
-   plot_mesh
-   plot_boundary
-   plot_material_param
-
-Special data types
-==================
-
-.. autosummary::
-   :toctree: plask
-   :nosignatures:
-
-   vector
-   Data
-
 '''
 
 copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"

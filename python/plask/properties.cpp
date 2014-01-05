@@ -24,6 +24,188 @@ void register_standard_properties_concentration_carriers();
 void register_standard_properties_concentration_electrons();
 void register_standard_properties_concentration_holes();
 
+const char* docstring_receiver =
+    "%1%Receiver%2%()\n\n"
+
+    "Receiver of the %3%%4%.\n\n"
+
+    "You may connect a provider to this receiver usign either the `connect` method\n"
+    "or an assignement operator. Then, you can read the provided value by calling\n"
+    "this receiver with arguments identical as the ones of the corresponding\n"
+    "provider.\n\n"
+
+    "See also:\n"
+    "    Provider of %3%: :class:`%1%Provider%2%`\n\n"
+    "    Data filter for %3%: :class:`plask.filter.%1%Filter%2%`";
+
+const char* docstring_receiver_connect =
+    "Connect some provider to the receiver.\n\n"
+
+    "Example:\n"
+    "    >>> solver.in%1%.connect(other_solver.out%1%)\n\n"
+
+    "Note:\n"
+    "    You may achieve the same effect by using the asignmnent operator\n"
+    "    if you put an exisiting provider at the right side of this operator:\n\n"
+
+    "    >>> solver.in%1% = other_solver.out%1%\n";
+
+const char* docstring_receiver_assign =
+    "Assign constant value to the receiver.\n\n"
+
+    "The receiver will always serve this value to the solver regardless of the\n"
+    "spatial coordinates. Use for manually setting uniform fields (e.g. constant\n"
+    "temperature.\n\n"
+
+    "Example:\n"
+    "    >>> solver.in%1%.assign(300.)\n"
+    "    >>> solver.in%1%(any_mesh)[0]\n"
+    "    300.\n"
+    "    >>> solver.in%1%(any_mesh)[-1]\n"
+    "    300.\n\n"
+
+    "Note:\n"
+    "    You may achieve the same effect by using the asignmnent operator\n"
+    "    if you put a value at the right side of this operator:\n\n"
+
+    "    >>> solver.in%1% = 300.";
+
+template <PropertyType propertyType> const char* docstring_provider();
+
+template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
+    "%1%Provider%2%(func)\n\n"
+
+    "Provider of the %3%%4%.\n\n"
+
+    "This class is used for %3% provider in binary solvers. You can also create\n"
+    "a custom provider for your Python solver.\n\n"
+
+    "Args:\n"
+    "    func (callable): function returning provided value on request.\n"
+    "        The callable must accept the same arguments as the provider\n"
+    "        ``__call__`` method (see below).\n\n"
+
+    "To obtain the value from the provider simply call it:\n\n"
+
+    ">>> solver.out%1%(%5%)\n\n"
+
+    "%6%\n"
+
+    "See also:\n"
+    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+}
+
+template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
+    "%1%Provider%2%(func)\n\n"
+
+    "Provider of the %3%%4%.\n\n"
+
+    "This class is used for %3% provider in binary solvers. You can also create\n"
+    "a custom provider for your Python solver.\n\n"
+
+    "Args:\n"
+    "    func (callable): function returning provided value on request.\n"
+    "        The callable must accept the same arguments as the provider\n"
+    "        ``__call__`` method (see below). It must also be able to give its\n"
+    "        length (i.e. have the ``__len__`` method defined) that gives the\n"
+    "        number of different provided values.\n\n"
+
+    "To obtain the value from the provider simply call it:\n\n"
+
+    ">>> solver.out%1%(n=0%5%)\n\n"
+
+    "where ``n`` is the number of the consecutive value to provide (it can\n"
+    "be omitted and defaults to 0.\n"
+    "%6%\n"
+
+    "See also:\n"
+    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+}
+
+template <> const char* docstring_provider<FIELD_PROPERTY>() { return
+    "%1%Provider%2%(func)\n\n"
+
+    "Provider of the %3%%4%.\n\n"
+
+    "This class is used for %3% provider in binary solvers. You can also create\n"
+    "a custom provider for your Python solver.\n\n"
+
+    "Args:\n"
+    "    func (callable): function returning provided value on request.\n"
+    "        The callable must accept the same arguments as the provider\n"
+    "        ``__call__`` method (see below).\n\n"
+
+    "To obtain the value from the provider simply call it:\n\n"
+
+    ">>> solver.out%1%(mesh, interpolation='default'%5%)\n\n"
+
+    "where ``mesh`` is the target mesh to get field at, ``interpolation`` is the\n"
+    "required interpolation method (can be omitted, in which case the solver\n"
+    "chooses it automatically).\n"
+    "%6%\n"
+
+    "See also:\n"
+    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+}
+
+template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
+    "%1%Provider%2%(func)\n\n"
+
+    "Provider of the %3%%4%.\n\n"
+
+    "This class is used for %3% provider in binary solvers. You can also create\n"
+    "a custom provider for your Python solver.\n\n"
+
+    "Args:\n"
+    "    func (callable): function returning provided value on request.\n"
+    "        The callable must accept the same arguments as the provider\n"
+    "        ``__call__`` method (see below). It must also be able to give its\n"
+    "        length (i.e. have the ``__len__`` method defined) that gives the\n"
+    "        number of different provided values.\n\n"
+
+    "To obtain the value from the provider simply call it:\n\n"
+
+    ">>> solver.out%1%(n=0, mesh, interpolation='default'%5%)\n\n"
+
+    "where ``n`` is the number of the consecutive value to provide (it can\n"
+    "be omitted and defaults to 0), ``mesh`` is the target mesh to get field at,\n"
+    "``interpolation`` is the required interpolation method (can be omitted, in"
+    "which case the solver chooses it automatically).\n"
+    "%6%\n"
+
+    "See also:\n"
+    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+}
+
+template const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
+template const char* docstring_provider<MULTI_VALUE_PROPERTY>();
+template const char* docstring_provider<FIELD_PROPERTY>();
+template const char* docstring_provider<MULTI_FIELD_PROPERTY>();
+
+const char* docstring_attr_receiver =
+    "Receiver of the %3% required for computations.\n"
+    "%4%\n\n"
+
+    "You will find usage details in the documentation of the receiver class\n"
+    ":class:`plask.flow.%1%Receiver%2%`.\n\n"
+
+    "See also:\n\n"
+    "    Receciver class: :class:`plask.flow.%1%Receiver%2%`\n\n"
+    "    Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "    Data filter: :class:`plask.filter.%1%Filter%2%`\n";
+
+const char* docstring_attr_provider =
+    "Provider of the computed %3%.\n"
+    "%4%\n\n"
+
+    "You will find usage details in the documentation of the provider class\n"
+    ":class:`plask.flow.%1%Provider%2%`.\n\n"
+
+    "See also:\n\n"
+    "    Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "    Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+
+
 py::object property_module;
 py::object filter_module;
 
@@ -73,7 +255,7 @@ void register_standard_properties()
 
         "Example:\n"
         "    To create the solver that get a temperature from another source and\n"
-        "    increases it by 100K, use the following class:\n\n"
+        "    increases it by 60 K, use the following class:\n\n"
 
         "    >>> class Hotter(object):\n"
         "    ...     def __init__(self):\n"
@@ -82,7 +264,7 @@ void register_standard_properties()
         "    ...             lambda mehs, meth: self.get_data(mesh, meth))\n"
         "    ...     def get_data(self, mesh, method):\n"
         "    ...         temp = self.inTemperature(mesh, method)\n"
-        "    ...         return temp.array + 100\n\n"
+        "    ...         return temp.array + 60.\n\n"
     ;
 
     filter_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.filter"))));
@@ -101,7 +283,7 @@ void register_standard_properties()
         "An example temperature filter for target 2D geometry can be constructed as\n"
         "follows:\n\n"
 
-        ">>> temp_filter = filter.Temperature2D(mygeometry2d)\n\n"
+        ">>> temp_filter = filter.TemperatureFilter2D(mygeometry2d)\n\n"
 
         "Having an existing filter, you may attach a source provider to it, using bracket\n"
         "indexing. The `index` is a geometry object either existing in the target geometry\n"

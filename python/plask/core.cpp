@@ -206,13 +206,25 @@ BOOST_PYTHON_MODULE(_plask)
     register_data_vectors();
 
     // Solvers
-    py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>("Solver", "Base class for all solvers", py::no_init)
-        .add_property("name", &plask::Solver::getName, "Name of the solver object")
-        .add_property("id", &plask::Solver::getId, "Id of the solver object")
-        .add_property("description", &plask::Solver::getClassDescription, "Short description of the solver")
-        .add_property("initialized", &plask::Solver::isInitialized, "True if the solver has been initialized")
-        .def("invalidate", &plask::Solver::invalidate, "Set solver back to uninitialized state")
+    py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>
+    solver("Solver", "Base class for all solvers.", py::no_init);
+    solver
+        .add_property("id", &plask::Solver::getId,
+                      "Id of the solver object. (read only)\n\n"
+                      "Example:\n"
+                      "    >>> mysolver.id\n"
+                      "    mysolver:category.type")
+        .add_property("initialized", &plask::Solver::isInitialized,
+                      "True if the solver has been initialized. (read only)\n\n"
+                      "Solvers usually get initialized at the beginnig of the computations.\n"
+                      "You can clean the initialization state and free the memory by calling\n"
+                      "the :method:`invalidate` method.")
+        .def("invalidate", &plask::Solver::invalidate,
+             "Set the solver back to uninitialized state.\n\n"
+             "This method frees the memory allocated by the solver and sets\n"
+             ":attr:`initialized` to *False*.")
     ;
+    solver.attr("__module__") = "plask";
 
     // Exceptions
     register_exception<plask::Exception>(PyExc_RuntimeError);

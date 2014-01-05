@@ -356,7 +356,9 @@ static bool DataVectorWrap__eq__(const DataVectorWrap<T,dim>& vec1, const DataVe
 template <typename T, int dim>
 void register_data_vector() {
 
-    py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<const T,dim>>>("Data", "Data returned by field providers", py::no_init)
+    py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<const T,dim>>>
+    data("Data", "Data returned by field providers.", py::no_init);
+    data
         .def_readonly("mesh", &DataVectorWrap<const T,dim>::mesh)
         .def("__len__", &DataVectorWrap<const T,dim>::size)
         .def("__getitem__", &DataVectorWrap_getitem<const T,dim>)
@@ -379,6 +381,7 @@ void register_data_vector() {
         // .def("__itruediv__", &DataVectorWrap__idiv__<const T,dim>)
         .def("__eq__", &DataVectorWrap__eq__<const T,dim>)
     ;
+    data.attr("__module__") = "plask";
 }
 
 template <int dim>
@@ -408,4 +411,3 @@ void register_data_vectors() {
 }} // namespace plask::python
 
 #include <plask/data.h>
-

@@ -190,11 +190,13 @@ template <typename SpaceT> static inline std::string spaceName();
 template <> inline std::string spaceName<Geometry2DCartesian>() { return "Cartesian2D"; }
 template <> inline std::string spaceName<Geometry2DCylindrical>() { return "Cylindrical2D"; }
 template <> inline std::string spaceName<Geometry3D>() { return "Cartesian3D"; }
+template <> inline std::string spaceName<void>() { return ""; }
 
 template <typename SpaceT> static inline std::string spaceSuffix();
 template <> inline std::string spaceSuffix<Geometry2DCartesian>() { return "2D"; }
 template <> inline std::string spaceSuffix<Geometry2DCylindrical>() { return "Cyl"; }
 template <> inline std::string spaceSuffix<Geometry3D>() { return "3D"; }
+template <> inline std::string spaceSuffix<void>() { return ""; }
 
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -216,7 +218,7 @@ struct LoggingConfig
 struct Config
 {
     std::string axes_name() const;
-    
+
     void set_axes(std::string axis);
 
     std::string __str__() const;

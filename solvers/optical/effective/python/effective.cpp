@@ -125,7 +125,7 @@ size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, py::object 
         if (py::len(neff) != 2) throw TypeError("'neff' must be either complex or sequence of two complex");
         return self.findMode(py::extract<dcomplex>(neff[0]), py::extract<dcomplex>(neff[1]), parseSymmetry(symmetry));
     }
-    
+
 }
 
 std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& self, dcomplex neff1, dcomplex neff2, py::object symmetry, size_t resteps, size_t imsteps, dcomplex eps) {
@@ -140,7 +140,7 @@ size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, p
         if (py::len(lam) != 2) throw TypeError("'lam' must be either complex or sequence of two complex");
         return self.findMode(py::extract<dcomplex>(lam[0]), py::extract<dcomplex>(lam[1]), m);
     }
-    
+
 }
 
 double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {
@@ -203,11 +203,11 @@ BOOST_PYTHON_MODULE(effective)
                        (py::arg("stripe"), "neff"));
         solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff") , py::arg("polarization")=py::object()));
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
-        RECEIVER(inTemperature, "Temperature distribution in the structure");
-        RECEIVER(inGain, "Optical gain in the active region");
-        PROVIDER(outNeff, "Effective index of the last computed mode");
-        PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
-        PROVIDER(outRefractiveIndex, "Refractive index used in the computations");
+        RECEIVER(inTemperature, "");
+        RECEIVER(inGain, "");
+        PROVIDER(outNeff, "");
+        PROVIDER(outLightIntensity, "");
+        PROVIDER(outRefractiveIndex, "");
         RO_FIELD(modes, "Computed modes");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
@@ -250,12 +250,12 @@ BOOST_PYTHON_MODULE(effective)
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), py::arg("m")=0));
         solver.def("set_mode", (size_t (EffectiveFrequencyCylSolver::*)(double,double,int))&EffectiveFrequencyCylSolver::setMode,
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), "loss", py::arg("m")=0));
-        RECEIVER(inTemperature, "Temperature distribution in the structure");
-        RECEIVER(inGain, "Optical gain distribution in the active region");
-        PROVIDER(outWavelength, "Wavelength of the computed mode [nm]");
-        PROVIDER(outLoss, "Modal loss of the computed mode [1/cm]");
-        PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
-        PROVIDER(outRefractiveIndex, "Refractive index used in the computations");
+        RECEIVER(inTemperature, "");
+        RECEIVER(inGain, "");
+        PROVIDER(outWavelength, "");
+        PROVIDER(outLoss, "");
+        PROVIDER(outLightIntensity, "");
+        PROVIDER(outRefractiveIndex, "");
         RO_FIELD(modes, "Computed modes");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 

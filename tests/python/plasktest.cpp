@@ -126,7 +126,9 @@ struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::Rect
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct SimpleSolver : plask::Solver {
-    struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {};
+    struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {
+        static constexpr const char* NAME = "vectorial field";
+    };
 
     virtual std::string getClassName() const { return "SimpleSolver"; }
 
@@ -158,6 +160,7 @@ struct SimpleSolver : plask::Solver {
         outLightIntensity.push_back(data);
     }
 };
+constexpr const char* SimpleSolver::VectorialField::NAME;
 
 struct InOutSolver : plask::Solver {
     struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {};

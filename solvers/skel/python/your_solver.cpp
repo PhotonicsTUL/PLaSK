@@ -23,8 +23,8 @@ BOOST_PYTHON_MODULE(solver_name)
         RW_FIELD(field_name, "Short documentation"); // read-write field
         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
-        RECEIVER(inReceiver, "Short documentation"); // receiver in the solver
-        PROVIDER(outProvider, "Short documentation"); // provider in the solver
+        RECEIVER(inReceiver, ""); // receiver in the solver (string is an optional additional documentation)
+        PROVIDER(outProvider, ""); // provider in the solver (string is an optional additional documentation)
         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
     }
 

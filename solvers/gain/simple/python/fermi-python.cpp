@@ -108,14 +108,10 @@ BOOST_PYTHON_MODULE(simple)
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCartesian>),
                    "Determine quasi-Fermi levels and carriers levels inside QW");
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
-        solver.add_receiver("inTemperature",
-                            reinterpret_cast<ReceiverFor<Temperature,Geometry2DCartesian>__Class__::*>(&__Class__::inTemperature),
-                            "Temperature distribution");
-        solver.add_receiver("inCarriersConcentration",
-                            reinterpret_cast<ReceiverFor<CarriersConcentration,Geometry2DCartesian>__Class__::*>(&__Class__::inCarriersConcentration),
-                            "Carrier pairs concentration");
-        PROVIDER(outGain, "Optical gain in the active region");
-        PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
+        RECEIVER(inTemperature, "");
+        RECEIVER(inCarriersConcentration, "");
+        PROVIDER(outGain, "");
+        PROVIDER(outGainOverCarriersConcentration, "");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
@@ -138,10 +134,10 @@ BOOST_PYTHON_MODULE(simple)
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCylindrical>),
                    "Determine quasi-Fermi levels and carriers levels inside QW");
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
-        RECEIVER(inTemperature, "Temperature distribution");
-        RECEIVER(inCarriersConcentration, "Carrier pairs concentration");
-        PROVIDER(outGain, "Optical gain in the active region");
-        PROVIDER(outGainOverCarriersConcentration, "Optical gain over carriers concentration derivative in the active region");
+        RECEIVER(inTemperature, "");
+        RECEIVER(inCarriersConcentration, "");
+        PROVIDER(outGain, "");
+        PROVIDER(outGainOverCarriersConcentration, "");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
         // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");

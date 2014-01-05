@@ -4,6 +4,8 @@
 #include <type_traits>  // std::is_same
 
 #include "python_globals.h"
+#include "python_property_desc.h"
+
 #include <plask/utils/stl.h>
 #include <plask/provider/providerfor.h>
 #include <plask/mesh/rectilinear.h>
@@ -47,6 +49,10 @@ struct DataVectorWrap : public DataVector<T> {
 
 // ---------- Receiver ------------
 
+extern const char* docstring_receiver;
+extern const char* docstring_receiver_connect;
+extern const char* docstring_receiver_assign;
+
 namespace detail {
 
     template <typename ReceiverT>
@@ -75,13 +81,21 @@ namespace detail {
 
         static void disconnect(ReceiverT& receiver) { receiver.setProvider(nullptr); }
 
-        RegisterReceiverBase(const std::string& suffix="") :
+        RegisterReceiverBase(const std::string& suffix="", const std::string& space="") :
             property_name(type_name<typename ReceiverT::PropertyTag>()),
-            receiver_class((property_name + "Receiver" + suffix).c_str()) {
-            receiver_class.def("connect", &connect, "Connect provider to the receiver", py::arg("provider"));
-            receiver_class.def("disconnect", &disconnect, "Disconnect any provider from receiver");
-            receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>, "Assign constant value to the receiver", py::arg("value"));
-            receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed, "Indicates whether the receiver value has changed since last retrieval");
+            receiver_class((property_name + "Receiver" + suffix).c_str(),
+                format(docstring_receiver, property_name, suffix, ReceiverT::ProviderType::PropertyTag::NAME,
+                (space!="")? " in "+space+" geometry" : "").c_str()
+            ) {
+            receiver_class.def("connect", &connect,
+                               format(docstring_receiver_connect, property_name).c_str(),
+                               py::arg("provider"));
+            receiver_class.def("disconnect", &disconnect, "Disconnect any provider from the receiver.");
+            receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>,
+                               format(docstring_receiver_assign, property_name).c_str(),
+                                py::arg("value"));
+            receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed,
+                                        "Indicates whether the receiver value has changed since the last retrieval.");
         }
     };
 
@@ -196,7 +210,7 @@ namespace detail {
             return DataT(self(*mesh, params..., method), mesh);
         }
 
-        RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
+        RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
         }
 
@@ -255,7 +269,7 @@ namespace detail {
             return DataT(self(0, *mesh, params..., method), mesh);
         }
 
-        RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>()) {
+        RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
             this->receiver_class.def("__call__", &__call__n, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
             this->receiver_class.def("__call__", &__call__0, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
@@ -501,6 +515,7 @@ struct RegisterScaledProvider {
 };
 
 
+template <PropertyType propertyType> const char* docstring_provider();
 
 namespace detail {
 
@@ -508,14 +523,25 @@ namespace detail {
     struct RegisterProviderBase {
         const std::string property_name;
         py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable> provider_class;
-        RegisterProviderBase(const std::string& suffix="") :
+        RegisterProviderBase(const std::string& suffix="", const std::string& space="") :
             property_name (type_name<typename ProviderT::PropertyTag>()),
             provider_class((property_name + "Provider" + suffix).c_str(), py::no_init) {
             py::class_<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>,
                        py::bases<ProviderT>, boost::noncopyable>((property_name + "Provider" + suffix).c_str(),
-                       ("Provider class for " + property_name + " in Geometry" + suffix).c_str(), // TODO documentation
+                       format(docstring_provider<ProviderT::PropertyTag::propertyType>(),
+                              property_name, suffix, ProviderT::PropertyTag::NAME,
+                              (space!="")? " in "+space+" geometry" : "",
+                              docstrig_property_optional_args<typename ProviderT::PropertyTag>(),
+                              docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>()
+                             ).c_str(),
                        py::no_init)
-                       .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>));
+                       .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(),
+                                                             py::args("func")))
+                       .def("set_changed", &ProviderT::fireChanged,
+                            "Inform all connected receivers that the provided value has changed.\n\n"
+                            "The receivers will have its `changed` attribute set to True and solvers will\n"
+                            "call the provider again if they need its value (otherwise they might take it\n"
+                            "from thei cache.\n");
         }
     };
 
@@ -528,7 +554,7 @@ namespace detail {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static ValueT __call__(ProviderT& self, const ExtraParams&... params) { return self(params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider");
+            this->provider_class.def("__call__", &__call__, "Get value from the provider.");
         }
     };
 
@@ -540,9 +566,9 @@ namespace detail {
         static ValueT __call__n(ProviderT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
         static ValueT __call__0(ProviderT& self, const ExtraParams&... params) { return self(0, params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__n, "Get value from the provider");
-            this->provider_class.def("__call__", &__call__0, "Get value from the provider");
-            this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
+            this->provider_class.def("__call__", &__call__n, "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__0, "Get value from the provider.");
+            this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
         }
     };
 
@@ -556,8 +582,8 @@ namespace detail {
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
         }
-        RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+        RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
+            this->provider_class.def("__call__", &__call__, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
         }
     };
 
@@ -574,10 +600,10 @@ namespace detail {
         static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             return DataVectorWrap<const ValueT,DIMS>(self(0, *mesh, params..., method), mesh);
         }
-        RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__n, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
-            this->provider_class.def("__call__", &__call__0, "Get value from the provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
-            this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values");
+        RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
+            this->provider_class.def("__call__", &__call__n, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->provider_class.def("__call__", &__call__0, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
         }
     };
 

@@ -541,6 +541,8 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
 
+    typedef PropertyT PropertyTag;
+
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
 
@@ -665,6 +667,8 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
+
+    typedef PropertyT PropertyTag;
 
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
@@ -890,6 +894,8 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
 
+    typedef PropertyT PropertyTag;
+
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }
 
@@ -1086,6 +1092,8 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiFieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
+
+    typedef PropertyT PropertyTag;
 
     static constexpr const char* NAME = PropertyT::NAME;
     virtual const char* name() const { return NAME; }

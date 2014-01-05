@@ -73,11 +73,11 @@ inline void export_base(Class solver) {
     solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter");
     solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers");
     solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set");
-    solver.add_receiver("inTemperature", &Solver::inTemperature, "Optical gain in the active region");
-    solver.add_receiver("inGain", &Solver::inGain, "Optical gain in the active region");
-    solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "Light intensity of the last computed mode");
-    solver.add_provider("outElectricField", &Solver::outElectricField, "Electric field for the last computed mode");
-    solver.add_provider("outMagneticField", &Solver::outMagneticField, "Magnetic field for the last computed mode");
+    solver.add_receiver("inTemperature", &Solver::inTemperature, "");
+    solver.add_receiver("inGain", &Solver::inGain, "");
+    solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "");
+    solver.add_provider("outElectricField", &Solver::outElectricField, "");
+    solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
 
     py::scope scope = solver;
 

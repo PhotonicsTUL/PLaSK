@@ -5,6 +5,8 @@
 #include "python_provider.h"
 #include "python_filters.h"
 
+#include <plask/properties/gain.h>
+
 namespace plask { namespace python {
 
 namespace detail {
