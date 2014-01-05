@@ -92,7 +92,8 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
         this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field),
             format(docstring_attr_provider, type_name<typename ProviderT::PropertyTag>(),
-                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME, addhelp).c_str()
+                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME,
+                   ProviderT::PropertyTag::UNIT, addhelp).c_str()
         );
         return *this;
     }
@@ -105,7 +106,8 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
         this->def_readonly(name, field,
             format(docstring_attr_provider, type_name<typename ProviderT::PropertyTag>(),
-                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME, addhelp).c_str()
+                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME,
+                   ProviderT::PropertyTag::UNIT, addhelp).c_str()
         );
         return *this;
     }
@@ -123,7 +125,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
                                             ),
                            format(docstring_attr_receiver, type_name<typename ReceiverT::ProviderType::PropertyTag>(),
                                   spaceSuffix<typename ReceiverT::SpaceType>(), ReceiverT::ProviderType::PropertyTag::NAME,
-                                  addhelp).c_str()
+                                   ReceiverT::ProviderType::PropertyTag::UNIT, addhelp).c_str()
                           );
         return *this;
     }

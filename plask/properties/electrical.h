@@ -10,14 +10,16 @@ namespace plask {
  */
 struct Potential: public ScalarFieldProperty {
     static constexpr const char* NAME = "potential";
+    static constexpr const char* UNIT = "V";
 };
 
 /**
- * Electric current density [kA/cm^2]
+ * Electric current density [kA/cm²]
  * This is 2D vector for two-dimensional sovers
  */
 struct CurrentDensity: public VectorFieldProperty<> {
     static constexpr const char* NAME = "current density";
+    static constexpr const char* UNIT = "kA/cm²";
 };
 
 /**
@@ -26,6 +28,7 @@ struct CurrentDensity: public VectorFieldProperty<> {
  */
 struct CarriersConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "carriers concentration";
+    static constexpr const char* UNIT = "1/cm³";
 };
 
 /**
@@ -33,6 +36,7 @@ struct CarriersConcentration: public ScalarFieldProperty {
  */
 struct ElectronsConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "electrons concentration";
+    static constexpr const char* UNIT = "1/cm³";
 };
 
 /**
@@ -40,6 +44,7 @@ struct ElectronsConcentration: public ScalarFieldProperty {
  */
 struct HolesConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "holes concentration";
+    static constexpr const char* UNIT = "1/cm³";
 };
 
 /**
@@ -47,6 +52,7 @@ struct HolesConcentration: public ScalarFieldProperty {
  */
 struct ElectricalConductivity: FieldProperty<Tensor2<double>> {
     static constexpr const char* NAME = "electrical conductivity";
+    static constexpr const char* UNIT = "S/m";
 };
 
 } // namespace plask

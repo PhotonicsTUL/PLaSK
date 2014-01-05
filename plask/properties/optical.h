@@ -13,6 +13,7 @@ namespace plask {
  */
 struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>,double> {
     static constexpr const char* NAME = "refractive index";
+    static constexpr const char* UNIT = "";
     static inline Tensor3<dcomplex> getDefaultValue() { return Tensor3<dcomplex>(1.); }
 };
 
@@ -23,6 +24,7 @@ struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>,double> {
  */
 struct LightIntensity: public MultiFieldProperty<double> {
     static constexpr const char* NAME = "light intensity";
+    static constexpr const char* UNIT = "W/m²";
 };
 
 /**
@@ -45,6 +47,7 @@ struct LightIntensitySumProvider: public FieldSumProvider<LightIntensity, SpaceT
  */
 struct OpticalElectricField: public MultiFieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "electric field";
+    static constexpr const char* UNIT = "V/m";
 };
 
 
@@ -55,6 +58,7 @@ struct OpticalElectricField: public MultiFieldProperty<Vec<3,dcomplex>> {
  */
 struct OpticalMagneticField: public MultiFieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "magnetic field";
+    static constexpr const char* UNIT = "A/m";
 };
 
 
@@ -68,6 +72,7 @@ struct OpticalMagneticField: public MultiFieldProperty<Vec<3,dcomplex>> {
  */
 struct Wavelength: public MultiValueProperty<double> {
     static constexpr const char* NAME = "wavelength";
+    static constexpr const char* UNIT = "nm";
 };
 
 /**
@@ -77,6 +82,7 @@ struct Wavelength: public MultiValueProperty<double> {
  */
 struct ModalLoss: public MultiValueProperty<double> {
     static constexpr const char* NAME = "modal extinction";
+    static constexpr const char* UNIT = "1/cm";
 };
 
 /**
@@ -88,6 +94,7 @@ struct ModalLoss: public MultiValueProperty<double> {
  */
 struct PropagationConstant: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "propagation constant";
+    static constexpr const char* UNIT = "1/µm";
 };
 
 /**
@@ -99,6 +106,7 @@ struct PropagationConstant: public MultiValueProperty<dcomplex> {
  */
 struct EffectiveIndex: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "effective index";
+    static constexpr const char* UNIT = "";
 };
 
 } // namespace plask

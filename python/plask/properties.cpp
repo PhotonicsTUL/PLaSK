@@ -27,7 +27,7 @@ void register_standard_properties_concentration_holes();
 const char* docstring_receiver =
     "%1%Receiver%2%()\n\n"
 
-    "Receiver of the %3%%4%.\n\n"
+    "Receiver of the %3%%4% [%5%].\n\n"
 
     "You may connect a provider to this receiver usign either the `connect` method\n"
     "or an assignement operator. Then, you can read the provided value by calling\n"
@@ -75,7 +75,7 @@ template <PropertyType propertyType> const char* docstring_provider();
 template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "%1%Provider%2%(func)\n\n"
 
-    "Provider of the %3%%4%.\n\n"
+    "Provider of the %3%%4% [%7%].\n\n"
 
     "This class is used for %3% provider in binary solvers. You can also create\n"
     "a custom provider for your Python solver.\n\n"
@@ -85,11 +85,16 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "        The callable must accept the same arguments as the provider\n"
     "        ``__call__`` method (see below).\n\n"
 
-    "To obtain the value from the provider simply call it:\n\n"
+    "To obtain the value from the provider simply call it. The call signature\n"
+    "is as follows:\n\n"
 
-    ">>> solver.out%1%(%5%)\n\n"
+    ">>> solver.out%1%(%5%)\n"
+    "1000\n\n"
 
-    "%6%\n"
+    "%6%"
+
+    "Returns:\n"
+    "    Value of the %3% [%7%].\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -98,7 +103,7 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
 template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "%1%Provider%2%(func)\n\n"
 
-    "Provider of the %3%%4%.\n\n"
+    "Provider of the %3%%4% [%7%].\n\n"
 
     "This class is used for %3% provider in binary solvers. You can also create\n"
     "a custom provider for your Python solver.\n\n"
@@ -110,13 +115,19 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "        length (i.e. have the ``__len__`` method defined) that gives the\n"
     "        number of different provided values.\n\n"
 
-    "To obtain the value from the provider simply call it:\n\n"
+    "To obtain the value from the provider simply call it. The call signature\n"
+    "is as follows:\n\n"
 
     ">>> solver.out%1%(n=0%5%)\n\n"
+    "1000\n\n"
 
-    "where ``n`` is the number of the consecutive value to provide (it can\n"
-    "be omitted and defaults to 0.\n"
-    "%6%\n"
+    "Args:\n"
+    "    n (int): Value number\n\n"
+
+    "%6%"
+
+    "Returns:\n"
+    "    Value of the %3% [%7%].\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -125,7 +136,7 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
 template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "%1%Provider%2%(func)\n\n"
 
-    "Provider of the %3%%4%.\n\n"
+    "Provider of the %3%%4% [%7%].\n\n"
 
     "This class is used for %3% provider in binary solvers. You can also create\n"
     "a custom provider for your Python solver.\n\n"
@@ -135,14 +146,21 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "        The callable must accept the same arguments as the provider\n"
     "        ``__call__`` method (see below).\n\n"
 
-    "To obtain the value from the provider simply call it:\n\n"
+    "To obtain the value from the provider simply call it. The call signature\n"
+    "is as follows:\n\n"
 
     ">>> solver.out%1%(mesh, interpolation='default'%5%)\n\n"
+    "<plask.Data at 0x1234567>\n\n"
 
-    "where ``mesh`` is the target mesh to get field at, ``interpolation`` is the\n"
-    "required interpolation method (can be omitted, in which case the solver\n"
-    "chooses it automatically).\n"
-    "%6%\n"
+    "Args:\n"
+    "    mesh (mesh): Target mesh to get field at.\n\n"
+
+    "    interpolation (str): Requested interpolation method.\n\n"
+
+    "%6%"
+
+    "Returns:\n"
+    "    Data with the %3% on the specified mesh [%7%].\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -151,7 +169,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
 template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "%1%Provider%2%(func)\n\n"
 
-    "Provider of the %3%%4%.\n\n"
+    "Provider of the %3%%4% [%7%].\n\n"
 
     "This class is used for %3% provider in binary solvers. You can also create\n"
     "a custom provider for your Python solver.\n\n"
@@ -163,15 +181,23 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "        length (i.e. have the ``__len__`` method defined) that gives the\n"
     "        number of different provided values.\n\n"
 
-    "To obtain the value from the provider simply call it:\n\n"
+    "To obtain the value from the provider simply call it. The call signature\n"
+    "is as follows:\n\n"
 
     ">>> solver.out%1%(n=0, mesh, interpolation='default'%5%)\n\n"
+    "<plask.Data at 0x1234567>\n\n"
 
-    "where ``n`` is the number of the consecutive value to provide (it can\n"
-    "be omitted and defaults to 0), ``mesh`` is the target mesh to get field at,\n"
-    "``interpolation`` is the required interpolation method (can be omitted, in"
-    "which case the solver chooses it automatically).\n"
-    "%6%\n"
+    "Args:\n"
+    "    n (int): Value number\n\n"
+
+    "    mesh (mesh): Target mesh to get field at.\n\n"
+
+    "    interpolation (str): Requested interpolation method.\n\n"
+
+    "%6%"
+
+    "Returns:\n"
+    "    Data with the %3% on the specified mesh [%7%].\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -183,8 +209,8 @@ template const char* docstring_provider<FIELD_PROPERTY>();
 template const char* docstring_provider<MULTI_FIELD_PROPERTY>();
 
 const char* docstring_attr_receiver =
-    "Receiver of the %3% required for computations.\n"
-    "%4%\n\n"
+    "Receiver of the %3% required for computations [%4%].\n"
+    "%5%\n\n"
 
     "You will find usage details in the documentation of the receiver class\n"
     ":class:`plask.flow.%1%Receiver%2%`.\n\n"
@@ -195,8 +221,8 @@ const char* docstring_attr_receiver =
     "    Data filter: :class:`plask.filter.%1%Filter%2%`\n";
 
 const char* docstring_attr_provider =
-    "Provider of the computed %3%.\n"
-    "%4%\n\n"
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
 
     "You will find usage details in the documentation of the provider class\n"
     ":class:`plask.flow.%1%Provider%2%`.\n\n"

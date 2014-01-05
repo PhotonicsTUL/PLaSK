@@ -85,7 +85,7 @@ namespace detail {
             property_name(type_name<typename ReceiverT::PropertyTag>()),
             receiver_class((property_name + "Receiver" + suffix).c_str(),
                 format(docstring_receiver, property_name, suffix, ReceiverT::ProviderType::PropertyTag::NAME,
-                (space!="")? " in "+space+" geometry" : "").c_str()
+                (space!="")? " in "+space+" geometry" : "", ReceiverT::ProviderType::PropertyTag::UNIT).c_str()
             ) {
             receiver_class.def("connect", &connect,
                                format(docstring_receiver_connect, property_name).c_str(),
@@ -93,7 +93,7 @@ namespace detail {
             receiver_class.def("disconnect", &disconnect, "Disconnect any provider from the receiver.");
             receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>,
                                format(docstring_receiver_assign, property_name).c_str(),
-                                py::arg("value"));
+                               py::arg("value"));
             receiver_class.add_property("changed", (bool (ReceiverT::*)() const)&ReceiverT::changed,
                                         "Indicates whether the receiver value has changed since the last retrieval.");
         }
@@ -532,7 +532,8 @@ namespace detail {
                               property_name, suffix, ProviderT::PropertyTag::NAME,
                               (space!="")? " in "+space+" geometry" : "",
                               docstrig_property_optional_args<typename ProviderT::PropertyTag>(),
-                              docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>()
+                              docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),
+                              ProviderT::PropertyTag::UNIT
                              ).c_str(),
                        py::no_init)
                        .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(),
