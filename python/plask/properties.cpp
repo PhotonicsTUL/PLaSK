@@ -94,7 +94,7 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "%6%"
 
     "Returns:\n"
-    "    Value of the %3% [%7%].\n\n"
+    "    Value of the %3% **[%7%]**.\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -118,7 +118,7 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(n=0%5%)\n\n"
+    ">>> solver.out%1%(n=0%5%)\n"
     "1000\n\n"
 
     "Args:\n"
@@ -127,7 +127,7 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "%6%"
 
     "Returns:\n"
-    "    Value of the %3% [%7%].\n\n"
+    "    Value of the %3% **[%7%]**.\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -149,7 +149,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(mesh, interpolation='default'%5%)\n\n"
+    ">>> solver.out%1%(mesh, interpolation='default'%5%)\n"
     "<plask.Data at 0x1234567>\n\n"
 
     "Args:\n"
@@ -160,7 +160,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "%6%"
 
     "Returns:\n"
-    "    Data with the %3% on the specified mesh [%7%].\n\n"
+    "    Data with the %3% on the specified mesh **[%7%]**.\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -184,7 +184,7 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(n=0, mesh, interpolation='default'%5%)\n\n"
+    ">>> solver.out%1%(n=0, mesh, interpolation='default'%5%)\n"
     "<plask.Data at 0x1234567>\n\n"
 
     "Args:\n"
@@ -197,7 +197,7 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "%6%"
 
     "Returns:\n"
-    "    Data with the %3% on the specified mesh [%7%].\n\n"
+    "    Data with the %3% on the specified mesh **[%7%]**.\n\n"
 
     "See also:\n"
     "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
@@ -287,7 +287,7 @@ void register_standard_properties()
         "    ...     def __init__(self):\n"
         "    ...         self.inTemperature = flow.TemperatureReceiver2D()\n"
         "    ...         self.outTemperature = flow.TemperatureProvider2D(\n"
-        "    ...             lambda mehs, meth: self.get_data(mesh, meth))\n"
+        "    ...             lambda mesh, meth: self.get_data(mesh, meth))\n"
         "    ...     def get_data(self, mesh, method):\n"
         "    ...         temp = self.inTemperature(mesh, method)\n"
         "    ...         return temp.array + 60.\n\n"
