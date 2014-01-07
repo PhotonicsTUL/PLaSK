@@ -32,8 +32,8 @@ Solver classes
 --------------
 
 .. autosummary::
-   :toctree: api/solvers/%(category)s/
-   :template: class.rst
+   :toctree: %(category)s
+   :template: solver.rst
 
 """ % locals())
 

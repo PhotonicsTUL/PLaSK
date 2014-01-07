@@ -542,7 +542,7 @@ namespace detail {
                             "Inform all connected receivers that the provided value has changed.\n\n"
                             "The receivers will have its `changed` attribute set to True and solvers will\n"
                             "call the provider again if they need its value (otherwise they might take it\n"
-                            "from thei cache.\n");
+                            "from the cache.\n");
         }
     };
 

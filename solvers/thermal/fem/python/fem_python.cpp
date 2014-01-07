@@ -34,19 +34,20 @@ BOOST_PYTHON_MODULE(fem)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py::class_<Convection>("Convection", "Convective boundary condition value", py::init<double,double>())
+    py::class_<Convection>("Convection", "Convective boundary condition value.", py::init<double,double>())
         .def_readwrite("coeff", &Convection::coeff)
         .def_readwrite("ambient", &Convection::ambient)
         .def("__repr__", &Convection__repr__)
     ;
 
-    py::class_<Radiation>("Radiation", "Radiative boundary condition value", py::init<double,double>())
+    py::class_<Radiation>("Radiation", "Radiative boundary condition value.", py::init<double,double>())
         .def_readwrite("emissivity", &Radiation::emissivity)
         .def_readwrite("ambient", &Radiation::ambient)
         .def("__repr__", &Radiation__repr__)
     ;
 
-    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D", "Finite element thermal solver for 2D Cartesian Geometry.")
+    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D",
+        "Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inHeat, "");
@@ -66,7 +67,8 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
     }
 
-    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
+    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
+        "Finite element thermal solver for 2D Cylindrical Geometry.")
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inHeat, "");

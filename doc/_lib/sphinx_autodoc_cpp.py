@@ -88,6 +88,16 @@ class MultiSigMixin(object):
                     self.add_line(autodoc._(u'   Bases: %s') % ', '.join(bases),
                                 '<autodoc>')
 
+        elif isinstance(self, autodoc.AttributeDocumenter):
+            if not self._datadescriptor:
+                try:
+                    objrepr = autodoc.safe_repr(self.object)
+                except ValueError:
+                    pass
+                else:
+                    self.add_line(u'   :annotation: = ' + objrepr, '<autodoc>')
+
+
     def format_signature(self):
         sig = super(MultiSigMixin, self).format_signature()
         self.sigs = self._find_signatures(sig)
@@ -102,17 +112,34 @@ class MultiSigMixin(object):
         return autodoc.Documenter.get_doc(self, encoding, ignore)
 
 
-class CppMethodDocumenter(MultiSigMixin,autodoc.MethodDocumenter):
+class CppMethodDocumenter(MultiSigMixin, autodoc.MethodDocumenter):
     objtype = "method"
 
 
-class CppFunctionDocumenter(MultiSigMixin,autodoc.FunctionDocumenter):
+class CppFunctionDocumenter(MultiSigMixin, autodoc.FunctionDocumenter):
     objtype = "function"
 
 
-class CppClassDocumenter(MultiSigMixin,autodoc.ClassDocumenter):
+class CppClassDocumenter(MultiSigMixin, autodoc.ClassDocumenter):
     objtype = "class"
 
+
+class CppAttributeDocumenter(MultiSigMixin, autodoc.AttributeDocumenter):
+    objtype = "attribute"
+    option_spec = {'noindex': autodoc.bool_option, 'show-signature': autodoc.bool_option}
+
+    def format_signature(self):
+        if 'show-signature' in self.options:
+            return MultiSigMixin.format_signature(self)
+        else:
+            self.sigs = []
+            return autodoc.AttributeDocumenter.format_signature(self)
+
+    def get_doc(self, encoding=None, ignore=1):
+        if 'show-signature' in self.options:
+            return MultiSigMixin.get_doc(self, encoding, ignore)
+        else:
+            return autodoc.AttributeDocumenter.get_doc(self, encoding, ignore)
 
 
 # Hooks modifying default output for autosummary
@@ -165,6 +192,7 @@ def setup(app):
     app.add_autodocumenter(CppMethodDocumenter)
     app.add_autodocumenter(CppFunctionDocumenter)
     app.add_autodocumenter(CppClassDocumenter)
+    app.add_autodocumenter(CppAttributeDocumenter)
 
     app.connect('autodoc-process-docstring', process_docstr)
     app.connect('autodoc-process-signature', process_signature)

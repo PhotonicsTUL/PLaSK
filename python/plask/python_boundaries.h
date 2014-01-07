@@ -15,8 +15,6 @@ namespace plask { namespace python {
 
 namespace detail {
 
-struct Dupa {};
-
 template <typename MeshT, typename ValueT>
 struct RegisterBoundaryConditions {
 
@@ -118,10 +116,10 @@ struct RegisterBoundaryConditions {
                 .def("__setitem__", &__setitem__2)
                 .def("__delitem__", &__delitem__)
                 .def("__len__", &BoundaryConditionsT::size)
-                .def("append", &append, "Append new boundary condition to the list", (py::arg("place"), "value"))
-                .def("prepend", &prepend, "Prepend new boundary condition to the list", (py::arg("place"), "value"))
-                .def("insert", &insert, "Insert new boundary condition to the list at specified position", (py::arg("index"), "place", "value"))
-                .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions")
+                .def("append", &append, "Append new boundary condition to the list.", (py::arg("place"), "value"))
+                .def("prepend", &prepend, "Prepend new boundary condition to the list.", (py::arg("place"), "value"))
+                .def("insert", &insert, "Insert new boundary condition to the list at specified position.", (py::arg("index"), "place", "value"))
+                .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions.")
                 .def("__iter__", &__iter__)
             ;
             py::delattr(py::scope(), "BoundaryConditions");
@@ -133,8 +131,8 @@ struct RegisterBoundaryConditions {
             ;
 
             py::class_<ConditionT> cd("BoundaryCondition", py::no_init); cd
-                .def_readwrite("place", &ConditionT::place, "Location of the boundary condition")
-                .def_readwrite("value", &ConditionT::value, "Value of the boundary condition")
+                .def_readwrite("place", &ConditionT::place, "Location of the boundary condition.")
+                .def_readwrite("value", &ConditionT::value, "Value of the boundary condition.")
                 .def("__iter__", &Condition__iter__/*, py::return_value_policy<py::manage_new_object>()*/)
                 .def("__repr__", &Condition__repr__)
             ;

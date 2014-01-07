@@ -513,10 +513,13 @@ p.rubric {
 
 table.docutils {
     border: none;
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 0.5em;
 }
 
 table.docutils tr.row-odd {
-    background-color: #f4f4f4;
+    background-color: #f0f4ff;
 }
 
 table.docutils td {

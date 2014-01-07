@@ -1,11 +1,10 @@
 ``{{ fullname }}``
-===============================================================
+===============================================================================
 
 .. automodule:: {{ fullname }}
 
-
-{% block submodules %}
-{% if submodules %}
+{%- block submodules %}
+{%- if submodules %}
 
 Modules
 -------
@@ -13,54 +12,52 @@ Modules
 .. autosummary::
    :toctree: {{ objname }}
    :template: module.rst
-
 {% for item in submodules %}
    {{ item }}
 {%- endfor %}
 
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 
 
-{% block classes %}
-{% if classes %}
+{%- block classes %}
+{%- if classes %}
 
 Classes
 -------
 
 .. autosummary::
    :nosignatures:
-   :toctree: {{ objname  }}/
+   :toctree: {{ objname }}
    :template: class.rst
-
 {% for item in classes %}
-{% if not item.endswith('_list') and not item.endswith('_entry') %}
+{%- if not item.endswith('_list') and not item.endswith('_entry') %}
    {{ item }}
-{% endif %}
+{%- endif %}
 {%- endfor %}
 
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 
-{% block functions %}
-{% if functions %}
+
+{%- block functions %}
+{%- if functions %}
 
 Functions
 ---------
 
 .. autosummary::
    :template: function.rst
-
 {% for item in functions %}
    {{ item }}
 {%- endfor %}
 
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 
 
-{% block exceptions %}
-{% if exceptions %}
+{%- block exceptions %}
+{%- if exceptions %}
 
 .. rubric:: Exceptions
 
@@ -71,43 +68,40 @@ Functions
    {{ item }}
 {%- endfor %}
 
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 
 
-
-{% block constants %}
-{% if constants %}
+{%- block constants %}
+{%- if constants %}
 
 .. rubric:: Defined
 
-{% for item in constants %}
+{%- for item in constants %}
 * {{ item }}
 {%- endfor %}
 
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 
 
-{% block functions_dsc %}
-{% if functions %}
+{%- block functions_dsc %}
+{%- if functions %}
 
 Descriptions
 ------------
 
 .. rubric:: Function Details
 
-{% for item in functions %}
-{% if not item.startswith('_') %}
+{%- for item in functions %}
+{%- if not item.startswith('_') %}
 
 .. autofunction:: {{ item }}
 
-{% endif %}
+{%- endif %}
 {%- endfor %}
 
-{% endif %}
-{% endblock %}
+{%- endif %}
+{%- endblock %}
 
 .. template module.rst
-
-

@@ -65,7 +65,7 @@ namespace detail {
 } // namespace detail
 
 extern const char* docstring_attr_receiver;
-extern const char* docstring_attr_provider;
+template <PropertyType propertyType> const char* docstring_attr_provider();
 
 /**
  * This class should be instantiated to export a solver to Python.
@@ -91,9 +91,16 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         typedef ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType> ClassT::* BaseTypePtr;
 
         this->def_readonly(name, reinterpret_cast<BaseTypePtr>(field),
-            format(docstring_attr_provider, type_name<typename ProviderT::PropertyTag>(),
-                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME,
-                   ProviderT::PropertyTag::UNIT, addhelp).c_str()
+            format(docstring_attr_provider<ProviderT::PropertyTag::propertyType>(),
+                   type_name<typename ProviderT::PropertyTag>(),                                // %1% Gain
+                   spaceSuffix<typename ProviderT::SpaceType>(),                                // %2% Cartesian2D
+                   ProviderT::PropertyTag::NAME,                                                // %3% material gain
+                   ProviderT::PropertyTag::UNIT,                                                // %4% 1/cm
+                   addhelp,                                                                     // %5% Gain in the active region.
+                   docstrig_property_optional_args<typename ProviderT::PropertyTag>(),          // %6% wavelength
+                   docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),     // %7% :param: wavelength
+                   name                                                                         // %8% inGain
+                  ).c_str()
         );
         return *this;
     }
@@ -105,9 +112,16 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         static_assert(std::is_base_of<Provider, ProviderT>::value, "add_provider used for non-provider type");
 
         this->def_readonly(name, field,
-            format(docstring_attr_provider, type_name<typename ProviderT::PropertyTag>(),
-                   spaceSuffix<typename ProviderT::SpaceType>(), ProviderT::PropertyTag::NAME,
-                   ProviderT::PropertyTag::UNIT, addhelp).c_str()
+            format(docstring_attr_provider<ProviderT::PropertyTag::propertyType>(),
+                   type_name<typename ProviderT::PropertyTag>(),                                // %1% Gain
+                   spaceSuffix<typename ProviderT::SpaceType>(),                                // %2% Cartesian2D
+                   ProviderT::PropertyTag::NAME,                                                // %3% material gain
+                   ProviderT::PropertyTag::UNIT,                                                // %4% 1/cm
+                   addhelp,                                                                     // %5% Gain in the active region.
+                   docstrig_property_optional_args<typename ProviderT::PropertyTag>(),          // %6% wavelength
+                   docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),     // %7% :param: wavelength
+                   name                                                                         // %8% inGain
+                  ).c_str()
         );
         return *this;
     }
@@ -115,7 +129,6 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
     template <typename ReceiverT, typename ClassT>
     ExportSolver& add_receiver(const char* name, ReceiverT ClassT::* field, const char* addhelp) {
 
-        //TODO maybe introduce some base class for receiver?
         static_assert(std::is_base_of<ReceiverBase, ReceiverT>::value, "add_receiver used for non-receiver type");
 
         this->add_property(name, py::make_getter(field),
@@ -125,7 +138,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
                                             ),
                            format(docstring_attr_receiver, type_name<typename ReceiverT::ProviderType::PropertyTag>(),
                                   spaceSuffix<typename ReceiverT::SpaceType>(), ReceiverT::ProviderType::PropertyTag::NAME,
-                                   ReceiverT::ProviderType::PropertyTag::UNIT, addhelp).c_str()
+                                  ReceiverT::ProviderType::PropertyTag::UNIT, addhelp, name).c_str()
                           );
         return *this;
     }
@@ -133,8 +146,53 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
     template <typename MeshT, typename ValueT>
     ExportSolver& add_boundary_conditions(const char* name, BoundaryConditions<MeshT,ValueT> Class::* field, const char* help) {
 
+        std::string boundary_class;
+        if (PyTypeObject* mesh = py::converter::registry::lookup(py::type_id<MeshT>()).m_class_object) {
+            std::string nam = py::extract<std::string>(PyObject_GetAttrString((PyObject*)mesh, "__name__"));
+            std::string mod = py::extract<std::string>(PyObject_GetAttrString((PyObject*)mesh, "__module__"));
+            boundary_class = " (:class:`" + mod + "." + nam + ".Boundary`)";
+        } else
+            boundary_class = "";
+
+        std::string value_class, value_class_desc;
+        if (PyTypeObject* mesh = py::converter::registry::lookup(py::type_id<ValueT>()).m_class_object) {
+            std::string nam = py::extract<std::string>(PyObject_GetAttrString((PyObject*)mesh, "__name__"));
+            std::string mod = py::extract<std::string>(PyObject_GetAttrString((PyObject*)mesh, "__module__"));
+            value_class = " (:class:`" + mod + "." + nam + "`)";
+            value_class_desc = "\n.. autoclass:: " + mod + "." + nam + "\n";
+        } else {
+            value_class = "";
+            value_class_desc = "";
+        }
+
         detail::RegisterBoundaryConditions<MeshT, ValueT>();
-        this->def_readonly(name, field, help);
+
+        this->def_readonly(name, field, format(
+            "%1% \n\n"
+
+            "This field holds a list of boundary conditions for the solver. You may access\n"
+            "and alter is elements a normal Python list. Each element is a special class\n"
+            "that has two attributes:\n\n"
+
+            "============= ==================================================================\n"
+            ":attr:`place` Boundary condition location%3%.\n"
+            ":attr:`value` Boundary condition value%4%.\n"
+            "============= ==================================================================\n\n"
+
+            "When you add new boundary condition, you may use two-argument ``append``, or\n"
+            "``prepend`` methods, or three-argument ``insert`` method, where you separately\n"
+            "specify the place and the value. See the below example for clarification.\n\n"
+
+            "Example:\n"
+            "    >>> solver.%2%.clear()\n"
+            "    >>> solver.%2%.append(solver.mesh.Bottom(), some_value)\n"
+            "    >>> solver.%2%[0].value = different_value\n"
+            "    >>> solver.%2%.insert(0, solver.mesh.Top(), new_value)\n"
+            "    >>> solver.%2%[1].value == different_value\n"
+            "    True\n"
+            "%5%",
+            help, name, boundary_class, value_class, value_class_desc).c_str()
+        );
         return *this;
     }
 
@@ -142,7 +200,10 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
 // Here are some useful defines.
 // Note that if you use them to define methods, properties etc, you should also use MODULE
-#define CLASS(cls, name, help) typedef cls __Class__; ExportSolver<cls> solver(name, help, py::init<std::string>(py::arg("name")=""));
+#define CLASS(cls, name, help) typedef cls __Class__; \
+        ExportSolver<cls> solver(name, \
+        name "(name=\"\")\n\n" help, \
+        py::init<std::string>(py::arg("name")=""));
 #define METHOD(name, method, help, ...) solver.def(BOOST_PP_STRINGIZE(name), &__Class__::method, help, (py::arg("arg1") , ## __VA_ARGS__))
 #define RO_PROPERTY(name, get, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, help)
 #define RW_PROPERTY(name, get, set, help) solver.add_property(BOOST_PP_STRINGIZE(name), &__Class__::get, &__Class__::set, help)

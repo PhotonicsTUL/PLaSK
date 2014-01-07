@@ -15,11 +15,11 @@ template <> inline const char* docstrig_property_optional_args<GainOverCarriersC
 template <typename PropertyT> inline const char* docstrig_property_optional_args_desc() { return ""; }
 
 template <> inline const char* docstrig_property_optional_args_desc<Gain>() { return
-    "    wavelength (float): The wavelength at which the gain is computed.\n\n";
+    ":param float wavelength: The wavelength at which the gain is computed.\n";
 }
 
 template <> inline const char* docstrig_property_optional_args_desc<GainOverCarriersConcentration>() { return
-    "    wavelength (float): The wavelength at which the gain is computed.\n\n";
+    ":param float wavelength: The wavelength at which the gain is computed.\n";
 }
 
 

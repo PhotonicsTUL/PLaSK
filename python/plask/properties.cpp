@@ -34,21 +34,26 @@ const char* docstring_receiver =
     "this receiver with arguments identical as the ones of the corresponding\n"
     "provider.\n\n"
 
+    "Example:\n"
+    "   Connect the reveiver to a provider from some other solver:\n\n"
+
+    "   >>> solver.in%1% = other_solver.out%1%\n\n"
+
     "See also:\n"
-    "    Provider of %3%: :class:`%1%Provider%2%`\n\n"
-    "    Data filter for %3%: :class:`plask.filter.%1%Filter%2%`";
+    "   Provider of %3%: :class:`%1%Provider%2%`\n\n"
+    "   Data filter for %3%: :class:`plask.filter.%1%Filter%2%`";
 
 const char* docstring_receiver_connect =
     "Connect some provider to the receiver.\n\n"
 
     "Example:\n"
-    "    >>> solver.in%1%.connect(other_solver.out%1%)\n\n"
+    "   >>> solver.in%1%.connect(other_solver.out%1%)\n\n"
 
     "Note:\n"
-    "    You may achieve the same effect by using the asignmnent operator\n"
-    "    if you put an exisiting provider at the right side of this operator:\n\n"
+    "   You may achieve the same effect by using the asignmnent operator\n"
+    "   if you put an exisiting provider at the right side of this operator:\n\n"
 
-    "    >>> solver.in%1% = other_solver.out%1%\n";
+    "   >>> solver.in%1% = other_solver.out%1%\n";
 
 const char* docstring_receiver_assign =
     "Assign constant value to the receiver.\n\n"
@@ -58,17 +63,17 @@ const char* docstring_receiver_assign =
     "temperature.\n\n"
 
     "Example:\n"
-    "    >>> solver.in%1%.assign(300.)\n"
-    "    >>> solver.in%1%(any_mesh)[0]\n"
-    "    300.\n"
-    "    >>> solver.in%1%(any_mesh)[-1]\n"
-    "    300.\n\n"
+    "   >>> solver.in%1%.assign(300.)\n"
+    "   >>> solver.in%1%(any_mesh)[0]\n"
+    "   300.\n"
+    "   >>> solver.in%1%(any_mesh)[-1]\n"
+    "   300.\n\n"
 
     "Note:\n"
-    "    You may achieve the same effect by using the asignmnent operator\n"
-    "    if you put a value at the right side of this operator:\n\n"
+    "   You may achieve the same effect by using the asignmnent operator\n"
+    "   if you put a value at the right side of this operator:\n\n"
 
-    "    >>> solver.in%1% = 300.";
+    "   >>> solver.in%1% = 300.";
 
 template <PropertyType propertyType> const char* docstring_provider();
 
@@ -81,23 +86,31 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "    func (callable): function returning provided value on request.\n"
-    "        The callable must accept the same arguments as the provider\n"
-    "        ``__call__`` method (see below).\n\n"
+    "   func (callable): function returning provided value on request.\n"
+    "       The callable must accept the same arguments as the provider\n"
+    "       ``__call__`` method (see below).\n\n"
 
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(%5%)\n"
-    "1000\n\n"
+    ".. method:: solver.out%1%(%5%)\n\n"
 
-    "%6%"
+    "   %6%\n"
 
-    "Returns:\n"
-    "    Value of the %3% **[%7%]**.\n\n"
+    "   :return: Value of the %3% **[%7%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+
+    "   Obtain the provided value:\n\n"
+
+    "   >>> solver.out%1%(%5%)\n"
+    "   1000\n\n"
 
     "See also:\n"
-    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
 }
 
 template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
@@ -109,28 +122,34 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "    func (callable): function returning provided value on request.\n"
-    "        The callable must accept the same arguments as the provider\n"
-    "        ``__call__`` method (see below). It must also be able to give its\n"
-    "        length (i.e. have the ``__len__`` method defined) that gives the\n"
-    "        number of different provided values.\n\n"
+    "   func (callable): function returning provided value on request.\n"
+    "       The callable must accept the same arguments as the provider\n"
+    "       ``__call__`` method (see below). It must also be able to give its\n"
+    "       length (i.e. have the ``__len__`` method defined) that gives the\n"
+    "       number of different provided values.\n\n"
 
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(n=0%5%)\n"
-    "1000\n\n"
+    ".. method:: solver.out%1%(n=0%5%)\n\n"
 
-    "Args:\n"
-    "    n (int): Value number\n\n"
+    "   :param int n: Value number.\n"
+    "   %6%\n"
 
-    "%6%"
+    "   :return: Value of the %3% **[%7%]**.\n\n"
 
-    "Returns:\n"
-    "    Value of the %3% **[%7%]**.\n\n"
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+
+    "   Obtain the provided value:\n\n"
+
+    "   >>> solver.out%1%(0%5%)\n"
+    "   1000\n\n"
 
     "See also:\n"
-    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
 }
 
 template <> const char* docstring_provider<FIELD_PROPERTY>() { return
@@ -142,28 +161,33 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "    func (callable): function returning provided value on request.\n"
-    "        The callable must accept the same arguments as the provider\n"
-    "        ``__call__`` method (see below).\n\n"
+    "   func (callable): function returning provided value on request.\n"
+    "       The callable must accept the same arguments as the provider\n"
+    "       ``__call__`` method (see below).\n\n"
 
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(mesh, interpolation='default'%5%)\n"
-    "<plask.Data at 0x1234567>\n\n"
+    ".. method:: solver.out%1%(mesh, interpolation='default'%5%)\n\n"
 
-    "Args:\n"
-    "    mesh (mesh): Target mesh to get field at.\n\n"
+    "   :param mesh mesh: Target mesh to get the field at.\n"
+    "   :param str interpolation: Requested interpolation method.\n"
+    "   %6%\n"
 
-    "    interpolation (str): Requested interpolation method.\n\n"
+    "   :return: Data with the %3% on the specified mesh **[%7%]**.\n\n"
 
-    "%6%"
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "Returns:\n"
-    "    Data with the %3% on the specified mesh **[%7%]**.\n\n"
+    "   >>> other_solver.in%1% = solver.out%1%\n\n"
+
+    "   Obtain the provided field:\n\n"
+
+    "   >>> solver.out%1%(mesh%5%)\n"
+    "   <plask.Data at 0x1234567>\n\n"
 
     "See also:\n"
-    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
 }
 
 template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
@@ -175,38 +199,43 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "a custom provider for your Python solver.\n\n"
 
     "Args:\n"
-    "    func (callable): function returning provided value on request.\n"
-    "        The callable must accept the same arguments as the provider\n"
-    "        ``__call__`` method (see below). It must also be able to give its\n"
-    "        length (i.e. have the ``__len__`` method defined) that gives the\n"
-    "        number of different provided values.\n\n"
+    "   func (callable): function returning provided value on request.\n"
+    "       The callable must accept the same arguments as the provider\n"
+    "       ``__call__`` method (see below). It must also be able to give its\n"
+    "       length (i.e. have the ``__len__`` method defined) that gives the\n"
+    "       number of different provided values.\n\n"
 
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ">>> solver.out%1%(n=0, mesh, interpolation='default'%5%)\n"
-    "<plask.Data at 0x1234567>\n\n"
+    ".. method:: solver.out%1%(n=0, mesh, interpolation='default'%5%)\n"
 
-    "Args:\n"
-    "    n (int): Value number\n\n"
+    "   :param int n: Value number.\n"
+    "   :param mesh mesh: Target mesh to get the field at.\n"
+    "   :param str interpolation: Requested interpolation method.\n"
+    "   %6%\n"
 
-    "    mesh (mesh): Target mesh to get field at.\n\n"
+    "   :return: Data with the %3% on the specified mesh **[%7%]**.\n\n"
 
-    "    interpolation (str): Requested interpolation method.\n\n"
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
 
-    "%6%"
+    "   >>> other_solver.in%1% = solver.out%1%\n\n"
 
-    "Returns:\n"
-    "    Data with the %3% on the specified mesh **[%7%]**.\n\n"
+    "   Obtain the provided field:\n\n"
+
+    "   >>> solver.out%1%(0, mesh%5%)\n"
+    "   <plask.Data at 0x1234567>\n\n"
 
     "See also:\n"
-    "    Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
 }
 
 template const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
 template const char* docstring_provider<MULTI_VALUE_PROPERTY>();
 template const char* docstring_provider<FIELD_PROPERTY>();
 template const char* docstring_provider<MULTI_FIELD_PROPERTY>();
+
 
 const char* docstring_attr_receiver =
     "Receiver of the %3% required for computations [%4%].\n"
@@ -215,21 +244,129 @@ const char* docstring_attr_receiver =
     "You will find usage details in the documentation of the receiver class\n"
     ":class:`plask.flow.%1%Receiver%2%`.\n\n"
 
-    "See also:\n\n"
-    "    Receciver class: :class:`plask.flow.%1%Receiver%2%`\n\n"
-    "    Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "    Data filter: :class:`plask.filter.%1%Filter%2%`\n";
+    "Example:\n"
+    "   Connect the reveiver to a provider from some other solver:\n\n"
 
-const char* docstring_attr_provider =
+    "   >>> solver.%6% = other_solver.out%1%\n\n"
+
+    "See also:\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Data filter: :class:`plask.filter.%1%Filter%2%`\n";
+
+
+template <PropertyType propertyType> const char* docstring_attr_provider();
+
+template <> const char* docstring_attr_provider<SINGLE_VALUE_PROPERTY>() { return
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
-    "You will find usage details in the documentation of the provider class\n"
-    ":class:`plask.flow.%1%Provider%2%`.\n\n"
+    "%8%(%6%)\n\n"
+
+    "%7%\n"
+
+    ":return: Value of the %3% **[%4%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%%\n\n"
+
+    "   Obtain the provided value:\n\n"
+
+    "   >>> solver.out%1%(%6%)\n"
+    "   1000\n\n"
 
     "See also:\n\n"
-    "    Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "    Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template <> const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(n=0%6%)\n\n"
+
+    ":param int n: Value number.\n"
+    "%7%\n"
+
+    ":return: Value of the %3% **[%4%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%\n\n"
+
+    "   Obtain the provided value:\n\n"
+
+    "   >>> solver.out%1%(n=0%6%)\n"
+    "   1000\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template <> const char* docstring_attr_provider<FIELD_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(mesh, interpolation='default'%6%)\n\n"
+
+    ":param mesh mesh: Target mesh to get the field at.\n"
+    ":param str interpolation: Requested interpolation method.\n"
+    "%7%\n"
+
+    ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%\n\n"
+
+    "   Obtain the provided field:\n\n"
+
+    "   >>> solver.out%1%(mesh%6%)\n"
+    "   <plask.Data at 0x1234567>\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template <> const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(n=0, mesh, interpolation='default'%6%)\n\n"
+
+    ":param int n: Value number.\n"
+    ":param mesh mesh: Target mesh to get the field at.\n"
+    ":param str interpolation: Requested interpolation method.\n"
+    "%7%\n"
+
+    ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%\n\n"
+
+    "   Obtain the provided field:\n\n"
+
+    "   >>> solver.out%1%(0, mesh%6%)\n"
+    "   <plask.Data at 0x1234567>\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template const char* docstring_attr_provider<SINGLE_VALUE_PROPERTY>();
+template const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>();
+template const char* docstring_attr_provider<FIELD_PROPERTY>();
+template const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>();
 
 
 py::object property_module;
@@ -280,17 +417,17 @@ void register_standard_properties()
         "requested.\n\n"
 
         "Example:\n"
-        "    To create the solver that get a temperature from another source and\n"
-        "    increases it by 60 K, use the following class:\n\n"
+        "   To create the solver that get a temperature from another source and\n"
+        "   increases it by 60 K, use the following class:\n\n"
 
-        "    >>> class Hotter(object):\n"
-        "    ...     def __init__(self):\n"
-        "    ...         self.inTemperature = flow.TemperatureReceiver2D()\n"
-        "    ...         self.outTemperature = flow.TemperatureProvider2D(\n"
-        "    ...             lambda mesh, meth: self.get_data(mesh, meth))\n"
-        "    ...     def get_data(self, mesh, method):\n"
-        "    ...         temp = self.inTemperature(mesh, method)\n"
-        "    ...         return temp.array + 60.\n\n"
+        "   >>> class Hotter(object):\n"
+        "   ...     def __init__(self):\n"
+        "   ...         self.inTemperature = flow.TemperatureReceiver2D()\n"
+        "   ...         self.outTemperature = flow.TemperatureProvider2D(\n"
+        "   ...             lambda mesh, meth: self.get_data(mesh, meth))\n"
+        "   ...     def get_data(self, mesh, method):\n"
+        "   ...         temp = self.inTemperature(mesh, method)\n"
+        "   ...         return temp.array + 60.\n\n"
     ;
 
     filter_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.filter"))));
@@ -333,11 +470,11 @@ void register_standard_properties()
         "After the connection the filter does its job automatically.\n\n"
 
         "See also:\n"
-        "    :ref:`sec-solvers-filters`.\n\n"
+        "   :ref:`sec-solvers-filters`.\n\n"
 
-        "    Definition of filters in the XPL file: :xml:tag:`filter` tag.\n\n"
+        "   Definition of filters in the XPL file: :xml:tag:`filter` tag.\n\n"
 
-        "    Example using filters: :ref:`sec-tutorial-threshold-of-array`.\n"
+        "   Example using filters: :ref:`sec-tutorial-threshold-of-array`.\n"
     ;
 
     register_standard_properties_thermal();

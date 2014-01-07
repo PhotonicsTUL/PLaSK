@@ -55,10 +55,12 @@ Due to the nature of the structure, it is the most natural to describe it as a s
     <geometry>
       <cartesian2d axes="xy" left="mirror" length="1000" name="main">
         <stack>
-          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
+          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20"
+                 name="top-layer"/>
           <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
           <block dx="150" dy="0.150" material="GaAs"/>
-          <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
+          <block dx="150" dy="0.007" material="In(0.2)GaAs"
+                 role="active" name="junction"/>
           <block dx="150" dy="0.150" material="GaAs"/>
           <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
           <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
@@ -87,7 +89,7 @@ In PLaSK user-defined meshes can be specified in two ways. First of all, you can
 
 For our purpose we will use simple, but surprisingly powerful generator of two-dimensional rectilinear mesh called *DivideGenerator*. It divides the structure along the edges of all geometrical objects and then subdivides such crude cells into smaller ones according to the user wish and additionally taking care that two adjacent mesh elements do not differ more than twice in a size along each dimension.
 
-The generator definition in XPL file is done using :xml:tag:`<generator> [rectilinear1d, divide]` tag and looks as follows (put the :xml:tag:`<grids>` section between ``</geometry>`` and ``</plask>``):
+The generator definition in XPL file is done using the :xml:tag:`<generator> [rectilinear1d, divide]` tag and looks as follows (put the :xml:tag:`<grids>` section between ``</geometry>`` and ``</plask>``):
 
 .. code-block:: xml
 
@@ -171,10 +173,12 @@ After you have specified the above connections, bi-directional data exchange bet
         <geometry>
           <cartesian2d axes="xy" left="mirror" length="1000" name="main">
         <stack>
-          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
+          <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20"
+                 name="top-layer"/>
           <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
           <block dx="150" dy="0.150" material="GaAs"/>
-          <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
+          <block dx="150" dy="0.007" material="In(0.2)GaAs"
+                 role="active" name="junction"/>
           <block dx="150" dy="0.150" material="GaAs"/>
           <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
           <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
