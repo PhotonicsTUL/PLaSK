@@ -32,7 +32,7 @@ const char* docstring_receiver =
     "You may connect a provider to this receiver usign either the `connect` method\n"
     "or an assignement operator. Then, you can read the provided value by calling\n"
     "this receiver with arguments identical as the ones of the corresponding\n"
-    "provider.\n\n"
+    "provider :class:`%1%Provider%2%`.\n\n"
 
     "Example:\n"
     "   Connect the reveiver to a provider from some other solver:\n\n"
@@ -40,7 +40,7 @@ const char* docstring_receiver =
     "   >>> solver.in%1% = other_solver.out%1%\n\n"
 
     "See also:\n"
-    "   Provider of %3%: :class:`%1%Provider%2%`\n\n"
+    "   Provider of %3%: :class:`plask.flow.%1%Provider%2%`\n\n"
     "   Data filter for %3%: :class:`plask.filter.%1%Filter%2%`";
 
 const char* docstring_receiver_connect =
@@ -110,7 +110,7 @@ template <> const char* docstring_provider<SINGLE_VALUE_PROPERTY>() { return
     "   1000\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
 template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
@@ -138,6 +138,9 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
 
     "   :return: Value of the %3% **[%7%]**.\n\n"
 
+    "You may obtain the number of different values this provider can return by\n"
+    "testing its length.\n\n"
+
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
@@ -148,8 +151,13 @@ template <> const char* docstring_provider<MULTI_VALUE_PROPERTY>() { return
     "   >>> solver.out%1%(0%5%)\n"
     "   1000\n\n"
 
+    "   Test the number of provided values:\n\n"
+
+    "   >>> len(solver.out%1%)\n"
+    "   3\n\n"
+
     "See also:\n"
-    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
 template <> const char* docstring_provider<FIELD_PROPERTY>() { return
@@ -187,7 +195,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "   <plask.Data at 0x1234567>\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
 template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
@@ -217,6 +225,9 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
 
     "   :return: Data with the %3% on the specified mesh **[%7%]**.\n\n"
 
+    "You may obtain the number of different values this provider can return by\n"
+    "testing its length.\n\n"
+
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
@@ -227,8 +238,13 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "   >>> solver.out%1%(0, mesh%5%)\n"
     "   <plask.Data at 0x1234567>\n\n"
 
+    "   Test the number of provided values:\n\n"
+
+    "   >>> len(solver.out%1%)\n"
+    "   3\n\n"
+
     "See also:\n"
-    "   Receiver of %3%: :class:`%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
 }
 
 template const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
@@ -242,7 +258,7 @@ const char* docstring_attr_receiver =
     "%5%\n\n"
 
     "You will find usage details in the documentation of the receiver class\n"
-    ":class:`plask.flow.%1%Receiver%2%`.\n\n"
+    ":class:`~plask.flow.%1%Receiver%2%`.\n\n"
 
     "Example:\n"
     "   Connect the reveiver to a provider from some other solver:\n\n"
@@ -293,6 +309,9 @@ template <> const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>() { return
 
     ":return: Value of the %3% **[%4%]**.\n\n"
 
+    "You may obtain the number of different values this provider can return by\n"
+    "testing its length.\n\n"
+
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
@@ -300,8 +319,13 @@ template <> const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>() { return
 
     "   Obtain the provided value:\n\n"
 
-    "   >>> solver.out%1%(n=0%6%)\n"
+    "   >>> solver.out%8%(n=0%6%)\n"
     "   1000\n\n"
+
+    "   Test the number of provided values:\n\n"
+
+    "   >>> len(solver.%8%)\n"
+    "   3\n\n"
 
     "See also:\n\n"
     "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
@@ -348,6 +372,9 @@ template <> const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>() { return
 
     ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
 
+    "You may obtain the number of different values this provider can return by\n"
+    "testing its length.\n\n"
+
     "Example:\n"
     "   Connect the provider to a receiver in some other solver:\n\n"
 
@@ -357,6 +384,11 @@ template <> const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>() { return
 
     "   >>> solver.out%1%(0, mesh%6%)\n"
     "   <plask.Data at 0x1234567>\n\n"
+
+    "   Test the number of provided values:\n\n"
+
+    "   >>> len(solver.%8%)\n"
+    "   3\n\n"
 
     "See also:\n\n"
     "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
