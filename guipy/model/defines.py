@@ -51,14 +51,14 @@ class DefinesModel(SectionModel, QtCore.QAbstractTableModel):
     def data(self, index, role): 
         if index.isValid() and (role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole): 
             return self.get(index.column(), index.row())
-        return QtCore.QVariant() 
+        return None
         
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             if col == 0: return 'name'
             if col == 1: return 'value'
             if col == 2: return 'comment'
-        return QtCore.QVariant()
+        return None
 
     def flags(self, index):
         flags = super(self.__class__, self).flags(index)

@@ -31,9 +31,9 @@ class ScriptControler(SourceEditControler):
     def __init__(self, model = ScriptModel()):
         SourceEditControler.__init__(self, model)
 
-    def createSourceEditor(self):
+    def createSourceEditor(self, parent = None):
         if hasPyCode:
-            edit = QtGui.QPlainTextEdit(None)
+            edit = QtGui.QPlainTextEdit(parent)
             self.pyedit = PyEdit(".", edit, prefix="from PyQt4 import QtGui")
             font = QtGui.QFont()
             font.setFamily("Courier")
@@ -44,4 +44,4 @@ class ScriptControler(SourceEditControler):
                 self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=font)
             return edit
         else:
-            return QtGui.QPlainTextEdit(None)
+            return QtGui.QPlainTextEdit(parent)

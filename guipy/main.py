@@ -58,10 +58,27 @@ class MainWindow(QtGui.QMainWindow):
     def tabChange(self, index):
         if index == self.current_tab_index: return
         if self.current_tab_index != -1:
-            self.document.getControlerByIndex(self.current_tab_index).onEditExit()
+            try:
+                self.document.getControlerByIndex(self.current_tab_index).onEditExit(self)
+            except Exception as e:
+                self.tabs.setCurrentIndex(self.current_tab_index)
+                err = QtGui.QErrorMessage(self.tabs)
+                err.setModal(True)
+                err.setWindowTitle('Error while trying to store data from editor')
+                err.showMessage(str(e))
+                return
         self.current_tab_index = index
         if self.current_tab_index != -1:
-            self.document.getControlerByIndex(self.current_tab_index).onEditEnter()
+            self.document.getControlerByIndex(self.current_tab_index).onEditEnter(self)
+            
+    def setSectionActions(self, *actions):
+        self.section_toolbar.clear()
+        for a in actions:
+            if not a:
+                self.section_toolbar.addSeparator()
+            else:
+                self.section_toolbar.addAction(a)
+        self.section_toolbar.setVisible(bool(actions))
         
     def initUI(self):
         
@@ -93,11 +110,6 @@ class MainWindow(QtGui.QMainWindow):
         exitAction.setShortcut(QtGui.QKeySequence.Quit)
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
-        
-        showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor'), '&Show source', self)
-        showSourceAction.setCheckable(True)
-        showSourceAction.setStatusTip('Show XPL source of the current section')
-        #newAction.triggered.connect(self.new)
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -109,8 +121,8 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(exitAction)
         
-        editMenu = menubar.addMenu('&Edit')
-        editMenu.addAction(showSourceAction)
+        #editMenu = menubar.addMenu('&Edit')
+        #editMenu.addAction(showSourceAction)
 
         toolbar = self.addToolBar('File')
         toolbar.addAction(newAction)
@@ -118,8 +130,11 @@ class MainWindow(QtGui.QMainWindow):
         toolbar.addAction(saveAction)
         toolbar.addAction(saveAsAction)
         toolbar.addAction(exitAction)
-        toolbar.addSeparator()
-        toolbar.addAction(showSourceAction)
+        #toolbar.addSeparator()
+        #toolbar.addAction(showSourceAction)
+        
+        self.section_toolbar = self.addToolBar('Section')
+        self.section_toolbar.hide()
         
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
