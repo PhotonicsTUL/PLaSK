@@ -8,45 +8,41 @@ for n in ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVar
 import sys
 from PyQt4 import QtGui
 from PyQt4.QtCore import SIGNAL
-from model import Model
+from XPLDocument import XPLDocument
 
 class MainWindow(QtGui.QMainWindow):
     
     def __init__(self):
         super(MainWindow, self).__init__()        
-        self.model = Model()
+        self.document = XPLDocument()
         self.current_tab_index = -1
         self.fileName = None
         self.initUI()
         
     def modelIsNew(self):
         self.tabs.clear()
-        for m in Model.NAMES:
-            self.tabs.addTab(self.model.getModelByName(m).getEditor(), m)
+        for m in XPLDocument.SECTION_NAMES:
+            self.tabs.addTab(self.document.getControlerByName(m).getEditor(), m)
         
     def setNewModel(self, model):
-        self.model = model
+        self.document = model
         self.modelIsNew()
         
     def new(self):
         reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
-        self.setNewModel(Model())
+        self.setNewModel(XPLDocument())
         self.fileName = None
         
     def open(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self, "Choose the name of experiment file to open", ".", "XPL (*.xpl)");
         if not fileName: return;
-        self.model.loadFromFile(fileName)
-        
-    def updateModel(self):
-        if self.current_tab_index != -1:
-            self.model.getModelByIndex(self.current_tab_index).afterEdit(self.tabs.currentWidget()) # currentWidget is current editor, or prev. one?
+        self.document.loadFromFile(fileName)
         
     def save(self):
         if self.fileName != None:
-            self.model.saveToFile(self.fileName)
+            self.document.saveToFile(self.fileName)
             return True
         else:
             return self.saveAs()
@@ -56,13 +52,16 @@ class MainWindow(QtGui.QMainWindow):
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
         if fileName.isEmpty(): return False
         self.fileName = fileName
-        self.model.saveToFile(fileName)
+        self.document.saveToFile(fileName)
         return True
         
     def tabChange(self, index):
         if index == self.current_tab_index: return
-        self.updateModel()
+        if self.current_tab_index != -1:
+            self.document.getControlerByIndex(self.current_tab_index).onEditExit()
         self.current_tab_index = index
+        if self.current_tab_index != -1:
+            self.document.getControlerByIndex(self.current_tab_index).onEditEnter()
         
     def initUI(self):
         
@@ -131,7 +130,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(200, 200, 550, 450)
         self.setWindowTitle('Main window')  
         
-        self.model.loadFromFile('../doc/tutorial1.xpl')
+        self.document.loadFromFile('../doc/tutorial1.xpl')
         self.modelIsNew()
           
         self.show()

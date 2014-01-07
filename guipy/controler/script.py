@@ -1,5 +1,6 @@
-from models.base import SectionModelTreeBased
+from controler.base import SourceEditControler
 from PyQt4 import QtGui
+from model.script import ScriptModel
 
 import sys
 try:
@@ -25,22 +26,22 @@ if hasPyCode:
         "syntax_number": "blue",
     }
 
-class ScriptModel(SectionModelTreeBased):
+class ScriptControler(SourceEditControler):
     
-    def __init__(self):
-        SectionModelTreeBased.__init__(self, 'script')
+    def __init__(self, model = ScriptModel()):
+        SourceEditControler.__init__(self, model)
 
     def createSourceEditor(self):
         if hasPyCode:
             edit = QtGui.QPlainTextEdit(None)
             self.pyedit = PyEdit(".", edit, prefix="from PyQt4 import QtGui")
-            font = QtGui.QFont()    #!! beg - move to get?
+            font = QtGui.QFont()
             font.setFamily("Courier")
             font.setPointSize(10)
             edit.setFont(font)
             if SyntaxHighlighter:
                 parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-                self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=font)    #!! end
+                self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=font)
             return edit
         else:
             return QtGui.QPlainTextEdit(None)

@@ -1,4 +1,4 @@
-from models.base import SectionModel
+from model.base import SectionModel
 from PyQt4 import QtCore
 from xml.etree import ElementTree
 #from guis import DefinesEditor
@@ -24,7 +24,7 @@ class DefinesModel(SectionModel, QtCore.QAbstractTableModel):
     
     # XML element that represents whole section
     def getXMLElement(self):
-        res = ElementTree.Element('defines')
+        res = ElementTree.Element(self.tagname)
         for e in self.defines:
             ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }).tail = '\n'
         return res

@@ -1,5 +1,5 @@
 from PyQt4 import QtCore, QtGui
-from models.defines import DefinesModel
+from model.defines import DefinesModel
 
 class DefinesEditor(QtGui.QWidget):
     
