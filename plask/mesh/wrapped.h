@@ -24,9 +24,11 @@ struct WrappedMesh: public MeshD<dim> {
 
   protected:
 
-      const MeshD<dim>& original;   ///< Original mesh
-      shared_ptr<const GeometryD<dim>> geometry; ///< Geometry of the mesh
+      const MeshD<dim>& original;                   ///< Original mesh
+      shared_ptr<const GeometryD<dim>> geometry;    ///< Geometry of the mesh
 
+      bool ignore_symmetry;                         ///< If true, the structure symmetry is ignored
+      
   public:
 
     /**
@@ -34,7 +36,8 @@ struct WrappedMesh: public MeshD<dim> {
      * \param original original mesh
      * \param geometry geometry in which the mesh is defined
      */
-    WrappedMesh(const MeshD<dim>& original, const shared_ptr<const GeometryD<dim>>& geometry): original(original), geometry(geometry) {}
+    WrappedMesh(const MeshD<dim>& original, const shared_ptr<const GeometryD<dim>>& geometry, bool ignore_symmetry=false):
+        original(original), geometry(geometry), ignore_symmetry(ignore_symmetry) {}
 
     virtual ~WrappedMesh() {}
 

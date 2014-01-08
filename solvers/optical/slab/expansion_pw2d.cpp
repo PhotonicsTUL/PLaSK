@@ -407,8 +407,8 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
     DataVector<Vec<3,dcomplex>> src(N + (symmetric? 0 : 1));
     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
+    const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
-    double mleft, mright;
     
     if (separated) {
         if (polarization == E_TRAN) {
@@ -455,16 +455,29 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
             fft_yz.execute(reinterpret_cast<dcomplex*>(src.data())+1);
         }
         double dx = 0.5 * (right-left) / N;
-        mleft = left+dx; mright = right-dx;
+        RegularMesh2D src_mesh(RegularAxis(left+dx, right-dx, src.size()), RegularAxis(vpos, vpos, 1));
+        auto result = interpolate(src_mesh, src, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry()),
+                                  defInterpolation<INTERPOLATION_SPLINE>(method), false);
+        double L = 2. * right;
+        if (symmetry == E_TRAN)
+            for (size_t i = 0; i != dest_mesh.size(); ++i) {
+                double x = std::fmod(dest_mesh[i][0], L);
+                if ((-right <= x && x < 0) || x > right) { result[i][0] = -result[i][0]; result[i][2] = -result[i][2]; }
+            }
+        else
+            for (size_t i = 0; i != dest_mesh.size(); ++i) {
+                double x = std::fmod(dest_mesh[i][0], L);
+                if ((-right <= x && x < 0) || x > right) { result[i][1] = -result[i][1]; }
+            }
+        return result;
     } else {
         FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
         fft.execute(reinterpret_cast<dcomplex*>(src.data()));
         src[N] = src[0];
-        mleft = left; mright = right;
+        RegularMesh2D src_mesh(RegularAxis(left, right, src.size()), RegularAxis(vpos, vpos, 1));
+        return interpolate(src_mesh, src, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), true),
+                           defInterpolation<INTERPOLATION_SPLINE>(method), false);
     }
-    RegularMesh2D src_mesh(RegularAxis(mleft, mright, src.size()), RegularAxis(vpos, vpos, 1));
-    return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
-                    defInterpolation<INTERPOLATION_SPLINE>(method), false);
 }
 
 
@@ -475,6 +488,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
     DataVector<Vec<3,dcomplex>> src(N+1);
     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
+    const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
 
     if (separated) {
@@ -512,15 +526,38 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh
             src[iH(i)].vert() /= k0;
         }
     }
-    
+
     if (symmetric) {
-        return DataVector<Vec<3,dcomplex>>();
+        {
+            FFT::Backward1D fft_x(1, N, (symmetry=E_TRAN)? FFT::SYMMETRY_ODD : FFT::SYMMETRY_EVEN, 3);
+            fft_x.execute(reinterpret_cast<dcomplex*>(src.data()));
+        }{
+            FFT::Backward1D fft_yz(2, N, (symmetry=E_TRAN)? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_ODD, 3);
+            fft_yz.execute(reinterpret_cast<dcomplex*>(src.data())+1);
+        }
+        double dx = 0.5 * (right-left) / N;
+        RegularMesh2D src_mesh(RegularAxis(left+dx, right-dx, src.size()), RegularAxis(vpos, vpos, 1));
+        auto result = interpolate(src_mesh, src, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry()),
+                                  defInterpolation<INTERPOLATION_SPLINE>(method), false);
+        double L = 2. * right;
+        if (symmetry == E_LONG) {
+            for (size_t i = 0; i != dest_mesh.size(); ++i) {
+                double x = std::fmod(dest_mesh[i][0], L);
+                if ((-right <= x && x < 0) || x > right) { result[i][0] = -result[i][0]; result[i][2] = -result[i][2]; }
+            }
+        } else {
+            for (size_t i = 0; i != dest_mesh.size(); ++i) {
+                double x = std::fmod(dest_mesh[i][0], L);
+                if ((-right <= x && x < 0) || x > right) { result[i][1] = -result[i][1]; }
+            }
+        }
+        return result;
     } else {
         FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
         fft.execute(reinterpret_cast<dcomplex*>(src.data()));
         src[N] = src[0];
         RegularMesh2D src_mesh(RegularAxis(left, right, N+1), RegularAxis(vpos, vpos, 1));
-        return interpolate(src_mesh, src, WrappedMesh<2>(static_cast<const MeshD<2>&>(dst_mesh), SOLVER->getGeometry()),
+        return interpolate(src_mesh, src, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), true),
                            defInterpolation<INTERPOLATION_SPLINE>(method), false);
     }
 }

@@ -148,7 +148,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
         interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
         k0(NAN), klong(0.), ktran(0.), detlog("", "modal", "k0", "det"),
-        ipiv(nullptr), emitting(true) {}
+        emitting(true), ipiv(nullptr) {}
 
     /// Initialize memory for calculations
     void init();

@@ -17,14 +17,20 @@ Vec<dim> WrappedMesh<dim>::at(std::size_t index) const {
            double l = box.lower[i], h = box.upper[i];
            double d = h - l;
            if (geometry->isSymmetric(dir)) {
-               pos[i] = std::fmod(abs(pos[i]), 2*d);
-               if (pos[i] > d) pos[i] = 2*d - pos[i];
+                if (ignore_symmetry) {
+                    pos[i] = std::fmod(pos[i], 2*d);
+                    if (pos[i] > d) pos[i] = -2*d + pos[i];
+                    else if (pos[i] < -d) pos[i] = 2*d + pos[i];
+                } else {
+                    pos[i] = std::fmod(abs(pos[i]), 2*d);
+                    if (pos[i] > d) pos[i] = 2*d - pos[i];
+                }
            } else {
                pos[i] = std::fmod(pos[i]-l, d);
                pos[i] += (pos[i] >= 0)? l : h;
            }
        } else {
-           if (geometry->isSymmetric(dir)) pos[i] = abs(pos[i]);
+           if (geometry->isSymmetric(dir) && !ignore_symmetry) pos[i] = abs(pos[i]);
         }
     }
     return pos;
