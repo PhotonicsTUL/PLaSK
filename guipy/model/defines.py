@@ -3,7 +3,7 @@ from PyQt4 import QtCore
 from xml.etree import ElementTree
 #from guis import DefinesEditor
 
-class DefinesModel(SectionModel, QtCore.QAbstractTableModel):
+class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
     
     class Entry:
         def __init__(self, name, value, comment = None):
@@ -21,6 +21,7 @@ class DefinesModel(SectionModel, QtCore.QAbstractTableModel):
         if isinstance(element, ElementTree.Element):
             for c in element.iter("define"):
                 self.defines.append(DefinesModel.Entry(c.attrib["name"], c.attrib["value"]))
+        self.emit(QtCore.SIGNAL('dataChanged()'))
     
     # XML element that represents whole section
     def getXMLElement(self):
@@ -39,16 +40,17 @@ class DefinesModel(SectionModel, QtCore.QAbstractTableModel):
         if col == 0: self.defines[row].name = value
         elif col == 1: self.defines[row].value = value
         elif col == 2: self.defines[row].comment = value
-        else: raise IndexError('column number for DefinesModel should be in range [0, 3], but is %d' % col)
-    
+        else: raise IndexError('column number for DefinesModel should be in range [0, 3], but is %d' % col)       
+        
     # QAbstractListModel implementation
     def rowCount(self, parent = QtCore.QModelIndex()):
+        if parent.isValid(): return 0
         return len(self.defines)
     
     def columnCount(self, parent = QtCore.QModelIndex()): 
         return 2    # 3 if comment supported
     
-    def data(self, index, role): 
+    def data(self, index, role = QtCore.Qt.DisplayRole): 
         if index.isValid() and (role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole): 
             return self.get(index.column(), index.row())
         return None

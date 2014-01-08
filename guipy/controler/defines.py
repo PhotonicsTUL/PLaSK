@@ -1,6 +1,7 @@
 from PyQt4 import QtGui
 from controler.base import SourceEditControler
 from model.defines import DefinesModel
+from utils import showError
 
 class DefinesControler(SourceEditControler):
 
@@ -13,7 +14,17 @@ class DefinesControler(SourceEditControler):
         self.editorWidget.addWidget(self.getSourceEditor())
         
     def changeEditor(self):
-        self.editorWidget.setCurrentIndex(int(self.showSourceAction.isChecked()))
+        old_index = self.editorWidget.currentIndex()
+        new_index = int(self.showSourceAction.isChecked())
+        if new_index == old_index: return
+        if old_index == 1:  # source editor exit
+            try:
+                self.model.setText(self.getSourceEditor().toPlainText())
+            except Exception as e:
+                self.showSourceAction.setChecked(True)
+                showError(str(e), self.getSourceEditor(), 'Error in source')
+                return
+        self.editorWidget.setCurrentIndex(new_index)
         
     def getShowSourceAction(self, parent):
         if not hasattr(self, 'showSourceAction'):

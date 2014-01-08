@@ -5,7 +5,6 @@ from model.script import ScriptModel
 import sys
 try:
     from pyeditor import PyEdit
-    from pycode import pyqtfrontend
     hasPyCode = True
 except ImportError:
     hasPyCode = False 
@@ -13,7 +12,7 @@ except ImportError:
 if hasPyCode:
     sys.path.append("syntaxhighlighter")
     try:
-        from highlighter import SyntaxHighlighter, load_syntax
+        from pycodelocal.highlighter import SyntaxHighlighter, load_syntax
         from highlighter.python27 import syntax
     except ImportError:
         SyntaxHighlighter = None

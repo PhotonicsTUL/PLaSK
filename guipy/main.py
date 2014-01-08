@@ -9,6 +9,7 @@ import sys
 from PyQt4 import QtGui
 from PyQt4.QtCore import SIGNAL
 from XPLDocument import XPLDocument
+from utils import exceptionToMsg
 
 class MainWindow(QtGui.QMainWindow):
     
@@ -58,14 +59,9 @@ class MainWindow(QtGui.QMainWindow):
     def tabChange(self, index):
         if index == self.current_tab_index: return
         if self.current_tab_index != -1:
-            try:
-                self.document.getControlerByIndex(self.current_tab_index).onEditExit(self)
-            except Exception as e:
+            if not exceptionToMsg(lambda: self.document.getControlerByIndex(self.current_tab_index).onEditExit(self),
+                                  self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
-                err = QtGui.QErrorMessage(self.tabs)
-                err.setModal(True)
-                err.setWindowTitle('Error while trying to store data from editor')
-                err.showMessage(str(e))
                 return
         self.current_tab_index = index
         if self.current_tab_index != -1:

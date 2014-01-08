@@ -1,4 +1,4 @@
-from pycode import pyqtfrontend
+from pycodelocal import pyqtfrontend
 
 class PyEdit(pyqtfrontend.PyCode):
     
