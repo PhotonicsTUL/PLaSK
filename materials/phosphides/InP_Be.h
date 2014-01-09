@@ -15,7 +15,7 @@ namespace plask { namespace materials {
  */
 struct InP_Be: public InP {
 
-    static constexpr const char* NAME = "InP:Zn";
+    static constexpr const char* NAME = "InP:Be";
 
     InP_Be(DopingAmountType Type, double Val);
     virtual std::string name() const;
