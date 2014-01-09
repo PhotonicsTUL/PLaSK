@@ -64,8 +64,147 @@ namespace detail {
 
 } // namespace detail
 
-extern const char* docstring_attr_receiver;
-template <PropertyType propertyType> const char* docstring_attr_provider();
+constexpr const char* docstring_attr_receiver() { return
+    "Receiver of the %3% required for computations [%4%].\n"
+    "%5%\n\n"
+
+    "You will find usage details in the documentation of the receiver class\n"
+    ":class:`~plask.flow.%1%Receiver%2%`.\n\n"
+
+    "Example:\n"
+    "   Connect the reveiver to a provider from some other solver:\n\n"
+
+    "   >>> solver.%6% = other_solver.out%1%\n\n"
+
+    "See also:\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Data filter: :class:`plask.filter.%1%Filter%2%`\n";
+}
+
+template <PropertyType propertyType> constexpr const char* docstring_attr_provider();
+
+template <> constexpr const char* docstring_attr_provider<SINGLE_VALUE_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(%6%)\n\n"
+
+    "%7%\n"
+
+    ":return: Value of the %3% **[%4%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%%\n\n"
+
+    "   Obtain the provided value:\n\n"
+
+    "   >>> solver.%8%(%6%)\n"
+    "   1000\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template <> constexpr const char* docstring_attr_provider<MULTI_VALUE_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(n=0%6%)\n\n"
+
+    ":param int n: Value number.\n"
+    "%7%\n"
+
+    ":return: Value of the %3% **[%4%]**.\n\n"
+
+    "You may obtain the number of different values this provider can return by\n"
+    "testing its length.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%\n\n"
+
+    "   Obtain the provided value:\n\n"
+
+    "   >>> solver.%8%(n=0%6%)\n"
+    "   1000\n\n"
+
+    "   Test the number of provided values:\n\n"
+
+    "   >>> len(solver.%8%)\n"
+    "   3\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template <> constexpr const char* docstring_attr_provider<FIELD_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(mesh, interpolation='default'%6%)\n\n"
+
+    ":param mesh mesh: Target mesh to get the field at.\n"
+    ":param str interpolation: Requested interpolation method.\n"
+    "%7%\n"
+
+    ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%\n\n"
+
+    "   Obtain the provided field:\n\n"
+
+    "   >>> solver.%8%(mesh%6%)\n"
+    "   <plask.Data at 0x1234567>\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
+
+template <> constexpr const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>() { return
+    "Provider of the computed %3% [%4%].\n"
+    "%5%\n\n"
+
+    "%8%(n=0, mesh, interpolation='default'%6%)\n\n"
+
+    ":param int n: Value number.\n"
+    ":param mesh mesh: Target mesh to get the field at.\n"
+    ":param str interpolation: Requested interpolation method.\n"
+    "%7%\n"
+
+    ":return: Data with the %3% on the specified mesh **[%4%]**.\n\n"
+
+    "You may obtain the number of different values this provider can return by\n"
+    "testing its length.\n\n"
+
+    "Example:\n"
+    "   Connect the provider to a receiver in some other solver:\n\n"
+
+    "   >>> other_solver.in%1% = solver.%8%\n\n"
+
+    "   Obtain the provided field:\n\n"
+
+    "   >>> solver.%8%(0, mesh%6%)\n"
+    "   <plask.Data at 0x1234567>\n\n"
+
+    "   Test the number of provided values:\n\n"
+
+    "   >>> len(solver.%8%)\n"
+    "   3\n\n"
+
+    "See also:\n\n"
+    "   Provider class: :class:`plask.flow.%1%Provider%2%`\n\n"
+    "   Receciver class: :class:`plask.flow.%1%Receiver%2%`\n";
+}
 
 /**
  * This class should be instantiated to export a solver to Python.
@@ -111,18 +250,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
         static_assert(std::is_base_of<Provider, ProviderT>::value, "add_provider used for non-provider type");
 
-        this->def_readonly(name, field,
-            format(docstring_attr_provider<ProviderT::PropertyTag::propertyType>(),
-                   type_name<typename ProviderT::PropertyTag>(),                                // %1% Gain
-                   spaceSuffix<typename ProviderT::SpaceType>(),                                // %2% Cartesian2D
-                   ProviderT::PropertyTag::NAME,                                                // %3% material gain
-                   ProviderT::PropertyTag::UNIT,                                                // %4% 1/cm
-                   addhelp,                                                                     // %5% Gain in the active region.
-                   docstrig_property_optional_args<typename ProviderT::PropertyTag>(),          // %6% wavelength
-                   docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),     // %7% :param: wavelength
-                   name                                                                         // %8% inGain
-                  ).c_str()
-        );
+        this->def_readonly(name, field, addhelp);
         return *this;
     }
 
@@ -136,7 +264,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
                                              py::default_call_policies(),
                                              boost::mpl::vector3<void, Class&, py::object>()
                                             ),
-                           format(docstring_attr_receiver, type_name<typename ReceiverT::ProviderType::PropertyTag>(),
+                           format(docstring_attr_receiver(), type_name<typename ReceiverT::ProviderType::PropertyTag>(),
                                   spaceSuffix<typename ReceiverT::SpaceType>(), ReceiverT::ProviderType::PropertyTag::NAME,
                                   ReceiverT::ProviderType::PropertyTag::UNIT, addhelp, name).c_str()
                           );
