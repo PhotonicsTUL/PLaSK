@@ -1,6 +1,0 @@
-version = '${VERSION_MAJOR}.${VERSION_MINOR}'
-release = '${VERSION}'
-
-python_path = '${CMAKE_BINARY_DIR}/lib/plask/python'
-
-#kate: syntax python;

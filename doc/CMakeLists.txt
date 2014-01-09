@@ -1,4 +1,9 @@
+cmake_minimum_required(VERSION 2.8)
+cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
+
 project(plask-doc)
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/_cmake)
 
 find_package(Sphinx)
 
@@ -28,10 +33,7 @@ if (INKSCAPE)
     endforeach()
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/plaskconf.py.in ${CMAKE_CURRENT_BINARY_DIR}/plaskconf.py)
-
-#TODO get rid of this is stubs are created for us automatically
-set(sphinx export CMAKE_CURRENT_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR} COMMAND plask ${SPHINX_EXECUTABLE})
+set(sphinx plask ${SPHINX_EXECUTABLE})
 
 if(SPHINX_FOUND)
 
