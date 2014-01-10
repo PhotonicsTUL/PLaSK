@@ -100,7 +100,7 @@ foreach (_Sphinx_TOOL IN LISTS Sphinx_FIND_COMPONENTS)
   if (Sphinx_DIR)
     find_program (
       Sphinx-${_Sphinx_TOOL}_EXECUTABLE
-      NAMES         sphinx-${_Sphinx_TOOL} sphinx-${_Sphinx_TOOL}.py
+      NAMES         sphinx-${_Sphinx_TOOL}-script.py sphinx-${_Sphinx_TOOL} sphinx-${_Sphinx_TOOL}.py
       HINTS         "${Sphinx_DIR}"
       PATH_SUFFIXES bin
       DOC           "The sphinx-${_Sphinx_TOOL} Python script."
@@ -109,7 +109,7 @@ foreach (_Sphinx_TOOL IN LISTS Sphinx_FIND_COMPONENTS)
   else ()
     find_program (
       Sphinx-${_Sphinx_TOOL}_EXECUTABLE
-      NAMES sphinx-${_Sphinx_TOOL} sphinx-${_Sphinx_TOOL}.py
+      NAMES sphinx-${_Sphinx_TOOL}-script.py sphinx-${_Sphinx_TOOL} sphinx-${_Sphinx_TOOL}.py
       DOC   "The sphinx-${_Sphinx_TOOL} Python script."
     )
   endif ()

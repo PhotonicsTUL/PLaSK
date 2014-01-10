@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
 
-project(plask-doc)
+project(plask-doc NONE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/_cmake)
 
