@@ -8,10 +8,10 @@ class XPLDocument(object):
     
     SECTION_NAMES = ["defines", "materials", "geometry", "grids", "solvers", "connects", "script"]
      
-    def __init__(self):
+    def __init__(self, main):
         object.__init__(self)
         self.controlers = [
-              DefinesControler(),  #defines
+              DefinesControler(main),  #defines
               SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[1])),  #materials
               SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
               SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids

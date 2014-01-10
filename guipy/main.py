@@ -15,7 +15,7 @@ class MainWindow(QtGui.QMainWindow):
     
     def __init__(self):
         super(MainWindow, self).__init__()        
-        self.document = XPLDocument()
+        self.document = XPLDocument(self)
         self.current_tab_index = -1
         self.fileName = None
         self.initUI()

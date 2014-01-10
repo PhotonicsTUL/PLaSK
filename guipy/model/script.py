@@ -3,8 +3,8 @@ from xml.etree import ElementTree
 
 class ScriptModel(SectionModel):
 
-    def __init__(self):
-        self.tagname = 'script'
+    def __init__(self, errors_cb = None):
+        SectionModel.__init__(self, 'script', errors_cb)
         self.code = ''
 
     def setXMLElement(self, element):

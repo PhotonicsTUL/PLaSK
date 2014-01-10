@@ -11,8 +11,8 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
             self.value = value
             self.comment = comment
     
-    def __init__(self, parent=None, *args):
-        SectionModel.__init__(self, 'defines')
+    def __init__(self, parent=None, errors_cb = None, *args):
+        SectionModel.__init__(self, 'defines', errors_cb)
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         self.defines = []
         
@@ -32,7 +32,7 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
     
     # XML element that represents whole section
     def getXMLElement(self):
-        res = ElementTree.Element(self.tagname)
+        res = ElementTree.Element(self.name)
         for e in self.defines:
             ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }).tail = '\n'
         return res
@@ -45,7 +45,7 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
     
     def set(self, col, row, value):
         if col == 0:
-            i = self.nameToIndex(value)
+            i = self.nameToIndex(value) # TODO should be non-critical error  
             if i > 0 and i != row: raise ValueError("name \"%s\" already in use in defines section (has indexes %d and value \"%s\")" % (value, i, self.defines[i].value))
             self.defines[row].name = value
         elif col == 1: self.defines[row].value = value
@@ -87,3 +87,21 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
         self.set(index.column(), index.row(), value)
         self.dataChanged.emit(index, index)
         return True
+    
+    def insert(self, index = None, value = None):
+        if not value: value = DefinesModel.Entry("new", "")
+        if index and 0 <= index and index <= len(self.defines):
+            self.beginInsertRows(QtCore.QModelIndex(), index, index)
+            self.defines.insert(index, value)
+        else:
+            index = len(self.defines)
+            self.beginInsertRows(QtCore.QModelIndex(), index, index)
+            self.defines.append(value)
+        self.endInsertRows()
+        return index
+    
+    def remove(self, index):
+        if index < 0 or index >= len(self.defines): return
+        self.beginRemoveRows(QtCore.QModelIndex(), index, index)
+        del self.defines[index]
+        self.endRemoveRows()
