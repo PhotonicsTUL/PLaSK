@@ -24,6 +24,8 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
             self.tabs.addTab(self.document.getControlerByName(m).getEditor(), m)
+        self.current_tab_index = 0
+        self.currentSectionEnter()
         
     def setNewModel(self, model):
         self.document = model
@@ -43,29 +45,41 @@ class MainWindow(QtGui.QMainWindow):
         
     def save(self):
         if self.fileName != None:
+            self.currentSectionExit()
             self.document.saveToFile(self.fileName)
             return True
         else:
             return self.saveAs()
         
     def saveAs(self):
-        self.updateModel()
+        self.currentSectionExit()
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
         if fileName.isEmpty(): return False
         self.fileName = fileName
         self.document.saveToFile(fileName)
         return True
-        
-    def tabChange(self, index):
-        if index == self.current_tab_index: return
+    
+    def currentSectionExit(self):
+        """"Should be called just before left the current section."""
         if self.current_tab_index != -1:
             if not exceptionToMsg(lambda: self.document.getControlerByIndex(self.current_tab_index).onEditExit(self),
                                   self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
-                return
-        self.current_tab_index = index
+                return False
+        return True
+    
+    def currentSectionEnter(self):
+        """"Should be called just after set the current section."""
         if self.current_tab_index != -1:
             self.document.getControlerByIndex(self.current_tab_index).onEditEnter(self)
+        
+    def tabChange(self, index):
+        if index == self.current_tab_index: return
+        if not self.currentSectionExit():
+            self.tabs.setCurrentIndex(self.current_tab_index)
+            return
+        self.current_tab_index = index
+        self.currentSectionEnter()
             
     def setSectionActions(self, *actions):
         self.section_toolbar.clear()
@@ -125,7 +139,7 @@ class MainWindow(QtGui.QMainWindow):
         toolbar.addAction(openAction)
         toolbar.addAction(saveAction)
         toolbar.addAction(saveAsAction)
-        toolbar.addAction(exitAction)
+        #toolbar.addAction(exitAction)
         #toolbar.addSeparator()
         #toolbar.addAction(showSourceAction)
         

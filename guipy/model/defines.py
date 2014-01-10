@@ -16,12 +16,19 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         self.defines = []
         
+    def nameToIndex(self, name):
+        """return index of entry with given name or -1"""
+        for idx, val in enumerate(self.defines):
+            if val.name == name: return idx
+        return -1
+        
     def setXMLElement(self, element):
+        self.layoutAboutToBeChanged.emit()
         del self.defines[:]
         if isinstance(element, ElementTree.Element):
             for c in element.iter("define"):
                 self.defines.append(DefinesModel.Entry(c.attrib["name"], c.attrib["value"]))
-        self.emit(QtCore.SIGNAL('dataChanged()'))
+        self.layoutChanged.emit()
     
     # XML element that represents whole section
     def getXMLElement(self):
@@ -37,7 +44,10 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
         raise IndexError('column number for DefinesModel should be in range [0, 3], but is %d' % col)
     
     def set(self, col, row, value):
-        if col == 0: self.defines[row].name = value
+        if col == 0:
+            i = self.nameToIndex(value)
+            if i > 0 and i != row: raise ValueError("name \"%s\" already in use in defines section (has indexes %d and value \"%s\")" % (value, i, self.defines[i].value))
+            self.defines[row].name = value
         elif col == 1: self.defines[row].value = value
         elif col == 2: self.defines[row].comment = value
         else: raise IndexError('column number for DefinesModel should be in range [0, 3], but is %d' % col)       
@@ -74,6 +84,6 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
         return flags
     
     def setData(self, index, value, role = QtCore.Qt.EditRole):
-        set(index.column(), index.row(), value)
-        self.emit(QtCore.SIGNAL('dataChanged()'))
+        self.set(index.column(), index.row(), value)
+        self.dataChanged.emit(index, index)
         return True

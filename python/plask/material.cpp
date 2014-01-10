@@ -177,7 +177,7 @@ class PythonMaterial : public Material
 
     // Here there are overridden methods from Material class
 
-    virtual bool isEqual(const Material& other) const {
+    virtual bool isEqual(const Material& other) const override {
         auto theother = static_cast<const PythonMaterial&>(other);
         py::object oself { py::borrowed(self) },
                    oother { py::object(py::borrowed(theother.self)) };
@@ -187,7 +187,7 @@ class PythonMaterial : public Material
         return *base == *theother.base && oself.attr("__class__") == oother.attr("__class__");
     }
 
-    virtual std::string name() const {
+    virtual std::string name() const override {
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object oname;
         try {
@@ -199,12 +199,12 @@ class PythonMaterial : public Material
         return py::extract<std::string>(oname);
     }
 
-    virtual std::string str() const {
+    virtual std::string str() const override {
         if (overriden("__str__")) return py::call_method<std::string>(self, "__str__");
         else return name();
     }
 
-    virtual Material::ConductivityType condtype() const {
+    virtual Material::ConductivityType condtype() const override {
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object octype;
         try {
@@ -216,7 +216,7 @@ class PythonMaterial : public Material
         return py::extract<Material::ConductivityType>(octype);
     }
 
-    virtual Material::Kind kind() const { 
+    virtual Material::Kind kind() const override {
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object okind;
         try {
@@ -228,65 +228,65 @@ class PythonMaterial : public Material
         return py::extract<Material::Kind>(okind);
     }
     
-    virtual double lattC(double T, char x) const { return override<double>("lattC", &Material::lattC, T, x); }
-    virtual double Eg(double T, double e, char point) const { return override<double>("Eg", &Material::Eg, T, e, point); }
-    virtual double CB(double T, double e, char point) const {
+    virtual double lattC(double T, char x) const override { return override<double>("lattC", &Material::lattC, T, x); }
+    virtual double Eg(double T, double e, char point) const override { return override<double>("Eg", &Material::Eg, T, e, point); }
+    virtual double CB(double T, double e, char point) const override {
         try { return override<double>("CB", &Material::CB, T, e, point); }
         catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }  // D = µ kB T / e
     }
-    virtual double VB(double T, double e, char point, char hole) const { return override<double>("VB", &Material::VB, T, e, point, hole); }
-    virtual double Dso(double T, double e) const { return override<double>("Dso", &Material::Dso, T, e); }
-    virtual double Mso(double T, double e) const { return override<double>("Mso", &Material::Mso, T, e); }
-    virtual Tensor2<double> Me(double T, double e, char point) const { return override<Tensor2<double>>("Me", &Material::Me, T, e, point); }
-    virtual Tensor2<double> Mhh(double T, double e) const { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, e); }
-    virtual Tensor2<double> Mlh(double T, double e) const { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, e); }
-    virtual Tensor2<double> Mh(double T, double e) const { return override<Tensor2<double>>("Mh", &Material::Mh, T, e); }
-    virtual double ac(double T) const { return override<double>("ac", &Material::ac, T); }
-    virtual double av(double T) const { return override<double>("av", &Material::av, T); }
-    virtual double b(double T) const { return override<double>("b", &Material::b, T); }
-    virtual double d(double T) const { return override<double>("d", &Material::d, T); }
-    virtual double c11(double T) const { return override<double>("c11", &Material::c11, T); }
-    virtual double c12(double T) const { return override<double>("c12", &Material::c12, T); }
-    virtual double c44(double T) const { return override<double>("c44", &Material::c44, T); }
-    virtual double eps(double T) const { return override<double>("eps", &Material::eps, T); }
-    virtual double chi(double T, double e, char point) const { return override<double>("chi", &Material::chi, T, e, point); }
-    virtual double Nc(double T, double e, char point) const { return override<double>("Nc", &Material::Nc, T, e, point); }
-    virtual double Nv(double T, double e, char point) const { return override<double>("Nv", &Material::Nv, T, e, point); }
-    virtual double Ni(double T) const { return override<double>("Ni", &Material::Ni, T); }
-    virtual double Nf(double T) const { return override<double>("Nf", &Material::Nf, T); }
-    virtual double EactD(double T) const { return override<double>("EactD", &Material::EactD, T); }
-    virtual double EactA(double T) const { return override<double>("EactA", &Material::EactA, T); }
-    virtual Tensor2<double> mob(double T) const { return override<Tensor2<double>>("mob", &Material::mob, T); }
-    virtual Tensor2<double> cond(double T) const { return override<Tensor2<double>>("cond", &Material::cond, T); }
-    virtual double A(double T) const { return override<double>("A", &Material::A, T); }
-    virtual double B(double T) const { return override<double>("B", &Material::B, T); }
-    virtual double C(double T) const { return override<double>("C", &Material::C, T); }
-    virtual double D(double T) const {
+    virtual double VB(double T, double e, char point, char hole) const  override{ return override<double>("VB", &Material::VB, T, e, point, hole); }
+    virtual double Dso(double T, double e) const override { return override<double>("Dso", &Material::Dso, T, e); }
+    virtual double Mso(double T, double e) const override { return override<double>("Mso", &Material::Mso, T, e); }
+    virtual Tensor2<double> Me(double T, double e, char point) const override { return override<Tensor2<double>>("Me", &Material::Me, T, e, point); }
+    virtual Tensor2<double> Mhh(double T, double e) const override { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, e); }
+    virtual Tensor2<double> Mlh(double T, double e) const override { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, e); }
+    virtual Tensor2<double> Mh(double T, double e) const override { return override<Tensor2<double>>("Mh", &Material::Mh, T, e); }
+    virtual double ac(double T) const override { return override<double>("ac", &Material::ac, T); }
+    virtual double av(double T) const override { return override<double>("av", &Material::av, T); }
+    virtual double b(double T) const override { return override<double>("b", &Material::b, T); }
+    virtual double d(double T) const override { return override<double>("d", &Material::d, T); }
+    virtual double c11(double T) const override { return override<double>("c11", &Material::c11, T); }
+    virtual double c12(double T) const override { return override<double>("c12", &Material::c12, T); }
+    virtual double c44(double T) const override { return override<double>("c44", &Material::c44, T); }
+    virtual double eps(double T) const override { return override<double>("eps", &Material::eps, T); }
+    virtual double chi(double T, double e, char point) const override { return override<double>("chi", &Material::chi, T, e, point); }
+    virtual double Nc(double T, double e, char point) const override { return override<double>("Nc", &Material::Nc, T, e, point); }
+    virtual double Nv(double T, double e, char point) const override { return override<double>("Nv", &Material::Nv, T, e, point); }
+    virtual double Ni(double T) const override { return override<double>("Ni", &Material::Ni, T); }
+    virtual double Nf(double T) const override { return override<double>("Nf", &Material::Nf, T); }
+    virtual double EactD(double T) const override { return override<double>("EactD", &Material::EactD, T); }
+    virtual double EactA(double T) const override { return override<double>("EactA", &Material::EactA, T); }
+    virtual Tensor2<double> mob(double T) const override { return override<Tensor2<double>>("mob", &Material::mob, T); }
+    virtual Tensor2<double> cond(double T) const override { return override<Tensor2<double>>("cond", &Material::cond, T); }
+    virtual double A(double T) const override { return override<double>("A", &Material::A, T); }
+    virtual double B(double T) const override { return override<double>("B", &Material::B, T); }
+    virtual double C(double T) const override { return override<double>("C", &Material::C, T); }
+    virtual double D(double T) const override {
         try { return override<double>("D", &Material::D, T); }
         catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; }  // D = µ kB T / e
     }
-    virtual Tensor2<double> thermk(double T, double t) const { return override<Tensor2<double>>("thermk", &Material::thermk, T, t); }
-    virtual double dens(double T) const { return override<double>("dens", &Material::dens, T); }
-    virtual double cp(double T) const { return override<double>("cp", &Material::cp, T); }
-    virtual double nr(double wl, double T) const { return override<double>("nr", &Material::nr, wl, T); }
-    virtual double absp(double wl, double T) const { return override<double>("absp", &Material::absp, wl, T); }
-    virtual dcomplex Nr(double wl, double T) const {
-        if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T);
+    virtual Tensor2<double> thermk(double T, double t) const override { return override<Tensor2<double>>("thermk", &Material::thermk, T, t); }
+    virtual double dens(double T) const override { return override<double>("dens", &Material::dens, T); }
+    virtual double cp(double T) const override { return override<double>("cp", &Material::cp, T); }
+    virtual double nr(double wl, double T, double n = 0.0) const override { return override<double>("nr", &Material::nr, wl, T, n); }
+    virtual double absp(double wl, double T) const override { return override<double>("absp", &Material::absp, wl, T); }
+    virtual dcomplex Nr(double wl, double T, double n = 0.0) const override {
+        if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T, n);
         if (overriden("nr") || overriden("absp"))
-            return dcomplex(override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
-        return base->Nr(wl, T);
+            return dcomplex(override<double>("nr", &Material::nr, wl, T, n), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        return base->Nr(wl, T, n);
     }
-    virtual Tensor3<dcomplex> NR(double wl, double T) const {
-        if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T);
+    virtual Tensor3<dcomplex> NR(double wl, double T, double n) const override {
+        if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
         if (overriden("Nr")) {
-            dcomplex n = py::call_method<dcomplex>(self, "Nr", wl, T);
+            dcomplex n = py::call_method<dcomplex>(self, "Nr", wl, T, n);
             return Tensor3<dcomplex>(n, n, n, 0., 0.);
         }
         if (overriden("nr") || overriden("absp")) {
-            dcomplex n (override<double>("nr", &Material::nr, wl, T), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
-            return Tensor3<dcomplex>(n, n, n, 0., 0.);
+            dcomplex cn (override<double>("nr", &Material::nr, wl, T, n), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+            return Tensor3<dcomplex>(cn, cn, cn, 0., 0.);
         }
-        return base->NR(wl, T);
+        return base->NR(wl, T, n);
     }
 
     // End of overriden methods

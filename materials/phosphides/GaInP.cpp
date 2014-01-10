@@ -189,7 +189,7 @@ Tensor2<double> GaInP::thermk(double T, double t) const {
 MI_PROPERTY(GaInP, nr,
             MIComment("TODO")
             )
-double GaInP::nr(double wl, double T) const {
+double GaInP::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

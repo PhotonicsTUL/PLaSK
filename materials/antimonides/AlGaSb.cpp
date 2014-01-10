@@ -154,7 +154,7 @@ Tensor2<double> AlGaSb::thermk(double T, double t) const {
 MI_PROPERTY(AlGaSb, nr,
             MIComment("TODO")
             )
-double AlGaSb::nr(double wl, double T) const {
+double AlGaSb::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

@@ -163,7 +163,7 @@ MI_PROPERTY(GaSb, nr,
             MIArgumentRange(MaterialInfo::wl, 1800, 2560),
             MIComment("fit by Lukasz Piskorski")
             )
-double GaSb::nr(double wl, double T) const {
+double GaSb::nr(double wl, double T, double) const {
     double nR300K = sqrt(1.+13.05e-6*wl*wl/(1e-6*wl*wl-0.32)); // 1e-3: nm-> um
 
     if (wl > 1800.)

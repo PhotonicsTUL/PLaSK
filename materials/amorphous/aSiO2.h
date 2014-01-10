@@ -16,13 +16,13 @@ struct aSiO2: public Dielectric {
 
     static constexpr const char* NAME = "aSiO2";
 
-    virtual std::string name() const;
-    virtual Tensor2<double> cond(double T) const;
-    virtual Tensor2<double> thermk(double T, double h=INFINITY) const;
-    virtual double nr(double wl, double T) const;
+    virtual std::string name() const override;
+    virtual Tensor2<double> cond(double T) const override;
+    virtual Tensor2<double> thermk(double T, double h=INFINITY) const override;
+    virtual double nr(double wl, double T, double n = .0) const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const;
+    virtual bool isEqual(const Material& other) const override;
 
 };
 

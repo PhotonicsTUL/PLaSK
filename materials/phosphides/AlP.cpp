@@ -161,7 +161,7 @@ MI_PROPERTY(AlP, nr,
             MISource(""),
             MIComment("TODO")
             )
-double AlP::nr(double wl, double T) const {
+double AlP::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

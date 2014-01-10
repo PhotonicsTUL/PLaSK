@@ -156,7 +156,7 @@ Tensor2<double> GaAsSb::thermk(double T, double t) const {
 MI_PROPERTY(GaAsSb, nr,
             MIComment("TODO")
             )
-double GaAsSb::nr(double wl, double T) const {
+double GaAsSb::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

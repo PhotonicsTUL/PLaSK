@@ -156,7 +156,7 @@ Tensor2<double> GaInAs::thermk(double T, double t) const {
 MI_PROPERTY(GaInAs, nr,
             MIComment("TODO")
             )
-double GaInAs::nr(double wl, double T) const {
+double GaInAs::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

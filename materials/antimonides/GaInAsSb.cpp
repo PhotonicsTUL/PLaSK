@@ -183,7 +183,7 @@ Tensor2<double> GaInAsSb::thermk(double T, double t) const {
 MI_PROPERTY(GaInAsSb, nr,
             MIComment("TODO")
             )
-double GaInAsSb::nr(double wl, double T) const {
+double GaInAsSb::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

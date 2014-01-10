@@ -18,13 +18,13 @@ struct GaAs: public Semiconductor {
 
     virtual std::string name() const { return NAME; }
 
-    virtual double lattC(double T, char x) const {
+    virtual double lattC(double T, char x) const override {
         double tLattC(0.);
         if (x == 'a') tLattC = 5.65325 + 3.88e-5 * (T-300.);
         return tLattC;
     }
 
-    virtual double Eg(double T, double e, char point) const {
+    virtual double Eg(double T, double e, char point) const override {
         double tEg(0.);
         if (point == 'G') tEg = phys::Varshni(1.519, 0.5405e-3, 204., T);
         else if (point == 'X') tEg = phys::Varshni(1.981, 0.460e-3, 204., T);
@@ -32,11 +32,11 @@ struct GaAs: public Semiconductor {
         return tEg;
     }
 
-    virtual double Dso(double T, double e) const {
+    virtual double Dso(double T, double e) const override {
         return 0.341;
     }
 
-    virtual Tensor2<double> Me(double T, double e, char point) const {
+    virtual Tensor2<double> Me(double T, double e, char point) const override {
         Tensor2<double> tMe(0., 0.);
         if (point == 'G') {
             tMe.c00 = 0.067;
@@ -45,23 +45,23 @@ struct GaAs: public Semiconductor {
         return tMe;
     }
 
-    virtual Tensor2<double> Mhh(double T, double e) const {
+    virtual Tensor2<double> Mhh(double T, double e) const override {
         Tensor2<double> tMhh(0.33, 0.33); // [001]
         return tMhh;
     }
 
-    virtual Tensor2<double> Mlh(double T, double e) const {
+    virtual Tensor2<double> Mlh(double T, double e) const override {
         Tensor2<double> tMlh(0.090, 0.090);
         return tMlh;
     }
 
-    virtual double CB(double T, double e, char point) const {
+    virtual double CB(double T, double e, char point) const override {
         double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
         if (!e) return tCB;
         else return tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e;
     }
 
-    virtual double VB(double T, double e, char point, char hole) const {
+    virtual double VB(double T, double e, char point, char hole) const override {
         double tVB(-0.80);
         if (e) {
             double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
@@ -73,56 +73,56 @@ struct GaAs: public Semiconductor {
         return tVB;
     }
 
-    virtual double ac(double T) const {
+    virtual double ac(double T) const override {
         return -7.17;
     }
 
-    virtual double av(double T) const {
+    virtual double av(double T) const override {
         return 1.16;
     }
 
-    virtual double b(double T) const {
+    virtual double b(double T) const override {
         return -2.0;
     }
 
-    virtual double d(double T) const {
+    virtual double d(double T) const override {
         return -4.8;
     }
 
-    virtual double c11(double T) const {
+    virtual double c11(double T) const override {
         return 122.1;
     }
 
-    virtual double c12(double T) const {
+    virtual double c12(double T) const override {
         return 56.6;
     }
 
-    virtual double c44(double T) const {
+    virtual double c44(double T) const override {
         return 60.0;
     }
 
-    virtual Tensor2<double> thermk(double T, double t) const {
+    virtual Tensor2<double> thermk(double T, double t) const override {
         double tCondT = 45.*pow((300./T),1.28);
         return Tensor2<double>(tCondT, tCondT);
     }
 
-    virtual Tensor2<double> cond(double T) const {
+    virtual Tensor2<double> cond(double T) const override {
         double c = 1e2 * phys::qe * 8000.* pow((300./T), 2./3.) * 1e16;
         return Tensor2<double>(c, c);
     }
 
-    virtual double nr(double wl, double T) const {
+    virtual double nr(double wl, double T, double n = .0) const override {
         double L2 = wl*wl*1e-6;
         double nR296K = sqrt(1.+9.659*L2/(L2-0.137));
         return ( nR296K + nR296K*4.5e-5*(T-296.) );
     }
 
-    virtual double absp(double wl, double T) const {
+    virtual double absp(double wl, double T) const override {
         return 0.;
     }
 
   protected:
-    virtual bool isEqual(const Material &other) const {
+    virtual bool isEqual(const Material &other) const override {
         return true;
     }
 };

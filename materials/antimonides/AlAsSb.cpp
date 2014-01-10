@@ -158,7 +158,7 @@ MI_PROPERTY(AlAsSb, nr,
             MIArgumentRange(MaterialInfo::wl, 500, 7000),
             MIComment("fit by Lukasz Piskorski")
             )
-double AlAsSb::nr(double wl, double T) const {
+double AlAsSb::nr(double wl, double T, double n) const {
     double nR300K = sqrt(1.+8.75e-6*wl*wl/(1e-6*wl*wl-0.15)); // 1e-3: nm-> um
 
     if (wl > 500.)

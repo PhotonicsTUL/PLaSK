@@ -162,7 +162,7 @@ MI_PROPERTY(GaP, nr,
             MISource(""),
             MIComment("TODO")
             )
-double GaP::nr(double wl, double T) const {
+double GaP::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

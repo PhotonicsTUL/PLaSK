@@ -154,7 +154,7 @@ Tensor2<double> AlInSb::thermk(double T, double t) const {
 MI_PROPERTY(AlInSb, nr,
             MIComment("TODO")
             )
-double AlInSb::nr(double wl, double T) const {
+double AlInSb::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

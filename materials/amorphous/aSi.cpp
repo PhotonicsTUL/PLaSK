@@ -23,7 +23,7 @@ MI_PROPERTY(aSi, nr,
             MIArgumentRange(MaterialInfo::wl, 1050, 2050),
             MIComment("fit by Lukasz Piskorski")
             )
-double aSi::nr(double wl, double T) const {
+double aSi::nr(double wl, double T, double n) const {
     double nR300K = 0.27/pow(wl*1e-3,4.1)+3.835; // 1e-3: nm-> um
 
     if (wl > 1050.)

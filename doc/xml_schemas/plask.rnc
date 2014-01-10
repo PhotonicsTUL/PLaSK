@@ -171,7 +171,8 @@ element materials {
 
 	## Refractive index nR [-]; parameters:
 	## wl - Wavelength [nm],
-	## T - temperature [K].
+	## T - temperature [K],
+   ## n - injected carriers concentration [1/cm].
 	element (nr) { text }?		&
 
 	## Absorption coefficient alpha [cm^(-1)]; parameters:
@@ -181,13 +182,15 @@ element materials {
 
 	## Refractive index nR [-]; parameters:
 	## wl - Wavelength [nm],
-	## T - temperature [K].
-	element (nR) { text }?		&
+	## T - temperature [K],
+   ## n - injected carriers concentration [1/cm].
+	element (Nr) { text }?		&
 
 	## Anisotropic refractive index tensor nR [-]. Tensor must have the form [n_0, n_3, 0 / n_4, n_1, 0 / 0, 0, n_2] where n_i is i-th object of the returned tuple; parameters:
 	## wl - Wavelength [nm],
-	## T - temperature [K].
-	element (nR_tensor) { text }?
+	## T - temperature [K],
+   ## n - injected carriers concentration [1/cm].
+	element (NR) { text }?
     }*
 )
 }

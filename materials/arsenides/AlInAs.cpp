@@ -156,7 +156,7 @@ Tensor2<double> AlInAs::thermk(double T, double t) const {
 MI_PROPERTY(AlInAs, nr,
             MIComment("TODO")
             )
-double AlInAs::nr(double wl, double T) const {
+double AlInAs::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

@@ -156,7 +156,7 @@ Tensor2<double> InAsSb::thermk(double T, double t) const {
 MI_PROPERTY(InAsSb, nr,
             MIComment("TODO")
             )
-double InAsSb::nr(double wl, double T) const {
+double InAsSb::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

@@ -560,14 +560,16 @@ struct Material {
      * Get refractive index Nr [-].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
+     * @param n injected carriers concentration [1/cm]
      * @return refractive index Nr [-]
      */
-    virtual double nr(double wl, double T) const;
+    virtual double nr(double wl, double T, double n = 0) const;
 
     /**
      * Get absorption coefficient alpha [cm^(-1)].
      * @param wl Wavelength [nm]
      * @param T temperature [K]
+     * @param n injected carriers concentration [1/cm]
      * @return absorption coefficient alpha cm^(-1)]
      */
     virtual double absp(double wl, double T) const;
@@ -578,7 +580,7 @@ struct Material {
      * @param T temperature [K]
      * @return refractive index Nr[-]
      */
-    virtual dcomplex Nr(double wl, double T) const;
+    virtual dcomplex Nr(double wl, double T, double n = 0) const;
 
     /**
      * Get anisotropic refractive index tensor NR [-].
@@ -586,9 +588,10 @@ struct Material {
      * where \f$ n_i \f$ is i-th object of the returned tuple.
      * @param wl Wavelength [nm]
      * @param T temperature [K]
+     * @param n injected carriers concentration [1/cm]
      * @return refractive index tensor NR[-]
      */
-    virtual Tensor3<dcomplex> NR(double wl, double T) const;
+    virtual Tensor3<dcomplex> NR(double wl, double T, double n = 0) const;
 
     /**
      * Check if this material is equal to @a other (checks type and uses isEqual).
@@ -723,87 +726,87 @@ struct MixedMaterial: public Material {
     MixedMaterial& add(const shared_ptr<Material>& material, double weight);
 
     //Material methods implementation:
-    virtual std::string name() const;
+    virtual std::string name() const override;
 
-    virtual Kind kind() const;
+    virtual Kind kind() const override;
 
-    virtual double lattC(double T, char x) const;
+    virtual double lattC(double T, char x) const override;
 
-    virtual double Eg(double T, double e=0., char point='G') const;
+    virtual double Eg(double T, double e=0., char point='G') const override;
 
-    virtual double CB(double T, double e=0., char point='G') const;
+    virtual double CB(double T, double e=0., char point='G') const override;
 
-    virtual double VB(double T, double e=0., char point='G', char hole='H') const;
+    virtual double VB(double T, double e=0., char point='G', char hole='H') const override;
 
-    virtual double Dso(double T, double e=0.) const;
+    virtual double Dso(double T, double e=0.) const override;
 
-    virtual double Mso(double T, double e=0.) const;
+    virtual double Mso(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Me(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Me(double T, double e=0., char point='G') const override;
 
-    virtual Tensor2<double> Mhh(double T, double e=0.) const;
+    virtual Tensor2<double> Mhh(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Mlh(double T, double e=0.) const;
+    virtual Tensor2<double> Mlh(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Mh(double T, double e=0.) const;
+    virtual Tensor2<double> Mh(double T, double e=0.) const override;
 
-    virtual double ac(double T) const;
+    virtual double ac(double T) const override;
 
-    virtual double av(double T) const;
+    virtual double av(double T) const override;
 
-    virtual double b(double T) const;
+    virtual double b(double T) const override;
 
-    virtual double d(double T) const;
+    virtual double d(double T) const override;
 
-    virtual double c11(double T) const;
+    virtual double c11(double T) const override;
 
-    virtual double c12(double T) const;
+    virtual double c12(double T) const override;
 
-    virtual double c44(double T) const;
+    virtual double c44(double T) const override;
 
-    virtual double eps(double T) const;
+    virtual double eps(double T) const override;
 
-    virtual double chi(double T, double e=0., char point='G') const;
+    virtual double chi(double T, double e=0., char point='G') const override;
 
-    virtual double Nc(double T, double e=0., char point='G') const;
+    virtual double Nc(double T, double e=0., char point='G') const override;
 
-    virtual double Nv(double T, double e=0., char point='G') const;
+    virtual double Nv(double T, double e=0., char point='G') const override;
 
-    virtual double Ni(double T=0.) const;
+    virtual double Ni(double T=0.) const override;
 
-    virtual double Nf(double T=0.) const;
+    virtual double Nf(double T=0.) const override;
 
-    virtual double EactD(double T) const;
+    virtual double EactD(double T) const override;
 
-    virtual double EactA(double T) const;
+    virtual double EactA(double T) const override;
 
-    virtual Tensor2<double> mob(double T) const;
+    virtual Tensor2<double> mob(double T) const override;
 
-    virtual Tensor2<double> cond(double T) const;
+    virtual Tensor2<double> cond(double T) const override;
 
-    virtual ConductivityType condtype() const;
+    virtual ConductivityType condtype() const override;
 
-    virtual double A(double T) const;
+    virtual double A(double T) const override;
 
-    virtual double B(double T) const;
+    virtual double B(double T) const override;
 
-    virtual double C(double T) const;
+    virtual double C(double T) const override;
 
-    virtual double D(double T) const;
+    virtual double D(double T) const override;
 
-    virtual Tensor2<double> thermk(double T, double h) const;
+    virtual Tensor2<double> thermk(double T, double h) const override;
 
-    virtual double dens(double T) const;
+    virtual double dens(double T) const override;
 
-    virtual double cp(double T) const;
+    virtual double cp(double T) const override;
 
-    virtual double nr(double wl, double T) const;
+    virtual double nr(double wl, double T, double n = 0.0) const override;
 
-    virtual double absp(double wl, double T) const;
+    virtual double absp(double wl, double T) const override;
 
-    virtual dcomplex Nr(double wl, double T) const;
+    virtual dcomplex Nr(double wl, double T, double n = 0.0) const override;
 
-    virtual Tensor3<dcomplex> NR(double wl, double T) const;
+    virtual Tensor3<dcomplex> NR(double wl, double T, double n = 0.0) const override;
 
 private:
 

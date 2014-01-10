@@ -49,7 +49,7 @@ MI_PROPERTY(AlAsSb_Te, nr,
             MIArgumentRange(MaterialInfo::wl, 500, 7000),
             MIComment("TODO")
             )
-double AlAsSb_Te::nr(double wl, double T) const {
+double AlAsSb_Te::nr(double wl, double T, double n) const {
     double nR300K = sqrt(1.+8.75e-6*wl*wl/(1e-6*wl*wl-0.15)); // 1e-3: nm-> um
     double nR = nR300K - 0.034*(ND*1e-18); // -3.4e-2 - the same as for GaSb TODO
 

@@ -183,7 +183,7 @@ Tensor2<double> AlGaAsSb::thermk(double T, double t) const {
 MI_PROPERTY(AlGaAsSb, nr,
             MIComment("TODO")
             )
-double AlGaAsSb::nr(double wl, double T) const {
+double AlGaAsSb::nr(double wl, double T, double n) const {
     return ( 0. );
 }
 

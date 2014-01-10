@@ -30,7 +30,7 @@ MI_PROPERTY(aSiO2, nr,
             MISource("I.H. Malitson, Journal of the Optical Society of America 55 (1965) 1205-1209"),
             MIArgumentRange(MaterialInfo::wl, 210, 3710)
             )
-double aSiO2::nr(double wl, double T) const {
+double aSiO2::nr(double wl, double T, double n) const {
     double L = wl*1e-3;
     double nR293K = sqrt(1.+0.6961663*L*L/(L*L-pow(0.0684043,2.))
                          +0.4079426*L*L/(L*L-pow(0.1162414,2.))

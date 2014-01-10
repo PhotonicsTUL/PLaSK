@@ -115,11 +115,11 @@ double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); retur
 
 double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); return 0; }
 
-double Material::nr(double wl, double T) const { throwNotImplemented("nr(double wl, double T)"); return 0; }
+double Material::nr(double wl, double T, double n) const { throwNotImplemented("nr(double wl, double T, double n)"); return 0; }
 
-dcomplex Material::Nr(double wl, double T) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
+dcomplex Material::Nr(double wl, double T, double n) const { return dcomplex(nr(wl,T), -7.95774715459e-09*absp(wl,T)*wl); }
 
-Tensor3<dcomplex> Material::NR(double wl, double T) const {
+Tensor3<dcomplex> Material::NR(double wl, double T, double n) const {
     return Nr(wl, T);
 }
 
@@ -467,21 +467,21 @@ double MixedMaterial::Ni(double T) const {
     return avg([&](const Material& m) { return m.Ni(T); });
 }
 
-double MixedMaterial::nr(double wl, double T) const {
-    return avg([&](const Material& m) { return m.nr(wl, T); });
+double MixedMaterial::nr(double wl, double T, double n) const {
+    return avg([&](const Material& m) { return m.nr(wl, T, n); });
 }
 
-dcomplex MixedMaterial::Nr(double wl, double T) const {
-    return avg([&](const Material& m) { return m.Nr(wl, T); });
+dcomplex MixedMaterial::Nr(double wl, double T, double n) const {
+    return avg([&](const Material& m) { return m.Nr(wl, T, n); });
 }
 
-Tensor3<dcomplex> MixedMaterial::NR(double wl, double T) const {
+Tensor3<dcomplex> MixedMaterial::NR(double wl, double T, double n) const {
     Tensor3<dcomplex> result;
-    result.c00 = avg([&](const Material& m) { return m.NR(wl, T).c00; });
-    result.c11 = avg([&](const Material& m) { return m.NR(wl, T).c11; });
-    result.c22 = avg([&](const Material& m) { return m.NR(wl, T).c22; });
-    result.c01 = avg([&](const Material& m) { return m.NR(wl, T).c01; });
-    result.c11 = avg([&](const Material& m) { return m.NR(wl, T).c11; });
+    result.c00 = avg([&](const Material& m) { return m.NR(wl, T, n).c00; });
+    result.c11 = avg([&](const Material& m) { return m.NR(wl, T, n).c11; });
+    result.c22 = avg([&](const Material& m) { return m.NR(wl, T, n).c22; });
+    result.c01 = avg([&](const Material& m) { return m.NR(wl, T, n).c01; });
+    result.c11 = avg([&](const Material& m) { return m.NR(wl, T, n).c11; });
     return result;
 }
 

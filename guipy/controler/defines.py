@@ -13,17 +13,21 @@ class DefinesControler(SourceEditControler):
         self.editorWidget.addWidget(self.table)
         self.editorWidget.addWidget(self.getSourceEditor())
         
+    def isInSourceEditor(self):
+        return self.editorWidget.currentIndex() == 1
+        
     def changeEditor(self):
-        old_index = self.editorWidget.currentIndex()
         new_index = int(self.showSourceAction.isChecked())
-        if new_index == old_index: return
-        if old_index == 1:  # source editor exit
+        if new_index == self.editorWidget.currentIndex(): return
+        if self.isInSourceEditor():  # source editor exit
             try:
                 self.model.setText(self.getSourceEditor().toPlainText())
             except Exception as e:
                 self.showSourceAction.setChecked(True)
                 showError(str(e), self.getSourceEditor(), 'Error in source')
                 return
+        else:   # source editor enter
+            self.getSourceEditor().setPlainText(self.model.getText())
         self.editorWidget.setCurrentIndex(new_index)
         
     def getShowSourceAction(self, parent):
@@ -43,5 +47,5 @@ class DefinesControler(SourceEditControler):
 
     # when editor is turn off, model should be update
     def onEditExit(self, main):
-        self.model.setText(self.getSourceEditor().toPlainText())
+        if self.isInSourceEditor(): self.model.setText(self.getSourceEditor().toPlainText())
         main.setSectionActions()

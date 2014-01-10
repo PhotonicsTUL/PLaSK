@@ -42,7 +42,7 @@ MI_PROPERTY(AlxOy, nr,
             MIComment("no temperature dependence"),
             MIArgumentRange(MaterialInfo::wl, 400, 1600)
 			)
-double AlxOy::nr(double wl, double T) const {
+double AlxOy::nr(double wl, double T, double n) const {
     return ( 0.30985*exp(-wl/236.7)+1.52829 );
 }
 

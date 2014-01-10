@@ -223,20 +223,20 @@ This section contains specification of custom materials that can be used togethe
 
          Complex refractive index *n*\ :sub:`R` [-].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [1/cm].
 
       .. xml:tag:: <nr>
 
          Real refractive index *n*\ :sub:`R` [-].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [1/cm].
 
-      .. xml:tag:: <Nr-tensor>
+      .. xml:tag:: <NR>
 
          Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
          Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K].
+         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [1/cm].
 
       .. xml:tag:: <Nv>
 
