@@ -106,7 +106,9 @@ BOOST_PYTHON_MODULE(simple)
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCartesian>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCartesian>),
-                   "Determine quasi-Fermi levels and carriers levels inside QW");
+                   "set_levels(**kwargs)\n\n"
+                   "Determine quasi-Fermi levels and carriers levels inside QW.\n"
+                  );
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
@@ -132,7 +134,9 @@ BOOST_PYTHON_MODULE(simple)
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCylindrical>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCylindrical>),
-                   "Determine quasi-Fermi levels and carriers levels inside QW");
+                   "set_levels(**kwargs)\n\n"
+                   "Determine quasi-Fermi levels and carriers levels inside QW.\n"
+                  );
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");

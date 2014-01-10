@@ -19,7 +19,7 @@ class Material(unittest.TestCase):
             ptest.print_ptr(self)
         def VB(self, T=300., e=0., point='G', hole='H'):
             return 2.*T
-        def nr(self, wl, T):
+        def nr(self, wl, T=300., n=0.):
             return 3.5
         def absp(self, wl, T):
             return 0.
@@ -40,7 +40,7 @@ class Material(unittest.TestCase):
             return self.kwargs['dc'] * T
         def CB(self, T=300., e=0., point='G'):
             return self.composition['Ga'] * T
-        def NR(self, wl, T):
+        def NR(self, wl, T, n):
             return (3.5, 3.6, 3.7, 0.1, 0.2)
 
     @plask.material.simple

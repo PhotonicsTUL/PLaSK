@@ -10,11 +10,11 @@ from optical.slab import FourierReflection2D
 
 @material.simple
 class Glass(material.Material):
-    def Nr(self, wl, T): return 1.3
+    def Nr(self, wl, T, n): return 1.3
 
 @material.simple
 class Cladding(material.Material):
-    def Nr(self, wl, T): return 1.28
+    def Nr(self, wl, T, n): return 1.28
 
 
 

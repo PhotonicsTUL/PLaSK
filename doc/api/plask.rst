@@ -38,6 +38,16 @@ Special data types
    vector
    Data
 
+   
+Other classes
+=============
+
+.. autosummary::
+   :toctree: plask
+   :nosignatures:
+
+   StepProfile
+
 
 Descriptions
 ============

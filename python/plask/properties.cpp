@@ -176,7 +176,7 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out%1%(mesh, interpolation='default'%5%)\n\n"
+    ".. method:: solver.out%1%(mesh%5%, interpolation='default')\n\n"
 
     "   :param mesh mesh: Target mesh to get the field at.\n"
     "   :param str interpolation: Requested interpolation method.\n"
@@ -216,7 +216,7 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "To obtain the value from the provider simply call it. The call signature\n"
     "is as follows:\n\n"
 
-    ".. method:: solver.out%1%(n=0, mesh, interpolation='default'%5%)\n\n"
+    ".. method:: solver.out%1%(n=0, mesh%5%, interpolation='default')\n\n"
 
     "   :param int n: Value number.\n"
     "   :param mesh mesh: Target mesh to get the field at.\n"

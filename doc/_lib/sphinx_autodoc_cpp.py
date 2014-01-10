@@ -17,7 +17,8 @@ import re
 from sphinx.ext import autodoc
 from sphinx.util.docstrings import prepare_docstring
 
-boost_signature_re = re.compile(r"^\s*(?:[\w.]+::)?(\w*)\((.*)\) -> (\w*) :$")
+# boost_signature_re = re.compile(r"^\s*(?:[\w.]+::)?(\w*)\((.*)\) -> (\w*) :$")
+boost_signature_re = re.compile(r"^\s*(\w+ )?(?:[\w.]+::)?(\w*)\(tuple args, dict kwds\) :$")
 
 class MultiSigMixin(object):
     '''Mixin that can properly output multiple signatures'''
@@ -31,6 +32,7 @@ class MultiSigMixin(object):
 
         if sig: sigs = [sig]
         else: sigs = []
+        generic_sig = False
         todel = []
         for lineno, docline in enumerate(doclines):
             match = autodoc.py_ext_sig_re.match(docline)
@@ -41,6 +43,13 @@ class MultiSigMixin(object):
                     todel.append(lineno)
                     sg = "(%s)" % (args)
                     sigs.append(fix_signature(self.objtype, sg))
+            else:
+                match = boost_signature_re.match(docline)
+                if match:
+                    retan, base = match.groups()
+                    if self.objpath and base == self.objpath[-1]:
+                        todel.append(lineno)
+                        generic_sig = True
 
         # delete doclines with signatures
         todel.reverse()
@@ -48,6 +57,9 @@ class MultiSigMixin(object):
             del doclines[i]
             while i < len(doclines) and not doclines[i].strip():
                 del doclines[i]
+
+        if not sigs and generic_sig:
+            sigs = ['(*args, **kwargs)']
 
         # unindent docstring
         doclines = prepare_docstring("\n".join(doclines), 0)
@@ -101,8 +113,9 @@ class MultiSigMixin(object):
     def format_signature(self):
         sig = super(MultiSigMixin, self).format_signature()
         self.sigs = self._find_signatures(sig)
-        if self.sigs and len(self.sigs) > 1:
-            sig = '(...)'
+        if self.sigs:
+            if len(self.sigs) > 1: sig = '(...)'
+            elif not sig: sig = self.sigs[0]
         return sig
 
     def get_doc(self, encoding=None, ignore=1):

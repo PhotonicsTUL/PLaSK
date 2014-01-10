@@ -93,7 +93,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
 size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = %1%", str(lambda));
-    if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
+    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
     Mode mode(this, m);
     mode.lam = RootMuller(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)(lambda-DLAM, lambda+DLAM);
@@ -104,7 +104,7 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda, int m)
 size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda1, dcomplex lambda2, int m)
 {
     writelog(LOG_INFO, "Searching for the mode between wavelengths %1% and %2%", str(lambda1), str(lambda2));
-    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
+    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
     Mode mode(this, m);
     mode.lam = RootMuller(*this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)(lambda1, lambda2);
@@ -114,7 +114,7 @@ size_t EffectiveFrequencyCylSolver::findMode(dcomplex lambda1, dcomplex lambda2,
 
 std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
-    if (isnan(k0.real())) k0 = 4e3*M_PI / (lambda1 + lambda2);
+    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
 
     if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
@@ -184,7 +184,7 @@ std::vector<size_t> EffectiveFrequencyCylSolver::findModes(dcomplex lambda1, dco
 
 size_t EffectiveFrequencyCylSolver::setMode(dcomplex clambda, int m)
 {
-    if (isnan(k0.real())) k0 = 2e3*M_PI / clambda;
+    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     if (!initialized) {
         writelog(LOG_WARNING, "Solver invalidated or not initialized, so performing some initial computations");
         stageOne();

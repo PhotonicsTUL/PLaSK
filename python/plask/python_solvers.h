@@ -147,7 +147,7 @@ template <> constexpr const char* docstring_attr_provider<FIELD_PROPERTY>() { re
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
-    "%8%(mesh, interpolation='default'%6%)\n\n"
+    "%8%(mesh%6%, interpolation='default')\n\n"
 
     ":param mesh mesh: Target mesh to get the field at.\n"
     ":param str interpolation: Requested interpolation method.\n"
@@ -174,7 +174,7 @@ template <> constexpr const char* docstring_attr_provider<MULTI_FIELD_PROPERTY>(
     "Provider of the computed %3% [%4%].\n"
     "%5%\n\n"
 
-    "%8%(n=0, mesh, interpolation='default'%6%)\n\n"
+    "%8%(n=0, mesh%6%, interpolation='default')\n\n"
 
     ":param int n: Value number.\n"
     ":param mesh mesh: Target mesh to get the field at.\n"

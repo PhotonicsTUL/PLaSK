@@ -15,11 +15,11 @@ def save_field(field, file, path='', mode='a'):
     '''Save field to HDF5 file.
 
        Args:
-           file (str of file): File to save to.
+            file (str of file): File to save to.
                 It should be eiher a filename or a h5py.File object opened for
                 writing.
 
-           field (plask.Data): Field to save.
+            field (plask.Data): Field to save.
                It should be an object returned by PLaSK provider that contains
                calculated field.
 
@@ -101,7 +101,7 @@ def load_field(file, path=''):
     '''Load field from HDF5 file.
 
        Args:
-           file (str of file): File load from.
+            file (str of file): File to load from.
                 It should be eiher a filename or a h5py.File object opened for
                 reading.
 

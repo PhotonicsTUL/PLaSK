@@ -256,7 +256,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * \param m number of the LP_mn mode describing angular dependence
      */
     dcomplex getDeterminant(dcomplex lambda, int m=0) {
-        if (isnan(k0.real())) k0 = 2e3*M_PI / lambda;
+    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
         dcomplex v =  2. - 4e3*M_PI / lambda / k0;
         stageOne();
         Mode mode(this,m);

@@ -10,11 +10,11 @@ from optical.effective import EffectiveIndex2D, EffectiveFrequencyCyl
 
 @material.simple
 class Glass(material.Material):
-    def Nr(self, wl, T): return 1.3
+    def Nr(self, wl, T=300., n=0.): return 1.3
 
 @material.simple
 class Cladding(material.Material):
-    def Nr(self, wl, T): return 1.28
+    def Nr(self, wl, T=300., n=0.): return 1.28
 
 class EffectiveIndex2D_Test(unittest.TestCase):
 

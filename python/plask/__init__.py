@@ -201,7 +201,7 @@ del warnings
 
 class StepProfile(object):
     """
-    Helper callable class for creating any step profile for use in custom providers
+    Helper callable class for creating any step profile for use in custom providers.
     """
 
     def __init__(self, geometry, default=0., dtype=None):
