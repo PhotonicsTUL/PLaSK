@@ -105,3 +105,9 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
         self.beginRemoveRows(QtCore.QModelIndex(), index, index)
         del self.defines[index]
         self.endRemoveRows()
+
+    def swapNeighbourEntries(self, index1, index2):
+        if index2 < index1: index1, index2 = index2, index1 
+        self.beginMoveRows(QtCore.QModelIndex(), index2, index2, QtCore.QModelIndex(), index1)
+        self.defines[index1], self.defines[index2] = self.defines[index2], self.defines[index1]
+        self.endMoveRows()

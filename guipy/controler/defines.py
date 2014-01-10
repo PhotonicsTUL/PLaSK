@@ -22,7 +22,7 @@ class DefinesControler(SourceEditControler):
             self.getSourceEditor().setPlainText(self.model.getText())
             self.main.setSectionActions(self.getShowSourceAction(self.main))
         else:
-            self.main.setSectionActions(self.getShowSourceAction(self.main), *self.getTableEditActions(self.main))
+            self.main.setSectionActions(self.getShowSourceAction(self.main), None, *self.getTableEditActions(self.main))
         
     def changeEditor(self):
         new_index = int(self.showSourceAction.isChecked())
@@ -70,10 +70,20 @@ class DefinesControler(SourceEditControler):
             self.model.remove(index.row())
     
     def moveUp(self):
-        pass
+        index = self.table.selectionModel().currentIndex()
+        if not index.isValid(): return
+        index = index.row()
+        if index >= 1 and index < len(self.model.defines):
+            self.model.swapNeighbourEntries(index-1, index)
+            #self.table.selectRow(index-1)
     
     def moveDown(self):
-        pass
+        index = self.table.selectionModel().currentIndex()
+        if not index.isValid(): return
+        index = index.row()
+        if index >= 0 and index+1 < len(self.model.defines):
+            self.model.swapNeighbourEntries(index, index+1)
+            #self.table.selectRow(index+1)
     
     def getTableEditActions(self, parent):
             self.addAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-add'), '&Add definition', parent)
