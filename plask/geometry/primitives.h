@@ -233,6 +233,30 @@ struct Box2D {
         res.flip(i);
         return res;
     }
+    
+    /**
+     * Return left edge of the box. Assume that box is already correct.
+     * \return left edge of the box
+     */
+    double left() const { return lower.c0; }
+    
+    /**
+     * Return right edge of the box. Assume that box is already correct.
+     * \return right edge of the box
+     */
+    double right() const { return upper.c0; }
+    
+    /**
+     * Return bottom edge of the box. Assume that box is already correct.
+     * \return bottom edge of the box
+     */
+    double bottom() const { return lower.c1; }
+    
+    /**
+     * Return top edge of the box. Assume that box is already correct.
+     * \return top edge of the box
+     */
+    double top() const { return upper.c1; }
 };
 
 /**
@@ -453,6 +477,42 @@ struct Box3D {
         res.flip(i);
         return res;
     }
+    
+    /**
+     * Return back edge of the box. Assume that box is already correct.
+     * \return back edge of the box
+     */
+    double back() const { return lower.c0; }
+    
+    /**
+     * Return front edge of the box. Assume that box is already correct.
+     * \return front edge of the box
+     */
+    double front() const { return upper.c0; }
+    
+    /**
+     * Return left edge of the box. Assume that box is already correct.
+     * \return left edge of the box
+     */
+    double left() const { return lower.c1; }
+    
+    /**
+     * Return right edge of the box. Assume that box is already correct.
+     * \return right edge of the box
+     */
+    double right() const { return upper.c1; }
+    
+    /**
+     * Return bottom edge of the box. Assume that box is already correct.
+     * \return bottom edge of the box
+     */
+    double bottom() const { return lower.c2; }
+    
+    /**
+     * Return top edge of the box. Assume that box is already correct.
+     * \return top edge of the box
+     */
+    double top() const { return upper.c2; }
 };
 
 /**

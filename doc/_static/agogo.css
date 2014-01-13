@@ -546,4 +546,5 @@ dl.method, dl.attribute, dl.function {
 dl.method dt, dl.attribute dt, dl.function dt {
     margin-left: -4px;
     padding-left: 4px;
+    text-align: left;
 }
