@@ -1333,10 +1333,10 @@ double gain::Find_max_gain() /// szuka maksimum wzmocnienia
       T=gsl_min_fminimizer_brent;
       s=gsl_min_fminimizer_alloc(T);
       gsl_min_fminimizer_set(s,&F,m,l,u);
-      int stat_it, stat_przedz;
+      int /*stat_it,*/ stat_przedz;
       do{
         iter++;
-        stat_it=gsl_min_fminimizer_iterate(s);
+        /*stat_it=*/gsl_min_fminimizer_iterate(s);
         m=gsl_min_fminimizer_minimum(s);
         l=gsl_min_fminimizer_x_lower(s);
         u=gsl_min_fminimizer_x_upper(s);
@@ -1392,10 +1392,10 @@ double gain::Find_max_gain_n(const ExternalLevels& zewpoziomy, double sumaszer)
       T=gsl_min_fminimizer_brent;
       s=gsl_min_fminimizer_alloc(T);
       gsl_min_fminimizer_set(s,&F,m,l,u);
-      int stat_it, stat_przedz;
+      int /*stat_it,*/ stat_przedz;
       do{
         iter++;
-        stat_it=gsl_min_fminimizer_iterate(s);
+        /*stat_it=*/gsl_min_fminimizer_iterate(s);
         m=gsl_min_fminimizer_minimum(s);
         l=gsl_min_fminimizer_x_lower(s);
         u=gsl_min_fminimizer_x_upper(s);

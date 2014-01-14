@@ -24,9 +24,9 @@ shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::makeGeometryGrid
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
-    for (std::size_t i = 0; i < boxes.size(); ++i) {
-        addPoints(mesh->axis, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-    }
+    for (std::size_t i = 0; i < boxes.size(); ++i)
+        if (boxes[i].isValid())
+            addPoints(mesh->axis, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
 
     /*for (auto& box: boxes) {
         mesh->axis.addPoint(box.lower.c0);
@@ -52,10 +52,11 @@ shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
-    for (std::size_t i = 0; i < boxes.size(); ++i) {
-        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
-    }
+    for (std::size_t i = 0; i < boxes.size(); ++i)
+        if (boxes[i].isValid()) {
+            addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+            addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+        }
 
     /*for (auto& box: boxes) {
         mesh->axis0.addPoint(box.lower.c0);
@@ -91,11 +92,12 @@ shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
-    for (std::size_t i = 0; i < boxes.size(); ++i) {
-        addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-        addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
-        addPoints(mesh->axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
-    }
+    for (std::size_t i = 0; i < boxes.size(); ++i)
+        if (boxes[i].isValid()) {
+            addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+            addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+            addPoints(mesh->axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
+        }
 
     /*for (auto& box: boxes) {
         mesh->axis0.addPoint(box.lower.c0);
@@ -217,10 +219,11 @@ RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::Geome
 {
     RectilinearAxis initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
-    for (auto& box: boxes) {
-        initial.addPoint(box.lower.c0);
-        initial.addPoint(box.upper.c0);
-    }
+    for (auto& box: boxes)
+        if (box.isValid()) {
+            initial.addPoint(box.lower.c0);
+            initial.addPoint(box.upper.c0);
+        }
 
     auto mesh = make_shared<RectilinearMesh1D>(getAxis(initial, geometry, 0));
 
@@ -233,12 +236,13 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
 {
     RectangularMesh<2,RectilinearAxis> initial;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
-    for (auto& box: boxes) {
-        initial.axis0.addPoint(box.lower.c0);
-        initial.axis0.addPoint(box.upper.c0);
-        initial.axis1.addPoint(box.lower.c1);
-        initial.axis1.addPoint(box.upper.c1);
-    }
+    for (auto& box: boxes)
+        if (box.isValid()) {
+            initial.axis0.addPoint(box.lower.c0);
+            initial.axis0.addPoint(box.upper.c0);
+            initial.axis1.addPoint(box.lower.c1);
+            initial.axis1.addPoint(box.upper.c1);
+        }
 
     auto mesh = make_shared<RectangularMesh<2,RectilinearAxis>>(getAxis(initial.axis0, geometry, 0), getAxis(initial.axis1, geometry, 1));
 
@@ -254,14 +258,15 @@ RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::Geome
 {
     RectangularMesh<3,RectilinearAxis> initial;
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
-    for (auto& box: boxes) {
-        initial.axis0.addPoint(box.lower.c0);
-        initial.axis0.addPoint(box.upper.c0);
-        initial.axis1.addPoint(box.lower.c1);
-        initial.axis1.addPoint(box.upper.c1);
-        initial.axis2.addPoint(box.lower.c2);
-        initial.axis2.addPoint(box.upper.c2);
-    }
+    for (auto& box: boxes)
+        if (box.isValid()) {
+            initial.axis0.addPoint(box.lower.c0);
+            initial.axis0.addPoint(box.upper.c0);
+            initial.axis1.addPoint(box.lower.c1);
+            initial.axis1.addPoint(box.upper.c1);
+            initial.axis2.addPoint(box.lower.c2);
+            initial.axis2.addPoint(box.upper.c2);
+        }
 
     auto mesh = make_shared<RectangularMesh<3,RectilinearAxis>>(
         getAxis(initial.axis0, geometry, 0),

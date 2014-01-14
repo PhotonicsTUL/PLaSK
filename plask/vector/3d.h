@@ -95,7 +95,7 @@ struct Vec<3,T> {
     typedef const T* const_iterator;
 
     /// Construct uninitialized vector.
-    Vec() {}
+    constexpr Vec() {}
 
     /**
      * Copy constructor from all other 2D vectors.

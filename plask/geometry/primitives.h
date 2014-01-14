@@ -28,36 +28,36 @@ struct Box2D {
      * Get size of box.
      * @return size of box (its width and height)
      */
-    Vec<2,double> size() const { return upper - lower; }
+    constexpr Vec<2,double> size() const { return upper - lower; }
 
     /**
      * Calculate height of this.
      * @return height of the box
      */
-    double height() const { return upper.vert() - lower.vert(); }
+    constexpr double height() const { return upper.vert() - lower.vert(); }
 
     /**
      * Calculate width of this.
      * @return width of the box
      */
-    double width() const { return upper.tran() - lower.tran(); }
+    constexpr double width() const { return upper.tran() - lower.tran(); }
 
     ///Construct uninitialized .
-    Box2D() {}
+    constexpr Box2D() {}
 
     /**
      * Construct box.
      * @param lower lower corner of box (with minimal all coordinates)
      * @param upper upper corner of box (with maximal all coordinates)
      */
-    Box2D(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
+    constexpr Box2D(const Vec<2,double>& lower, const Vec<2,double>& upper): lower(lower), upper(upper) {}
 
     /**
      * Construct box.
      * @param x_lo, y_lo lower corner of box (with minimal all coordinates)
      * @param x_up, y_up upper corner of box (with maximal all coordinates)
      */
-    Box2D(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
+    constexpr Box2D(double x_lo, double y_lo, double x_up, double y_up): lower(x_lo, y_lo), upper(x_up, y_up) {}
 
     static Box2D invalidInstance() {
         Box2D r; r.makeInvalid(); return r;
@@ -108,6 +108,19 @@ struct Box2D {
      * @param other point which should be inside box
      */
     void makeInclude(const Box2D& other);
+
+    /**
+     * Change this to the biggest box which is included in this and @p other box.
+     * @param other box to clip this
+     */
+    void makeIntersection(const Box2D& other);
+
+    /**
+     * Calculate the biggest box which is included in this and @p other box.
+     * @param other box to clip
+     * @return the biggest box which is included in this and @p other box
+     */
+    Box2D intersection(Box2D other) const;
 
     /**
      * Get translated copy of this.
@@ -180,20 +193,12 @@ struct Box2D {
     }
 
     /**
-     * Check if this box is valid.
+     * Check if this box is valid (non-empty).
      *
      * Valid box has: upper.c0 >= lower.c0 && upper.c1 >= lower.c1
-     * @return @c true only if this box is valid
+     * @return @c true only if this box is valid (non-empty)
      */
     bool isValid() const { return upper.c0 >= lower.c0 && upper.c1 >= lower.c1; }
-
-    /**
-     * Check if this box is empty.
-     *
-     * Empty box has: lower == upper
-     * @return @c true only if this box is empty
-     */
-    bool isEmpty() const { return lower == upper; }
 
     /**
      * Set this box coordinates to invalid once, so isValid() returns @c false after this call.
@@ -238,25 +243,59 @@ struct Box2D {
      * Return left edge of the box. Assume that box is already correct.
      * \return left edge of the box
      */
-    double left() const { return lower.c0; }
+    const double& left() const { return lower.c0; }
+
+    /**
+     * Return left edge of the box. Assume that box is already correct.
+     * \return left edge of the box
+     */
+    double& left() { return lower.c0; }
     
     /**
      * Return right edge of the box. Assume that box is already correct.
      * \return right edge of the box
      */
-    double right() const { return upper.c0; }
+    const double& right() const { return upper.c0; }
+
+    /**
+     * Return right edge of the box. Assume that box is already correct.
+     * \return right edge of the box
+     */
+    double& right() { return upper.c0; }
     
     /**
      * Return bottom edge of the box. Assume that box is already correct.
      * \return bottom edge of the box
      */
-    double bottom() const { return lower.c1; }
+    const double& bottom() const { return lower.c1; }
+
+    /**
+     * Return bottom edge of the box. Assume that box is already correct.
+     * \return bottom edge of the box
+     */
+    double& bottom() { return lower.c1; }
     
     /**
      * Return top edge of the box. Assume that box is already correct.
      * \return top edge of the box
      */
-    double top() const { return upper.c1; }
+    const double& top() const { return upper.c1; }
+
+    /**
+     * Return top edge of the box. Assume that box is already correct.
+     * \return top edge of the box
+     */
+    double& top() { return upper.c1; }
+
+    void setLeft(double v) { lower.c0 = v; }
+    void setRight(double v) { upper.c0 = v; }
+    void setBottom(double v) { lower.c1 = v; }
+    void setTop(double v) { upper.c1 = v; }
+
+    double getLeft() const { return lower.c0; }
+    double getRight() const { return upper.c0;}
+    double getBottom() const { return lower.c1; }
+    double getTop() const { return upper.c1; }
 };
 
 /**
@@ -298,21 +337,21 @@ struct Box3D {
     double depth() const { return upper.lon() - lower.lon(); }
 
     /// Construct uninitialized .
-    Box3D() {}
+    constexpr Box3D() {}
 
     /**
      * Construct  with given lower and upper corner positions.
      * @param lower position of lower corner of cuboid (with minimal all coordinates)
      * @param upper position of upper corner of cuboid (with maximal all coordinates)
      */
-    Box3D(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
+    constexpr Box3D(const Vec<3,double>& lower, const Vec<3,double>& upper): lower(lower), upper(upper) {}
 
     /**
      * Construct box.
      * @param x_lo, y_lo, z_lo lower corner of box (with minimal all coordinates)
      * @param x_up, y_up, z_up upper corner of box (with maximal all coordinates)
      */
-    Box3D(double x_lo, double y_lo, double z_lo, double x_up, double y_up, double z_up): lower(x_lo, y_lo, z_lo), upper(x_up, y_up, z_up) {}
+    constexpr Box3D(double x_lo, double y_lo, double z_lo, double x_up, double y_up, double z_up): lower(x_lo, y_lo, z_lo), upper(x_up, y_up, z_up) {}
 
     static Box3D invalidInstance() {
         Box3D r; r.makeInvalid(); return r;
@@ -363,6 +402,19 @@ struct Box3D {
      * @param other point which should be inside box
      */
     void makeInclude(const Box3D& other);
+
+    /**
+     * Change this to the biggest box which is included in this and @p other box.
+     * @param other box to clip this
+     */
+    void makeIntersection(const Box3D& other);
+
+    /**
+     * Calculate the biggest box which is included in this and @p other box.
+     * @param other box to clip
+     * @return the biggest box which is included in this and @p other box
+     */
+    Box3D intersection(Box3D other) const;
 
     /**
      * Get translated copy of this.
@@ -418,6 +470,12 @@ struct Box3D {
     void translateUp(const double trasnalation_in_up_dir) { lower.vert() += trasnalation_in_up_dir; upper.vert() += trasnalation_in_up_dir; }
 
     /**
+     * Make this box, the minimal one which include @c this and @p other box.
+     * @param other point which should be inside box
+     */
+    void makeInclude(const Box2D& other);
+
+    /**
      * Translate a point to be inside the box by shifting to the closest edge.
      * This method assumes that the box is fixed.
      * @param p given point
@@ -436,20 +494,12 @@ struct Box3D {
     }
 
     /**
-     * Check if this box is valid.
+     * Check if this box is valid (non-empty).
      *
      * Valid box has: upper.c0 >= lower.c0 && upper.c1 >= lower.c1 && upper.c2 >= lower.c2
-     * @return @c true only if this box is valid
+     * @return @c true only if this box is valid (non-empty)
      */
     bool isValid() const { return upper.c0 >= lower.c0 && upper.c1 >= lower.c1 && upper.c2 >= lower.c2; }
-
-    /**
-     * Check if this box is empty.
-     *
-     * Empty box has: lower == upper
-     * @return @c true only if this box is empty
-     */
-    bool isEmpty() const { return lower == upper; }
 
     /**
      * Set this box coordinates to invalid once, so isValid() returns @c false after this call.
@@ -494,37 +544,87 @@ struct Box3D {
      * Return back edge of the box. Assume that box is already correct.
      * \return back edge of the box
      */
-    double back() const { return lower.c0; }
+    const double& back() const { return lower.c0; }
+
+    /**
+     * Return back edge of the box. Assume that box is already correct.
+     * \return back edge of the box
+     */
+    double& back() { return lower.c0; }
     
     /**
      * Return front edge of the box. Assume that box is already correct.
      * \return front edge of the box
      */
-    double front() const { return upper.c0; }
+    const double& front() const { return upper.c0; }
+
+    /**
+     * Return front edge of the box. Assume that box is already correct.
+     * \return front edge of the box
+     */
+    double& front() { return upper.c0; }
     
     /**
      * Return left edge of the box. Assume that box is already correct.
      * \return left edge of the box
      */
-    double left() const { return lower.c1; }
+    const double& left() const { return lower.c1; }
+
+    /**
+     * Return left edge of the box. Assume that box is already correct.
+     * \return left edge of the box
+     */
+    double& left() { return lower.c1; }
     
     /**
      * Return right edge of the box. Assume that box is already correct.
      * \return right edge of the box
      */
-    double right() const { return upper.c1; }
+    const double& right() const { return upper.c1; }
+
+    /**
+     * Return right edge of the box. Assume that box is already correct.
+     * \return right edge of the box
+     */
+    double& right() { return upper.c1; }
     
     /**
      * Return bottom edge of the box. Assume that box is already correct.
      * \return bottom edge of the box
      */
-    double bottom() const { return lower.c2; }
+    const double& bottom() const { return lower.c2; }
+
+    /**
+     * Return bottom edge of the box. Assume that box is already correct.
+     * \return bottom edge of the box
+     */
+    double& bottom() { return lower.c2; }
     
     /**
      * Return top edge of the box. Assume that box is already correct.
      * \return top edge of the box
      */
-    double top() const { return upper.c2; }
+    const double& top() const { return upper.c2; }
+
+    /**
+     * Return top edge of the box. Assume that box is already correct.
+     * \return top edge of the box
+     */
+    double& top() { return upper.c2; }
+
+    void setBack(double v) { lower.c0 = v; }
+    void setFront(double v) { upper.c0 = v; }
+    void setLeft(double v) { lower.c1 = v; }
+    void setRight(double v) { upper.c1 = v; }
+    void setBottom(double v) { lower.c2 = v; }
+    void setTop(double v) { upper.c2 = v; }
+
+    double getBack() const { return lower.c0; }
+    double getFront() const { return upper.c0;}
+    double getLeft() const { return lower.c1; }
+    double getRight() const { return upper.c1;}
+    double getBottom() const { return lower.c2; }
+    double getTop() const { return upper.c2; }
 };
 
 /**

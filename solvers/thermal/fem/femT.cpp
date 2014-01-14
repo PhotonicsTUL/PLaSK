@@ -152,8 +152,6 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
 
-    std::vector<Box2D> vecbox = this->geometry->getLeafsBoundingBoxes();
-
     // Set stiffness matrix and load vector
     for (auto e: this->mesh->elements)
     {
@@ -282,8 +280,6 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
 
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
-
-    std::vector<Box2D> vecbox = geometry->getLeafsBoundingBoxes();
 
     // Set stiffness matrix and load vector
     for (auto e: this->mesh->elements)

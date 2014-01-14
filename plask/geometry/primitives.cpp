@@ -54,6 +54,18 @@ void Box2D::makeInclude(const plask::Box2D& other) {
     ensureHi(upper.c1, other.upper.c1);
 }
 
+void Box2D::makeIntersection(const Box2D &other) {
+    ensureHi(lower.c0, other.lower.c0);
+    ensureHi(lower.c1, other.lower.c1);
+    ensureLo(upper.c0, other.upper.c0);
+    ensureLo(upper.c1, other.upper.c1);
+}
+
+Box2D Box2D::intersection(Box2D other) const {
+    other.makeIntersection(*this);
+    return other;
+}
+
 Vec<2,double> Box2D::moveInside(Vec<2,double> p) const {
     if (p.c0 < lower.c0) p.c0 = lower.c0; else ensureLo(p.c0, upper.c0);
     if (p.c1 < lower.c1) p.c1 = lower.c1; else ensureLo(p.c1, upper.c1);
@@ -108,6 +120,20 @@ void Box3D::makeInclude(const plask::Box3D& other) {
     ensureHi(upper.c0, other.upper.c0);
     ensureHi(upper.c1, other.upper.c1);
     ensureHi(upper.c2, other.upper.c2);
+}
+
+void Box3D::makeIntersection(const Box3D &other) {
+    ensureHi(lower.c0, other.lower.c0);
+    ensureHi(lower.c1, other.lower.c1);
+    ensureHi(lower.c2, other.lower.c2);
+    ensureLo(upper.c0, other.upper.c0);
+    ensureLo(upper.c1, other.upper.c1);
+    ensureLo(upper.c2, other.upper.c2);
+}
+
+Box3D Box3D::intersection(Box3D other) const {
+    other.makeIntersection(*this);
+    return other;
 }
 
 Vec<3,double> Box3D::moveInside(Vec<3,double> p) const {
