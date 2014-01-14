@@ -415,7 +415,7 @@ span.linkdescr {
 
 /* -- general index --------------------------------------------------------- */
 
-table.indextable td {
+td {
     text-align: left;
     vertical-align: top;
 }

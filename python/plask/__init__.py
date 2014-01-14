@@ -17,9 +17,10 @@ Modules
    geometry
    mesh
    material
-   algorithm
    filter
    flow
+   phys
+   algorithm
 '''
 
 copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
@@ -244,6 +245,10 @@ except ImportError:
     has_hdf5 = False
 else:
     has_hdf5 = True
+
+## ##  ## ##
+
+import phys
 
 import algorithm
 
