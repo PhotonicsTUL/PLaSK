@@ -38,6 +38,7 @@ struct MaterialInfo {
         c11,        ///< elastic constant
         c12,        ///< elastic constant
         c44,        ///< elastic constant
+        eps,        ///< dielectric constant
         e,          ///< dielectric constant
         chi,        ///< electron affinity
         Nc,         ///< effective density of states in the conduction band

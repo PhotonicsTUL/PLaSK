@@ -162,26 +162,38 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     double integrateCurrent(size_t vindex);
 
     /**
-     * Integrate vertical total current flowing vertically through active region
+     * Integrate vertical total current flowing vertically through active region.
      * \param nact number of the active region
      * \return computed total current
      */
     double getTotalCurrent(size_t nact=0);
 
-    /// Return maximum estimated error
+    /**
+     * Compute total electrostatic energy stored in the structure.
+     * \return total electrostatic energy [J]
+     */
+    double getTotalEnergy();
+    
+    /**
+     * Estimate structure capacitance.
+     * \return static structure capacitance [pF]
+     */
+    double getCapacitance();
+
+    /// Return the maximum estimated error.
     double getErr() const { return toterr; }
 
-    /// Return beta
+    /// Return beta.
     double getBeta() const { return beta; }
-    /// Set new beta and invalidate the solver
+    /// Set new beta and invalidate the solver.
     void setBeta(double beta)  {
         this->beta = beta;
         this->invalidate();
     }
 
-    /// Get junction thermal voltage
+    /// Get junction thermal voltage.
     double getVt() const { return 1. / beta; }
-    /// Set new junction thermal voltage and invalidate the solver
+    /// Set new junction thermal voltage and invalidate the solver.
     void setVt(double Vt) {
         this->beta = 1. / Vt;
         this->invalidate();

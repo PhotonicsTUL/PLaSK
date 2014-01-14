@@ -172,6 +172,10 @@ double AlGaAs::absp(double wl, double T) const {
     return ( 0. );
 }
 
+double AlGaAs::eps(double T) const {
+    return Al*mAlAs.eps(T) + Ga*mGaAs.eps(T);
+}
+
 bool AlGaAs::isEqual(const Material &other) const {
     const AlGaAs& o = static_cast<const AlGaAs&>(other);
     return o.Al == this->Al;

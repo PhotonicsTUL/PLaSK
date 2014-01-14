@@ -39,7 +39,7 @@ double AlGaN::absp(double wl, double T) const {
 MI_PROPERTY(AlGaN, nr,
             MIComment("shift of the nR for GaN")
             )
-double AlGaN::nr(double wl, double T) const {
+double AlGaN::nr(double wl, double T, double n) const {
     double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
            Eold = phys::h_eVc1e9 / wl,
            Enew = Eold - dEg;

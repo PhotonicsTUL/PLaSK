@@ -96,7 +96,21 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-        py::scope().attr("Beta3D") = solver;
+        METHOD(get_electrostatic_energy, getTotalEnergy,
+            "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
+            "Return:\n"
+            "    Total electrostatic energy [J].\n"
+        );
+        METHOD(get_capacitance, getCapacitance,
+            "Get the structure capacitance.\n\n"
+            "Return:\n"
+            "    Total capacitance [pF].\n\n"
+            "Note:\n"
+            "    This method can only be used it there are exactly two boundary conditions\n"
+            "    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
+            "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
+            "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
+        );
     }
 
 }

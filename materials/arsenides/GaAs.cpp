@@ -101,6 +101,10 @@ MI_PROPERTY(GaAs, absp,
             MIComment("TODO")
            )
 
+MI_PROPERTY(GaAs, eps,
+            MISource("http://www.ioffe.ru/SVA/NSM/Semicond/GaAs/basic.html")
+           )
+
     
 static MaterialsDB::Register<GaAs> materialDB_register_GaAs;
 

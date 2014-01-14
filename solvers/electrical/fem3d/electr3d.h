@@ -177,7 +177,19 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
      */
     double getTotalCurrent(size_t nact=0);
 
-    /// Return maximum estimated error
+    /**
+     * Compute total electrostatic energy stored in the structure.
+     * \return total electrostatic energy [J]
+     */
+    double getTotalEnergy();
+    
+    /**
+     * Estimate structure capacitance.
+     * \return static structure capacitance [pF]
+     */
+    double getCapacitance();
+
+    /// Return the maximum estimated error
     double getErr() const { return toterr; }
 
     /// \return current algorithm

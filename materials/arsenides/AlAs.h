@@ -112,6 +112,10 @@ struct AlAs: public Semiconductor {
         return ( nR296K + nR296K*4.6e-5*(T-296.) );
     }
 
+    double eps(double T) const override {
+        return 10.1;
+    }
+    
   protected:
       
     virtual bool isEqual(const Material &other) const override {

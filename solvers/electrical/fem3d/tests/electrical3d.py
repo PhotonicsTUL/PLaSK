@@ -8,17 +8,21 @@ from plask import *
 from plask import material, geometry, mesh
 from electrical.fem3d import Shockley3D
 
+eps0 = 8.854187817e-6 # pF/µm
+
 @material.simple
 class Conductor(material.Material):
     def cond(self, T):
         return (1e+9, 1e+9)
+    def eps(self, T):
+        return 1.
 
 
 class Shockley3D_Test(unittest.TestCase):
 
     def setUp(self):
         rect = geometry.Cuboid(1000., 1000., 300., Conductor())
-        junc = geometry.Cuboid(1000., 1000., 0.02, None)
+        junc = geometry.Cuboid(1000., 1000., 0.02, 'air')
         junc.role = 'active'
         stack = geometry.Stack3D()
         stack.append(rect)
@@ -39,6 +43,8 @@ class Shockley3D_Test(unittest.TestCase):
         self.solver.compute(1000)
         correct_current = 1e-3 * self.solver.js * (exp(self.solver.beta) - 1)
         self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
+        capacitance = eps0 * 1000.**2 / 0.02 # pF
+        self.assertAlmostEqual( self.solver.get_capacitance(), capacitance, 4 )
 
     def testConductivity(self):
         msh = self.solver.mesh.get_midpoints()

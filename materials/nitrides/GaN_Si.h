@@ -25,7 +25,7 @@ struct GaN_Si: public GaN {
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const;
     virtual Tensor2<double> thermk(double T, double t) const;
-    virtual double nr(double wl, double T) const;
+    virtual double nr(double wl, double T, double n=0.) const;
     virtual double absp(double wl, double T) const;
 
 protected:

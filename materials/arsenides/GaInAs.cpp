@@ -167,6 +167,10 @@ double GaInAs::absp(double wl, double T) const {
     return ( 0. );
 }
 
+double GaInAs::eps(double T) const {
+    return In*mInAs.eps(T) + Ga*mGaAs.eps(T);
+}
+
 bool GaInAs::isEqual(const Material &other) const {
     const GaInAs& o = static_cast<const GaInAs&>(other);
     return o.Ga == this->Ga;

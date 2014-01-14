@@ -687,4 +687,47 @@ DataVector<const Tensor2<double>> FiniteElementMethodElectrical3DSolver::getCond
     return result;
 }
 
+double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
+    double W = 0.;
+    auto T = inTemperature(this->mesh->getMidpointsMesh());
+    for (auto el: this->mesh->elements) {
+            size_t lll = el.getLoLoLoIndex();
+            size_t llu = el.getLoLoUpIndex();
+            size_t lul = el.getLoUpLoIndex();
+            size_t luu = el.getLoUpUpIndex();
+            size_t ull = el.getUpLoLoIndex();
+            size_t ulu = el.getUpLoUpIndex();
+            size_t uul = el.getUpUpLoIndex();
+            size_t uuu = el.getUpUpUpIndex();
+            double dvx = - 0.25e6 * (- potential[lll] - potential[llu] - potential[lul] - potential[luu]
+                                     + potential[ull] + potential[ulu] + potential[uul] + potential[uuu])
+                                / (el.getUpper0() - el.getLower0()); // 1e6 - from µm to m
+            double dvy = - 0.25e6 * (- potential[lll] - potential[llu] + potential[lul] + potential[luu]
+                                     - potential[ull] - potential[ulu] + potential[uul] + potential[uuu])
+                                / (el.getUpper1() - el.getLower1()); // 1e6 - from µm to m
+            double dvz = - 0.25e6 * (- potential[lll] + potential[llu] - potential[lul] + potential[luu]
+                                     - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
+                                / (el.getUpper2() - el.getLower2()); // 1e6 - from µm to m
+        double w = this->geometry->getMaterial(el.getMidpoint())->eps(T[el.getIndex()]) * (dvx*dvx + dvy*dvy + dvz*dvz); 
+        double d0 = el.getUpper0() - el.getLower0();
+        double d1 = el.getUpper1() - el.getLower1();
+        double d2 = el.getUpper2() - el.getLower2();
+        //TODO add outsides of computational area
+        W += 0.5e-18 * phys::epsilon0 * d0 * d1 * d2 * w; // 1e-18 µm³ -> m³
+    }
+    return W;
+}
+
+
+double FiniteElementMethodElectrical3DSolver::getCapacitance() {
+    
+    if (this->voltage_boundary.size() != 2) {
+        throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
+    }
+    
+    double U = voltage_boundary[0].value - voltage_boundary[1].value;
+    
+    return 2e12 * getTotalEnergy() / (U*U); // 1e12 F -> pF
+}
+
 }}} // namespace plask::solvers::electrical

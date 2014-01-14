@@ -85,6 +85,10 @@ MI_PROPERTY(InAs, thermk,
             MIArgumentRange(MaterialInfo::T, 300, 650)
            )
 
+MI_PROPERTY(InAs, eps,
+            MISource("http://www.iue.tuwien.ac.at/phd/quay/node27.html")
+)
+
 static MaterialsDB::Register<InAs> materialDB_register_InAs;
 
 }} // namespace plask::materials

@@ -106,6 +106,10 @@ struct InAs: public Semiconductor {
         return(Tensor2<double>(tCondT, tCondT));
     }
 
+    virtual double eps(double T) const override {
+        return 14.6;
+    }
+
   protected:
       
     virtual bool isEqual(const Material &other) const override {

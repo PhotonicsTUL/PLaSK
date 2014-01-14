@@ -43,7 +43,7 @@ MI_PROPERTY(Ti, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Ti::nr(double wl, double T) const {
+double Ti::nr(double wl, double T, double n) const {
     return ( 1. );
 }
 

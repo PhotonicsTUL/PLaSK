@@ -6,14 +6,6 @@ using namespace plask::python;
 #include "../femV.h"
 using namespace plask::solvers::electrical;
 
-static shared_ptr<SolverOver<Geometry2DCartesian>> DriftDiffusion2D(const std::string& name) {
-    throw NotImplemented("DriftDiffusion2D: I want it to be implemented too!");
-}
-
-static shared_ptr<SolverOver<Geometry2DCylindrical>> DriftDiffusionCyl(const std::string& name) {
-    throw NotImplemented("DriftDiffusionCyl: I want it to be implemented too!");
-}
-
 template <typename Cls>
 static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
     if (self->getMesh() && self->getGeometry()) {
@@ -68,6 +60,58 @@ static void setCondJunc(Cls* self, py::object value) {
     }
 }
 
+template <typename GeometryT>
+inline static void register_electrical_solver(const char* name, const char* geoname)
+{
+    typedef FiniteElementMethodElectrical2DSolver<GeometryT>  __Class__;
+    ExportSolver<FiniteElementMethodElectrical2DSolver<GeometryT>> solver(name, format(
+        
+        "%1%(name=\"\")\n\n"
+        
+        "Finite element thermal solver for 2D %2% geometry."
+        
+        , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
+    METHOD(compute, compute, "Run electrical calculations", py::arg("loops")=0);
+    METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
+    RO_PROPERTY(err, getErr, "Maximum estimated error");
+    RECEIVER(inWavelength, "It is required only if :attr:`heat` is equal to *wavelength*.");
+    RECEIVER(inTemperature, "");
+    PROVIDER(outPotential, "");
+    PROVIDER(outCurrentDensity, "");
+    PROVIDER(outHeat, "");
+    solver.setattr("outHeatDensity", solver.attr("outHeat"));
+    PROVIDER(outConductivity, "");
+    BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
+    RW_FIELD(maxerr, "Limit for the potential updates");
+    RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
+    solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
+    RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient [1/V]");
+    RW_PROPERTY(Vt, getVt, setVt, "Junction thermal voltage [V]");
+    RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
+    RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
+    RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
+    solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
+    solver.setattr("outVoltage", solver.attr("outPotential"));
+    RW_FIELD(itererr, "Allowed residual iteration for iterative method");
+    RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
+    RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+    METHOD(get_electrostatic_energy, getTotalEnergy,
+           "Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
+           "Return:\n"
+           "    Total electrostatic energy [J].\n"
+    );
+    METHOD(get_capacitance, getCapacitance,
+           "Get the structure capacitance.\n\n"
+           "Return:\n"
+           "    Total capacitance [pF].\n\n"
+           "Note:\n"
+           "    This method can only be used it there are exactly two boundary conditions\n"
+           "    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
+           "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
+           "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
+    );
+}
+
 /**
  * Initialization of your solver class to Python
  *
@@ -87,63 +131,8 @@ BOOST_PYTHON_MODULE(fem)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;
 
-    {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>, "Shockley2D", "Finite element thermal solver for 2D Cartesian Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-        RO_PROPERTY(err, getErr, "Maximum estimated error");
-        RECEIVER(inWavelength, "It is required only if :attr:`heat` is eual to *wavelength*.");
-        RECEIVER(inTemperature, "");
-        PROVIDER(outPotential, "");
-        PROVIDER(outCurrentDensity, "");
-        PROVIDER(outHeat, "");
-        solver.setattr("outHeatDensity", solver.attr("outHeat"));
-        PROVIDER(outConductivity, "");
-        BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-        RW_FIELD(maxerr, "Limit for the potential updates");
-        RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
-        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient [1/V]");
-        RW_PROPERTY(Vt, getVt, setVt, "Junction thermal voltage [V]");
-        RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
-        RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
-        RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-        solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
-        solver.setattr("outVoltage", solver.attr("outPotential"));
-        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
-        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
-        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-        py::scope().attr("Beta2D") = solver;
-    }
-
-    {CLASS(FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>, "ShockleyCyl", "Finite element thermal solver for 2D Cylindrical Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
-        RO_PROPERTY(err, getErr, "Maximum estimated error");
-        RECEIVER(inWavelength, "It is required only if :attr:`heat` is eual to *wavelength*.");
-        RECEIVER(inTemperature, "");
-        PROVIDER(outPotential, "");
-        PROVIDER(outCurrentDensity, "");
-        PROVIDER(outHeat, "");
-        solver.setattr("outHeatDensity", solver.attr("outHeat"));
-        PROVIDER(outConductivity, "");
-        BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
-        RW_FIELD(maxerr, "Limit for the potential updates");
-        RW_FIELD(algorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
-        RW_PROPERTY(beta, getBeta, setBeta, "Junction coefficient [1/V]");
-        RW_PROPERTY(Vt, getVt, setVt, "Junction thermal voltage [V]");
-        RW_PROPERTY(js, getJs, setJs, "Reverse bias current density [A/m²]");
-        RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, "Conductivity of the p-contact");
-        RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, "Conductivity of the n-contact");
-        solver.add_property("pnjcond", &getCondJunc<__Class__>, &setCondJunc<__Class__>, "Effective conductivity of the p-n junction");
-        solver.setattr("outVoltage", solver.attr("outPotential"));
-        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
-        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
-        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-        py::scope().attr("BetaCyl") = solver;
-    }
-
-    py::def("DriftDiffusion2D", DriftDiffusion2D, py::arg("name")="");
-    py::def("DriftDiffusionCyl", DriftDiffusionCyl, py::arg("name")="");
+    register_electrical_solver<Geometry2DCartesian>("Shockley2D", "Cartesian");
+    
+    register_electrical_solver<Geometry2DCylindrical>("ShockleyCyl", "cylindrical");
 }
 

@@ -42,7 +42,7 @@ MI_PROPERTY(In, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double In::nr(double wl, double T) const {
+double In::nr(double wl, double T, double n) const {
     return ( 1. );
 }
 

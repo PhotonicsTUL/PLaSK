@@ -33,7 +33,7 @@ MI_PROPERTY(AlN, nr,
             MIArgumentRange(MaterialInfo::wl, 225, 1240),
             MIComment("no temperature dependence")
             )
-double AlN::nr(double wl, double T) const {
+double AlN::nr(double wl, double T, double n) const {
     double a = phys::h_eVc1e9/wl;
     return ( 0.0034417*pow(a,3) - 0.0172622*pow(a,2) + 0.0594128*a + 1.92953 );
 }

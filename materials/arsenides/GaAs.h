@@ -121,6 +121,10 @@ struct GaAs: public Semiconductor {
         return 0.;
     }
 
+    virtual double eps(double T) const override {
+        return 12.9;
+    }
+    
   protected:
     virtual bool isEqual(const Material &other) const override {
         return true;

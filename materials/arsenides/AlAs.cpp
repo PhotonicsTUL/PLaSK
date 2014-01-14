@@ -90,6 +90,11 @@ MI_PROPERTY(AlAs, nr,
             MIComment("fit by Lukasz Piskorski")
            )
 
+MI_PROPERTY(AlAs, eps,
+            MISource("http://www.iue.tuwien.ac.at/phd/quay/node27.html")
+           )
+
+
 static MaterialsDB::Register<AlAs> materialDB_register_AlAs;
 
 }}       // namespace plask::materials

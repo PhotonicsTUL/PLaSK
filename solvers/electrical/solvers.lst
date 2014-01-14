@@ -2,12 +2,6 @@ fem.Shockley2D
 fem.ShockleyCyl
 fem3d.Shockley3D
 
-fem.Beta2D
-fem.BetaCyl
-fem3d.Beta3D
-
-fem.DriftDiffusion2D
-fem.DriftDiffusionCyl
 
 diffusion.Diffusion2D
 diffusion.DiffusionCyl

@@ -37,7 +37,7 @@ struct Box2D {
     double height() const { return upper.vert() - lower.vert(); }
 
     /**
-     * Calculate height of this.
+     * Calculate width of this.
      * @return width of the box
      */
     double width() const { return upper.tran() - lower.tran(); }
@@ -284,6 +284,18 @@ struct Box3D {
      * @return upper.vert() - lower.up
      */
     double height() const { return upper.vert() - lower.vert(); }
+
+    /**
+     * Calculate width of this.
+     * @return width of the box
+     */
+    double width() const { return upper.tran() - lower.tran(); }
+
+    /**
+     * Calculate depth of this.
+     * @return width of the box
+     */
+    double depth() const { return upper.lon() - lower.lon(); }
 
     /// Construct uninitialized .
     Box3D() {}

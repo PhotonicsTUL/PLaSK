@@ -663,6 +663,8 @@ struct Semiconductor: public Material {
  */
 struct Metal: public Material {
     virtual Kind kind() const;
+    virtual double eps(double T) const override;
+
 };
 
 /**

@@ -44,7 +44,7 @@ MI_PROPERTY(Au, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Au::nr(double wl, double T) const {
+double Au::nr(double wl, double T, double n) const {
     return ( 1. );
 }
 

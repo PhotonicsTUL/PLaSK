@@ -43,7 +43,7 @@ MI_PROPERTY(GaN, nr,
             MIArgumentRange(MaterialInfo::wl, 300, 580),
             MIComment("no temperature dependence")
             )
-double GaN::nr(double wl, double T) const {
+double GaN::nr(double wl, double T, double n) const {
     double dEg = Eg(T,0.,'G') - Eg(300.,0.,'G'),
            Eold = phys::h_eVc1e9 / wl,
            Enew = Eold - dEg;

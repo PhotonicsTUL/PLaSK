@@ -693,6 +693,64 @@ DataVector<const Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry
 }
 
 
+template <>
+double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnergy() {
+    double W = 0.;
+    auto T = inTemperature(this->mesh->getMidpointsMesh());
+    for (auto e: this->mesh->elements) {
+        size_t ll = e.getLoLoIndex();
+        size_t lu = e.getUpLoIndex();
+        size_t ul = e.getLoUpIndex();
+        size_t uu = e.getUpUpIndex();
+        double dvx = 0.5e6 * (- potentials[ll] + potentials[lu] - potentials[ul] + potentials[uu])
+                            / (e.getUpper0() - e.getLower0()); // [grad(dV)] = V/m
+        double dvy = 0.5e6 * (- potentials[ll] - potentials[lu] + potentials[ul] + potentials[uu])
+                            / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
+        double w = this->geometry->getMaterial(e.getMidpoint())->eps(T[e.getIndex()]) * (dvx*dvx + dvy*dvy); 
+        double width = e.getUpper0() - e.getLower0();
+        double height = e.getUpper1() - e.getLower1();
+        W += width * height * w;
+    }
+    //TODO add outsides of comptational areas
+    return geometry->getExtrusion()->getLength() * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
+}
+
+template <>
+double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
+    double W = 0.;
+    auto T = inTemperature(this->mesh->getMidpointsMesh());
+    for (auto e: this->mesh->elements) {
+        size_t ll = e.getLoLoIndex();
+        size_t lu = e.getUpLoIndex();
+        size_t ul = e.getLoUpIndex();
+        size_t uu = e.getUpUpIndex();
+        auto midpoint = e.getMidpoint();
+        double dvx = 0.5e6 * (- potentials[ll] + potentials[lu] - potentials[ul] + potentials[uu])
+                            / (e.getUpper0() - e.getLower0()); // [grad(dV)] = V/m
+        double dvy = 0.5e6 * (- potentials[ll] - potentials[lu] + potentials[ul] + potentials[uu])
+                            / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
+        double w = this->geometry->getMaterial(midpoint)->eps(T[e.getIndex()]) * (dvx*dvx + dvy*dvy); 
+        double width = e.getUpper0() - e.getLower0();
+        double height = e.getUpper1() - e.getLower1();
+        W += width * height * midpoint.rad_r() * w;
+    }
+    //TODO add outsides of computational area
+    return 2.*M_PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
+}
+
+
+template<typename Geometry2DType>
+double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCapacitance() {
+    
+    if (this->voltage_boundary.size() != 2) {
+        throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
+    }
+    
+    double U = voltage_boundary[0].value - voltage_boundary[1].value;
+    
+    return 2e12 * getTotalEnergy() / (U*U); // 1e12 F -> pF
+}
+
 
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Shockley2D"; }
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ShockleyCyl"; }

@@ -42,7 +42,7 @@ MI_PROPERTY(AuGe, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double AuGe::nr(double wl, double T) const {
+double AuGe::nr(double wl, double T, double n) const {
     return ( 1. );
 }
 

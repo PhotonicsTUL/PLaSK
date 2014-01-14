@@ -44,7 +44,7 @@ MI_PROPERTY(Ni, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Ni::nr(double wl, double T) const {
+double Ni::nr(double wl, double T, double n) const {
     return ( 1. );
 }
 

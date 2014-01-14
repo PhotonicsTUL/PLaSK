@@ -303,7 +303,11 @@ Material::Kind Dielectric::kind() const { return Material::DIELECTRIC; }
 
 Material::Kind LiquidCrystal::kind() const { return Material::LIQUID_CRYSTAL; }
 
+//------------ Metals -------------------------
 
+double Metal::eps(double T) const {
+    return 1.;
+}
 
 //------------ MixedMaterial -------------------------
 

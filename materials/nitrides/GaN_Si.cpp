@@ -91,7 +91,7 @@ MI_PROPERTY(GaN_Si, nr,
             MIComment("Nf: 1e18 - 5e19 cm-3"),
             MIComment("no temperature dependence")
             )
-double GaN_Si::nr(double wl, double T) const {
+double GaN_Si::nr(double wl, double T, double n) const {
 	return ( GaN::nr(wl,T) * (1.0001-Nf_RT/1e18*1.05003e-4 ) );
 }
 

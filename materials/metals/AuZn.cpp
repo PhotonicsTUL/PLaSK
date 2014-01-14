@@ -42,7 +42,7 @@ MI_PROPERTY(AuZn, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double AuZn::nr(double wl, double T) const {
+double AuZn::nr(double wl, double T, double n) const {
     return ( 1. );
 }
 
