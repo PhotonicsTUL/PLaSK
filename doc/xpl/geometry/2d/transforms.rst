@@ -3,6 +3,31 @@ Transforms
 
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
+
+
+
+
+.. xml:tag:: <clip2D> (or <clip>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Clip2D`.
+
+   Clip child object to given rectangle.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr role: Object role. Important for some solvers.
+   :attr required left: left edge of the clipping rectangle
+   :attr required right: right edge of the clipping rectangle
+   :attr required bottom: bottom edge of the clipping rectangle
+   :attr required top: top edge of the clipping rectangle
+
+   .. xml:contents::
+
+       A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`. Object to clip.
+
+
+
+
+
 .. xml:tag:: <flip2D> (or <flip>)
 
    Corresponding Python class: :py:class:`plask.geometry.Flip2D`.
@@ -17,6 +42,10 @@ Transforms always contain a single geometry object (possibly container) as their
 
        A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
+
+
+
+
 .. xml:tag:: <mirror2D> (or <mirror>)
 
    Corresponding Python class: :py:class:`plask.geometry.Mirror2D`.
@@ -30,6 +59,10 @@ Transforms always contain a single geometry object (possibly container) as their
    .. xml:contents::
 
        A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
+
+
+
+
 
 .. xml:tag:: <translation2D> (or <translation>)
 

@@ -3,6 +3,34 @@ Transforms
 
 Transforms always contain a single geometry object (possibly container) as their content and perform some transformation of this object.
 
+
+
+
+
+.. xml:tag:: <clip3D> (or <clip>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Clip3D`.
+
+   Clip child object to given cuboid.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr role: Object role. Important for some solvers.
+   :attr required front: front edge of the clipping cuboid
+   :attr required back: back edge of the clipping cuboid
+   :attr required left: left edge of the clipping cuboid
+   :attr required right: right edge of the clipping cuboid
+   :attr required bottom: bottom edge of the clipping cuboid
+   :attr required top: top edge of the clipping cuboid
+
+   .. xml:contents::
+
+       A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`. Object to clip.
+
+
+
+
+
+
 .. xml:tag:: <extrusion>
 
    Corresponding Python class: :py:class:`plask.geometry.Extrusion`.
@@ -16,6 +44,10 @@ Transforms always contain a single geometry object (possibly container) as their
    .. xml:contents::
 
        A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
+
+
+
+
 
 .. xml:tag:: <flip3D> (or <flip>)
 
@@ -31,6 +63,10 @@ Transforms always contain a single geometry object (possibly container) as their
 
        A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
+
+
+
+
 .. xml:tag:: <revolution>
 
    Corresponding Python class: :py:class:`plask.geometry.Revolution`.
@@ -43,6 +79,10 @@ Transforms always contain a single geometry object (possibly container) as their
    .. xml:contents::
 
        A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`. All the boundaries of its bounding box must have their horizontal coordinates larger or equal to zero i.e. all the object must be located at the right-hand half of the plane.
+
+
+
+
 
 .. xml:tag:: <mirror3D> (or <mirror>)
 
@@ -57,6 +97,10 @@ Transforms always contain a single geometry object (possibly container) as their
    .. xml:contents::
 
        A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
+
+
+
+
 
 .. xml:tag:: <translation3D> (or <translation>)
 
