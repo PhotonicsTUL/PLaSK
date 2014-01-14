@@ -3,11 +3,14 @@
 Copies and references to geometry objects
 -----------------------------------------
 
+
 .. xml:tag:: <again/>
 
    This tag can be used to insert any previously defined and named (with the name attribute) two or three dimensional object again in the geometry tree.
 
    :attr required ref: Name of the referenced object.
+
+
 
 .. xml:tag:: <copy>
 

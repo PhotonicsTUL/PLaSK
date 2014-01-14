@@ -3,7 +3,7 @@ Physical objects
 
 Physical objects are the leafs of the geometry tree. They represent actual objects that have some shape and defined material.
 
-.. xml:tag:: <block2D/> (or <block/>)
+.. xml:tag:: <block2d/> (or <block/>)
 
    Corresponding Python class: :py:class:`plask.geometry.Block2D`.
 
@@ -23,4 +23,4 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
 .. xml:tag:: <rectangle/>
 
-   Alias for :xml:tag:`<block2D/>`.
+   Alias for :xml:tag:`<block2d/>`.

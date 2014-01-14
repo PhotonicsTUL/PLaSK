@@ -7,7 +7,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
 
 
-.. xml:tag:: <clip3D> (or <clip>)
+.. xml:tag:: <clip3d> (or <clip>)
 
    Corresponding Python class: :py:class:`plask.geometry.Clip3D`.
 
@@ -49,7 +49,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
 
 
-.. xml:tag:: <flip3D> (or <flip>)
+.. xml:tag:: <flip3d> (or <flip>)
 
    Corresponding Python class: :py:class:`plask.geometry.Flip3D`.
 
@@ -84,7 +84,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
 
 
-.. xml:tag:: <mirror3D> (or <mirror>)
+.. xml:tag:: <mirror3d> (or <mirror>)
 
    Corresponding Python class: :py:class:`plask.geometry.Mirror3D`.
 

@@ -25,7 +25,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 
 .. xml:tag:: <cuboid/>
 
-   Alias for :xml:tag:`<block3D/>`.
+   Alias for :xml:tag:`<block3d/>`.
 
 .. xml:tag:: <cylinder/>
 

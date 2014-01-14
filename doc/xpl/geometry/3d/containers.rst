@@ -3,7 +3,7 @@ Containers
 
 Containers are objects that contain multiple other geometry objects as their items. They organize them spatially in different manners depending on the type of the container.
 
-.. xml:tag:: <align3D> (or <align>)
+.. xml:tag:: <align3d> (or <align>)
 
    Corresponding Python classes: :py:class:`plask.geometry.AlignContainerLong3D`, :py:class:`plask.geometry.AlignContainerTran3D`, :py:class:`plask.geometry.AlignContainerVert3D`.
 
@@ -37,7 +37,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
          :ref:`Three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-      .. xml:tag:: <item> [in <align3D>]
+      .. xml:tag:: <item> [in <align3d>]
 
          Tag that allows to specify additional item attributes.
 
@@ -48,7 +48,11 @@ Containers are objects that contain multiple other geometry objects as their ite
 
              A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-.. xml:tag:: <container3D> (or <container>)
+
+
+
+
+.. xml:tag:: <container3d> (or <container>)
 
    Corresponding Python class: :py:class:`plask.geometry.TranslationContainer3D`.
 
@@ -59,7 +63,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
    .. xml:contents::
 
-      .. xml:tag:: <item> [in <container3D>]
+      .. xml:tag:: <item> [in <container3d>]
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
          :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of the element. (float [µm])
@@ -84,7 +88,10 @@ Containers are objects that contain multiple other geometry objects as their ite
 
              A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-.. xml:tag:: <stack3D> (or <stack>)
+
+
+
+.. xml:tag:: <stack3d> (or <stack>)
 
    Corresponding Python classes: :py:class:`plask.geometry.SingleStack3D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack3D` (if ``repeat``\ >1).
 
@@ -115,7 +122,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
          :ref:`Three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-      .. xml:tag:: <item> [in <stack3D>]
+      .. xml:tag:: <item> [in <stack3d>]
 
          Tag that allows to specify additional item attributes.
 
@@ -126,6 +133,6 @@ Containers are objects that contain multiple other geometry objects as their ite
 
              A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-      .. xml:tag:: <zero/> [in <stack3D>]
+      .. xml:tag:: <zero/> [in <stack3d>]
 
          This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.

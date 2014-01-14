@@ -1,7 +1,7 @@
 Containers
 ^^^^^^^^^^
 
-.. xml:tag:: <align2D> (or <align>)
+.. xml:tag:: <align2d> (or <align>)
 
    Corresponding Python classes: :py:class:`plask.geometry.AlignContainerTran2D`, :py:class:`plask.geometry.AlignContainerVert2D`.
 
@@ -30,7 +30,7 @@ Containers
 
          :ref:`Two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
-      .. xml:tag:: <item> [in <align2D>]
+      .. xml:tag:: <item> [in <align2d>]
 
          Tag that allows to specify additional item attributes.
 
@@ -42,7 +42,7 @@ Containers
             A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
 
-.. xml:tag:: <container2D> (or <container>)
+.. xml:tag:: <container2d> (or <container>)
 
    Corresponding Python class: :py:class:`plask.geometry.TranslationContainer2D`.
 
@@ -53,7 +53,7 @@ Containers
 
    .. xml:contents::
 
-      .. xml:tag:: <item> [in <container2D>]
+      .. xml:tag:: <item> [in <container2d>]
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
          :attr left: Horizontal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
@@ -74,7 +74,7 @@ Containers
              A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
 
-.. xml:tag:: <shelf2D> (or shelf)
+.. xml:tag:: <shelf2d> (or shelf)
 
    Corresponding Python class: :py:class:`plask.geometry.Shelf2D`.
 
@@ -93,7 +93,7 @@ Containers
 
         :ref:`Two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
-      .. xml:tag:: <gap/> [in <shelf2D>]
+      .. xml:tag:: <gap/> [in <shelf2d>]
 
          Horizontal gap between two objects. The size of the gap can be specified either as the absolute value in µm or as the total horizontal size of the shelf.
 
@@ -102,11 +102,11 @@ Containers
 
          Exactly one of the above attributes must be specified and only one ``gap`` in the shelf can have the ``total`` attribute.
 
-      .. xml:tag:: <zero/> [in <shelf2D>]
+      .. xml:tag:: <zero/> [in <shelf2d>]
 
          This tag can appear as a shelf content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
-.. xml:tag:: <stack2D> (or <stack>)
+.. xml:tag:: <stack2d> (or <stack>)
 
    Corresponding Python classes: :py:class:`plask.geometry.SingleStack2D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiStack2D` (if ``repeat``\ >1).
 
@@ -132,7 +132,7 @@ Containers
 
          :ref:`Two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
-      .. xml:tag:: <item> [in <stack2D>]
+      .. xml:tag:: <item> [in <stack2d>]
 
          Tag that allows to specify additional item attributes.
 
@@ -143,6 +143,6 @@ Containers
 
              A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
-      .. xml:tag:: <zero/> [in <stack2D>]
+      .. xml:tag:: <zero/> [in <stack2d>]
 
          This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
