@@ -287,7 +287,6 @@ bool EffectiveFrequencyCylSolver::updateCache()
                 auto point = midmesh[idx];
                 auto material = geometry->getMaterial(point);
                 auto roles = geometry->getRolesAt(point);
-
                 // Nr = nr + i/(4π) λ g
                 // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) {
@@ -713,9 +712,13 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const 
 }
 
 
-DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double, InterpolationMethod) {
+DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod) {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
-    updateCache();
+    dcomplex ok0 = k0;
+    if (!isnan(lam) && lam != 0.) k0 = 2e3*M_PI / lam;
+    try { updateCache(); }
+    catch(...) { k0 = ok0; throw; }
+    k0 = ok0;
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
