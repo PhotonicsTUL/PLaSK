@@ -2,6 +2,7 @@
 
 #include <plask/geometry/transform.h>
 #include <plask/geometry/mirror.h>
+#include <plask/geometry/clip.h>
 
 namespace plask { namespace python {
 
@@ -129,6 +130,37 @@ DECLARE_GEOMETRY_ELEMENT_23D(Mirror, "Mirror", "Transfer that mirrors the geomet
     ;
 }
 
+template <int dim>
+shared_ptr<Clip<dim>> Clip_constructor1(shared_ptr<GeometryObjectD<dim>> object, const typename Primitive<dim>::Box& clip_box) {
+    return make_shared<Clip<dim>>(object, clip_box);
+}
+
+template <int dim> struct Clip_constructor2 {};
+template <> struct Clip_constructor2<2> {
+    static inline shared_ptr<Clip<2>> call(shared_ptr<GeometryObjectD<2>> object, double left, double bottom, double right, double top) {
+            return make_shared<Clip<2>>(object, Box2D(left, bottom, right, top));
+    }
+    const static py::detail::keywords<5> args;
+};
+const py::detail::keywords<5> Clip_constructor2<2>::args = (py::arg("item"), py::arg("left"), py::arg("bottom"), py::arg("right"), py::arg("top"));
+
+template <> struct Clip_constructor2<3> {
+    static inline shared_ptr<Clip<3>> call(shared_ptr<GeometryObjectD<3>> object, double back, double left, double bottom, double front, double right, double top) {
+            return make_shared<Clip<3>>(object, Box3D(back, left, bottom, front, right, top));
+    }
+    const static py::detail::keywords<7> args;
+};
+const py::detail::keywords<7> Clip_constructor2<3>::args = (py::arg("item"), py::arg("back"), py::arg("left"), py::arg("bottom"), py::arg("front"), py::arg("right"), py::arg("top"));
+
+DECLARE_GEOMETRY_ELEMENT_23D(Clip, "Clip", "Transform that holds a clipped geometry object together with clipping box ("," version)")
+{
+    GEOMETRY_ELEMENT_23D(Clip, GeometryObjectTransform<dim>, py::no_init)
+    .def("__init__", py::make_constructor(&Clip_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("clip_box"))))
+    .def("__init__", py::make_constructor(&Clip_constructor2<dim>::call, py::default_call_policies(), Clip_constructor2<dim>::args))
+    .def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box")
+    ;
+}
+
 void register_geometry_changespace();
 
 void register_geometry_transform()
@@ -146,6 +178,9 @@ void register_geometry_transform()
 
     init_Mirror<2>();
     init_Mirror<3>();
+
+    init_Clip<2>();
+    init_Clip<3>();
 }
 
 }} // namespace plask::python
