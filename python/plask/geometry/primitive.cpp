@@ -94,8 +94,13 @@ void register_geometry_primitive()
         .def("contains", &Box2D::contains, py::args("point"), "Check if the point is inside the box.")
         .def("__contains__", &Box2D::contains, py::args("point"), "Check if the point is inside the box.")
         .def("intersects", &Box2D::intersects, py::args("other"), "Check if this and the other box have common points.")
-        .def("makeInclude", includeR2p, py::args("point"), "Make this box, the minimal one which include this and given point")
-        .def("makeInclude", includeR2R, py::args("other"), "Make this box, the minimal one which include this and the other box.")
+        .def("extend", includeR2p, py::args("point"), "")
+        .def("extend", includeR2R, py::args("box"),
+             "Extend the box to include the given point or box.\n\n"
+             "Args:\n"
+             "    point (plask.vector): The point to include.\n"
+             "    box (Box2D): The box to include.\n"
+            )
         .def("translated", &Box2D::translated, py::args("trans"), "Get translated copy of this box")
         .def("translate", &Box2D::translate, py::args("trans"), "Translate this box")
         .def("__str__", &Box2D__str__)
@@ -134,8 +139,13 @@ void register_geometry_primitive()
         .def("contains", &Box3D::contains, "Check if the point is inside the box.")
         .def("__contains__", &Box2D::contains, py::args("point"), "Check if the point is inside the box.")
         .def("intersects", &Box3D::intersects, "Check if this and the other box have common points.")
-        .def("extend", includeR3p, (py::arg("point")), "Make this box the minimal one which contains this and the given point")
-        .def("extend", includeR3R, (py::arg("other")), "Make this box the minimal one which contains this and the other box.")
+        .def("extend", includeR3p, (py::arg("point")), "")
+        .def("extend", includeR3R, (py::arg("box")),
+             "Extend the box to include the given point or box.\n\n"
+             "Args:\n"
+             "    point (plask.vector): The point to include.\n"
+             "    box (Box2D): The box to include.\n"
+            )
         .def("translated", &Box2D::translated, py::args("trans"), "Get translated copy of this box")
         .def("translate", &Box2D::translate, py::args("trans"), "Translate this box")
         .def("__str__", &Box3D__str__)

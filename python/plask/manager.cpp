@@ -277,6 +277,7 @@ void PythonManager::loadMaterials(XMLReader& reader, shared_ptr<const MaterialsS
         else
             throw XMLUnexpectedElementException(reader, "<material>");
     }
+    py::import("plask.material").attr("update_factories")();
 }
 
 

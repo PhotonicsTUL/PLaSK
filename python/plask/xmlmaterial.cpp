@@ -61,8 +61,12 @@ class PythonEvalMaterial : public Material
     }
 
     template <typename RETURN>
-    inline RETURN call(PyCodeObject *fun, const py::dict& locals) const {
-        return py::extract<RETURN>(py::handle<>(PY_EVAL(fun, locals)).get());
+    inline RETURN call(PyCodeObject *fun, const py::dict& locals, const char* funname) const {
+        try {
+            return py::extract<RETURN>(py::handle<>(PY_EVAL(fun, locals)).get());
+        } catch (py::error_already_set) {
+            throw ValueError("Error in the custom material function <%2%> of \"%1%\"", this->name(), funname);
+        }
     }
 
   public:
@@ -92,24 +96,24 @@ class PythonEvalMaterial : public Material
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->fun == NULL) return base->fun(arg1); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
-        return call<rtype>(cls->fun, locals);
+        return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_2(rtype, fun, arg1, arg2) \
         if (cls->fun == NULL) return base->fun(arg1, arg2); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
-        return call<rtype>(cls->fun, locals);
+        return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_3(rtype, fun, arg1, arg2, arg3) \
-        if (cls->fun == NULL) return base->fun(arg1, arg2); \
+        if (cls->fun == NULL) return base->fun(arg1, arg2, arg3); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; \
-        return call<rtype>(cls->fun, locals);
+        return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_4(rtype, fun, arg1, arg2, arg3, arg4) \
-        if (cls->fun == NULL) return base->fun(arg1, arg2); \
+        if (cls->fun == NULL) return base->fun(arg1, arg2, arg3, arg4); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; locals[BOOST_PP_STRINGIZE(arg4)] = arg4; \
-        return call<rtype>(cls->fun, locals);
+        return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
     virtual double lattC(double T, char x) const override { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
     virtual double Eg(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
