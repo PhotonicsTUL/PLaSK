@@ -157,14 +157,16 @@ MI_PROPERTY(GaInAs, nr,
             MIComment("TODO")
             )
 double GaInAs::nr(double wl, double T, double n) const {
-    return ( 0. );
+    throw NotImplemented("nR for GaInAs");
+    //return ( 0. );
 }
 
 MI_PROPERTY(GaInAs, absp,
             MIComment("TODO")
             )
 double GaInAs::absp(double wl, double T) const {
-    return ( 0. );
+    throw NotImplemented("absp for GaInAs");
+    //return ( 0. );
 }
 
 double GaInAs::eps(double T) const {
