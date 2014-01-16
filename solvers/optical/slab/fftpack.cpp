@@ -27,7 +27,7 @@ Forward1D& Forward1D::operator=(Forward1D&& old) {
 
 Forward1D::Forward1D(int lot, int n, Symmetry symmetry, int strid):
     lot(lot), n(n), strid(strid?strid:lot), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
-    try { 
+    try {
         int ier;
         if (symmetry == SYMMETRY_NONE)
             cfftmi_(n, wsave, lensav(n), ier);
@@ -42,14 +42,17 @@ Forward1D::Forward1D(int lot, int n, Symmetry symmetry, int strid):
 
 void Forward1D::execute(dcomplex* data) {
     if (!wsave) throw CriticalException("FFTPACX not initialized");
-    try { 
+    try {
         int ier;
         double work[2*lot*n];
         if (symmetry == SYMMETRY_NONE) {
             cfftmf_(lot, 1, n, strid, data, strid*n, wsave, lensav(n), work, 2*lot*n, ier);
         } else {
             cosqmb_(2*lot, 1, n, 2*strid, (double*)data, 2*strid*n, wsave, lensav(n), work, 2*lot*n, ier);
-            double factor = 1./n; for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
+            double factor = 1./n;
+            for (int i = 0, N = strid*n; i < N; i += strid)
+                for (int j = 0; j < lot; ++j)
+                    data[i+j] *= factor;
         }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Forward1D::execute: %1%", msg);
@@ -82,7 +85,7 @@ Backward1D& Backward1D::operator=(Backward1D&& old) {
 
 Backward1D::Backward1D(int lot, int n, Symmetry symmetry, int strid):
     lot(lot), n(n), strid(strid?strid:lot), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
-    try { 
+    try {
         int ier;
         switch (symmetry) {
             case SYMMETRY_NONE:
@@ -99,7 +102,7 @@ Backward1D::Backward1D(int lot, int n, Symmetry symmetry, int strid):
 
 void Backward1D::execute(dcomplex* data) {
     if (!wsave) throw CriticalException("FFTPACX not initialized");
-    try { 
+    try {
         int ier;
         double work[2*lot*n];
         switch (symmetry) {
@@ -114,8 +117,9 @@ void Backward1D::execute(dcomplex* data) {
                 break;
         }
         double factor = n;
-        for (int N = lot*n, i = 0; i < N; ++i) data[i] *= factor;
-
+        for (int i = 0, N = strid*n; i < N; i += strid)
+            for (int j = 0; j < lot; ++j)
+                data[i+j] *= factor;
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Backward1D::execute: %1%", msg);
     }

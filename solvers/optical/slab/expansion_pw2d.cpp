@@ -410,7 +410,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
     const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
-    
+
     if (separated) {
         if (polarization == E_TRAN) {
             for (int i = symmetric? 0 : -order; i <= order; ++i) {
@@ -446,7 +446,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
             src[iE(i)].vert() /= k0;
         }
     }
-    
+
     if (method == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh.size());
         double L = right - left;
