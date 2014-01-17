@@ -14,9 +14,9 @@ struct ExpansionPW2D: public Expansion {
 
     /// Specified component in polarization or symmetry
     enum Component {
-        E_TRAN,               ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
-        E_LONG,               ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
-        E_UNSPECIFIED         ///< All components exist or no symmetry
+        E_TRAN = 0,         ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
+        E_UNSPECIFIED = 1,  ///< All components exist or no symmetry
+        E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
     };
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
@@ -61,15 +61,15 @@ struct ExpansionPW2D: public Expansion {
         return diagonals[l];
     }
 
-    virtual size_t matrixSize() const { return separated? N : 2*N; }
+    size_t matrixSize() const override { return separated? N : 2*N; }
 
-    virtual void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH);
+    void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH) override;
 
-    virtual DataVector<Vec<3,dcomplex>> fieldE(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
-                                           const cvector& E, const cvector& H, InterpolationMethod method);
+    void prepareField() override;
 
-    virtual DataVector<Vec<3,dcomplex>> fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
-                                               const cvector& E, const cvector& H, InterpolationMethod method);
+    void cleanupField() override;
+
+    DataVector<Vec<3,dcomplex>> getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H) override;
 
     /**
      * Get refractive index back from expansion
@@ -80,6 +80,11 @@ struct ExpansionPW2D: public Expansion {
      */
     DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearAxis mesh,
                                                       InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
+  private:
+
+    DataVector<Vec<3,dcomplex>> field;
+    FFT::Backward1D fft_x, fft_yz;
 
   protected:
 

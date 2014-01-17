@@ -362,7 +362,7 @@ void ReflectionSolver<GeometryT>::determineFields()
             case 0: start = this->interface-1; end = 0;       inc = -1; break;
             case 1: start = this->interface;   end = count-1; inc = +1; break;
         }
-        
+
         fields[start].F = cvector(N);
         fields[start].B = cvector(N);
 
@@ -461,7 +461,7 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorE(double z, int n)
         if (n != 0 && n != this->vbounds.size())
             z += this->vbounds[n] - this->vbounds[n-1];
     }
-    
+
     cdiagonal gamma = diagonalizer->Gamma(this->stack[n]);
 
     int N = gamma.size();
@@ -489,7 +489,7 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
         if (n != 0 && n != this->vbounds.size())
             z += this->vbounds[n] - this->vbounds[n-1];
     }
-    
+
     cdiagonal gamma = diagonalizer->Gamma(this->stack[n]);
 
     int N = gamma.size();
@@ -515,6 +515,7 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldE(const MeshD<G
 {
     DataVector<Vec<3,dcomplex>> destination(dst_mesh.size());
     auto levels = LevelsGenerator<GeometryT::DIM>(dst_mesh);
+    diagonalizer->source()->initField(Expansion::FieldParams::E, k0, klong, ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = this->getLayerFor(z);
@@ -522,9 +523,10 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldE(const MeshD<G
         cvector H = getFieldVectorH(z, n);
         if (n >= this->interface) for (auto& h: H) h = -h;
         size_t layer = this->stack[n];
-        auto dest = diagonalizer->source()->fieldE(layer, *level, k0, klong, ktran, E, H, method);
+        auto dest = diagonalizer->source()->getField(layer, *level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
+    diagonalizer->source()->cleanupField();
     return destination;
 }
 
@@ -534,6 +536,7 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldH(const MeshD<G
 {
     DataVector<Vec<3,dcomplex>> destination(dst_mesh.size());
     auto levels = LevelsGenerator<GeometryT::DIM>(dst_mesh);
+    diagonalizer->source()->initField(Expansion::FieldParams::H, k0, klong, ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = this->getLayerFor(z);
@@ -541,9 +544,10 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::getFieldH(const MeshD<G
         cvector H = getFieldVectorH(z, n);
         if (n >= this->interface) for (auto& h: H) h = -h;
         size_t layer = this->stack[n];
-        auto dest = diagonalizer->source()->fieldH(layer, *level, k0, klong, ktran, E, H, method);
+        auto dest = diagonalizer->source()->getField(layer, *level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
+    diagonalizer->source()->cleanupField();
     return destination;
 }
 

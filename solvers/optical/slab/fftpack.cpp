@@ -20,6 +20,7 @@ Forward1D::Forward1D(Forward1D&& old):
 Forward1D& Forward1D::operator=(Forward1D&& old) {
     lot = old.lot; n = old.n; strid = old.strid;
     symmetry = old.symmetry;
+    aligned_free(wsave);
     wsave = old.wsave;
     old.wsave = nullptr;
     return *this;
@@ -78,6 +79,7 @@ Backward1D::Backward1D(Backward1D&& old):
 Backward1D& Backward1D::operator=(Backward1D&& old) {
     lot = old.lot; n = old.n; strid = old.strid;
     symmetry = old.symmetry;
+    aligned_free(wsave);
     wsave = old.wsave;
     old.wsave = nullptr;
     return *this;

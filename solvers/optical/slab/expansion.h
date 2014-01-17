@@ -9,6 +9,20 @@ namespace plask { namespace solvers { namespace slab {
 
 struct Expansion {
 
+    struct FieldParams {
+        /// Indentification of the field obtained by the getField
+        enum Which {
+            E,                      ///< Electric field
+            H                       ///< Magnetic field
+        };
+        Which which;                ///< Which field is being computed
+        dcomplex k0;                ///< Normalized frequency [1/µm]
+        dcomplex klong;             ///< Longitudinal wavevector component [1/µm]
+        dcomplex ktran;             ///< Longitudinal wavevector component [1/µm]
+        InterpolationMethod method; ///< Interpolation method
+    };
+    FieldParams field_params;
+
     /// Solver which performs calculations (and is the interface to the outside world)
     Solver* solver;
 
@@ -43,30 +57,39 @@ struct Expansion {
     virtual void getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH) = 0;
 
     /**
-     * Compute electric field on \c dst_mesh at certain level
-     * \param l layer number
-     * \param dst_mesh destination mesh
+     * Prepare for computatiations of the fields
+     * \param field which field is computed
      * \param k0 normalized frequency [1/µm]
      * \param klong,ktran horizontal wavevector components [1/µm]
-     * \param E,H electric and magnetic field coefficients
      * \param method interpolation method
-     * \return electric field distribution at \c dst_mesh
      */
-    virtual DataVector<Vec<3,dcomplex>> fieldE(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
-                                               const cvector& E, const cvector& H, InterpolationMethod method) = 0;
+    void initField(FieldParams::Which field, dcomplex k0, dcomplex klong, dcomplex ktran, InterpolationMethod method) {
+        field_params.which = field; field_params.k0 = k0; field_params.klong = klong; field_params.ktran = ktran;
+        field_params.method = method;
+        prepareField();
+    };
+
+  protected:
+    /**
+     * Prepare for computatiations of the fields
+     */
+    virtual void prepareField() {};
+
+  public:
+    /**
+     * Cleanup after computatiations of the fields
+     */
+    virtual void cleanupField() {};
 
     /**
-     * Compute magnetic field on \c dst_mesh at certain level
+     * Compute electric og magnetic field on \c dst_mesh at certain level
      * \param l layer number
      * \param dst_mesh destination mesh
-     * \param k0 normalized frequency [1/µm]
-     * \param klong,ktran horizontal wavevector components [1/µm]
-     * \param E,H electric and magnetic field coefficients
-     * \param method interpolation method
-     * \return magnetic field distribution at \c dst_mesh
+     * \param E,H electric and magnetic field coefficientscients
+     * \return field distribution at \c dst_mesh
+     * \return field distribution at \c dst_mesh
      */
-    virtual DataVector<Vec<3,dcomplex>> fieldH(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex klong, dcomplex ktran,
-                                               const cvector& E, const cvector& H, InterpolationMethod method) = 0;
+    virtual DataVector<Vec<3,dcomplex>> getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H) = 0;
 };
 
 
