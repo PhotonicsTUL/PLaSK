@@ -299,7 +299,6 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
     // Ez represents -Ez
 
     if (separated) {
-        //TODO
         if (symmetric) {
             // Separated symmetric
             std::fill_n(RE.data(), N*N, dcomplex(0.));
@@ -399,7 +398,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
     }
 }
 
-// TODO fields must be carefullty verified
+// TODO fields must be carefully verified
 
 DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh, dcomplex k0, dcomplex beta, dcomplex kx,
                                                  const cvector& E, const cvector& H, InterpolationMethod method)
@@ -411,42 +410,52 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldE(size_t l, const Mesh& dst_mesh
     const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
 
+    int dl = (symmetric && method != INTERPOLATION_FOURIER && symmetry == E_TRAN)? 1 : 0;
+    int dt = (symmetric && method != INTERPOLATION_FOURIER && symmetry == E_LONG)? 1 : 0;
+    
     if (separated) {
         if (polarization == E_TRAN) {
             for (int i = symmetric? 0 : -order; i <= order; ++i) {
                 src[iE(i)].lon() = src[iE(i)].vert() = 0.;
-                src[iE(i)].tran() = E[iE(i)];
+                if (iE(i) != 0 || !dt) src[iE(i)-dt].tran() = E[iE(i)];
             }
         } else {
             for (int i = symmetric? 0 : -order; i <= order; ++i) {
                 src[iE(i)].tran() = 0.;
-                src[iE(i)].lon() = E[iE(i)];
-                src[iE(i)].vert() = - iepsyy(l, i) * beta * H[iH(i)] / k0;
+                if (iE(i) != 0 || !dl) {
+                    src[iE(i)-dl].lon() = E[iE(i)];
+                    src[iE(i)-dl].vert() = - iepsyy(l, i) * beta * H[iH(i)] / k0;
+                }
             }
         }
     } else {
         for (int i = symmetric? 0 : -order; i <= order; ++i) {
-            src[iE(i)].lon() = E[iEz(i)];
-            src[iE(i)].tran() = E[iEx(i)];
-            src[iE(i)].vert() = - iepsyy(l, i) * beta * H[iHx(i)];
-            if (symmetric) {
-                if (symmetry == E_LONG) {
-                    for (int j = -order; j <= order; ++j)
-                        src[iE(i)].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(abs(j))];
+            if (iE(i) != 0 || !dt) src[iE(i)-dt].tran() = E[iEx(i)];
+            if (iE(i) != 0 || !dl) {
+                src[iE(i)-dl].lon() = E[iEz(i)];
+                src[iE(i)-dl].vert() = - iepsyy(l, i) * beta * H[iHx(i)];
+                if (symmetric) {
+                    if (symmetry == E_LONG) {
+                        for (int j = -order; j <= order; ++j)
+                            src[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(abs(j))];
+                    } else {
+                        for (int j = 0; j <= order; ++j)
+                            src[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(j)];
+                        for (int j = -order; j < 0; ++j)
+                            src[iE(i)-dl].vert() -= iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(-j)];
+                    }
                 } else {
-                    for (int j = 0; j <= order; ++j)
-                        src[iE(i)].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(j)];
-                    for (int j = -order; j < 0; ++j)
-                        src[iE(i)].vert() -= iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(-j)];
+                    for (int j = -order; j <= order; ++j)
+                        src[iE(i)-dl].vert() += iepsyy(l, i-j) * (b*double(j)-kx) * H[iHz(j)];
                 }
-            } else {
-                for (int j = -order; j <= order; ++j)
-                    src[iE(i)].vert() += iepsyy(l, i-j) * (b*double(j)-kx) * H[iHz(j)];
+                src[iE(i)-dl].vert() /= k0;
             }
-            src[iE(i)].vert() /= k0;
         }
     }
 
+    if (dt) { src[src.size()-1].tran() = 0.; }
+    if (dl) { src[src.size()-1].lon() = 0.; src[src.size()-1].vert() = 0.; }
+    
     if (method == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh.size());
         double L = right - left;
@@ -521,47 +530,57 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::fieldH(size_t l, const Mesh& dst_mesh
 {
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-    DataVector<Vec<3,dcomplex>> src(N+1);
+    DataVector<Vec<3,dcomplex>> src(N + (symmetric? 0 : 1));
     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
     const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
 
+    int dt = (symmetric && method != INTERPOLATION_FOURIER && symmetry == E_TRAN)? 1 : 0;
+    int dl = (symmetric && method != INTERPOLATION_FOURIER && symmetry == E_LONG)? 1 : 0;
+    
     if (separated) {
         if (polarization == E_LONG) {
             for (int i = symmetric? 0 : -order; i <= order; ++i) {
                 src[iH(i)].lon() = src[iH(i)].vert() = 0.;
-                src[iH(i)].tran() = E[iH(i)];
+                if (iH(i) != 0 || !dt) src[iH(i)- dt].tran() = E[iH(i)];
             }
         } else {
             for (int i = symmetric? 0 : -order; i <= order; ++i) {
                 src[iH(i)].tran() = 0.;
-                src[iH(i)].lon() = E[iH(i)];
-                src[iH(i)].vert() = - imuyy(l, i) * beta * E[iE(i)] / k0;
+                if (iH(i) != 0 || !dl) {
+                    src[iH(i)- dl].lon() = E[iH(i)];
+                    src[iH(i)- dl].vert() = - imuyy(l, i) * beta * E[iE(i)] / k0;
+                }
             }
         }
     } else {
         for (int i = symmetric? 0 : -order; i <= order; ++i) {
-            src[iH(i)].lon() = H[iHz(i)];
-            src[iH(i)].tran() = H[iHx(i)];
-            src[iH(i)].vert() = - imuyy(l, i) * beta * H[iEx(i)];
-            if (symmetric) {
-                if (symmetry == E_TRAN) {
-                    for (int j = -order; j <= order; ++j)
-                        src[iE(i)].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(abs(j))];
+            if (iH(i) != 0 || !dt) src[iH(i)- dt].tran() = H[iHx(i)];
+            if (iH(i) != 0 || !dl) {
+                src[iH(i)- dl].lon() = H[iHz(i)];
+                src[iH(i)- dl].vert() = - imuyy(l, i) * beta * H[iEx(i)];
+                if (symmetric) {
+                    if (symmetry == E_TRAN) {
+                        for (int j = -order; j <= order; ++j)
+                            src[iE(i)- dl].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(abs(j))];
+                    } else {
+                        for (int j = 0; j <= order; ++j)
+                            src[iE(i)- dl].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(j)];
+                        for (int j = -order; j < 0; ++j)
+                            src[iE(i)- dl].vert() -= imuyy(l, abs(i-j)) * b*double(j) * H[iEz(-j)];
+                    }
                 } else {
-                    for (int j = 0; j <= order; ++j)
-                        src[iE(i)].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(j)];
-                    for (int j = -order; j < 0; ++j)
-                        src[iE(i)].vert() -= imuyy(l, abs(i-j)) * b*double(j) * H[iEz(-j)];
+                    for (int j = -order; j <= order; ++j)
+                        src[iE(i)- dl].vert() += imuyy(l, i-j) * (b*double(j)-kx) * H[iEz(j)];
                 }
-            } else {
-                for (int j = -order; j <= order; ++j)
-                    src[iE(i)].vert() += imuyy(l, i-j) * (b*double(j)-kx) * H[iEz(j)];
+                src[iH(i)].vert() /= k0;
             }
-            src[iH(i)].vert() /= k0;
         }
     }
 
+    if (dt) { src[src.size()-1].tran() = 0.; }
+    if (dl) { src[src.size()-1].lon() = 0.; src[src.size()-1].vert() = 0.; }
+    
     if (method == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh.size());
         double L = right - left;
