@@ -43,7 +43,7 @@ class SectionModel(object):
         """
             :return: true if model is read-only (typically: has been read from external source)
         """
-        return self.externalSource == None
+        return self.externalSource != None
     
     def getFileXMLElement(self):
         if self.externalSource != None:
