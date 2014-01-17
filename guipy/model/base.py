@@ -1,18 +1,24 @@
 # coding: utf8
 
 from xml.etree import ElementTree
+from utils import Signal
 
 class SectionModel(object):
 
-    def __init__(self, name, errors_cb = None):
+    def __init__(self, name, info_cb = None):
         """
             :param str tagName: name of section
-            :param errors_cb: call when list of error has been changed with parameters: section name, list of errors
+            :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
         object.__init__(self)
         self.name = name
-        self.errors = []    #non-critical errors in model
-        self.errors_cb = errors_cb
+        self.changed = Signal()
+        self.info = []    #non-critical errors in model, maybe change to: Errors, Warnings and Informations
+        self.infoChanged = Signal()
+        if info_cb: self.infoChanged.connect(info_cb)
+        
+    def fireChanged(self):
+        self.changed(self)
 
     def getText(self):
         element = self.getXMLElement()
@@ -28,12 +34,18 @@ class SectionModel(object):
     def setText(self, text):
         self.setXMLElement(ElementTree.fromstringlist(['<?xml version="1.0"?>\n<', self.name, '>', text, '</', self.name, '>']))
         
-    def errorsChanged(self):
-        if self.errors_cb: self.errors_cb(self.name, self.errors)
+    def fireInfoChanged(self):
+        self.infoChanged.call(self)
         
-    def setErrors(self, *errors):
-        self.errors = list(errors)
-        self.errorsChanged()
+    def setInfo(self, *info):
+        self.errors = list(info)
+        self.fireInfoChanged()
+        
+    def isReadOnly(self):
+        """
+            :return: true if model is read-only (typically: has been read from external source)
+        """
+        return hasattr(self, 'externalSource')
         
 
 class SectionModelTreeBased(SectionModel):
@@ -47,6 +59,7 @@ class SectionModelTreeBased(SectionModel):
             self.element = element
         else:
             self.element.clear()
+        self.fireChanged()
 
     # XML element that represents whole section
     def getXMLElement(self):

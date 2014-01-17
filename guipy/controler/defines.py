@@ -73,7 +73,7 @@ class DefinesControler(SourceEditControler):
         index = self.table.selectionModel().currentIndex()
         if not index.isValid(): return
         index = index.row()
-        if index >= 1 and index < len(self.model.defines):
+        if 1 <= index < len(self.model.entries):
             self.model.swapNeighbourEntries(index-1, index)
             #self.table.selectRow(index-1)
     
@@ -81,7 +81,7 @@ class DefinesControler(SourceEditControler):
         index = self.table.selectionModel().currentIndex()
         if not index.isValid(): return
         index = index.row()
-        if index >= 0 and index+1 < len(self.model.defines):
+        if 0 <= index < len(self.model.entries)-1:
             self.model.swapNeighbourEntries(index, index+1)
             #self.table.selectRow(index+1)
     

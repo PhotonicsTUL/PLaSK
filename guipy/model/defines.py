@@ -11,51 +11,52 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
             self.value = value
             self.comment = comment
     
-    def __init__(self, parent=None, errors_cb = None, *args):
-        SectionModel.__init__(self, 'defines', errors_cb)
+    def __init__(self, parent=None, info_cb = None, *args):
+        SectionModel.__init__(self, 'entries', info_cb)
         QtCore.QAbstractListModel.__init__(self, parent, *args)
-        self.defines = []
+        self.entries = []
         
     def nameToIndex(self, name):
         """return index of entry with given name or -1"""
-        for idx, val in enumerate(self.defines):
+        for idx, val in enumerate(self.entries):
             if val.name == name: return idx
         return -1
         
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()
-        del self.defines[:]
+        del self.entries[:]
         if isinstance(element, ElementTree.Element):
             for c in element.iter("define"):
-                self.defines.append(DefinesModel.Entry(c.attrib["name"], c.attrib["value"]))
+                self.entries.append(DefinesModel.Entry(c.attrib["name"], c.attrib["value"]))
         self.layoutChanged.emit()
+        self.fireChanged()
     
     # XML element that represents whole section
     def getXMLElement(self):
         res = ElementTree.Element(self.name)
-        for e in self.defines:
+        for e in self.entries:
             ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }).tail = '\n'
         return res
     
     def get(self, col, row):
-        if col == 0: return self.defines[row].name
-        if col == 1: return self.defines[row].value
-        if col == 2: return self.defines[row].comment
+        if col == 0: return self.entries[row].name
+        if col == 1: return self.entries[row].value
+        if col == 2: return self.entries[row].comment
         raise IndexError('column number for DefinesModel should be in range [0, 3], but is %d' % col)
     
     def set(self, col, row, value):
         if col == 0:
             i = self.nameToIndex(value) # TODO should be non-critical error  
-            if i > 0 and i != row: raise ValueError("name \"%s\" already in use in defines section (has indexes %d and value \"%s\")" % (value, i, self.defines[i].value))
-            self.defines[row].name = value
-        elif col == 1: self.defines[row].value = value
-        elif col == 2: self.defines[row].comment = value
+            if i > 0 and i != row: raise ValueError("name \"%s\" already in use in entries section (has indexes %d and value \"%s\")" % (value, i, self.entries[i].value))
+            self.entries[row].name = value
+        elif col == 1: self.entries[row].value = value
+        elif col == 2: self.entries[row].comment = value
         else: raise IndexError('column number for DefinesModel should be in range [0, 3], but is %d' % col)       
         
     # QAbstractListModel implementation
     def rowCount(self, parent = QtCore.QModelIndex()):
         if parent.isValid(): return 0
-        return len(self.defines)
+        return len(self.entries)
     
     def columnCount(self, parent = QtCore.QModelIndex()): 
         return 2    # 3 if comment supported
@@ -75,39 +76,43 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
     def flags(self, index):
         flags = super(self.__class__, self).flags(index)
 
-        flags |= QtCore.Qt.ItemIsEditable
+        if not self.isReadOnly(): flags |= QtCore.Qt.ItemIsEditable
         flags |= QtCore.Qt.ItemIsSelectable
         flags |= QtCore.Qt.ItemIsEnabled
-        flags |= QtCore.Qt.ItemIsDragEnabled
-        flags |= QtCore.Qt.ItemIsDropEnabled
+        #flags |= QtCore.Qt.ItemIsDragEnabled
+        #flags |= QtCore.Qt.ItemIsDropEnabled
 
         return flags
     
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
         self.dataChanged.emit(index, index)
+        self.fireChanged()
         return True
     
     def insert(self, index = None, value = None):
+        if self.isReadOnly(): return
         if not value: value = DefinesModel.Entry("new", "")
-        if index and 0 <= index and index <= len(self.defines):
+        if 0 <= index and index <= len(self.entries):
             self.beginInsertRows(QtCore.QModelIndex(), index, index)
-            self.defines.insert(index, value)
+            self.entries.insert(index, value)
         else:
-            index = len(self.defines)
+            index = len(self.entries)
             self.beginInsertRows(QtCore.QModelIndex(), index, index)
-            self.defines.append(value)
+            self.entries.append(value)
         self.endInsertRows()
+        self.fireChanged()
         return index
     
     def remove(self, index):
-        if index < 0 or index >= len(self.defines): return
+        if self.isReadOnly() or index < 0 or index >= len(self.entries): return
         self.beginRemoveRows(QtCore.QModelIndex(), index, index)
-        del self.defines[index]
+        del self.entries[index]
         self.endRemoveRows()
 
     def swapNeighbourEntries(self, index1, index2):
+        if self.isReadOnly(): return
         if index2 < index1: index1, index2 = index2, index1 
         self.beginMoveRows(QtCore.QModelIndex(), index2, index2, QtCore.QModelIndex(), index1)
-        self.defines[index1], self.defines[index2] = self.defines[index2], self.defines[index1]
+        self.entries[index1], self.entries[index2] = self.entries[index2], self.entries[index1]
         self.endMoveRows()

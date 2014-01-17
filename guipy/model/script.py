@@ -3,15 +3,12 @@ from xml.etree import ElementTree
 
 class ScriptModel(SectionModel):
 
-    def __init__(self, errors_cb = None):
-        SectionModel.__init__(self, 'script', errors_cb)
+    def __init__(self, info_cb = None):
+        SectionModel.__init__(self, 'script', info_cb)
         self.code = ''
 
     def setXMLElement(self, element):
-        if isinstance(element, ElementTree.Element):
-            self.code = element.text
-        else:
-            self.code = ''
+        self.setText(element.text if isinstance(element, ElementTree.Element) else '')
 
     # XML element that represents whole section
     def getXMLElement(self):
@@ -24,4 +21,5 @@ class ScriptModel(SectionModel):
 
     def setText(self, text):
         self.code = text
+        self.fireChanged()
 

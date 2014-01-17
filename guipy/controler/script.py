@@ -1,6 +1,7 @@
 from controler.base import SourceEditControler
 from PyQt4 import QtGui
 from model.script import ScriptModel
+from utils import defaultFont
 
 import sys
 try:
@@ -33,14 +34,13 @@ class ScriptControler(SourceEditControler):
     def createSourceEditor(self, parent = None):
         if hasPyCode:
             edit = QtGui.QPlainTextEdit(parent)
+            edit.setFont(defaultFont)
             self.pyedit = PyEdit(".", edit, prefix="from PyQt4 import QtGui")
-            font = QtGui.QFont()
-            font.setFamily("Courier")
-            font.setPointSize(10)
-            edit.setFont(font)
             if SyntaxHighlighter:
                 parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-                self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=font)
-            return edit
+                self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
         else:
-            return QtGui.QPlainTextEdit(parent)
+            edit = QtGui.QPlainTextEdit(parent)
+            edit.setFont(defaultFont)
+        edit.setReadOnly(self.model.isReadOnly())
+        return edit

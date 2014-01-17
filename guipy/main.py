@@ -54,7 +54,7 @@ class MainWindow(QtGui.QMainWindow):
     def saveAs(self):
         self.currentSectionExit()
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
-        if fileName.isEmpty(): return False
+        if not fileName: return False
         self.fileName = fileName
         self.document.saveToFile(fileName)
         return True

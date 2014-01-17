@@ -10,6 +10,7 @@ class SourceEditControler(object):
     def createSourceEditor(self, parent = None):
         ed = QtGui.QTextEdit(parent)
         self.highlighter = XMLHighlighter(ed.document())   # highlighter varible is required, in other case it is deleted and text is not highlighted
+        ed.setReadOnly(self.model.isReadOnly())
         return ed
 
     # text, source editor
