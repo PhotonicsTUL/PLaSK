@@ -24,12 +24,16 @@ class XPLDocument(object):
     def loadFromFile(self, fileName):
         tree = ElementTree.parse(fileName)
         for i in range(len(XPLDocument.SECTION_NAMES)):
-            self.getModelByIndex(i).setXMLElement(tree.getroot().find(XPLDocument.SECTION_NAMES[i]))
+            element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
+            if isinstance(element, ElementTree.Element):
+                self.getModelByIndex(i).setFileXMLElement(element)
+            else:
+                self.getModelByIndex(i).clear()
         
     def saveToFile(self, fileName):
         root = ElementTree.Element("plask")
         for c in self.controlers:
-            root.append(c.model.getXMLElement())
+            root.append(c.model.getFileXMLElement())
         ElementTree.ElementTree(root).write(fileName, encoding="UTF-8") #, encoding, xml_declaration, default_namespace, method)
         
     def getControlerByIndex(self, index):

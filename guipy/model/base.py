@@ -15,6 +15,7 @@ class SectionModel(object):
         self.changed = Signal()
         self.info = []    #non-critical errors in model, maybe change to: Errors, Warnings and Informations
         self.infoChanged = Signal()
+        self.externalSource = None
         if info_cb: self.infoChanged.connect(info_cb)
         
     def fireChanged(self):
@@ -22,17 +23,14 @@ class SectionModel(object):
 
     def getText(self):
         element = self.getXMLElement()
-        text = ''
-        #text = ''+element.text
+        text = element.text.lstrip('\n') if element.text else ''
         for c in element:
             text += ElementTree.tostring(c)
-        if not text:
-            return ''
         return text
         #return ElementTree.tostring(self.getXMLElement())
 
     def setText(self, text):
-        self.setXMLElement(ElementTree.fromstringlist(['<?xml version="1.0"?>\n<', self.name, '>', text, '</', self.name, '>']))
+        self.setXMLElement(ElementTree.fromstringlist(['<', self.name, '>', text, '</', self.name, '>']))
         
     def fireInfoChanged(self):
         self.infoChanged.call(self)
@@ -45,8 +43,24 @@ class SectionModel(object):
         """
             :return: true if model is read-only (typically: has been read from external source)
         """
-        return hasattr(self, 'externalSource')
+        return self.externalSource == None
+    
+    def getFileXMLElement(self):
+        if self.externalSource != None:
+            return ElementTree.Element(self.name, { "external": self.externalSource })
+        else:
+            return self.getXMLElement()
         
+    def clear(self):
+        self.setText('')
+        self.fireChanged()
+        
+    def setFileXMLElement(self, element):
+        if 'external' in element.attrib:
+            self.externalSource = element.attrib['external']
+            self.clear() #TODO element = load external content
+            return       #and remove this two lines
+        self.setXMLElement(element)   
 
 class SectionModelTreeBased(SectionModel):
 
@@ -55,10 +69,11 @@ class SectionModelTreeBased(SectionModel):
         self.element = ElementTree.Element(name)
 
     def setXMLElement(self, element):
-        if isinstance(element, ElementTree.Element):
-            self.element = element
-        else:
-            self.element.clear()
+        self.element = element
+        self.fireChanged()
+        
+    def clear(self):
+        self.element.clear()
         self.fireChanged()
 
     # XML element that represents whole section

@@ -1,5 +1,6 @@
 from PyQt4 import QtGui
 from qhighlighter.XML import XMLHighlighter
+from utils import defaultFont
 
 class SourceEditControler(object):
 
@@ -9,6 +10,7 @@ class SourceEditControler(object):
 
     def createSourceEditor(self, parent = None):
         ed = QtGui.QTextEdit(parent)
+        ed.setFont(defaultFont)
         self.highlighter = XMLHighlighter(ed.document())   # highlighter varible is required, in other case it is deleted and text is not highlighted
         ed.setReadOnly(self.model.isReadOnly())
         return ed
