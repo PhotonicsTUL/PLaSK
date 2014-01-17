@@ -581,6 +581,7 @@ namespace detail {
         typedef typename ProviderT::ValueType ValueT;
 
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
             return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
@@ -596,9 +597,11 @@ namespace detail {
         typedef typename ProviderT::ValueType ValueT;
 
         static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
             return DataVectorWrap<const ValueT,DIMS>(self(n, *mesh, params..., method), mesh);
         }
         static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+            if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
             return DataVectorWrap<const ValueT,DIMS>(self(0, *mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
