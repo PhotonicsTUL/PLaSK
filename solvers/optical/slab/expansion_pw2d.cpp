@@ -420,8 +420,8 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
 {
     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
 
-    dcomplex beta = field_params.klong;
-    dcomplex kx = field_params.ktran;
+    const dcomplex beta = field_params.klong;
+    const dcomplex kx = field_params.ktran;
 
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
@@ -514,11 +514,8 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
         }
     }
 
-    if (dt) {
-        field[field.size()-1].tran() = 0.; }
-    if (dl) {
-        field[field.size()-1].lon() = 0.;
-        field[field.size()-1].vert() = 0.; }
+    if (dt) { field[field.size()-1].tran() = 0.; }
+    if (dl) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }
 
     if (field_params.method == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh.size());

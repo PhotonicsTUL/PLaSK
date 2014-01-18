@@ -144,14 +144,14 @@ static void RectilinearMesh1D_extend(RectilinearMesh1D& self, py::object sequenc
 
 
 namespace detail {
-    struct RegularAxis_from_Tuple
+    struct RegularAxisFromTupleOrFloat
     {
-        RegularAxis_from_Tuple() {
+        RegularAxisFromTupleOrFloat() {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RegularAxis>());
         }
 
         static void* convertible(PyObject* obj) {
-            if (PyTuple_Check(obj)) return obj;
+            if (PyTuple_Check(obj) || PyFloat_Check(obj) || PyInt_Check(obj)) return obj;
             if (PySequence_Check(obj) && PySequence_Length(obj) == 1) return obj;
             return NULL;
         }
@@ -161,11 +161,14 @@ namespace detail {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularAxis>*)data)->storage.bytes;
             auto tuple = py::object(py::handle<>(py::borrowed(obj)));
             try {
-                if (py::len(tuple) == 3)
-                    new(storage) RegularAxis(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
-                else if (py::len(tuple) == 1) {
+                if (PyFloat_Check(obj) || PyInt_Check(obj)) {
+                    double val = py::extract<double>(tuple);
+                    new(storage) RegularAxis(val, val, 1);
+                } else if (py::len(tuple) == 1) {
                     double val = py::extract<double>(tuple[0]);
                     new(storage) RegularAxis(val, val, 1);
+                } else if (py::len(tuple) == 3) {
+                    new(storage) RegularAxis(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]), py::extract<unsigned>(tuple[2]));
                 } else
                     throw py::error_already_set();
                 data->convertible = storage;
@@ -174,6 +177,11 @@ namespace detail {
             }
         }
     };
+}
+
+template <typename RegularT>
+shared_ptr<RegularT> Regular__init__one_param(double val) {
+    return make_shared<RegularT>(val, val, 1);
 }
 
 template <typename RegularT>
@@ -871,6 +879,7 @@ void register_mesh_rectangular()
         "RegularAxis(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
         )
         .def("__init__", py::make_constructor(&__init__empty<RegularAxis>))
+        .def("__init__", py::make_constructor(&Regular__init__one_param<RegularAxis>, py::default_call_policies(), (py::arg("value"))))
         .def("__init__", py::make_constructor(&Regular__init__params<RegularAxis>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
         .add_property("start", &RegularAxis::first, &RegularAxis_setFirst, "Position of the beginning of the mesh")
         .add_property("stop", &RegularAxis::last, &RegularAxis_setLast, "Position of the end of the mesh")
@@ -884,7 +893,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularAxis::begin, &RegularAxis::end))
     ;
-    detail::RegularAxis_from_Tuple();
+    detail::RegularAxisFromTupleOrFloat();
     py::implicitly_convertible<RegularAxis, RectilinearAxis>();
 
     py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>, py::bases<MeshD<1>>> regular1d("Regular1D",
@@ -893,6 +902,7 @@ void register_mesh_rectangular()
         "Regular1D(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
         ); regular1d
         .def("__init__", py::make_constructor(&__init__empty<RegularMesh1D>))
+        .def("__init__", py::make_constructor(&Regular__init__one_param<RegularMesh1D>, py::default_call_policies(), (py::arg("value"))))
         .def("__init__", py::make_constructor(&Regular__init__params<RegularMesh1D>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
         .def("__init__", py::make_constructor(&RectangularMesh1D__init__axis<RegularMesh1D,RegularAxis>, py::default_call_policies(), py::arg("axis0")))
         .def_readonly("axis", &RegularMesh1D::axis, "Axis of the mesh")

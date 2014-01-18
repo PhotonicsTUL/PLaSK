@@ -141,7 +141,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
         emitting = value;
         this->invalidate();
     }
-    
+
   protected:
 
     /// Solver constructor
