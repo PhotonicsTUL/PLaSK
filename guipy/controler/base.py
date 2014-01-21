@@ -29,4 +29,5 @@ class SourceEditControler(object):
 
     # when editor is turn off, model should be update
     def onEditExit(self, main):
-        self.model.setText(self.getSourceEditor().toPlainText())
+        if not self.getSourceEditor().isReadOnly():
+            self.model.setText(self.getSourceEditor().toPlainText())

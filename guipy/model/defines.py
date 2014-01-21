@@ -12,7 +12,7 @@ class DefinesModel(QtCore.QAbstractTableModel, SectionModel):
             self.comment = comment
     
     def __init__(self, parent=None, info_cb = None, *args):
-        SectionModel.__init__(self, 'entries', info_cb)
+        SectionModel.__init__(self, 'defines', info_cb)
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         self.entries = []
         

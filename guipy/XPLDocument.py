@@ -26,7 +26,7 @@ class XPLDocument(object):
         for i in range(len(XPLDocument.SECTION_NAMES)):
             element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
             if isinstance(element, ElementTree.Element):
-                self.getModelByIndex(i).setFileXMLElement(element)
+                self.getModelByIndex(i).setFileXMLElement(element, fileName)
             else:
                 self.getModelByIndex(i).clear()
         
