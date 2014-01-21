@@ -36,7 +36,7 @@ double GaInAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
     if (point == 'G') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*Sb*mGaSb.Eg(T,e,point)
             + In*As*mInAs.Eg(T,e,point) + In*Sb*mInSb.Eg(T,e,point)
-            - Ga*In*As*(0.477) - Ga*In*Sb*(0.415) - Ga*As*Sb*(1.43) - In*As*Sb*(0.67);
+            - Ga*In*As*(0.477) - Ga*In*Sb*(0.415) - Ga*As*Sb*(1.43) - In*As*Sb*(0.67) - Ga*In*As*Sb*(0.75);
     else if (point == 'X') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*Sb*mGaSb.Eg(T,e,point)
             + In*As*mInAs.Eg(T,e,point) + In*Sb*mInSb.Eg(T,e,point)
             - Ga*In*As*(1.4) - Ga*In*Sb*(0.33) - Ga*As*Sb*(1.2) - In*As*Sb*(0.6);
