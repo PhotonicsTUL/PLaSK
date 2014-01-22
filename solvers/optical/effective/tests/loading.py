@@ -48,7 +48,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver2 = self.manager.slv.eff2
         profile = plask.StepProfile(self.manager.geo.Space_1, default=300.)
         profile[self.manager.geo.Block_3] = 320.
-        self.solver1.inTemperature = plask.flow.TemperatureProvider2D(profile)
+        self.solver1.inTemperature = profile.outTemperature
 
     def testLoadConfigurations(self):
         self.assertEqual( self.solver1.id, "eff1:optical.EffectiveIndex2D" )

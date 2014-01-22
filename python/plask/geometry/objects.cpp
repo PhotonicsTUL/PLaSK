@@ -161,6 +161,8 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
 
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectD, GeometryObject)
 
+        .def("__contains__", &GeometryObjectD<dim>::contains, (py::arg("point")),
+             "Return True if the geometry object contains a point (in local coordinates)")
         .def("contains", &GeometryObjectD<dim>::contains, (py::arg("point")),
              "Return True if the geometry object contains a point (in local coordinates)")
         .def("contains", &MethodsD<dim>::contains, GeometryObjectD_vector_args<dim>::args(),

@@ -63,6 +63,24 @@ static std::vector<shared_ptr<GeometryObject>> Space_getLeafs(S& self, const Pat
     return result;
 }
 
+template <typename S>
+static bool objectIncludes1_2D(const S& self, const GeometryObject& object, const PathHints& path, double c0, double c1) {
+    return self.objectIncludes(object, path, Vec<2,double>(c0, c1));
+}
+template <typename S>
+static bool objectIncludes2_2D(const S& self, const GeometryObject& object, double c0, double c1) {
+    return self.objectIncludes(object, Vec<2,double>(c0, c1));
+}
+
+static bool objectIncludes1_3D(const Geometry3D& self, const GeometryObject& object, const PathHints& path, double c0, double c1, double c2) {
+    return self.objectIncludes(object, path, Vec<3,double>(c0, c1, c2));
+}
+static bool objectIncludes2_3D(const Geometry3D& self, const GeometryObject& object, double c0, double c1, double c2) {
+    return self.objectIncludes(object, Vec<3,double>(c0, c1, c2));
+}
+
+
+
 
 static void _Space_setBorders(Geometry& self, py::dict borders, std::set<std::string>& parsed, const std::string& err_msg) {
    self.setBorders(
@@ -413,6 +431,14 @@ void register_calculation_spaces() {
         .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCartesian>, (py::arg("c0"), "c1"), "Return roles of objects at specified point")
         .def("has_role", &Geometry_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "point"), "Return true if the specified point has given role")
         .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "c0", "c1"), "Return true if the specified point has given role")
+        .def("object_contains", (bool(Geometry2DCartesian::*)(const GeometryObject&,const PathHints&,const Vec<2>&)const)&Geometry2DCartesian::objectIncludes,
+             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+        .def("object_contains", (bool(Geometry2DCartesian::*)(const GeometryObject&,const Vec<2>&)const)&Geometry2DCartesian::objectIncludes,
+             (py::arg("object"), "point"), "Return true if the specified object contains given point")
+        .def("object_contains", &objectIncludes1_2D<Geometry2DCartesian>, (py::arg("object"), "path", "c0", "c1"),
+             "Return true if the specified child contains given point")
+        .def("object_contains", &objectIncludes2_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"),
+             "Return true if the specified child contains given point")
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -450,6 +476,14 @@ void register_calculation_spaces() {
         .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCylindrical>, (py::arg("c0"), "c1"), "Return roles of objects at specified point")
         .def("has_role", &Geometry_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "point"), "Return true if the specified point has given role")
         .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "c0", "c1"), "Return true if the specified point has given role")
+        .def("object_contains", (bool(Geometry2DCylindrical::*)(const GeometryObject&,const PathHints&,const Vec<2>&)const)&Geometry2DCylindrical::objectIncludes,
+             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+        .def("object_contains", (bool(Geometry2DCylindrical::*)(const GeometryObject&,const Vec<2>&)const)&Geometry2DCylindrical::objectIncludes,
+             (py::arg("object"), "point"), "Return true if the specified object contains given point")
+        .def("object_contains", &objectIncludes1_2D<Geometry2DCylindrical>, (py::arg("object"), "path", "c0", "c1"),
+             "Return true if the specified child contains given point")
+        .def("object_contains", &objectIncludes2_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"),
+             "Return true if the specified child contains given point")
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
@@ -486,6 +520,14 @@ void register_calculation_spaces() {
         .def("get_roles", &Geometry3D_getRolesAt, (py::arg("c0"), "c1", "c2"), "Return roles of objects at specified point")
         .def("has_role", &Geometry_hasRoleAt<Geometry3D>, (py::arg("role"), "point"), "Return true if the specified point has given role")
         .def("has_role", &Geometry3D_hasRoleAt, (py::arg("role"), "c0", "c1", "c2"), "Return true if the specified point has given role")
+        .def("object_contains", (bool(Geometry3D::*)(const GeometryObject&,const PathHints&,const Vec<3>&)const)&Geometry3D::objectIncludes,
+             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+        .def("object_contains", (bool(Geometry3D::*)(const GeometryObject&,const Vec<3>&)const)&Geometry3D::objectIncludes,
+             (py::arg("object"), "point"), "Return true if the specified object contains given point")
+        .def("object_contains", &objectIncludes1_3D, (py::arg("object"), "path", "c0", "c1"),
+             "Return true if the specified child contains given point")
+        .def("object_contains", &objectIncludes2_3D, (py::arg("object"), "c0", "c1"),
+             "Return true if the specified child contains given point")
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;

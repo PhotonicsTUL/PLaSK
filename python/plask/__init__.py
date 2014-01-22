@@ -210,20 +210,40 @@ class StepProfile(object):
         self.geometry = geometry
         self.default = default
         self.dtype = dtype if dtype is not None else type(default)
+        self.providers = {}
 
     def __getitem__(self, key):
-        return self.steps[key]
+        present = [step for step in self.steps if key == step]
+        if present: return self.steps[present[0]]
+        else: return self.steps[key]
 
     def __setitem__(self, key, val):
-        self.steps[key] = val
+        # We use '== operator instead of 'is'
+        present = [step for step in self.steps if key == step]
+        if present: self.steps[present[0]] = val
+        else: self.steps[key] = val
+        for prov in self.providers.values(): prov.set_changed()
 
     def __delitem__(self, key):
         del self.steps[key]
+        for prov in self.providers.values(): prov.set_changed()
+
+    def __getattr__(self, name):
+        if name[:3] != 'out':
+            super(StepProfile, self).__getattr__(name)
+        if (name in self.providers):
+            return self.providers[name]
+        suffix = { geometry.Cartesian2D: '2D',
+                   geometry.Cylindrical2D: 'Cyl',
+                   geometry.Cartesian3D: '3D' }[type(self.geometry)]
+        provider = flow.__dict__[name[3:] + "Provider" + suffix](self)
+        self.providers[name] = provider
+        return provider
 
     def __call__(self, mesh, *args):
         result = ones(len(mesh), self.dtype) * self.default
         for obj,val in self.steps.items():
-            result[fromiter( (_any(p in box for box in self.geometry.get_object_bboxes(obj)) for p in mesh), bool, len(mesh) )] = val
+            result[fromiter((self.geometry.object_contains(obj, p) for p in mesh), bool, len(mesh))] = val
         return result
 
 

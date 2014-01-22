@@ -319,7 +319,6 @@ bool EffectiveFrequencyCylSolver::updateCache()
                 ngCache[ir][0] = ngCache[ir][1];
             }
         }
-        
         return true;
     }
     return false;
