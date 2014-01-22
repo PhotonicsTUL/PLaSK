@@ -140,3 +140,6 @@ class Vector(unittest.TestCase):
         self.assertEqual( self.d2.conj(), plask.vec(1-2j, 0) )
         self.assertEqual( self.d3.conj(), plask.vec(1-2j, 0, 0) )
         self.assertEqual( list(self.a3), [1,2,3] )
+        self.assertEqual( self.b2 / 2, plask.vec(5, 10) )
+        self.c2 /= 2
+        self.assertEqual( self.c2, plask.vec(50, 100) )

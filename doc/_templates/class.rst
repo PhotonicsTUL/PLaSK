@@ -36,6 +36,9 @@ Attributes
 {%- endif %}
 {%- endblock %}
 
+{% block descriptions -%}
+{% if methods or attributes -%}
+
 Descriptions
 ------------
 
@@ -67,6 +70,9 @@ Descriptions
 
 {%- endif %}
 {%- endfor %}
+
+{%- endif %}
+{%- endblock %}
 
 {%- endif %}
 {%- endblock %}

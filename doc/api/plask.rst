@@ -28,24 +28,16 @@ Functions
    plot_material_param
 
 
-Special data types
-==================
+Classes
+=======
 
 .. autosummary::
    :toctree: plask
+   :template: class.rst
    :nosignatures:
 
-   vector
+   vec
    Data
-
-   
-Other classes
-=============
-
-.. autosummary::
-   :toctree: plask
-   :nosignatures:
-
    StepProfile
 
 

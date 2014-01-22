@@ -301,7 +301,7 @@ void register_standard_properties()
         "requested.\n\n"
 
         "Example:\n"
-        "   To create the solver that get a temperature from another source and\n"
+        "   To create the solver that gets temperature from another source and\n"
         "   increases it by 60 K, use the following class:\n\n"
 
         "   >>> class Hotter(object):\n"

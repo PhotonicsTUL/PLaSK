@@ -73,7 +73,7 @@ namespace detail {
                 }
                 data->convertible = storage;
             } catch (py::error_already_set) {
-                throw TypeError("Must provide either plask.vec or a sequence of length %1% of proper dtype", dim);
+                throw TypeError("Must provide either plask.vector or a sequence of length %1% of proper dtype", dim);
             }
         }
     };
@@ -202,6 +202,11 @@ struct VecAttr {
     static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
 };
 
+template <int dim, typename T>
+static Vec<dim,T> vector__div__float(const Vec<dim,T>& self, double f) { return self/f; }
+
+template <int dim, typename T>
+static Vec<dim,dcomplex> vector__div__complex(const Vec<dim,T>& self, dcomplex f) { return self * (1./f); }
 
 
 // Register vector class to python
@@ -248,16 +253,20 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def(py::self += py::other<V>())
         .def(py::self -= py::other<V>())
         .def(py::self *= T())
+        .def("__div__", &vector__div__float<dim,T>)
+        .def("__truediv__", &vector__div__float<dim,T>)
+        .def("__div__", &vector__div__complex<dim,T>)
+        .def("__truediv__", &vector__div__complex<dim,T>)
         .def("__mul__", dc)
         .def("__mul__", dr)
-        .def("dot", dc, "Dot product with another vector")
-        .def("dot", dr, "Dot product with another vector")
+        .def("dot", dc, py::arg("other"))
+        .def("dot", dr, py::arg("other"))
         .def("conjugate", c)
         .def("conj", c)
-        .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>, "Squared vector abs")
-        .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
-        .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>, "Vector magnitue")
-        .def("copy", &copy_vec<dim,T>)
+        .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>)
+        .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
+        .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
+        .def("copy", &copy_vec<dim,T>, "Make copy of the vector.")
         .add_static_property("dtype", &vec_dtype<dim,T>)
         .def("__array__", &vec__array__<dim,T>, py::arg("dtype")=py::object())
     ;
@@ -293,10 +302,12 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         --nk;
         py::object dtype;
         dtype = kwargs["dtype"];
-        if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
-        else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
-        else {
-            throw TypeError("wrong dtype (can be only double or complex)");
+        if (dtype != py::object()) {
+            if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
+            else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
+            else {
+                throw TypeError("wrong dtype (can be only double or complex)");
+            }
         }
     }
 
@@ -350,52 +361,155 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
 // Python doc
 const static std::string __doc__ =
 
-    "vector(*args, **kwargs)\n"
+    "vec(x,y,z, dtype=None)\n"
+    "vec(z,x,y, dtype=None)\n"
+    "vec(r,p,z, dtype=None)\n"
+    "vec(x,y, dtype=None)\n"
+    "vec(z,x, dtype=None)\n"
+    "vec(r,z, dtype=None)\n\n"
 
     "Create PLaSK vector.\n\n"
 
-    "vector(#, #[, #])\n"
-    "    initialize with ordered components\n"
-    "vector(x=#, y=#, z=#)\n"
-    "    initialize with Cartesian components (z or x skipped in 2D)\n"
-    "vector(r=#, p=#, z=#)\n"
-    "    initialize with cylindrical components (p skipped in 2D)\n\n"
+    "The constructor arguments depend on the current value of\n"
+    ":attr:`plask.config.axes`. However, you must either specify all the components\n"
+    "either as the unnamed sequence or as the named keywords.\n\n"
 
-    "The order of its components always corresponds to the structure orientation\n"
-    "(with the last component parallel to the epitaxial growth direction.\n\n"
+    "Args:\n"
+    "    number x, y, z, r, p: Vector components.\n"
+    "        Their choice depends on the current value of :attr:`plask.config.axes`.\n"
+    "    dtype (type): type of the vector components.\n"
+    "        If this argument is omitted or `None`, the type is determined\n"
+    "        automatically.\n\n"
 
-    "However, the component names depend on the config.axes configuration option.\n"
-    "Changing this option will change the order of component names accordingly:\n\n"
+    "The order of vector components is always [`longitudinal`, `transverse`,\n"
+    "`vertical`] for 3D vectors or [`transverse`, `vertical`] for 2D vectors.\n"
+    "However, the component names depend on the :attr:`~plask.config.axes`\n"
+    "configuration option. Changing this option will change the order of component\n"
+    "names (even for existing vectors) accordingly:\n\n"
 
-    "config.axes = 'xyz' (equivalents are 'yz' or 'z_up'):\n"
-    "   2D vectors: [y,z], 3D vectors: [x,y,z]\n"
-    "config.axes = 'zxy' (equivalents are 'xy' or 'y_up'):\n"
-    "   2D vectors: [x,y], 3D vectors: [z,x,y]\n"
-    "config.axes = 'prz' (equivalents are 'rz' or 'rad'):\n"
-    "   2D vectors: [r,z], 3D vectors: [p,r,z]\n"
-    "config.axes = 'lon,tran,up' (equivalent is 'absolute'):\n"
-    "   2D vectors: [tran,up], 3D vectors: [lon,tran,up]\n"
+    "================================  =====================  =====================\n"
+    "plask.config.axes value           2D vector components   3D vector components\n"
+    "================================  =====================  =====================\n"
+    "`xyz`, `yz`, `z_up`               [`y`, `z`]             [`x`, `y`, `z`]\n"
+    "`zxy`, `xy`, `y_up`               [`x`, `y`]             [`z`, `x`, `y`]\n"
+    "`prz`, `rz`, `rad`                [`r`, `z`]             [`p`, `r`, `z`]\n"
+    "`lon,tran,up`, `absolute`, `abs`  [`tran`, `up`]         [`lon`, `tran`, `up`]\n"
+    "================================  =====================  =====================\n\n"
 
     "Examples:\n"
-    "    Create two-dimensional vector.\n"
+    "    Create two-dimensional vector:\n\n"
+
     "    >>> vector(1, 2)\n"
-    "    vector(1, 2)\n    \n"
+    "    vector(1, 2)\n\n"
 
-    "    Create 3D vector specifying components in rotated coordinate system.\n"
+    "    Create 3D vector specifying components in rotated coordinate system:\n\n"
+
     "    >>> config.axes = 'xy'\n"
-    "    >>> vector(x=1, y=2, z=3)\n"
-    "    vector(3, 2, 1)\n    \n"
+    "    >>> vec(x=1, y=2, z=3)\n"
+    "    plask.vec(3, 1, 2)\n\n"
 
-    "    Create 3D vector specifying components.\n"
+    "    Create 3D vector specifying components:\n\n"
+
     "    >>> config.axes = 'xyz'\n"
-    "    >>> vector(x=1, z=2, y=3)\n"
-    "    vector(1, 3, 2)\n    \n"
+    "    >>> vec(x=1, z=2, y=3)\n"
+    "    plask.vec(1, 3, 2)\n\n"
 
-    "    Create 2D vector in cylindrical coordinates, specifying dtype.\n"
+    "    Create 2D vector in cylindrical coordinates, specifying dtype:\n\n"
+
     "    >>> config.axes = 'rz'\n"
-    "    >>> vector(r=2, z=0, dtype=complex)\n"
-    "    vector(2, 0)\n"
+    "    >>> vec(r=2, z=0, dtype=complex)\n"
+    "    plask.vec(2, 0)\n\n"
 
+    "To access vector components you may either use attribute names or numerical\n"
+    "indexing. The ordering and naming rules are the same as for the construction.\n"
+
+    "Examples:\n\n"
+
+    "    >>> config.axes = 'xyz'\n"
+    "    >>> v = vec(1, 2, 3)\n"
+    "    >>> v.z\n"
+    "    3\n"
+    "    >>> v[0]\n"
+    "    1\n\n"
+
+    "You may perfrom all the proper algebraic operations on PLaSK vectors like\n"
+    "addition, substraction, multiplication by scalar, multiplication by another\n"
+    "vector (which results in a dot product). In addition you have access to methods\n"
+    "and attributes stated below:\n\n"
+
+    ".. rubric:: Methods\n\n"
+
+    "=================== ================================\n"
+    ":meth:`abs()`       Magnitude of the vector.\n"
+    ":meth:`abs2()`      Squared magnitude of the vector.\n"
+    ":meth:`conj()`      Conjugate of the vector.\n"
+    ":meth:`conjugate()` Conjugate of the vector.\n"
+    ":meth:`copy()`      Copy of the vector.\n"
+    ":meth:`dot()`       Dot product with another vector.\n"
+    "=================== ================================\n\n"
+
+    ".. rubric:: Attributes\n\n"
+
+    "============= ==============================\n"
+    ":attr:`dtype` Type od the vector components.\n"
+    "============= ==============================\n\n"
+
+    "Examples:\n\n"
+
+    "    >>> v1 = vec(1, 2, 3)\n"
+    "    >>> v2 = vec(10, 20, 30)\n"
+    "    >>> v1 + v2\n"
+    "    plask.vec(11, 22, 33)\n"
+    "    >>> 2 * v1\n"
+    "    plask.vec(2, 4, 6)\n"
+    "    >>> v1 * v2\n"
+    "    140.0\n"
+    "    >>> abs(v1)\n"
+    "    >>> v3 = vec(0, 1+2j)\n"
+    "    >>> v3.conj()\n"
+    "    plask.vec(0, 1-2j)\n"
+    "    >>> v3.abs2()\n"
+    "    5.0\n\n"
+
+    "Descriptions\n"
+    "^^^^^^^^^^^^\n"
+
+    ".. rubric:: Method Details\n\n"
+
+    ".. method:: abs()\n\n"
+
+    "   Magnitude of the vector. It is always a real number.\n\n"
+
+    ".. method:: abs2()\n\n"
+
+    "   Squared magnitude of the vector. It is always a real number equal to\n"
+    "   ``v * v``.\n\n"
+
+    ".. method:: conj()\n\n"
+
+    "   Conjugate of the vector. It can be called for real vectors, but then it\n"
+    "   simply returns `self`\n\n"
+
+    ".. method:: conjugate()\n\n"
+
+    "   Conjugate of the vector. Alias for :meth:`conj`.\n\n"
+
+    ".. method:: copy()\n\n"
+
+    "   Copy of the vector. Normally vectors behave like Python containers, and\n"
+    "   assignement operation makes shallow copy only. Use this method if you want\n"
+    "   to modify the copy without changing the source.\n\n"
+
+    ".. method:: dot(other)\n\n"
+
+    "   Dot product with another vector. It is equal to `self` * `other`, so the\n"
+    "   `self` vector is conjugated.\n\n"
+
+    ".. rubric:: Attribute Details\n\n"
+
+    ".. attribute:: dtype\n\n"
+
+    "   Type od the vector components. This is always either ``float`` or ``complex``.\n"
     ;
 
 void register_vectors()
@@ -405,14 +519,13 @@ void register_vectors()
 
     py::to_python_converter<Vec<1,double>, detail::Vec1_to_Python<double>>();
 
-    register_vector_class<2,double>("vector2f");
-    register_vector_class<2,dcomplex>("vector2fc");
-    register_vector_class<3,double>("vector3f");
-    register_vector_class<3,dcomplex>("vector2c");
+    register_vector_class<2,double>("vec");
+    register_vector_class<2,dcomplex>("vec");
+    register_vector_class<3,double>("vec");
+    register_vector_class<3,dcomplex>("vec");
 
-    py::def("vector", py::raw_function(&new_vector));
-    py::scope().attr("vector").attr("__doc__") = __doc__.c_str();
-    py::scope().attr("vec") = py::scope().attr("vector");
+    py::def("vec", py::raw_function(&new_vector));
+    py::scope().attr("vec").attr("__doc__") = __doc__.c_str();
 }
 
 }} // namespace plask::python

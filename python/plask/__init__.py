@@ -202,13 +202,68 @@ del warnings
 
 class StepProfile(object):
     """
-    Helper callable class for creating any step profile for use in custom providers.
+    Step profile for use in custom providers.
+
+    Create a step profile class that can set a constant value of any scalar field
+    in an arbitrary geometry object. Typical use of this class is setting an
+    arbitrary heat source or step-profile material gain located in a chosen geometry
+    object.
+
+    Args:
+        geometry: Geometry in which the step-profile is defined.
+            It must be known in order to properly map the absolute mesh coordinates
+            to the step-profile items.
+        default: Default value of the provided field, returned in all non-referenced
+            geometry objects.
+        dtype: Type of the returned value. Defaults to `None`, in which case it is
+            determined by the type of `default`.
+
+    After creation, set the desired values at chosen geometry objects using item
+    access [] notation:
+
+    >>> profile[geometry_object] = value
+
+    Then, you may retrieve the provider of a desired type using the normal outXXX
+    name:
+
+    >>> solver.inProperty = profile.outProperty
+
+    This way you create a provider of the proper type and  associate it with the
+    profile, so each time, the profile is in any way changed, all the receivers
+    connected to the provider get notified.
+
+    Example:
+        To create a heat source profile that sets some heat at the object named
+        `hot`:
+
+        >>> hot = geometry.Rectangle(20,2, 'GaAs')
+        >>> cold = geometry.Rectangle(20,10, 'GaAs')
+        >>> stack = geometry.Stack2D()
+        >>> stack.prepend(hot)
+        <plask.geometry.PathHint at 0x47466b0>
+        >>> stack.prepend(cold)
+        <plask.geometry.PathHint at 0x47469e0>
+        >>> geom = geometry.Cylindrical2D(stack)
+        >>> profile = StepProfile(geom)
+        >>> profile[hot] = 1e7
+        >>> receiver = flow.HeatReceiverCyl()
+        >>> receiver.connect(profile.outHeat)
+        >>> list(receiver(mesh.Rectilinear2D([10], [5, 11])))
+        [0.0, 10000000.0]
+        >>> receiver.changed
+        False
+        >>> profile[hot] = 2e7
+        >>> receiver.changed
+        True
+        >>> list(receiver(mesh.Rectilinear2D([10], [5, 11])))
+        [0.0, 20000000.0]
+
     """
 
     def __init__(self, geometry, default=0., dtype=None):
         self.steps = {}
-        self.geometry = geometry
-        self.default = default
+        self._geometry = geometry
+        self._default = default
         self.dtype = dtype if dtype is not None else type(default)
         self.providers = {}
 
@@ -235,17 +290,45 @@ class StepProfile(object):
             return self.providers[name]
         suffix = { geometry.Cartesian2D: '2D',
                    geometry.Cylindrical2D: 'Cyl',
-                   geometry.Cartesian3D: '3D' }[type(self.geometry)]
+                   geometry.Cartesian3D: '3D' }[type(self._geometry)]
         provider = flow.__dict__[name[3:] + "Provider" + suffix](self)
         self.providers[name] = provider
         return provider
 
     def __call__(self, mesh, *args):
-        result = ones(len(mesh), self.dtype) * self.default
+        result = ones(len(mesh), self.dtype) * self._default
         for obj,val in self.steps.items():
-            result[fromiter((self.geometry.object_contains(obj, p) for p in mesh), bool, len(mesh))] = val
+            result[fromiter((self._geometry.object_contains(obj, p) for p in mesh), bool, len(mesh))] = val
         return result
 
+    @property
+    def default(self):
+        '''Default value of the profile.
+
+           This value is returned for all mesh points that are located outside any
+           of the geometry objects with a specified value.
+        '''
+        return self._default
+
+    @default.setter
+    def default(self, val):
+        self._default = val
+        for prov in self.providers.values(): prov.set_changed()
+
+    @property
+    def geometry(self):
+        '''Profile geometry. (read only)'''
+        return self._geometry
+
+    def clear_providers(self):
+        '''Clear orphaned providers.
+
+           Remove all associated providers that are not used elsewhere.
+        '''
+        keys = list(self.providers.keys())
+        for key in keys:
+            if _sys.getrefcount(self.providers[key]) == 2:
+                del self.providers[key]
 
 ## ##  ## ##
 
