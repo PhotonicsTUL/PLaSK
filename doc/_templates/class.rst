@@ -7,7 +7,7 @@
 .. autoclass:: {{ fullname }}
 
 {%- block methods %}
-{%- if methods %}
+{%- if methods and methods != ['__init__'] %}
 
 Methods
 -------
@@ -37,13 +37,13 @@ Attributes
 {%- endblock %}
 
 {% block descriptions -%}
-{% if methods or attributes -%}
+{% if (methods and methods != ['__init__']) or attributes -%}
 
 Descriptions
 ------------
 
 {%- block methods_desc %}
-{%- if methods %}
+{%- if methods and methods != ['__init__'] %}
 
 .. rubric:: Method Details
 

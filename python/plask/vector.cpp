@@ -224,9 +224,8 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
 
     py::class_<V> vec_class = py::class_<V>(name.c_str(),
         "PLaSK vector.\n\n"
-        "See Also\n"
-        "--------\n"
-        "vector\t:\tcreate a new vector.\n"
+        "See Also:\n"
+        "    vec: create a new vector.\n"
         , py::no_init);
     vec_class
         .def("__getattr__", &VecAttr<dim,T>::get)
@@ -260,14 +259,26 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("__mul__", dc)
         .def("__mul__", dr)
         .def("dot", dc, py::arg("other"))
-        .def("dot", dr, py::arg("other"))
-        .def("conjugate", c)
-        .def("conj", c)
-        .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>)
-        .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
+        .def("dot", dr, py::arg("other"),
+             "Dot product with another vector. It is equal to `self` * `other`, so the\n"
+             "`self` vector is conjugated.\n")
+        .def("conjugate", c,
+             "Conjugate of the vector. Alias for :meth:`conj`.\n")
+        .def("conj", c,
+             "Conjugate of the vector. It can be called for real vectors, but then it\n"
+             "simply returns `self`\n")
+        .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>,
+             "Squared magnitude of the vector. It is always a real number equal to\n"
+             "``v * v``.\n")
+        .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>,
+             "Magnitude of the vector. It is always a real number.\n")
         .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
-        .def("copy", &copy_vec<dim,T>, "Make copy of the vector.")
-        .add_static_property("dtype", &vec_dtype<dim,T>)
+        .def("copy", &copy_vec<dim,T>,
+             "Copy of the vector. Normally vectors behave like Python containers, and\n"
+             "assignement operation makes shallow copy only. Use this method if you want\n"
+             "to modify the copy without changing the source.\n")
+        .add_static_property("dtype", &vec_dtype<dim,T>,
+             "Type od the vector components. This is always either ``float`` or ``complex``.\n")
         .def("__array__", &vec__array__<dim,T>, py::arg("dtype")=py::object())
     ;
 
@@ -359,7 +370,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
 
 
 // Python doc
-const static std::string __doc__ =
+const static char* __doc__ =
 
     "vec(x,y,z, dtype=None)\n"
     "vec(z,x,y, dtype=None)\n"
@@ -387,14 +398,15 @@ const static std::string __doc__ =
     "configuration option. Changing this option will change the order of component\n"
     "names (even for existing vectors) accordingly:\n\n"
 
-    "================================  =====================  =====================\n"
-    "plask.config.axes value           2D vector components   3D vector components\n"
-    "================================  =====================  =====================\n"
-    "`xyz`, `yz`, `z_up`               [`y`, `z`]             [`x`, `y`, `z`]\n"
-    "`zxy`, `xy`, `y_up`               [`x`, `y`]             [`z`, `x`, `y`]\n"
-    "`prz`, `rz`, `rad`                [`r`, `z`]             [`p`, `r`, `z`]\n"
-    "`lon,tran,up`, `absolute`, `abs`  [`tran`, `up`]         [`lon`, `tran`, `up`]\n"
-    "================================  =====================  =====================\n\n"
+    "============================== ======================== ========================\n"
+    "plask.config.axes value        2D vector components     3D vector components\n"
+    "============================== ======================== ========================\n"
+    "`xyz`, `yz`, `z_up`            [`y`, `z`]               [`x`, `y`, `z`]\n"
+    "`zxy`, `xy`, `y_up`            [`x`, `y`]               [`z`, `x`, `y`]\n"
+    "`prz`, `rz`, `rad`             [`r`, `z`]               [`p`, `r`, `z`]\n"
+    "`ltv`, `abs`                   [`t`, `v`]               [`l`, `t`, `v`]\n"
+    "`long,tran,vert`, `absolute`   [`tran`, `vert`]         [`long`, `tran`, `vert`]\n"
+    "============================== ======================== ========================\n\n"
 
     "Examples:\n"
     "    Create two-dimensional vector:\n\n"
@@ -434,25 +446,7 @@ const static std::string __doc__ =
 
     "You may perfrom all the proper algebraic operations on PLaSK vectors like\n"
     "addition, substraction, multiplication by scalar, multiplication by another\n"
-    "vector (which results in a dot product). In addition you have access to methods\n"
-    "and attributes stated below:\n\n"
-
-    ".. rubric:: Methods\n\n"
-
-    "=================== ================================\n"
-    ":meth:`abs()`       Magnitude of the vector.\n"
-    ":meth:`abs2()`      Squared magnitude of the vector.\n"
-    ":meth:`conj()`      Conjugate of the vector.\n"
-    ":meth:`conjugate()` Conjugate of the vector.\n"
-    ":meth:`copy()`      Copy of the vector.\n"
-    ":meth:`dot()`       Dot product with another vector.\n"
-    "=================== ================================\n\n"
-
-    ".. rubric:: Attributes\n\n"
-
-    "============= ==============================\n"
-    ":attr:`dtype` Type od the vector components.\n"
-    "============= ==============================\n\n"
+    "vector (which results in a dot product).\n\n"
 
     "Examples:\n\n"
 
@@ -470,46 +464,6 @@ const static std::string __doc__ =
     "    plask.vec(0, 1-2j)\n"
     "    >>> v3.abs2()\n"
     "    5.0\n\n"
-
-    "Descriptions\n"
-    "^^^^^^^^^^^^\n"
-
-    ".. rubric:: Method Details\n\n"
-
-    ".. method:: abs()\n\n"
-
-    "   Magnitude of the vector. It is always a real number.\n\n"
-
-    ".. method:: abs2()\n\n"
-
-    "   Squared magnitude of the vector. It is always a real number equal to\n"
-    "   ``v * v``.\n\n"
-
-    ".. method:: conj()\n\n"
-
-    "   Conjugate of the vector. It can be called for real vectors, but then it\n"
-    "   simply returns `self`\n\n"
-
-    ".. method:: conjugate()\n\n"
-
-    "   Conjugate of the vector. Alias for :meth:`conj`.\n\n"
-
-    ".. method:: copy()\n\n"
-
-    "   Copy of the vector. Normally vectors behave like Python containers, and\n"
-    "   assignement operation makes shallow copy only. Use this method if you want\n"
-    "   to modify the copy without changing the source.\n\n"
-
-    ".. method:: dot(other)\n\n"
-
-    "   Dot product with another vector. It is equal to `self` * `other`, so the\n"
-    "   `self` vector is conjugated.\n\n"
-
-    ".. rubric:: Attribute Details\n\n"
-
-    ".. attribute:: dtype\n\n"
-
-    "   Type od the vector components. This is always either ``float`` or ``complex``.\n"
     ;
 
 void register_vectors()
@@ -525,7 +479,7 @@ void register_vectors()
     register_vector_class<3,dcomplex>("vec");
 
     py::def("vec", py::raw_function(&new_vector));
-    py::scope().attr("vec").attr("__doc__") = __doc__.c_str();
+    py::scope().attr("vec").attr("__doc__") = __doc__;
 }
 
 }} // namespace plask::python

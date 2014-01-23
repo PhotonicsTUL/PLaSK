@@ -68,13 +68,89 @@ std::string Config:: __repr__() const {
 
 inline static void register_config()
 {
-    py::class_<Config> config_class("config", "Global PLaSK configuration.", py::no_init);
+    py::class_<Config> config_class("config",
+
+        "Global PLaSK configuration.\n\n"
+
+        "This class has only one instance and it contains global configuration options.\n"
+        "The attributes of this class are config parameters that can be set using the\n"
+        "``config`` object.\n\n"
+
+        "Examples:\n"
+        "    >>> config.axes = 'xy'\n"
+        "    >>> config.log.level = 'debug'\n"
+        "    >>> print config\n"
+        "    axes:        zxy\n"
+        "    log.color:   ansi\n"
+        "    log.level:   DEBUG\n"
+        "    log.output:  stdout\n"
+
+        , py::no_init);
     config_class
         .def("__str__", &Config::__str__)
         .def("__repr__", &Config::__repr__)
         .add_property("axes", &Config::axes_name, &Config::set_axes,
-                      "String representing axis names")
-        .add_property("log", &getLoggingConfig, "Settings of the logging system");
+                      "String representing axis names.\n\n"
+
+                      "The accepted values are listed below. Each shows different aliases for the same\n"
+                      "axes:\n\n"
+
+                      "================ ================ ================\n"
+                      "`xyz`            `yz`             `z_up`\n"
+                      "`zxy`            `xy`             `y_up`\n"
+                      "`prz`            `rz`             `rad`\n"
+                      "`ltv`                             `abs`\n"
+                      "`long,tran,vert`                  `absolute`\n"
+                      "================ ================ ================\n\n"
+
+                      "The choice of the axes should depend on your structure. In Cartesian coordinates\n"
+                      "you probablye prefer `xyz` or `zxy`. In cylindrical ones the most natural choice\n"
+                      "is `prz`. However, it is important to realize that any names can be chosen in\n"
+                      "any geometry and they are fully independent from it.\n"
+                     )
+        .add_property("log", &getLoggingConfig,
+                      "Settings of the logging system.\n\n"
+
+                      "This setting has several subattributes listed below:\n\n"
+
+                      "**color**\n"
+                      "        System used for coloring the log messages depending on their level.\n"
+                      "        This parameter can have on of the following values:\n\n"
+
+                      "        :ansi:    Use ANSI codes for coloring. Works best in UNIX-like systems\n"
+                      "                  (Linux, OSX) or with GUI launchers.\n"
+                      "        :windows: Use Windows API for coloring. Availale only on Windows.\n"
+                      "        :none:    Do not perform coloring at all. Recomended when redirecting\n"
+                      "                  output to a file.\n\n"
+
+                      "        On its start PLaSK tries to automatically determin the best value for\n"
+                      "        this option, so usually you will not need to change it.\n\n"
+
+                      "**level**\n"
+                      "        Maximum logging level. It can be one of:\n\n"
+
+                      "        :CRITICAL_ERROR: Critical errors that result in program interruption.\n"
+                      "        :ERROR:          Minor errors that do not break the whole program flow.\n"
+                      "        :ERROR_DETAIL:   Details of the errors with more information on them.\n"
+                      "        :WARNING:        Important warnings that you investiagate.\n"
+                      "        :INFO:           General information of the executed operations.\n"
+                      "        :RESULT:         Some intermediate computations results.\n"
+                      "        :DATA:           Some data used for tracking the computations.\n"
+                      "        :DETAIL:         Details of computations processes.\n"
+                      "        :DEBUG:          Additional information useful for debugging PLaSK.\n\n"
+
+                      "        Setting any of the above levels will instruct PLaSK to print only\n"
+                      "        information of the specified level and above. It is recommended to\n"
+                      "        always set the logging level at least to 'WARNING'.\n\n"
+
+                      "**output**\n"
+                      "        Stream to which the log messages are prited. Can be either **stderr**\n"
+                      "        (which is the default) or **stdout** (turned on for interactive mode).\n\n"
+
+                      "Usually you should only want to change the :attr:`config.log.level` value.\n"
+                      "However this setting is ignored when the :option:`-l` option of the ``plask``\n"
+                      "program is specified.\n"
+                     );
     py::scope().attr("config") = Config();
 }
 

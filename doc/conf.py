@@ -323,3 +323,13 @@ def setup(app):
     app.add_directive('exec', ExecDirective)
     ExecDirective.app = app
 
+# -- Some tricks with plask for better documentation -------------------------------
+
+vec = plask.vec(0., 0.)
+doc = plask.vec.__doc__
+plask.vec = type(vec)
+plask.vec.__doc__ = doc
+del vec
+del doc
+
+plask.config = type(plask.config)

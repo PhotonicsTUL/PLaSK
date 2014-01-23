@@ -66,7 +66,7 @@ class MultiSigMixin(object):
 
         setattr(self, '__new_doclines', doclines)
 
-        return sigs
+        return list(set(sigs)) # this way we sort it and remove duplicates
 
     def add_directive_header(self, sig):
         domain = getattr(self, 'domain', 'py')

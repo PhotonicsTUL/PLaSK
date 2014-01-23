@@ -17,8 +17,8 @@ AxisNames::Register AxisNames::axisNamesRegister =
         ("x", "y", "z", "yz", "se", "z_up")
         ("z", "x", "y", "xy", "ee", "y_up")
         ("p", "r", "z", "rz", "rad")
-        ("l", "t", "v", "abs1")
-        ("long", "tran", "vert", "absolute", "abs");
+        ("l", "t", "v", "abs")
+        ("long", "tran", "vert", "absolute");
 
 
 AxisNames::AxisNames(const std::string& c0_name, const std::string& c1_name, const std::string& c2_name)
