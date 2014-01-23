@@ -7,6 +7,20 @@
 .. automodule:: plask
 
 
+Classes
+=======
+
+.. autosummary::
+   :toctree: plask
+   :template: class.rst
+   :nosignatures:
+
+   config
+   vec
+   Data
+   StepProfile
+
+
 Functions
 =========
 
@@ -28,26 +42,13 @@ Functions
    plot_material_param
 
 
-Classes
-=======
-
-.. autosummary::
-   :toctree: plask
-   :template: class.rst
-   :nosignatures:
-
-   vec
-   Data
-   StepProfile
-   config
-
-
 Descriptions
 ============
 
 .. rubric:: Function Details
 
 .. autofunction::   loadxpl
+.. autofunction::   runxpl
 .. autofunction::   print_log
 
 .. autofunction::   save_field

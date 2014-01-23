@@ -92,8 +92,8 @@ inline static void register_config()
         .add_property("axes", &Config::axes_name, &Config::set_axes,
                       "String representing axis names.\n\n"
 
-                      "The accepted values are listed below. Each shows different aliases for the same\n"
-                      "axes:\n\n"
+                      "The accepted values are listed below. Each row shows different aliases for\n"
+                      "the same axes:\n\n"
 
                       "================ ================ ================\n"
                       "`xyz`            `yz`             `z_up`\n"
