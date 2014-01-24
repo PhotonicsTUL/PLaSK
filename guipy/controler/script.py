@@ -28,8 +28,8 @@ if hasPyCode:
 
 class ScriptControler(SourceEditControler):
     
-    def __init__(self, model = ScriptModel()):
-        SourceEditControler.__init__(self, model)
+    def __init__(self, document, model = ScriptModel()):
+        SourceEditControler.__init__(self, document, model)
 
     def createSourceEditor(self, parent = None):
         if hasPyCode:

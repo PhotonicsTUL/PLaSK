@@ -11,14 +11,15 @@ class XPLDocument(object):
     def __init__(self, main):
         object.__init__(self)
         self.controlers = [
-              DefinesControler(main),  #defines
-              SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[1])),  #materials
-              SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
-              SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
-              SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  #solvers
-              SourceEditControler(SectionModelTreeBased(XPLDocument.SECTION_NAMES[5])),  #connects
-              ScriptControler()   #script
+              DefinesControler(self),  #defines
+              SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[1])),  #materials
+              SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
+              SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
+              SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  #solvers
+              SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[5])),  #connects
+              ScriptControler(self)   #script
               ]
+        self.mainWindow = main
         #self.tree = ElementTree()
            
     def loadFromFile(self, fileName):

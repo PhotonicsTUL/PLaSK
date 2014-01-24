@@ -62,7 +62,7 @@ class MainWindow(QtGui.QMainWindow):
     def currentSectionExit(self):
         """"Should be called just before left the current section."""
         if self.current_tab_index != -1:
-            if not exceptionToMsg(lambda: self.document.getControlerByIndex(self.current_tab_index).onEditExit(self),
+            if not exceptionToMsg(lambda: self.document.getControlerByIndex(self.current_tab_index).onEditExit(),
                                   self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
                 return False
@@ -71,7 +71,7 @@ class MainWindow(QtGui.QMainWindow):
     def currentSectionEnter(self):
         """"Should be called just after set the current section."""
         if self.current_tab_index != -1:
-            self.document.getControlerByIndex(self.current_tab_index).onEditEnter(self)
+            self.document.getControlerByIndex(self.current_tab_index).onEditEnter()
         
     def tabChange(self, index):
         if index == self.current_tab_index: return
@@ -80,15 +80,26 @@ class MainWindow(QtGui.QMainWindow):
             return
         self.current_tab_index = index
         self.currentSectionEnter()
-            
-    def setSectionActions(self, *actions):
-        self.section_toolbar.clear()
+        
+    def setActions(self, toolbar_name, *actions):
+        try:
+            toolbar = self.extra_toolbars[toolbar_name]
+        except KeyError:
+            toolbar = self.addToolBar(toolbar_name)
+            self.extra_toolbars[toolbar_name] = toolbar
+        toolbar.clear()
         for a in actions:
             if not a:
-                self.section_toolbar.addSeparator()
+                toolbar.addSeparator()
             else:
-                self.section_toolbar.addAction(a)
-        self.section_toolbar.setVisible(bool(actions))
+                toolbar.addAction(a)
+        toolbar.setVisible(bool(actions))
+            
+    def setSectionActions(self, *actions):
+        self.setActions('Section edit', *actions)
+        
+    def setEditorSelectActions(self, *actions):
+        self.setActions('Section editor', *actions)
         
     def initUI(self):
         
@@ -142,9 +153,7 @@ class MainWindow(QtGui.QMainWindow):
         #toolbar.addAction(exitAction)
         #toolbar.addSeparator()
         #toolbar.addAction(showSourceAction)
-        
-        self.section_toolbar = self.addToolBar('Section')
-        self.section_toolbar.hide()
+        self.extra_toolbars = {}
         
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)

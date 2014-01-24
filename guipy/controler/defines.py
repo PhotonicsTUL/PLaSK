@@ -3,16 +3,16 @@ from controler.base import SourceEditControler
 from model.defines import DefinesModel
 from utils import showError
 
+# TODO use GUIAndSourceControler, remove most of code
 class DefinesControler(SourceEditControler):
 
-    def __init__(self, main, model = DefinesModel()):
-        SourceEditControler.__init__(self, model)
+    def __init__(self, document, model = DefinesModel()):
+        SourceEditControler.__init__(self, document, model)
         self.editorWidget = QtGui.QStackedWidget()
         self.table = QtGui.QTableView()
         self.table.setModel(self.model)
         self.editorWidget.addWidget(self.table)
         self.editorWidget.addWidget(self.getSourceEditor())
-        self.main = main
         
     def isInSourceEditor(self):
         return self.editorWidget.currentIndex() == 1
@@ -20,9 +20,9 @@ class DefinesControler(SourceEditControler):
     def initCurrentEditor(self):
         if self.isInSourceEditor():
             self.getSourceEditor().setPlainText(self.model.getText())
-            self.main.setSectionActions(self.getShowSourceAction(self.main))
+            self.document.mainWindow.setSectionActions(self.getShowSourceAction())
         else:
-            self.main.setSectionActions(self.getShowSourceAction(self.main), None, *self.getTableEditActions(self.main))
+            self.document.mainWindow.setSectionActions(self.getShowSourceAction(), None, *self.getTableEditActions())
         
     def changeEditor(self):
         new_index = int(self.showSourceAction.isChecked())
@@ -37,9 +37,9 @@ class DefinesControler(SourceEditControler):
         self.editorWidget.setCurrentIndex(new_index)
         self.initCurrentEditor()
         
-    def getShowSourceAction(self, parent):
+    def getShowSourceAction(self):
         if not hasattr(self, 'showSourceAction'):
-            self.showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor'), '&Show source', parent)
+            self.showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor'), '&Show source', self.document.mainWindow)
             self.showSourceAction.setCheckable(True)
             self.showSourceAction.setStatusTip('Show XPL source of the current section')
             self.showSourceAction.triggered.connect(self.changeEditor)
@@ -48,13 +48,13 @@ class DefinesControler(SourceEditControler):
     def getEditor(self):
         return self.editorWidget
 
-    def onEditEnter(self, main):
+    def onEditEnter(self):
         self.initCurrentEditor()
 
     # when editor is turn off, model should be update
-    def onEditExit(self, main):
+    def onEditExit(self):
         if self.isInSourceEditor(): self.model.setText(self.getSourceEditor().toPlainText())
-        main.setSectionActions()
+        self.document.mainWindow.setSectionActions()
         
     def addDefine(self):
         index = self.table.selectionModel().currentIndex()
@@ -85,20 +85,20 @@ class DefinesControler(SourceEditControler):
             self.model.swapNeighbourEntries(index, index+1)
             #self.table.selectRow(index+1)
     
-    def getTableEditActions(self, parent):
-            self.addAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-add'), '&Add definition', parent)
+    def getTableEditActions(self):
+            self.addAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-add'), '&Add definition', self.document.mainWindow)
             self.addAction.setStatusTip('Add new definition to the list')
             self.addAction.triggered.connect(self.addDefine)
             
-            self.removeAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove definition', parent)
+            self.removeAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove definition', self.document.mainWindow)
             self.removeAction.setStatusTip('Remove selected definition from the list')
             self.removeAction.triggered.connect(self.removeDefine)
             
-            self.moveUpAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', parent)
+            self.moveUpAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', self.document.mainWindow)
             self.moveUpAction.setStatusTip('Change order of entries: move current entry up')
             self.moveUpAction.triggered.connect(self.moveUp)
             
-            self.moveDownAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', parent)
+            self.moveDownAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', self.document.mainWindow)
             self.moveDownAction.setStatusTip('Change order of entries: move current entry down')
             self.moveDownAction.triggered.connect(self.moveDown)
             
