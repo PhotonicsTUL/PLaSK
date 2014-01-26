@@ -15,8 +15,9 @@ namespace py = boost::python;
 /// Generic declaration of mesh generator
 template <typename MeshType>
 py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, py::bases<MeshGenerator>, boost::noncopyable>
-ExportMeshGenerator(const std::string name) {
-    py::scope scope = py::object(py::scope().attr(name.c_str()));
+ExportMeshGenerator(py::object parent) {
+    py::scope scope = parent;
+    std::string name = py::extract<std::string>(parent.attr("__name__"));
     py::class_<MeshGeneratorOf<MeshType>, shared_ptr<MeshGeneratorOf<MeshType>>, py::bases<MeshGenerator>, boost::noncopyable>
     pyclass("Generator", ("Base class for all "+name+" mesh generators.").c_str(), py::no_init);
     pyclass.def("__call__", &MeshGeneratorOf<MeshType>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));

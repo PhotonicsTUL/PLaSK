@@ -21,6 +21,10 @@ void register_mesh()
     py::scope().attr("mesh") = mesh_module;
     py::scope scope = mesh_module;
 
+    scope.attr("__doc__") =
+        "Meshes classes.\n\n"
+    ;
+
     py::class_<Mesh, shared_ptr<Mesh>, boost::noncopyable>("Mesh", "Base class for all meshes", py::no_init)
         .def("__len__", &Mesh::size)
     ;

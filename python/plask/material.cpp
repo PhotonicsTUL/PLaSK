@@ -84,7 +84,7 @@ namespace detail {
             return boost::python::incref(tuple.ptr());
         }
     };
-    
+
     struct StringFromMaterial
     {
         StringFromMaterial() {
@@ -143,7 +143,7 @@ class PythonMaterial : public Material
     inline R override(const char* name, F f, Args... args) const {
         if (overriden(name)) return py::call_method<R>(self, name, args...);
         return ((*base).*f)(args...);
-    } 
+    }
 
   public:
     PythonMaterial () : base(new EmptyMaterial) {}
@@ -227,7 +227,7 @@ class PythonMaterial : public Material
         }
         return py::extract<Material::Kind>(okind);
     }
-    
+
     virtual double lattC(double T, char x) const override { return override<double>("lattC", &Material::lattC, T, x); }
     virtual double Eg(double T, double e, char point) const override { return override<double>("Eg", &Material::Eg, T, e, point); }
     virtual double CB(double T, double e, char point) const override {
@@ -585,6 +585,10 @@ void initMaterials() {
     py::scope().attr("material") = materials_module;
     py::scope scope = materials_module;
 
+    scope.attr("__doc__") =
+        "Materials and material database.\n\n"
+    ;
+
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
         "Material database class\n\n"
         "    The material database. Many semiconductor materials used in photonics are defined here.\n"
@@ -685,7 +689,7 @@ void initMaterials() {
     ;
 
     detail::StringFromMaterial();
-    
+
     py::def("_register_material_simple", &registerSimpleMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new simple material class to the database");
 

@@ -33,6 +33,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
               'sphinx.ext.autosummary', 'sphinx.ext.inheritance_diagram',
               'sphinx_domain_xml', 'sphinx_autodoc_cpp']
 
+
+# Use Napoleon if available for pretty docstrings formatting
+
 try:
     import sphinxcontrib.napoleon
 except ImportError:
@@ -107,6 +110,29 @@ pygments_style = 'sphinx'
 # -- Autosummary options -------------------------------------------------------
 
 autosummary_generate = True
+
+# Use our own generate script
+
+import sphinx.ext.autosummary
+
+def process_generate_options(app):
+    genfiles = app.config.autosummary_generate
+    ext = app.config.source_suffix
+    if genfiles and not hasattr(genfiles, '__len__'):
+        env = app.builder.env
+        genfiles = [x + ext for x in env.found_docs
+                    if os.path.isfile(env.doc2path(x))]
+    if not genfiles:
+        return
+    from autosummary_generate import generate_autosummary_docs
+    genfiles = [genfile + (not genfile.endswith(ext) and ext or '')
+                for genfile in genfiles]
+    generate_autosummary_docs(genfiles, builder=app.builder,
+                              warn=app.warn, info=app.info, suffix=ext,
+                              base_path=app.srcdir)
+
+sphinx.ext.autosummary.process_generate_options = process_generate_options
+
 
 
 # -- Options for HTML output ---------------------------------------------------
@@ -316,12 +342,43 @@ class ExecDirective(Directive):
         finally:
             sys.stdout = oldStdout
 
+# -- Hook for better LaTeX autosummary output --------------------------------------
+
+#import sphinx.writers.latex
+
+#def latex_visit_table(self, node):
+    #if self.table:
+        #raise sphinx.writers.latex.UnsupportedError(
+            #'%s:%s: nested tables are not yet implemented.' %
+            #(self.curfilestack[-1], node.line or ''))
+    #self.table = sphinx.writers.latex.Table()
+    ##self.table.longtable = 'longtable' in node['classes']
+    #self.table.longtable = False
+    #self.tablebody = []
+    #self.tableheaders = []
+    ## Redirect body output until table is finished.
+    #self._body = self.body
+    #self.body = self.tablebody
+
+#def latex_visit_thead(self, node):
+    #self.table.had_head = True
+    #if self.next_table_colspec:
+        #if not self.table.longtable and self.next_table_colspec == 'll':
+            #self.table.colspec = '{LL}\n'
+        #else:
+            #self.table.colspec = '{%s}\n' % self.next_table_colspec
+    #self.next_table_colspec = None
+    ## Redirect head output until header is finished. see visit_tbody.
+    #self.body = self.tableheaders
+
 
 # -- Register custom elements ------------------------------------------------------
 
 def setup(app):
     app.add_directive('exec', ExecDirective)
     ExecDirective.app = app
+    #sphinx.writers.latex.LaTeXTranslator.visit_table = latex_visit_table
+    #sphinx.writers.latex.LaTeXTranslator.visit_thead = latex_visit_thead
 
 # -- Some tricks with plask for better documentation -------------------------------
 

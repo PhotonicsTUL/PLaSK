@@ -54,6 +54,10 @@
 #     <td>Absolute path of the found sphinx-apidoc tool.</td>
 #   </tr>
 #   <tr>
+#     @tp @b Sphinx-autogen_EXECUTABLE @endtp
+#     <td>Absolute path of the found sphinx-autogen tool.</td>
+#   </tr>
+#   <tr>
 #     @tp @b Sphinx_VERSION_STRING @endtp
 #     <td>Sphinx version found e.g. 1.1.2.</td>
 #   </tr>
@@ -89,8 +93,8 @@ endif ()
 # ----------------------------------------------------------------------------
 # default components to look for
 if (NOT Sphinx_FIND_COMPONENTS)
-  set (Sphinx_FIND_COMPONENTS "build" "apidoc")
-elseif (NOT Sphinx_FIND_COMPONENTS MATCHES "^(build|apidoc)$")
+  set (Sphinx_FIND_COMPONENTS "build" "apidoc" "autogen")
+elseif (NOT Sphinx_FIND_COMPONENTS MATCHES "^(build|apidoc|autogen)$")
   message (FATAL_ERROR "Invalid Sphinx component in: ${Sphinx_FIND_COMPONENTS}")
 endif ()
 

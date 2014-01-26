@@ -88,17 +88,15 @@ To exit the shell type:
 
 On Windows you can find the "PLaSK Console" in the Start Menu which will start the interactive mode. Furthermore there is a simple graphical launcher provided, simply named "PLaSK". Just run it and press F5 to run your XPL or Python file in PLaSK. In the future this launcher will become a part of a more complex GUI.
 
-Program ``plask`` may be run with several command-line parameters that -- if present -- must be specified before the script name. The most useful parameters are:
-
-.. program:: plask
+Program ``plask`` may be run with several command-line parameters tha--if present--must be specified before the script name. The most useful parameters are:
 
 .. option:: -l loglevel
 
-	specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: error, error_detail, warning, info, result, data, detail, or debug. Mind that it is generally bad idea to set the logging level to anything less than warning.
+	specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: ``error``, ``error_detail``, ``warning``, ``info``, ``result``, ``data``, ``detail``, or ``debug``. Mind that it is generally a bad idea to set the logging level to anything less than warning.
 
 .. option:: -c command
 
-	run a single command instead of the script.
+	run a single command instead of a script.
 
 .. option:: -i
 

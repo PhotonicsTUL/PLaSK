@@ -6,17 +6,32 @@
 
 .. autoclass:: {{ fullname }}
 
+{%- block classes %}
+{%- if classes and classes != ['dtype'] %}
+
+Classes
+-------
+
+.. autosummary::
+   :nosignatures:
+   :toctree: {{ objname }}
+   :template: class.rst
+{% for item in classes -%}
+   ~{{ fullname }}.{{ item }}
+{%- endfor %}
+
+{%- endif %}
+{%- endblock %}
+
 {%- block methods %}
-{%- if methods and methods != ['__init__'] %}
+{%- if methods %}
 
 Methods
 -------
 
 .. autosummary::
 {% for item in methods %}
-{%- if not item.startswith('_') %}
    ~{{ fullname }}.{{ item }}
-{%- endif %}
 {%- endfor %}
 
 {%- endif %}
@@ -36,23 +51,39 @@ Attributes
 {%- endif %}
 {%- endblock %}
 
+{% block static_attributes -%}
+{% if static_attributes -%}
+
+Static Attributes
+-----------------
+
+======= ========================================================
+{% if 'dtype' in static_attributes -%}
+|dtype| Value type.
+{%- endif %}
+======= ========================================================
+
+.. |dtype| replace:: :attr:`~{{fullname}}.dtype`
+
+{%- endif %}
+{%- endblock %}
+
+
 {% block descriptions -%}
-{% if (methods and methods != ['__init__']) or attributes -%}
+{% if (methods) or attributes -%}
 
 Descriptions
 ------------
 
 {%- block methods_desc %}
-{%- if methods and methods != ['__init__'] %}
+{%- if methods %}
 
 .. rubric:: Method Details
 
 {%- for item in methods %}
-{%- if not item.startswith('_') %}
 
 .. automethod:: {{ fullname }}.{{ item }}
 
-{%- endif %}
 {%- endfor %}
 
 {%- endif %}
@@ -73,6 +104,22 @@ Descriptions
 
 {%- endif %}
 {%- endblock %}
+
+{%- endif %}
+{%- endblock %}
+
+{% block static_attributes_desc -%}
+{% if static_attributes -%}
+
+.. rubric:: Static Attribute Details
+
+{% if 'dtype' in static_attributes -%}
+.. attribute:: {{ fullname }}.dtype
+
+   Value type.
+
+   This attribute is the type of a single element in this vector.
+{%- endif %}
 
 {%- endif %}
 {%- endblock %}

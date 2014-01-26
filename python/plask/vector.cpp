@@ -448,7 +448,7 @@ const static char* __doc__ =
     "addition, substraction, multiplication by scalar, multiplication by another\n"
     "vector (which results in a dot product).\n\n"
 
-    "Examples:\n\n"
+    "Example:\n\n"
 
     "    >>> v1 = vec(1, 2, 3)\n"
     "    >>> v2 = vec(10, 20, 30)\n"

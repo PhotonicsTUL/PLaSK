@@ -1005,7 +1005,7 @@ void register_mesh_rectangular()
     ExportBoundary<RegularMesh3D> { regular3d };
     py::implicitly_convertible<RegularMesh3D, RectilinearMesh3D>();
 
-    ExportMeshGenerator<RectilinearMesh1D>("Rectilinear1D");
+    ExportMeshGenerator<RectilinearMesh1D>(rectilinear1d);
     {
         py::scope scope = rectilinear1d;
 
@@ -1018,7 +1018,7 @@ void register_mesh_rectangular()
         register_divide_generator<1>();
     }
 
-    ExportMeshGenerator<RectilinearMesh2D>("Rectilinear2D");
+    ExportMeshGenerator<RectilinearMesh2D>(rectilinear2d);
     {
         py::scope scope = rectilinear2d;
 
@@ -1031,7 +1031,7 @@ void register_mesh_rectangular()
         register_divide_generator<2>();
     }
 
-    ExportMeshGenerator<RectilinearMesh3D>("Rectilinear3D");
+    ExportMeshGenerator<RectilinearMesh3D>(rectilinear3d);
     {
         py::scope scope = rectilinear3d;
 

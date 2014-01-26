@@ -235,16 +235,16 @@ void register_geometry_object()
     export_set<std::string>("string_set");
     py::delattr(py::scope(), "string_set");
 
-    py_enum<GeometryObject::Type>("ObjectType")
-        .value("LEAF", GeometryObject::TYPE_LEAF)
-        .value("TRANSFORM", GeometryObject::TYPE_TRANSFORM)
-        .value("SPACE_CHANGER", GeometryObject::TYPE_SPACE_CHANGER)
-        .value("CONTAINER", GeometryObject::TYPE_CONTAINER)
-    ;
+    // py_enum<GeometryObject::Type>("ObjectType")
+    //     .value("LEAF", GeometryObject::TYPE_LEAF)
+    //     .value("TRANSFORM", GeometryObject::TYPE_TRANSFORM)
+    //     .value("SPACE_CHANGER", GeometryObject::TYPE_SPACE_CHANGER)
+    //     .value("CONTAINER", GeometryObject::TYPE_CONTAINER)
+    // ;
 
     py::class_<GeometryObject, shared_ptr<GeometryObject>, boost::noncopyable>("GeometryObject",
         "Base class for all geometry objects.", py::no_init)
-        .add_property("type", &GeometryObject::getType)
+        // .add_property("type", &GeometryObject::getType)
         .def("validate", &GeometryObject::validate, "Check if the object is complete and ready for calculations")
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)

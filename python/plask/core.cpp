@@ -76,7 +76,7 @@ inline static void register_config()
         "The attributes of this class are config parameters that can be set using the\n"
         "``config`` object.\n\n"
 
-        "Examples:\n"
+        "Example:\n"
         "    >>> config.axes = 'xy'\n"
         "    >>> config.log.level = 'debug'\n"
         "    >>> print config\n"
@@ -148,8 +148,8 @@ inline static void register_config()
                       "        (which is the default) or **stdout** (turned on for interactive mode).\n\n"
 
                       "Usually you should only want to change the :attr:`config.log.level` value.\n"
-                      "However this setting is ignored when the :option:`-l` option of the ``plask``\n"
-                      "program is specified.\n"
+                      "However this setting is ignored when the plask option :option:`-l`\n"
+                      "is specified.\n"
                      );
     py::scope().attr("config") = Config();
 }
