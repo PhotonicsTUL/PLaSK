@@ -14,7 +14,7 @@ def showError(msg, parent = None, title = None):
     if title != None: err.setWindowTitle(title)
     err.showMessage(msg)
 
-def exceptionToMsg(f, parent = None, err_title = None):
+def exceptionToMsg(f, parent = None, err_title = None):   
     try:
         f()
         return True

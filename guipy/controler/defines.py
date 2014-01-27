@@ -1,59 +1,23 @@
 from PyQt4 import QtGui
-from controler.base import SourceEditControler
+from controler.base import Controler
 from model.defines import DefinesModel
-from utils import showError
 
 # TODO use GUIAndSourceControler, remove most of code
-class DefinesControler(SourceEditControler):
+class DefinesControler(Controler):
 
     def __init__(self, document, model = DefinesModel()):
-        SourceEditControler.__init__(self, document, model)
-        self.editorWidget = QtGui.QStackedWidget()
+        Controler.__init__(self, document, model)
         self.table = QtGui.QTableView()
-        self.table.setModel(self.model)
-        self.editorWidget.addWidget(self.table)
-        self.editorWidget.addWidget(self.getSourceEditor())
+        self.table.setModel(self.model)            
         
-    def isInSourceEditor(self):
-        return self.editorWidget.currentIndex() == 1
-    
-    def initCurrentEditor(self):
-        if self.isInSourceEditor():
-            self.getSourceEditor().setPlainText(self.model.getText())
-            self.document.mainWindow.setSectionActions(self.getShowSourceAction())
-        else:
-            self.document.mainWindow.setSectionActions(self.getShowSourceAction(), None, *self.getTableEditActions())
-        
-    def changeEditor(self):
-        new_index = int(self.showSourceAction.isChecked())
-        if new_index == self.editorWidget.currentIndex(): return
-        if self.isInSourceEditor():  # source editor exit
-            try:
-                self.model.setText(self.getSourceEditor().toPlainText())
-            except Exception as e:
-                self.showSourceAction.setChecked(True)
-                showError(str(e), self.getSourceEditor(), 'Error in source')
-                return
-        self.editorWidget.setCurrentIndex(new_index)
-        self.initCurrentEditor()
-        
-    def getShowSourceAction(self):
-        if not hasattr(self, 'showSourceAction'):
-            self.showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor'), '&Show source', self.document.mainWindow)
-            self.showSourceAction.setCheckable(True)
-            self.showSourceAction.setStatusTip('Show XPL source of the current section')
-            self.showSourceAction.triggered.connect(self.changeEditor)
-        return self.showSourceAction
-
     def getEditor(self):
-        return self.editorWidget
+        return self.table
 
     def onEditEnter(self):
-        self.initCurrentEditor()
+        self.document.mainWindow.setSectionActions(*self.getTableEditActions())
 
     # when editor is turn off, model should be update
     def onEditExit(self):
-        if self.isInSourceEditor(): self.model.setText(self.getSourceEditor().toPlainText())
         self.document.mainWindow.setSectionActions()
         
     def addDefine(self):

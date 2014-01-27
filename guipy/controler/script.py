@@ -1,4 +1,4 @@
-from controler.base import SourceEditControler
+from controler.source import SourceEditControler
 from PyQt4 import QtGui
 from model.script import ScriptModel
 from utils import defaultFont

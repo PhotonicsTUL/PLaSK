@@ -1,8 +1,9 @@
 from xml.etree import ElementTree
 from model.base import SectionModelTreeBased
-from controler.base import SourceEditControler
+from controler.source import SourceEditControler
 from controler.defines import DefinesControler
 from controler.script import ScriptControler
+from controler.multi import GUIAndSourceControler
 
 class XPLDocument(object):
     
@@ -11,7 +12,7 @@ class XPLDocument(object):
     def __init__(self, main):
         object.__init__(self)
         self.controlers = [
-              DefinesControler(self),  #defines
+              GUIAndSourceControler(DefinesControler(self)),  #defines
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[1])),  #materials
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
