@@ -4,6 +4,7 @@ from controler.source import SourceEditControler
 from controler.defines import DefinesControler
 from controler.script import ScriptControler
 from controler.multi import GUIAndSourceControler
+from controler.connects import ConnectsControler
 
 class XPLDocument(object):
     
@@ -17,7 +18,7 @@ class XPLDocument(object):
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  #solvers
-              SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[5])),  #connects
+              GUIAndSourceControler(ConnectsControler(self)),   #connects
               ScriptControler(self)   #script
               ]
         self.mainWindow = main
