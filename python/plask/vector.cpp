@@ -281,6 +281,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
              "Type od the vector components. This is always either ``float`` or ``complex``.\n")
         .def("__array__", &vec__array__<dim,T>, py::arg("dtype")=py::object())
     ;
+    vec_class.attr("__module__") = "plask";
 
     detail::Vec_from_Sequence<dim,T>();
 
@@ -379,7 +380,7 @@ const static char* __doc__ =
     "vec(z,x, dtype=None)\n"
     "vec(r,z, dtype=None)\n\n"
 
-    "Create PLaSK vector.\n\n"
+    "PLaSK vector.\n\n"
 
     "The constructor arguments depend on the current value of\n"
     ":attr:`plask.config.axes`. However, you must either specify all the components\n"
