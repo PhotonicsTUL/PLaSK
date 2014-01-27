@@ -6,12 +6,17 @@ class TableControler(Controler):
     def __init__(self, document, model):
         Controler.__init__(self, document, model)
         self.table = QtGui.QTableView()
-        self.table.setModel(self.model)            
+        self.table.setModel(self.model)
+        
+        cols = self.model.columnCount(None) #column widths:
+        for c in range(0, cols): self.table.setColumnWidth(c, 200)
+        self.table.horizontalHeader().setResizeMode(cols-1, QtGui.QHeaderView.Stretch);
         
     def getEditor(self):
         return self.table
 
     def onEditEnter(self):
+        self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
         self.document.mainWindow.setSectionActions(*self.getTableEditActions())
 
     # when editor is turn off, model should be update

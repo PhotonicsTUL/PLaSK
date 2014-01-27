@@ -7,19 +7,12 @@ from weakref import WeakSet, WeakKeyDictionary
 from PyQt4 import QtCore 
 from PyQt4 import QtGui
 
-
-def showError(msg, parent = None, title = None):
-    err = QtGui.QErrorMessage(parent)
-    err.setModal(True)
-    if title != None: err.setWindowTitle(title)
-    err.showMessage(msg)
-
 def exceptionToMsg(f, parent = None, err_title = None):   
     try:
         f()
         return True
     except Exception as e:
-        showError(str(e), parent, err_title)
+        QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
 
 #deprecated, to remove

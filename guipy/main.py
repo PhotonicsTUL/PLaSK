@@ -45,18 +45,34 @@ class MainWindow(QtGui.QMainWindow):
         
     def save(self):
         if self.fileName != None:
-            self.currentSectionExit()
+            if not self.beforeSave(): return False
             self.document.saveToFile(self.fileName)
             return True
         else:
             return self.saveAs()
         
     def saveAs(self):
-        self.currentSectionExit()
+        if not self.beforeSave(): return False
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
         if not fileName: return False
         self.fileName = fileName
         self.document.saveToFile(fileName)
+        return True
+    
+    def beforeSave(self):
+        """"Is called just before save, return True if document can be saved."""
+        if self.current_tab_index != -1:
+            try:
+                self.document.getControlerByIndex(self.current_tab_index).saveDataInModel()
+            except Exception as e:
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("Edited content of the current section is invalid.")
+                msgBox.setDetailedText(str(e))
+                msgBox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
+                msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                msgBox.setIcon(QtGui.QMessageBox.Warning)
+                #msgBox.setDefaultButton(QtGui.QMessageBox.Yes);
+                return msgBox.exec_() == QtGui.QMessageBox.Yes
         return True
     
     def currentSectionExit(self):

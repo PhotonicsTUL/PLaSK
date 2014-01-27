@@ -38,6 +38,9 @@ class MultiEditorControler(object):
     def getCurrectControler(self):
         return self.controlers[self.getCurrentIndex()]
     
+    def saveDataInModel(self):
+        self.getCurrectControler().saveDataInModel()
+    
     def onEditEnter(self):
         self.getCurrectControler().onEditEnter()
 

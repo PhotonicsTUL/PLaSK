@@ -24,10 +24,18 @@ class SourceEditControler(Controler):
     def getEditor(self):
         return self.getSourceEditor()
 
-    def onEditEnter(self):
+    def refreshEditor(self, *ignore):
         self.getSourceEditor().setPlainText(self.model.getText())
+        
+    def saveDataInModel(self):
+        if not self.getSourceEditor().isReadOnly():
+            self.model.setText(self.getSourceEditor().toPlainText())
+
+    def onEditEnter(self):
+        self.refreshEditor()
+        self.model.changed += self.refreshEditor 
 
     # when editor is turn off, model should be update
     def onEditExit(self):
-        if not self.getSourceEditor().isReadOnly():
-            self.model.setText(self.getSourceEditor().toPlainText())
+        self.saveDataInModel()
+        self.model.changed -= self.refreshEditor
