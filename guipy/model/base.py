@@ -2,9 +2,11 @@
 
 from xml.etree import ElementTree
 from utils import Signal
+from info import Info
 import os
+from model.info import InfoListModel
 
-def getSectionXMLFromFile(sectionName, fileName, oryginalFileName = None):
+def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
         """
             Load section from file.
             :param str sectionName: name of section
@@ -26,6 +28,14 @@ def getSectionXMLFromFile(sectionName, fileName, oryginalFileName = None):
             fileName = os.path.join(os.path.dirname(fileName), el.attrib['external'])
             if fileName in usednames: raise RuntimeError("Error while reading section \"%s\": circular reference was detected." % sectionName)
 
+class ExternalSource(object):
+    
+    def __init__(self, fileName, oryginalFileName = None):
+        object.__init__(self)
+        self.fileName = fileName
+        if oryginalFileName: fileName = os.path.join(os.path.dirname(oryginalFileName), fileName)
+        self.fileNameAbs = os.path.abspath(fileName)
+
 class SectionModel(object):
     
     def __init__(self, name, info_cb = None):
@@ -36,13 +46,14 @@ class SectionModel(object):
         object.__init__(self)
         self.name = name
         self.changed = Signal()
-        self.info = []    #non-critical errors in model, maybe change to: Errors, Warnings and Informations
+        self.__info__ = []    #model Infos: Errors, Warnings and Informations
         self.infoChanged = Signal()
         self.externalSource = None
         if info_cb: self.infoChanged.connect(info_cb)
         
-    def fireChanged(self):
+    def fireChanged(self, refreshInfo = True):
         self.changed(self)
+        if refreshInfo: self.refreshInfo()
 
     def getText(self):
         element = self.getXMLElement()
@@ -70,7 +81,7 @@ class SectionModel(object):
     
     def getFileXMLElement(self):
         if self.externalSource != None:
-            return ElementTree.Element(self.name, { "external": self.externalSource })
+            return ElementTree.Element(self.name, { "external": self.externalSource.fileName })
         else:
             return self.getXMLElement()
         
@@ -84,24 +95,42 @@ class SectionModel(object):
             :param oryginalFileName: name of XPL file where self.externalSource was given in external attribute, used only for optimization in circular reference finding
         """
         try:
-            self.setXMLElement(getSectionXMLFromFile(self.name, self.externalSourceAbs, oryginalFileName))
+            self.setXMLElement(getSectionXMLFromFile(self.name, self.externalSource.fileNameAbs, oryginalFileName))
         except Exception as e:
-            self.externalSourceLoadRaport = str(e) 
+            self.externalSource.error = str(e) 
         else:
-            del self.externalSourceLoadRaport
+            if hasattr(self.externalSource, 'error'): del self.externalSource.error
         
     def setExternalSource(self, fileName, oryginalFileName = None):
-        self.externalSource = fileName
-        if oryginalFileName:
-            fileName = os.path.join(os.path.dirname(oryginalFileName), fileName)
-        self.externalSourceAbs = os.path.abspath(fileName)
+        self.externalSource = ExternalSource(fileName, oryginalFileName)
         self.reloadExternalSource(oryginalFileName)
             
     def setFileXMLElement(self, element, fileName = None):
         if 'external' in element.attrib:
             self.setExternalSource(element.attrib['external'], fileName)
             return
-        self.setXMLElement(element)   
+        self.setXMLElement(element)
+        
+    def createInfo(self):
+        res = []
+        if self.isReadOnly():
+            res.append(Info('%s section is read-only' % self.name, Info.INFO))
+        if self.externalSource != None:
+            res.append(Info('%s section is loaded from external file "%s" ("%s")' % (self.name, self.externalSource.fileName, self.externalSource.fileNameAbs), Info.INFO))
+            if hasattr(self.externalSource, 'error'):
+                res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
+        return res
+        
+    def getInfo(self):
+        if self.__info__ == None: self.__info__ = self.createInfo()
+        return self.__info__
+    
+    def getInfoListModel(self):
+        return InfoListModel(self)
+    
+    def refreshInfo(self):
+        self.__info__ = None
+        self.infoChanged(self)
 
 class SectionModelTreeBased(SectionModel):
 

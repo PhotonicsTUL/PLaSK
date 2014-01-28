@@ -17,7 +17,8 @@ class TableControler(Controler):
 
     def onEditEnter(self):
         self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
-        self.document.mainWindow.setSectionActions(*self.getTableEditActions())
+        if not self.model.isReadOnly():
+            self.document.mainWindow.setSectionActions(*self.getTableEditActions())
 
     # when editor is turn off, model should be update
     def onEditExit(self):

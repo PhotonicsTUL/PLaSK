@@ -6,10 +6,11 @@ import sip
 for n in ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"]: sip.setapi(n, 2)
 
 import sys
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from XPLDocument import XPLDocument
 from utils import exceptionToMsg
+from model.info import InfoListModel
 
 class MainWindow(QtGui.QMainWindow):
     
@@ -35,7 +36,7 @@ class MainWindow(QtGui.QMainWindow):
         reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
-        self.setNewModel(XPLDocument())
+        self.setNewModel(XPLDocument(self))
         self.fileName = None
         
     def open(self):
@@ -87,7 +88,11 @@ class MainWindow(QtGui.QMainWindow):
     def currentSectionEnter(self):
         """"Should be called just after set the current section."""
         if self.current_tab_index != -1:
-            self.document.getControlerByIndex(self.current_tab_index).onEditEnter()
+            c = self.document.getControlerByIndex(self.current_tab_index)
+            self.info_model.setModel(c.model)
+            c.onEditEnter()
+        else:
+            self.info_model.setModel(None)
         
     def tabChange(self, index):
         if index == self.current_tab_index: return
@@ -158,6 +163,8 @@ class MainWindow(QtGui.QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(exitAction)
         
+        #viewMenu = menubar.addMenu('&View')
+        
         #editMenu = menubar.addMenu('&Edit')
         #editMenu.addAction(showSourceAction)
 
@@ -176,6 +183,22 @@ class MainWindow(QtGui.QMainWindow):
     
         self.tabs.connect(self.tabs, SIGNAL("currentChanged(int)"), self.tabChange)
         self.setCentralWidget(self.tabs)
+        
+        self.info_dock = QtGui.QDockWidget("Warnings", self)
+        self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
+        self.info_dock.setTitleBarWidget(QtGui.QWidget())
+        self.info_model = InfoListModel(None)
+        #self.info_table = QtGui.QTableView(self.info_dock)
+        self.info_table = QtGui.QListView(self.info_dock)
+        self.info_table.setModel(self.info_model)
+        #self.info_table.horizontalHeader().hide()
+        #self.info_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Stretch);
+        self.info_dock.setWidget(self.info_table)
+        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
+        
+        self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount(QtCore.QModelIndex()) > 0))
+        
+        #viewMenu.addAction(self.info_dock.toggleViewAction());
         
         self.setGeometry(200, 200, 550, 450)
         self.setWindowTitle('Main window')  

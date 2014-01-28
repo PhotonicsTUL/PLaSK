@@ -54,6 +54,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel):
         self.beginRemoveRows(QtCore.QModelIndex(), index, index)
         del self.entries[index]
         self.endRemoveRows()
+        self.fireChanged()
 
     def swapNeighbourEntries(self, index1, index2):
         if self.isReadOnly(): return
@@ -61,3 +62,4 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel):
         self.beginMoveRows(QtCore.QModelIndex(), index2, index2, QtCore.QModelIndex(), index1)
         self.entries[index1], self.entries[index2] = self.entries[index2], self.entries[index1]
         self.endMoveRows()
+        self.fireChanged()

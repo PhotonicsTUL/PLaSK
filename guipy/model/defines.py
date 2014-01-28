@@ -1,6 +1,8 @@
 from PyQt4 import QtCore
 from xml.etree import ElementTree
 from model.table import TableModel
+from collections import OrderedDict
+from model.info import Info
 #from guis import DefinesEditor
 
 class DefinesModel(TableModel):
@@ -43,13 +45,23 @@ class DefinesModel(TableModel):
         raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)
     
     def set(self, col, row, value):
-        if col == 0:
-            i = self.nameToIndex(value) # TODO should be non-critical error  
-            if i > 0 and i != row: raise ValueError("name \"%s\" already in use in entries section (has indexes %d and value \"%s\")" % (value, i, self.entries[i].value))
-            self.entries[row].name = value
+        if col == 0: self.entries[row].name = value
         elif col == 1: self.entries[row].value = value
         elif col == 2: self.entries[row].comment = value
-        else: raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)       
+        else: raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)
+        
+    def createInfo(self):
+        res = super(DefinesModel, self).createInfo()
+        names = OrderedDict()
+        for i, d in enumerate(self.entries):
+            names.setdefault(d.name, []).append(i)
+        for name, indexes in names.items():
+            if len(indexes) > 1:
+                err = Info('Duplicated definition name "%s", rows: %s' % (name, ', '.join(map(str, indexes))), Info.ERROR)
+                err.rows = indexes
+                err.col = 0
+                res.append(err)
+        return res
         
     def createDefaultEntry(self):
         return DefinesModel.Entry("new", "")
