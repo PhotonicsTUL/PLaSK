@@ -35,7 +35,7 @@ from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
 from sphinx.util.docfields import TypedField, Field
 
-# hold parsed version of string: XML_TAG EXTRA [CONTEXT]
+# hold parsed version of the string: XML_TAG EXTRA [CONTEXT]
 # name = TAG, displ_name = XML_TAG. desc = EXTRA, context = [CONTEXT]
 class ParsedName:
    def __init__(self, name, displ_name, desc, context):

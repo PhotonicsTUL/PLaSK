@@ -283,11 +283,11 @@ void PythonManager::loadMaterials(XMLReader& reader, shared_ptr<const MaterialsS
 
 
 void PythonManager::export_dict(py::object self, py::dict dict) {
-    dict["PTH"] = self.attr("pth");
-    dict["GEO"] = self.attr("geo");
-    dict["MSH"] = self.attr("msh");
-    dict["MSG"] = self.attr("msg");
-    dict["DEF"] = self.attr("def");
+    dict["PTH"] = self.attr("path");
+    dict["GEO"] = self.attr("geometry");
+    dict["MSH"] = self.attr("mesh");
+    dict["MSG"] = self.attr("meshgen");
+    dict["DEF"] = self.attr("define");
 
     PythonManager* ths = py::extract<PythonManager*>(self);
 
@@ -487,30 +487,61 @@ static void register_manager_dict(const std::string name) {
 
 void register_manager() {
     py::class_<PythonManager, shared_ptr<PythonManager>, boost::noncopyable> manager("Manager",
-        "Main input manager. It provides methods to read the XML file and fetch geometry objects, pathes,"
-        "meshes, and generators by name.\n\n"
-        "GeometryReader(materials=None)\n"
-        "    Create manager with specified material database (if None, use default database)\n\n",
+        "Main input manager.\n\n"
+        
+        "Object of this class provides methods to read the XML file and fetch geometry\n"
+        "objects, pathes, meshes, and generators by name. It also allows to access\n"
+        "solvers defined in the XPL file.\n\n"
+        
+        "Some global PLaSK function like :func:`~plask.loadxpl` or :func:`~plask.runxpl`\n"
+        "create a default manager and use it to load the data from XPL into ther global\n"
+        "namespace.\n\n"
+        
+        "Manager(materials=None)\n\n"
+        
+        "Args:\n"
+        "    materials: Material database to use.\n"
+        "               If *None*, the default material database is used.\n",
+        
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
-        .def("load", &PythonManager_load, "Load data from source (can be a filename, file, or an XML string to read)",
+        .def("load", &PythonManager_load,
+             "Load data from source.\n\n"
+             "Args:\n"
+             "    source (string or file): File to read.\n"
+             "        The value of this argument can be either a file name, an open file\n"
+             "        object, or an XML string to read.\n"
+             "    vars (dict): Dictionary of user-defined variables (which string keys).\n"
+             "        The values of this dictionary overrides the ones given in the\n"
+             "        :xml:tag:`<defines>` section of the XPL file.\n"
+             "    sections (list): List of section to read.\n"
+             "        If this parameter is given, only the listed sections of the XPL file are\n"
+             "        read and the other ones are skipped.\n",
              (py::arg("source"), py::arg("vars")=py::dict(), py::arg("sections")=py::object()))
-        .def_readonly("paths", &PythonManager::pathHints, "Dictionary of all named paths")
-        .def_readonly("geometrics", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects")
-        .def_readonly("meshes", &PythonManager::meshes, "Dictionary of all named meshes")
-        .def_readonly("meshgens", &PythonManager::generators, "Dictionary of all named mesh generators")
-        .def_readonly("solvers", &PythonManager::solvers, "Dictionary of all named solvers")
-        .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
-        .def_readonly("script", &PythonManager::script, "Script read from XML file")
-        .def_readonly("scriptline", &PythonManager::scriptline, "First line of the script in the XML file")
-        .def_readwrite("defines", &PythonManager::locals, "Local defines")
-        .def("export", &PythonManager::export_dict, "Export loaded objects to target dictionary", py::arg("target"))
+        .def_readonly("path", &PythonManager::pathHints, "Dictionary of all named paths.")
+        .def_readonly("geometry", &PythonManager::geometrics, "Dictionary of all named geometries and geometry objects.")
+        .def_readonly("mesh", &PythonManager::meshes, "Dictionary of all named meshes.")
+        .def_readonly("meshgen", &PythonManager::generators, "Dictionary of all named mesh generators.")
+        .def_readonly("solver", &PythonManager::solvers, "Dictionary of all named solvers.")
+        // .def_readonly("profiles", &PythonManager::profiles, "Dictionary of constant profiles")
+        .def_readonly("script", &PythonManager::script, "Script read from XML file.")
+        .def_readonly("script_first_line", &PythonManager::scriptline, "First line of the script in the XML file.")
+        .def_readwrite("define", &PythonManager::locals,
+                       "Local defines.\n\n"
+                       "This is a combination of the values specified in the :xml:tag:`<defines>`\n"
+                       "section of the XPL file and the ones specified by the user in the\n"
+                       ":meth:`~plask.Manager.load` method."
+                      )
+        .def("export", &PythonManager::export_dict,
+             "Export loaded objects into a target dictionary.\n\n"
+             "All the loaded solvers are exported with keys equal to their names and the other objects\n"
+             "under the following keys:\n\n"
+             "* geometries and geometry objects (:attr:`~plask.Manager.geometry`): ``GEO``,\n\n"
+             "* paths to geometry objects (:attr:`~plask.Manager.path`): ``PTH``,\n\n"
+             "* meshes (:attr:`~plask.Manager.mesh`): ``MSH``,\n\n"
+             "* mesh generators (:attr:`~plask.Manager.meshgen`): ``MSG``,\n\n"
+             "* custom defines (:attr:`~plask.Manager.define`): ``DEF``.\n",
+             py::arg("target"))
     ;
-    manager.attr("pth") = manager.attr("paths");
-    manager.attr("geo") = manager.attr("geometrics");
-    manager.attr("msh") = manager.attr("meshes");
-    manager.attr("msg") = manager.attr("meshgens");
-    manager.attr("slv") = manager.attr("solvers");
-    manager.attr("def") = manager.attr("defines");
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
     register_manager_dict<PathHints>("PathHints");

@@ -8,8 +8,8 @@ namespace plask { namespace  python {
 
 struct PythonManager: public Manager {
 
-    /// List of constant profiles
-    py::dict profiles;
+//     /// List of constant profiles
+//     py::dict profiles;
 
     /// Locals read from &lt;defines&gt; section and supplied by user
     py::dict locals;

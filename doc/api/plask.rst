@@ -18,6 +18,7 @@ Classes
    config
    vec
    Data
+   Manager
    StepProfile
 
 

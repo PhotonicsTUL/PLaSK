@@ -147,10 +147,10 @@ class RectilinearMeshes(unittest.TestCase):
           </grids>
         </plask>
         ''')
-        msh = manager.meshgens['refined'](manager.geometrics['rect'])
+        msh = manager.meshgen['refined'](manager.geometry['rect'])
         self.assertEqual( list(msh.axis0), [0., 10., 20., 30., 40., 50.] )
         self.assertEqual( list(msh.axis1), [0., 1., 2., 3., 4., 5.] )
-        self.assertEqual( list(manager.meshgens['one'](manager.geometrics['rect'])), [0., 25., 50.] )
+        self.assertEqual( list(manager.meshgen['one'](manager.geometry['rect'])), [0., 25., 50.] )
 
 
     def testRegenerationInSolver(self):

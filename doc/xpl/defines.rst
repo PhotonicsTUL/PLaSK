@@ -3,6 +3,8 @@
 Section <defines>
 =================
 
+.. xml:tag:: <defines>
+
 This section allows to define some constant parameters (that can be later overridden either in the command line or while reading the XPL file from Python). Each parameter is defined with the only tag allowed in this section:
 
 .. xml:tag:: <define>

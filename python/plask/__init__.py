@@ -179,7 +179,7 @@ def runxpl(source, vars={}):
         exec(code, env)
     except Exception as exc:
         ety, eva, etb = _sys.exc_info()
-        _print_exception(ety, eva, etb, env['__manager__'].scriptline, filename, True)
+        _print_exception(ety, eva, etb, env['__manager__'].script_first_line, filename, True)
 
 
 ## ##  ## ##
@@ -188,7 +188,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
     """
     Implementation of showwarnings which redirects to PLaSK logs
     """
-    try: lineno += __globals['__manager__'].scriptline
+    try: lineno += __globals['__manager__'].script_first_line
     except NameError: pass
     except KeyError: pass
     print_log(LOG_WARNING, "%s, line %s: %s: %s" % (filename, lineno, category.__name__, message))

@@ -11,7 +11,7 @@ In this section geometries of the analyze structures are defined. More than one 
 
    :attr axes: Default value of axes attribute for all geometries defined in this section.
 
-Belew there is a list of the available elements in this section.
+Below there is a list of the available elements in this section.
 
 .. toctree::
    :maxdepth: 3

@@ -63,14 +63,14 @@ class LayerSet_Test(unittest.TestCase):
               </optical>
             </solvers>
           </plask>''')
-        self.solver = self.manager.slv.pwrt
+        self.solver = self.manager.solver.pwrt
         self.solver.wavelength = 1000.
-        self.mat = self.manager.geo.vcsel.get_material
+        self.mat = self.manager.geometry.vcsel.get_material
 
     def testInterface(self):
         self.solver.set_interface(0.)
         self.assertEqual( self.solver.interface, 60 )
-        self.solver.set_interface(self.manager.geo.QW)
+        self.solver.set_interface(self.manager.geometry.QW)
         self.assertEqual( self.solver.interface, 61 )
 
     def testLayers(self):

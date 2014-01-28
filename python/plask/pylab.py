@@ -220,11 +220,14 @@ def plot_stream(field, scale=8.0, color='k', **kwargs):
 
     m = field.mesh
 
-    if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+    if type(m) not in (plask.mesh.Regular2D, plask.mesh.Regular3D):
+        raise TypeError("plot_stream can be only used for data obtained for regular mesh")
+
+    if type(m) == plask.mesh.Regular2D:
         axis0, axis1 = m.axis0, m.axis1
         i0, i1 = -2, -1
         data = field.array.transpose((1,0,2))
-    elif type(m) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+    elif type(m) == plask.mesh.Regular3D:
         iaxes = [ iaxis for iaxis in enumerate,(m.axis0, m.axis1, m.axis2) if len(axis) > 1 ]
         if len(axes) != 2:
             raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
@@ -232,6 +235,8 @@ def plot_stream(field, scale=8.0, color='k', **kwargs):
         data = field.array.reshape((len(axis0), len(axis1), field.array.shape[-1]))[:,:,[i0,i1]].transpose((1,0,2))
     else:
         raise NotImplementedError("mesh type not supported")
+
+    if 'linewidth' in kwargs: scale = None
 
     m0, m1 = meshgrid(array(axis0), array(axis1))
     if scale or color == 'norm':

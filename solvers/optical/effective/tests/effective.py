@@ -106,14 +106,14 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
               </optical>
             </solvers>
           </plask>''')
-        self.solver = self.manager.slv.efm
+        self.solver = self.manager.solver.efm
         self.solver.lam0 = 980.
 
     def testField(self):
         axis0 = linspace(0.001, 39.999, 20000)
         #axis0 = linspace(0.01, 3.99, 200)
         #axis1  = [ self.manager.geo.layers.bbox.lower.z-1e-6, 0.0025, self.manager.geo.layers.bbox.upper.z+-1e-6 ]
-        axis1  = [ self.manager.geo.layers.bbox.upper.z+-1e-6 ]
+        axis1  = [ self.manager.geometry.layers.bbox.upper.z+-1e-6 ]
         dr = axis0[1]-axis0[0]
         msh = mesh.Rectilinear2D(axis0, axis1)
         self.solver.find_mode(980., 0)
