@@ -196,7 +196,7 @@ class MainWindow(QtGui.QMainWindow):
         self.info_dock.setWidget(self.info_table)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
         
-        self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount(QtCore.QModelIndex()) > 0))
+        self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
         
         #viewMenu.addAction(self.info_dock.toggleViewAction());
         

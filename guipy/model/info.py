@@ -1,4 +1,5 @@
 from PyQt4 import QtCore, QtGui
+import weakref
 
 class Info(object):
     
@@ -15,15 +16,17 @@ class Info(object):
         self.level = int(level)
 
 class InfoListModel(QtCore.QAbstractListModel):
+    """Qt list model of info (warning, errors, etc.) of section model (None section model is allowed and than the list is empty)"""
     
     def __setModel__(self, model):
         if hasattr(self, 'model'):
-            self.model.infoChanged -= self.infoChanged
+            m = self.model()
+            if m: m.infoChanged -= self.infoChanged
         if model == None:
             if hasattr(self, 'model'): del self.model
             self.entries = []
         else:
-            self.model = model
+            self.model = weakref.ref(model)
             self.entries = model.getInfo()
             model.infoChanged += self.infoChanged
     
@@ -32,8 +35,9 @@ class InfoListModel(QtCore.QAbstractListModel):
         self.__setModel__(model)
                        
     def infoChanged(self, model):
+        """Read info from model, inform observers."""
         self.layoutAboutToBeChanged.emit()
-        self.entries = self.model.getInfo()
+        self.entries = model.getInfo()
         self.layoutChanged.emit()
         
     def setModel(self, model):
