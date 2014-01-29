@@ -16,7 +16,7 @@ Classes
    :nosignatures:
    :toctree: {{ objname }}
    :template: class.rst
-{% for item in classes -%}
+{% for item in classes %}
    ~{{ fullname }}.{{ item }}
 {%- endfor %}
 

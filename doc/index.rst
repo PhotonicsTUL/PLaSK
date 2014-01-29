@@ -28,7 +28,10 @@ PLaSK User Guide
    xpl
    api
    glossary
-
+   genindex
+   modindex
+   search
+   
 * :doc:`preface`
 * :doc:`introduction`
 * :doc:`tutorials`
@@ -45,3 +48,6 @@ PLaSK User Guide
 * :doc:`xpl`
 * :doc:`api`
 * :doc:`glossary`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -23,11 +23,3 @@ Glossary
 
     HDF5
         HDF5 is a data model, library, and file format for storing and managing data. See: http://www.hdfgroup.org/HDF5/
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

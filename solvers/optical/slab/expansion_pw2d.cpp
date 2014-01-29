@@ -13,7 +13,7 @@ size_t ExpansionPW2D::lcount() const {
     return SOLVER->getLayersPoints().size();
 }
 
-void ExpansionPW2D::init()
+void ExpansionPW2D::init(bool compute_coeffs)
 {
     auto geometry = SOLVER->getGeometry();
 
@@ -136,9 +136,8 @@ void ExpansionPW2D::init()
     size_t nlayers = lcount();
     coeffs.resize(nlayers);
     diagonals.assign(nlayers, false);
-    #pragma omp parallel for
-    for (size_t l = 0; l < nlayers; ++l)
-        getMaterialCoefficients(l);
+    if (compute_coeffs)
+        computeMaterialCoefficients();
 
     initialized = true;
 }
@@ -151,7 +150,7 @@ void ExpansionPW2D::free() {
 void ExpansionPW2D::getMaterialCoefficients(size_t l)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
-        throw BadInput(SOLVER->getId(), "No wavelength set in SOLVER");
+        throw BadInput(SOLVER->getId(), "No wavelength set specified");
 
     auto geometry = SOLVER->getGeometry();
     const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
@@ -223,7 +222,7 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
         diagonals[l] = false;
 
     if (diagonals[l]) {
-        solver->writelog(LOG_DETAIL, "Layer %1%  uniform", l);
+        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
         for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
     } else {
         // Perform FFT

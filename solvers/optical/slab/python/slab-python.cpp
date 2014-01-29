@@ -98,8 +98,8 @@ inline void export_reflection_base(Class solver) {
     solver.add_property("emitting", &Solver::getEmitting, &Solver::setEmitting, "Should emitted field be computed?");
     py::scope scope = solver;
     py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
-        .value("TOP", Solver::DIRECTION_TOP)
-        .value("BOTTOM", Solver::DIRECTION_BOTTOM)
+        .value("TOP", Solver::INCIDENCE_TOP)
+        .value("BOTTOM", Solver::INCIDENCE_BOTTOM)
     ;
 }
 
@@ -183,12 +183,12 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
 py::object FourierReflection2D_computeReflectivity(FourierReflection2D* self,
                                                    py::object wavelength,
                                                    ExpansionPW2D::Component polarization,
-                                                   FourierReflection2D::IncidentDirection direction
+                                                   FourierReflection2D::IncidentDirection incidence
                                                   )
 {
     return UFUNC<double>([=](double lam)->double {
         self->setWavelength(lam);
-        return 100. * self->getReflection(polarization, direction);
+        return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
 
@@ -212,6 +212,13 @@ double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
     return real(mode.ktran);
 }
 
+shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(FourierReflection2D* parent,
+                                                                double wavelength,
+                                                                ExpansionPW2D::Component polarization,
+                                                                FourierReflection2D::IncidentDirection side)
+{
+    return make_shared<FourierReflection2D::Reflected>(parent, wavelength, polarization, side);
+}
 
 
 BOOST_PYTHON_MODULE(slab)
@@ -223,42 +230,86 @@ BOOST_PYTHON_MODULE(slab)
                                        py::type_id<ExpansionPW2D::Component>());
 
     {CLASS(FourierReflection2D, "FourierReflection2D",
-        "Calculate optical modes and optical field distribution using Fourier slab method\n"
-        " and reflection transfer in two-dimensional Cartesian space.")
+        "Optical Solver using Fourier expansion in 2D.\n\n"
+        "It calculates optical modes and optical field distribution using Fourier slab method\n"
+        "and reflection transfer in two-dimensional Cartesian space.")
         export_reflection_base(solver);
-        PROVIDER(outNeff, "Effective index of the last computed mode");
-        METHOD(find_mode, findMode, "Compute the mode near the specified effective index", "neff");
-        RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
-        RW_PROPERTY(beta, getKlong, setKlong, "Longitudinal propagation constant of the light");
-        RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light");
-        RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size");
-        RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry");
-        RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization");
-        RW_FIELD(refine, "Number of refinemnet points for refractive index averaging");
+        PROVIDER(outNeff, "Effective index of the last computed mode.");
+        METHOD(find_mode, findMode,
+               "Compute the mode near the specified effective index.\n\n"
+               "Args:\n"
+               "    neff: starting effective index.\n"
+               , "neff");
+        RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light.");
+        RW_PROPERTY(beta, getKlong, setKlong, "Longitudinal propagation constant of the light.");
+        RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light.");
+        RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+        RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
+        RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
+        RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
-                   "Compute discontinuity matrix determinant");
-        solver.def("reflectivity", &FourierReflection2D_computeReflectivity,
-                   "Compute reflectivity on the perpendicuar incidence [%]",
-                   (py::arg("lam"), "polarization", "incidence"));
+                   "Compute discontinuity matrix determinant.");
+        solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
+                   "Compute reflectivity on the perpendicular incidence [%].\n\n"
+                   "Args:\n"
+                   "    lam (float or array of floats): Incident light wavelength.\n"
+                   "    polarization: Specification of the incident light polarization.\n"
+                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+                   "        of the non-vanishing electric field component.\n"
+                   "    side (`top` or `bottom`): Side of the structure at which the reflectivity\n"
+                   "        is computed.\n"
+                   , (py::arg("lam"), "polarization", "side"));
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
-                   "Get profile of the expanded refractive index", (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()), "Side PMLs");
-        RO_PROPERTY(period, getPeriod, "Period for periodic structures");
-        RO_FIELD(modes, "Computed modes");
-
+                   "Get profile of the expanded refractive index.\n\n"
+                   "Args:\n"
+                   "    mesh: Target mesh.\n"
+                   "    interp: Interpolation method\n"
+                   , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
+        solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()), "Side PMLs.");
+        RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
+        RO_FIELD(modes, "Computed modes.");
+        solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
+                   "Access to the reflected field.\n\n"
+                   "Args:\n"
+                   "    lam (float): Incident light wavelength.\n"
+                   "    polarization: Specification of the incident light polarization.\n"
+                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+                   "        of the non-vanishing electric field component.\n"
+                   "    side (`top` or `bottom`): Side of the structure at which the reflectivity\n"
+                   "        is computed.\n"
+                   , (py::arg("lam"), "polarization", "side"));
         py::scope scope = solver;
 
         register_vector_of<FourierReflection2D::Mode>("Modes");
-        py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode", py::no_init)
-            .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry")
-            .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization")
-            .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm]")
-            .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm]")
-            .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm]")
-            .add_property("beta", &FourierReflection2D_Mode_Beta, "Mode longitudinal wavevector")
-            .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal wavevector")
-            .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector")
-            .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode")
+        py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
+            .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry.")
+            .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization.")
+            .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
+            .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
+            .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm].")
+            .add_property("beta", &FourierReflection2D_Mode_Beta, "Mode longitudinal wavevector.")
+            .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal wavevector.")
+            .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
+            .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
+        ;
+        
+        py::class_<FourierReflection2D::Reflected, shared_ptr<FourierReflection2D::Reflected>, boost::noncopyable>("Reflected",
+            "Reflected mode proxy.\n\n"
+            "This class contains providers for the optical field for a reflected field"
+            "under the normal incidence.\n"
+            , py::no_init)
+            .def_readonly("outElectricField", reinterpret_cast<ProviderFor<OpticalElectricField,Geometry2DCartesian> FourierReflection2D::Reflected::*>
+                                              (&FourierReflection2D::Reflected::outElectricField),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "OpticalElectricField", "2D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
+            )
+            .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<OpticalMagneticField,Geometry2DCartesian> FourierReflection2D::Reflected::*>
+                                              (&FourierReflection2D::Reflected::outMagneticField),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "OpticalMagneticField", "2D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
+            )
+            .def_readonly("outLightIntensity", reinterpret_cast<ProviderFor<LightIntensity,Geometry2DCartesian> FourierReflection2D::Reflected::*>
+                                              (&FourierReflection2D::Reflected::outLightIntensity),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightIntensity", "2D", "light intensity", "W/m²", "", "", "", "outLightIntensity").c_str()
+            )
         ;
     }
 }

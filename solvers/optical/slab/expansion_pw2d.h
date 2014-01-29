@@ -49,12 +49,23 @@ struct ExpansionPW2D: public Expansion {
      */
     ExpansionPW2D(FourierReflection2D* solver);
 
-    /// Init expansion
-    void init();
+    /**
+     * Init expansion
+     * \param compute_coeffs compute material coefficients
+     */
+    void init(bool compute_coeffs=true);
 
     /// Free allocated memory
     void free();
 
+    /// Compute all expansion coefficients
+    void computeMaterialCoefficients() {
+        size_t nlayers = lcount();
+        #pragma omp parallel for
+        for (size_t l = 0; l < nlayers; ++l)
+            getMaterialCoefficients(l);
+    }
+    
     virtual size_t lcount() const;
 
     virtual bool diagonalQE(size_t l) const {

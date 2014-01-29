@@ -46,6 +46,10 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
     void onInvalidate();
 
+    void onNewK0() override {
+        expansion.computeMaterialCoefficients();
+    }
+    
   public:
 
     /// Computed modes
@@ -92,6 +96,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
             if (!expansion.symmetric && symmetry != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
         }
+        fields_determined = DETERMINED_NOTHING;
         expansion.symmetry = symmetry;
     }
 
@@ -99,6 +104,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     void setKtran(dcomplex k)  {
         if (expansion.initialized && (expansion.symmetric && k != 0.))
             throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
+        if (k != ktran) fields_determined = DETERMINED_NOTHING;
         ktran = k;
     }
 
@@ -118,8 +124,12 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     /**
      * Get period
      */
-    double getPeriod() const {
-        return (expansion.right - expansion.left) * (expansion.periodic? 2. : 1.);
+    double getPeriod() {
+        bool not_initialized(!expansion.initialized);
+        if (not_initialized) expansion.init(false);
+        double result = (expansion.right - expansion.left) * (expansion.symmetric? 2. : 1.);
+        if (not_initialized) expansion.free();
+        return result;
     }
 
     /**
@@ -128,21 +138,104 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh2D& dst_mesh,
                                             InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
+  private:
+    
+    /**
+     * Get incident field vector for given polarization.
+     * \param polarization polarization of the perpendicularly incident light
+     * \param savidx pointer to which optionally save nonzero incident index
+     * \return incident field vector
+     */
+    cvector incidentVector(ExpansionPW2D::Component polarization, size_t* savidx=nullptr) {
+        size_t idx;
+        if (polarization == ExpansionPW2D::E_UNSPECIFIED)
+            throw BadInput(getId(), "Wrong incident polarization specified for reflectivity computation");
+        if (expansion.symmetric) {
+            if (expansion.symmetry == ExpansionPW2D::E_UNSPECIFIED)
+                expansion.symmetry = polarization;
+            else if (expansion.symmetry != polarization)
+                throw BadInput(getId(), "Current symmetry is inconsistent with specified incident polarization");
+        }
+        if (expansion.separated) {
+            expansion.polarization = polarization;
+            idx = expansion.iE(0);
+        } else {
+            idx = (polarization == ExpansionPW2D::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
+        }
+        if (savidx) *savidx = idx;
+        cvector incident(expansion.matrixSize(), 0.);
+        incident[idx] = 1.;
+        return incident;
+    }
+    
+  public:
+    
     /**
      * Get amplitudes of reflected diffraction orders
      * \param polarization polarization of the perpendicularly incident light
-     * \param direction incidence direction
+     * \param incidence incidence side
      * \param savidx pointer to which optionally save nonzero incident index
      */
-    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection direction, size_t* savidx=nullptr);
+    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
 
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
-     * \param direction incidence direction
+     * \param incidence incidence side
      */
-    double getReflection(ExpansionPW2D::Component polarization, IncidentDirection direction);
+    double getReflection(ExpansionPW2D::Component polarization, IncidentDirection incidence);
 
+    /**
+     * Get amplitudes of transmitted diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     */
+    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence);
+
+    /**
+     * Get reflection coefficient
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     */
+    double getTransmission(ExpansionPW2D::Component polarization, IncidentDirection incidence);
+
+    /**
+     * Get electric field at the given mesh for reflected light.
+     * \param Ei incident field vector
+     * \param incident incidence direction
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW2D::Component polarization, IncidentDirection incident,
+                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
+        return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
+    }
+
+    /**
+     * Get magnetic field at the given mesh for reflected light.
+     * \param Ei incident field vector
+     * \param incident incidence direction
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW2D::Component polarization, IncidentDirection incident,
+                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
+        return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
+    }
+
+    /**
+     * Get light intensity for reflected light.
+     * \param Ei incident field vector
+     * \param incident incidence direction
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    DataVector<double> getReflectedFieldIntensity(ExpansionPW2D::Component polarization, IncidentDirection incident,
+                                                  const MeshD<2>& dst_mesh, InterpolationMethod method) {
+        return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
+    }
+    
+    
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -193,6 +286,43 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      */
     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
+  public:
+    
+    /**
+     * Proxy class for accessing reflected fields
+     */
+    struct Reflected {
+        
+        /// Provider of the optical electric field
+        typename ProviderFor<OpticalElectricField,Geometry2DCartesian>::Delegate outElectricField;
+
+        /// Provider of the optical magnetic field
+        typename ProviderFor<OpticalMagneticField,Geometry2DCartesian>::Delegate outMagneticField;
+
+        /// Provider of the optical field intensity
+        typename ProviderFor<LightIntensity,Geometry2DCartesian>::Delegate outLightIntensity;
+    
+        /// Return one as the number of the modes
+        static size_t size() { return 1; }
+        
+        /**
+         * Construct proxy.
+         * \param wavelength incident light wavelength
+         * \param polarization polarization of the perpendicularly incident light
+         * \param side incidence side
+         */
+        Reflected(FourierReflection2D* parent, double wavelength, ExpansionPW2D::Component polarization, FourierReflection2D::IncidentDirection side):
+            outElectricField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+                parent->setWavelength(wavelength);
+                return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
+            outMagneticField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+                parent->setWavelength(wavelength);
+                return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
+            outLightIntensity([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+                parent->setWavelength(wavelength);
+                return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
+        {}
+    };
 };
 
 
