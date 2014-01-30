@@ -33,6 +33,7 @@ void FourierReflection2D::onInitialize()
     expansion.init();
     diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
     init();
+    expansion.computeMaterialCoefficients();
 }
 
 
@@ -92,7 +93,6 @@ cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component pol
     fields_determined = DETERMINED_NOTHING;
 
     initCalculation();
-    diagonalizer->initDiagonalization(k0, klong, ktran);
 
     return getReflectionVector(incidentVector(polarization, savidx), incidence);
 }

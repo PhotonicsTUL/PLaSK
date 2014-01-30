@@ -158,6 +158,8 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
+//std::cerr << (2e3*M_PI/k0) << " " << ktran << klong << "\n";
+
     const int inc = (start < end) ? 1 : -1;
 
     int N0 = diagonalizer->source()->matrixSize();
@@ -285,6 +287,7 @@ void ReflectionSolver<GeometryT>::storeP(size_t n) {
 template <typename GeometryT>
 cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident, IncidentDirection side)
 {
+    diagonalizer->initDiagonalization(k0, klong, ktran);
     switch (side) {
         case INCIDENCE_TOP:
             findReflection(0, this->stack.size()-1); break;
@@ -460,7 +463,7 @@ void ReflectionSolver<GeometryT>::determineFields()
 }
 
 template <typename GeometryT>
-void ReflectionSolver<GeometryT>::determineReflectedFields(cvector Ei, IncidentDirection incident)
+void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incident, IncidentDirection side)
 {
     if (fields_determined == DETERMINED_REFLECTED) return;
 
@@ -474,6 +477,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(cvector Ei, IncidentD
     allP = true;
 
     // Compute reflection matrices
+    diagonalizer->initDiagonalization(k0, klong, ktran);
     findReflection(0, count-1);
 
     // Temporary and initial data
@@ -485,10 +489,10 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(cvector Ei, IncidentD
     int curr = this->stack[0];
     double H;
 
-    fields[count-1].B = diagonalizer->invTE(curr) * Ei; // diagonalized incident E-field
+    fields[count-1].B = diagonalizer->invTE(curr) * incident; // diagonalized incident E-field
     fields[count-1].F = cvector(N);
 
-    for (int n = count-1; n > 0; n--)
+    for (int n = count-1; n > 0; --n)
     {
         // F-field for the current layer
         mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
@@ -511,7 +515,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(cvector Ei, IncidentD
 
         for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];              // F2 := F1 - B1
         mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
-        mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * E
+        mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
         // multiply rows of invTH by -1 where necessary for the outer layer
         if (n == 1) {
             for (int i = 0; i < N; i++)
@@ -541,13 +545,10 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(cvector Ei, IncidentD
 
     // In the outer layers replace F and B where necessary for consistent gamma handling
     for (int n = 0; n < count; n += count-1) {
-        cvector& F2 = fields[n].F;
-        cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(this->stack[n]);
         for (int i = 0; i < N; i++) {
-            if (real(gamma[i]) < -SMALL) {
-                dcomplex t = B2[i]; B2[i] =  F2[i]; F2[i] = t;
-            }
+            if (real(gamma[i]) < -SMALL)
+                std::swap(fields[n].F, fields[n].B);
         }
      }
 

@@ -69,18 +69,22 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     /// Set current wavelength
     void setWavelength(dcomplex lambda) {
         dcomplex k = 2e3*M_PI / lambda;
-        if (k != k0) fields_determined = DETERMINED_NOTHING;
-        k0 = k;
-        onNewK0();
+        if (k != k0) {
+            fields_determined = DETERMINED_NOTHING;
+            k0 = k;
+            k0changed();
+        }
     }
 
     /// Get current k0
     dcomplex getK0() const { return k0; }
     /// Set current k0
     void setK0(dcomplex k) {
-        if (k != k0) fields_determined = DETERMINED_NOTHING;
-        k0 = k;
-        onNewK0();
+        if (k != k0) {
+            fields_determined = DETERMINED_NOTHING;
+            k0 = k;
+            k0changed();
+        }
     }
 
     /// Get longitudinal wavevector
@@ -169,7 +173,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     void cleanup();
 
     /// Tasks to perform if a new wavelength is set (e.g. recompute indices to consider material dispersion)
-    virtual void onNewK0() {}
+    virtual void k0changed() {}
     
     /// Compute discontinuity matrix determinant for the current parameters
     dcomplex determinant();
@@ -210,10 +214,10 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     /**
      * Determine coefficients in each layer necessary for fields calculations.
      * This method is called for reflected fields.
-     * \param Ei incident field vector
-     * \param incident incidence direction
+     * \param incident incident field vector
+     * \param side incidence side
      */
-    void determineReflectedFields(cvector Ei, IncidentDirection incident);
+    void determineReflectedFields(const cvector& incident, IncidentDirection side);
 
     /**
      * Compute electric field at the given mesh.
@@ -270,37 +274,37 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     /**
      * Get electric field at the given mesh for reflected light.
-     * \param Ei incident field vector
-     * \param incident incidence direction
+     * \param incident incident field vector
+     * \param side incidence side
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(cvector Ei, IncidentDirection incident, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
-        determineReflectedFields(Ei, incident);
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+        determineReflectedFields(incident, side);
         return computeFieldE(dst_mesh, method);
     }
 
     /**
      * Get magnetic field at the given mesh for reflected light.
-     * \param Ei incident field vector
-     * \param incident incidence direction
+     * \param incident incident field vector
+     * \param side incidence side
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(cvector Ei, IncidentDirection incident, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
-        determineReflectedFields(Ei, incident);
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+        determineReflectedFields(incident, side);
         return computeFieldH(dst_mesh, method);
     }
 
     /**
      * Get light intensity for reflected light.
-     * \param Ei incident field vector
-     * \param incident incidence direction
+     * \param incident incident field vector
+     * \param side incidence side
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldIntensity(cvector Ei, IncidentDirection incident, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
-        determineReflectedFields(Ei, incident);
+    DataVector<double> getReflectedFieldIntensity(const cvector& incident, IncidentDirection side, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+        determineReflectedFields(incident, side);
         return computeFieldIntensity(1., dst_mesh, method);
     }
 };

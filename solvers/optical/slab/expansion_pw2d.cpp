@@ -13,7 +13,7 @@ size_t ExpansionPW2D::lcount() const {
     return SOLVER->getLayersPoints().size();
 }
 
-void ExpansionPW2D::init(bool compute_coeffs)
+void ExpansionPW2D::init()
 {
     auto geometry = SOLVER->getGeometry();
 
@@ -136,8 +136,6 @@ void ExpansionPW2D::init(bool compute_coeffs)
     size_t nlayers = lcount();
     coeffs.resize(nlayers);
     diagonals.assign(nlayers, false);
-    if (compute_coeffs)
-        computeMaterialCoefficients();
 
     initialized = true;
 }

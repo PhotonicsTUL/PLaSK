@@ -46,8 +46,8 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
     void onInvalidate();
 
-    void onNewK0() override {
-        expansion.computeMaterialCoefficients();
+    void k0changed() override {
+        if (expansion.initialized) expansion.computeMaterialCoefficients();
     }
     
   public:
@@ -126,7 +126,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      */
     double getPeriod() {
         bool not_initialized(!expansion.initialized);
-        if (not_initialized) expansion.init(false);
+        if (not_initialized) expansion.init();
         double result = (expansion.right - expansion.left) * (expansion.symmetric? 2. : 1.);
         if (not_initialized) expansion.free();
         return result;
@@ -208,6 +208,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      */
     DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW2D::Component polarization, IncidentDirection incident,
                                                    const MeshD<2>& dst_mesh, InterpolationMethod method) {
+        initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -220,6 +221,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      */
     DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW2D::Component polarization, IncidentDirection incident,
                                                    const MeshD<2>& dst_mesh, InterpolationMethod method) {
+        initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
 
@@ -232,6 +234,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      */
     DataVector<double> getReflectedFieldIntensity(ExpansionPW2D::Component polarization, IncidentDirection incident,
                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
+        initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
     }
     

@@ -24,7 +24,7 @@ class Matrix {
 
   public:
 
-    Matrix() : gc(NULL) {};
+    Matrix() : gc(nullptr) {};
 
     Matrix(int m, int n) : r(m), c(n) {
         data_ = aligned_new_array<T>(m*n); gc = new int;
@@ -60,12 +60,12 @@ class Matrix {
         data_ = aligned_new_array<T>(r*c); gc = new int;
         write_debug("allocating matrix %1%x%2% (%3% bytes) at %4% (from diagonal)", r, c, r*c*sizeof(T), data_);
         int size = r*c;
-        for (int i = 0; i < size; i++) data_[i] = 0;
+        std::fill_n(data_, size, 0);
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
         *gc = 1;
     }
 
-    Matrix(int m, int n, T* existing_data) : r(m), c(n), gc(NULL) {
+    Matrix(int m, int n, T* existing_data) : r(m), c(n), gc(nullptr) {
         // Create matrix using exiting data. This data is never garbage-collected
         data_ = existing_data;
     }
@@ -121,7 +121,7 @@ class MatrixDiagonal {
 
   public:
 
-    MatrixDiagonal() : gc(NULL) {}
+    MatrixDiagonal() : gc(nullptr) {}
 
     MatrixDiagonal(int n) : siz(n) {
         data_ = aligned_new_array<T>(n); gc = new int;

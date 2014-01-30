@@ -53,7 +53,7 @@ struct ExpansionPW2D: public Expansion {
      * Init expansion
      * \param compute_coeffs compute material coefficients
      */
-    void init(bool compute_coeffs=true);
+    void init();
 
     /// Free allocated memory
     void free();
@@ -61,6 +61,7 @@ struct ExpansionPW2D: public Expansion {
     /// Compute all expansion coefficients
     void computeMaterialCoefficients() {
         size_t nlayers = lcount();
+        assert(coeffs.size() == nlayers);
         #pragma omp parallel for
         for (size_t l = 0; l < nlayers; ++l)
             getMaterialCoefficients(l);
