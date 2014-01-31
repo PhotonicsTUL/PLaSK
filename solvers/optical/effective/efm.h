@@ -95,12 +95,12 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     dcomplex freqv(dcomplex lam) {
         return 2. - 4e3*M_PI / lam / k0;
     }
-    
+
     /// Convert frequency parameter to the wavelength
     dcomplex lambda(dcomplex freq) {
         return 2e3*M_PI / (k0 * (1. - freq/2.));
     }
-    
+
   protected:
 
     friend struct RootMuller;
@@ -136,6 +136,11 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Direction of laser emission
     Emission emission;
 
+    /// Slot called when gain has changed
+    void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        cache_outdated = true;
+    }
+
   public:
 
     /// Distance outside outer borders where material is sampled
@@ -153,11 +158,16 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// 'Vertical wavelength' used as a helper for searching vertical modes
     dcomplex vlam;
-    
+
     /// Computed modes
     std::vector<Mode> modes;
 
     EffectiveFrequencyCylSolver(const std::string& name="");
+
+    virtual ~EffectiveFrequencyCylSolver() {
+        inTemperature.changedDisconnectMethod(this, &EffectiveFrequencyCylSolver::onInputChange);
+        inGain.changedDisconnectMethod(this, &EffectiveFrequencyCylSolver::onInputChange);
+    }
 
     virtual std::string getClassName() const { return "optical.EffectiveFrequencyCyl"; }
 
@@ -302,11 +312,17 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
     /// Provider for refractive index
     ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
-    
+
   protected:
 
     /// Do we need to compute gain
     bool need_gain;
+
+    /// Indicator that we need to recompute the effective indices
+    bool cache_outdated;
+
+    /// Indicator if we have veffs foe the current cache
+    bool have_veffs;
 
     /// Initialize the solver
     virtual void onInitialize();
@@ -317,7 +333,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /**
      * Update refractive index cache
      */
-    bool updateCache();
+    void updateCache();
 
     /**
      * Fist stage of computations

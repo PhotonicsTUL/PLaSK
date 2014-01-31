@@ -29,6 +29,8 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     stripe_root.tolf_min = 1.0e-8;
     stripe_root.tolf_max = 1.0e-6;
     stripe_root.maxiter = 500;
+    inTemperature.changedConnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
+    inGain.changedConnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
 }
 
 
@@ -300,6 +302,7 @@ void EffectiveIndex2DSolver::onInitialize()
     yfields.resize(yend);
 
     need_gain = false;
+    recompute_neffs = true;
 }
 
 
@@ -318,14 +321,14 @@ void EffectiveIndex2DSolver::updateCache()
 {
     bool fresh = !initCalculation();
 
-    if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
-        if (fresh) // Make sure we have only positive points
-            for (auto x: mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
-        if (mesh->axis0[0] == 0.) xbegin = 1;
-    }
-
-    if (fresh || inTemperature.changed() || (need_gain && inGain.changed())) {
+    if (fresh || inTemperature.changed() || (need_gain && inGain.changed()) || recompute_neffs) {
         // we need to update something
+
+        if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
+            if (fresh) // Make sure we have only positive points
+                for (auto x: mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
+            if (mesh->axis0[0] == 0.) xbegin = 1;
+        }
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
         modes.clear();

@@ -240,10 +240,21 @@ struct GainSpectrum {
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
+                solver->inTemperature.changedConnectMethod(this, &GainSpectrum::onTChange);
+                solver->inCarriersConcentration.changedConnectMethod(this, &GainSpectrum::onNChange);
                 return;
             };
         }
         throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
+    }
+
+    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
+
+    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
+
+    ~GainSpectrum() {
+        solver->inTemperature.changedDisconnectMethod(this, &GainSpectrum::onTChange);
+        solver->inCarriersConcentration.changedDisconnectMethod(this, &GainSpectrum::onNChange);
     }
 
     /**
@@ -252,12 +263,10 @@ struct GainSpectrum {
      * \return gain
      */
     double getGain(double wavelength) {
-        if (isnan(T) || solver->inTemperature.changed())
-            T = solver->inTemperature(OnePointMesh<2>(point))[0];
-        if (isnan(n) || solver->inCarriersConcentration.changed())
-            n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
-            return solver->getGainModule(wavelength, T, n, *region)
-                .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
+        if (isnan(T)) T = solver->inTemperature(OnePointMesh<2>(point))[0];
+        if (isnan(n)) n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
+        return solver->getGainModule(wavelength, T, n, *region)
+            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
     }
 };
 

@@ -28,6 +28,8 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     stripe_root.tolf_min = 1.0e-7;
     stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxiter = 500;
+    inTemperature.changedConnectMethod(this, &EffectiveFrequencyCylSolver::onInputChange);
+    inGain.changedConnectMethod(this, &EffectiveFrequencyCylSolver::onInputChange);
 }
 
 
@@ -229,6 +231,8 @@ void EffectiveFrequencyCylSolver::onInitialize()
     zfields.resize(zsize);
 
     need_gain = false;
+    cache_outdated = true;
+    have_veffs = false;
 }
 
 
@@ -243,16 +247,18 @@ void EffectiveFrequencyCylSolver::onInvalidate()
 
 /********* Here are the computations *********/
 
-bool EffectiveFrequencyCylSolver::updateCache()
+void EffectiveFrequencyCylSolver::updateCache()
 {
     bool fresh = !initCalculation();
-    // Some additional checks
-    for (auto x: mesh->axis0) {
-        if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
-    }
-    if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
-    if (fresh || inTemperature.changed() || (need_gain && inGain.changed()) || k0 != old_k0) { // we need to update something
+    if (fresh || cache_outdated || inTemperature.changed() || (need_gain && inGain.changed()) || k0 != old_k0) {
+        // we need to update something
+
+        // Some additional checks
+        for (auto x: mesh->axis0) {
+            if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
+        }
+        if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
         modes.clear();
@@ -319,14 +325,16 @@ bool EffectiveFrequencyCylSolver::updateCache()
                 ngCache[ir][0] = ngCache[ir][1];
             }
         }
-        return true;
+        cache_outdated = false;
+        have_veffs = false;
     }
-    return false;
 }
 
 void EffectiveFrequencyCylSolver::stageOne()
 {
-    if (updateCache()) {
+    updateCache();
+
+    if (!have_veffs) {
         // Compute effective frequencies for all stripes
         std::exception_ptr error; // needed to handle exceptions from OMP loop
         #pragma omp parallel for
@@ -369,6 +377,8 @@ void EffectiveFrequencyCylSolver::stageOne()
             std::stringstream strn; for (size_t i = 0; i < nng.size(); ++i) strn << ", " << str(nng[i]);
             writelog(LOG_DEBUG, "stripes <nng> = [%1% ]", strn.str().substr(1));
 #       endif
+
+        have_veffs = true;
 
         double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
         for (auto v: veffs) {

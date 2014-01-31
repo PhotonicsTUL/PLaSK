@@ -147,6 +147,11 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     EffectiveIndex2DSolver(const std::string& name="");
 
+    virtual ~EffectiveIndex2DSolver() {
+        inTemperature.changedDisconnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
+        inGain.changedDisconnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
+    }
+
     virtual std::string getClassName() const { return "optical.EffectiveIndex2D"; }
 
     virtual std::string getClassDescription() const {
@@ -305,8 +310,13 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /// Provider for refractive index
     ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
-    
+
   protected:
+
+    /// Slot called when gain has changed
+    void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
+        recompute_neffs = true;
+    }
 
     /// Initialize the solver
     virtual void onInitialize();
