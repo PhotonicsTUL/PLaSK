@@ -12,8 +12,9 @@ class XPLDocument(object):
      
     def __init__(self, main):
         object.__init__(self)
+        self.defines = GUIAndSourceControler(DefinesControler(self))
         self.controlers = [
-              GUIAndSourceControler(DefinesControler(self)),  #defines
+              self.defines,
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[1])),  #materials
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
