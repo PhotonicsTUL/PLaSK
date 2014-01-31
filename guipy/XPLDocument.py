@@ -50,3 +50,9 @@ class XPLDocument(object):
         
     def getModelByName(self, sectionName):
         return self.getControlerByName(sectionName).model
+    
+    def getInfo(self, level = None):
+        """Get messages from all models, on given level (all by default)."""
+        res = []
+        for c in self.controlers: res.extend(c.model.getInfo(level))
+        return res

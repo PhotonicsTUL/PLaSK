@@ -121,9 +121,12 @@ class SectionModel(object):
                 res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
         return res
         
-    def getInfo(self):
+    def getInfo(self, level = None):
         if self.__info__ == None: self.__info__ = self.createInfo()
-        return self.__info__
+        if level != None:
+            return filter(lambda m: m.level == level, self.__info__)
+        else:
+            return self.__info__
     
     def getInfoListModel(self):
         return InfoListModel(self)

@@ -10,7 +10,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from XPLDocument import XPLDocument
 from utils import exceptionToMsg
-from model.info import InfoListModel
+from model.info import InfoListModel, Info
 
 class MainWindow(QtGui.QMainWindow):
     
@@ -36,8 +36,8 @@ class MainWindow(QtGui.QMainWindow):
         reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
-        self.setNewModel(XPLDocument(self))
         self.fileName = None
+        self.setNewModel(XPLDocument(self))
         
     def open(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self, "Choose the name of experiment file to open", ".", "XPL (*.xpl)");
@@ -53,6 +53,7 @@ class MainWindow(QtGui.QMainWindow):
             return self.saveAs()
         
     def saveAs(self):
+        """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.beforeSave(): return False
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
         if not fileName: return False
@@ -74,6 +75,16 @@ class MainWindow(QtGui.QMainWindow):
                 msgBox.setIcon(QtGui.QMessageBox.Warning)
                 #msgBox.setDefaultButton(QtGui.QMessageBox.Yes);
                 return msgBox.exec_() == QtGui.QMessageBox.Yes
+        errors = self.document.getInfo(Info.ERROR)
+        if errors:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("Document contains some non-critical errors. It is possible to save it but probably not to run.")
+            msgBox.setDetailedText('\n'.join(map(str, errors)))
+            msgBox.setInformativeText("Do you want to save anyway?")
+            msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            msgBox.setIcon(QtGui.QMessageBox.Warning)
+            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
+            return msgBox.exec_() == QtGui.QMessageBox.Yes
         return True
     
     def currentSectionExit(self):
