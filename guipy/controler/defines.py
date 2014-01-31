@@ -48,10 +48,7 @@ class DefineHinstTableModel(QtCore.QAbstractTableModel):
         return self.model.headerData(col, orientation, role)
         
 class DefinesCompletionDelegate(QtGui.QItemDelegate):
-    """
-    A delegate that places a fully functioning QComboBox in every
-    cell of the column to which it's applied
-    """
+
     def __init__(self, model, parent):
         QtGui.QItemDelegate.__init__(self, parent)
         self.model = DefineHinstTableModel(model, parent)
