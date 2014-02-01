@@ -38,7 +38,7 @@ void ReflectionSolver<GeometryT>::init()
     P = cmatrix(N,N);
     phas = cdiagonal(N);
     A = cmatrix(N,N);       // A is also temporary matrix
-    
+
     assert(ipiv == nullptr);
     ipiv = aligned_new_array<int>(N);
     allP = false;
@@ -476,9 +476,16 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
     // Obtain the physical fields at the last layer
     allP = true;
 
+    int start, end, inc;
+    switch (side)
+    {
+        case INCIDENCE_TOP:    start = count-1; end = 0;       inc = -1; break;
+        case INCIDENCE_BOTTOM: start = 0;       end = count-1; inc = +1; break;
+    }
+
     // Compute reflection matrices
     diagonalizer->initDiagonalization(k0, klong, ktran);
-    findReflection(0, count-1);
+    findReflection(end, start);
 
     // Temporary and initial data
     int N = diagonalizer->matrixSize();
@@ -486,30 +493,30 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
     cvector tmp(work, N);
     cdiagonal gamma;
 
-    int curr = this->stack[0];
+    int curr = this->stack[start];
     double H;
 
-    fields[count-1].B = diagonalizer->invTE(curr) * incident; // diagonalized incident E-field
-    fields[count-1].F = cvector(N);
+    fields[start].B = diagonalizer->invTE(curr) * incident; // diagonalized incident E-field
+    fields[start].F = cvector(N);
 
-    for (int n = count-1; n > 0; --n)
+    for (int n = start; n != end; n += inc)
     {
         // F-field for the current layer
         mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
 
         // Compute B-field for the next (previous) layer
 
-        fields[n-1].F = cvector(N);
-        fields[n-1].B = cvector(N);
+        fields[n+inc].F = cvector(N);
+        fields[n+inc].B = cvector(N);
 
         // some aliases
         cvector& F1 = fields[n].F;
         cvector& B1 = fields[n].B;
-        cvector& F2 = fields[n-1].F;
-        cvector& B2 = fields[n-1].B;
+        cvector& F2 = fields[n+inc].F;
+        cvector& B2 = fields[n+inc].B;
 
         curr = this->stack[n];
-        int next = this->stack[n-1];
+        int next = this->stack[n+inc];
 
         gamma = diagonalizer->Gamma(next);
 
@@ -517,7 +524,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
         mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
         // multiply rows of invTH by -1 where necessary for the outer layer
-        if (n == 1) {
+        if (n+inc == end) {
             for (int i = 0; i < N; i++)
                 if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
         }
@@ -527,8 +534,8 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
               tmp.data(), N0, -1., B2.data(), N);                       // B2 := invTE * tmp - B2
 
-        H = (n > 1)? this->vbounds[n-1] - this->vbounds[n-2] : 0.;
-        if (n != 1) {
+        H = (n+inc != end)? this->vbounds[n+inc] - this->vbounds[n+inc-1] : 0.;
+        if (n+inc != end) {
             for (int i = 0; i < N; i++)
                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                      // B2 := 1/2 * phas * B2
         } else {
@@ -541,7 +548,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
     }
 
     //mult_matrix_by_vector(getP(0), layerFields[0].B, layerFields[0].F);
-    fields[0].F = cvector(N, 0.);
+    fields[end].F = cvector(N, 0.);
 
     // In the outer layers replace F and B where necessary for consistent gamma handling
     for (int n = 0; n < count; n += count-1) {
@@ -552,8 +559,13 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         }
      }
 
-    // Replace F and B above the interface for consistency in getFieldVectorE and getFieldVectorH
-    for (int n = this->interface; n < count; n++) {
+    // Replace F and B before the interface for consistency in getFieldVectorE and getFieldVectorH
+    switch (side)
+    {
+        case INCIDENCE_TOP:    start = this->interface; end = count; break;
+        case INCIDENCE_BOTTOM: start = 0; end = this->interface; break;
+    }
+    for (int n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(this->stack[n]);
@@ -566,20 +578,6 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         }
     }
 
-    // for (int n = count-1; n >= 0; n--) {
-    //     //std::cerr << "g[" << n << "]: ";
-    //     for (int i = 0; i < N; i++) {
-    //         double gr = real(diagonalizer.Gamma(stack[n].indx)[i]);
-    //         double gi = imag(diagonalizer.Gamma(stack[n].indx)[i]);
-    //         //std::cerr << ((abs(gr)>1e-10)?gr:0.) << ((gi>=0)?"+":"-") << ((abs(gi)>1e-10)?abs(gi):0.) << "j ";
-    //     }
-    //     std::cerr << "\nF[" << n << "]: ";
-    //     for (int i = 0; i < N; i++) std::cerr << ((abs(layerFields[n].F[i])>1e-10)?abs(layerFields[n].F[i]):0.) << " ";
-    //     std::cerr << "\nB[" << n << "]: ";
-    //     for (int i = 0; i < N; i++) std::cerr << ((abs(layerFields[n].B[i])>1e-10)?abs(layerFields[n].B[i]):0.) << " ";
-    //     std::cerr << "\n\n";
-    // }
-
     allP = false;
     fields_determined = DETERMINED_REFLECTED;
 }
@@ -589,7 +587,7 @@ template <typename GeometryT>
 cvector ReflectionSolver<GeometryT>::getFieldVectorE(double z, int n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
-    
+
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
@@ -617,7 +615,7 @@ template <typename GeometryT>
 cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
-    
+
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
