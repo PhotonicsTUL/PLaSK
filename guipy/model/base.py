@@ -120,9 +120,15 @@ class SectionModel(object):
             if hasattr(self.externalSource, 'error'):
                 res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
         return res
+    
+    def createInfoIndexes(self, info):
+        """Create indexes needs to fast search in info."""
+        pass
         
     def getInfo(self, level = None):
-        if self.__info__ == None: self.__info__ = self.createInfo()
+        if self.__info__ == None:
+            self.__info__ = self.createInfo()
+            self.createInfoIndexes(self.__info__)
         if level != None:
             return filter(lambda m: m.level == level, self.__info__)
         else:

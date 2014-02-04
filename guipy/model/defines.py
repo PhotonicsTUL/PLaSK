@@ -59,7 +59,7 @@ class DefinesModel(TableModel):
             if len(indexes) > 1:
                 err = Info('Duplicated definition name "%s", rows: %s' % (name, ', '.join(map(str, indexes))), Info.ERROR)
                 err.rows = indexes
-                err.col = 0
+                err.cols = [0]
                 res.append(err)
         return res
         
