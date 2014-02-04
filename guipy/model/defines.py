@@ -27,7 +27,7 @@ class DefinesModel(TableModel):
         del self.entries[:]
         if isinstance(element, ElementTree.Element):
             for c in element.iter("define"):
-                self.entries.append(DefinesModel.Entry(c.attrib["name"], c.attrib["value"]))
+                self.entries.append(DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")))
         self.layoutChanged.emit()
         self.fireChanged()
     
@@ -54,13 +54,17 @@ class DefinesModel(TableModel):
         res = super(DefinesModel, self).createInfo()
         names = OrderedDict()
         for i, d in enumerate(self.entries):
-            names.setdefault(d.name, []).append(i)
+            if not d.name:
+                res.append(Info('Definition name is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
+            else:
+                names.setdefault(d.name, []).append(i)
+            if not d.value: res.append(Info('Definition value is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
         for name, indexes in names.items():
             if len(indexes) > 1:
-                err = Info('Duplicated definition name "%s", rows: %s' % (name, ', '.join(map(str, indexes))), Info.ERROR)
-                err.rows = indexes
-                err.cols = [0]
-                res.append(err)
+                res.append(Info('Duplicated definition name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
+                                Info.ERROR, rows = indexes, cols = [0]
+                                )
+                          )
         return res
         
     def createDefaultEntry(self):

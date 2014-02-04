@@ -10,10 +10,12 @@ class Info(object):
     def __str__(self):
         return self.text
     
-    def __init__(self, text, level = None):
+    def __init__(self, text, level = None, **kwargs):
         object.__init__(self)
         self.text = text
         self.level = int(level)
+        for name, value in kwargs.items():
+            setattr(self, name, value)
         
     def add_connection(self, attr_name, value):
         getattr(self, attr_name, []).append(value)

@@ -1,6 +1,7 @@
 from PyQt4 import QtCore
 from xml.etree import ElementTree
 from model.table import TableModel
+from model.info import Info
 #from guis import DefinesEditor
 
 class ConnectsModel(TableModel):
@@ -19,7 +20,7 @@ class ConnectsModel(TableModel):
         del self.entries[:]
         if isinstance(element, ElementTree.Element):
             for c in element.iter("connect"):
-                self.entries.append(ConnectsModel.Entry(c.attrib["out"], c.attrib["in"]))
+                self.entries.append(ConnectsModel.Entry(c.attrib.get("out", ""), c.attrib.get("in", "")))
         self.layoutChanged.emit()
         self.fireChanged()
     
@@ -56,3 +57,10 @@ class ConnectsModel(TableModel):
             if col == 1: return 'input receiver'
             if col == 2: return 'comment'
         return None
+    
+    def createInfo(self):
+        res = super(ConnectsModel, self).createInfo()
+        for i, d in enumerate(self.entries):
+            if not d.output: res.append(Info('Connection output is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
+            if not d.input: res.append(Info('Connection input is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
+        return res
