@@ -6,7 +6,6 @@ from weakref import WeakSet, WeakKeyDictionary
 
 from PyQt4 import QtCore 
 from PyQt4 import QtGui
-from model.info import Info
 
 def exceptionToMsg(f, parent = None, err_title = None):   
     try:
