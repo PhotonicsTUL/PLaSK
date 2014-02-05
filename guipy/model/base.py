@@ -52,8 +52,20 @@ class SectionModel(object):
         if info_cb: self.infoChanged.connect(info_cb)
         
     def fireChanged(self, refreshInfo = True):
+        if refreshInfo: self.markInfoInvalid()
         self.changed(self)
-        if refreshInfo: self.refreshInfo()
+        if refreshInfo: self.fireInfoChanged()
+        
+    def markInfoInvalid(self):
+        """Invalidate the info and it indexes."""
+        self.__info__ = None
+        
+    def fireInfoChanged(self):
+        """
+            Inform observers that info has been changed.
+            You must call markInfoInvalid and prepare data to build the info before call this.
+        """
+        self.infoChanged(self)
 
     def getText(self):
         element = self.getXMLElement()
@@ -65,13 +77,6 @@ class SectionModel(object):
 
     def setText(self, text):
         self.setXMLElement(ElementTree.fromstringlist(['<', self.name, '>', text, '</', self.name, '>']))
-        
-    def fireInfoChanged(self):
-        self.infoChanged.call(self)
-        
-    def setInfo(self, *info):
-        self.errors = list(info)
-        self.fireInfoChanged()
         
     def isReadOnly(self):
         """
@@ -120,15 +125,10 @@ class SectionModel(object):
             if hasattr(self.externalSource, 'error'):
                 res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
         return res
-    
-    def createInfoIndexes(self, info):
-        """Create indexes needs to fast search in info."""
-        pass
-        
+            
     def getInfo(self, level = None):
         if self.__info__ == None:
             self.__info__ = self.createInfo()
-            self.createInfoIndexes(self.__info__)
         if level != None:
             return filter(lambda m: m.level == level, self.__info__)
         else:
