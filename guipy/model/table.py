@@ -1,5 +1,5 @@
 from model.base import SectionModel
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore
 from model import info
 
 class TableModel(QtCore.QAbstractTableModel, SectionModel):
@@ -11,10 +11,14 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel):
         self.__row_to_errors__ = None
         
     @property
-    def errors_by_row(self):
+    def info_by_row(self):
+        """
+            Allow to fast access to Info which has rows attributes and for search by row.
+            :return: dict: row number -> Info
+        """
         if self.__row_to_errors__ == None:
             self.__row_to_errors__ = {}
-            for msg in self.getInfo():
+            for msg in self.info:
                 for r in getattr(msg, 'rows', []):
                     self.__row_to_errors__.setdefault(r, []).append(msg)
         return self.__row_to_errors__
@@ -33,13 +37,11 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel):
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole: 
             return self.get(index.column(), index.row())
         if role == QtCore.Qt.ToolTipRole:
-            self.getInfo()  # force index refreshing
-            return '\n'.join([str(err) for err in self.errors_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
+            return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
         if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
-            self.getInfo()  # force index refreshing
             max_level = -1
             c = index.column()
-            for err in self.errors_by_row.get(index.row(), []):
+            for err in self.info_by_row.get(index.row(), []):
                 if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row massages has decoration only in first column
                     if err.level > max_level: max_level = err.level
             return info.infoLevelIcon(max_level)

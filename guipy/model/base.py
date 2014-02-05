@@ -133,6 +133,10 @@ class SectionModel(object):
             return filter(lambda m: m.level == level, self.__info__)
         else:
             return self.__info__
+        
+    @property
+    def info(self):
+        return self.getInfo()
     
     def getInfoListModel(self):
         return InfoListModel(self)

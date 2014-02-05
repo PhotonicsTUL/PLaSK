@@ -53,7 +53,7 @@ class InfoListModel(QtCore.QAbstractListModel):
             self.entries = []
         else:
             self.model = weakref.ref(model)
-            self.entries = model.getInfo()
+            self.entries = model.info
             model.infoChanged += self.infoChanged
     
     def __init__(self, model, parent=None, *args):
@@ -63,7 +63,7 @@ class InfoListModel(QtCore.QAbstractListModel):
     def infoChanged(self, model):
         """Read info from model, inform observers."""
         self.layoutAboutToBeChanged.emit()
-        self.entries = model.getInfo()
+        self.entries = model.info
         self.layoutChanged.emit()
         
     def setModel(self, model):
