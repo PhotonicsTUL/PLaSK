@@ -24,10 +24,10 @@ class DefinesModel(TableModel):
         
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()
-        del self.entries[:]
         if isinstance(element, ElementTree.Element):
-            for c in element.iter("define"):
-                self.entries.append(DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")))
+            self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")) for c in element.iter("define")]
+        else:
+            self.entries = []
         self.layoutChanged.emit()
         self.fireChanged()
     

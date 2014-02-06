@@ -17,10 +17,10 @@ class ConnectsModel(TableModel):
         
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()
-        del self.entries[:]
         if isinstance(element, ElementTree.Element):
-            for c in element.iter("connect"):
-                self.entries.append(ConnectsModel.Entry(c.attrib.get("out", ""), c.attrib.get("in", "")))
+            self.entries = [ConnectsModel.Entry(c.attrib.get("out", ""), c.attrib.get("in", "")) for c in element.iter("connect")]
+        else:
+            self.entries = []
         self.layoutChanged.emit()
         self.fireChanged()
     
