@@ -192,6 +192,18 @@ py::object FourierReflection2D_computeReflectivity(FourierReflection2D* self,
     }, wavelength);
 }
 
+py::object FourierReflection2D_computeTransmitticity(FourierReflection2D* self,
+                                                     py::object wavelength,
+                                                     ExpansionPW2D::Component polarization,
+                                                     FourierReflection2D::IncidentDirection incidence
+                                                    )
+{
+    return UFUNC<double>([=](double lam)->double {
+        self->setWavelength(lam);
+        return 100. * self->getTransmission(polarization, incidence);
+    }, wavelength);
+}
+
 PmlWrapper<FourierReflection2D> FourierReflection2D_getPML(FourierReflection2D* self) {
     return PmlWrapper<FourierReflection2D>(self, &self->pml);
 }
@@ -250,14 +262,24 @@ BOOST_PYTHON_MODULE(slab)
         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
                    "Compute discontinuity matrix determinant.");
         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
-                   "Compute reflectivity on the perpendicular incidence [%].\n\n"
+                   "Compute reflection ceofficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
                    "    lam (float or array of floats): Incident light wavelength.\n"
                    "    polarization: Specification of the incident light polarization.\n"
                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                    "        of the non-vanishing electric field component.\n"
-                   "    side (`top` or `bottom`): Side of the structure at which the reflectivity\n"
-                   "        is computed.\n"
+                   "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                   "        present.\n"
+                   , (py::arg("lam"), "polarization", "side"));
+        solver.def("compute_transmittivity", &FourierReflection2D_computeTransmitticity,
+                   "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+                   "Args:\n"
+                   "    lam (float or array of floats): Incident light wavelength.\n"
+                   "    polarization: Specification of the incident light polarization.\n"
+                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+                   "        of the non-vanishing electric field component.\n"
+                   "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                   "        present.\n"
                    , (py::arg("lam"), "polarization", "side"));
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index.\n\n"
@@ -275,8 +297,8 @@ BOOST_PYTHON_MODULE(slab)
                    "    polarization: Specification of the incident light polarization.\n"
                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                    "        of the non-vanishing electric field component.\n"
-                   "    side (`top` or `bottom`): Side of the structure at which the reflectivity\n"
-                   "        is computed.\n"
+                   "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                   "        present.\n"
                    , (py::arg("lam"), "polarization", "side"));
         py::scope scope = solver;
 
@@ -292,7 +314,7 @@ BOOST_PYTHON_MODULE(slab)
             .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
         ;
-        
+
         py::class_<FourierReflection2D::Reflected, shared_ptr<FourierReflection2D::Reflected>, boost::noncopyable>("Reflected",
             "Reflected mode proxy.\n\n"
             "This class contains providers for the optical field for a reflected field"

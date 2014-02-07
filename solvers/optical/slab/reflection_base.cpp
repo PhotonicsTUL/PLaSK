@@ -287,14 +287,30 @@ void ReflectionSolver<GeometryT>::storeP(size_t n) {
 template <typename GeometryT>
 cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident, IncidentDirection side)
 {
+    int last, first;
+
     diagonalizer->initDiagonalization(k0, klong, ktran);
     switch (side) {
         case INCIDENCE_TOP:
-            findReflection(0, this->stack.size()-1); break;
+            last = 0; first = this->stack.size()-1; break;
         case INCIDENCE_BOTTOM:
-            findReflection(this->stack.size()-1, 0); break;
+            last = this->stack.size()-1; first = 0; break;
     }
-    return P * incident;
+    findReflection(last, first);
+    return diagonalizer->TE(this->stack[first]) *  (P * incident);
+}
+
+
+template <typename GeometryT>
+cvector ReflectionSolver<GeometryT>::getTransmissionVector(const cvector& incident, IncidentDirection side)
+{
+    determineReflectedFields(incident, side);
+    switch (side) {
+        case INCIDENCE_TOP:
+            return getFieldVectorE(0., this->stack.size()-1);
+        case INCIDENCE_BOTTOM:
+            return getFieldVectorE(0., 0);
+    }
 }
 
 
@@ -876,127 +892,6 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldIntensity(double pow
 //     }
 //
 //     return integral;
-// }
-//
-// /// Function to determine field on reflection in the whole structure
-// void ReflectionSolver::determineReflectedFields(dcomplex k0, cvector Ei)
-// {
-//     logger(LOG_BASIC) << "ReflectionSolver: Determining reflected fields...\n\n";
-//
-//     // Assign the space for the field vectors
-//     fields.resize(count);
-//     // Obtain the physical fields at the last layer
-//     allP = true; K0 = k0;
-//
-//     // Compute reflection matrices
-//     diagonalizer->initDiagonalization(k0, Kx, Ky, MGain);
-//     findReflection(0, count-1);
-//
-//     // Temporary and initial data
-//     int N = diagonalizer->matrixSize();
-//     int N0 = diagonalizer->source()->matrixSize();
-//     cvector tmp(N, work);
-//     cdiagonal gamma;
-//
-//     int curr = this->stack[0];
-//     double H;
-//
-//     fields[count-1].B = diagonalizer->invTE(curr) * Ei; // diagonalized incident E-field
-//     fields[count-1].F = cvector(N);
-//
-//     for (int n = count-1; n > 0; n--)
-//     {
-//         // F-field for the current layer
-//         mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
-//
-//         // Compute B-field for the next (previous) layer
-//
-//         fields[n-1].F = cvector(N);
-//         fields[n-1].B = cvector(N);
-//
-//         // some aliases
-//         cvector& F1 = fields[n].F;
-//         cvector& B1 = fields[n].B;
-//         cvector& F2 = fields[n-1].F;
-//         cvector& B2 = fields[n-1].B;
-//
-//         curr = this->stack[n];
-//         int next = this->stack[n-1];
-//
-//         gamma = diagonalizer->Gamma(next);
-//
-//         for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];          // F2 := F1 - B1
-//         mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);      // tmp := TH * F2
-//         mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);   // B2 := invTH * E
-//         // multiply rows of invTH by -1 where necessary for the outer layer
-//         if (n == 1) {
-//             for (int i = 0; i < N; i++)
-//                 if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
-//         }
-//
-//         for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];          // F2 := F1 + B1
-//         mult_matrix_by_vector(diagonalizer->TE(curr), F2, tmp);      // tmp := TE * F2
-//         zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
-//               tmp.data(), N0, -1., B2.data(), N);                 // B2 := invTE * tmp - B2
-//
-//         H = this->stack[n-1].height;
-//         if (n != 1) {
-//             for (int i = 0; i < N; i++)
-//                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                  // B2 := 1/2 * phas * B2
-//         } else {
-//             for (int i = 0; i < N; i++) {
-//                 dcomplex g = gamma[i];
-//                 if (real(g) < -SMALL) g = -g;
-//                 B2[i] *= 0.5 * exp(-I*g*H);                         // B2 := 1/2 * phas * B2
-//             }
-//         }
-//     }
-//
-//     //mult_matrix_by_vector(memP[0], fields[0].B, fields[0].F);
-//     fields[0].F = cvector(N);
-//
-//     // In the outer layers replace F and B where necessary for consistent gamma handling
-//     for (int n = 0; n < count; n += count-1) {
-//         cvector& F2 = fields[n].F;
-//         cvector& B2 = fields[n].B;
-//         gamma = diagonalizer->Gamma(this->stack[n]);
-//         for (int i = 0; i < N; i++) {
-//             if (real(gamma[i]) < -SMALL) {
-//                 dcomplex t = B2[i]; B2[i] =  F2[i]; F2[i] = t;
-//             }
-//         }
-//      }
-//
-//     // Replace F and B above the interface for consistency in getFieldVectorE and getFieldVectorH
-//     for (int n = interface; n < count; n++) {
-//         cvector& F2 = fields[n].F;
-//         cvector& B2 = fields[n].B;
-//         gamma = diagonalizer->Gamma(this->stack[n]);
-//         H = this->stack[n].height;
-//         for (int i = 0; i < N; i++) {
-//                 dcomplex phas = exp(-I*gamma[i]*H);
-//                 dcomplex t = B2[i] / phas;
-//                 B2[i] =  F2[i] * phas;
-//                 F2[i] = t;
-//         }
-//     }
-//
-//     // for (int n = count-1; n >= 0; n--) {
-//     //     //std::cerr << "g[" << n << "]: ";
-//     //     for (int i = 0; i < N; i++) {
-//     //         double gr = real(diagonalizer->Gamma(this->stack[n])[i]);
-//     //         double gi = imag(diagonalizer->Gamma(this->stack[n])[i]);
-//     //         //std::cerr << ((abs(gr)>1e-10)?gr:0.) << ((gi>=0)?"+":"-") << ((abs(gi)>1e-10)?abs(gi):0.) << "j ";
-//     //     }
-//     //     std::cerr << "\nF[" << n << "]: ";
-//     //     for (int i = 0; i < N; i++) std::cerr << ((abs(fields[n].F[i])>1e-10)?abs(fields[n].F[i]):0.) << " ";
-//     //     std::cerr << "\nB[" << n << "]: ";
-//     //     for (int i = 0; i < N; i++) std::cerr << ((abs(fields[n].B[i])>1e-10)?abs(fields[n].B[i]):0.) << " ";
-//     //     std::cerr << "\n\n";
-//     // }
-//
-//     allP = false;
-//     fields_determined = true;
 // }
 
 

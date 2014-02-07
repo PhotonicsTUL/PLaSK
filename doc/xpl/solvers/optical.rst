@@ -28,6 +28,7 @@ Optical solvers
          :attr polarization: Light polatization. (``TE`` or ``TM``)
          :attr symmetry: Mode symmetry with respect to vertical symmetry axis (if present). (``none``, ``positive``, or ``negative``)
          :attr wavelength: Light wavelength. (float [nm])
+         :attr vat: Horizontal position of at which the vertical part of the field is calculated. (float)
 
       .. xml:tag:: <root> [in EffectiveIndex2D optical solver]
 
@@ -86,6 +87,7 @@ Optical solvers
          :attr k0: Approximate normalized frequency. (float [1/µm])
          :attr emission: Direction of emission, necessary for over-threshold power computations (``top`` or ``bottom``)
          :attr vlam: "vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement; setting this value helps to find models in very long resonators (float [nm])
+         :attr vat: Radial position of at which the vertical part of the field is calculated. (float or ``none``)
 
          Attributes ``lam0`` and ``k0`` are mutually exclusive.
 

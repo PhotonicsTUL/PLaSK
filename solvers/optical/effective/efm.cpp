@@ -11,6 +11,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
+    rstripe(-1),
     outdist(0.1),
     perr(1e-3),
     k0(NAN),
@@ -46,6 +47,13 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             } else if (ak0) k0 = *ak0;
             emission = reader.enumAttribute<Emission>("emission").value("top", TOP).value("bottom", BOTTOM).get(emission);
             vlam = reader.getAttribute<double>("vlam", real(vlam));
+            if (reader.hasAttribute("vat")) {
+                std::string str = reader.requireAttribute("vat");
+                if (str == "all" || str == "none") rstripe = -1;
+                else
+                    try { setStripeR(boost::lexical_cast<double>(str)); }
+                    catch (boost::bad_lexical_cast) { throw XMLBadAttrException(reader, "vat", str); }
+            }
             reader.requireTagEnd();
         } else if (param == "root") {
             root.tolx = reader.getAttribute<double>("tolx", root.tolx);
@@ -335,41 +343,68 @@ void EffectiveFrequencyCylSolver::stageOne()
     updateCache();
 
     if (!have_veffs) {
-        // Compute effective frequencies for all stripes
-        std::exception_ptr error; // needed to handle exceptions from OMP loop
-        #pragma omp parallel for
-        for (size_t i = 0; i < rsize; ++i) {
-            if (error != std::exception_ptr()) continue; // just skip loops after error
-            try {
-                writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
-#               ifndef NDEBUG
-                    std::stringstream nrgs; for (auto nr = nrCache[i].end(), ng = ngCache[i].end(); nr != nrCache[i].begin();) {
-                        --nr; --ng;
-                        nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
+        if (rstripe < 0) {
+            // Compute effective frequencies for all stripes
+            std::exception_ptr error; // needed to handle exceptions from OMP loop
+            #pragma omp parallel for
+            for (size_t i = 0; i < rsize; ++i) {
+                if (error != std::exception_ptr()) continue; // just skip loops after error
+                try {
+                    writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", i);
+#                   ifndef NDEBUG
+                        std::stringstream nrgs; for (auto nr = nrCache[i].end(), ng = ngCache[i].end(); nr != nrCache[i].begin();) {
+                            --nr; --ng;
+                            nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
+                        }
+                        writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", i, nrgs.str().substr(1));
+#                   endif
+                    dcomplex same_nr = nrCache[i].front();
+                    dcomplex same_ng = ngCache[i].front();
+                    bool all_the_same = true;
+                    for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
+                        if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
+                    if (all_the_same) {
+                        veffs[i] = 1.; // TODO make sure this is so!
+                        nng[i] = same_nr * same_ng;
+                    } else {
+                        Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "vlam", "det");
+                        RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
+                        dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
+                        veffs[i] = freqv(rootdigger(start-DLAM, start+DLAM));
+                        computeStripeNNg(i);
                     }
-                    writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", i, nrgs.str().substr(1));
-#               endif
-                dcomplex same_nr = nrCache[i].front();
-                dcomplex same_ng = ngCache[i].front();
-                bool all_the_same = true;
-                for (auto nr = nrCache[i].begin(), ng = ngCache[i].begin(); nr != nrCache[i].end(); ++nr, ++ng)
-                    if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
-                if (all_the_same) {
-                    veffs[i] = 1.; // TODO make sure this is so!
-                    nng[i] = same_nr * same_ng;
-                } else {
-                    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", i), "vlam", "det");
-                    RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
-                    dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
-                    veffs[i] = freqv(rootdigger(start-DLAM, start+DLAM));
-                    computeStripeNNg(i);
+                } catch (...) {
+                    #pragma omp critical
+                    error = std::current_exception();
                 }
-            } catch (...) {
-                #pragma omp critical
-                error = std::current_exception();
             }
+            if (error != std::exception_ptr()) std::rethrow_exception(error);
+        } else {
+            // Compute effective frequencies for just one stripe
+            writelog(LOG_DETAIL, "Computing effective frequency for vertical stripe %1%", rstripe);
+#           ifndef NDEBUG
+                std::stringstream nrgs;
+                for (auto nr = nrCache[rstripe].end(), ng = ngCache[rstripe].end(); nr != nrCache[rstripe].begin();) {
+                    --nr; --ng;
+                    nrgs << ", (" << str(*nr) << ")/(" << str(*ng) << ")";
+                }
+                writelog(LOG_DEBUG, "Nr/Ng[%1%] = [%2% ]", rstripe, nrgs.str().substr(1));
+#           endif
+            Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", rstripe), "vlam", "det");
+            RootMuller rootdigger(*this,
+                                  [&](const dcomplex& x){
+                                      return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[rstripe], ngCache[rstripe]);
+                                  },
+                                  log_stripe,
+                                  stripe_root
+                                 );
+            dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
+            veffs[rstripe] = freqv(rootdigger(start-DLAM, start+DLAM));
+            // Compute veffs and neffs for other stripes
+            computeStripeNNg(rstripe);
+            for (size_t i = 0; i < rsize; ++i)
+                if (i != rstripe) computeStripeNNg(i);
         }
-        if (error != std::exception_ptr()) std::rethrow_exception(error);
 
 #       ifndef NDEBUG
             std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
@@ -463,23 +498,28 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
     return s4 - s2*s3/s1;
 }
 
+
 void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
 {
+    size_t stripe0 = (rstripe < 0)? stripe : rstripe;
+
     nng[stripe] = 0.;
+
+    if (stripe != stripe0) veffs[stripe] = 0.;
 
     std::vector<FieldZ> zfield(zsize);
 
-    dcomplex veff = veffs[stripe];
+    dcomplex veff = veffs[stripe0];
 
     // Compute fields
-    detS1(veff, nrCache[stripe], ngCache[stripe], &zfield);
+    detS1(veff, nrCache[stripe0], ngCache[stripe0], &zfield);
 
     double sum = 0.;
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
         double weight = 0.;
-        dcomplex kz = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - veff * nrCache[stripe][i]*ngCache[stripe][i]);
+        dcomplex kz = k0 * sqrt(nrCache[stripe0][i]*nrCache[stripe0][i] - veff * nrCache[stripe0][i]*ngCache[stripe0][i]);
         if (real(kz) < 0.) kz = -kz;
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
@@ -502,6 +542,14 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
         }
         sum += weight;
         nng[stripe] += weight * nrCache[stripe][i] * ngCache[stripe][i];
+        if (stripe != stripe0) {
+            veffs[stripe] += weight * (nrCache[stripe][i]*nrCache[stripe][i] - nrCache[stripe0][i]*nrCache[stripe0][i]);
+        }
+    }
+
+    if (stripe != stripe0) {
+        veffs[stripe] += veff * nng[stripe0] * sum;
+        veffs[stripe] /= nng[stripe];
     }
 
     nng[stripe] /= sum;
@@ -570,6 +618,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 
 
 
+
 plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
@@ -585,6 +634,10 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
 #endif
+    }
+
+    size_t stripe;
+    if (rstripe < 0) {
         stripe = 0;
         // Look for the innermost stripe with not constant refractive index
         bool all_the_same = true;
@@ -596,17 +649,20 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
             if (all_the_same) ++stripe;
         }
         writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
+    } else {
+        stripe = rstripe;
+    }
 
+    if (!modes[num].have_fields) {
         // Compute vertical part
         detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
-
         modes[num].have_fields = true;
     }
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(num, dst_mesh, results) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(num, dst_mesh, results)) {
+    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(num, stripe, dst_mesh, results) &&
+        !getLightIntenisty_Efficient<RegularMesh2D>(num, stripe, dst_mesh, results)) {
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
@@ -648,7 +704,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 }
 
 template <typename MeshT>
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, const MeshD<2>& dst_mesh, DataVector<double>& results)
+bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
 

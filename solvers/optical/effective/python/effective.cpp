@@ -168,6 +168,17 @@ static void Optical_setMesh(SolverT& self, py::object omesh) {
     }
 }
 
+py::object EffectiveFrequencyCylSolver_getStripeR(const EffectiveFrequencyCylSolver& self) {
+    double r = self.getStripeR();
+    if (std::isnan(r)) return py::object();
+    return py::object(r);
+}
+
+void EffectiveFrequencyCylSolver_setStripeR(EffectiveFrequencyCylSolver& self, py::object r) {
+    if (r == py::object()) self.useAllStripes();
+    else self.setStripeR(py::extract<double>(r));
+}
+
 /**
  * Initialization of your solver to Python
  *
@@ -195,7 +206,7 @@ BOOST_PYTHON_MODULE(effective)
         solver.def("find_modes", &EffectiveIndex2DSolver_findModes, "Find the modes within the specified range using global method",
                (arg("start")=0., arg("end")=0., arg("symmetry")=py::object(), arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9)));
         METHOD(set_mode, setMode, "Set the current mode the specified effective index.\nneff can be a value returned e.g. by 'find_modes'.", "neff", arg("symmetry")=py::object());
-        RW_PROPERTY(stripex, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominat mode)");
+        RW_PROPERTY(vat, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominat mode)");
         RW_FIELD(vneff, "Effective index in the vertical direction");
         solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
                     "Mirror reflectivities. If None then they are automatically estimated from Fresenel equations");
@@ -257,6 +268,10 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outLightIntensity, "");
         PROVIDER(outRefractiveIndex, "");
         RO_FIELD(modes, "Computed modes");
+        solver.add_property("vat", &EffectiveFrequencyCylSolver_getStripeR, &EffectiveFrequencyCylSolver_setStripeR,
+                            "Radial position of at which the vertical part of the field is calculated.\n\n"
+                            "Should be a float number or ``None`` to compute effective frequencies for all\n"
+                            "the stripes.\n");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
         py::scope scope = solver;

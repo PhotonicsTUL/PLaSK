@@ -121,9 +121,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed vertical fields
     std::vector<FieldZ> zfields;
 
-    /// Stripe to take vertical fields from
-    size_t stripe;
-
     /// Computed effective frequencies for each stripe
     std::vector<dcomplex,aligned_allocator<dcomplex>> veffs;
 
@@ -141,7 +138,50 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         cache_outdated = true;
     }
 
+    /**
+     * Stripe number to use for vertical computations.
+     * -1 means to ompute all stripes as in the proper EFM
+     */
+    int rstripe;
+
   public:
+
+    /// Return the main stripe number
+    int getStripe() const {
+        return rstripe;
+    }
+
+    /// Set stripe for computations
+    void setStripe(int stripe) {
+        if (!mesh) setSimpleMesh();
+        if (stripe < 0 || stripe >= mesh->axis0.size())
+            throw BadInput(getId(), "Wrong stripe number specified");
+        rstripe = stripe;
+        invalidate();
+    }
+
+    /// Get position of the main stripe
+    double getStripeR() const {
+        if (rstripe == -1 || !mesh) return NAN;
+        return mesh->axis0[rstripe];
+    }
+
+    /**
+     * Set position of the main stripe
+     * \param r horizontal position of the main stripe
+     */
+    void setStripeR(double r=0.) {
+        if (!mesh) setSimpleMesh();
+        if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
+        rstripe = std::lower_bound(mesh->axis0.begin()+1, mesh->axis0.end(), r) - mesh->axis0.begin() - 1;
+        invalidate();
+    }
+
+    /// Use all stripes
+    void useAllStripes() {
+        rstripe = -1;
+        invalidate();
+    }
 
     /// Distance outside outer borders where material is sampled
     double outdist;
@@ -345,7 +385,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     dcomplex detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
                    const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, std::vector<FieldZ>* saveto=nullptr);
 
-    /// Return S matrix determinant for one stripe
+    /// Compute stripe averaged n ng
     void computeStripeNNg(size_t stripe);
 
     /** Integrate horizontal field
@@ -398,7 +438,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(size_t num, const MeshD<2>& dst_mesh, DataVector<double>& results);
+    bool getLightIntenisty_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);
 };
 
 

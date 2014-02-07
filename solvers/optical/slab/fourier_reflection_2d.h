@@ -49,7 +49,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     void k0changed() override {
         if (expansion.initialized) expansion.computeMaterialCoefficients();
     }
-    
+
   public:
 
     /// Computed modes
@@ -139,7 +139,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
                                             InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   private:
-    
+
     /**
      * Get incident field vector for given polarization.
      * \param polarization polarization of the perpendicularly incident light
@@ -167,9 +167,39 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         incident[idx] = 1.;
         return incident;
     }
-    
+
+    /**
+     * Compute sum of amplitudes for reflection/transmission coefficient
+     * \param amplitudes amplitudes to sum
+     */
+    double sumAmplitutes(const cvector& amplitudes) {
+        double result = 0.;
+        int N = getSize();
+        if (expansion.separated) {
+            if (expansion.symmetric) {
+                for (int i = 0; i <= N; ++i)
+                    result += real(amplitudes[expansion.iE(i)]);
+                result = 2.*result - real(amplitudes[expansion.iE(0)]);
+            } else {
+                for (int i = -N; i <= N; ++i)
+                    result += real(amplitudes[expansion.iE(i)]);
+            }
+        } else {
+            if (expansion.symmetric) {
+                for (int i = 0; i <= N; ++i)
+                    result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
+                result = 2.*result - real(amplitudes[expansion.iEx(0)]) - real(amplitudes[expansion.iEz(0)]);
+            } else {
+                for (int i = -N; i <= N; ++i) {
+                    result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
+                }
+            }
+        }
+        return result;
+    }
+
   public:
-    
+
     /**
      * Get amplitudes of reflected diffraction orders
      * \param polarization polarization of the perpendicularly incident light
@@ -179,18 +209,19 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
 
     /**
+     * Get amplitudes of transmitted diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     * \param savidx pointer to which optionally save nonzero incident index
+     */
+    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
+
+    /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
     double getReflection(ExpansionPW2D::Component polarization, IncidentDirection incidence);
-
-    /**
-     * Get amplitudes of transmitted diffraction orders
-     * \param polarization polarization of the perpendicularly incident light
-     * \param incidence incidence side
-     */
-    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence);
 
     /**
      * Get reflection coefficient
@@ -237,8 +268,8 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
     }
-    
-    
+
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -290,12 +321,12 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
 
   public:
-    
+
     /**
      * Proxy class for accessing reflected fields
      */
     struct Reflected {
-        
+
         /// Provider of the optical electric field
         typename ProviderFor<OpticalElectricField,Geometry2DCartesian>::Delegate outElectricField;
 
@@ -304,10 +335,10 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
         /// Provider of the optical field intensity
         typename ProviderFor<LightIntensity,Geometry2DCartesian>::Delegate outLightIntensity;
-    
+
         /// Return one as the number of the modes
         static size_t size() { return 1; }
-        
+
         /**
          * Construct proxy.
          * \param wavelength incident light wavelength

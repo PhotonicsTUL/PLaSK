@@ -86,15 +86,22 @@ DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfi
 cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
                                                     IncidentDirection incidence, size_t* savidx)
 {
-    if (!expansion.initialized && klong == 0.)
-        expansion.polarization = polarization;
-    
+    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
     emitting = true;
     fields_determined = DETERMINED_NOTHING;
-
     initCalculation();
-
     return getReflectionVector(incidentVector(polarization, savidx), incidence);
+}
+
+
+cvector FourierReflection2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
+                                                      IncidentDirection incidence, size_t* savidx)
+{
+    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
+    emitting = true;
+    fields_determined = DETERMINED_NOTHING;
+    initCalculation();
+    return getTransmissionVector(incidentVector(polarization, savidx), incidence);
 }
 
 
@@ -118,30 +125,33 @@ double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization,
         reflected[i] = reflected[i] * conj(reflected[i]) * gamma[i] / gamma0;
     }
 
-    double result = 0.;
-    int N = getSize();
-    if (expansion.separated) {
-        if (expansion.symmetric) {
-            for (int i = 0; i <= N; ++i)
-                result += real(reflected[expansion.iE(i)]);
-            result = 2.*result - real(reflected[expansion.iE(0)]);
-        } else {
-            for (int i = -N; i <= N; ++i)
-                result += real(reflected[expansion.iE(i)]);
-        }
-    } else {
-        if (expansion.symmetric) {
-            for (int i = 0; i <= N; ++i)
-                result += real(reflected[expansion.iEx(i)]) + real(reflected[expansion.iEz(i)]);
-            result = 2.*result - real(reflected[expansion.iEx(0)]) - real(reflected[expansion.iEz(0)]);
-        } else {
-            for (int i = -N; i <= N; ++i) {
-                result += real(reflected[expansion.iEx(i)]) + real(reflected[expansion.iEz(i)]);
-            }
-        }
-    }
+    return sumAmplitutes(reflected);
+}
 
-    return result;
+
+double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarization, IncidentDirection incidence)
+{
+    size_t idx;
+    cvector transmitted = getTransmittedAmplitudes(polarization, incidence, &idx).claim();
+
+    if (!expansion.periodic)
+        throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
+
+    size_t n = (incidence == INCIDENCE_TOP)? 0 : stack.size()-1;
+    size_t l = stack[n];
+    if (!expansion.diagonalQE(l))
+        writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
+                              (incidence == INCIDENCE_TOP)? "Bottom" : "Top");
+
+    auto gamma = diagonalizer->Gamma(l);
+    dcomplex gamma0 = diagonalizer->Gamma(stack[stack.size()-1-n])[idx];
+    for (size_t i = 0; i != expansion.matrixSize(); ++i) {
+std::cerr << abs(transmitted[i]) << " ";
+        transmitted[i] = transmitted[i] * conj(transmitted[i]) * gamma[i] / gamma0;
+    }
+std::cerr << "\n";
+
+    return sumAmplitutes(transmitted);
 }
 
 

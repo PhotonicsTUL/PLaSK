@@ -57,7 +57,7 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             //     } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
             // }
             k0 = 2e3*M_PI / reader.getAttribute<double>("wavelength",  real(2e3*M_PI / k0));
-            stripex = reader.getAttribute<double>("stripex", stripex);
+            stripex = reader.getAttribute<double>("vat", stripex);
             vneff = reader.getAttribute<dcomplex>("vneff", vneff);
             reader.requireTagEnd();
         } else if (param == "root") {

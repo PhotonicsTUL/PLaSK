@@ -26,7 +26,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
         DETERMINED_RESONANT,    ///< Resonant field has been determined
         DETERMINED_REFLECTED    ///< Reflected field has been determined
     };
-    
+
     std::unique_ptr<Diagonalizer> diagonalizer; ///< Diagonalizer used to compute matrix of eigenvalues and eigenvectors
 
     cmatrix interface_field_matrix;             ///< Determined field at the interface
@@ -124,9 +124,10 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     /**
      * Get vector of transmission coefficients
+     * \param incident incident field profile
      * \param side incident light side
      */
-    cvector getTransmissionVector(IncidentDirection side);
+    cvector getTransmissionVector(const cvector& incident, IncidentDirection side);
 
     /**
      * Get current expansion coefficients at the matching interface
@@ -174,7 +175,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     /// Tasks to perform if a new wavelength is set (e.g. recompute indices to consider material dispersion)
     virtual void k0changed() {}
-    
+
     /// Compute discontinuity matrix determinant for the current parameters
     dcomplex determinant();
 
@@ -232,7 +233,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param method interpolation method
      */
     DataVector<Vec<3,dcomplex>> computeFieldH(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
-    
+
     /**
      * Compute light intensity.
      * \param power mode power
