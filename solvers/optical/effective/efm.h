@@ -290,14 +290,16 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     std::vector<size_t> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., int m=0, size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
 
     /**
-     * Compute modal determinant for the whole matrix
-     * \param v frequency parameter
+     * Compute vectical modal determinant
+     * \param vlambda vertical plane-wave wavelength
      * \param m number of the LP_mn mode describing angular dependence
      */
-    dcomplex getDeterminantV(dcomplex v, int m=0) {
-        stageOne();
-        Mode mode(this, m);
-        return detS(v, mode);
+    dcomplex getVertDeterminant(dcomplex vlambda, int m=0) {
+        updateCache();
+        if (rstripe < 0) throw BadInput(getId(), "This works only for the weigted approach");
+        if (vlam == 0. && isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
+        dcomplex v =  2. - 4e3*M_PI / vlambda / k0;
+        return this->detS1(v, nrCache[rstripe], ngCache[rstripe]);
     }
 
     /**

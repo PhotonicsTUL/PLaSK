@@ -270,10 +270,12 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
     /**
      * Compute determinant for a single stripe
-     * \param stripe index of stripe
      * \param neff effective index to use
      */
-    dcomplex getStripeDeterminant(size_t stripe, dcomplex neff) { initCalculation(); return detS1(neff, nrCache[stripe]); }
+    dcomplex getVertDeterminant(dcomplex neff) {
+        initCalculation();
+        return detS1(neff, nrCache[mesh->tran().findIndex(stripex)]);
+    }
 
     /**
      * Compute modal determinant for the whole matrix

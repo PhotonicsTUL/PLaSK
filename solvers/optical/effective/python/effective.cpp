@@ -61,28 +61,23 @@ static void EffectiveIndex2DSolver_setPolarization(EffectiveIndex2DSolver& self,
     }
 }
 
-py::object EffectiveIndex2DSolver_getStripeDeterminant(EffectiveIndex2DSolver& self, int stripe, py::object val)
-{
-    if (!self.getMesh()) self.setSimpleMesh();
-    if (stripe < 0) stripe = self.getMesh()->tran().size() + 1 + stripe;
-    if (stripe < 0 || size_t(stripe) >= self.getMesh()->tran().size() + 1) throw IndexError("wrong stripe number");
-
-    return UFUNC<dcomplex>([&](dcomplex x){return self.getStripeDeterminant(stripe, x);}, val);
-}
-
 static py::object EffectiveIndex2DSolver_getDeterminant(EffectiveIndex2DSolver& self, py::object val)
 {
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
 }
-
-static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyCylSolver& self, py::object val)
+py::object EffectiveIndex2DSolver_getVertDeterminant(EffectiveIndex2DSolver& self, py::object val)
 {
-   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x);}, val);
+    return UFUNC<dcomplex>([&](dcomplex x){return self.getVertDeterminant(x);}, val);
 }
 
-static py::object EffectiveFrequencyCylSolver_getDeterminantV(EffectiveFrequencyCylSolver& self, py::object val)
+
+static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyCylSolver& self, py::object val, int m)
 {
-   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminantV(x);}, val);
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x, m);}, val);
+}
+static py::object EffectiveFrequencyCylSolver_getVertDeterminant(EffectiveFrequencyCylSolver& self, py::object val, int m)
+{
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getVertDeterminant(x, m);}, val);
 }
 
 dcomplex EffectiveFrequencyCylSolver_getLambda0(const EffectiveFrequencyCylSolver& self) {
@@ -210,9 +205,12 @@ BOOST_PYTHON_MODULE(effective)
         RW_FIELD(vneff, "Effective index in the vertical direction");
         solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
                     "Mirror reflectivities. If None then they are automatically estimated from Fresenel equations");
-        solver.def("get_stripe_determinant", EffectiveIndex2DSolver_getStripeDeterminant, "Get single stripe modal determinant for debugging purposes",
-                       (py::arg("stripe"), "neff"));
-        solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant, "Get modal determinant", (py::arg("neff") , py::arg("polarization")=py::object()));
+        solver.def("get_vert_determinant", EffectiveIndex2DSolver_getVertDeterminant,
+                   "Get vertical modal determinant for debugging purposes.",
+                   "neff");
+        solver.def("get_determinant", &EffectiveIndex2DSolver_getDeterminant,
+                   "Get modal determinant.",
+                   (py::arg("neff") , py::arg("polarization")=py::object()));
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light");
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
@@ -254,9 +252,12 @@ BOOST_PYTHON_MODULE(effective)
         solver.def("find_mode", &EffectiveFrequencyCylSolver_findMode, "Compute the mode near the specified wavelength", "lam", arg("m")=0);
         METHOD(find_modes, findModes, "Find the modes within the specified range using global method",
                arg("start")=0., arg("end")=0., arg("m")=0, arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
-        solver.def("get_determinant_v", &EffectiveFrequencyCylSolver_getDeterminantV, "Get modal determinant for frequency parameter v for debugging purposes",
-                   py::arg("v"), arg("m")=0);
-        solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant, "Get modal determinant", arg("lam"), arg("m")=0);
+        solver.def("get_vert_determinant", &EffectiveFrequencyCylSolver_getVertDeterminant,
+                   "Get vertical modal determinant for debugging purposes.",
+                   (py::arg("vlam"), py::arg("m")=0));
+        solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant,
+                   "Get modal determinant.",
+                   (py::arg("lam"), py::arg("m")=0));
         solver.def("set_mode", (size_t (EffectiveFrequencyCylSolver::*)(dcomplex,int))&EffectiveFrequencyCylSolver::setMode,
                    "Set the current mode the specified wavelength.\nlam can be a value returned e.g. by 'find_modes'.", (py::arg("lam"), py::arg("m")=0));
         solver.def("set_mode", (size_t (EffectiveFrequencyCylSolver::*)(double,double,int))&EffectiveFrequencyCylSolver::setMode,
