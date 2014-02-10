@@ -1,9 +1,33 @@
+# -*- coding: utf-8 -*-
+
 from PyQt4 import QtCore
 from xml.etree import ElementTree
 from model.table import TableModel
 from model.info import Info
 from collections import OrderedDict
 #from guis import DefinesEditor
+
+MATERIALS_PROPERTES = [
+    ('A', 'Monomolecular recombination coefficient A [1/s]', ['T — temperature [K]']),
+    ('absb', 'Absorption coefficient α [cm<sup>-1</sup>]', ['wl — wavelength [nm]', 'T — temperature [K]']),
+    ('ac', 'Hydrostatic deformation potential for the conduction band a<sub>c</sub> [eV]', ['T — temperature [K]']),
+    ('av', 'Hydrostatic deformation potential for the valence band a<sub>v</sub> [eV]', ['T — temperature [K]']),
+    ('B', 'Radiative recombination coefficient B [m<sup>3</sup>/s]', ['T — temperature [K]']),
+    ('b', 'Shear deformation potential b [eV]', ['T — temperature [K]']),
+    ('C', 'Auger recombination coefficient C [m<sup>6</sup>/s]', ['T — temperature [K]']),
+    ('c11', 'Elastic constant c<sub>11</sub> [GPa]', ['T — temperature [K]']),
+    ('c12', 'Elastic constant c<sub>12</sub> [GPa]', ['T — temperature [K]']),
+    ('CB', 'Conduction band level CB [eV]', ['T — temperature [K]', 'e — lateral strain [-]', 'point — point in the Brillouin zone [-]']),
+    ('chi', 'Electron affinity χ [eV]', ['T — temperature [K]', 'e — lateral strain [-]', 'point — point in the Brillouin zone [-]']),
+    ('cond', 'Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m]', ['T — temperature [K]']),
+    ('condtype', 'Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.', []),
+    ('cp', 'Specific heat at constant pressure [J/(kg K)]', ['T — temperature [K]']),
+    ('D', 'Ambipolar diffusion coefficient D [m<sup>2</sup>/s]', ['T — temperature [K]']),
+    ('dens', 'Density [kg/m<sup>3</sup>]', ['T — temperature [K]']),
+    ('Dso', 'Split-off energy D<sub>so</sub> [eV]', ['T — temperature [K]', 'e — lateral strain [-]']),
+    ('EactA', 'Acceptor ionization energy E<sub>actA</sub> [eV]', ['T — temperature [K]']),
+    ('EactD', 'Acceptor ionization energy E<sub>actD</sub> [eV]', ['T — temperature [K]']),
+]
 
 class MaterialsModel(TableModel):
        
