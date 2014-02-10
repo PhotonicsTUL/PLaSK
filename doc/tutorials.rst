@@ -9,6 +9,7 @@ Tutorials and Examples
 
    tutorial1
    tutorial2
+   tutorial3
 
 
 Finding the threshold current of a gallium-arsenide VCSEL
