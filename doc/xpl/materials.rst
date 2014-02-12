@@ -196,7 +196,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <Mso>
 
-         Split-off mass *M*\ :sub:`so`` [*m*\ :sub:`0`].
+         Split-off mass *M*\ :sub:`so` [*m*\ :sub:`0`].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
 
