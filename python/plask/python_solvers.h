@@ -29,7 +29,6 @@ namespace detail {
         template <typename PySolver>
         static auto init(PySolver& solver) -> PySolver& {
             solver.add_property("geometry", &SolverT::getGeometry, &SolverT::setGeometry, "Geometry provided to the solver");
-            solver.def("setGeometry", &SolverT::setGeometry, "Set geometry for the solver", py::arg("geometry"));
             return solver;
         }
     };

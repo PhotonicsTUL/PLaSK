@@ -121,9 +121,24 @@ double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization,
 
     auto gamma = diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
-    for (size_t i = 0; i != expansion.matrixSize(); ++i) {
-        reflected[i] = reflected[i] * conj(reflected[i]) * gamma[i] / gamma0;
+    dcomplex igamma0 = 1. / gamma0;
+    if (!expansion.separated) {
+        int N = getSize() + 1;
+        for (int n = expansion.symmetric? 0 : 1-N; n != N; ++n) {
+            size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
+            reflected[ix] = reflected[ix] * conj(reflected[ix]) *  gamma0 / gamma[ix];
+            reflected[iz] = reflected[iz] * conj(reflected[iz]) * igamma0 * gamma[iz];
+        }
+    } else {
+        if (expansion.polarization == ExpansionPW2D::E_LONG) {
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                reflected[i] = reflected[i] * conj(reflected[i]) * igamma0 * gamma[i];
+        } else {
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                reflected[i] = reflected[i] * conj(reflected[i]) *  gamma0 / gamma[i];
+        }
     }
+
 
     return sumAmplitutes(reflected);
 }
@@ -148,9 +163,23 @@ double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarizatio
                  (incidence == INCIDENCE_TOP)? "Top" : "Bottom");
 
     auto gamma = diagonalizer->Gamma(lt);
-    dcomplex gamma0 = diagonalizer->Gamma(li)[idx];
-    for (size_t i = 0; i != expansion.matrixSize(); ++i) {
-        transmitted[i] = transmitted[i] * conj(transmitted[i]) * gamma[i] / gamma0;
+    dcomplex igamma0 = 1. / diagonalizer->Gamma(li)[idx];
+    dcomplex gamma0 = gamma[idx] * gamma[idx] * igamma0;
+    if (!expansion.separated) {
+        int N = getSize() + 1;
+        for (int n = expansion.symmetric? 0 : 1-N; n != N; ++n) {
+            size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
+            transmitted[ix] = transmitted[ix] * conj(transmitted[ix]) *  gamma0 / gamma[ix];
+            transmitted[iz] = transmitted[iz] * conj(transmitted[iz]) * igamma0 * gamma[iz];
+        }
+    } else {
+        if (expansion.polarization == ExpansionPW2D::E_LONG) {
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                transmitted[i] = transmitted[i] * conj(transmitted[i]) * igamma0 * gamma[i];
+        } else {
+            for (size_t i = 0; i != expansion.matrixSize(); ++i)
+                transmitted[i] = transmitted[i] * conj(transmitted[i]) *  gamma0 / gamma[i];
+        }
     }
 
     return sumAmplitutes(transmitted);
