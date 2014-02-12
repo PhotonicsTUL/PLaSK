@@ -137,19 +137,21 @@ double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarizatio
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
 
-    size_t n = (incidence == INCIDENCE_TOP)? 0 : stack.size()-1;
-    size_t l = stack[n];
-    if (!expansion.diagonalQE(l))
+    size_t ni = (incidence == INCIDENCE_TOP)? stack.size()-1 : 0;
+    size_t nt = stack.size()-1-ni;
+    size_t li = stack[ni], lt = stack[nt];
+    if (!expansion.diagonalQE(lt))
         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
-                              (incidence == INCIDENCE_TOP)? "Bottom" : "Top");
+                 (incidence == INCIDENCE_TOP)? "Bottom" : "Top");
+    if (!expansion.diagonalQE(li))
+        writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
+                 (incidence == INCIDENCE_TOP)? "Top" : "Bottom");
 
-    auto gamma = diagonalizer->Gamma(l);
-    dcomplex gamma0 = diagonalizer->Gamma(stack[stack.size()-1-n])[idx];
+    auto gamma = diagonalizer->Gamma(lt);
+    dcomplex gamma0 = diagonalizer->Gamma(li)[idx];
     for (size_t i = 0; i != expansion.matrixSize(); ++i) {
-std::cerr << abs(transmitted[i]) << " ";
         transmitted[i] = transmitted[i] * conj(transmitted[i]) * gamma[i] / gamma0;
     }
-std::cerr << "\n";
 
     return sumAmplitutes(transmitted);
 }
@@ -157,6 +159,7 @@ std::cerr << "\n";
 
 const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
+    if (modes.size() <= num) throw NoValue(OpticalElectricField::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -169,6 +172,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getE(size_t num, co
 
 const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
+    if (modes.size() <= num) throw NoValue(OpticalMagneticField::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -181,6 +185,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getH(size_t num, co
 
 const DataVector<const double> FourierReflection2D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
+    if (modes.size() <= num) throw NoValue(LightIntensity::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;

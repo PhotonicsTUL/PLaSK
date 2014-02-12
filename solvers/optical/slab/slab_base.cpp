@@ -23,6 +23,7 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
 template <typename GeometryT>
 void SlabSolver<GeometryT>::prepareLayers()
 {
+    if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
@@ -30,6 +31,7 @@ void SlabSolver<GeometryT>::prepareLayers()
 template <>
 void SlabSolver<Geometry3D>::prepareLayers()
 {
+    if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = RectilinearMesh3DSimpleGenerator()(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }

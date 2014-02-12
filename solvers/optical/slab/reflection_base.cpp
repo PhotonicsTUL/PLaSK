@@ -158,8 +158,6 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
-//std::cerr << (2e3*M_PI/k0) << " " << ktran << klong << "\n";
-
     const int inc = (start < end) ? 1 : -1;
 
     int N0 = diagonalizer->source()->matrixSize();
@@ -297,7 +295,7 @@ cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident
             last = this->stack.size()-1; first = 0; break;
     }
     findReflection(last, first);
-    return diagonalizer->TE(this->stack[first]) *  (P * incident);
+    return P * incident;
 }
 
 
@@ -307,9 +305,9 @@ cvector ReflectionSolver<GeometryT>::getTransmissionVector(const cvector& incide
     determineReflectedFields(incident, side);
     switch (side) {
         case INCIDENCE_TOP:
-            return getFieldVectorE(0., this->stack.size()-1);
+            return diagonalizer->TE(this->stack[0]) * fields[0].B;
         case INCIDENCE_BOTTOM:
-            return getFieldVectorE(0., 0);
+            return diagonalizer->TE(this->stack[this->stack.size()-1]) * fields[this->stack.size()-1].B;
     }
 }
 
@@ -589,7 +587,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         for (int i = 0; i < N; i++) {
                 dcomplex phas = exp(-I*gamma[i]*H);
                 dcomplex t = B2[i] / phas;
-                B2[i] =  F2[i] * phas;
+                B2[i] = F2[i] * phas;
                 F2[i] = t;
         }
     }
