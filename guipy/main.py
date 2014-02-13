@@ -214,7 +214,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(200, 200, 550, 450)
         self.setWindowTitle('Main window')  
         
-        self.document.loadFromFile('../doc/tutorial1.xpl')
+        self.document.loadFromFile('test.xpl')
         self.modelIsNew()
           
         self.show()

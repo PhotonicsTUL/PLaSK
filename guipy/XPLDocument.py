@@ -5,7 +5,7 @@ from controler.defines import DefinesControler
 from controler.script import ScriptControler
 from controler.multi import GUIAndSourceControler
 from controler.connects import ConnectsControler
-from model.materials import MaterialsModel
+from controler import materials
 
 class XPLDocument(object):
     
@@ -14,9 +14,10 @@ class XPLDocument(object):
     def __init__(self, main):
         object.__init__(self)
         self.defines = GUIAndSourceControler(DefinesControler(self))
+        self.materials = GUIAndSourceControler(materials.MaterialsControler(self))
         self.controlers = [
               self.defines,
-              SourceEditControler(self, MaterialsModel()),  #materials
+              self.materials,
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
               SourceEditControler(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  #solvers

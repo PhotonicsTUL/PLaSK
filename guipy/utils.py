@@ -6,6 +6,7 @@ from weakref import WeakSet, WeakKeyDictionary
 
 from PyQt4 import QtCore 
 from PyQt4 import QtGui
+import collections
 
 def exceptionToMsg(f, parent = None, err_title = None):   
     try:
@@ -80,3 +81,48 @@ class Signal(object):
     def clear(self):
         self._functions.clear()
         self._methods.clear()
+        
+def table_last_col_fill(table, cols_count, col_size = 200):
+    if isinstance(col_size, collections.Sequence):
+        for c in range(0, cols_count-1): table.setColumnWidth(c, col_size[c])
+    else:
+        for c in range(0, cols_count-1): table.setColumnWidth(c, col_size)
+    #table.horizontalHeader().setResizeMode(cols_count-1, QtGui.QHeaderView.Stretch)
+    table.horizontalHeader().setStretchLastSection(True)
+
+class HTMLDelegate(QtGui.QStyledItemDelegate):
+    def paint(self, painter, option, index):
+        options = QtGui.QStyleOptionViewItemV4(option)
+        self.initStyleOption(options, index)
+
+        style = QtGui.QApplication.style() if options.widget is None else options.widget.style()
+
+        doc = QtGui.QTextDocument()
+        doc.setHtml(options.text)
+        doc.setTextWidth(max(300, options.rect.width()))    #TODO 300 -> member
+
+        options.text = ""
+        style.drawControl(QtGui.QStyle.CE_ItemViewItem, options, painter);
+
+        ctx = QtGui.QAbstractTextDocumentLayout.PaintContext()
+
+        # Highlighting text if item is selected
+        #if (optionV4.state & QStyle::State_Selected)
+            #ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+        textRect = style.subElementRect(QtGui.QStyle.SE_ItemViewItemText, options)
+        painter.save()
+        painter.translate(textRect.topLeft())
+        painter.setClipRect(textRect.translated(-textRect.topLeft()))
+        doc.documentLayout().draw(painter, ctx)
+
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        options = QtGui.QStyleOptionViewItemV4(option)
+        self.initStyleOption(options, index)
+
+        doc = QtGui.QTextDocument()
+        doc.setHtml(options.text)
+        doc.setTextWidth(max(300, options.rect.width()))
+        return QtCore.QSize(doc.idealWidth(), doc.size().height())

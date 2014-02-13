@@ -52,11 +52,9 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel):
         return None
         
     def flags(self, index):
-        flags = super(TableModel, self).flags(index)
+        flags = super(TableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled  
 
         if not self.isReadOnly(): flags |= QtCore.Qt.ItemIsEditable
-        flags |= QtCore.Qt.ItemIsSelectable
-        flags |= QtCore.Qt.ItemIsEnabled
         #flags |= QtCore.Qt.ItemIsDragEnabled
         #flags |= QtCore.Qt.ItemIsDropEnabled
 

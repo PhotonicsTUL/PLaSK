@@ -19,7 +19,7 @@ class AfterBracketCompleter(QtGui.QCompleter):
         path = path.rsplit('{', 1)[-1].lstrip(' ')
         return [path]
         
-class DefineHinstTableModel(QtCore.QAbstractTableModel):
+class DefineHintsTableModel(QtCore.QAbstractTableModel):
    
     def __init__(self, defineModel, parent = None, info_cb = None, *args):
         QtCore.QAbstractListModel.__init__(self, parent, *args)   #QtCore.QObject.parent(defineModel)
@@ -39,7 +39,7 @@ class DefineHinstTableModel(QtCore.QAbstractTableModel):
         return self.model.data(index, role) 
         
     #def flags(self, index):
-    #    return super(DefineHinstTableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+    #    return super(DefineHintsTableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
     
     def columnCount(self, parent = QtCore.QModelIndex()): 
         return 2
@@ -51,7 +51,7 @@ class DefinesCompletionDelegate(QtGui.QItemDelegate):
 
     def __init__(self, model, parent):
         QtGui.QItemDelegate.__init__(self, parent)
-        self.model = DefineHinstTableModel(model, parent)
+        self.model = DefineHintsTableModel(model, parent)
         #self.model = model
         
     def createEditor(self, parent, option, index):
