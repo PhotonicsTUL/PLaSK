@@ -37,11 +37,14 @@ MATERIALS_PROPERTES = {
     'Mso': ('Split-off mass M<sub>so</sub>` [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
 }
 
-def materialHTMLHelp(material_name, font_size = None):
-    prop_name, prop_attr = MATERIALS_PROPERTES[material_name]
+def materialHTMLHelp(property_name, font_size = None):
+    prop_name, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None))
     res = ''
     if font_size != None: res += '<span style="font-size: %s">' % font_size
-    res += prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr])
+    if prop_name == None:
+        res += "unknown property '%s'" % property_name
+    else:
+        res += prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr])
     if font_size != None: res += '</span>'
     return res
 
@@ -87,6 +90,21 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
 #                     if err.level > max_level: max_level = err.level
 #             return info.infoLevelIcon(max_level)
         return None
+    
+    def set(self, col, row, value):
+        #if row == 0:
+            #TODO
+        n, v = self.__material__.properties[row-1]
+        if col == 0:
+            self.__material__.properties[row-1] = (value, v)
+        elif col == 1:
+            self.__material__.properties[row-1] = (n, value)
+    
+    def setData(self, index, value, role = QtCore.Qt.EditRole):
+        self.set(index.column(), index.row(), value)
+        #self.fireChanged()
+        self.dataChanged.emit(index, index)
+        return True
     
     def flags(self, index):
         flags = super(MaterialPropertyModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled  

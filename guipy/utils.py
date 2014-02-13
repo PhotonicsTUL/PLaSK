@@ -126,3 +126,20 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))
         return QtCore.QSize(doc.idealWidth(), doc.size().height())
+
+
+class ComboBoxDelegate(QtGui.QItemDelegate):
+
+    def __init__(self, list, parent):
+        QtGui.QItemDelegate.__init__(self, parent)
+        self.list = list
+        #self.model = model
+        
+    def createEditor(self, parent, option, index):
+        combo = QtGui.QComboBox(parent)
+        combo.setEditable(True)
+        combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        combo.addItems(self.list)
+        #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"), 
+        #             self, QtCore.SLOT("currentIndexChanged()"))
+        return combo
