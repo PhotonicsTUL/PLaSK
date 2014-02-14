@@ -35,6 +35,15 @@ MATERIALS_PROPERTES = {
     'Mhh': ('Heavy hole effective mass M<sub>hh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
     'Mlh': ('Light hole effective mass M<sub>lh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
     'Mso': ('Split-off mass M<sub>so</sub>` [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
+    'Nc': ('Effective density of states in the conduction band Nc [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
+    'Nf': ('Free carrier concentration N [cm<sup>-3</sup>]', [('T', 'temperature [K]')]),
+    'Ni': ('Intrinsic carrier concentration N<sub>i</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]')]),
+    'Nr': ('Complex refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]), 
+    'nr': ('Real refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
+    'NR': ('Anisotropic complex refractive index tensor n<sub>R</sub> [-]. Tensor must have the form [ n<sub>00</sub>, n<sub>11</sub>, n<sub>22</sub>, n<sub>01</sub>, n<sub>10</sub> ]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
+    'Nv': ('Effective density of states in the valance band N<sub>v</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
+    'thermk': ('Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k [W/(m K)]', [('T', 'temperature [K]'), ('h', 'layer thickness [µm]')]),
+    'VB': ('Valance band level offset VB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('hole', 'hole type (\'H\' or \'L\') [-]')]),
 }
 
 def materialHTMLHelp(property_name, font_size = None):

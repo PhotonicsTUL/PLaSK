@@ -2,8 +2,9 @@ from PyQt4 import QtGui
 from controler.base import Controler
 from PyQt4.QtGui import QSplitter
 from model import materials
-from model.materials import MaterialPropertyModel
-from utils import HTMLDelegate, table_last_col_fill
+from model.materials import MaterialPropertyModel, MATERIALS_PROPERTES
+from utils import HTMLDelegate, table_last_col_fill, ComboBoxDelegate
+from controler.defines import DefinesCompletionDelegate
 
 class MaterialsControler(Controler):
 
@@ -19,9 +20,11 @@ class MaterialsControler(Controler):
         
         self.property_model = MaterialPropertyModel(model)
         self.properties_table = QtGui.QTableView()
-        self.properties_table.setItemDelegateForColumn(2, HTMLDelegate())
-        #self.properties_table.setWordWrap(True)
         self.properties_table.setModel(self.property_model)
+        self.properties_table.setItemDelegateForColumn(0, ComboBoxDelegate(MATERIALS_PROPERTES.keys(), self.properties_table))
+        self.properties_table.setItemDelegateForColumn(1, DefinesCompletionDelegate(self.document.defines.model, self.properties_table))       
+        self.properties_table.setItemDelegateForColumn(2, HTMLDelegate())
+        #self.properties_table.setWordWrap(True)        
         table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [50, 200])
         self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         self.splitter.addWidget(self.properties_table)
