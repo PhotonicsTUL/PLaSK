@@ -47,7 +47,8 @@ MI_PROPERTY(GaAs_C, cond,
 			MIComment("no temperature dependence")
             )
 Tensor2<double> GaAs_C::cond(double T) const {
-    double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
+    double tMob = mob(T).c00;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob;
     return (Tensor2<double>(tCond, tCond));
 }
 
