@@ -7,6 +7,8 @@ from model.info import Info
 from collections import OrderedDict
 #from guis import DefinesEditor
 
+#TODO support for condtype
+
 MATERIALS_PROPERTES = {
     'A': ('Monomolecular recombination coefficient A [1/s]', [('T', 'temperature [K]')]),
     'absb': ('Absorption coefficient α [cm<sup>-1</sup>]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]')]),
@@ -66,19 +68,13 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
     
     def rowCount(self, parent = QtCore.QModelIndex()):
         if not self.__material__ or parent.isValid(): return 0
-        return len(self.__material__.properties) + 1
+        return len(self.__material__.properties)
     
     def columnCount(self, parent = QtCore.QModelIndex()): 
         return 3    # 3 if comment supported
     
     def get(self, col, row):
-        if row == 0:
-            if col == 0:
-                if self.__material__.kind: return "kind"
-                if self.__material__.base: return "base"
-                return ""
-            return self.__material__.kind_or_base
-        n, v = self.__material__.properties[row-1]
+        n, v = self.__material__.properties[row]
         if col == 2:
             #prop_name, prop_attr = MATERIALS_PROPERTES[n]
             #return '<span style="font-size: 9pt">' + prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr]) + '</span>'
@@ -142,22 +138,15 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
         
         
-
+#TODO how to support condtype??
 class MaterialsModel(TableModel):
              
     class Material:
-        def __init__(self, name, kind = None, base = None, properties = [], comment = None):
+        def __init__(self, name, base = None, condtype = None, properties = [], comment = None):
             self.name = name
-            self.kind = kind
             self.base = base
             self.properties = properties    #TODO what with duplicate properties, should be supported?
             self.comment = comment
-            
-        @property
-        def kind_or_base(self):
-            if self.kind: return self.kind
-            if self.base: return self.base
-            return ""
     
     def __init__(self, parent=None, info_cb = None, *args):
         TableModel.__init__(self, 'materials', parent, info_cb, *args)
@@ -168,7 +157,7 @@ class MaterialsModel(TableModel):
         if isinstance(element, ElementTree.Element):
             for mat in element.iter("material"):
                 self.entries.append(
-                        MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("kind", None), mat.attrib.get("base", None),
+                        MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None), mat.attrib.get("condtype", None),
                                              [ (prop.tag, prop.text) for prop in mat ])
                 )
         self.layoutChanged.emit()
@@ -180,8 +169,8 @@ class MaterialsModel(TableModel):
         for e in self.entries:
             mat = ElementTree.SubElement(res, "material", { "name": e.name })
             mat.tail = '\n'
-            if e.kind: mat.attrib['kind'] = e.kind
             if e.base: mat.attrib['base'] = e.base
+            if e.condtype: mat.attrib['condtype'] = e.condtype 
             if len(e.properties) > 0:
                 mat.text = '\n  '
                 prev = None
@@ -195,13 +184,13 @@ class MaterialsModel(TableModel):
     
     def get(self, col, row): 
         if col == 0: return self.entries[row].name
-        if col == 1: return self.entries[row].kind_or_base
+        if col == 1: return self.entries[row].base
         if col == 2: return self.entries[row].comment
         raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
     
     def set(self, col, row, value):
         if col == 0: self.entries[row].name = value
-        #elif col == 1: self.entries[row].input = value    #TODO??
+        elif col == 1: self.entries[row].base = value
         elif col == 2: self.entries[row].comment = value
         else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)       
         
@@ -216,7 +205,7 @@ class MaterialsModel(TableModel):
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             if col == 0: return 'name'
-            if col == 1: return 'kind or base'
+            if col == 1: return 'base'
             if col == 2: return 'comment'
         return None
     
@@ -229,10 +218,8 @@ class MaterialsModel(TableModel):
                 res.append(Info('Material name is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
             else:
                 names.setdefault(d.name, []).append(i)
-            if not d.kind_or_base:
-                res.append(Info('Either kind or base is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
-            elif d.kind and d.base:
-                res.append(Info('Kind and base are given, but exactly one is allowed [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
+            if not d.base:
+                res.append(Info('Material base is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info('Duplicated material name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
