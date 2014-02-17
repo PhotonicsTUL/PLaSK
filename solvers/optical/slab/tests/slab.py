@@ -17,16 +17,16 @@ class LayerSet_Test(unittest.TestCase):
         self.manager.load('''
           <plask>
             <materials>
-            <material name="GaAs" kind="semiconductor">
+            <material name="GaAs" base="semiconductor">
               <nr>3.53</nr>
             </material>
-            <material name="AlGaAs" kind="semiconductor">
+            <material name="AlGaAs" base="semiconductor">
               <nr>3.08</nr>
             </material>
-            <material name="AlAs" kind="semiconductor">
+            <material name="AlAs" base="semiconductor">
               <nr>2.95</nr>
             </material>
-            <material name="InGaAs" kind="semiconductor">
+            <material name="InGaAs" base="semiconductor">
               <nr>3.53</nr>
               <absp>1000</absp>
             </material>

@@ -163,7 +163,7 @@ class Manager(unittest.TestCase):
         manager.load('''
         <plask>
             <materials>
-                <material name="XmlMat" kind="dielectric">
+                <material name="XmlMat" base="dielectric">
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>1.</absp>
                 </material>
@@ -175,7 +175,7 @@ class Manager(unittest.TestCase):
                     <nr>1. + 0.001*T + 0.0001*wl</nr>
                     <absp>T * self.dc</absp>
                 </material>
-                <material name="XmlMatSimple" kind="dielectric">
+                <material name="XmlMatSimple" base="dielectric">
                     <nr>3.5</nr>
                     <absp>0.</absp>
                 </material>

@@ -655,14 +655,18 @@ protected:
  * Base material class for all semiconductors and similar materials
  */
 struct Semiconductor: public Material {
-    virtual Kind kind() const;
+    static constexpr const char* NAME = "semiconductor";
+    virtual std::string name() const override;
+    virtual Kind kind() const override;
 };
 
 /**
  * Base material class for all metals
  */
 struct Metal: public Material {
-    virtual Kind kind() const;
+    static constexpr const char* NAME = "metal";
+    virtual std::string name() const override;
+    virtual Kind kind() const override;
     virtual double eps(double T) const override;
 
 };
@@ -671,21 +675,27 @@ struct Metal: public Material {
  * Base material class for all oxides
  */
 struct Oxide: public Material {
-    virtual Kind kind() const;
+    static constexpr const char* NAME = "oxide";
+    virtual std::string name() const override;
+    virtual Kind kind() const override;
 };
 
 /**
  * Base material class for all dielectrics
  */
 struct Dielectric: public Material {
-    virtual Kind kind() const;
+    static constexpr const char* NAME = "dielectric";
+    virtual std::string name() const override;
+    virtual Kind kind() const override;
 };
 
 /**
  * Base material class for all liquid crystals
  */
 struct LiquidCrystal: public Material {
-    virtual Kind kind() const;
+    static constexpr const char* NAME = "liquid_crystal";
+    virtual std::string name() const override;
+    virtual Kind kind() const override;
 };
 
 
@@ -838,7 +848,7 @@ private:
         Tensor2<double> w_sum(0., 0.);
         for (auto& p: materials) {
             Tensor2<double> m = f(*std::get<0>(p));
-            w_sum.c00 += std::get<1>(p) * m.c00;
+            w_sum.c00 += std::get<1>(p) * m.c00;    //std::get<1>(p) is weight of current material
             w_sum.c11 += std::get<1>(p) * m.c11;
         }
         return w_sum;
@@ -849,6 +859,7 @@ private:
 /**
  * Material which wrap one material and rotate its tensors properties.
  */
+//TODO write or remove??
 struct RotatedMaterial: public Material {
 
     shared_ptr<Material> wrapped;

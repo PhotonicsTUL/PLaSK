@@ -199,8 +199,9 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
-    shared_ptr<PythonEvalMaterialConstructor> constructor;
     std::string name = reader.requireAttribute("name");
+
+    /*shared_ptr<PythonEvalMaterialConstructor> constructor;
     auto base = reader.getAttribute("base");
     if (base)
         constructor = make_shared<PythonEvalMaterialConstructor>(name, *base);
@@ -228,7 +229,22 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
         constructor = make_shared<PythonEvalMaterialConstructor>(name);
         constructor->kind = kind;
         constructor->condtype = condtype;
+    }*/
+
+    shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(name, reader.requireAttribute("base"));
+
+    auto condname = reader.getAttribute("condtype");
+    if (condname) {
+        Material::ConductivityType condtype = (*condname == "n" || *condname == "N")? Material::CONDUCTIVITY_N :
+                    (*condname == "i" || *condname == "I")? Material::CONDUCTIVITY_I :
+                    (*condname == "p" || *condname == "P")? Material::CONDUCTIVITY_P :
+                    (*condname == "other" || *condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
+                     Material::CONDUCTIVITY_UNDETERMINED;
+        if (condtype == Material::CONDUCTIVITY_UNDETERMINED) throw XMLBadAttrException(reader, "condtype", *condname);
+        constructor->condtype = condtype;
     }
+
+
     constructor->self = constructor;
     constructor->db = &materialsDB;
 

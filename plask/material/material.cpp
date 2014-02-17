@@ -5,6 +5,8 @@
 #include "../utils/string.h"
 #include "../log/log.h"
 
+#include "db.h"
+
 #include <cmath>
 #include <set>
 
@@ -293,15 +295,25 @@ std::vector<std::string> Material::parseObjectsNames(const std::string &allNames
 
 //------------ Different material kinds -------------------------
 
+std::string Semiconductor::name() const { return NAME; }
 Material::Kind Semiconductor::kind() const { return Material::SEMICONDUCTOR; }
+static MaterialsDB::Register<Semiconductor> materialDB_register_Semiconductor;
 
+std::string Metal::name() const { return NAME; }
 Material::Kind Metal::kind() const { return Material::METAL; }
+static MaterialsDB::Register<Metal> materialDB_register_Metal;
 
+std::string Oxide::name() const { return NAME; }
 Material::Kind Oxide::kind() const { return Material::OXIDE; }
+static MaterialsDB::Register<Metal> materialDB_register_Oxide;
 
+std::string Dielectric::name() const { return NAME; }
 Material::Kind Dielectric::kind() const { return Material::DIELECTRIC; }
+static MaterialsDB::Register<Dielectric> materialDB_register_Dielectric;
 
+std::string LiquidCrystal::name() const { return NAME; }
 Material::Kind LiquidCrystal::kind() const { return Material::LIQUID_CRYSTAL; }
+static MaterialsDB::Register<LiquidCrystal> materialDB_register_LiquidCrystal;
 
 //------------ Metals -------------------------
 
