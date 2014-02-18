@@ -3,28 +3,27 @@ from PyQt4 import QtGui
 from model.script import ScriptModel
 from utils import defaultFont
 
-import sys
 try:
     from pyeditor import PyEdit
     hasPyCode = True
-except ImportError:
+except ImportError as e:
     hasPyCode = False 
 
-if hasPyCode:
     #sys.path.append("./pycodelocal/syntaxhighlighter")
-    try:
-        from pycodelocal.highlighter import SyntaxHighlighter, load_syntax
-        from highlighter.python27 import syntax
-    except ImportError as e:
+try:
+        from external.highlighter import SyntaxHighlighter, load_syntax
+        from external.highlighter.python27 import syntax
+        scheme = {
+                "syntax_comment": dict(color="green", italic=True),
+                "syntax_string": "magenta",
+                "syntax_builtin": "red",
+                "syntax_keyword": ("darkred", True),
+                "syntax_number": "blue",
+            }
+except ImportError:
         SyntaxHighlighter = None
     
-    scheme = {
-        "syntax_comment": dict(color="green", italic=True),
-        "syntax_string": "magenta",
-        "syntax_builtin": "red",
-        "syntax_keyword": ("darkred", True),
-        "syntax_number": "blue",
-    }
+
 
 class ScriptControler(SourceEditControler):
     
@@ -32,15 +31,12 @@ class ScriptControler(SourceEditControler):
         SourceEditControler.__init__(self, document, model)
 
     def createSourceEditor(self, parent = None):
+        edit = QtGui.QPlainTextEdit(parent)
+        edit.setFont(defaultFont)
         if hasPyCode:
-            edit = QtGui.QPlainTextEdit(parent)
-            edit.setFont(defaultFont)
             self.pyedit = PyEdit(".", edit, prefix="from PyQt4 import QtGui")
-            if SyntaxHighlighter:
-                parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-                self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
-        else:
-            edit = QtGui.QPlainTextEdit(parent)
-            edit.setFont(defaultFont)
+        if SyntaxHighlighter:
+            parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
+            self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
         edit.setReadOnly(self.model.isReadOnly())
         return edit
