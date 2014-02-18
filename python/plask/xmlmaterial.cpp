@@ -200,50 +200,7 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string name = reader.requireAttribute("name");
-
-    /*shared_ptr<PythonEvalMaterialConstructor> constructor;
-    auto base = reader.getAttribute("base");
-    if (base)
-        constructor = make_shared<PythonEvalMaterialConstructor>(name, *base);
-    else {
-        std::string kindname = reader.requireAttribute("kind");
-        Material::Kind kind =  (kindname == "semiconductor" || kindname == "SEMICONDUCTOR")? Material::SEMICONDUCTOR :
-                               (kindname == "oxide" || kindname == "OXIDE")? Material::OXIDE :
-                               (kindname == "dielectric" || kindname == "DIELECTRIC")? Material::DIELECTRIC :
-                               (kindname == "metal" || kindname == "METAL")? Material::METAL :
-                               (kindname == "liquid crystal" || kindname == "liquid_crystal" || kindname == "LIQUID_CRYSTAL" || kindname == "LC")? Material::LIQUID_CRYSTAL :
-                                Material::NONE;
-        if (kind == Material::NONE) throw XMLBadAttrException(reader, "kind", kindname);
-
-        Material::ConductivityType condtype = Material::CONDUCTIVITY_UNDETERMINED;
-        auto condname = reader.getAttribute("condtype");
-        if (condname) {
-            condtype = (*condname == "n" || *condname == "N")? Material::CONDUCTIVITY_N :
-                        (*condname == "i" || *condname == "I")? Material::CONDUCTIVITY_I :
-                        (*condname == "p" || *condname == "P")? Material::CONDUCTIVITY_P :
-                        (*condname == "other" || *condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
-                         Material::CONDUCTIVITY_UNDETERMINED;
-            if (condtype == Material::CONDUCTIVITY_UNDETERMINED) throw XMLBadAttrException(reader, "condtype", *condname);
-        }
-
-        constructor = make_shared<PythonEvalMaterialConstructor>(name);
-        constructor->kind = kind;
-        constructor->condtype = condtype;
-    }*/
-
     shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(name, reader.requireAttribute("base"));
-
-    auto condname = reader.getAttribute("condtype");
-    if (condname) {
-        Material::ConductivityType condtype = (*condname == "n" || *condname == "N")? Material::CONDUCTIVITY_N :
-                    (*condname == "i" || *condname == "I")? Material::CONDUCTIVITY_I :
-                    (*condname == "p" || *condname == "P")? Material::CONDUCTIVITY_P :
-                    (*condname == "other" || *condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
-                     Material::CONDUCTIVITY_UNDETERMINED;
-        if (condtype == Material::CONDUCTIVITY_UNDETERMINED) throw XMLBadAttrException(reader, "condtype", *condname);
-        constructor->condtype = condtype;
-    }
-
 
     constructor->self = constructor;
     constructor->db = &materialsDB;
@@ -281,7 +238,17 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
 
 #   endif
     while (reader.requireTagOrEnd()) {
-        if (false);
+        if (reader.getNodeName() == "condtype") {
+            auto condname = reader.requireTextInCurrentTag();
+            Material::ConductivityType condtype = (condname == "n" || condname == "N")? Material::CONDUCTIVITY_N :
+                            (condname == "i" || condname == "I")? Material::CONDUCTIVITY_I :
+                            (condname == "p" || condname == "P")? Material::CONDUCTIVITY_P :
+                            (condname == "other" || condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
+                             Material::CONDUCTIVITY_UNDETERMINED;
+            if (condtype == Material::CONDUCTIVITY_UNDETERMINED)
+                throw XMLException(format("XML line %1% in <%2%>", reader.getLineNr(), "condtype"), "Material parameter syntax error, condtype must be given as one of: n, i, p, other (or: N, I, P, OTHER)");
+            constructor->condtype = condtype;
+        } //else if
         COMPILE_PYTHON_MATERIAL_FUNCTION(lattC)
         COMPILE_PYTHON_MATERIAL_FUNCTION(Eg)
         COMPILE_PYTHON_MATERIAL_FUNCTION(CB)

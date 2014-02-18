@@ -7,8 +7,6 @@ from model.info import Info
 from collections import OrderedDict
 #from guis import DefinesEditor
 
-#TODO support for condtype
-
 MATERIALS_PROPERTES = {
     'A': ('Monomolecular recombination coefficient A [1/s]', [('T', 'temperature [K]')]),
     'absb': ('Absorption coefficient α [cm<sup>-1</sup>]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]')]),
@@ -138,11 +136,10 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
         self.layoutChanged.emit()
         
         
-#TODO how to support condtype??
 class MaterialsModel(TableModel):
              
     class Material:
-        def __init__(self, name, base = None, condtype = None, properties = [], comment = None):
+        def __init__(self, name, base = None, properties = [], comment = None):
             self.name = name
             self.base = base
             self.properties = properties    #TODO what with duplicate properties, should be supported?
@@ -157,8 +154,7 @@ class MaterialsModel(TableModel):
         if isinstance(element, ElementTree.Element):
             for mat in element.iter("material"):
                 self.entries.append(
-                        MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None), mat.attrib.get("condtype", None),
-                                             [ (prop.tag, prop.text) for prop in mat ])
+                        MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None),  [ (prop.tag, prop.text) for prop in mat ])
                 )
         self.layoutChanged.emit()
         self.fireChanged()
@@ -169,8 +165,7 @@ class MaterialsModel(TableModel):
         for e in self.entries:
             mat = ElementTree.SubElement(res, "material", { "name": e.name })
             mat.tail = '\n'
-            if e.base: mat.attrib['base'] = e.base
-            if e.condtype: mat.attrib['condtype'] = e.condtype 
+            if e.base: mat.attrib['base'] = e.base 
             if len(e.properties) > 0:
                 mat.text = '\n  '
                 prev = None

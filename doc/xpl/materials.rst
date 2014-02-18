@@ -15,7 +15,6 @@ This section contains specification of custom materials that can be used togethe
 
    :attr required name: Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
    :attr required base: Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used. The following bases are always available: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid_crystal*.
-   :attr condtype: Electrical conductivity type. In semiconductors this indicates what type of carriers :xml:tag:`<Nf>` refers to. Allowed values: ``n``, ``i``, ``p``, ``other`` (or: ``N``, ``I``, ``P``, ``OTHER``).
 
    .. xml:contents::
 
@@ -98,6 +97,10 @@ This section contains specification of custom materials that can be used togethe
          Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
 
          Variables: ``T`` — temperature [K].
+         
+      .. xml:tag:: <condtype>
+      
+         Electrical conductivity type. In semiconductors this indicates what type of carriers :xml:tag:`<Nf>` refers to. Value of this property is not interpreted as Python code. Instead, one of the following values is required: ``n``, ``i``, ``p``, ``other`` (or: ``N``, ``I``, ``P``, ``OTHER``).
 
       .. xml:tag:: <cp>
 

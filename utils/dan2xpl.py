@@ -81,7 +81,7 @@ class Material(object):
             output.write('  <material name="%s" base="%s">\n' % (name, self.base))
         else:
             if self.condtype:
-                output.write('  <material name="%s" base="%s" condtype="%s">\n' % (name, self.kind, self.condtype))
+                output.write('  <material name="%s" base="%s">\n    <condtype>%s</condtype>\n' % (name, self.kind, self.condtype))
             else:
                 output.write('  <material name="%s" base="%s">\n' % (name, self.kind))
         if self.kappa is not None:
