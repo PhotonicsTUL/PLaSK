@@ -262,7 +262,7 @@ BOOST_PYTHON_MODULE(slab)
         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
                    "Compute discontinuity matrix determinant.");
         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
-                   "Compute reflection ceofficient on the perpendicular incidence [%].\n\n"
+                   "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
                    "    lam (float or array of floats): Incident light wavelength.\n"
                    "    polarization: Specification of the incident light polarization.\n"

@@ -149,12 +149,12 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     cvector incidentVector(ExpansionPW2D::Component polarization, size_t* savidx=nullptr) {
         size_t idx;
         if (polarization == ExpansionPW2D::E_UNSPECIFIED)
-            throw BadInput(getId(), "Wrong incident polarization specified for reflectivity computation");
+            throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
         if (expansion.symmetric) {
             if (expansion.symmetry == ExpansionPW2D::E_UNSPECIFIED)
                 expansion.symmetry = polarization;
             else if (expansion.symmetry != polarization)
-                throw BadInput(getId(), "Current symmetry is inconsistent with specified incident polarization");
+                throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
         }
         if (expansion.separated) {
             expansion.polarization = polarization;

@@ -1,7 +1,7 @@
 <plask>
 
 <materials>
-  <material name="active" kind="semiconductor">
+  <material name="active" base="semiconductor">
     <nr>3.53</nr>
     <absp>0.</absp>
   </material>

@@ -76,7 +76,7 @@ The `gain-region` block has the role *gain*, which tells the optical solver that
 .. code-block:: xml
 
    <materials>
-      <material name="active" kind="semiconductor">
+      <material name="active" base="semiconductor">
         <nr>3.53</nr>
         <absp>0.</absp>
       </material>
@@ -85,9 +85,9 @@ The `gain-region` block has the role *gain*, which tells the optical solver that
       </material>
    </materials>
 
-This defines two materials with names given in name attribute of the material tags. These tags must also have the second attribute which is either ``kind`` or ``base``. The former one is used for creating completely new materials and specifies to which group it belongs. Allowed values are *"semiconductor"*, *"dielectric"*, *"oxide"*, *"metal"*, or *"liquid crystal"*. Then in the following internal tags you have to specify all the material properties used in the simulation (see chapter :ref:`sec-Materials` for the complete list). In our case, we will perform only optical simulations, so the refractive index and the absorption are sufficient.
+This defines two materials with names given in name attribute of the material tags. These tags must also have the second attribute ``base``. It is either used for creating completely new materials and specifies to which group it belongs, or for providing the base material that we want to modify. In the first case, the allowed values are *"semiconductor"*, *"dielectric"*, *"oxide"*, *"metal"*, or *"liquid crystal"*. In the second case ``base`` must be a proper material specification, as used e.g. in the geometry section. In this case every undefined property of the newly defined material will be looked up in the base material. Hence, in this example, the *inactive* material will have exactly the same refractive index as the *active* one.
 
-The second defined material has the ``base`` attribute instead of ``kind``. This tells PLaSK that we want to define the modification of the existing material. The ``base`` value must be a proper material specification, as used e.g. in the geometry section. In this case every undefined property, will be looked up in the base material. Hence, in this example, the *inactive* material will have exactly the same refractive index as the *active* one.
+In the internal tags of each ``<material>`` you have to specify all the material properties used in the simulation (see chapter :ref:`sec-Materials` for the complete list). In our case, we will perform only optical simulations, so the refractive index and the absorption are sufficient.
 
 The whole XPL file with VCSEL geometry specification is presented in :ref:`Listing of tutorial2.xpl <lis-Listing-of-tutorial2.xpl>`.
 
@@ -100,7 +100,7 @@ The whole XPL file with VCSEL geometry specification is presented in :ref:`Listi
    <plask>
 
    <materials>
-     <material name="active" kind="semiconductor">
+     <material name="active" base="semiconductor">
        <nr>3.53</nr>
        <absp>0.</absp>
      </material>

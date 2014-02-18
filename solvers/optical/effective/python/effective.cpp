@@ -75,9 +75,9 @@ static py::object EffectiveFrequencyCylSolver_getDeterminant(EffectiveFrequencyC
 {
    return UFUNC<dcomplex>([&](dcomplex x){return self.getDeterminant(x, m);}, val);
 }
-static py::object EffectiveFrequencyCylSolver_getVertDeterminant(EffectiveFrequencyCylSolver& self, py::object val, int m)
+static py::object EffectiveFrequencyCylSolver_getVertDeterminant(EffectiveFrequencyCylSolver& self, py::object val)
 {
-   return UFUNC<dcomplex>([&](dcomplex x){return self.getVertDeterminant(x, m);}, val);
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getVertDeterminant(x);}, val);
 }
 
 dcomplex EffectiveFrequencyCylSolver_getLambda0(const EffectiveFrequencyCylSolver& self) {
@@ -254,7 +254,7 @@ BOOST_PYTHON_MODULE(effective)
                arg("start")=0., arg("end")=0., arg("m")=0, arg("resteps")=256, arg("imsteps")=64, arg("eps")=dcomplex(1e-6, 1e-9));
         solver.def("get_vert_determinant", &EffectiveFrequencyCylSolver_getVertDeterminant,
                    "Get vertical modal determinant for debugging purposes.",
-                   (py::arg("vlam"), py::arg("m")=0));
+                   py::arg("vlam"));
         solver.def("get_determinant", &EffectiveFrequencyCylSolver_getDeterminant,
                    "Get modal determinant.",
                    (py::arg("lam"), py::arg("m")=0));

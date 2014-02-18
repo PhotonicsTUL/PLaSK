@@ -292,9 +292,8 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /**
      * Compute vectical modal determinant
      * \param vlambda vertical plane-wave wavelength
-     * \param m number of the LP_mn mode describing angular dependence
      */
-    dcomplex getVertDeterminant(dcomplex vlambda, int m=0) {
+    dcomplex getVertDeterminant(dcomplex vlambda) {
         updateCache();
         if (rstripe < 0) throw BadInput(getId(), "This works only for the weigted approach");
         if (vlam == 0. && isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
