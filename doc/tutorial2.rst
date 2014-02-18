@@ -127,7 +127,8 @@ The whole XPL file with VCSEL geometry specification is presented in :ref:`Listi
             <block dr="10" dz="0.03178" material="Al(0.73)GaAs"/>
             <block dr="10" dz="0.13756" material="GaAs"/>
             <shelf>
-            <block dr="4" dz="0.005" role="gain" material="active" name="gain-region"/>
+            <block dr="4" dz="0.005" role="gain" material="active"
+                   name="gain-region"/>
             <block dr="6" dz="0.005" material="inactive"/>
             </shelf>
             <block dr="10" dz="0.13756" material="GaAs"/>

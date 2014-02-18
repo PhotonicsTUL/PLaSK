@@ -290,16 +290,20 @@ You should see a lot of logs, but no results. This is not strange as we did not 
     INFO          : electr:electrical.Shockley2D: Running electrical calculations
     DETAIL        : therm:thermal.Static2D: Getting temperatures
     DETAIL        : interpolate: Running LINEAR interpolation
-    DETAIL        : electr:electrical.Shockley2D: Setting up matrix system (size=1675, bands=27{28})
+    DETAIL        : electr:electrical.Shockley2D: Setting up matrix system
+                    (size=1675, bands=27{28})
     DETAIL        : electr:electrical.Shockley2D: Solving matrix system
-    RESULT        : electr:electrical.Shockley2D: Loop 1(71): max(j@junc) = 8.88 kA/cm2, error = 0.0435 %
+    RESULT        : electr:electrical.Shockley2D: Loop 1(71): max(j@junc) =
+                    8.88 kA/cm2, error = 0.0435 %
     INFO          : therm:thermal.Static2D: Running thermal calculations
-    DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675, bands=27{28})
+    DETAIL        : therm:thermal.Static2D: Setting up matrix system (size=1675,
+                    bands=27{28})
     DETAIL        : electr:electrical.Shockley2D: Getting heat density
     DETAIL        : electr:electrical.Shockley2D: Computing heat densities
     DETAIL        : interpolate: Running LINEAR interpolation
     DETAIL        : therm:thermal.Static2D: Solving matrix system
-    RESULT        : therm:thermal.Static2D: Loop 1(14): max(T) = 345.393 K, error = 0.00553302 K
+    RESULT        : therm:thermal.Static2D: Loop 1(14): max(T) = 345.393 K, error
+                    = 0.00553302 K
     INFO          : Calculations finished!
 
 In the last line you can see the message "Calculations finished!", which you printed yourself in the script. Before this, there is a lot of information given by the solvers. The very interesting one is the one before the last, reported by the thermal solver (see ``therm:thermal.Static2D:`` in this line) which gives the number of iterations, number of total iterations, the maximum computed temperature in the structure, and the maximum temperature update since the last call to the ``compute`` method. The convergence is achieved, since the default temperature change limit is 0.05K.
