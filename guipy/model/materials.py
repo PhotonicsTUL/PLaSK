@@ -95,13 +95,11 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
         return None
     
     def set(self, col, row, value):
-        #if row == 0:
-            #TODO
-        n, v = self.__material__.properties[row-1]
+        n, v = self.__material__.properties[row]
         if col == 0:
-            self.__material__.properties[row-1] = (value, v)
+            self.__material__.properties[row] = (value, v)
         elif col == 1:
-            self.__material__.properties[row-1] = (n, value)
+            self.__material__.properties[row] = (n, value)
     
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)

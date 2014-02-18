@@ -11,11 +11,11 @@ except ImportError:
     hasPyCode = False 
 
 if hasPyCode:
-    sys.path.append("syntaxhighlighter")
+    #sys.path.append("./pycodelocal/syntaxhighlighter")
     try:
         from pycodelocal.highlighter import SyntaxHighlighter, load_syntax
         from highlighter.python27 import syntax
-    except ImportError:
+    except ImportError as e:
         SyntaxHighlighter = None
     
     scheme = {
