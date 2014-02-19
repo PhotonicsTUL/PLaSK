@@ -128,7 +128,7 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         return QtCore.QSize(doc.idealWidth(), doc.size().height())
 
 
-class ComboBoxDelegate(QtGui.QItemDelegate):
+class ComboBoxDelegate(QtGui.QStyledItemDelegate):
 
     def __init__(self, list, parent):
         QtGui.QItemDelegate.__init__(self, parent)

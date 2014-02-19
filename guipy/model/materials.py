@@ -133,6 +133,15 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
         self.__material__ = material
         self.layoutChanged.emit()
         
+    def options_to_choose(self, index):
+        """:return: list of available options to choose at given index or None"""
+        if index.column() == 0: return MATERIALS_PROPERTES.keys()
+        if index.column() == 1:
+            if self.__material__.properties[index.row()][0] == 'condtype':
+                return ['n', 'i', 'p', 'other']
+        return None
+        
+        
         
 class MaterialsModel(TableModel):
              

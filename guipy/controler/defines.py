@@ -47,7 +47,7 @@ class DefineHintsTableModel(QtCore.QAbstractTableModel):
     def headerData(self, col, orientation, role):
         return self.model.headerData(col, orientation, role)
         
-class DefinesCompletionDelegate(QtGui.QItemDelegate):
+class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
 
     def __init__(self, model, parent):
         QtGui.QItemDelegate.__init__(self, parent)
