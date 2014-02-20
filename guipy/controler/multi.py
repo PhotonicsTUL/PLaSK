@@ -3,6 +3,10 @@ from utils import exceptionToMsg
 from controler.source import SourceEditControler
 
 class MultiEditorControler(object):
+    """
+        Controller which consist with a list of controllers and display one at time (using QStackedWidget).
+        Allows to change current controller.
+    """
     
     def __init__(self, *controlers):
         object.__init__(self)

@@ -2,11 +2,44 @@ from model.base import SectionModel
 from PyQt4 import QtCore
 from model import info
 
-class TableModel(QtCore.QAbstractTableModel, SectionModel):
+class TableModelEditMethods(object):
+    
+    def insert(self, index = None, value = None):
+        if self.isReadOnly(): return
+        if not value: value = self.createDefaultEntry()
+        if 0 <= index <= len(self.entries):
+            self.beginInsertRows(QtCore.QModelIndex(), index, index)
+            self.entries.insert(index, value)
+        else:
+            index = len(self.entries)
+            self.beginInsertRows(QtCore.QModelIndex(), index, index)
+            self.entries.append(value)
+        self.fireChanged()
+        self.endInsertRows()
+        return index
+    
+    def remove(self, index):
+        if self.isReadOnly() or index < 0 or index >= len(self.entries): return
+        self.beginRemoveRows(QtCore.QModelIndex(), index, index)
+        del self.entries[index]
+        self.fireChanged()
+        self.endRemoveRows()        
+
+    def swapNeighbourEntries(self, index1, index2):
+        if self.isReadOnly(): return
+        if index2 < index1: index1, index2 = index2, index1 
+        self.beginMoveRows(QtCore.QModelIndex(), index2, index2, QtCore.QModelIndex(), index1)
+        self.entries[index1], self.entries[index2] = self.entries[index2], self.entries[index1]
+        self.fireChanged()
+        self.endMoveRows()
+        
+
+class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods):
    
     def __init__(self, name, parent=None, info_cb = None, *args):
         SectionModel.__init__(self, name, info_cb)
         QtCore.QAbstractListModel.__init__(self, parent, *args)
+        TableModelEditMethods.__init__(self)
         self.entries = []
         self.__row_to_errors__ = None
         
@@ -66,31 +99,3 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel):
         self.dataChanged.emit(index, index)
         return True
     
-    def insert(self, index = None, value = None):
-        if self.isReadOnly(): return
-        if not value: value = self.createDefaultEntry()
-        if 0 <= index and index <= len(self.entries):
-            self.beginInsertRows(QtCore.QModelIndex(), index, index)
-            self.entries.insert(index, value)
-        else:
-            index = len(self.entries)
-            self.beginInsertRows(QtCore.QModelIndex(), index, index)
-            self.entries.append(value)
-        self.fireChanged()
-        self.endInsertRows()
-        return index
-    
-    def remove(self, index):
-        if self.isReadOnly() or index < 0 or index >= len(self.entries): return
-        self.beginRemoveRows(QtCore.QModelIndex(), index, index)
-        del self.entries[index]
-        self.fireChanged()
-        self.endRemoveRows()        
-
-    def swapNeighbourEntries(self, index1, index2):
-        if self.isReadOnly(): return
-        if index2 < index1: index1, index2 = index2, index1 
-        self.beginMoveRows(QtCore.QModelIndex(), index2, index2, QtCore.QModelIndex(), index1)
-        self.entries[index1], self.entries[index2] = self.entries[index2], self.entries[index1]
-        self.fireChanged()
-        self.endMoveRows()

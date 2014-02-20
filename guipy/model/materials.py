@@ -2,7 +2,7 @@
 
 from PyQt4 import QtCore
 from xml.etree import ElementTree
-from model.table import TableModel
+from model.table import TableModel, TableModelEditMethods
 from model.info import Info
 from collections import OrderedDict
 #from guis import DefinesEditor
@@ -53,26 +53,28 @@ def materialHTMLHelp(property_name, font_size = None):
     if prop_name == None:
         res += "unknown property '%s'" % property_name
     else:
-        res += prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr])
+        res += prop_name
+        if len(prop_attr) > 0: res += '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr])
     if font_size != None: res += '</span>'
     return res
 
-class MaterialPropertyModel(QtCore.QAbstractTableModel):
+class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
     
     def __init__(self, materialsModel, material = None, parent=None, *args):
         QtCore.QAbstractListModel.__init__(self, parent, *args)
+        TableModelEditMethods.__init__(self)
         self.materialsModel = materialsModel
-        self.__material__ = material
+        self.__material = material
     
     def rowCount(self, parent = QtCore.QModelIndex()):
-        if not self.__material__ or parent.isValid(): return 0
-        return len(self.__material__.properties)
+        if not self.__material or parent.isValid(): return 0
+        return len(self.__material.properties)
     
     def columnCount(self, parent = QtCore.QModelIndex()): 
         return 3    # 3 if comment supported
     
     def get(self, col, row):
-        n, v = self.__material__.properties[row]
+        n, v = self.__material.properties[row]
         if col == 2:
             #prop_name, prop_attr = MATERIALS_PROPERTES[n]
             #return '<span style="font-size: 9pt">' + prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr]) + '</span>'
@@ -95,11 +97,11 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
         return None
     
     def set(self, col, row, value):
-        n, v = self.__material__.properties[row]
+        n, v = self.__material.properties[row]
         if col == 0:
-            self.__material__.properties[row] = (value, v)
+            self.__material.properties[row] = (value, v)
         elif col == 1:
-            self.__material__.properties[row] = (n, value)
+            self.__material.properties[row] = (n, value)
     
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
@@ -125,22 +127,34 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel):
     
     @property
     def material(self):
-        return self.__material__
+        return self.__material
     
     @material.setter
     def material(self, material):
         self.layoutAboutToBeChanged.emit()
-        self.__material__ = material
+        self.__material = material
         self.layoutChanged.emit()
         
     def options_to_choose(self, index):
         """:return: list of available options to choose at given index or None"""
         if index.column() == 0: return MATERIALS_PROPERTES.keys()
         if index.column() == 1:
-            if self.__material__.properties[index.row()][0] == 'condtype':
+            if self.__material.properties[index.row()][0] == 'condtype':
                 return ['n', 'i', 'p', 'other']
         return None
         
+    @property
+    def entries(self):
+        return self.__material.properties
+        
+    def isReadOnly(self):
+        return self.material == None or self.materialsModel.isReadOnly()
+    
+    def fireChanged(self):
+        pass
+    
+    def createDefaultEntry(self):
+        return "", ""
         
         
 class MaterialsModel(TableModel):
