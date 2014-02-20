@@ -7,6 +7,27 @@ from utils import HTMLDelegate, table_last_col_fill
 from controler.defines import DefinesCompletionDelegate
 from controler.table import tableWithManipulators
 
+class MaterialBaseDelegate(DefinesCompletionDelegate):
+    
+    def __init__(self, definesModel, parent):
+        DefinesCompletionDelegate.__init__(self, definesModel, parent)
+        
+    def createEditor(self, parent, option, index):
+        earlier_names = [ e.name for e in index.model().entries[0:index.row()] ]
+
+        if not earlier_names: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
+        
+        combo = QtGui.QComboBox(parent)
+        combo.setEditable(True)
+        combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        combo.addItems(earlier_names)
+        combo.setEditText(index.data())
+        combo.setCompleter(self.getDefinesCompleter(parent))
+        #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"), 
+        #             self, QtCore.SLOT("currentIndexChanged()"))
+        return combo
+    
+
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
     def __init__(self, definesModel, parent):
@@ -36,6 +57,7 @@ class MaterialsControler(Controler):
         
         self.materials_table = QtGui.QTableView()
         self.materials_table.setModel(self.model)
+        self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.materials_table))
         #self.materialsTableActions = TableActions(self.materials_table)
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 150)
         self.splitter.addWidget(tableWithManipulators(self.materials_table, self.splitter, title="Materials"))

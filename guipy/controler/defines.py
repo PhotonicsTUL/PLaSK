@@ -7,7 +7,12 @@ class AfterBracketCompleter(QtGui.QCompleter):
     def pathFromIndex(self, index):
         path = QtGui.QCompleter.pathFromIndex(self, index)
         
-        lst = str(self.widget().text()).rsplit('{', 1)
+        try:
+            text = self.widget().text()         #text field
+        except AttributeError:
+            text = self.widget().currentText()  #combo box
+        
+        lst = text.rsplit('{', 1)
         if len(lst) > 1:
             path = '%s{%s}' % (lst[0], path)
         else:
@@ -54,8 +59,7 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
         self.model = DefineHintsTableModel(model, parent)
         #self.model = model
         
-    def createEditor(self, parent, option, index):
-        ed = super(DefinesCompletionDelegate, self).createEditor(parent, option, index)
+    def getDefinesCompleter(self, parent):
         completer = AfterBracketCompleter(self.model, self)
         tab = QtGui.QTableView(parent)
         #tab.resizeColumnsToContents()
@@ -74,9 +78,14 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
         #tab.setContentsMargins(1, 1, 1, 1)
         
         completer.setPopup(tab)
+        return completer
+        
+    def createEditor(self, parent, option, index):
+        ed = super(DefinesCompletionDelegate, self).createEditor(parent, option, index)
+
         #completer.setWrapAround(False)
         #completer->setCaseSensitivity(Qt::CaseInsensitive);
-        ed.setCompleter(completer)
+        ed.setCompleter(self.getDefinesCompleter(parent))
         return ed
         
     #def setEditorData(self, editor, index):
