@@ -564,7 +564,12 @@ namespace detail {
     public RegisterProviderBase<ProviderT>
     {
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
-        static ValueT __call__n(ProviderT& self, size_t n, const ExtraParams&... params) { return self(n, params...); }
+        static ValueT __call__n(ProviderT& self, int n, const ExtraParams&... params) {
+            if (n < 0) n = self.size() + n;
+            if (n < 0 || n >= self.size())
+                throw NoValue(format("%1% [%2%]", self.name(), n).c_str());
+            return self(n, params...);
+        }
         static ValueT __call__0(ProviderT& self, const ExtraParams&... params) { return self(0, params...); }
         RegisterProviderImpl() {
             this->provider_class.def("__call__", &__call__n, "Get value from the provider.");
@@ -596,8 +601,11 @@ namespace detail {
         static const int DIMS = ProviderT::SpaceType::DIM;
         typedef typename ProviderT::ValueType ValueT;
 
-        static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+        static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, int n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
+            if (n < 0) n = self.size() + n;
+            if (n < 0 || n >= self.size())
+                throw NoValue(format("%1% [%2%]", self.name(), n).c_str());
             return DataVectorWrap<const ValueT,DIMS>(self(n, *mesh, params..., method), mesh);
         }
         static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {

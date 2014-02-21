@@ -28,9 +28,9 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertEqual( self.solver.id, "eim:optical.EffectiveIndex2D" )
 
     def testExceptions(self):
-        with self.assertRaisesRegexp(ValueError, r"^Effective index cannot be provided now$"):
+        with self.assertRaisesRegexp(ValueError, r"^Effective index \[0\] cannot be provided now$"):
             self.solver.outNeff(0)
-        with self.assertRaisesRegexp(ValueError, r"^Light intensity cannot be provided now$"):
+        with self.assertRaisesRegexp(ValueError, r"^Light intensity \[0\] cannot be provided now$"):
             self.solver.outLightIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
 
     def testComputations(self):
