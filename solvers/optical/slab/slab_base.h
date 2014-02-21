@@ -6,20 +6,20 @@
 
 namespace plask { namespace solvers { namespace slab {
 
+/// Information about lateral PMLs
+struct PML {
+    dcomplex factor;  ///< PML factor
+    double size;      ///< Size of the PMLs
+    double shift;     ///< Distance of the PMLs from defined computational domain
+    double order;     ///< Order of the PMLs
+    PML(): factor(1.,0.), size(1.), shift(0.5), order(2) {}
+};
+
 /**
  * Base class for all slab solvers
  */
 template <typename GeometryT>
 struct SlabSolver: public SolverOver<GeometryT> {
-
-    /// Information about lateral PMLs
-    struct PML {
-        dcomplex factor;  ///< PML factor
-        double size;      ///< Size of the PMLs
-        double shift;     ///< Distance of the PMLs from defined computational domain
-        double order;     ///< Order of the PMLs
-        PML(): factor(1.,0.), size(1.), shift(0.5), order(2) {}
-    };
 
   protected:
 

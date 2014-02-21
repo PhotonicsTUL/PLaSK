@@ -303,12 +303,8 @@ template <typename GeometryT>
 cvector ReflectionSolver<GeometryT>::getTransmissionVector(const cvector& incident, IncidentDirection side)
 {
     determineReflectedFields(incident, side);
-    switch (side) {
-        case INCIDENCE_TOP:
-            return diagonalizer->TE(this->stack[0]) * fields[0].B;
-        case INCIDENCE_BOTTOM:
-            return diagonalizer->TE(this->stack[this->stack.size()-1]) * fields[this->stack.size()-1].B;
-    }
+    size_t n = (side == INCIDENCE_BOTTOM)? this->stack.size()-1 : 0;
+    return diagonalizer->TE(this->stack[n]) * fields[n].B;
 }
 
 

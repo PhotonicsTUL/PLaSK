@@ -138,6 +138,11 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh2D& dst_mesh,
                                             InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
+    /**
+     * Get mesh at which material parameters are sampled
+     */
+    RegularAxis getXmesh() const { return expansion.xmesh; }
+    
   private:
 
     /**

@@ -15,19 +15,35 @@ using namespace plask::python;
 #include "../fourier_reflection_2d.h"
 using namespace plask::solvers::slab;
 
+#define ROOTDIGGER_ATTRS_DOC \
+    ".. rubric:: Attributes\n\n" \
+    ".. autosummary::\n\n" \
+    "   ~optical.slab.RootParams.maxiter\n" \
+    "   ~optical.slab.RootParams.maxstep\n" \
+    "   ~optical.slab.RootParams.tolf_max\n" \
+    "   ~optical.slab.RootParams.tolf_min\n" \
+    "   ~optical.slab.RootParams.tolx\n"
+
+#define PML_ATTRS_DOC \
+    ".. rubric:: Attributes\n\n" \
+    ".. autosummary::\n\n" \
+    "   ~optical.slab.PML.factor\n" \
+    "   ~optical.slab.PML.order\n" \
+    "   ~optical.slab.PML.shift\n" \
+    "   ~optical.slab.PML.size\n"
+
 template <typename SolverT>
 static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) { return self.getStack(); }
 
 template <typename SolverT>
 static const std::vector<RectilinearAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
 
-template <typename SolverT>
 struct PmlWrapper {
 
-    SolverT* solver;
-    typename SolverT::PML* pml;
+    Solver* solver;
+    PML* pml;
 
-    PmlWrapper(SolverT* solver, typename SolverT::PML* pml): solver(solver), pml(pml) {}
+    PmlWrapper(Solver* solver, PML* pml): solver(solver), pml(pml) {}
 
     dcomplex get_factor() const { return pml->factor; }
     void set_factor(dcomplex val) {
@@ -78,17 +94,11 @@ inline void export_base(Class solver) {
     solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "");
     solver.add_provider("outElectricField", &Solver::outElectricField, "");
     solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
-
-    py::scope scope = solver;
-
-    py::class_<PmlWrapper<Solver>>("PML", "Perfectly matched layer details", py::no_init)
-        .add_property("factor", &PmlWrapper<Solver>::get_factor, &PmlWrapper<Solver>::set_factor, "PML scaling factor")
-        .add_property("size", &PmlWrapper<Solver>::get_size, &PmlWrapper<Solver>::set_size, "PML size")
-        .add_property("shift", &PmlWrapper<Solver>::get_shift, &PmlWrapper<Solver>::set_shift, "PML shift from the structure")
-        .add_property("order", &PmlWrapper<Solver>::get_order, &PmlWrapper<Solver>::set_order, "PML shape order")
-        .def("__str__", &PmlWrapper<Solver>::__str__)
-        .def("__repr__", &PmlWrapper<Solver>::__repr__)
-    ;
+    solver.def_readwrite("root", &Solver::root,
+                         "Configuration of the root searching algorithm for horizontal component of the\n"
+                         "mode.\n\n"
+                         ROOTDIGGER_ATTRS_DOC
+                        );
 }
 
 template <typename Class>
@@ -108,7 +118,7 @@ struct PythonComponentConventer2D {
 
     // Determine if obj can be converted into an Aligner
     static void* convertible(PyObject* obj) {
-        if (PyString_Check(obj)) return obj;
+        if (PyString_Check(obj) || obj == Py_None) return obj;
         return nullptr;
     }
 
@@ -121,8 +131,10 @@ struct PythonComponentConventer2D {
         } else {
             try {
                 std::string repr = py::extract<std::string>(obj);
-                if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
-                    repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong())
+                if (repr == "none" || repr == "NONE" || repr == "None")
+                    val = ExpansionPW2D::E_UNSPECIFIED;
+                else if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
+                         repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong())
                     val = ExpansionPW2D::E_TRAN;
                 else if (repr == "Elong" || repr == "El" || repr == "E"+axes->getNameForLong() ||
                          repr == "Htran" || repr == "Ht" || repr == "H"+axes->getNameForTran())
@@ -204,8 +216,8 @@ py::object FourierReflection2D_computeTransmitticity(FourierReflection2D* self,
     }, wavelength);
 }
 
-PmlWrapper<FourierReflection2D> FourierReflection2D_getPML(FourierReflection2D* self) {
-    return PmlWrapper<FourierReflection2D>(self, &self->pml);
+PmlWrapper FourierReflection2D_getPML(FourierReflection2D* self) {
+    return PmlWrapper(self, &self->pml);
 }
 
 double FourierReflection2D_Mode_Wavelength(const FourierReflection2D::Mode& mode) {
@@ -287,7 +299,11 @@ BOOST_PYTHON_MODULE(slab)
                    "    mesh: Target mesh.\n"
                    "    interp: Interpolation method\n"
                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()), "Side PMLs.");
+        RO_PROPERTY(tran_mesh, getXmesh, "Transverse mesh with points where materials parameters are sampled.");
+        solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()),
+                            "Side Perfectly Matched Layers boundary conditions.\n\n"
+                            PML_ATTRS_DOC
+                           );
         RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
         RO_FIELD(modes, "Computed modes.");
         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
@@ -334,5 +350,24 @@ BOOST_PYTHON_MODULE(slab)
             )
         ;
     }
+    
+    py::class_<PmlWrapper>("PML", "Perfectly matched layer details.", py::no_init)
+        .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
+        .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
+        .add_property("shift", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML shift from the structure.")
+        .add_property("order", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
+        .def("__str__", &PmlWrapper::__str__)
+        .def("__repr__", &PmlWrapper::__repr__)
+    ;
+
+    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
+        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
+        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
+        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration.")
+        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
+    ;
+
+    
 }
 
