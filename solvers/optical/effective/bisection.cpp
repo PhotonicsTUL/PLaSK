@@ -14,25 +14,51 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     double dr = (re1 - re0) / ren;
     double di = (im1 - im0) / imn;
 
+    std::exception_ptr error;
     #pragma omp parallel
     {
         #pragma for nowait
         for (size_t i = 0; i < ren; ++i) {
-            bottom[i] = fun(dcomplex(re0+i*dr, im0));
+            if (error) continue;
+            try {
+                bottom[i] = fun(dcomplex(re0+i*dr, im0));
+            } catch (...) { 
+                #pragma omp critical
+                error = std::current_exception();
+            }
         }
         #pragma for nowait
         for (size_t i = 0; i < imn; ++i) {
-            right[i] = fun(dcomplex(re1, im0+i*di));
+            if (error) continue;
+            try {
+                right[i] = fun(dcomplex(re1, im0+i*di));
+            } catch (...) { 
+                #pragma omp critical
+                error = std::current_exception();
+            }
         }
         #pragma for nowait
         for (size_t i = 1; i <= ren; ++i) {
-            top[i] = fun(dcomplex(re0+i*dr, im1));
+            if (error) continue;
+            try {
+                top[i] = fun(dcomplex(re0+i*dr, im1));
+            } catch (...) { 
+                #pragma omp critical
+                error = std::current_exception();
+            }
         }
         #pragma for
         for (size_t i = 1; i <= imn; ++i) {
-            left[i] = fun(dcomplex(re0, im0+i*di));
+            if (error) continue;
+            try {
+                left[i] = fun(dcomplex(re0, im0+i*di));
+            } catch (...) { 
+                #pragma omp critical
+                error = std::current_exception();
+            }
         }
     }
+    if (error) std::rethrow_exception(error);
     // Wrap values
     bottom[ren] = right[0];
     right[imn] = top[ren];
@@ -84,9 +110,18 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
         DataVector<dcomplex> middle(imn+1);
         middle[0] = bottom[n]; middle[imn] = top[n];
         double di = (im1 - im0) / imn;
-        #pragma omp parallel for
-        for (size_t i = 1; i < imn; ++i)
-            middle[i] = fun(dcomplex(re, im0+i*di));
+        
+        std::exception_ptr error;
+        #pragma omp parallel for 
+        for (size_t i = 1; i < imn; ++i) {
+            if (error) continue;
+            try {
+                middle[i] = fun(dcomplex(re, im0+i*di));
+            } catch (...) {
+                error = std::current_exception();
+            }
+        }
+        if (error) std::rethrow_exception(error);
 
         contoura.left = left;
         contoura.right = middle;
@@ -119,9 +154,18 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
             size_t n = (right.size()-1) / 2; // no less than 1
             middle[0] = left[n]; middle[ren] = right[n];
             double dr = (re1 - re0) / ren;
+            
+            std::exception_ptr error;
             #pragma omp parallel for
-            for (size_t i = 1; i < ren; ++i)
-                middle[i] = fun(dcomplex(re0+i*dr, im));
+            for (size_t i = 1; i < ren; ++i) {
+                if (error) continue;
+                try {
+                    middle[i] = fun(dcomplex(re0+i*dr, im));
+                } catch (...) {
+                    error = std::current_exception();
+                }
+            }
+            
             contoura.left = DataVector<dcomplex>(const_cast<dcomplex*>(&left[0]), n+1);
             contoura.right = DataVector<dcomplex>(const_cast<dcomplex*>(&right[0]), n+1);
             contourb.left = DataVector<dcomplex>(const_cast<dcomplex*>(&left[n]), n+1);
