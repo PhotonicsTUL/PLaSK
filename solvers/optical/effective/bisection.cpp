@@ -194,7 +194,7 @@ namespace detail {
             int wind = contour.winding();
             if (wind == 0)
                 return 0;
-            if (wind == 1 && contour.re1-contour.re0 <= reps && contour.im1-contour.im0 <= ieps) {
+            if (contour.re1-contour.re0 <= reps && contour.im1-contour.im0 <= ieps) {
                 for(int i = 0; i != abs(wind); ++i)
                     results.push_back(std::make_pair(dcomplex(contour.re0, contour.im0), dcomplex(contour.re1, contour.im1)));
                 return wind;
@@ -219,8 +219,10 @@ std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const 
     for(; resteps > Nr; Nr <<= 1);
     for(; imsteps > Ni; Ni <<= 1);
 
+    double reps = real(eps), ieps = imag(eps);
+    
     std::vector<std::pair<dcomplex,dcomplex>> results;
-    detail::ContourBisect bisection(real(eps), imag(eps), results);
+    detail::ContourBisect bisection(reps, ieps, results);
     Contour contour(solver, fun, corner0, corner1, Nr, Ni);
     int zeros = abs(contour.winding());
     solver->writelog(LOG_DETAIL, "Looking for %5% zero%6% between %1% and %2% with %3%/%4% real/imaginary intervals",
