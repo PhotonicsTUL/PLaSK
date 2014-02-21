@@ -75,16 +75,13 @@ void ExpansionPW2D::init()
         M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
         double dx = 0.5 * L * (refine-1) / M;               // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
         xmesh = RegularAxis(left-dx, right-dx-L/M, M);      //  ^ ^ ^ ^
-        xpoints = RegularAxis(left, right-L/N, N);          // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-    } else {
+    } else {                                                // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
         L = 2 * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
         M = refine * nN;                                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
         double dx = 0.25 * L / M;                           //  ^ ^ ^ ^
         xmesh = RegularAxis(left + dx, right - dx, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-        dx = 0.25 * L / N;
-        xpoints = RegularAxis(left + dx, right - dx, N);
     }
 
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",

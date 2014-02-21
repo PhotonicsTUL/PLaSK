@@ -20,7 +20,6 @@ struct ExpansionPW2D: public Expansion {
     };
 
     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
-    RegularAxis xpoints;                ///< Horizontal points in which fields will be computed by the inverse FFT
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
