@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace slab {
 FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSolver<Geometry2DCartesian>(name),
     size(12),
     expansion(this),
-    refine(8),
+    refine(32),
     outNeff(this, &FourierReflection2D::getEffectiveIndex, &FourierReflection2D::nummodes)
 {
     detlog.global_prefix = this->getId();
@@ -18,10 +18,89 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "expansion") {
-            size = reader.getAttribute<double>("size", size);
+            size = reader.getAttribute<size_t>("size", size);
+            refine = reader.getAttribute<size_t>("refine", refine);
+            smooth = reader.getAttribute<double>("smooth", smooth);
+            reader.requireTagEnd();
+        } else if (param == "interface") {
+            if (reader.hasAttribute("index")) {
+                if (reader.hasAttribute("position")) throw XMLConflictingAttributesException(reader, "index", "position");
+                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
+                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
+                setInterface(reader.requireAttribute<size_t>("interface"));
+            } else if (reader.hasAttribute("position")) {
+                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
+                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
+                setInterfaceAt(reader.requireAttribute<double>("interface"));
+            } else if (reader.hasAttribute("object")) {
+                auto object = manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
+                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
+                setInterfaceOn(object, path);
+            } else if (reader.hasAttribute("path")) {
+                throw XMLUnexpectedAttrException(reader, "path");
+            }
+            reader.requireTagEnd();
+        } else if (param == "pml") {
+            pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
+            pml.size = reader.getAttribute<double>("size", pml.size);
+            pml.shift = reader.getAttribute<double>("shift", pml.shift);
+            pml.order = reader.getAttribute<double>("order", pml.order);
+            reader.requireTagEnd();
+        } else if (param == "mode") {
+            k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
+            ktran = 2e3*M_PI / reader.getAttribute<dcomplex>("k-tran", ktran);
+            klong = 2e3*M_PI / reader.getAttribute<dcomplex>("k-long", klong);
+            if (reader.hasAttribute("symmetry")) {
+                std::string repr = reader.requireAttribute("symmetry");
+                ExpansionPW2D::Component val;
+                AxisNames* axes = nullptr;
+                if (geometry) axes = &geometry->axisNames;
+                if (repr == "none" || repr == "NONE" || repr == "None")
+                    val = ExpansionPW2D::E_UNSPECIFIED;
+                else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
+                         repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
+                    val = ExpansionPW2D::E_TRAN;
+                else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
+                         repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
+                    val = ExpansionPW2D::E_LONG;
+                else
+                    throw XMLBadAttrException(reader, "symmetry", repr, "symmetric field component name (maybe you need to specify the geometry first)");
+                setSymmetry(val);
+            }
+            if (reader.hasAttribute("polarization")) {
+                std::string repr = reader.requireAttribute("polarization");
+                ExpansionPW2D::Component val;
+                AxisNames* axes = nullptr;
+                if (geometry) axes = &geometry->axisNames;
+                if (repr == "none" || repr == "NONE" || repr == "None")
+                    val = ExpansionPW2D::E_UNSPECIFIED;
+                else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
+                         repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
+                    val = ExpansionPW2D::E_TRAN;
+                else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
+                         repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
+                    val = ExpansionPW2D::E_LONG;
+                else
+                    throw XMLBadAttrException(reader, "polarization", repr, "existing field component name (maybe you need to specify the geometry first)");
+                setPolarization(val);
+            }
+        } else if (param == "root") {
+            root.tolx = reader.getAttribute<double>("tolx", root.tolx);
+            root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
+            root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
+            root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
+            root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
+            reader.requireTagEnd();
+        } else if (param == "mirrors") {
+            double R1 = reader.requireAttribute<double>("R1");
+            double R2 = reader.requireAttribute<double>("R2");
+            mirrors.reset(std::make_pair(R1,R2));
+            reader.requireTagEnd();
+        } else if (param == "outer") {
+            outdist = reader.requireAttribute<double>("dist");
             reader.requireTagEnd();
         } else
-            parseStandardConfiguration(reader, manager, "TODO");
+            parseStandardConfiguration(reader, manager);
     }
 }
 
@@ -33,7 +112,6 @@ void FourierReflection2D::onInitialize()
     expansion.init();
     diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
     init();
-    expansion.computeMaterialCoefficients();
 }
 
 
@@ -56,7 +134,7 @@ size_t FourierReflection2D::findMode(dcomplex neff)
     initCalculation();
     detlog.axis_arg_name = "neff";
     klong =  k0 *
-        RootDigger(*this, [this](const dcomplex& x) { this->klong = x * this->k0; return this->determinant(); },
+        RootDigger(*this, [this](const dcomplex& x) { this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0; return this->determinant(); },
                    detlog, root)(neff);
     return insertMode();
 }

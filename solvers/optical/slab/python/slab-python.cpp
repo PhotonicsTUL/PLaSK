@@ -81,14 +81,21 @@ struct PmlWrapper {
 template <typename Class>
 inline void export_base(Class solver) {
     typedef typename Class::wrapped_type Solver;
-    solver.def_readwrite("outdist", &Solver::outdist, "Distance outside outer borders where material is sampled");
-    solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position");
+    solver.def_readwrite("outdist", &Solver::outdist, "Distance outside outer borders where material is sampled.");
+    solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position.");
     solver.def("set_interface", (void(Solver::*)(const shared_ptr<GeometryObject>&, const PathHints&))&Solver::setInterfaceOn,
-               "Set interface at the bottom of the object pointed by path", (py::arg("object"), py::arg("path")=py::object()));
-    solver.def("set_interface", &Solver::setInterfaceAt, "Set interface around position pos", py::arg("pos"));
-    solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter");
-    solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers");
-    solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set");
+               "Set interface at the bottom of the specified object.\n\n"
+               "Args:\n"
+               "    object (geometry object): object to set the interface at.\n"
+               "    path (path): Optional path specifying an instance of the object.",
+               (py::arg("object"), py::arg("path")=py::object()));
+    solver.def("set_interface", &Solver::setInterfaceAt,
+               "Set interface as close as possible to the specified position.\n\n"
+               "Args:\n"
+               "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
+    solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
+    solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers.");
+    solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
     solver.add_receiver("inTemperature", &Solver::inTemperature, "");
     solver.add_receiver("inGain", &Solver::inGain, "");
     solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "");
@@ -178,6 +185,30 @@ void FourierReflection2D_parseKeywords(const char* name, FourierReflection2D* se
     if (ktran) self->setKtran(*ktran);
 }
 
+py::object FourierReflection2D_getMirrors(const FourierReflection2D& self) {
+    if (!self.mirrors) return py::object();
+    return py::make_tuple(self.mirrors->first, self.mirrors->second);
+}
+
+void FourierReflection2D_setMirrors(FourierReflection2D& self, py::object value) {
+    if (value == py::object())
+        self.mirrors.reset();
+    else {
+        try {
+            double v = py::extract<double>(value);
+            self.mirrors.reset(std::make_pair(v,v));
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            try {
+                if (py::len(value) != 2) throw py::error_already_set();
+                self.mirrors.reset(std::make_pair<double,double>(py::extract<double>(value[0]),py::extract<double>(value[1])));
+            } catch (py::error_already_set) {
+                throw ValueError("None, float, or tuple of two floats required");
+            }
+        }
+    }
+}
+
 
 DataVectorWrap<const Tensor3<dcomplex>,2> FourierReflection2D_getRefractiveIndexProfile(FourierReflection2D& self,
                 const shared_ptr<RectilinearMesh2D>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
@@ -224,7 +255,7 @@ double FourierReflection2D_Mode_Wavelength(const FourierReflection2D::Mode& mode
     return real(2e3 / mode.k0);
 }
 double FourierReflection2D_Mode_ModalLoss(const FourierReflection2D::Mode& mode) {
-    return imag(2e4 * mode.k0);
+    return imag(2e4 * mode.beta);
 }
 double FourierReflection2D_Mode_Beta(const FourierReflection2D::Mode& mode) {
     return real(mode.beta);
@@ -265,7 +296,7 @@ BOOST_PYTHON_MODULE(slab)
                "    neff: starting effective index.\n"
                , "neff");
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light.");
-        RW_PROPERTY(beta, getKlong, setKlong, "Longitudinal propagation constant of the light.");
+        RW_PROPERTY(klong, getKlong, setKlong, "Longitudinal propagation constant of the light.");
         RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light.");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
@@ -293,6 +324,9 @@ BOOST_PYTHON_MODULE(slab)
                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                    "        present.\n"
                    , (py::arg("lam"), "polarization", "side"));
+        solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
+                   "Mirror reflectivities. If None then they are automatically estimated from the\n"
+                   "Fresnel equations.");
         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index.\n\n"
                    "Args:\n"

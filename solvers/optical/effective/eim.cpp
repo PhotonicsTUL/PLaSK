@@ -80,7 +80,7 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             mirrors.reset(std::make_pair(R1,R2));
             reader.requireTagEnd();
         } else if (param == "outer") {
-            outdist = reader.requireAttribute<double>("distance");
+            outdist = reader.requireAttribute<double>("dist");
             reader.requireTagEnd();
         } else if (param == "mesh") {
             auto name = reader.getAttribute("ref");

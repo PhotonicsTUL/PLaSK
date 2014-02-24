@@ -76,7 +76,7 @@ public:
     DataSourceWithReceiver() {
         in.providerValueChanged.connect(
             [&] (ReceiverBase&, ReceiverBase::ChangeReason reason) {
-                if (reason != ReceiverBase::ChangeReason::EVENT_DELETE) this->fireChanged();
+                if (reason != ReceiverBase::ChangeReason::REASON_DELETE) this->fireChanged();
             }
         );
     }

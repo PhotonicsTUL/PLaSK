@@ -128,7 +128,7 @@ struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::Rect
 struct SimpleSolver : plask::Solver {
     struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {
         static constexpr const char* NAME = "vectorial field";
-        static constexpr const char* UNIT = "";
+        static constexpr const char* UNIT = "-";
     };
 
     virtual std::string getClassName() const { return "SimpleSolver"; }

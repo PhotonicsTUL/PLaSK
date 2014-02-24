@@ -46,8 +46,8 @@
 // 
 //     void onInvalidate();
 // 
-//     void k0changed() override {
-//         if (expansion.initialized) expansion.computeMaterialCoefficients();
+//     void computeCoefficients() override {
+//         expansion.computeMaterialCoefficients();
 //     }
 // 
 //   public:

@@ -13,7 +13,7 @@ namespace plask {
  */
 struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>,double> {
     static constexpr const char* NAME = "refractive index";
-    static constexpr const char* UNIT = "";
+    static constexpr const char* UNIT = "-";
     static inline Tensor3<dcomplex> getDefaultValue() { return Tensor3<dcomplex>(1.); }
 };
 
@@ -106,7 +106,7 @@ struct PropagationConstant: public MultiValueProperty<dcomplex> {
  */
 struct EffectiveIndex: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "effective index";
-    static constexpr const char* UNIT = "";
+    static constexpr const char* UNIT = "-";
 };
 
 } // namespace plask

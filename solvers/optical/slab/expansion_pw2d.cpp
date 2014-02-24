@@ -145,7 +145,7 @@ void ExpansionPW2D::free() {
 void ExpansionPW2D::getMaterialCoefficients(size_t l)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
-        throw BadInput(SOLVER->getId(), "No wavelength set specified");
+        throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
     const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
@@ -158,17 +158,41 @@ void ExpansionPW2D::getMaterialCoefficients(size_t l)
     DataVector<Tensor3<dcomplex>> NR(M);
 
     RectilinearMesh2D mesh(xmesh, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
-    auto temperature = SOLVER->inTemperature(mesh);
+
     double lambda = real(SOLVER->getWavelength());
+
+    auto temperature = SOLVER->inTemperature(mesh);
+
+    bool need_gain = false;
+    std::vector<bool> gain_at(xmesh.size(), false);
+    for (auto point: mesh) {
+        auto roles = geometry->getRolesAt(point);
+        if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+            need_gain = true;
+            break;
+        }
+    }
+    DataVector<const double> gain;
+    if (need_gain) gain = SOLVER->inGain(mesh, lambda);
+
     double maty = axis1[0]; // at each point along any vertical axis material is the same
     for (size_t i = 0; i < M; ++i) {
-        auto material = geometry->getMaterial(Vec<2>(xmesh[i],maty));
-        // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(Vec<2>(xmesh[i],y))!=material)return false; return true;}());
+        auto material = geometry->getMaterial(vec(xmesh[i],maty));
+        // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(vec(xmesh[i],y))!=material)return false; return true;}());
         double T = 0.; // average temperature in all vertical points
         for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
         T /= axis1.size();
         #pragma omp critical
         NR[i] = material->NR(lambda, T);
+        if (need_gain) {
+            auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                double g = 0.; // average temperature in all vertical points
+                for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) g += gain[j];
+                double ni = lambda * g/axis1.size() * 7.95774715459e-09;
+                NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);
+            }
+        }
     }
 
     for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR

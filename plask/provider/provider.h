@@ -212,9 +212,9 @@ struct ReceiverBase {
 
     /// The reason of change of provider value
     enum class ChangeReason {
-        EVENT_DELETE,     ///< this receiver is being deleted
-        VALUE,      ///< value of provider has just been changed
-        PROVIDER    ///< provider has just been exchanged to another one
+        REASON_DELETE,     ///< this receiver is being deleted
+        REASON_VALUE,      ///< value of provider has just been changed
+        REASON_PROVIDER    ///< provider has just been exchanged to another one
     };
 
     virtual ~ReceiverBase() {}
@@ -288,7 +288,7 @@ public:
             delete this->provider;
             this->provider = nullptr;
         }
-        fireChanged(ChangeReason::EVENT_DELETE);
+        fireChanged(ChangeReason::REASON_DELETE);
     }
 
     /**
@@ -318,11 +318,11 @@ public:
                             providerConnection.disconnect();    //TODO do we need this line?
                             this->provider = 0;
                         }
-                        this->fireChanged(isDeleted ? ChangeReason::PROVIDER : ChangeReason::VALUE);
+                        this->fireChanged(isDeleted ? ChangeReason::REASON_PROVIDER : ChangeReason::REASON_VALUE);
                     });
         this->provider = provider;
         this->_hasPrivateProvider = newProviderIsPrivate;
-        this->fireChanged(ChangeReason::PROVIDER);
+        this->fireChanged(ChangeReason::REASON_PROVIDER);
     }
 
     /**

@@ -39,15 +39,15 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     /// Maximum order of the orthogonal base
     size_t size;
 
-    /// Class responsoble for computing expansion coefficients
+    /// Class responsible for computing expansion coefficients
     ExpansionPW2D expansion;
 
     void onInitialize();
 
     void onInvalidate();
 
-    void k0changed() override {
-        if (expansion.initialized) expansion.computeMaterialCoefficients();
+    void computeCoefficients() override {
+        expansion.computeMaterialCoefficients();
     }
 
   public:
@@ -60,6 +60,9 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
 
     /// Lateral PMLs
     PML pml;
+
+    /// Mirror reflectivities
+    boost::optional<std::pair<double,double>> mirrors;
 
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::Delegate outNeff;
@@ -299,6 +302,21 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     dcomplex getEffectiveIndex(size_t n) {
         if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
         return modes[n].beta / modes[n].k0;
+    }
+
+    /// Compute mirror losses for specified effective mode
+    double getMirrorLosses(dcomplex n) {
+        const double lambda = real(2e3*M_PI / k0);
+        double R1, R2;
+        if (mirrors) {
+            std::tie(R1,R2) = *mirrors;
+        } else {
+            const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
+                         n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
+            R1 = abs((n-n1) / (n+n1));
+            R2 = abs((n-n2) / (n+n2));
+        }
+        return lambda * std::log(R1*R2) / (4e3 * M_PI * geometry->getExtrusion()->getLength());
     }
 
     /**

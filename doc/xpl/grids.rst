@@ -287,7 +287,7 @@ Possible <generator> contents for different types and methods
 
    Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
 
-.. xml:tag:: <generator type=”rectilinear3d” method=”divide”> [rectilinear3d, divide]
+.. xml:tag:: <generator type="rectilinear3d" method="divide"> [rectilinear3d, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 

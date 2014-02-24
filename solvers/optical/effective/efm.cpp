@@ -70,7 +70,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             stripe_root.maxiter = reader.getAttribute<int>("maxiter", stripe_root.maxiter);
             reader.requireTagEnd();
         } else if (param == "outer") {
-            outdist = reader.requireAttribute<double>("distance");
+            outdist = reader.requireAttribute<double>("dist");
             reader.requireTagEnd();
         } else if (param == "mesh") {
             auto name = reader.getAttribute("ref");

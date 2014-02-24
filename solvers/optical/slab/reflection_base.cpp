@@ -43,6 +43,7 @@ void ReflectionSolver<GeometryT>::init()
     ipiv = aligned_new_array<int>(N);
     allP = false;
 
+    recompute_coefficients = true;
 }
 
 
@@ -63,6 +64,8 @@ template <typename GeometryT>
 ReflectionSolver<GeometryT>::~ReflectionSolver()
 {
     cleanup();
+    this->inTemperature.changedDisconnectMethod(this, &ReflectionSolver::onInputChanged);
+    this->inGain.changedDisconnectMethod(this, &ReflectionSolver::onInputChanged);
 }
 
 
@@ -72,8 +75,8 @@ dcomplex ReflectionSolver<GeometryT>::determinant()
     // We change the matrices M and A so we will have to find the new fields
     fields_determined = DETERMINED_NOTHING;
 
-    diagonalizer->initDiagonalization(k0, klong, ktran);
-
+    initDiagonalization();
+    
     // Obtain admittance
     getFinalMatrix();
 
@@ -287,7 +290,7 @@ cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident
 {
     int last, first;
 
-    diagonalizer->initDiagonalization(k0, klong, ktran);
+    initDiagonalization();
     switch (side) {
         case INCIDENCE_TOP:
             last = 0; first = this->stack.size()-1; break;
@@ -494,7 +497,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
     }
 
     // Compute reflection matrices
-    diagonalizer->initDiagonalization(k0, klong, ktran);
+    initDiagonalization();
     findReflection(end, start);
 
     // Temporary and initial data

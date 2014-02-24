@@ -54,12 +54,18 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     bool emitting;                              ///< \c True if the structure is emitting vertically.
 
+    bool recompute_coefficients;                ///< Force recomputation of material coefficients
+    
   private:
 
     cdiagonal phas;                             ///< current phase shift matrix
     int* ipiv;                                  ///< pivot vector
     std::vector<cmatrix> memP;                  ///< reflection matrices for each layer
 
+    void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
+        recompute_coefficients = true;
+    }
+    
   public:
 
     ~ReflectionSolver();
@@ -72,7 +78,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            k0changed();
+            recompute_coefficients = true;
         }
     }
 
@@ -83,7 +89,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            k0changed();
+            recompute_coefficients = true;
         }
     }
 
@@ -161,11 +167,13 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
   protected:
 
-    /// Solver constructor
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
         interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
         k0(NAN), klong(0.), ktran(0.), detlog("", "modal", "k0", "det"),
-        emitting(true), ipiv(nullptr) {}
+        emitting(true), ipiv(nullptr) {
+        this->inTemperature.changedConnectMethod(this, &ReflectionSolver::onInputChanged);
+        this->inGain.changedConnectMethod(this, &ReflectionSolver::onInputChanged);
+    }
 
     /// Initialize memory for calculations
     void init();
@@ -173,9 +181,19 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     /// Cleanup memory
     void cleanup();
 
-    /// Tasks to perform if a new wavelength is set (e.g. recompute indices to consider material dispersion)
-    virtual void k0changed() {}
-
+    /// Init diagonalization
+    void initDiagonalization() {
+    // Get new coefficients if needed
+        if (recompute_coefficients) {
+            computeCoefficients();
+            recompute_coefficients = false;
+        }
+        diagonalizer->initDiagonalization(k0, klong, ktran);
+    }
+    
+    /// Recompute expansion coefficients
+    virtual void computeCoefficients() = 0;
+    
     /// Compute discontinuity matrix determinant for the current parameters
     dcomplex determinant();
 
