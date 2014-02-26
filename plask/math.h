@@ -6,6 +6,8 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include "utils/string.h"
+#include <boost/lexical_cast.hpp>
 
 #ifdef PLASK_MATH_STD
 #   include <complex>
@@ -158,7 +160,7 @@ inline bool dbl_compare_eq(double x, double y) {
  */
 inline bool dbl_compare_lt(double x, double y) {
       if (std::isnan(y)) return !std::isnan(x);
-      return x < y;
+      return x < y; // if x is NaN it is grater than non-NaN y and std. < operator returns false
 }
 
 /**
@@ -188,6 +190,12 @@ inline bool dbl_compare_lteq(double x, double y) { return !dbl_compare_gt(x, y);
  * @return @c true only if @p x is greater or equals to @p y.
  */
 inline bool dbl_compare_gteq(double x, double y) { return !dbl_compare_lt(x, y); }
+
+/*template <typename T>
+std::complex<T> parse_complex(const std::string& to_parse) {
+    std::pair<std::string, std::string> s = splitString2(to_parse, 'j');
+    if (s.second.empty()) return boost::lexical_cast<std::complex<T>>(s.first);
+}*/
 
 } // namespace plask
 
