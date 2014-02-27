@@ -142,7 +142,7 @@ void ExpansionPW2D::free() {
     initialized = false;
 }
 
-void ExpansionPW2D::getMaterialCoefficients(size_t l)
+void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
         throw BadInput(SOLVER->getId(), "No wavelength specified");

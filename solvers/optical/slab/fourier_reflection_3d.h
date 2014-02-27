@@ -1,69 +1,66 @@
-// #ifndef PLASK__SOLVER__OPTICAL__SLAB_FOURIER_REFLECTION_3D_H
-// #define PLASK__SOLVER__OPTICAL__SLAB_FOURIER_REFLECTION_3D_H
-// 
-// #include <plask/plask.hpp>
-// 
-// #include "reflection_base.h"
-// #include "expansion_pw3d.h"
-// 
-// namespace plask { namespace solvers { namespace slab {
-// 
-// /**
-//  * Reflection transformation solver in Cartesian 3D geometry.
-//  */
-// struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
-// 
-//     std::string getClassName() const { return "optical.FourierReflection3D"; }
-// 
-//     struct Mode {
-//         FourierReflection3D* solver;                            ///< Solver this mode belongs to
-//         ExpansionPW3D::Component symmetry_tran;                 ///< Mode symmetry in tran direction
-//         ExpansionPW3D::Component symmetry_long;                 ///< Mode symmetry in long direction
-//         dcomplex k0;                                            ///< Stored mode frequency
-//         dcomplex klong;                                         ///< Stored mode effective index
-//         dcomplex ktran;                                         ///< Stored mode transverse wavevector
-//         double power;                                           ///< Mode power [mW]
-// 
-//         Mode(FourierReflection3D* solver): solver(solver), power(1.) {}
-// 
-//         bool operator==(const Mode& other) const {
-//             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
-//                 && (!solver->expansion.symmetric || symmetry == other.symmetry)
-//                 && (!solver->expansion.separated || polarization == other.polarization)
-//             ;
-//         }
-//     };
-// 
-//   protected:
-// 
-//     /// Maximum order of the orthogonal base
-//     size_t size;
-// 
-//     /// Class responsoble for computing expansion coefficients
-//     ExpansionPW3D expansion;
-// 
-//     void onInitialize();
-// 
-//     void onInvalidate();
-// 
-//     void computeCoefficients() override {
-//         expansion.computeMaterialCoefficients();
-//     }
-// 
-//   public:
-// 
-//     /// Computed modes
-//     std::vector<Mode> modes;
-// 
-//     /// Mesh multiplier for finer computation of the refractive indices
-//     size_t refine;
-// 
-//     /// Lateral PMLs
-//     PML pml;
-// 
-//     /// Provider for computed effective index
-//     ProviderFor<EffectiveIndex>::Delegate outNeff;
-// 
+#ifndef PLASK__SOLVER__OPTICAL__SLAB_FOURIER_REFLECTION_3D_H
+#define PLASK__SOLVER__OPTICAL__SLAB_FOURIER_REFLECTION_3D_H
+
+#include <plask/plask.hpp>
+
+#include "reflection_base.h"
+#include "expansion_pw3d.h"
+
+namespace plask { namespace solvers { namespace slab {
+
+/**
+ * Reflection transformation solver in Cartesian 3D geometry.
+ */
+struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
+
+    std::string getClassName() const { return "optical.FourierReflection3D"; }
+
+    struct Mode {
+        FourierReflection3D* solver;                            ///< Solver this mode belongs to
+        ExpansionPW3D::Component symmetry_tran;                 ///< Mode symmetry in tran direction
+        ExpansionPW3D::Component symmetry_long;                 ///< Mode symmetry in long direction
+        dcomplex k0;                                            ///< Stored mode frequency
+        dcomplex klong;                                         ///< Stored mode effective index
+        dcomplex ktran;                                         ///< Stored mode transverse wavevector
+        double power;                                           ///< Mode power [mW]
+
+        Mode(FourierReflection3D* solver): solver(solver), power(1.) {}
+
+        bool operator==(const Mode& other) const {
+            return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
+                && (!solver->expansion.symmetric || symmetry == other.symmetry)
+                && (!solver->expansion.separated || polarization == other.polarization)
+            ;
+        }
+    };
+
+  protected:
+
+    /// Maximum order of the orthogonal base
+    size_t size;
+
+    /// Class responsoble for computing expansion coefficients
+    ExpansionPW3D expansion;
+
+    void onInitialize();
+
+    void onInvalidate();
+
+    void computeCoefficients() override {
+        expansion.computeMaterialCoefficients();
+    }
+
+  public:
+
+    /// Computed modes
+    std::vector<Mode> modes;
+
+    /// Mesh multiplier for finer computation of the refractive indices
+    size_t refine;
+
+    /// Lateral PMLs
+    PML pml;
+
 //     FourierReflection3D(const std::string& name="");
 // 
 //     void loadConfiguration(XMLReader& reader, Manager& manager);
@@ -357,10 +354,10 @@
 //                 return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
 //         {}
 //     };
-// };
-// 
-// 
-// }}} // namespace
-// 
-// #endif
-// 
+};
+
+
+}}} // namespace
+
+#endif
+

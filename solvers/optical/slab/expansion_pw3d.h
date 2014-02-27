@@ -1,35 +1,39 @@
-// #ifndef PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
-// #define PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
-// 
-// #include <plask/plask.hpp>
-// 
-// #include "expansion.h"
-// #include "fft.h"
-// 
-// namespace plask { namespace solvers { namespace slab {
-// 
-// struct FourierReflection3D;
-// 
-// struct ExpansionPW3D: public Expansion {
-// 
-//     /// Specified component in polarization or symmetry
-//     enum Component {
-//         E_TRAN = 0,         ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
-//         E_UNSPECIFIED = 1,  ///< All components exist or no symmetry
-//         E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
-//     };
-// 
-//     RegularAxis xmesh;                  ///< Horizontal axis for structure sampling
-//     RegularAxis xpoints;                ///< Horizontal points in which fields will be computed by the inverse FFT
-// 
-//     size_t N;                           ///< Number of expansion coefficients
+#ifndef PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
+#define PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
+
+#include <plask/plask.hpp>
+
+#include "expansion.h"
+#include "fft.h"
+
+namespace plask { namespace solvers { namespace slab {
+
+struct FourierReflection3D;
+
+struct ExpansionPW3D: public Expansion {
+
+    /// Specified component in polarization or symmetry
+    enum Component {
+        E_TRAN = 0,         ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
+        E_UNSPECIFIED = 1,  ///< All components exist or no symmetry
+        E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
+    };
+
+    RegularAxis lmesh,                  ///< Horizontal axis for structure sampling in longitudinal direction
+                tmesh;                  ///< Horizontal axis for structure sampling in transverse direction
+
+    size_t Nl,                          ///< Number of expansion coefficients in longitudinal direction
+           Nt;                          ///< Number of expansion coefficients in transverse direction
+    size_t nNl,                         ///< Number of of required coefficients for material parameters in longitudinal direction
+           nNt;                         ///< Number of of required coefficients for material parameters in transverse direction
+
 //     size_t nN;                          ///< Number of of required coefficients for material parameters
 //     double left;                        ///< Left side of the sampled area
 //     double right;                       ///< Right side of the sampled area
 //     bool symmetric;                     ///< Indicates if the expansion is a symmetric one
 //     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
 //     bool separated;                     ///< Indicates whether TE and TM modes can be separated
-//     bool initialized;                   ///< Exansion is initialized
+//     bool initialized;                   ///< Expansion is initialized
 // 
 //     Component symmetry;                 ///< Indicates symmetry if `symmetric`
 //     Component polarization;             ///< Indicates polarization if `separated`
@@ -43,37 +47,37 @@
 //     /// Information if the layer is diagonal
 //     std::vector<bool> diagonals;
 // 
-//     /**
-//      * Create new expansion
-//      * \param solver solver which performs calculations
-//      */
-//     ExpansionPW3D(FourierReflection3D* solver);
-// 
+    /**
+     * Create new expansion
+     * \param solver solver which performs calculations
+     */
+    ExpansionPW3D(FourierReflection3D* solver);
+
 //     /**
 //      * Init expansion
 //      * \param compute_coeffs compute material coefficients
 //      */
-//     void init();
-// 
-//     /// Free allocated memory
-//     void free();
-// 
-//     /// Compute all expansion coefficients
-//     void computeMaterialCoefficients() {
-//         size_t nlayers = lcount();
-//         assert(coeffs.size() == nlayers);
-//         #pragma omp parallel for
-//         for (size_t l = 0; l < nlayers; ++l)
-//             getMaterialCoefficients(l);
-//     }
-//     
-//     virtual size_t lcount() const;
-// 
-//     virtual bool diagonalQE(size_t l) const {
-//         return diagonals[l];
-//     }
-// 
-//     size_t matrixSize() const override { return separated? N : 2*N; }
+    void init();
+
+    /// Free allocated memory
+    void free();
+
+    /// Compute all expansion coefficients
+    void computeMaterialCoefficients() {
+        size_t nlayers = lcount();
+        assert(coeffs.size() == nlayers);
+        #pragma omp parallel for
+        for (size_t l = 0; l < nlayers; ++l)
+            layerMaterialCoefficients(l);
+    }
+    
+    virtual size_t lcount() const;
+
+    virtual bool diagonalQE(size_t l) const {
+        return diagonals[l];
+    }
+
+    size_t matrixSize() const override { return 2*Nl*Nt; }
 // 
 //     void getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex kx, cmatrix& RE, cmatrix& RH) override;
 // 
@@ -102,13 +106,13 @@
 // 
 //     DataVector<Tensor2<dcomplex>> mag;      ///< Magnetic permeability coefficients (used with for PMLs)
 // 
-//     FFT::Forward1D matFFT;                  ///< FFT object for material coeffictiens
-// 
-//     /**
-//      * Compute expansion coefficients for material parameters
-//      * \param l layer number
-//      */
-//     void getMaterialCoefficients(size_t l);
+    FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
+
+    /**
+     * Compute expansion coefficients for material parameters
+     * \param l layer number
+     */
+    void layerMaterialCoefficients(size_t l);
 // 
 //   public:
 // 
@@ -153,8 +157,8 @@
 // 
 //     /// Get \f$ E_x \f$ index
 //     size_t iH(int i) { return (i>=0)?i:i+N; }
-// };
-// 
-// }}} // namespace plask
-// 
-// #endif // PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
+};
+
+}}} // namespace plask
+
+#endif // PLASK__SOLVER_SLAB_EXPANSION_PW3D_H

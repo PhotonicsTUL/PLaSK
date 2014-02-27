@@ -28,7 +28,7 @@ struct ExpansionPW2D: public Expansion {
     bool symmetric;                     ///< Indicates if the expansion is a symmetric one
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
     bool separated;                     ///< Indicates whether TE and TM modes can be separated
-    bool initialized;                   ///< Exansion is initialized
+    bool initialized;                   ///< Expansion is initialized
 
     Component symmetry;                 ///< Indicates symmetry if `symmetric`
     Component polarization;             ///< Indicates polarization if `separated`
@@ -63,7 +63,7 @@ struct ExpansionPW2D: public Expansion {
         assert(coeffs.size() == nlayers);
         #pragma omp parallel for
         for (size_t l = 0; l < nlayers; ++l)
-            getMaterialCoefficients(l);
+            layerMaterialCoefficients(l);
     }
     
     virtual size_t lcount() const;
@@ -101,13 +101,13 @@ struct ExpansionPW2D: public Expansion {
 
     DataVector<Tensor2<dcomplex>> mag;      ///< Magnetic permeability coefficients (used with for PMLs)
 
-    FFT::Forward1D matFFT;                  ///< FFT object for material coeffictiens
+    FFT::Forward1D matFFT;                  ///< FFT object for material coefficients
 
     /**
      * Compute expansion coefficients for material parameters
      * \param l layer number
      */
-    void getMaterialCoefficients(size_t l);
+    void layerMaterialCoefficients(size_t l);
 
   public:
 
