@@ -140,6 +140,25 @@ inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBou
     );
 }
 
+/*struct GetObjectBoundingBoxesCaller {
+
+    shared_ptr<const GeometryObject> object;
+    std::unique_ptr<PathHints> path;
+
+    GetObjectBoundingBoxesCaller(shared_ptr<const GeometryObject> object, const PathHints* path)
+        : object(object), path(path ? new PathHints(*path) : nullptr)
+    {}
+
+    auto operator()(const shared_ptr<const GeometryD<2>>& geometry) const -> decltype(geometry->getObjectBoundingBoxes(object))  {
+        return geometry->getObjectBoundingBoxes(object, path.get());
+    }
+
+    auto operator()(const shared_ptr<const GeometryD<3>>& geometry) const -> decltype(geometry->getObjectBoundingBoxes(object))  {
+        return geometry->getObjectBoundingBoxes(object, path.get());
+    }
+
+};*/
+
 /**
  * Parse boundary from XML tag in format:
  * \<place side="i.e. left" [object="object name" [path="path name"] [geometry="name of geometry which is used by the solver"]]/>
@@ -1159,7 +1178,22 @@ public:
      * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
      */
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getLeftOfBoundary(object, &path);
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getLeftOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on left edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
+     */
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getLeftOfBoundary(box); }
+        );
     }
 
     /**
@@ -1168,11 +1202,8 @@ public:
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of left edges of @p object's bounding-boxes
      */
-    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
-            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getLeftOfBoundary(box); }
-        );
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getLeftOfBoundary(object, *path) : getLeftOfBoundary(object);
     }
 
     /**
@@ -1182,7 +1213,22 @@ public:
      * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
      */
     static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getRightOfBoundary(object, &path);
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getRightOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on right edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
+     */
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getRightOfBoundary(box); }
+        );
     }
 
     /**
@@ -1191,11 +1237,8 @@ public:
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of right edges of @p object's bounding-boxes
      */
-    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
-            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getRightOfBoundary(box); }
-        );
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getRightOfBoundary(object, *path) : getRightOfBoundary(object);
     }
 
     /**
@@ -1205,7 +1248,22 @@ public:
      * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
      */
     static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getBottomOfBoundary(object, &path);
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getBottomOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on bottom edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
+     */
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getBottomOfBoundary(box); }
+        );
     }
 
     /**
@@ -1214,11 +1272,8 @@ public:
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of bottom edges of @p object's bounding-boxes
      */
-    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
-            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getBottomOfBoundary(box); }
-        );
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getBottomOfBoundary(object, *path) : getBottomOfBoundary(object);
     }
 
     /**
@@ -1228,7 +1283,22 @@ public:
      * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
      */
     static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return getTopOfBoundary(object, &path);
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getTopOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on top edge of bounding-boxes of @p object (in @p geometry coordinates).
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
+     */
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
+            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getTopOfBoundary(box); }
+        );
     }
 
     /**
@@ -1237,11 +1307,8 @@ public:
      * @param path (optional) hints specifying particular instances of the geometry object
      * @return boundary which represents sum of boundaries of top edges of @p object's bounding-boxes
      */
-    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        return details::getBoundaryForBoxes< RectangularMesh<2,AxisT> >(
-            [=](const shared_ptr<const GeometryD<2>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box2D& box) { return RectangularMesh<2,AxisT>::getTopOfBoundary(box); }
-        );
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getTopOfBoundary(object, *path) : getTopOfBoundary(object);
     }
 
     /**
