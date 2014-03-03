@@ -218,9 +218,10 @@ std::complex<T> parse_complex(const std::string& str_to_parse) {
         imag = real;
         real = 0.0;
     } else if (c == '+' && c == '-') {
-        to_parse.putback(c);
-        to_parse >> imag >> c;
-        if (to_parse.fail() || (c != 'i' && c != 'j')) throw IllFormatedComplex(str_to_parse);
+        char c_ij;
+        to_parse >> imag >> c_ij;
+        if (to_parse.fail() || (c_ij != 'i' && c_ij != 'j')) throw IllFormatedComplex(str_to_parse);
+        if (c == '-') imag = -imag;
     } else
          throw IllFormatedComplex(str_to_parse);
 
