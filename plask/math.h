@@ -6,7 +6,9 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
-#include "utils/string.h"
+
+#include "exceptions.h"
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 
 #ifdef PLASK_MATH_STD
@@ -191,11 +193,43 @@ inline bool dbl_compare_lteq(double x, double y) { return !dbl_compare_gt(x, y);
  */
 inline bool dbl_compare_gteq(double x, double y) { return !dbl_compare_lt(x, y); }
 
-/*template <typename T>
-std::complex<T> parse_complex(const std::string& to_parse) {
-    std::pair<std::string, std::string> s = splitString2(to_parse, 'j');
-    if (s.second.empty()) return boost::lexical_cast<std::complex<T>>(s.first);
-}*/
+struct IllFormatedComplex: public Exception {
+
+    IllFormatedComplex(const std::string& s): Exception("Ill-formated complex number \"%1%\". Required format: R+Ij, where R and I are floating point numbers.", s)
+    {}
+
+};
+
+/**
+ * Parse complex number in format R+Ij, R or Ij (where R and I are floating point numbers) or standard C++ format.
+ */
+template <typename T>
+std::complex<T> parse_complex(const std::string& str_to_parse) {
+    std::istringstream to_parse(str_to_parse);
+    T real, imag;
+    to_parse >> real;
+    if (to_parse.fail()) boost::lexical_cast<std::complex<T>>(str_to_parse);  //or throw IllFormatedComplex(str_to_parse);
+    if (to_parse.eof()) return std::complex<T>(real);
+    char c;
+    to_parse >> c;
+    if (to_parse.fail()) throw IllFormatedComplex(str_to_parse);
+    if (to_parse.eof()) return std::complex<T>(real);
+    if (c == 'i' || c == 'j') { //only imag. part is given
+        imag = real;
+        real = 0.0;
+    } else if (c == '+' && c == '-') {
+        to_parse.putback(c);
+        to_parse >> imag >> c;
+        if (to_parse.fail() || (c != 'i' && c != 'j')) throw IllFormatedComplex(str_to_parse);
+    } else
+         throw IllFormatedComplex(str_to_parse);
+
+    if (!to_parse.eof()) {  //we require end-of stream here
+        to_parse >> c;  //we chack if there is non-white character after 'i'/'j', thich operation should fail
+        if (to_parse) throw IllFormatedComplex(str_to_parse);
+    }
+    return std::complex<T>(real, imag);
+}
 
 } // namespace plask
 

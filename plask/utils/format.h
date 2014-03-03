@@ -9,8 +9,6 @@ This file contains utils to format strings.
 
 #include <boost/format.hpp> //TODO maybe better to take simple code from http://en.wikipedia.org/wiki/Variadic_templates
 
-#include "../math.h"
-
 namespace plask {
 
 ///Recursion end of format_add_args. Do nothing.
@@ -63,11 +61,9 @@ inline std::string str(double x) {
  * Convert complex number to pretty string
  * @param x value to convert
  */
-inline std::string str(dcomplex x) {
+inline std::string str(std::complex<double> x) {
     return format("%.9g%+-0.9gj", real(x), imag(x));
 }
-
-
 
 }   // namespace plask
 
