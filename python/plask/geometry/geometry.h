@@ -18,6 +18,12 @@
     py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>, boost::noncopyable> \
     cls##_registrant (cls##_pyname<dim>(), cls##_pydoc<dim>(), py::no_init); cls##_registrant
 
+#define GEOMETRY_ELEMENT_23D_DOC(cls, method, doc2, doc3) \
+    template <int dim> inline static const char* cls##_##method##_doc(); \
+    template <> inline const char* cls##_##method##_doc<2>() { return doc2; }; \
+    template <> inline const char* cls##_##method##_doc<3>() { return doc3; };
+
+#define USE_23D_DOC(cls, method) cls##_##method##_doc<dim>()
 
 #define GEOMETRY_ELEMENT_23D_DEFAULT(cls, base) \
     py::class_<cls<dim>, shared_ptr<cls<dim>>, py::bases<base>, boost::noncopyable> cls##_registrant (cls##_pyname<dim>(), cls##_pydoc<dim>()); \

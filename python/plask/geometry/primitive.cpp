@@ -75,8 +75,8 @@ void register_geometry_primitive()
         "Rectangular two-dimensional box. Provides some basic operation on boxes.\n\n"
         "Box2D()\n    create empty box\n\n"
         "Box2D(lower, upper)\n    create box with opposite corners described by 2D vectors\n\n"
-        "Box2D(l1, l2, u1, u2)\n    create box with opposite corners described by two coordinates\n"
-        )
+        "Box2D(l1, l2, u1, u2)\n    create box with opposite corners described by two coordinates\n",
+        py::no_init)
         .def("__init__", py::make_constructor(&Box2D_constructor_default))
         .def("__init__", py::make_constructor(&Box2D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box2D_constructor_4numbers, py::default_call_policies(), (py::arg("l0"), py::arg("l1"), py::arg("u0"), py::arg("u1"))))
@@ -117,8 +117,8 @@ void register_geometry_primitive()
         "Cuboidal three-dimensional box. Provides some basic operation on boxes.\n\n"
         "Box3D()\n    create empty box\n\n"
         "Box3D(lower, upper)\n    create box with opposite corners described by 3D vectors\n\n"
-        "Box3D(l1, l2, l3, u1, u2, u3)\n    create box with opposite corners described by three coordinates\n"
-        )
+        "Box3D(l1, l2, l3, u1, u2, u3)\n    create box with opposite corners described by three coordinates\n",
+        py::no_init)
         .def("__init__", py::make_constructor(&Box3D_constructor_default))
         .def("__init__", py::make_constructor(&Box3D_constructor_2vec, py::default_call_policies(), (py::arg("lower"), py::arg("upper"))))
         .def("__init__", py::make_constructor(&Box3D_constructor_4numbers, py::default_call_policies(), (py::arg("l0"), py::arg("l1"), py::arg("l2"), py::arg("u0"), py::arg("u1"), py::arg("u2"))))
@@ -144,7 +144,7 @@ void register_geometry_primitive()
              "Extend the box to include the given point or box.\n\n"
              "Args:\n"
              "    point (plask.vector): The point to include.\n"
-             "    box (Box2D): The box to include.\n"
+             "    box (Box3D): The box to include.\n"
             )
         .def("translated", &Box2D::translated, py::args("trans"), "Get translated copy of this box")
         .def("translate", &Box2D::translate, py::args("trans"), "Translate this box")

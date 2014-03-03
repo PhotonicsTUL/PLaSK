@@ -7,7 +7,7 @@
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
-    
+
 template <int dim>
 static bool Transfrom__contains__(const GeometryObjectTransform<dim>& self, shared_ptr<typename GeometryObjectTransform<dim>::ChildType> child) {
     if (self.getChild() == child) return true;
@@ -77,7 +77,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation", "Transform that holds a
     GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("translation"))))
     .def("__init__", py::make_constructor(&Translation_constructor2<dim>::call, py::default_call_policies(), Translation_constructor2<dim>::args))
-    .def_readwrite("translation", &Translation<dim>::translation, "Translation vector")
+    .def_readwrite("translation", &Translation<dim>::translation, "Vector of the translation.")
     .def("__str__", &Translation__str__<dim>)
     .def("__repr__", &Translation__repr__<dim>)
     ;
