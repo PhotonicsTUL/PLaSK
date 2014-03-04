@@ -161,6 +161,12 @@ public:
         return input(*obj, path);
     }
 
+    virtual ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical& obj, const PathHints* path = nullptr) = 0;
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(shared_ptr<Geometry2DCylindrical> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
+    }
+
 private:
 
     void onSourceChange(Provider&, bool isDestr) {
@@ -214,6 +220,10 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian& innerObj, const PathHints* path = nullptr) override {
+        return appendInner(innerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical& innerObj, const PathHints* path = nullptr) override {
         return appendInner(innerObj, path);
     }
 
@@ -305,6 +315,10 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
         return input(obj.getChild(), path);
     }
 
+    virtual ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical&, const PathHints* = nullptr) override {
+        throw Exception("Bad use of filter over cartesian space. Cartesian geometry 2D can't contain cylindrical geometry and can't be included in cylindrical geometry.");
+    }
+
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {
         if (obj.hasInSubtree(this->geometry->getChild(), path))
             return setOuter(obj, path);
@@ -366,7 +380,7 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
 /**
  * Filter which provides data in 2D cylindrical space.
  *
- * It can have one or more inner (only custom) inputs and one outer (3D) input or default value (which is used in all points where inner inputs don't provide data).
+ * It can have one or more inner (2D) inputs and one outer (2D or 3D) input or default value (which is used in all points where inner inputs don't provide data).
  * @tparam PropertyT property which has type FIELD_PROPERTY
  */
 template <typename PropertyT>
@@ -382,8 +396,23 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
         return setOuter(outerObj, path);
     }
 
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical& obj, const PathHints* path = nullptr) override {
+        return input(obj.getChild(), path);
+    }
+
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian&, const PathHints* = nullptr) override {
-        throw Exception("Bad use of filter over cylindrical space. Cylindrical geometry can't contain any other geometry and can't be included in any geometry 2D.");
+        throw Exception("Bad use of filter over cylindrical space. Cylindrical geometry can't contain cartesian geometry 2D and can't be included in cartesian geometry 2D.");
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {
+        if (obj.hasInSubtree(this->geometry->getChild(), path))
+            return setOuter(obj, path);
+        else
+            return appendInner(obj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(shared_ptr<GeometryObjectD<2>> obj, const PathHints* path = nullptr) {
+        return input(*obj, path);
     }
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(GeometryObjectD<3>& outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
@@ -394,6 +423,48 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
 
     ReceiverFor<PropertyT, Geometry3D>& setOuter(shared_ptr<GeometryObjectD<3>> outerObj, const PathHints* path = nullptr, std::size_t pointsCount = 10) {
         return setOuter(*outerObj, path, pointsCount);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& setOuter(GeometryObjectD<2>& outerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< TranslatedOuterDataSource<PropertyT, Geometry2DCylindrical> > source(new TranslatedOuterDataSource<PropertyT, Geometry2DCylindrical>());
+        if (source->inTranslation.rad_r() != 0.0)
+            throw Exception("Bad use of a filter over cylindrical space. Connection of the data sources connected with the cylindrical geometries translated in rad_r direction are not allowed.");
+        source->connect(outerObj, *this->geometry->getChild(), path);
+        return this->setOuterRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& setOuter(shared_ptr<GeometryObjectD<2>> outerObj, const PathHints* path = nullptr) {
+        return setOuter(*outerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& setOuter(Geometry2DCylindrical& outerGeom, const PathHints* path = nullptr) {
+        return setOuter(outerGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& setOuter(shared_ptr<Geometry2DCylindrical> outerGeom, const PathHints* path = nullptr) {
+        return setOuter(outerGeom->getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner(GeometryObjectD<2>& innerObj, const PathHints* path = nullptr) {
+        std::unique_ptr< TranslatedInnerDataSource<PropertyT, Geometry2DCylindrical> > source(new TranslatedInnerDataSource<PropertyT, Geometry2DCylindrical>());
+        for (const auto& r: source->regions) {
+            if (r.inTranslation.rad_r() != 0.0)
+                throw Exception("Bad use of a filter over cylindrical space. Connection of the data sources connected with the cylindrical geometries translated in rad_r direction are not allowed.");
+        }
+        source->connect(innerObj, *this->geometry, path);
+        return this->appendInnerRecv(std::move(source));
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner(shared_ptr<GeometryObjectD<2>> innerObj, const PathHints* path = nullptr) {
+        return this->appendInner(*innerObj, path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner(Geometry2DCylindrical& innerGeom, const PathHints* path = nullptr) {
+        return appendInner(innerGeom.getChild(), path);
+    }
+
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& appendInner(shared_ptr<Geometry2DCylindrical> innerGeom, const PathHints* path = nullptr) {
+        return appendInner(innerGeom->getChild(), path);
     }
 };
 

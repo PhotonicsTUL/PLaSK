@@ -9,7 +9,6 @@
 
 #include "exceptions.h"
 #include <sstream>
-#include <boost/lexical_cast.hpp>
 
 #ifdef PLASK_MATH_STD
 #   include <complex>

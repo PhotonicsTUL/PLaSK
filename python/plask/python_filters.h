@@ -101,10 +101,10 @@ namespace detail {
             int points;
             filterin_parse_key(key, geom, path, points);
 
-            // if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
-            //     return Fun::call(self, filter->input(*geomd, path), value...);
-            // if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom))
-            //     return Fun::call(self, filter->input(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
+                 return Fun::call(self, filter->input(*geomd, path), value...);
+            if (auto geomd = dynamic_pointer_cast<Geometry2DCylindrical>(geom))
+                 return Fun::call(self, filter->input(*geomd, path), value...);
 
             if (auto geomd = dynamic_pointer_cast<GeometryObjectD<3>>(geom))
                 return Fun::call(self, filter->setOuter(*geomd, path, points), value...);
