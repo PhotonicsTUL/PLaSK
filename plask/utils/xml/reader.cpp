@@ -183,7 +183,15 @@ std::string XMLReader::getNodeName() const {
 std::string XMLReader::getTextContent() const {
     if (getNodeType() != NODE_TEXT)
         throw XMLUnexpectedElementException(*this, "text");
-    return contentFilter ? contentFilter(getCurrent().text) : getCurrent().text;
+    if (contentFilter) {
+        try {
+            return contentFilter(getCurrent().text);
+        } catch (const std::exception& e) {
+            throw XMLException("Error while parsing expression in {} in XML tag content (about line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + ")",
+                               e.what());
+        }
+    } else
+        return getCurrent().text;
 }
 
 boost::optional<std::string> XMLReader::getAttribute(const std::string& name) const {
@@ -191,7 +199,15 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
     if (res_it == this->getCurrent().attributes.end())
         return boost::optional<std::string>();
     const_cast<std::set<std::string>&>(read_attributes).insert(name);
-    return attributeFilter ? attributeFilter(res_it->second) : res_it->second;
+    if (attributeFilter) {
+        try {
+            return attributeFilter(res_it->second);
+        } catch (const std::exception& e) {
+            throw XMLException("Error while parsing expression in {} in XML atribute \"" + name + "\" of tag <" + this->getCurrent().text + "> (line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + ")",
+                               e.what());
+        }
+    } else
+        return res_it->second;
 }
 
 std::string XMLReader::requireAttribute(const std::string& attr_name) const {

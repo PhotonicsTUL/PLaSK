@@ -338,10 +338,10 @@ class XMLReader {
     /// XML reader/parser, low level.
     XML_Parser parser;
 
-    /// Path from root to current tag.
+    /// Path from root to the current tag.
     std::vector<std::string> path;
 
-    /// Attributes which was read in current tag.
+    /// Attributes which was read in the current tag.
     std::set<std::string> read_attributes;
 
 public:
