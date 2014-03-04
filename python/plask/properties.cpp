@@ -253,22 +253,24 @@ template const char* docstring_provider<FIELD_PROPERTY>();
 template const char* docstring_provider<MULTI_FIELD_PROPERTY>();
 
 
-py::object property_module;
-py::object filter_module;
+py::object flow_module;
 
 /**
  * Register standard properties to Python.
  */
 void register_standard_properties()
 {
-    property_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
-    py::scope().attr("flow") = property_module;
-    property_module.attr("__doc__") =
-        "Data flow classes for standard properties.\n\n"
+    flow_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
+    py::scope().attr("flow") = flow_module;
+    flow_module.attr("__doc__") =
+        "Data flow classes for standard properties\n"
+        "-----------------------------------------\n\n"
 
-        "This module contains providers and receivers for standard properties. These\n"
-        "classes are present in binary solvers, but you may also use them in your custom\n"
-        "Python solvers.\n\n"
+        "This module contains providers, receivers, and filters for standard properties.\n"
+        "These classes are present in binary solvers, but you may also use them in your\n"
+        "custom Python solvers.\n\n"
+
+        ".. rubric:: Providers and Receivers\n\n"
 
         "Existing providers can be connected to receivers by using a simple assignment\n"
         "operator:\n\n"
@@ -312,16 +314,12 @@ void register_standard_properties()
         "   ...     def get_data(self, mesh, method):\n"
         "   ...         temp = self.inTemperature(mesh, method)\n"
         "   ...         return temp.array + 60.\n\n"
-    ;
 
-    filter_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.filter"))));
-    py::scope().attr("filter") = filter_module;
-    filter_module.attr("__doc__") =
-        "Data filters for standard properties.\n\n"
+        ".. rubric:: Filters\n\n"
 
-        "This module contains data filters for standard properties. Filters are\n"
-        "solver-like classes that translate the fields computed in one geometry to\n"
-        "another one. This geometry can have either the same or different dimension.\n\n"
+        "Filters are solver-like classes that translate the fields computed in one\n"
+        "geometry to another one. This geometry can have either the same or different\n"
+        "dimension.\n\n"
 
         "All filter classes are used the same way. They are constructed with a single\n"
         "argument, which is a target geometry. The type of this geometry must match\n"

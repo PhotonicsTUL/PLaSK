@@ -13,7 +13,7 @@
 
 namespace plask { namespace python {
 
-extern py::object property_module;
+extern py::object flow_module;
 
 template <typename T, int dim>
 struct DataVectorWrap : public DataVector<T> {
@@ -654,7 +654,7 @@ namespace detail {
 template <typename ReceiverT>
 inline void registerReceiver() {
     if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
-        py::scope scope = property_module;
+        py::scope scope = flow_module;
         detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>();
     }
 }
@@ -662,7 +662,7 @@ inline void registerReceiver() {
 template <typename ProviderT>
 void registerProvider() {
     if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
-        py::scope scope = property_module;
+        py::scope scope = flow_module;
         detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
     }
 }

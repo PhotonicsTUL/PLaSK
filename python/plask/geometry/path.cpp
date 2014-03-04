@@ -160,10 +160,10 @@ void register_geometry_path()
     boost::python::converter::registry::push_back(&detail::Object_List_from_Python::convertible, &detail::Object_List_from_Python::construct,
                                                   boost::python::type_id<std::vector<shared_ptr<const GeometryObject>>>());
 
-    py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", "Class holding some part of geometry tree", py::no_init)
+    py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", "Class holding some part of a geometry tree.", py::no_init)
         .def("__nonzero__", &Subtree__nonzero__)
-        .add_property("brached", &GeometryObject::Subtree::hasBranches, "Indicates whether the subtree has more than one branch")
-        .add_property("last_path", &GeometryObject::Subtree::getLastPath, "Last (topmost) branch of the subtree")
+        .add_property("brached", &GeometryObject::Subtree::hasBranches, "Bool Indicating whether the subtree has more than one branch.")
+        .add_property("last_path", &GeometryObject::Subtree::getLastPath, "Last (topmost) branch of the subtree.")
     ;
     py::implicitly_convertible<GeometryObject::Subtree,PathHints>();
     py::implicitly_convertible<GeometryObject::Subtree,Path>();

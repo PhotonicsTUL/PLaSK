@@ -198,7 +198,7 @@ template <typename PropertyT, typename OutputSpaceType>
 struct FilterImpl {};
 
 /**
- * Filter which provides data in 3D cartesian space.
+ * Filter which provides data in 3D Cartesian space.
  *
  * It can have one or more inner (2D or 3D) inputs and one outer (3D) input or default value (which is used in all points where inner inputs don't provide data).
  * @tparam PropertyT property which has type FIELD_PROPERTY
@@ -293,7 +293,7 @@ struct FilterImpl<PropertyT, Geometry3D>: public FilterBase<PropertyT, Geometry3
 };
 
 /**
- * Filter which provides data in 2D cartesian space.
+ * Filter which provides data in 2D Cartesian space.
  *
  * It can have one or more inner (2D) inputs and one outer (2D or 3D) input or default value (which is used in all points where inner inputs don't provide data).
  * @tparam PropertyT property which has type FIELD_PROPERTY
@@ -316,7 +316,7 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
     }
 
     virtual ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical&, const PathHints* = nullptr) override {
-        throw Exception("Bad use of filter over cartesian space. Cartesian geometry 2D can't contain cylindrical geometry and can't be included in cylindrical geometry.");
+        throw Exception("Bad use of filter over Cartesian space. Cartesian geometry 2D can't contain cylindrical geometry and can't be included in cylindrical geometry.");
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {
@@ -401,7 +401,7 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian&, const PathHints* = nullptr) override {
-        throw Exception("Bad use of filter over cylindrical space. Cylindrical geometry can't contain cartesian geometry 2D and can't be included in cartesian geometry 2D.");
+        throw Exception("Bad use of filter over cylindrical space. Cylindrical geometry can't contain Cartesian geometry 2D and can't be included in Cartesian geometry 2D.");
     }
 
     ReceiverFor<PropertyT, Geometry2DCylindrical>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {

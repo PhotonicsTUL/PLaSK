@@ -52,7 +52,7 @@ Example of XML which describes geometry:
 \endcode
 
 Above XML describes 2 geometries, each is in 2D space, and each contains one container.
-First geometry is cartesian, has name "cartesian geometry", and length equal to 2.
+First geometry is Cartesian, has name "cartesian geometry", and length equal to 2.
 Second geometry is cylindrical and has name "cylindrical geometry".
 
 Container in first geometry (described by the \c container2D tag), has name "trans_cont" (see \c name attribute) and has 2 (identical) children.

@@ -292,6 +292,186 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, bbox,
     "    :class:`plask.geometry.Box3D`\n"
 )
 
+GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_leafs_positions,
+    "Calculate positions of all the geometry tree leafs.\n\n"
+    "This method computes position of all the geometry tree leafs located under this\n"
+    "geometry object. By *leaf* we understand a proper geometry object, in contrast\n"
+    "to any container or transformation.\n\n"
+    "The position are computed in the local coordinates of this object.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of vectors containing the position of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_translations`.\n",
+
+    "Calculate positions of all the geometry tree leafs.\n\n"
+    "This method computes position of all the geometry tree leafs located under this\n"
+    "geometry object. By *leaf* we understand a proper geometry object, in contrast\n"
+    "to any container or transformation.\n\n"
+    "The position are computed in the local coordinates of this object.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of vectors containing the position of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_translations`.\n"
+)
+
+GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_leafs_bboxes,
+    "Calculate bounding boxes of all the geometry tree leafs.\n\n"
+    "This method computes the bounding boxes of all the geometry tree leafs located\n"
+    "under this geometry object. By *leaf* we understand a proper geometry object,\n"
+    "in contrast to any container or transformation.\n\n"
+    "The bounding boxes are computed in the local coordinates of this object.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of vectors containing the position of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_translations`.\n",
+
+    "Calculate bounding boxes of all the geometry tree leafs.\n\n"
+    "This method computes the bounding boxes of all the geometry tree leafs located\n"
+    "under this geometry object. By *leaf* we understand a proper geometry object,\n"
+    "in contrast to any container or transformation.\n\n"
+    "The bounding boxes are computed in the local coordinates of this object.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of vectors containing the position of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_translations`.\n"
+)
+
+GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_leafs_translations,
+    "Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
+    "This method computes the :class:`Translation` objects of all the geometry tree\n"
+    "leafs located under this geometry object. By *leaf* we understand a proper\n"
+    "geometry object, in contrast to any container or transformation.\n\n"
+    "The translations are computed in the local coordinates of this object.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of translations of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_translations`.\n",
+
+    "Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
+    "This method computes the :class:`Translation` objects of all the geometry tree\n"
+    "leafs located under this geometry object. By *leaf* we understand a proper\n"
+    "geometry object, in contrast to any container or transformation.\n\n"
+    "The translations are computed in the local coordinates of this object.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of translations of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_translations`.\n"
+
+)
+
+GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_leafs,
+    "Get list of the geometry tree leafs.\n\n"
+    "This method returns all the geometry tree leafs located under this geometry\n"
+    "object. By *leaf* we understand a proper geometry object, in contrast to any\n"
+    "container or transformation.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of translations of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_leafs_translations`.\n",
+
+    "Get list of the geometry tree leafs.\n\n"
+    "This method returns all the geometry tree leafs located under this geometry\n"
+    "object. By *leaf* we understand a proper geometry object, in contrast to any\n"
+    "container or transformation.\n\n"
+    "Args:\n"
+    "    path: Path that can be used to select only some leafs.\n"
+    "Returns:\n"
+    "    sequence: List of translations of the leafs.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order:\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_positions`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_leafs_translations`.\n"
+)
+
+GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_object_positions,
+    "Calculate positions of all instances of the specified object.\n\n"
+    "The position are computed in the local coordinates of *self*.\n\n"
+    "Args:\n"
+    "    object: Object to test.\n"
+    "    path: Path specifying a particular object instance.\n"
+    "Returns:\n"
+    "    sequence: List of vectors containing the position of the instances of\n"
+    "    the object.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order,\n"
+    "provided they are called with the same arguments:\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_object_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_object_positions`\n",
+
+    "Calculate positions of all instances of the specified object.\n\n"
+    "The position are computed in the local coordinates of *self*.\n\n"
+    "Args:\n"
+    "    object: Object to test.\n"
+    "    path: Path specifying a particular object instance.\n"
+    "Returns:\n"
+    "    sequence: List of vectors containing the position of the instances of\n"
+    "    the object.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order,\n"
+    "provided they are called with the same arguments:\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_object_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_object_positions`\n"
+)
+
+GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD, get_object_bboxes,
+    "Calculate bounding boxes of all instances of specified object.\n\n"
+    "The bounding boxes are computed in the local coordinates of *self*.\n\n"
+    "Args:\n"
+    "    object: Object to test.\n"
+    "    path: Path specifying a particular object instance.\n"
+    "Returns:\n"
+    "    sequence: List of bounding boxes of the instances of the object.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order,\n"
+    "provided they are called with the same arguments:\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_object_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject2D.get_object_positions`\n",
+
+    "Calculate bounding boxes of all instances of specified object.\n\n"
+    "The bounding boxes are computed in the local coordinates of *self*.\n\n"
+    "Args:\n"
+    "    object: Object to test.\n"
+    "    path: Path specifying a particular object instance.\n"
+    "Returns:\n"
+    "    sequence: List of bounding boxes of the instances of the object.\n\n"
+    "All these methods are guaranteed to return their sequences in the same order,\n"
+    "provided they are called with the same arguments:\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_object_bboxes`,\n"
+    ":meth:`~plask.geometry.GeometryObject3D.get_object_positions`\n"
+)
 
 /// Initialize class GeometryObjectD for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for "," geometry objects.") {
@@ -319,94 +499,21 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
                      )
 
         .def("get_leafs_positions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsPositions,
-             (py::arg("path")=py::object()),
-             "Calculate positions of all the geometry tree leafs.\n\n"
-             "This method computes position of all the geometry tree leafs located under this\n"
-             "geometry object. By *leaf* we understand a proper geometry object, in contrast\n"
-             "to any container or transformation.\n\n"
-             "The position are computed in the local coordinates of this object.\n\n"
-             "Args:\n"
-             "    path: Path that can be used to select only some leafs.\n"
-             "Returns:\n"
-             "    sequence: List of vectors containing the position of the leafs.\n\n"
-             "All these methods are guaranteed to return their sequences in the same order:\n"
-             ":meth:`get_leafs`, :meth:`get_leafs_bboxes`, :meth:`get_leafs_positions`,\n"
-             ":meth:`get_leafs_translations`.\n"
-            )
+             (py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_leafs_positions))
 
         .def("get_leafs_bboxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const PathHints&)const) &GeometryObjectD<dim>::getLeafsBoundingBoxes,
-             (py::arg("path")=py::object()),
-             "Calculate bounding boxes of all the geometry tree leafs.\n\n"
-             "This method computes the bounding boxes of all the geometry tree leafs located\n"
-             "under this geometry object. By *leaf* we understand a proper geometry object,\n"
-             "in contrast to any container or transformation.\n\n"
-             "The bounding boxes are computed in the local coordinates of this object.\n\n"
-             "Args:\n"
-             "    path: Path that can be used to select only some leafs.\n"
-             "Returns:\n"
-             "    sequence: List of vectors containing the position of the leafs.\n\n"
-             "All these methods are guaranteed to return their sequences in the same order:\n"
-             ":meth:`get_leafs`, :meth:`get_leafs_bboxes`, :meth:`get_leafs_positions`,\n"
-             ":meth:`get_leafs_translations`.\n"
-            )
+             (py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_leafs_bboxes))
 
         .def("get_leafs_translations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
-             "Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
-             "This method computes the :class:`Translation` objects of all the geometry tree\n"
-             "leafs located under this geometry object. By *leaf* we understand a proper\n"
-             "geometry object, in contrast to any container or transformation.\n\n"
-             "The translations are computed in the local coordinates of this object.\n\n"
-             "Args:\n"
-             "    path: Path that can be used to select only some leafs.\n"
-             "Returns:\n"
-             "    sequence: List of translations of the leafs.\n\n"
-             "All these methods are guaranteed to return their sequences in the same order:\n"
-             ":meth:`get_leafs`, :meth:`get_leafs_bboxes`, :meth:`get_leafs_positions`,\n"
-             ":meth:`get_leafs_translations`.\n"
-            )
+             USE_23D_DOC(GeometryObjectD, get_leafs_translations))
 
-        .def("get_leafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()),
-             "Get list of the geometry tree leafs.\n\n"
-             "This method returns all the geometry tree leafs located under this geometry\n"
-             "object. By *leaf* we understand a proper geometry object, in contrast to any\n"
-             "container or transformation.\n\n"
-             "Args:\n"
-             "    path: Path that can be used to select only some leafs.\n"
-             "Returns:\n"
-             "    sequence: List of translations of the leafs.\n\n"
-             "All these methods are guaranteed to return their sequences in the same order:\n"
-             ":meth:`get_leafs`, :meth:`get_leafs_bboxes`, :meth:`get_leafs_positions`,\n"
-             ":meth:`get_leafs_translations`.\n"
-            )
+        .def("get_leafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_leafs_translations))
 
         .def("get_object_positions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectPositions,
-             (py::arg("object"), py::arg("path")=py::object()),
-             "Calculate positions of all instances of the specified object.\n\n"
-             "The position are computed in the local coordinates of *self*.\n\n"
-             "Args:\n"
-             "    object: Object to test.\n"
-             "    path: Path specifying a particular object instance.\n"
-             "Returns:\n"
-             "    sequence: List of vectors containing the position of the instances of\n"
-             "    the object.\n\n"
-             "All these methods are guaranteed to return their sequences in the same order,\n"
-             "provided they are called with the same arguments:\n"
-             ":meth:`get_object_bboxes`, :meth:`get_object_positions`\n"
-            )
+             (py::arg("object"), py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_object_positions))
 
         .def("get_object_bboxes", (std::vector<Box>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectBoundingBoxes,
-             (py::arg("object"), py::arg("path")=py::object()),
-             "Calculate bounding boxes of all instances of specified object.\n\n"
-             "The bounding boxes are computed in the local coordinates of *self*.\n\n"
-             "Args:\n"
-             "    object: Object to test.\n"
-             "    path: Path specifying a particular object instance.\n"
-             "Returns:\n"
-             "    sequence: List of bounding boxes of the instances of the object.\n\n"
-             "All these methods are guaranteed to return their sequences in the same order,\n"
-             "provided they are called with the same arguments:\n"
-             ":meth:`get_object_bboxes`, :meth:`get_object_positions`\n"
-            )
+             (py::arg("object"), py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_object_bboxes))
 
         // .def("getObjectAsTranslations", &GeometryObjectD_getObjectAsTranslations<dim>,
         //         (py::arg("object"), py::arg("path")=py::object()), "Return Translations holding specified object")

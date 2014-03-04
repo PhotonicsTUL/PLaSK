@@ -22,9 +22,9 @@ namespace plask { namespace python {
 extern py::dict xml_globals;
 
 class PythonXMLFilter {
-    
+
     PythonManager* manager;
-    
+
     // static inline bool is_first_char_in_name(char c) { return ('a' < c && c < 'z') || ('A' < c && c < 'Z') || (c == '_'); }
     // static inline bool is_char_in_name(char c) { return is_first_char_in_name(c) || ('0' < c && c < '9');  }
 
@@ -51,13 +51,22 @@ class PythonXMLFilter {
         }
     }
 
-  public:  
+  public:
 
     PythonXMLFilter(PythonManager* manager): manager(manager) {}
 
     std::string eval(std::string str) const {
         boost::algorithm::trim(str);
-        return py::extract<std::string>(py::str(py::eval(py::str(str), xml_globals, manager->locals)));
+        try {
+            return py::extract<std::string>(py::str(py::eval(py::str(str), xml_globals, manager->locals)));
+        } catch (py::error_already_set) {
+            PyObject *value, *type, *original_traceback;
+            PyErr_Fetch(&type, &value, &original_traceback);
+            PyErr_NormalizeException(&type, &value, &original_traceback);
+            PyErr_Clear();
+            py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
+            throw Exception(py::extract<std::string>(py::str(value_h)));
+        }
     }
 
     std::string operator()(const std::string& in) const {
@@ -153,7 +162,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     if (!manager->locals.has_key("self")) manager->locals["self"] = self;
 
     reader.setFilter(PythonXMLFilter(manager));
-    
+
     if (filter == py::object()) {
         manager->load(reader, make_shared<MaterialsSourceDB>(MaterialsDB::getDefault()), Manager::ExternalSourcesFromFile(filename));
     } else {
@@ -225,10 +234,20 @@ void PythonManager::loadConnects(XMLReader& reader)
             std::tie(obj, pts) = splitString2(in.second, '#');
             if (pts != "") points = reader.stringInterpreter.get<int>(pts);
             std::tie(obj, pth) = splitString2(obj, '@');
-            if (pth == "")
-                receiver = solverin[py::make_tuple(geometrics[obj], points)];
-            else
-                receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
+            try {
+                if (pth == "")
+                    receiver = solverin[py::make_tuple(geometrics[obj], points)];
+                else
+                    receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
+            } catch (py::error_already_set) {
+                PyObject *value, *type, *original_traceback;
+                PyErr_Fetch(&type, &value, &original_traceback);
+                PyErr_NormalizeException(&type, &value, &original_traceback);
+                py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
+                throw XMLException(reader, py::extract<std::string>(py::str(value_h)));
+            } catch(std::exception err) {
+                throw XMLException(reader, err.what());
+            }
         } else {
             try { receiver = solverin.attr(in.second.c_str()); }
             catch (py::error_already_set) { throw XMLException(reader, format("Solver '%1%' does not have attribute '%2%.", in.first, in.second)); }
@@ -488,21 +507,21 @@ static void register_manager_dict(const std::string name) {
 void register_manager() {
     py::class_<PythonManager, shared_ptr<PythonManager>, boost::noncopyable> manager("Manager",
         "Main input manager.\n\n"
-        
+
         "Object of this class provides methods to read the XML file and fetch geometry\n"
         "objects, pathes, meshes, and generators by name. It also allows to access\n"
         "solvers defined in the XPL file.\n\n"
-        
+
         "Some global PLaSK function like :func:`~plask.loadxpl` or :func:`~plask.runxpl`\n"
         "create a default manager and use it to load the data from XPL into ther global\n"
         "namespace.\n\n"
-        
+
         "Manager(materials=None)\n\n"
-        
+
         "Args:\n"
         "    materials: Material database to use.\n"
         "               If *None*, the default material database is used.\n",
-        
+
         py::init<MaterialsDB*>(py::arg("materials")=py::object())); manager
         .def("load", &PythonManager_load,
              "Load data from source.\n\n"

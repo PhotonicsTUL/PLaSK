@@ -195,7 +195,7 @@ void Forward2D::execute(dcomplex* data) {
         }
         if (symmetry2 == SYMMETRY_NONE) {
             for (int i = 0; i != n1; ++i)
-                cfftmf_(lot, 1, n2, strid*n1, data+strid*i, strid*n1*n2, wsave2, lensav(n2), work, 2*lot*n2, ier);
+                cfftmf_(lot, 1, n2, strid*n1, data+strid*i, strid*(n1*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
         } else {
             for (int i = 0; i != n1; ++i)
                 cosqmb_(2*lot, 1, n1, 2*strid*n1, (double*)data+2*strid*i, 2*strid*(n1*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);

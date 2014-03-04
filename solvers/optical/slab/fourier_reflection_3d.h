@@ -11,14 +11,14 @@ namespace plask { namespace solvers { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 3D geometry.
  */
-struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
+struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 
     std::string getClassName() const { return "optical.FourierReflection3D"; }
 
     struct Mode {
         FourierReflection3D* solver;                            ///< Solver this mode belongs to
-        ExpansionPW3D::Component symmetry_tran;                 ///< Mode symmetry in tran direction
         ExpansionPW3D::Component symmetry_long;                 ///< Mode symmetry in long direction
+        ExpansionPW3D::Component symmetry_tran;                 ///< Mode symmetry in tran direction
         dcomplex k0;                                            ///< Stored mode frequency
         dcomplex klong;                                         ///< Stored mode effective index
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
@@ -28,16 +28,18 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
-                && (!solver->expansion.symmetric || symmetry == other.symmetry)
-                && (!solver->expansion.separated || polarization == other.polarization)
+                && (!solver->expansion.symmetricl || symmetry_long == other.symmetry_long)
+                && (!solver->expansion.symmetrict || symmetry_tran == other.symmetry_tran)
             ;
         }
     };
 
   protected:
 
-    /// Maximum order of the orthogonal base
-    size_t size;
+    /// Maximum order of the orthogonal base in longitudinal direction
+    size_t sizel;
+    /// Maximum order of the orthogonal base in transverse direction
+    size_t sizet;
 
     /// Class responsoble for computing expansion coefficients
     ExpansionPW3D expansion;
@@ -62,9 +64,9 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
     PML pml;
 
 //     FourierReflection3D(const std::string& name="");
-// 
+//
 //     void loadConfiguration(XMLReader& reader, Manager& manager);
-// 
+//
 //     /**
 //      * Find the mode around the specified effective index.
 //      * This method remembers the determined mode, for retrieval of the field profiles.
@@ -72,15 +74,32 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //      * \return determined effective index
 //      */
 //     size_t findMode(dcomplex neff);
-// 
-//     /// Get order of the orthogonal base
-//     size_t getSize() const { return size; }
-//     /// Set order of the orthogonal base
-//     void setSize(size_t n) {
-//         size = n;
-//         invalidate();
-//     }
-// 
+//
+    /// Get order of the orthogonal base in the longitudinal direction
+    size_t getLongSize() const { return sizel; }
+
+    /// Get order of the orthogonal base in the transverse direction
+    size_t getTranSize() const { return sizet; }
+
+    /// Set order of the orthogonal base in the longitudinal direction
+    void setLongSize(size_t n) {
+        sizel = n;
+        invalidate();
+    }
+    /// Set order of the orthogonal base in the transverse direction
+    void setTranSize(size_t n) {
+        sizet = n;
+        invalidate();
+    }
+
+    /// Set order of the orthogonal base
+    void setSizes(size_t nl, size_t nt) {
+        sizel = nl;
+        sizet = nt;
+        invalidate();
+    }
+
+//
 //     /// Return current mode symmetry
 //     ExpansionPW3D::Component getSymmetry() const { return expansion.symmetry; }
 //     /// Set new mode symmetry
@@ -96,7 +115,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         fields_determined = DETERMINED_NOTHING;
 //         expansion.symmetry = symmetry;
 //     }
-// 
+//
 //     /// Set transverse wavevector
 //     void setKtran(dcomplex k)  {
 //         if (expansion.initialized && (expansion.symmetric && k != 0.))
@@ -104,7 +123,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         if (k != ktran) fields_determined = DETERMINED_NOTHING;
 //         ktran = k;
 //     }
-// 
+//
 //     /// Return current mode polarization
 //     ExpansionPW3D::Component getPolarization() const { return expansion.polarization; }
 //     /// Set new mode polarization
@@ -117,7 +136,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         }
 //         expansion.polarization = polarization;
 //     }
-// 
+//
 //     /**
 //      * Get period
 //      */
@@ -128,15 +147,15 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         if (not_initialized) expansion.free();
 //         return result;
 //     }
-// 
+//
 //     /**
 //      * Get refractive index after expansion
 //      */
 //     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh3D& dst_mesh,
 //                                                                   InterpolationMethod interp=INTERPOLATION_DEFAULT);
-// 
+//
 //   private:
-// 
+//
 //     /**
 //      * Get incident field vector for given polarization.
 //      * \param polarization polarization of the perpendicularly incident light
@@ -164,7 +183,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         incident[idx] = 1.;
 //         return incident;
 //     }
-// 
+//
 //     /**
 //      * Compute sum of amplitudes for reflection/transmission coefficient
 //      * \param amplitudes amplitudes to sum
@@ -194,9 +213,9 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         }
 //         return result;
 //     }
-// 
+//
 //   public:
-// 
+//
 //     /**
 //      * Get amplitudes of reflected diffraction orders
 //      * \param polarization polarization of the perpendicularly incident light
@@ -204,7 +223,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //      * \param savidx pointer to which optionally save nonzero incident index
 //      */
 //     cvector getReflectedAmplitudes(ExpansionPW3D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
-// 
+//
 //     /**
 //      * Get amplitudes of transmitted diffraction orders
 //      * \param polarization polarization of the perpendicularly incident light
@@ -212,21 +231,21 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //      * \param savidx pointer to which optionally save nonzero incident index
 //      */
 //     cvector getTransmittedAmplitudes(ExpansionPW3D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
-// 
+//
 //     /**
 //      * Get reflection coefficient
 //      * \param polarization polarization of the perpendicularly incident light
 //      * \param incidence incidence side
 //      */
 //     double getReflection(ExpansionPW3D::Component polarization, IncidentDirection incidence);
-// 
+//
 //     /**
 //      * Get reflection coefficient
 //      * \param polarization polarization of the perpendicularly incident light
 //      * \param incidence incidence side
 //      */
 //     double getTransmission(ExpansionPW3D::Component polarization, IncidentDirection incidence);
-// 
+//
 //     /**
 //      * Get electric field at the given mesh for reflected light.
 //      * \param Ei incident field vector
@@ -239,7 +258,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         initCalculation();
 //         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
 //     }
-// 
+//
 //     /**
 //      * Get magnetic field at the given mesh for reflected light.
 //      * \param Ei incident field vector
@@ -252,7 +271,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         initCalculation();
 //         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
 //     }
-// 
+//
 //     /**
 //      * Get light intensity for reflected light.
 //      * \param Ei incident field vector
@@ -265,10 +284,10 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         initCalculation();
 //         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
 //     }
-// 
-// 
+//
+//
 //   protected:
-// 
+//
 //     /// Insert mode to the list or return the index of the exiting one
 //     size_t insertMode() {
 //         Mode mode(this);
@@ -281,9 +300,9 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         outLightIntensity.fireChanged();
 //         return modes.size()-1;
 //     }
-// 
+//
 //     size_t nummodes() const { return outNeff.size(); }
-// 
+//
 //     /**
 //      * Return mode effective index
 //      * \param n mode number
@@ -292,7 +311,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //         if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
 //         return modes[n].klong / modes[n].k0;
 //     }
-// 
+//
 //     /**
 //      * Compute electric field
 //      * \param num mode number
@@ -300,7 +319,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //      * \param method interpolation method
 //      */
 //     const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
-// 
+//
 //     /**
 //      * Compute magnetic field
 //      * \param num mode number
@@ -308,7 +327,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //      * \param method interpolation method
 //      */
 //     const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
-// 
+//
 //     /**
 //      * Compute light intensity
 //      * \param num mode number
@@ -316,26 +335,26 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3DCartesian> {
 //      * \param method interpolation method
 //      */
 //     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
-// 
+//
 //   public:
-// 
+//
 //     /**
 //      * Proxy class for accessing reflected fields
 //      */
 //     struct Reflected {
-// 
+//
 //         /// Provider of the optical electric field
 //         typename ProviderFor<OpticalElectricField,Geometry3DCartesian>::Delegate outElectricField;
-// 
+//
 //         /// Provider of the optical magnetic field
 //         typename ProviderFor<OpticalMagneticField,Geometry3DCartesian>::Delegate outMagneticField;
-// 
+//
 //         /// Provider of the optical field intensity
 //         typename ProviderFor<LightIntensity,Geometry3DCartesian>::Delegate outLightIntensity;
-// 
+//
 //         /// Return one as the number of the modes
 //         static size_t size() { return 1; }
-// 
+//
 //         /**
 //          * Construct proxy.
 //          * \param wavelength incident light wavelength

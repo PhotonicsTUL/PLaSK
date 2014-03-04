@@ -37,7 +37,7 @@ void initGeometry() {
     scope.attr("__doc__") =
         "PLaSK geometry classes.\n\n"
 
-        "Classes and fuctions defined in this module can be used to create and modify\n"
+        "Classes and functions defined in this module can be used to create and modify\n"
         "geometry description in PLaSK. See :ref:`sec-geometry-python` for more details.\n\n"
 
         "Example:\n"

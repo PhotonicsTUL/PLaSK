@@ -9,7 +9,7 @@
 
 namespace plask { namespace python {
 
-extern py::object filter_module;
+extern py::object flow_module;
 
 namespace detail {
 
@@ -87,7 +87,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
 
-            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key.attr("__class__")))));
+            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -111,7 +111,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
 
-            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key.attr("__class__")))));
+            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -141,7 +141,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->input(*geomd->getChild(), path), value...);
 
-            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key.attr("__class__")))));
+            throw TypeError("Wrong geometry type '%1%'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -155,7 +155,7 @@ namespace detail {
     py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
     registerFilterImpl(const char* suffix)
     {
-        py::scope scope = filter_module;
+        py::scope scope = flow_module;
 
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
         filter_class((type_name<PropertyT>()+"Filter"+suffix).c_str(),

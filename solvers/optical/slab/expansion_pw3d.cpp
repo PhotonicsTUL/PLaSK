@@ -1,34 +1,38 @@
-// #include "expansion_pw3d.h"
-// #include "fourier_reflection_3d.h"
-// #include "mesh_adapter.h"
-// 
-// #define SOLVER static_cast<FourierReflection3D*>(solver)
-// 
-// namespace plask { namespace solvers { namespace slab {
-// 
-// ExpansionPW3D::ExpansionPW3D(FourierReflection3D* solver): Expansion(solver), initialized(false),
-//     symmetry(E_UNSPECIFIED), polarization(E_UNSPECIFIED) {}
-// 
-// size_t ExpansionPW3D::lcount() const {
-//     return SOLVER->getLayersPoints().size();
-// }
-// 
-// void ExpansionPW3D::init()
-// {
+#include "expansion_pw3d.h"
+#include "fourier_reflection_3d.h"
+#include "mesh_adapter.h"
+
+#define SOLVER static_cast<FourierReflection3D*>(solver)
+
+namespace plask { namespace solvers { namespace slab {
+
+ExpansionPW3D::ExpansionPW3D(FourierReflection3D* solver): Expansion(solver), initialized(false),
+    symmetryl(E_UNSPECIFIED), symmetryt(E_UNSPECIFIED) {}
+
+size_t ExpansionPW3D::lcount() const {
+    return SOLVER->getLayersPoints().size();
+}
+
+void ExpansionPW3D::init()
+{
 //     auto geometry = SOLVER->getGeometry();
-// 
-//     periodic = geometry->isPeriodic(Geometry3DCartesian::DIRECTION_TRAN);
-// 
+//
+//     periodicl = geometry->isPeriodic(Geometry3D::DIRECTION_LONG);
+//     periodict = geometry->isPeriodic(Geometry3D::DIRECTION_TRAN);
+//
 //     left = geometry->getChild()->getBoundingBox().lower[0];
 //     right = geometry->getChild()->getBoundingBox().upper[0];
-// 
+//     back = geometry->getChild()->getBoundingBox().lower[1];
+//     front = geometry->getChild()->getBoundingBox().upper[1];
+//
 //     size_t refine = SOLVER->refine, M;
 //     if (refine == 0) refine = 1;
-// 
-//     symmetric = separated = false;
-//     if (symmetry != E_UNSPECIFIED || polarization != E_UNSPECIFIED) {
-//         // Test for off-diagonal NR components in which case we cannot use neither symmetry nor separation
+//
+//     symmetricl = symmetrict = false;
+//     if (symmetryl != E_UNSPECIFIED || symmetryt != E_UNSPECIFIED) {
+//         // Test for off-diagonal NR components in which case we cannot use any symmetry
 //         bool off_diagonal = false;
+//         double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
 //         double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
 //         for (const RectilinearAxis& axis1: SOLVER->getLayersPoints()) {
 //             for (double x = left+dx/2; x < right; x += dx) {
@@ -37,21 +41,23 @@
 //             }
 //             if (off_diagonal) break;
 //         }
-//         if (symmetry != E_UNSPECIFIED) {
-//             if (!geometry->isSymmetric(Geometry3DCartesian::DIRECTION_TRAN))
+//         if (symmetryl != E_UNSPECIFIED) {
+//             if (!geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
 //                 throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
 //             if (off_diagonal)
 //                 throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-//             symmetric = true;
+//             symmetricl = true;
 //         }
-//         if (polarization != E_UNSPECIFIED) {
+//         if (symmetryt != E_UNSPECIFIED) {
+//             if (!geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
+//                 throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
 //             if (off_diagonal)
-//                 throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
-//             separated = true;
+//                 throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+//             symmetrict = true;
 //         }
 //     }
-// 
-//     if (geometry->isSymmetric(Geometry3DCartesian::DIRECTION_TRAN)) {
+//
+//     if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
 //         if (right <= 0) {
 //             left = -left; right = -right;
 //             std::swap(left, right);
@@ -59,13 +65,13 @@
 //         if (left != 0) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
 //         if (!symmetric) left = -right;
 //     }
-// 
+//
 //     if (!periodic) {
 //         // Add PMLs
 //         if (!symmetric) left -= SOLVER->pml.size + SOLVER->pml.shift;
 //         right += SOLVER->pml.size + SOLVER->pml.shift;
 //     }
-// 
+//
 //     double L;
 //                                                             // N = 3  nN = 5  refine = 5  M = 25
 //     if (!symmetric) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
@@ -86,12 +92,12 @@
 //         dx = 0.25 * L / N;
 //         xpoints = RegularAxis(left + dx, right - dx, N);
 //     }
-// 
+//
 //     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
 //                      N, matrixSize(), symmetric?" symmetric":"", separated?" separated":"");
-// 
+//
 //     matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
-// 
+//
 //     // Compute permeability coefficients
 //     mag.reset(nN, Tensor2<dcomplex>(0.));
 //     if (periodic) {
@@ -131,35 +137,35 @@
 //             }
 //         }
 //     }
-// 
+//
 //     // Allocate memory for expansion coefficients
 //     size_t nlayers = lcount();
 //     coeffs.resize(nlayers);
 //     diagonals.assign(nlayers, false);
-// 
+//
 //     initialized = true;
-// }
-// 
-// void ExpansionPW3D::free() {
-//     coeffs.clear();
-//     initialized = false;
-// }
-// 
-// void ExpansionPW3D::getMaterialCoefficients(size_t l)
-// {
+}
+
+void ExpansionPW3D::free() {
+    coeffs.clear();
+    initialized = false;
+}
+
+void ExpansionPW3D::layerMaterialCoefficients(size_t l)
+{
 //     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
 //         throw BadInput(SOLVER->getId(), "No wavelength set specified");
-// 
+//
 //     auto geometry = SOLVER->getGeometry();
 //     const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
-// 
+//
 //     size_t refine = SOLVER->refine;
 //     size_t M = refine * nN;
-// 
+//
 //     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
-// 
+//
 //     DataVector<Tensor3<dcomplex>> NR(M);
-// 
+//
 //     RectilinearMesh3D mesh(xmesh, axis1, RectilinearMesh3D::ORDER_TRANSPOSED);
 //     auto temperature = SOLVER->inTemperature(mesh);
 //     double lambda = real(SOLVER->getWavelength());
@@ -173,9 +179,9 @@
 //         #pragma omp critical
 //         NR[i] = material->NR(lambda, T);
 //     }
-// 
+//
 //     for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR
-// 
+//
 //     // Add PMLs
 //     if (!periodic) {
 //         Tensor3<dcomplex> ref;
@@ -193,7 +199,7 @@
 //             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
 //         }
 //     }
-// 
+//
 //     // Average material parameters
 //     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
 //     double factor = 1. / refine;
@@ -204,7 +210,7 @@
 //         coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
 //         coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
 //     }
-// 
+//
 //     // Check if the layer is uniform
 //     if (periodic) {
 //         diagonals[l] = true;
@@ -218,7 +224,7 @@
 //         }
 //     } else
 //         diagonals[l] = false;
-// 
+//
 //     if (diagonals[l]) {
 //         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
 //         for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
@@ -234,9 +240,9 @@
 //             }
 //         }
 //     }
-// }
-// 
-// 
+}
+
+
 // DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
 // {
 //     double L = right - left;
@@ -282,19 +288,19 @@
 //     }
 //     return result;
 // }
-// 
-// 
-// 
-// void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex kx, cmatrix& RE, cmatrix& RH)
-// {
+//
+//
+//
+void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
+{
 //     assert(initialized);
-// 
+//
 //     int order = SOLVER->getSize();
 //     dcomplex f = 1. / k0, k02 = k0*k0;
 //     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-// 
+//
 //     // Ez represents -Ez
-// 
+//
 //     if (separated) {
 //         if (symmetric) {
 //             // Separated symmetric
@@ -393,9 +399,9 @@
 //             }
 //         }
 //     }
-// }
-// 
-// 
+}
+//
+//
 // void ExpansionPW3D::prepareField()
 // {
 //     field.reset(N + (symmetric? 0 : 1));
@@ -403,32 +409,32 @@
 //     fft_x = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_ODD, 3);
 //     fft_yz = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_ODD : FFT::SYMMETRY_EVEN, 3);
 // }
-// 
+//
 // void ExpansionPW3D::cleanupField()
 // {
 //     field.reset();
 //     fft_x = FFT::Backward1D();
 //     fft_yz = FFT::Backward1D();
 // }
-// 
+//
 // // TODO fields must be carefully verified
-// 
-// DataVector<Vec<3,dcomplex>> ExpansionPW3D::getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H)
-// {
+
+DataVector<Vec<3,dcomplex>> ExpansionPW3D::getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H)
+{
 //     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
-// 
+//
 //     const dcomplex klong = field_params.klong;
 //     const dcomplex kx = field_params.ktran;
-// 
+//
 //     int order = SOLVER->getSize();
 //     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
 //     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
 //     const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
 //     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
-// 
+//
 //     int dt = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0;
 //     int dl = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0;
-// 
+//
 //     if (field_params.which == FieldParams::E) {
 //         if (separated) {
 //             if (polarization == E_TRAN) {
@@ -510,10 +516,10 @@
 //             }
 //         }
 //     }
-// 
+//
 //     if (dt) { field[field.size()-1].tran() = 0.; }
 //     if (dl) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }
-// 
+//
 //     if (field_params.method == INTERPOLATION_FOURIER) {
 //         DataVector<Vec<3,dcomplex>> result(dest_mesh.size());
 //         double L = right - left;
@@ -575,7 +581,7 @@
 //                                defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
 //         }
 //     }
-// }
-// 
-// 
-// }}} // namespace plask
+}
+
+
+}}} // namespace plask

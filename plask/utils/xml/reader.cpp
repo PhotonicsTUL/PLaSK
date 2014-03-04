@@ -187,8 +187,8 @@ std::string XMLReader::getTextContent() const {
         try {
             return contentFilter(getCurrent().text);
         } catch (const std::exception& e) {
-            throw XMLException("Error while parsing expression in {} in XML tag content (about line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + ")",
-                               e.what());
+            throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + 
+                               ": Bad parsed expression", e.what());
         }
     } else
         return getCurrent().text;
@@ -203,8 +203,9 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
         try {
             return attributeFilter(res_it->second);
         } catch (const std::exception& e) {
-            throw XMLException("Error while parsing expression in {} in XML atribute \"" + name + "\" of tag <" + this->getCurrent().text + "> (line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + ")",
-                               e.what());
+            throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + 
+                               " in <" + this->getCurrent().text + "> attribute '" + name +
+                               "': Bad parsed expression", e.what());
         }
     } else
         return res_it->second;
