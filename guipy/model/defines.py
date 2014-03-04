@@ -81,3 +81,9 @@ class DefinesModel(TableModel):
             if col == 1: return 'value'
             if col == 2: return 'comment'
         return None
+   
+    #zapis DEF.cos nie dziala w PLaSKu 
+    #def stubs(self):
+        #res = "DEF = object()\n"
+        #res += "\n".join("DEF."%s = 0" % d.name for d in self.entries)
+        #return res

@@ -59,3 +59,10 @@ class XPLDocument(object):
         res = []
         for c in self.controlers: res.extend(c.model.getInfo(level))
         return res
+    
+    def stubs(self):
+        res = ""
+        for c in self.controlers:
+            res += c.model.stubs()
+            res += '\n'
+        return res  

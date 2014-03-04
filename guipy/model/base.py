@@ -144,6 +144,9 @@ class SectionModel(object):
     def refreshInfo(self):
         self.__info__ = None
         self.infoChanged(self)
+        
+    def stubs(self):
+        return ""
 
 class SectionModelTreeBased(SectionModel):
 

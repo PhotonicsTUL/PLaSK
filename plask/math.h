@@ -193,22 +193,46 @@ inline bool dbl_compare_lteq(double x, double y) { return !dbl_compare_gt(x, y);
  */
 inline bool dbl_compare_gteq(double x, double y) { return !dbl_compare_lt(x, y); }
 
+/**
+ * Exception thrown by complex parser when complex number is ill-formated.
+ */
 struct IllFormatedComplex: public Exception {
 
-    IllFormatedComplex(const std::string& s): Exception("Ill-formated complex number \"%1%\". Required format: R+Ij, where R and I are floating point numbers.", s)
+    /**
+     * Constructor.
+     * @param str_to_parse ill-formated complex number
+     */
+    IllFormatedComplex(const std::string& str_to_parse): Exception("Ill-formated complex number \"%1%\". Allowed formats: R+Ij, R, Ij, (R, I), where R and I are floating point numbers.", str_to_parse)
     {}
 
 };
 
 /**
- * Parse complex number in format R+Ij, R or Ij (where R and I are floating point numbers) or standard C++ format.
+ * Parse complex number in format: R+Ij, R, Ij, or (R, I), where R and I are floating point numbers (last is standard C++ format).
+ * @param str_to_parse string to parse
+ * @return parsed complex number
+ * @throw IllFormatedComplex when @p str_to_parse is in bad format
  */
 template <typename T>
 std::complex<T> parse_complex(const std::string& str_to_parse) {
     std::istringstream to_parse(str_to_parse);
+    auto check_eof = [&] () {
+        if (!to_parse.eof()) {  //we require end-of stream here
+            char c;
+            to_parse >> c;  //we chack if there is non-white character, this operation should fail
+            if (to_parse) throw IllFormatedComplex(str_to_parse);
+        }
+    };
     T real, imag;
     to_parse >> real;
-    if (to_parse.fail()) boost::lexical_cast<std::complex<T>>(str_to_parse);  //or throw IllFormatedComplex(str_to_parse);
+    if (to_parse.fail()) {  //we will try standard >> operator
+        to_parse.clear(); to_parse.str(str_to_parse);
+        std::complex<T> res;
+        to_parse >> res;
+        if (to_parse.fail()) throw IllFormatedComplex(str_to_parse);
+        check_eof();
+        return res;
+    }
     if (to_parse.eof()) return std::complex<T>(real);
     char c;
     to_parse >> c;
@@ -217,20 +241,18 @@ std::complex<T> parse_complex(const std::string& str_to_parse) {
     if (c == 'i' || c == 'j') { //only imag. part is given
         imag = real;
         real = 0.0;
-    } else if (c == '+' && c == '-') {
+    } else if (c == '+' || c == '-') {
         char c_ij;
         to_parse >> imag >> c_ij;
         if (to_parse.fail() || (c_ij != 'i' && c_ij != 'j')) throw IllFormatedComplex(str_to_parse);
         if (c == '-') imag = -imag;
     } else
          throw IllFormatedComplex(str_to_parse);
-
-    if (!to_parse.eof()) {  //we require end-of stream here
-        to_parse >> c;  //we chack if there is non-white character after 'i'/'j', thich operation should fail
-        if (to_parse) throw IllFormatedComplex(str_to_parse);
-    }
+    check_eof();
     return std::complex<T>(real, imag);
 }
+
+extern template std::complex<double> parse_complex<double>(const std::string& str_to_parse);
 
 } // namespace plask
 

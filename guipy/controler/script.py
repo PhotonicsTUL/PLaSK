@@ -34,9 +34,13 @@ class ScriptControler(SourceEditControler):
         edit = QtGui.QPlainTextEdit(parent)
         edit.setFont(defaultFont)
         if hasPyCode:
-            self.pyedit = PyEdit(".", edit, prefix="from PyQt4 import QtGui")
+            self.pyedit = PyEdit(".", edit)
         if SyntaxHighlighter:
             parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
             self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
         edit.setReadOnly(self.model.isReadOnly())
         return edit
+    
+    def onEditEnter(self):
+        super(ScriptControler, self).onEditEnter()
+        self.pyedit.prefix = self.document.stubs()

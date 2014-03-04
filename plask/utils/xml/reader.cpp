@@ -1,6 +1,8 @@
 #include "reader.h"
 #include "expat.h"
 
+#include "../../math.h"
+
 #include <fstream>
 
 namespace plask {
@@ -70,25 +72,25 @@ void XMLReader::initParser() {
 }
 
 XMLReader::XMLReader(DataSource* source):
-    source(source), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
+    source(source), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(std::istream *istream):
-    source(new StreamDataSource(istream)), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(istream)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(const char* file_name):
-    source(new StreamDataSource(new std::ifstream(file_name))), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(new std::ifstream(file_name))), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(FILE* file):
-    source(new CFileDataSource(file)), stringInterpreter(&XMLReader::strToBool), check_if_all_attributes_were_read(true)
+    source(new CFileDataSource(file)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
