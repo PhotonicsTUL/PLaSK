@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from utils import Signal
 from info import Info
 import os
-from model.info import InfoListModel
+from model.info import InfoSource
 
 def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
         """
@@ -36,36 +36,22 @@ class ExternalSource(object):
         if oryginalFileName: fileName = os.path.join(os.path.dirname(oryginalFileName), fileName)
         self.fileNameAbs = os.path.abspath(fileName)
 
-class SectionModel(object):
+class SectionModel(InfoSource):
     
     def __init__(self, name, info_cb = None):
         """
             :param str name: name of section
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
-        object.__init__(self)
+        InfoSource.__init__(self, info_cb)
         self.name = name
         self.changed = Signal()
-        self.__info__ = []    #model Infos: Errors, Warnings and Informations
-        self.infoChanged = Signal()
         self.externalSource = None
-        if info_cb: self.infoChanged.connect(info_cb)
         
     def fireChanged(self, refreshInfo = True):
         if refreshInfo: self.markInfoInvalid()
         self.changed(self)
         if refreshInfo: self.fireInfoChanged()
-        
-    def markInfoInvalid(self):
-        """Invalidate the info and it indexes."""
-        self.__info__ = None
-        
-    def fireInfoChanged(self):
-        """
-            Inform observers that info has been changed.
-            You must call markInfoInvalid and prepare data to build the info before call this.
-        """
-        self.infoChanged(self)
 
     def getText(self):
         element = self.getXMLElement()
@@ -125,25 +111,6 @@ class SectionModel(object):
             if hasattr(self.externalSource, 'error'):
                 res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
         return res
-            
-    def getInfo(self, level = None):
-        if self.__info__ == None:
-            self.__info__ = self.createInfo()
-        if level != None:
-            return filter(lambda m: m.level == level, self.__info__)
-        else:
-            return self.__info__
-        
-    @property
-    def info(self):
-        return self.getInfo()
-    
-    def getInfoListModel(self):
-        return InfoListModel(self)
-    
-    def refreshInfo(self):
-        self.__info__ = None
-        self.infoChanged(self)
         
     def stubs(self):
         return ""

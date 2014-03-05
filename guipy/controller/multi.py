@@ -1,28 +1,28 @@
 from PyQt4 import QtGui
 from utils import exceptionToMsg
-from controler.source import SourceEditControler
+from controller.source import SourceEditController
 
-class MultiEditorControler(object):
+class MultiEditorController(object):
     """
         Controller which consist with a list of controllers and display one at time (using QStackedWidget).
         Allows to change current controller.
     """
     
-    def __init__(self, *controlers):
+    def __init__(self, *controllers):
         object.__init__(self)
-        self.controlers = list(controlers)
+        self.controllers = list(controllers)
         
         self.editorWidget = QtGui.QStackedWidget()
-        for c in controlers:
+        for c in controllers:
             self.editorWidget.addWidget(c.getEditor())
 
     @property
     def model(self):
-        return self.controlers[0].model
+        return self.controllers[0].model
 
     @property
     def document(self):
-        return self.controlers[0].document
+        return self.controllers[0].document
     
     def getEditor(self):
         return self.editorWidget
@@ -32,30 +32,30 @@ class MultiEditorControler(object):
     
     def setCurrentIndex(self, new_index):
         if self.getCurrentIndex() == new_index: return False;
-        if not exceptionToMsg(lambda: self.getCurrectControler().onEditExit(),
+        if not exceptionToMsg(lambda: self.getCurrectController().onEditExit(),
                               self.document.mainWindow, 'Error while trying to store data from editor'):
             return False
         self.editorWidget.setCurrentIndex(new_index)
-        self.getCurrectControler().onEditEnter()  
+        self.getCurrectController().onEditEnter()  
         return True     
     
-    def getCurrectControler(self):
-        return self.controlers[self.getCurrentIndex()]
+    def getCurrectController(self):
+        return self.controllers[self.getCurrentIndex()]
     
     def saveDataInModel(self):
-        self.getCurrectControler().saveDataInModel()
+        self.getCurrectController().saveDataInModel()
     
     def onEditEnter(self):
-        self.getCurrectControler().onEditEnter()
+        self.getCurrectController().onEditEnter()
 
     def onEditExit(self):
-        self.getCurrectControler().onEditExit()
+        self.getCurrectController().onEditExit()
     
     
-class GUIAndSourceControler(MultiEditorControler):
+class GUIAndSourceController(MultiEditorController):
     
-    def __init__(self, controler):
-        MultiEditorControler.__init__(self, controler, SourceEditControler(controler.document, controler.model))
+    def __init__(self, controller):
+        MultiEditorController.__init__(self, controller, SourceEditController(controller.document, controller.model))
     
     def changeEditor(self):
         if not self.setCurrentIndex(int(self.showSourceAction.isChecked())):
@@ -71,8 +71,8 @@ class GUIAndSourceControler(MultiEditorControler):
     
     def onEditEnter(self):
         self.document.mainWindow.setEditorSelectActions(self.getShowSourceAction())
-        super(GUIAndSourceControler, self).onEditEnter()
+        super(GUIAndSourceController, self).onEditEnter()
 
     def onEditExit(self):
-        super(GUIAndSourceControler, self).onEditExit()
+        super(GUIAndSourceController, self).onEditExit()
         self.document.mainWindow.setEditorSelectActions()

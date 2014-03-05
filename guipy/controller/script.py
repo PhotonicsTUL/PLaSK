@@ -1,4 +1,4 @@
-from controler.source import SourceEditControler
+from controller.source import SourceEditController
 from PyQt4 import QtGui
 from model.script import ScriptModel
 from utils import defaultFont
@@ -25,10 +25,10 @@ except ImportError:
     
 
 
-class ScriptControler(SourceEditControler):
+class ScriptController(SourceEditController):
     
     def __init__(self, document, model = ScriptModel()):
-        SourceEditControler.__init__(self, document, model)
+        SourceEditController.__init__(self, document, model)
 
     def createSourceEditor(self, parent = None):
         edit = QtGui.QPlainTextEdit(parent)
@@ -42,5 +42,5 @@ class ScriptControler(SourceEditControler):
         return edit
     
     def onEditEnter(self):
-        super(ScriptControler, self).onEditEnter()
+        super(ScriptController, self).onEditEnter()
         self.pyedit.prefix = self.document.stubs()

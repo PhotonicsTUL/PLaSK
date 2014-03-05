@@ -1,11 +1,11 @@
 from PyQt4 import QtGui
-from controler.base import Controler
+from controller.base import Controller
 from PyQt4.QtGui import QSplitter
 from model import materials
 from model.materials import MaterialPropertyModel
 from utils import HTMLDelegate, table_last_col_fill
-from controler.defines import DefinesCompletionDelegate
-from controler.table import tableWithManipulators
+from controller.defines import DefinesCompletionDelegate
+from controller.table import tableWithManipulators
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
     
@@ -48,10 +48,10 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         return combo
     
 
-class MaterialsControler(Controler):
+class MaterialsController(Controller):
 
     def __init__(self, document, model = materials.MaterialsModel()):
-        Controler.__init__(self, document, model)
+        Controller.__init__(self, document, model)
         
         self.splitter = QSplitter()
         

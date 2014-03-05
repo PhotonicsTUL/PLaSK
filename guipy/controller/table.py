@@ -1,5 +1,5 @@
 from PyQt4 import QtGui
-from controler.base import Controler
+from controller.base import Controller
 
 class TableActions(object):
     
@@ -81,10 +81,10 @@ def tableWithManipulators(table, parent = None, model = None, title = None):
     return external
 
 
-class TableControler(Controler):
+class TableController(Controller):
 
     def __init__(self, document, model):
-        Controler.__init__(self, document, model)
+        Controller.__init__(self, document, model)
         self.table = QtGui.QTableView()
         self.table.setModel(self.model)
         self.tableActions = TableActions(self.table)

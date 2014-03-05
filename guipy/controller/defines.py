@@ -1,5 +1,5 @@
 from model.defines import DefinesModel
-from controler.table import TableControler
+from controller.table import TableController
 from PyQt4 import QtGui, QtCore
 
 class AfterBracketCompleter(QtGui.QCompleter):
@@ -100,8 +100,8 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
     #def currentIndexChanged(self):
     #    self.commitData.emit(self.sender())
 
-class DefinesControler(TableControler):
+class DefinesController(TableController):
 
     def __init__(self, document, model = DefinesModel()):
-        TableControler.__init__(self, document, model)
+        TableController.__init__(self, document, model)
         self.table.setItemDelegateForColumn(1, DefinesCompletionDelegate(self.model, self.table))

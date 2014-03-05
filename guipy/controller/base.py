@@ -1,4 +1,4 @@
-class Controler(object):
+class Controller(object):
     
     def __init__(self, document, model):
         object.__init__(self)

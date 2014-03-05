@@ -1,11 +1,13 @@
 from PyQt4 import QtCore, QtGui
 import weakref
+from utils import Signal
 
 class Info(object):
     
-    INFO = 0
-    WARNING = 1
-    ERROR = 2
+    GROUP = 0
+    INFO = 1
+    WARNING = 2
+    ERROR = 3
     
     def __str__(self):
         return self.text
@@ -36,12 +38,14 @@ class Info(object):
         return ans_if_non_attr
     
 def infoLevelIcon(level):
+    if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder')
     if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information')
     if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning')
     if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error')
     return None
 
-class InfoListModel(QtCore.QAbstractListModel):
+#TODO support for groups using tree model QAbstractItemModel
+class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articles/using_qtreeview_with_qabstractitemmodel
     """Qt list model of info (warning, errors, etc.) of section model (None section model is allowed and than the list is empty)"""
     
     def __setModel__(self, model):
@@ -89,3 +93,55 @@ class InfoListModel(QtCore.QAbstractListModel):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return 'text'
         return None
+    
+    
+class InfoSource(object):
+    
+    def __init__(self, info_cb = None):
+        """
+            :param info_cb: call when list of error has been changed with parameters: section name, list of errors
+        """
+        object.__init__(self)
+        self.__info__ = []    #model Infos: Errors, Warnings and Informations
+        self.infoChanged = Signal()
+        if info_cb: self.infoChanged.connect(info_cb)
+                
+    def markInfoInvalid(self):
+        """Invalidate the info and it indexes."""
+        self.__info__ = None
+        
+    def fireInfoChanged(self):
+        """
+            Inform observers that info has been changed.
+            You must call markInfoInvalid and prepare data to build the info before call this.
+        """
+        self.infoChanged(self)
+        
+    def createInfo(self):
+        """
+            Create table with messages.
+            :return: array of Info objects
+        """
+        return []
+            
+    def getInfo(self, level = None):
+        """
+            Get array of Info objects on given level connected with this object.
+        """
+        if self.__info__ == None:
+            self.__info__ = self.createInfo()
+        if level != None:
+            return filter(lambda m: m.level == level, self.__info__)
+        else:
+            return self.__info__
+        
+    @property
+    def info(self):
+        return self.getInfo()
+    
+    def getInfoListModel(self):
+        return InfoTreeModel(self)
+    
+    def refreshInfo(self):
+        self.__info__ = None
+        self.infoChanged(self)

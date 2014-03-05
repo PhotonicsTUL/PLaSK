@@ -10,7 +10,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from XPLDocument import XPLDocument
 from utils import exceptionToMsg
-from model.info import InfoListModel, Info
+from model.info import InfoTreeModel, Info
 
 class MainWindow(QtGui.QMainWindow):
     
@@ -24,7 +24,7 @@ class MainWindow(QtGui.QMainWindow):
     def modelIsNew(self):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
-            self.tabs.addTab(self.document.getControlerByName(m).getEditor(), m)
+            self.tabs.addTab(self.document.getControllerByName(m).getEditor(), m)
         self.current_tab_index = 0
         self.currentSectionEnter()
         
@@ -65,7 +65,7 @@ class MainWindow(QtGui.QMainWindow):
         """"Is called just before save, return True if document can be saved."""
         if self.current_tab_index != -1:
             try:
-                self.document.getControlerByIndex(self.current_tab_index).saveDataInModel()
+                self.document.getControllerByIndex(self.current_tab_index).saveDataInModel()
             except Exception as e:
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText("Edited content of the current section is invalid.")
@@ -90,7 +90,7 @@ class MainWindow(QtGui.QMainWindow):
     def currentSectionExit(self):
         """"Should be called just before left the current section."""
         if self.current_tab_index != -1:
-            if not exceptionToMsg(lambda: self.document.getControlerByIndex(self.current_tab_index).onEditExit(),
+            if not exceptionToMsg(lambda: self.document.getControllerByIndex(self.current_tab_index).onEditExit(),
                                   self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
                 return False
@@ -99,7 +99,7 @@ class MainWindow(QtGui.QMainWindow):
     def currentSectionEnter(self):
         """"Should be called just after set the current section."""
         if self.current_tab_index != -1:
-            c = self.document.getControlerByIndex(self.current_tab_index)
+            c = self.document.getControllerByIndex(self.current_tab_index)
             self.info_model.setModel(c.model)
             c.onEditEnter()
         else:
@@ -198,7 +198,7 @@ class MainWindow(QtGui.QMainWindow):
         self.info_dock = QtGui.QDockWidget("Warnings", self)
         self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
         self.info_dock.setTitleBarWidget(QtGui.QWidget())
-        self.info_model = InfoListModel(None)
+        self.info_model = InfoTreeModel(None)
         #self.info_table = QtGui.QTableView(self.info_dock)
         self.info_table = QtGui.QListView(self.info_dock)
         self.info_table.setModel(self.info_model)

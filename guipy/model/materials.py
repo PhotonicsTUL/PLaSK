@@ -159,12 +159,28 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         
 class MaterialsModel(TableModel):
              
-    class Material:
+    class Material: #(InfoSource)
+        
         def __init__(self, name, base = None, properties = [], comment = None):
             self.name = name
             self.base = base
             self.properties = properties    #TODO what with duplicate properties, should be supported?
             self.comment = comment
+            
+        def addToXML(self, material_section_element):
+            mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
+            mat.tail = '\n'
+            if self.base: mat.attrib['base'] = self.base 
+            if len(self.properties) > 0:
+                mat.text = '\n  '
+                prev = None
+                for (n, v) in self.properties:
+                    if prev is not None: prev.tail = '\n  '
+                    p = ElementTree.SubElement(mat, n)
+                    p.text = v
+                    prev = p
+                prev.tail = '\n'
+            
     
     def __init__(self, parent=None, info_cb = None, *args):
         TableModel.__init__(self, 'materials', parent, info_cb, *args)
@@ -183,19 +199,7 @@ class MaterialsModel(TableModel):
     # XML element that represents whole section
     def getXMLElement(self):
         res = ElementTree.Element(self.name)
-        for e in self.entries:
-            mat = ElementTree.SubElement(res, "material", { "name": e.name })
-            mat.tail = '\n'
-            if e.base: mat.attrib['base'] = e.base 
-            if len(e.properties) > 0:
-                mat.text = '\n  '
-                prev = None
-                for (n, v) in e.properties:
-                    if prev is not None: prev.tail = '\n  '
-                    p = ElementTree.SubElement(mat, n)
-                    p.text = v
-                    prev = p
-                prev.tail = '\n'
+        for e in self.entries: e.addToXML(res)
         return res
     
     def get(self, col, row): 

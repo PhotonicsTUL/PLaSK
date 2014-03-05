@@ -1,12 +1,12 @@
 from PyQt4 import QtGui
 from qhighlighter.XML import XMLHighlighter
 from utils import defaultFont
-from controler.base import Controler
+from controller.base import Controller
 
-class SourceEditControler(Controler):
+class SourceEditController(Controller):
 
     def __init__(self, document, model):
-        Controler.__init__(self, document, model)
+        Controller.__init__(self, document, model)
 
     def createSourceEditor(self, parent = None):
         ed = QtGui.QTextEdit(parent)
