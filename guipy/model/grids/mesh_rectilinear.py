@@ -29,8 +29,11 @@ class RectilinearMesh(Mesh):
     
     def addToXML(self, grids_section_element):
         res = Mesh.addToXML(self, grids_section_element)
-        for i, a in enumerate(self.points):
-            a.addToXML(ElementTree.SubElement(res, "axis%d" % (i-1)))
+        if self.dim == 1:
+            self.axis[0].addToXML(ElementTree.SubElement(res, "axis"))
+        else:
+            for i, a in enumerate(self.axis):
+                a.addToXML(ElementTree.SubElement(res, "axis%d" % i))
         return res;
     
     
