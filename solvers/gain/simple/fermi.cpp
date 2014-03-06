@@ -269,11 +269,13 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
-    double strain = 0.0;
+    double qstrain = 0.; // strain in well
+    double bstrain = 0.; // strain in barrier
 
     if (if_strain == true)
     {
-        strain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+        qstrain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+        bstrain = (region.materialBarrier->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
     }
 
 //    write_debug("a_QW: %1%", region.materialQW->lattC(T,'a'));
@@ -281,35 +283,57 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 //    write_debug("strain: %1%", strain);
 
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
+    double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth;
 
     #pragma omp critical // necessary as the material may be defined in Python
     {
-        qme = region.materialQW->Me(T,strain);
-        qmhh = region.materialQW->Mhh(T,strain);
-        qmlh = region.materialQW->Mlh(T,strain);
-        bme = region.materialBarrier->Me(T,strain);
-        bmhh = region.materialBarrier->Mhh(T,strain);
-        bmlh = region.materialBarrier->Mlh(T,strain);
+        qme = region.materialQW->Me(T,qstrain);
+        qmhh = region.materialQW->Mhh(T,qstrain);
+        qmlh = region.materialQW->Mlh(T,qstrain);
+        bme = region.materialBarrier->Me(T,bstrain);
+        bmhh = region.materialBarrier->Mhh(T,bstrain);
+        bmlh = region.materialBarrier->Mlh(T,bstrain);
 
         gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
-        gainModule.Set_split_off(region.materialQW->Dso(T,strain));
-        gainModule.Set_bandgap(region.materialQW->Eg(T,strain));
+        gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));
 
-        double cdepth = region.materialBarrier->CB(T,strain) - region.materialQW->CB(T,strain);
-        double vdepth = region.materialQW->VB(T,strain) - region.materialBarrier->VB(T,strain);
+        qEc = region.materialQW->CB(T,qstrain);
+        qEvhh = region.materialQW->VB(T,qstrain,'G','H');
+        qEvlh = region.materialQW->VB(T,qstrain,'G','L');
+        bEc = region.materialBarrier->CB(T,qstrain);
+        bEvhh = region.materialBarrier->VB(T,qstrain,'G','H');
+        bEvlh = region.materialBarrier->VB(T,qstrain,'G','L');
+        // to be continued...
 
-        if (vdepth < 0)
-            throw BadInput(this->getId(), "Valence QW depth negative, check VB values of materials %1% and %2%",
+        qEg = 0.;
+        double cdepth = bEc - qEc;
+
+        vhhdepth = qEvhh-bEvhh;
+        vlhdepth = qEvlh-bEvlh;
+        if ( (qstrain==0.) && (bstrain==0.) )
+            qEg = qEc-qEvhh;
+        else if ( (qstrain<0.) && (bstrain==0.) )
+            qEg = qEc-qEvhh;
+        else if ( (qstrain>0.) && (bstrain==0.) )
+            qEg = qEc-qEvlh;
+        else
+            qEg = qEc-qEvhh; // it will be changed
+
+        double vdepth = vhhdepth; // it will be changed
+
+        if ((vhhdepth < 0.)&&(vlhdepth < 0.))
+            throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials %1% and %2%",
                            region.materialQW->name(), region.materialBarrier->name());
 
-        if (cdepth < 0)
+        if (cdepth < 0.)
             throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%",
                            region.materialQW->name(), region.materialBarrier->name());
 
-        gainModule.Set_conduction_depth(cdepth);
-        gainModule.Set_valence_depth(vdepth);
-    }
-
+        gainModule.Set_bandgap(qEg); // czemu ta linia jest tu, a nie |
+        gainModule.Set_conduction_depth(cdepth);                //    |
+        gainModule.Set_valence_depth(vdepth);                   //    |
+    }                                                           //    V
+                                                                //   TU?
     gainModule.Set_electron_mass_in_plain(qme.c00);
     gainModule.Set_electron_mass_transverse(qme.c11);
     gainModule.Set_heavy_hole_mass_in_plain(qmhh.c00);

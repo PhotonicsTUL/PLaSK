@@ -134,6 +134,14 @@ namespace QW{
     void przygobl2();
     void przygobl_n(double);
     void przygobl_n(const ExternalLevels&, double);
+    void przygoblE(); // LUKASZ
+    void przygoblHH(); // LUKASZ
+	void przygoblLH(); // LUKASZ
+    double * sendLev(std::vector<double> &zewpoziomy); // LUKASZ
+    void przygoblHHc(std::vector<double> &iLevHH); // LUKASZ
+    void przygoblLHc(std::vector<double> &iLevLH); // LUKASZ
+	void przygoblQFL(double iTotalWellH); // LUKASZ
+    double GetGainAt(double E,double iTotalWellH); // LUKASZ
 
     int Break;
     static const double kB;
