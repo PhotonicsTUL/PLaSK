@@ -7,7 +7,7 @@
 namespace plask { namespace solvers { namespace slab {
 
 ExpansionPW3D::ExpansionPW3D(FourierReflection3D* solver): Expansion(solver), initialized(false),
-    symmetryl(E_UNSPECIFIED), symmetryt(E_UNSPECIFIED) {}
+    symmetry_long(E_UNSPECIFIED), symmetry_tran(E_UNSPECIFIED) {}
 
 size_t ExpansionPW3D::lcount() const {
     return SOLVER->getLayersPoints().size();
@@ -15,89 +15,101 @@ size_t ExpansionPW3D::lcount() const {
 
 void ExpansionPW3D::init()
 {
-//     auto geometry = SOLVER->getGeometry();
-//
-//     periodicl = geometry->isPeriodic(Geometry3D::DIRECTION_LONG);
-//     periodict = geometry->isPeriodic(Geometry3D::DIRECTION_TRAN);
-//
-//     left = geometry->getChild()->getBoundingBox().lower[0];
-//     right = geometry->getChild()->getBoundingBox().upper[0];
-//     back = geometry->getChild()->getBoundingBox().lower[1];
-//     front = geometry->getChild()->getBoundingBox().upper[1];
-//
-//     size_t refine = SOLVER->refine, M;
-//     if (refine == 0) refine = 1;
-//
-//     symmetricl = symmetrict = false;
-//     if (symmetryl != E_UNSPECIFIED || symmetryt != E_UNSPECIFIED) {
-//         // Test for off-diagonal NR components in which case we cannot use any symmetry
-//         bool off_diagonal = false;
-//         double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
-//         double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
-//         for (const RectilinearAxis& axis1: SOLVER->getLayersPoints()) {
-//             for (double x = left+dx/2; x < right; x += dx) {
-//                 Tensor3<dcomplex> nr = geometry->getMaterial(vec(x,axis1[0]))->NR(real(SOLVER->getWavelength()), 300.);
-//                 if (nr.c01 != 0. || nr.c10 != 0.) { off_diagonal = true; break; }
-//             }
-//             if (off_diagonal) break;
-//         }
-//         if (symmetryl != E_UNSPECIFIED) {
-//             if (!geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
-//                 throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
-//             if (off_diagonal)
-//                 throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-//             symmetricl = true;
-//         }
-//         if (symmetryt != E_UNSPECIFIED) {
-//             if (!geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
-//                 throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
-//             if (off_diagonal)
-//                 throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-//             symmetrict = true;
-//         }
-//     }
-//
-//     if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
-//         if (right <= 0) {
-//             left = -left; right = -right;
-//             std::swap(left, right);
-//         }
-//         if (left != 0) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
-//         if (!symmetric) left = -right;
-//     }
-//
-//     if (!periodic) {
-//         // Add PMLs
-//         if (!symmetric) left -= SOLVER->pml.size + SOLVER->pml.shift;
-//         right += SOLVER->pml.size + SOLVER->pml.shift;
-//     }
-//
-//     double L;
-//                                                             // N = 3  nN = 5  refine = 5  M = 25
-//     if (!symmetric) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
-//         L = right - left;                                   //  ^ ^ ^ ^ ^
-//         N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
-//         nN = 4 * SOLVER->getSize() + 1;
-//         M = refine * nN;                                    // N = 3  nN = 5  refine = 4  M = 20
-//         double dx = 0.5 * L * (refine-1) / M;               // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-//         xmesh = RegularAxis(left-dx, right-dx-L/M, M);      //  ^ ^ ^ ^
-//         xpoints = RegularAxis(left, right-L/N, N);          // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-//     } else {
-//         L = 2 * right;
-//         N = SOLVER->getSize() + 1;
-//         nN = 2 * SOLVER->getSize() + 1;                     // N = 3  nN = 5  refine = 4  M = 20
-//         M = refine * nN;                                    // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-//         double dx = 0.25 * L / M;                           //  ^ ^ ^ ^
-//         xmesh = RegularAxis(left + dx, right - dx, M);      // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-//         dx = 0.25 * L / N;
-//         xpoints = RegularAxis(left + dx, right - dx, N);
-//     }
-//
-//     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
-//                      N, matrixSize(), symmetric?" symmetric":"", separated?" separated":"");
-//
-//     matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
-//
+    auto geometry = SOLVER->getGeometry();
+
+    periodic_long = geometry->isPeriodic(Geometry3D::DIRECTION_LONG);
+    periodic_tran = geometry->isPeriodic(Geometry3D::DIRECTION_TRAN);
+
+    left = geometry->getChild()->getBoundingBox().lower[0];
+    right = geometry->getChild()->getBoundingBox().upper[0];
+    back = geometry->getChild()->getBoundingBox().lower[1];
+    front = geometry->getChild()->getBoundingBox().upper[1];
+
+    size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran, Ml, Mt;
+    if (refl == 0) refl = 1;
+    if (reft == 0) reft = 1;
+
+    symmetric_long = symmetric_tran = false;
+    if (symmetry_long != E_UNSPECIFIED) {
+        if (!geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
+            throw BadInput(solver->getId(), "Longitudinal symmetry not allowed for asymmetric structure");
+        symmetric_long = true;
+    }
+    if (symmetry_tran != E_UNSPECIFIED) {
+        if (!geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
+            throw BadInput(solver->getId(), "Transverse symmetry not allowed for asymmetric structure");
+        symmetric_tran = true;
+    }
+
+    if (geometry->isSymmetric(Geometry3D::DIRECTION_LONG)) {
+        if (front <= 0) {
+            back = -back; front = -front;
+            std::swap(back, front);
+        }
+        if (back != 0) throw BadMesh(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
+        if (!symmetric_long) back = -back;
+    }
+    if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
+        if (right <= 0) {
+            left = -left; right = -right;
+            std::swap(left, right);
+        }
+        if (left != 0) throw BadMesh(SOLVER->getId(), "Transversely symmetric geometry must have one of its sides at symmetry axis");
+        if (!symmetric_tran) left = -right;
+    }
+
+    if (!periodic_long) {
+        // Add PMLs
+        if (!symmetric_long) back -= SOLVER->pml_long.size + SOLVER->pml_long.shift;
+        front += SOLVER->pml_long.size + SOLVER->pml_long.shift;
+    }
+    if (!periodic_tran) {
+        // Add PMLs
+        if (!symmetric_tran) left -= SOLVER->pml_tran.size + SOLVER->pml_tran.shift;
+        right += SOLVER->pml_tran.size + SOLVER->pml_tran.shift;
+    }
+
+    double Ll, Lt;
+
+    if (!symmetric_long) {
+        Ll = front - back;
+        Nl = 2 * SOLVER->getLongSize() + 1;
+        nNl = 4 * SOLVER->getLongSize() + 1;
+        Ml = refl * nNl;
+        double dx = 0.5 * Ll * (refl-1) / Ml;
+        long_mesh = RegularAxis(back-dx, front-dx-Ll/Ml, Ml);
+    } else {
+        Ll = 2 * front;
+        Nl = SOLVER->getLongSize() + 1;
+        nNl = 2 * SOLVER->getLongSize() + 1;
+        Ml = refl * nNl;
+        double dx = 0.25 * Ll / Ml;
+        long_mesh = RegularAxis(back + dx, front - dx, Ml);
+    }                                                           // N = 3  nN = 5  refine = 5  M = 25
+    if (!symmetric_tran) {                                      //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
+        Lt = right - left;                                      //  ^ ^ ^ ^ ^
+        Nt = 2 * SOLVER->getTranSize() + 1;                     // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
+        nNt = 4 * SOLVER->getTranSize() + 1;
+        Mt = reft * nNt;                                        // N = 3  nN = 5  refine = 4  M = 20
+        double dx = 0.5 * Lt * (reft-1) / Mt;                   // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        tran_mesh = RegularAxis(left-dx, right-dx-Lt/Mt, Mt);   //  ^ ^ ^ ^
+    } else {                                                    // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+        Lt = 2 * right;
+        Nt = SOLVER->getTranSize() + 1;
+        nNt = 2 * SOLVER->getTranSize() + 1;                    // N = 3  nN = 5  refine = 4  M = 20
+        Mt = reft * nNt;                                        // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+        double dx = 0.25 * Lt / Mt;                             //  ^ ^ ^ ^
+        tran_mesh = RegularAxis(left + dx, right - dx, Mt);     // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+    }
+
+    SOLVER->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
+                     (!symmetric_long && !symmetric_tran)? "" :
+                     (symmetric_long && symmetric_tran)? " symmetric in longitudinal and transverse directions" :
+                     (!symmetric_long && symmetric_tran)? " symmetric in transverse direction" : " symmetric in longitudinal direction"
+                    );
+
+    matFFT = FFT::Forward2D(5, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+
 //     // Compute permeability coefficients
 //     mag.reset(nN, Tensor2<dcomplex>(0.));
 //     if (periodic) {
@@ -138,12 +150,12 @@ void ExpansionPW3D::init()
 //         }
 //     }
 //
-//     // Allocate memory for expansion coefficients
-//     size_t nlayers = lcount();
-//     coeffs.resize(nlayers);
-//     diagonals.assign(nlayers, false);
-//
-//     initialized = true;
+    // Allocate memory for expansion coefficients
+    size_t nlayers = lcount();
+    coeffs.resize(nlayers);
+    diagonals.assign(nlayers, false);
+
+    initialized = true;
 }
 
 void ExpansionPW3D::free() {
@@ -154,7 +166,7 @@ void ExpansionPW3D::free() {
 void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 {
 //     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
-//         throw BadInput(SOLVER->getId(), "No wavelength set specified");
+//         throw BadInput(SOLVER->getId(), "No wavelength specified");
 //
 //     auto geometry = SOLVER->getGeometry();
 //     const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
@@ -166,18 +178,46 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 //
 //     DataVector<Tensor3<dcomplex>> NR(M);
 //
-//     RectilinearMesh3D mesh(xmesh, axis1, RectilinearMesh3D::ORDER_TRANSPOSED);
-//     auto temperature = SOLVER->inTemperature(mesh);
+//     RectilinearMesh2D mesh(xmesh, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
+//
 //     double lambda = real(SOLVER->getWavelength());
+//
+//     auto temperature = SOLVER->inTemperature(mesh);
+//
+//     bool need_gain = false;
+//     std::vector<bool> gain_at(xmesh.size(), false);
+//     for (auto point: mesh) {
+//         auto roles = geometry->getRolesAt(point);
+//         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+//             need_gain = true;
+//             break;
+//         }
+//     }
+//     DataVector<const double> gain;
+//     if (need_gain) gain = SOLVER->inGain(mesh, lambda);
+//
 //     double maty = axis1[0]; // at each point along any vertical axis material is the same
 //     for (size_t i = 0; i < M; ++i) {
-//         auto material = geometry->getMaterial(Vec<2>(xmesh[i],maty));
-//         // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(Vec<2>(xmesh[i],y))!=material)return false; return true;}());
+//         auto material = geometry->getMaterial(vec(xmesh[i],maty));
+//         // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(vec(xmesh[i],y))!=material)return false; return true;}());
 //         double T = 0.; // average temperature in all vertical points
 //         for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
 //         T /= axis1.size();
 //         #pragma omp critical
 //         NR[i] = material->NR(lambda, T);
+//         if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
+//             if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+//             if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+//         }
+//         if (need_gain) {
+//             auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
+//             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+//                 double g = 0.; // average temperature in all vertical points
+//                 for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) g += gain[j];
+//                 double ni = lambda * g/axis1.size() * 7.95774715459e-09;
+//                 NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);
+//             }
+//         }
 //     }
 //
 //     for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR

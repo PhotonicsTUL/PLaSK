@@ -19,8 +19,8 @@ struct ExpansionPW3D: public Expansion {
         E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
     };
 
-    RegularAxis lmesh,                  ///< Horizontal axis for structure sampling in longitudinal direction
-                tmesh;                  ///< Horizontal axis for structure sampling in transverse direction
+    RegularAxis long_mesh,              ///< Horizontal axis for structure sampling in longitudinal direction
+                tran_mesh;              ///< Horizontal axis for structure sampling in transverse direction
 
     size_t Nl,                          ///< Number of expansion coefficients in longitudinal direction
            Nt;                          ///< Number of expansion coefficients in transverse direction
@@ -31,14 +31,14 @@ struct ExpansionPW3D: public Expansion {
     double right;                       ///< Right side of the sampled area
     double back;                        ///< Back side of the sampled area
     double front;                       ///< Front side of the sampled area
-    bool symmetricl,                    ///< Indicates if the expansion is a symmetric one in longitudinal direction
-         symmetrict;                    ///< Indicates if the expansion is a symmetric one in transverse direction
-    bool periodicl,                     ///< Indicates if the geometry is periodic (otherwise use PMLs) in longitudinal direction
-         periodict;                     ///< Indicates if the geometry is periodic (otherwise use PMLs) in transverse direction
+    bool symmetric_long,                ///< Indicates if the expansion is a symmetric one in longitudinal direction
+         symmetric_tran;                ///< Indicates if the expansion is a symmetric one in transverse direction
+    bool periodic_long,                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in longitudinal direction
+         periodic_tran;                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in transverse direction
     bool initialized;                   ///< Expansion is initialized
 
-    Component symmetryl,                 ///< Indicates symmetry if `symmetric` in longitudinal direction
-              symmetryt;                 ///< Indicates symmetry if `symmetric` in transverse direction
+    Component symmetry_long,            ///< Indicates symmetry if `symmetric` in longitudinal direction
+              symmetry_tran;            ///< Indicates symmetry if `symmetric` in transverse direction
 
 //     size_t pil,                         ///< Index of the beginning of the left PML
 //            pir;                         ///< Index of the beginning of the right PML

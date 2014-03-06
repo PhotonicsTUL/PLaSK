@@ -283,7 +283,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 //    write_debug("strain: %1%", strain);
 
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
-    double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth;
+    double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
 
     #pragma omp critical // necessary as the material may be defined in Python
     {
@@ -300,40 +300,52 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         qEc = region.materialQW->CB(T,qstrain);
         qEvhh = region.materialQW->VB(T,qstrain,'G','H');
         qEvlh = region.materialQW->VB(T,qstrain,'G','L');
-        bEc = region.materialBarrier->CB(T,qstrain);
-        bEvhh = region.materialBarrier->VB(T,qstrain,'G','H');
-        bEvlh = region.materialBarrier->VB(T,qstrain,'G','L');
+        bEc = region.materialBarrier->CB(T,bstrain);
+        bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
+        bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
         // to be continued...
+    }
 
-        qEg = 0.;
-        double cdepth = bEc - qEc;
+    qEg = 0.;
+    cdepth = bEc - qEc;
 
-        vhhdepth = qEvhh-bEvhh;
-        vlhdepth = qEvlh-bEvlh;
-        if ( (qstrain==0.) && (bstrain==0.) )
-            qEg = qEc-qEvhh;
-        else if ( (qstrain<0.) && (bstrain==0.) )
-            qEg = qEc-qEvhh;
-        else if ( (qstrain>0.) && (bstrain==0.) )
-            qEg = qEc-qEvlh;
-        else
-            qEg = qEc-qEvhh; // it will be changed
+    vhhdepth = qEvhh-bEvhh;
+    vlhdepth = qEvlh-bEvlh;
+    if ( (qstrain==0.) && (bstrain==0.) )
+        qEg = qEc-qEvhh;
+    else if ( (qstrain<0.) && (bstrain==0.) )
+        qEg = qEc-qEvhh;
+    else if ( (qstrain>0.) && (bstrain==0.) )
+        qEg = qEc-qEvlh;
+    else
+        qEg = qEc-qEvhh; // it will be changed
 
-        double vdepth = vhhdepth; // it will be changed
+    vdepth = vhhdepth; // it will be changed
 
-        if ((vhhdepth < 0.)&&(vlhdepth < 0.))
-            throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials %1% and %2%",
-                           region.materialQW->name(), region.materialBarrier->name());
+    if ((vhhdepth < 0.)&&(vlhdepth < 0.)) {
+        std::string qname, bname;
+        #pragma omp critical
+        {
+            qname = region.materialQW->name();
+            bname = region.materialBarrier->name();
+        }
+        throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials %1% and %2%", qname, bname);
+    }
 
-        if (cdepth < 0.)
-            throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%",
-                           region.materialQW->name(), region.materialBarrier->name());
+    if (cdepth < 0.) {
+        std::string qname, bname;
+        #pragma omp critical
+        {
+            qname = region.materialQW->name();
+            bname = region.materialBarrier->name();
+        }
+        throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%", qname, bname);
+    }
 
-        gainModule.Set_bandgap(qEg); // czemu ta linia jest tu, a nie |
-        gainModule.Set_conduction_depth(cdepth);                //    |
-        gainModule.Set_valence_depth(vdepth);                   //    |
-    }                                                           //    V
-                                                                //   TU?
+    gainModule.Set_bandgap(qEg);
+    gainModule.Set_conduction_depth(cdepth);
+    gainModule.Set_valence_depth(vdepth);
+
     gainModule.Set_electron_mass_in_plain(qme.c00);
     gainModule.Set_electron_mass_transverse(qme.c11);
     gainModule.Set_heavy_hole_mass_in_plain(qmhh.c00);

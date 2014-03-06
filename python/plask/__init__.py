@@ -17,7 +17,6 @@ Modules
    geometry
    mesh
    material
-   filter
    flow
    phys
    algorithm

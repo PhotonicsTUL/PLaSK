@@ -26,29 +26,13 @@ void ExpansionPW2D::init()
     if (refine == 0) refine = 1;
 
     symmetric = separated = false;
-    if (symmetry != E_UNSPECIFIED || polarization != E_UNSPECIFIED) {
-        // Test for off-diagonal NR components in which case we cannot use neither symmetry nor separation
-        bool off_diagonal = false;
-        double dx =  (right-left) / (2 * SOLVER->getSize() * refine);
-        for (const RectilinearAxis& axis1: SOLVER->getLayersPoints()) {
-            for (double x = left+dx/2; x < right; x += dx) {
-                Tensor3<dcomplex> nr = geometry->getMaterial(vec(x,axis1[0]))->NR(real(SOLVER->getWavelength()), 300.);
-                if (nr.c01 != 0. || nr.c10 != 0.) { off_diagonal = true; break; }
-            }
-            if (off_diagonal) break;
-        }
-        if (symmetry != E_UNSPECIFIED) {
-            if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
-                throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
-            if (off_diagonal)
-                throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-            symmetric = true;
-        }
-        if (polarization != E_UNSPECIFIED) {
-            if (off_diagonal)
-                throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
-            separated = true;
-        }
+    if (symmetry != E_UNSPECIFIED) {
+        if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
+            throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
+        symmetric = true;
+    }
+    if (polarization != E_UNSPECIFIED) {
+        separated = true;
     }
 
     if (geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN)) {
@@ -184,6 +168,10 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         T /= axis1.size();
         #pragma omp critical
         NR[i] = material->NR(lambda, T);
+        if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
+            if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+            if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+        }
         if (need_gain) {
             auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {

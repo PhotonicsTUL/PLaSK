@@ -28,8 +28,8 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
-                && (!solver->expansion.symmetricl || symmetry_long == other.symmetry_long)
-                && (!solver->expansion.symmetrict || symmetry_tran == other.symmetry_tran)
+                && (!solver->expansion.symmetric_long || symmetry_long == other.symmetry_long)
+                && (!solver->expansion.symmetric_tran || symmetry_tran == other.symmetry_tran)
             ;
         }
     };
@@ -37,9 +37,9 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
   protected:
 
     /// Maximum order of the orthogonal base in longitudinal direction
-    size_t sizel;
+    size_t size_long;
     /// Maximum order of the orthogonal base in transverse direction
-    size_t sizet;
+    size_t size_tran;
 
     /// Class responsoble for computing expansion coefficients
     ExpansionPW3D expansion;
@@ -57,11 +57,16 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
     /// Computed modes
     std::vector<Mode> modes;
 
-    /// Mesh multiplier for finer computation of the refractive indices
-    size_t refine;
+    /// Mesh multiplier for finer computation of the refractive indices in the longitudinal direction
+    size_t refine_long;
+    /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
+    size_t refine_tran;
 
-    /// Lateral PMLs
-    PML pml;
+    /// Longitudinal PMLs
+    PML pml_long;
+
+    /// Transverse PMLs
+    PML pml_tran;
 
 //     FourierReflection3D(const std::string& name="");
 //
@@ -76,26 +81,26 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //     size_t findMode(dcomplex neff);
 //
     /// Get order of the orthogonal base in the longitudinal direction
-    size_t getLongSize() const { return sizel; }
+    size_t getLongSize() const { return size_long; }
 
     /// Get order of the orthogonal base in the transverse direction
-    size_t getTranSize() const { return sizet; }
+    size_t getTranSize() const { return size_tran; }
 
     /// Set order of the orthogonal base in the longitudinal direction
     void setLongSize(size_t n) {
-        sizel = n;
+        size_long = n;
         invalidate();
     }
     /// Set order of the orthogonal base in the transverse direction
     void setTranSize(size_t n) {
-        sizet = n;
+        size_tran = n;
         invalidate();
     }
 
     /// Set order of the orthogonal base
     void setSizes(size_t nl, size_t nt) {
-        sizel = nl;
-        sizet = nt;
+        size_long = nl;
+        size_tran = nt;
         invalidate();
     }
 
