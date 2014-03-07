@@ -274,13 +274,18 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (if_strain == true)
     {
-        qstrain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
-        bstrain = (region.materialBarrier->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
+        //qstrain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+        //bstrain = (region.materialBarrier->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
+        qstrain = bstrain = 0.;
+        writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
+        writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
     }
-
-//    write_debug("a_QW: %1%", region.materialQW->lattC(T,'a'));
-//    write_debug("a_sub: %1%", materialSubstrate->lattC(T,'a'));
-//    write_debug("strain: %1%", strain);
+    //write_debug("a_QW: %1%", region.materialQW->lattC(T,'a'));
+    //write_debug("a_sub: %1%", materialSubstrate->lattC(T,'a'));
+    //write_debug("strain: %1%", qstrain);
+    //writelog(LOG_RESULT, "latt const for QW: %1%", region.materialQW->lattC(T,'a'));
+    //writelog(LOG_RESULT, "latt const for subs: %1%", materialSubstrate->lattC(T,'a'));
+    //writelog(LOG_RESULT, "latt const for barr: %1%", region.materialBarrier->lattC(T,'a'));
 
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
     double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
@@ -306,20 +311,26 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         // to be continued...
     }
 
-    qEg = 0.;
-    cdepth = bEc - qEc;
+    gainModule.Set_electron_mass_in_plain(qme.c00);
+    gainModule.Set_electron_mass_transverse(qme.c11);
+    gainModule.Set_heavy_hole_mass_in_plain(qmhh.c00);
+    gainModule.Set_heavy_hole_mass_transverse(qmhh.c11);
+    gainModule.Set_light_hole_mass_in_plain(qmlh.c00);
+    gainModule.Set_light_hole_mass_transverse(qmlh.c11);
+    gainModule.Set_electron_mass_in_barrier(bme.c00);
+    gainModule.Set_heavy_hole_mass_in_barrier(bmhh.c00);
+    gainModule.Set_light_hole_mass_in_barrier(bmlh.c00);
+    gainModule.Set_well_width(region.qwlen);
+    gainModule.Set_waveguide_width(region.totallen);
+    gainModule.Set_lifetime(lifetime);
 
+    gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
+    gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
+
+    qEg = qEc-qEvhh;
+    cdepth = bEc - qEc;
     vhhdepth = qEvhh-bEvhh;
     vlhdepth = qEvlh-bEvlh;
-    if ( (qstrain==0.) && (bstrain==0.) )
-        qEg = qEc-qEvhh;
-    else if ( (qstrain<0.) && (bstrain==0.) )
-        qEg = qEc-qEvhh;
-    else if ( (qstrain>0.) && (bstrain==0.) )
-        qEg = qEc-qEvlh;
-    else
-        qEg = qEc-qEvhh; // it will be changed
-
     vdepth = vhhdepth; // it will be changed
 
     if ((vhhdepth < 0.)&&(vlhdepth < 0.)) {
@@ -342,38 +353,63 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%", qname, bname);
     }
 
-    gainModule.Set_bandgap(qEg);
     gainModule.Set_conduction_depth(cdepth);
-    gainModule.Set_valence_depth(vdepth);
 
-    gainModule.Set_electron_mass_in_plain(qme.c00);
-    gainModule.Set_electron_mass_transverse(qme.c11);
-    gainModule.Set_heavy_hole_mass_in_plain(qmhh.c00);
-    gainModule.Set_heavy_hole_mass_transverse(qmhh.c11);
-    gainModule.Set_light_hole_mass_in_plain(qmlh.c00);
-    gainModule.Set_light_hole_mass_transverse(qmlh.c11);
-
-    gainModule.Set_electron_mass_in_barrier(bme.c00);
-    gainModule.Set_heavy_hole_mass_in_barrier(bmhh.c00);
-    gainModule.Set_light_hole_mass_in_barrier(bmlh.c00);
-
-    gainModule.Set_well_width(region.qwlen);
-    gainModule.Set_waveguide_width(region.totallen);
-
-    gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
-    gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
-
-    gainModule.Set_lifetime(lifetime);
-    gainModule.Set_momentum_matrix_element(matrixelem);
-
-    // Now compute levels
-    if (extern_levels) {
-        gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
-    } else {
-        gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwtotallen));
+    if (if_strain == true)
+    {
+        // compute levels
+        if (extern_levels)
+            gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
+        else
+        {
+            gainModule.przygoblE();
+            if (vhhdepth > 0.)
+            {
+                gainModule.Set_valence_depth(vhhdepth);
+                gainModule.przygoblHH();
+            }
+            if (vlhdepth > 0.)
+            {
+                gainModule.Set_valence_depth(vlhdepth);
+                gainModule.przygoblLH();
+            }
+        }
+        if ( (qstrain==0.) && (bstrain==0.) )
+        {
+            qEg = qEc-qEvhh;
+            vdepth = vhhdepth;
+        }
+        else if ( (qstrain<0.) && (bstrain==0.) )
+        {
+            qEg = qEc-qEvhh;
+            vdepth = vhhdepth;
+        }
+        else if ( (qstrain>0.) && (bstrain==0.) )
+        {
+            qEg = qEc-qEvlh;
+            vdepth = vlhdepth;
+        }
     }
 
-    return gainModule;
+    gainModule.Set_bandgap(qEg);
+    gainModule.Set_valence_depth(vdepth);
+    gainModule.Set_momentum_matrix_element(matrixelem);
+
+    if (if_strain == true)
+    {
+         //gainModule.przygoblQFL(gainModule.przel_dlug_z_angstr(region.qwtotallen));
+         gainModule.przygoblQFL(region.qwtotallen);
+         return gainModule;
+    }
+    else
+    {
+        // compute levels
+        if (extern_levels)
+            gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
+        else
+            gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwtotallen));
+        return gainModule;
+    }
 }
 
 //  TODO: it should return computed levels

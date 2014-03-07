@@ -1426,6 +1426,17 @@ void gain::przygoblLH() // LUKASZ
   lh.poziomy=znajdzpoziomy(lh);
 }
 /*****************************************************************************/
+void gain::przygoblALL(const ExternalLevels& zewpoziomy, double sumaszer) // LUKASZ
+{
+  if (kasuj_poziomy) el.~nosnik();
+  el.poziomy = zewpoziomy.el;
+  if (kasuj_poziomy) hh.~nosnik();
+  hh.poziomy = zewpoziomy.hh;
+  if (kasuj_poziomy) lh.~nosnik();
+  lh.poziomy = zewpoziomy.lh;
+  kasuj_poziomy = false;
+}
+/*****************************************************************************/
 double *gain::sendLev(std::vector<double> &zewpoziomy) // LUKASZ
 {
   int rozm=zewpoziomy.size();
@@ -1452,6 +1463,7 @@ void gain::przygoblQFL(double iTotalWellH) // LUKASZ
 	
   Efc=qFlc_n(sszer);
   Efv=qFlv_n(sszer);
+
   //std::cout << "Quasi Fermi level for electrons = " << Efc << "\n";
   //std::cout << "Quasi Fermi level for holes = " << Efv << "\n";
   ustawione='t';

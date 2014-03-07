@@ -137,6 +137,7 @@ namespace QW{
     void przygoblE(); // LUKASZ
     void przygoblHH(); // LUKASZ
 	void przygoblLH(); // LUKASZ
+    void przygoblALL(const ExternalLevels& zewpoziomy, double sumaszer); // LUKASZ
     double * sendLev(std::vector<double> &zewpoziomy); // LUKASZ
     void przygoblHHc(std::vector<double> &iLevHH); // LUKASZ
     void przygoblLHc(std::vector<double> &iLevLH); // LUKASZ
