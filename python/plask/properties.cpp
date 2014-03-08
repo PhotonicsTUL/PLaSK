@@ -41,7 +41,7 @@ const char* docstring_receiver =
 
     "See also:\n"
     "   Provider of %3%: :class:`plask.flow.%1%Provider%2%`\n\n"
-    "   Data filter for %3%: :class:`plask.filter.%1%Filter%2%`";
+    "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 
 const char* docstring_receiver_connect =
     "Connect some provider to the receiver.\n\n"
@@ -195,7 +195,8 @@ template <> const char* docstring_provider<FIELD_PROPERTY>() { return
     "   <plask.Data at 0x1234567>\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n"
+    "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 }
 
 template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
@@ -244,7 +245,8 @@ template <> const char* docstring_provider<MULTI_FIELD_PROPERTY>() { return
     "   3\n\n"
 
     "See also:\n"
-    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n";
+    "   Receiver of %3%: :class:`plask.flow.%1%Receiver%2%`\n"
+    "   Data filter for %3%: :class:`plask.flow.%1%Filter%2%`";
 }
 
 template const char* docstring_provider<SINGLE_VALUE_PROPERTY>();
@@ -263,8 +265,7 @@ void register_standard_properties()
     flow_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
     py::scope().attr("flow") = flow_module;
     flow_module.attr("__doc__") =
-        "Data flow classes for standard properties\n"
-        "-----------------------------------------\n\n"
+        "Data flow classes for standard properties.\n\n"
 
         "This module contains providers, receivers, and filters for standard properties.\n"
         "These classes are present in binary solvers, but you may also use them in your\n"
@@ -328,7 +329,7 @@ void register_standard_properties()
         "An example temperature filter for target 2D geometry can be constructed as\n"
         "follows:\n\n"
 
-        ">>> temp_filter = filter.TemperatureFilter2D(mygeometry2d)\n\n"
+        ">>> temp_filter = flow.TemperatureFilter2D(mygeometry2d)\n\n"
 
         "Having an existing filter, you may attach a source provider to it, using bracket\n"
         "indexing. The `index` is a geometry object either existing in the target geometry\n"

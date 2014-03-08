@@ -29,8 +29,6 @@ PLaSK User Guide
    api
    glossary
    genindex
-   modindex
-   search
    
 * :doc:`preface`
 * :doc:`introduction`
@@ -49,5 +47,3 @@ PLaSK User Guide
 * :doc:`api`
 * :doc:`glossary`
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

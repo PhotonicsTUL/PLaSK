@@ -13,15 +13,15 @@ template <typename PropertyT> inline const char* docstrig_property_optional_args
 template <> inline const char* docstrig_property_optional_args<Gain>() { return ", wavelength"; }
 template <> inline const char* docstrig_property_optional_args<GainOverCarriersConcentration>() { return ", wavelength"; }
 template <> inline const char* docstrig_property_optional_args_desc<Gain>() { return
-    ":param float wavelength: The wavelength at which the gain is computed.\n";
+    ":param float wavelength: The wavelength at which the gain is computed [nm].\n";
 }
 template <> inline const char* docstrig_property_optional_args_desc<GainOverCarriersConcentration>() { return
-    ":param float wavelength: The wavelength at which the gain is computed.\n";
+    ":param float wavelength: The wavelength at which the gain is computed [nm].\n";
 }
 
 template <> inline const char* docstrig_property_optional_args<RefractiveIndex>() { return ", wavelength"; }
 template <> inline const char* docstrig_property_optional_args_desc<RefractiveIndex>() { return
-    ":param float wavelength: The wavelength at which the refractive index is computed.\n";
+    ":param float wavelength: The wavelength at which the refractive index is computed [nm].\n";
 }
 
 
