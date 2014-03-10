@@ -274,15 +274,14 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (if_strain == true)
     {
-        //qstrain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
-        //bstrain = (region.materialBarrier->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
-        qstrain = bstrain = 0.;
+        qstrain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+        bstrain = (region.materialBarrier->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
+        qstrain *= 1.;
+        bstrain *= 1.;
         writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
         writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
     }
-    //write_debug("a_QW: %1%", region.materialQW->lattC(T,'a'));
-    //write_debug("a_sub: %1%", materialSubstrate->lattC(T,'a'));
-    //write_debug("strain: %1%", qstrain);
+
     //writelog(LOG_RESULT, "latt const for QW: %1%", region.materialQW->lattC(T,'a'));
     //writelog(LOG_RESULT, "latt const for subs: %1%", materialSubstrate->lattC(T,'a'));
     //writelog(LOG_RESULT, "latt const for barr: %1%", region.materialBarrier->lattC(T,'a'));
@@ -308,7 +307,6 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         bEc = region.materialBarrier->CB(T,bstrain);
         bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
         bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
-        // to be continued...
     }
 
     gainModule.Set_electron_mass_in_plain(qme.c00);
@@ -331,7 +329,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     cdepth = bEc - qEc;
     vhhdepth = qEvhh-bEvhh;
     vlhdepth = qEvlh-bEvlh;
-    vdepth = vhhdepth; // it will be changed
+    vdepth = vhhdepth;
 
     if ((vhhdepth < 0.)&&(vlhdepth < 0.)) {
         std::string qname, bname;
@@ -397,9 +395,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (if_strain == true)
     {
-         //gainModule.przygoblQFL(gainModule.przel_dlug_z_angstr(region.qwtotallen));
          gainModule.przygoblQFL(region.qwtotallen);
-         return gainModule;
     }
     else
     {
@@ -408,8 +404,9 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
             gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
         else
             gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwtotallen));
-        return gainModule;
     }
+
+    return gainModule;
 }
 
 //  TODO: it should return computed levels

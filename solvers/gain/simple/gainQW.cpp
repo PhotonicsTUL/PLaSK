@@ -1428,6 +1428,14 @@ void gain::przygoblLH() // LUKASZ
 /*****************************************************************************/
 void gain::przygoblALL(const ExternalLevels& zewpoziomy, double sumaszer) // LUKASZ
 {
+  if(Mt<=0)
+  {
+    Mt=element();
+  }
+  if(T<0 || n_r<0 || szer<0 || szer_fal<0 || Eg<0 || Mt<0 || tau<0 || konc<0)
+  {
+    throw CriticalException("Error in gain module");
+  }
   if (kasuj_poziomy) el.~nosnik();
   el.poziomy = zewpoziomy.el;
   if (kasuj_poziomy) hh.~nosnik();
@@ -1459,6 +1467,15 @@ void gain::przygoblLHc(std::vector<double> &iLevLH) // LUKASZ
 /*****************************************************************************/
 void gain::przygoblQFL(double iTotalWellH) // LUKASZ
 {
+  if(Mt<=0)
+  {
+    Mt=element();
+  }
+  if(T<0 || n_r<0 || szer<0 || szer_fal<0 || Eg<0 || Mt<0 || tau<0 || konc<0)
+  {
+    throw CriticalException("Error in gain module");
+  }
+
   double sszer=przel_dlug_z_angstr(iTotalWellH);
 	
   Efc=qFlc_n(sszer);
