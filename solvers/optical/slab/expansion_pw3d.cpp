@@ -26,8 +26,7 @@ void ExpansionPW3D::init()
     front = geometry->getChild()->getBoundingBox().upper[1];
 
     size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran, Ml, Mt;
-    if (refl == 0) refl = 1;
-    if (reft == 0) reft = 1;
+    if (refl == 0) refl = 1;  if (reft == 0) reft = 1;
 
     symmetric_long = symmetric_tran = false;
     if (symmetry_long != E_UNSPECIFIED) {
@@ -165,63 +164,67 @@ void ExpansionPW3D::free() {
 
 void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 {
-//     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
-//         throw BadInput(SOLVER->getId(), "No wavelength specified");
-//
-//     auto geometry = SOLVER->getGeometry();
-//     const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
-//
-//     size_t refine = SOLVER->refine;
-//     size_t M = refine * nN;
-//
-//     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
-//
-//     DataVector<Tensor3<dcomplex>> NR(M);
-//
-//     RectilinearMesh2D mesh(xmesh, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
-//
-//     double lambda = real(SOLVER->getWavelength());
-//
-//     auto temperature = SOLVER->inTemperature(mesh);
-//
-//     bool need_gain = false;
-//     std::vector<bool> gain_at(xmesh.size(), false);
-//     for (auto point: mesh) {
-//         auto roles = geometry->getRolesAt(point);
-//         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-//             need_gain = true;
-//             break;
-//         }
-//     }
-//     DataVector<const double> gain;
-//     if (need_gain) gain = SOLVER->inGain(mesh, lambda);
-//
-//     double maty = axis1[0]; // at each point along any vertical axis material is the same
-//     for (size_t i = 0; i < M; ++i) {
-//         auto material = geometry->getMaterial(vec(xmesh[i],maty));
-//         // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(vec(xmesh[i],y))!=material)return false; return true;}());
-//         double T = 0.; // average temperature in all vertical points
-//         for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
-//         T /= axis1.size();
-//         #pragma omp critical
-//         NR[i] = material->NR(lambda, T);
-//         if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
-//             if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-//             if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
-//         }
-//         if (need_gain) {
-//             auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
-//             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-//                 double g = 0.; // average temperature in all vertical points
-//                 for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) g += gain[j];
-//                 double ni = lambda * g/axis1.size() * 7.95774715459e-09;
-//                 NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);
-//             }
-//         }
-//     }
-//
-//     for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR
-//
+    if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
+        throw BadInput(SOLVER->getId(), "No wavelength specified");
+
+    auto geometry = SOLVER->getGeometry();
+    const RectilinearAxis& axis2 = SOLVER->getLayerPoints(l);
+
+    size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran;
+    if (refl == 0) refl = 1; if (reft == 0) reft = 1;
+    size_t Ml = refl * nNl,  Mt = reft * nNt;
+    size_t M = Ml * Mt;
+
+    SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+
+    DataVector<Tensor3<dcomplex>> NR(M);
+
+    RectilinearMesh3D mesh(long_mesh, tran_mesh, axis2, RectilinearMesh3D::ORDER_210);
+
+    double lambda = real(SOLVER->getWavelength());
+
+    auto temperature = SOLVER->inTemperature(mesh);
+
+    bool need_gain = false;
+    for (auto point: mesh) {
+        auto roles = geometry->getRolesAt(point);
+        if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+            need_gain = true;
+            break;
+        }
+    }
+    DataVector<const double> gain;
+    if (need_gain) gain = SOLVER->inGain(mesh, lambda);
+
+    double matv = axis2[0]; // at each point along any vertical axis material is the same
+    for (size_t it = 0; it < M; ++it) {
+        for (size_t il = 0; il < Ml; ++il) {
+            size_t i = Ml*it + il;
+            auto material = geometry->getMaterial(vec(long_mesh[il], tran_mesh[it], matv));
+            double T = 0.; // average temperature in all vertical points
+            for (size_t j = mesh.index(il, it, 0) * axis2.size(), end = mesh.index(il, it, axis2.size())+1; j != end; ++j) T += temperature[j];
+            T /= axis2.size();
+            #pragma omp critical
+            NR[i] = material->NR(lambda, T);
+            if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
+                if (symmetric_long || symmetric_tran) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+            }
+            if (need_gain) {
+                auto roles = geometry->getRolesAt(vec(long_mesh[il], tran_mesh[it], matv));
+                if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                    double g = 0.; // average gain in all vertical points
+                    for (size_t j = mesh.index(il, it, 0) * axis2.size(), end = mesh.index(il, it, axis2.size())+1; j != end; ++j) g += gain[j];
+                    double ni = lambda * g/axis2.size() * 7.95774715459e-09;
+                    NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);
+                }
+            }
+        }
+    }
+
+    for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR
+
+    size_t nN = nNl * nNt;
+
 //     // Add PMLs
 //     if (!periodic) {
 //         Tensor3<dcomplex> ref;
@@ -239,7 +242,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 //             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
 //         }
 //     }
-//
+
 //     // Average material parameters
 //     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
 //     double factor = 1. / refine;
@@ -250,36 +253,40 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 //         coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
 //         coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
 //     }
-//
-//     // Check if the layer is uniform
-//     if (periodic) {
-//         diagonals[l] = true;
-//         for (size_t i = 1; i != nN; ++i) {
-//             Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
-//             if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) &&
-//                   is_zero(diff.c01) && is_zero(diff.c10))) {
-//                 diagonals[l] = false;
-//                 break;
-//             }
-//         }
-//     } else
-//         diagonals[l] = false;
-//
-//     if (diagonals[l]) {
-//         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-//         for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
-//     } else {
-//         // Perform FFT
-//         matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
-//         // Smooth coefficients
-//         if (SOLVER->smooth) {
-//             double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
-//             for (size_t i = 0; i != nN; ++i) {
-//                 int k = i; if (k > nN/2) k -= nN;
-//                 coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
-//             }
-//         }
-//     }
+
+    // Check if the layer is uniform
+    if (periodic_tran && periodic_long) {
+        diagonals[l] = true;
+        for (size_t i = 1; i != nN; ++i) {
+            Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
+            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) &&
+                  is_zero(diff.c01) && is_zero(diff.c10))) {
+                diagonals[l] = false;
+                break;
+            }
+        }
+    } else
+        diagonals[l] = false;
+
+    if (diagonals[l]) {
+        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
+        for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
+    } else {
+        // Perform FFT
+        matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+        // Smooth coefficients
+        if (SOLVER->smooth) {
+            double bb4 = 2.*M_PI / ((right-left) * (symmetric_tran? 2 : 1)) / ((front-back) * (symmetric_long? 2 : 1));
+            bb4 *= bb4; bb4 *= 0.25;  // (2π/Lt)² (2π/Ll)² / 4
+            for (size_t it = 0; it != nNl; ++it) {
+                int kt = it; if (kt > nNt/2) kt -= nNt;
+                for (size_t il = 0; il != nNl; ++il) {
+                    int kl = il; if (kl > nNl/2) kl -= nNl;
+                    coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * bb4 * kt*kt * kl*kl);
+                }
+            }
+        }
+    }
 }
 
 

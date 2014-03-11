@@ -135,6 +135,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
 
     size_t refine = SOLVER->refine;
+    if (refine == 0) refine = 1;
     size_t M = refine * nN;
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
@@ -148,7 +149,6 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
     auto temperature = SOLVER->inTemperature(mesh);
 
     bool need_gain = false;
-    std::vector<bool> gain_at(xmesh.size(), false);
     for (auto point: mesh) {
         auto roles = geometry->getRolesAt(point);
         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
@@ -175,7 +175,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         if (need_gain) {
             auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                double g = 0.; // average temperature in all vertical points
+                double g = 0.; // average gain in all vertical points
                 for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) g += gain[j];
                 double ni = lambda * g/axis1.size() * 7.95774715459e-09;
                 NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);

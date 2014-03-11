@@ -421,28 +421,38 @@ struct RegisterCombinedProvider {
     }
 
     RegisterCombinedProvider(const std::string& name)  {
-        Class pyclass(name.c_str(), (std::string("Combined provider for ") + CombinedProviderT::NAME).c_str());
+        py::scope scope = flow_module;
+        Class pyclass(name.c_str(), (std::string(
+            "Combined provider for ") + CombinedProviderT::NAME + ".\n\n"
+            "This provider holds a sum of the other providers, so the provided field\n"
+            "is the sum of its sources.\n"
+        ).c_str());
         pyclass.def("__iadd__", &__iadd__, py::with_custodian_and_ward<1,2>())
                .def("__len__", &CombinedProviderT::size)
-               .def("add", &__iadd__, "Add another provider to the combination", py::with_custodian_and_ward_postcall<0,2>())
-               .def("remove", &CombinedProviderT::remove, "Remove provider from the combination")
-               .def("clear", &CombinedProviderT::clear, "Clear all elements of combined provider")
+               .def("add", &__iadd__, py::arg("provider"),
+                    "Add another provider to the combination.\n"
+                    "Using this function is equal to calling ``self += provider``.\n\n"
+                    "Args:\n"
+                    "    provider: Provider to add.\n",
+                    py::with_custodian_and_ward_postcall<0,2>()
+                   )
+               .def("remove", &CombinedProviderT::remove, py::arg("provider"),
+                    "Remove provider from the combination.\n\n"
+                    "Args:\n"
+                    "    provider: Provider to remove.\n"
+                   )
+               .def("clear", &CombinedProviderT::clear, "Clear all elements of the combined provider.")
                .def("__add__", &__add__, py::with_custodian_and_ward_postcall<0,2>())
         ;
 
-        py::scope scope;
-        boost::optional<py::object> oldadd;
-        try { oldadd.reset(scope.attr("__add__")); }
-        catch (py::error_already_set) { PyErr_Clear(); }
-        py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
-                                 py::with_custodian_and_ward_postcall<0,2,
-                                 py::return_value_policy<py::manage_new_object>>>());
         py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
             py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseType>()).m_class_object
         )));
-        if (cls) py::object(cls).attr("__add__") = scope.attr("__add__");
-        if (oldadd) scope.attr("__add__") = *oldadd;
-        else py::delattr(scope, "__add__");
+        if (!cls) throw CriticalException("No registered provider for %1%", py::type_id<typename CombinedProviderT::BaseType>().name());
+        py::scope cls_scope = py::object(cls);
+        py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
+                                 py::with_custodian_and_ward_postcall<0,2,
+                                 py::return_value_policy<py::manage_new_object>>>());
     }
 
 };
