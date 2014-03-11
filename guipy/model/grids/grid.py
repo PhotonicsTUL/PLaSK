@@ -1,5 +1,5 @@
 # Base classes for entries in grids model
-from xml.etree import ElementTree
+from lxml.etree import ElementTree
 
 class Grid(object):
     

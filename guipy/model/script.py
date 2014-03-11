@@ -1,5 +1,5 @@
 from model.base import SectionModel
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 
 class ScriptModel(SectionModel):
 
@@ -8,7 +8,7 @@ class ScriptModel(SectionModel):
         self.code = ''
 
     def setXMLElement(self, element):
-        self.setText(element.text if isinstance(element, ElementTree.Element) else '')
+        self.setText(element.text if element is not None else '')
 
     # XML element that represents whole section
     def getXMLElement(self):

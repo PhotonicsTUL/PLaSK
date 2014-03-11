@@ -1,5 +1,5 @@
 from model.grids.grid import Mesh
-from xml.etree import ElementTree
+from lxml.etree import ElementTree
 
 class AxisConf(object):
     

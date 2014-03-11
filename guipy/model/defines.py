@@ -1,5 +1,5 @@
 from PyQt4 import QtCore
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 from model.table import TableModel
 from collections import OrderedDict
 from model.info import Info
@@ -24,7 +24,7 @@ class DefinesModel(TableModel):
         
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()
-        if isinstance(element, ElementTree.Element):
+        if element is not None:
             self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")) for c in element.iter("define")]
         else:
             self.entries = []

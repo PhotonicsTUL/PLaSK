@@ -1,4 +1,4 @@
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 from model.base import SectionModelTreeBased
 from controller.source import SourceEditController
 from controller.defines import DefinesController
@@ -31,7 +31,7 @@ class XPLDocument(object):
         tree = ElementTree.parse(fileName)
         for i in range(len(XPLDocument.SECTION_NAMES)):
             element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
-            if isinstance(element, ElementTree.Element):
+            if element is not None:
                 self.getModelByIndex(i).setFileXMLElement(element, fileName)
             else:
                 self.getModelByIndex(i).clear()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtCore
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 from model.table import TableModel, TableModelEditMethods
 from model.info import Info
 from collections import OrderedDict
@@ -188,7 +188,7 @@ class MaterialsModel(TableModel):
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()
         del self.entries[:]
-        if isinstance(element, ElementTree.Element):
+        if element is not None:
             for mat in element.iter("material"):
                 self.entries.append(
                         MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None),  [ (prop.tag, prop.text) for prop in mat ])

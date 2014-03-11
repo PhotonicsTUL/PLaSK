@@ -1,5 +1,5 @@
 from PyQt4 import QtCore
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 from model.table import TableModel
 from model.info import Info
 #from guis import DefinesEditor
@@ -17,7 +17,7 @@ class ConnectsModel(TableModel):
         
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()
-        if isinstance(element, ElementTree.Element):
+        if element is not None:
             self.entries = [ConnectsModel.Entry(c.attrib.get("out", ""), c.attrib.get("in", "")) for c in element.iter("connect")]
         else:
             self.entries = []

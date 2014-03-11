@@ -1,6 +1,6 @@
 # coding: utf8
 
-from xml.etree import ElementTree
+from lxml import etree as ElementTree
 from utils import Signal
 from info import Info
 import os
@@ -62,7 +62,7 @@ class SectionModel(InfoSource):
         #return ElementTree.tostring(self.getXMLElement())
 
     def setText(self, text):
-        self.setXMLElement(ElementTree.fromstringlist(['<', self.name, '>', text, '</', self.name, '>']))
+        self.setXMLElement(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>']))   # .encode('utf-8') wymagane (tylko) przez lxml
         
     def isReadOnly(self):
         """
