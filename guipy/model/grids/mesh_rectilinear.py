@@ -2,6 +2,7 @@ from model.grids.grid import Mesh
 from lxml.etree import ElementTree
 
 class AxisConf(object):
+    """Store axis configuration of RectilinearMesh"""
     
     def __init__(self, start = None, stop = None, num = None, points = None):
         self.start = start
@@ -16,7 +17,7 @@ class AxisConf(object):
         if self.points: axisElement.text = ", ".join(self.points)
         
 class RectilinearMesh(Mesh):
-    """Rectilinear Mesh model (1, 2, or 3D - see self.dim)"""
+    """Model of RectilinearMesh (1D, 2D, or 3D - see self.dim)"""
     
     def __init__(self, dim, name):
         Mesh.__init__(self, name)

@@ -29,8 +29,13 @@ def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
             if fileName in usednames: raise RuntimeError("Error while reading section \"%s\": circular reference was detected." % sectionName)
 
 class ExternalSource(object):
+    """Store information about data source of section if the source is external (file name)"""
     
     def __init__(self, fileName, oryginalFileName = None):
+        """
+            :param str fileName: name of file with source of section (or reference to next file)
+            :param str oryginalFileName: name of file, from which the XPL is read (used when fileName is relative)
+        """
         object.__init__(self)
         self.fileName = fileName
         if oryginalFileName: fileName = os.path.join(os.path.dirname(oryginalFileName), fileName)
@@ -49,6 +54,10 @@ class SectionModel(InfoSource):
         self.externalSource = None
         
     def fireChanged(self, refreshInfo = True):
+        """
+            Inform listeners that this section was changed.
+            :param bool refreshInfo: only if True, info of this section will be refresh
+        """
         if refreshInfo: self.markInfoInvalid()
         self.changed(self)
         if refreshInfo: self.fireInfoChanged()
@@ -71,12 +80,17 @@ class SectionModel(InfoSource):
         return self.externalSource != None
     
     def getFileXMLElement(self):
+        """
+            Get XML element ready to save in XPL document.
+            It represents the whole section and either contains data or points to external source (has external attribute).
+        """
         if self.externalSource != None:
             return ElementTree.Element(self.name, { "external": self.externalSource.fileName })
         else:
             return self.getXMLElement()
         
     def clear(self):
+        """Make this section empty."""
         self.setText('')
         self.fireChanged()
         
