@@ -5,6 +5,7 @@ from utils import Signal
 from info import Info
 import os
 from model.info import InfoSource
+from utils.xml import print_interior
 
 def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
         """
@@ -41,6 +42,8 @@ class ExternalSource(object):
         if oryginalFileName: fileName = os.path.join(os.path.dirname(oryginalFileName), fileName)
         self.fileNameAbs = os.path.abspath(fileName)
 
+#TODO TreeFragmentModel = SectionModel without some methods like getFileXMLElement, external, etc. ... only InfoSource + change signal + get/set XML 
+
 class SectionModel(InfoSource):
     
     def __init__(self, name, info_cb = None):
@@ -63,11 +66,7 @@ class SectionModel(InfoSource):
         if refreshInfo: self.fireInfoChanged()
 
     def getText(self):
-        element = self.getXMLElement()
-        text = element.text.lstrip('\n') if element.text else ''
-        for c in element:
-            text += ElementTree.tostring(c)
-        return text
+        return print_interior(self.getXMLElement())
         #return ElementTree.tostring(self.getXMLElement())
 
     def setText(self, text):
