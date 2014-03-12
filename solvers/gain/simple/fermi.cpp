@@ -365,11 +365,29 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
             {
                 gainModule.Set_valence_depth(vhhdepth);
                 gainModule.przygoblHH();
+                if (bstrain<0.)
+                {
+                    std::vector<double> tLevHH;
+                    tLevHH.clear();
+                    double tDelEv = bEvhh-bEvlh;
+                    for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i)
+                        tLevHH.push_back(gainModule.Get_heavy_hole_level_from_bottom(i)+tDelEv);
+                    gainModule.przygoblHHc(tLevHH);
+                }
             }
             if (vlhdepth > 0.)
             {
                 gainModule.Set_valence_depth(vlhdepth);
                 gainModule.przygoblLH();
+                if (bstrain>0.)
+                {
+                    std::vector<double> tLevLH;
+                    tLevLH.clear();
+                    double tDelEv = bEvhh-bEvlh;
+                    for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i)
+                        tLevLH.push_back(gainModule.Get_light_hole_level_from_bottom(i)-tDelEv);
+                    gainModule.przygoblLHc(tLevLH);
+                }
             }
         }
         if ( (qstrain==0.) && (bstrain==0.) )
