@@ -81,16 +81,18 @@ struct DataFrom3DtoCyl2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
         DataVector<ValueType> result(requested_points.size());
         PointsOnCircleMesh circleMesh;
         circleMesh.setPointsCount(pointsCount);
+        NoLogging nolog;
         for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
-                const auto v = requested_points[src_point_nr];
-                circleMesh.center = getCenterForPoint(v);
-                circleMesh.radius = v.rad_r();
-                result[src_point_nr] =
-                        PropertyT::value3Dto2D(average(this->in(
-                            circleMesh,
-                            std::forward<ExtraArgs>(extra_args)...,
-                            method
-                        )));
+            const auto v = requested_points[src_point_nr];
+            circleMesh.center = getCenterForPoint(v);
+            circleMesh.radius = v.rad_r();
+            result[src_point_nr] =
+                    PropertyT::value3Dto2D(average(this->in(
+                        circleMesh,
+                        std::forward<ExtraArgs>(extra_args)...,
+                        method
+                    )));
+            nolog.silence();
         }
         return result;
     }

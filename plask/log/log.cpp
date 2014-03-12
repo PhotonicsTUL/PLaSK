@@ -148,10 +148,26 @@ bool forcedLoglevel = false;
 shared_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
-    if (level <= maxLoglevel) {
+    if (level <= maxLoglevel && (!default_logger->silent || level <= LOG_WARNING)) {
         #pragma omp critical(writelog)
         default_logger->writelog(level, msg);
     }
+}
+
+NoLogging::NoLogging(): old_state(default_logger->silent) {}
+
+
+NoLogging::NoLogging(bool silent): old_state(default_logger->silent) {
+    default_logger->silent = silent;
+}
+
+NoLogging::~NoLogging() {
+    default_logger->silent = old_state;
+}
+
+/// Turn off logging in started without it
+void NoLogging::set(bool silent) {
+    default_logger->silent = silent;
 }
 
 } // namespace plask

@@ -109,22 +109,24 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
              ));
         DataVector<ValueType> result(requested_points.size());
         PointsOnLineMesh lineMesh;
-            const double d = this->outputObj->getLength() / this->pointsCount;
-            lineMesh.lastPointNr = this->pointsCount - 1;
-            lineMesh.longSize = this->outputObj->getLength() - d;
-            lineMesh.begin.lon() = this->outputObj->getLength() + d * 0.5;
-            for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
-                const auto v = requested_points[src_point_nr];
-                lineMesh.begin.tran() = this->inTranslation.tran() + v.tran();
-                lineMesh.begin.vert() = this->inTranslation.vert() + v.vert();
-                result[src_point_nr] =
-                        PropertyT::value3Dto2D(average(this->in(
-                            lineMesh,
-                            std::forward<ExtraArgs>(extra_args)...,
-                            method
-                        )));
-            }
-            return result;
+        const double d = this->outputObj->getLength() / this->pointsCount;
+        lineMesh.lastPointNr = this->pointsCount - 1;
+        lineMesh.longSize = this->outputObj->getLength() - d;
+        lineMesh.begin.lon() = this->outputObj->getLength() + d * 0.5;
+        NoLogging nolog;
+        for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
+            const auto v = requested_points[src_point_nr];
+            lineMesh.begin.tran() = this->inTranslation.tran() + v.tran();
+            lineMesh.begin.vert() = this->inTranslation.vert() + v.vert();
+            result[src_point_nr] =
+                    PropertyT::value3Dto2D(average(this->in(
+                        lineMesh,
+                        std::forward<ExtraArgs>(extra_args)...,
+                        method
+                    )));
+            nolog.silence();
+        }
+        return result;
     }
 };
 

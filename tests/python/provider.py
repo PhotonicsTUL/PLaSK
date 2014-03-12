@@ -61,6 +61,7 @@ class ReceiverTest(unittest.TestCase):
        self.assertEqual( inout.inWavelength(1), 2. )
        self.assertEqual( inout.inWavelength(2), 3. )
 
+
 class PythonProviderTest(unittest.TestCase):
 
     class CustomSolver(object):
@@ -116,16 +117,22 @@ class ProfileTest(unittest.TestCase):
         warm = plask.geometry.Rectangle(20, 2, 'GaAs')
         hot = plask.geometry.Rectangle(20, 2, 'GaAs')
         stack = plask.geometry.Stack2D()
+
         top = stack.prepend(warm)
         stack.prepend(hot)
         bottom = stack.prepend(warm)
+
         geom = plask.geometry.Cylindrical2D(stack)
+
         profile1 = plask.StepProfile(geom)
         profile1[warm, top] = 1e7
         profile1[hot] = 1e7
+
         profile2 = plask.StepProfile(geom)
         profile2[warm, bottom] = 1e7
         profile2[hot] = 1e7
+
         receiver = plask.flow.HeatReceiverCyl()
         receiver.connect(profile1.outHeat + profile2.outHeat)
+
         self.assertEqual( list(receiver(mesh.Rectilinear2D([10], [1, 3, 5]))), [1e7, 2e7, 1e7] )

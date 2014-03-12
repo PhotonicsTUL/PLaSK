@@ -301,9 +301,13 @@ class StepProfile(object):
 
     def __call__(self, mesh, *args):
         result = ones(len(mesh), self.dtype) * self._default
-        cont = self._geometry.object_contains
-        for obj,val in self.steps.items():
-            obj_iter = (cont(obj[0], obj[1], p) if type(obj) == tuple else cont(obj, p) for p in mesh)
+        for xobj,val in self.steps.items():
+            try:
+                obj, pth = xobj
+            except TypeError:
+                obj_iter = (self._geometry.object_contains(xobj, p) for p in mesh)
+            else:
+                obj_iter = (self._geometry.object_contains(obj, pth, p) for p in mesh)
             result[fromiter(obj_iter, bool, len(mesh))] = val
         return result
 

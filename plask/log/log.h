@@ -44,9 +44,40 @@ inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
 }
 
 /**
+ * Logger switch.
+ * Creating objects of these class temporarily turns off logging.
+ */
+class NoLogging {
+    bool old_state;
+
+  public:
+    NoLogging();
+
+    NoLogging(bool silent);
+
+    ~NoLogging();
+
+    /// Set logging state
+    void set(bool silent);
+
+    /// Turn off logging
+    void silence() { set(true); }
+};
+
+/**
  * Abstract class that is base for all loggers
  */
-struct Logger {
+class Logger {
+
+    /// Flag indicating temporarily turned of logging
+    bool silent;
+
+    friend class NoLogging;
+    friend void writelog(LogLevel, const std::string&);
+
+  public:
+
+    Logger(): silent(false) {}
 
     virtual ~Logger() {}
 

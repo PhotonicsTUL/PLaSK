@@ -91,14 +91,17 @@ public:
         if (innerSources.empty())   //special case, for fast getting data from outer source
             return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         DataVector<ValueT> result(dst_mesh.size());
+        NoLogging nolog;
+        bool silent = outerSource && typeid(*outerSource) != typeid(ConstDataSource<PropertyT, OutputSpaceType>);
         for (std::size_t i = 0; i < result.size(); ++i) {
             // iterate over inner sources, if inner sources don't provide data, use outer source:
             boost::optional<ValueT> innerVal;
             for (const DataSourceTPtr& innerSource: innerSources) {
                 innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
-                if (innerVal) break;
+                if (innerVal) { silent = true; break; }
             }
             result[i] = *(innerVal ? innerVal : outerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method));
+            if (silent) nolog.silence();
         }
         return result;
     }
