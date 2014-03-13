@@ -183,7 +183,7 @@ class MaterialsModel(TableModel):
             
     
     def __init__(self, parent=None, info_cb = None, *args):
-        TableModel.__init__(self, 'materials', parent, info_cb, *args)
+        super(MaterialsModel, self).__init__('materials', parent, info_cb, *args)
         
     def setXMLElement(self, element):
         self.layoutAboutToBeChanged.emit()

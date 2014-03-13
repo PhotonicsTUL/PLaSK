@@ -42,19 +42,15 @@ class ExternalSource(object):
         if oryginalFileName: fileName = os.path.join(os.path.dirname(oryginalFileName), fileName)
         self.fileNameAbs = os.path.abspath(fileName)
 
-#TODO TreeFragmentModel = SectionModel without some methods like getFileXMLElement, external, etc. ... only InfoSource + change signal + get/set XML 
-
-class SectionModel(InfoSource):
+class TreeFragmentModel(InfoSource):
+    """Base class for fragment of tree (with change signal and info)"""
     
-    def __init__(self, name, info_cb = None):
+    def __init__(self, info_cb = None):
         """
-            :param str name: name of section
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
         InfoSource.__init__(self, info_cb)
-        self.name = name
         self.changed = Signal()
-        self.externalSource = None
         
     def fireChanged(self, refreshInfo = True):
         """
@@ -68,6 +64,18 @@ class SectionModel(InfoSource):
     def getText(self):
         return print_interior(self.getXMLElement())
         #return ElementTree.tostring(self.getXMLElement())
+
+
+class SectionModel(TreeFragmentModel):
+    
+    def __init__(self, name, info_cb = None):
+        """
+            :param str name: name of section
+            :param info_cb: call when list of error has been changed with parameters: section name, list of errors
+        """
+        super(SectionModel, self).__init__(info_cb)
+        self.name = name
+        self.externalSource = None
 
     def setText(self, text):
         self.setXMLElement(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>']))   # .encode('utf-8') wymagane (tylko) przez lxml
@@ -116,7 +124,7 @@ class SectionModel(InfoSource):
         self.setXMLElement(element)
         
     def createInfo(self):
-        res = []
+        res = super(SectionModel, self).createInfo()
         if self.isReadOnly():
             res.append(Info('%s section is read-only' % self.name, Info.INFO))
         if self.externalSource != None:
