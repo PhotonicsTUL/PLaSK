@@ -18,6 +18,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
     outLightIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2DSolver::getRefractiveIndex),
+    outHeat(this, &EffectiveIndex2DSolver::getHeat),
     k0(2e3*M_PI/980) {
     inTemperature = 300.;
     inGain = NAN;
@@ -823,6 +824,10 @@ DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(c
         result[i] = Tensor3<dcomplex>(nrCache[x][y]);
     }
     return result;
+}
+
+
+plask::DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mesh, plask::InterpolationMethod method) {
 }
 
 

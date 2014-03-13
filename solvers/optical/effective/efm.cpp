@@ -19,7 +19,8 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
     outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes),
-    outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex) {
+    outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex),
+    outHeat(this, &EffectiveFrequencyCylSolver::getHeat) {
     inTemperature = 300.;
     root.tolx = 1.0e-6;
     root.tolf_min = 1.0e-7;
@@ -794,6 +795,10 @@ DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIn
         result[i] = Tensor3<dcomplex>(nrCache[r][z]);
     }
     return result;
+}
+
+
+DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method) {
 }
 
 

@@ -26,7 +26,7 @@ using namespace plask::solvers::effective;
     "    resteps (integer): Number of steps on the real axis during the search.\n" \
     "    imsteps (integer): Number of steps on the imaginary axis during the search.\n" \
     "    eps (complex): required precision of the search.\n" \
-    
+
 static py::object EffectiveIndex2DSolver_getSymmetry(const EffectiveIndex2DSolver::Mode& self) {
     switch (self.symmetry) {
         case EffectiveIndex2DSolver::SYMMETRY_POSITIVE: return py::object("positive");
@@ -277,6 +277,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outNeff, "");
         PROVIDER(outLightIntensity, "");
         PROVIDER(outRefractiveIndex, "");
+        PROVIDER(outHeat, "");
         RO_FIELD(modes, "List of the computed modes.");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
@@ -364,6 +365,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outLoss, "");
         PROVIDER(outLightIntensity, "");
         PROVIDER(outRefractiveIndex, "");
+        PROVIDER(outHeat, "");
         RO_FIELD(modes, "List of the computed modes.");
         solver.add_property("vat", &EffectiveFrequencyCylSolver_getStripeR, &EffectiveFrequencyCylSolver_setStripeR,
                             "Radial position of at which the vertical part of the field is calculated.\n\n"
