@@ -274,8 +274,10 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (if_strain == true)
     {
-        qstrain = (region.materialQW->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialQW->lattC(T,'a');
-        bstrain = (region.materialBarrier->lattC(T,'a') - this->materialSubstrate->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
+        if (!this->materialSubstrate) throw ComputationError(this->getId(), "No layer with role=substrate has been found");
+
+        qstrain = (this->materialSubstrate->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+        bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
         qstrain *= 1.;
         bstrain *= 1.;
         writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
@@ -308,6 +310,11 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
         bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
     }
+
+    if (qEc<qEvhh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for heavy holes = %2% eV", qEc, qEvhh);
+    if (qEc<qEvlh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for light holes = %2% eV", qEc, qEvlh);
+    if (bEc<bEvhh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for heavy holes = %2% eV", bEc, bEvhh);
+    if (bEc<bEvlh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for light holes = %2% eV", bEc, bEvlh);
 
     gainModule.Set_electron_mass_in_plain(qme.c00);
     gainModule.Set_electron_mass_transverse(qme.c11);
