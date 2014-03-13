@@ -380,31 +380,43 @@ void register_calculation_spaces() {
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
         "Geometry in 2D Cartesian space.\n\n"
-        "Cartesian2D(geometry, length=infty, **borders)\n\n"
+        "Cartesian2D(root, length=infty, **borders)\n\n"
         "Create a space around the two-dimensional geometry object with given length.\n\n"
         "Args:\n"
-        "    geometry (GeometryObject2D Extrusion): Root object of the geometry.\n"
+        "    root (GeometryObject2D Extrusion): Root object of the geometry.\n"
         "        If this parameters is an extrusion, the `length` should be skipped,\n"
-        "        as it is read directly from extrusion.\n\n"
+        "        as it is read directly from extrusion.\n"
         "    length (float): Length of the geometry.\n"
         "        This information is required by some solvers. Furthermore it is\n"
         "        necessary if you want to use :mod:`plask.filters` to translate the\n"
         "        data between this geometry and the :class:`Cartesian3D` geometry.\n\n"
         "    borders (dict): Optional borders specification.\n"
         "        Borders are given as additional constructor keyword arguments. Available\n"
-        "        keys are `left`, `right`, `top`, and `bottom` and their values must be\n"
-        "        strings specifying the border (either a material name or `mirror`,\n"
-        "        `periodic`, or `extend`).\n\n"
+        "        keys are *left*, *right*, *top*, and *bottom* and their values must be\n"
+        "        strings specifying the border (either a material name or *mirror*,\n"
+        "        *periodic*, or *extend*).\n\n"
         "Example:\n"
         "    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
         "    >>> geometry.Cartesian2D(block, length=10, left='mirror', bottom='AlAs')\n"
         "    <plask.geometry.Cartesian2D object at (0x3dd6c70)>",
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCartesian__init__, 1))
-        .add_property("item", &Geometry2DCartesian::getChild, ":class:`GeometryObject2D` at the root of the tree.")
-        .add_property("extrusion", &Geometry2DCartesian::getExtrusion, ":class:`Extrusion` object at the very root of the tree.")
-        .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>, "Minimal rectangle which contains all object inside the geometry.")
-        .def_readwrite("default_material", &Geometry2DCartesian::defaultMaterial, "Material of the 'empty' regions of the geometry.")
+        .add_property("item", &Geometry2DCartesian::getChild,
+                      ":class:`~plask.geometry.GeometryObject2D` at the root of the geometry tree."
+                     )
+        .add_property("extrusion", &Geometry2DCartesian::getExtrusion,
+                      ":class:`~plask.geometry.Extrusion` object at the very root of the tree."
+                     )
+        .add_property("bbox", &Space_childBoundingBox<Geometry2DCartesian>,
+                      "Minimal rectangle which contains all points of the geometry object.\n\n"
+                      "See also:\n"
+                      "    :class:`plask.geometry.Box2D`\n"
+                     )
+        .def_readwrite("default_material", &Geometry2DCartesian::defaultMaterial,
+                       "Material of the *empty* regions of the geometry.\n\n"
+                       "This material is returned by :meth:`~plask.geometry.Cartesian2D.get_material`\n"
+                       "for the points that do not belong to any object in the geometry tree.\n"
+                      )
         .add_property("front_material", &Geometry2DCartesian::getFrontMaterial, &Geometry2DCartesian::setFrontMaterial,
                       "Material at the positive side of the axis along the extrusion.")
         .add_property("back_material", &Geometry2DCartesian::getBackMaterial, &Geometry2DCartesian::setBackMaterial,
@@ -412,79 +424,359 @@ void register_calculation_spaces() {
         .add_property("borders", &Geometry2DCartesian_getBorders, &Space_setBorders,
                       "Dictionary specifying the geometry borders.")
         .def("get_material", &Geometry2DCartesian::getMaterial, (py::arg("point")))
-        .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, (py::arg("c0"), py::arg("c1")),
-             "Return the material at the given point.")
-        .def("get_leafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
+        .def("get_material", &Space_getMaterial<Geometry2DCartesian>::call, (py::arg("c0"), "c1"),
+             "Get material at the given point.\n\n"
+             "This method returns a material object with the material at the given point if\n"
+             "this point is located within the geometry object *self*. Otherwise the method\n"
+             "returns :attr:`~plask.geometry.Cartesian2D.default_material`.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    Material at the specified point."
+            )
+        .def("get_leafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),
+             "Get list of the geometry tree leafs.\n\n"
+             "This method returns all the geometry tree leafs located under this geometry\n"
+             "object. By *leaf* we understand a proper geometry object, in contrast to any\n"
+             "container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of translations of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_translations`.\n"
+            )
         .def("get_leafs_positions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsPositions,
-             (py::arg("path")=py::object()), "Calculate positions of all leafs")
+             (py::arg("path")=py::object()),
+             "Calculate positions of all the geometry tree leafs.\n\n"
+             "This method computes position of all the geometry tree leafs located under this\n"
+             "geometry object. By *leaf* we understand a proper geometry object, in contrast\n"
+             "to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_translations`.\n"
+            )
         .def("get_leafs_bboxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const PathHints&)const) &Geometry2DCartesian::getLeafsBoundingBoxes,
-             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
-        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
+             (py::arg("path")=py::object()),
+             "Calculate bounding boxes of all the geometry tree leafs.\n\n"
+             "This method computes the bounding boxes of all the geometry tree leafs located\n"
+             "under this geometry object. By *leaf* we understand a proper geometry object,\n"
+             "in contrast to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_translations`.\n"
+            )
+        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCartesian>, (py::arg("path")=py::object()),
+             "Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
+             "This method computes the :class:`Translation` objects of all the geometry tree\n"
+             "leafs located under this geometry object. By *leaf* we understand a proper\n"
+             "geometry object, in contrast to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of translations of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_leafs_translations`.\n"
+            )
         .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectPositions,
-             (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
+             (py::arg("object"), py::arg("path")=py::object()),
+             "Calculate positions of all instances of the specified object.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the instances of\n"
+             "    the object.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order,\n"
+             "provided they are called with the same arguments:\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_object_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_object_positions`\n"
+            )
         .def("get_object_bboxes", (std::vector<Box2D>(Geometry2DCartesian::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCartesian::getObjectBoundingBoxes,
-             (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
+             (py::arg("object"), py::arg("path")=py::object()),
+             "Calculate bounding boxes of all instances of specified object.\n\n"
+             "The bounding boxes are computed in the local coordinates of *self*.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "Returns:\n"
+             "    sequence: List of bounding boxes of the instances of the object.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order,\n"
+             "provided they are called with the same arguments:\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_object_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian2D.get_object_positions`\n"
+            )
         .def("get_paths", &Geometry2DCartesian::getPathsAt, (py::arg("point"), py::arg("all")=false),
-             "Return subtree containg paths to all leafs covering specified point")
-        .def("get_paths", &Space_getPathsTo<Geometry2DCartesian>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
-        .def("get_roles", &Geometry_getRolesAt<Geometry2DCartesian>, py::arg("point"), "Return roles of objects at specified point")
-        .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCartesian>, (py::arg("c0"), "c1"), "Return roles of objects at specified point")
-        .def("has_role", &Geometry_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "point"), "Return true if the specified point has given role")
-        .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "c0", "c1"), "Return true if the specified point has given role")
+             "Get subtree containing paths to all leafs covering the specified point.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "    bool all: If *True* then all the leafs intersecting the point are\n"
+             "              considered. Otherwise, only the path to the topmost (i.e. visible)\n"
+             "              object is returned.\n"
+             "Returns:\n"
+             "    Subtree with the path to the specified point.\n"
+             "See also:\n"
+             "    :class:`plask.geometry.Subtree`"
+            )
+        .def("get_paths", &Space_getPathsTo<Geometry2DCartesian>::call, (py::arg("c0"), "c1", py::arg("all")=false))
+        .def("get_roles", &Geometry_getRolesAt<Geometry2DCartesian>, py::arg("point"),
+             "Get roles of objects at specified point.\n\n"
+             "This method returns a set of all the roles given to the every object\n"
+             "intersecting the specified point.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    set: Set of the roles at given point."
+            )
+        .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCartesian>, (py::arg("c0"), "c1"))
+        .def("has_role", &Geometry_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "point"),
+             "Test if the specified point has a given role.\n\n"
+             "This method checks if any object intersecting the specified point has the role\n"
+             "*role*.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    bool: True if the point has the role *role*."
+            )
+        .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCartesian>, (py::arg("role"), "c0", "c1"))
         .def("object_contains", (bool(Geometry2DCartesian::*)(const GeometryObject&,const PathHints&,const Vec<2>&)const)&Geometry2DCartesian::objectIncludes,
-             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+             (py::arg("object"), "path", "point"),
+             "Return true if the specified object contains given point"
+            )
         .def("object_contains", (bool(Geometry2DCartesian::*)(const GeometryObject&,const Vec<2>&)const)&Geometry2DCartesian::objectIncludes,
-             (py::arg("object"), "point"), "Return true if the specified object contains given point")
+             (py::arg("object"), "point"))
         .def("object_contains", &objectIncludes1_2D<Geometry2DCartesian>, (py::arg("object"), "path", "c0", "c1"),
-             "Return true if the specified child contains given point")
-        .def("object_contains", &objectIncludes2_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"),
-             "Return true if the specified child contains given point")
-//         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
+             "Test if the specified geometry object contains a point.\n\n"
+             "The given geometry object must be located somewhere within the *self*\n"
+             "geometry tree.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    bool: True if the specified geometry object contains the given point."
+            )
+        .def("object_contains", &objectIncludes2_2D<Geometry2DCartesian>, (py::arg("object"), "c0", "c1"))
+//         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
         "Geometry in 2D cylindrical space\n\n"
-        "Cylindrical2D(geometry, **borders)\n"
-        "    Create a space around the two-dimensional geometry object.\n\n"
-        "    'geometry' can be either a 2D geometry object or plask.geometry.Revolution.\n"
-        "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
+        "Cylindrical2D(root, **borders)\n"
+        "Create a cylindrical space around the two-dimensional geometry object.\n\n"
+        "Args:\n"
+        "    root (GeometryObject2D or Revolution): Root object of the geometry.\n"
+        "    borders (dict): Optional borders specification.\n"
+        "        Borders are given as additional constructor keyword arguments. Available\n"
+        "        keys are *inner*, *outer*, *top*, and *bottom* and their values must be\n"
+        "        strings specifying the border (either a material name or *mirror*,\n"
+        "        *periodic*, or *extend*).\n\n"
+        "Example:\n"
+        "    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
+        "    >>> geometry.Cylindrical2D(block, bottom='AlAs', outer='extend')\n"
+        "    <plask.geometry.Cylindrical2D object at (0x3dd6c70)>",
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCylindrical__init__, 1))
-        .add_property("item", &Geometry2DCylindrical::getChild, "GeometryObject2D at the root of the tree")
-        .add_property("revolution", &Geometry2DCylindrical::getRevolution, "Revolution object at the very root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>, "Minimal rectangle which contains all points of the geometry object")
-        .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial, "Material of the 'empty' regions of the geometry")
+        .add_property("item", &Geometry2DCylindrical::getChild,
+                      ":class:`~plask.geometry.GeometryObject2D` at the root of the geometry tree."
+                     )
+        .add_property("revolution", &Geometry2DCylindrical::getRevolution,
+                      ":class:`~plask.geometry.Revolution` object at the very root of the tree."
+                     )
+        .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>,
+                      "Minimal rectangle which contains all points of the geometry object.\n\n"
+                      "See also:\n"
+                      "    :class:`plask.geometry.Box2D`\n"
+                     )
+        .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial,
+                       "This material is returned by :meth:`~plask.geometry.Cylindrical2D.get_material`\n"
+                       "for the points that do not belong to any object in the geometry tree.\n"
+                       "any object in the geometry tree.\n"
+                      )
         .add_property("borders", &Geometry2DCylindrical_getBorders, &Space_setBorders,
-                      "Dictionary specifying the type of the surroundings around the structure")
-        .def("get_material", &Geometry2DCylindrical::getMaterial, "Return material at given point", (py::arg("point")))
-        .def("get_material", &Space_getMaterial<Geometry2DCylindrical>::call, "Return material at given point", (py::arg("c0"), py::arg("c1")))
-        .def("get_leafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
+                      "Dictionary specifying the geometry borders.")
+        .def("get_material", &Geometry2DCylindrical::getMaterial, (py::arg("point")))
+        .def("get_material", &Space_getMaterial<Geometry2DCylindrical>::call, (py::arg("c0"), "c1"),
+             "Get material at the given point.\n\n"
+             "This method returns a material object with the material at the given point if\n"
+             "this point is located within the geometry object *self*. Otherwise the method\n"
+             "returns :attr:`~plask.geometry.Cylindrical2D.default_material`.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    Material at the specified point."
+            )
+        .def("get_leafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=py::object()),
+             "Get list of the geometry tree leafs.\n\n"
+             "This method returns all the geometry tree leafs located under this geometry\n"
+             "object. By *leaf* we understand a proper geometry object, in contrast to any\n"
+             "container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of translations of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+            )
         .def("get_leafs_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsPositions,
-             (py::arg("path")=py::object()), "Calculate positions of all leafs")
+             (py::arg("path")=py::object()),
+             "Calculate positions of all the geometry tree leafs.\n\n"
+             "This method computes position of all the geometry tree leafs located under this\n"
+             "geometry object. By *leaf* we understand a proper geometry object, in contrast\n"
+             "to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+            )
         .def("get_leafs_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
-             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
-        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
-        .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectPositions,
-             (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
-        .def("get_object_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const GeometryObject&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
-             (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
+             (py::arg("path")=py::object()),
+             "Calculate bounding boxes of all the geometry tree leafs.\n\n"
+             "This method computes the bounding boxes of all the geometry tree leafs located\n"
+             "under this geometry object. By *leaf* we understand a proper geometry object,\n"
+             "in contrast to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+            )
+        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()),
+             "Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
+             "This method computes the :class:`Translation` objects of all the geometry tree\n"
+             "leafs located under this geometry object. By *leaf* we understand a proper\n"
+             "geometry object, in contrast to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of translations of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+            )
+        .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCylindrical::getObjectPositions,
+             (py::arg("object"), py::arg("path")=py::object()),
+             "Calculate positions of all instances of the specified object.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the instances of\n"
+             "    the object.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order,\n"
+             "provided they are called with the same arguments:\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_object_bboxes`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_object_positions`\n"
+            )
+        .def("get_object_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
+             (py::arg("object"), py::arg("path")=py::object()),
+             "Calculate bounding boxes of all instances of specified object.\n\n"
+             "The bounding boxes are computed in the local coordinates of *self*.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "Returns:\n"
+             "    sequence: List of bounding boxes of the instances of the object.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order,\n"
+             "provided they are called with the same arguments:\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_object_bboxes`,\n"
+             ":meth:`~plask.geometry.Cylindrical2D.get_object_positions`\n"
+            )
         .def("get_paths", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
-             "Return subtree containing paths to all leafs covering specified point")
-        .def("get_paths", &Space_getPathsTo<Geometry2DCylindrical>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("all")=false))
-        .def("get_roles", &Geometry_getRolesAt<Geometry2DCylindrical>, py::arg("point"), "Return roles of objects at specified point")
-        .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCylindrical>, (py::arg("c0"), "c1"), "Return roles of objects at specified point")
-        .def("has_role", &Geometry_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "point"), "Return true if the specified point has given role")
-        .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "c0", "c1"), "Return true if the specified point has given role")
+             "Get subtree containing paths to all leafs covering the specified point.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "    bool all: If *True* then all the leafs intersecting the point are\n"
+             "              considered. Otherwise, only the path to the topmost (i.e. visible)\n"
+             "              object is returned.\n"
+             "Returns:\n"
+             "    Subtree with the path to the specified point.\n"
+             "See also:\n"
+             "    :class:`plask.geometry.Subtree`"
+            )
+        .def("get_paths", &Space_getPathsTo<Geometry2DCylindrical>::call, (py::arg("c0"), "c1", py::arg("all")=false))
+        .def("get_roles", &Geometry_getRolesAt<Geometry2DCylindrical>, py::arg("point"),
+             "Get roles of objects at specified point.\n\n"
+             "This method returns a set of all the roles given to the every object\n"
+             "intersecting the specified point.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    set: Set of the roles at given point."
+            )
+        .def("get_roles", &Geometry2D_getRolesAt<Geometry2DCylindrical>, (py::arg("c0"), "c1"))
+        .def("has_role", &Geometry_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "point"),
+             "Test if the specified point has a given role.\n\n"
+             "This method checks if any object intersecting the specified point has the role\n"
+             "*role*.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    bool: True if the point has the role *role*."
+            )
+        .def("has_role", &Geometry2D_hasRoleAt<Geometry2DCylindrical>, (py::arg("role"), "c0", "c1"))
         .def("object_contains", (bool(Geometry2DCylindrical::*)(const GeometryObject&,const PathHints&,const Vec<2>&)const)&Geometry2DCylindrical::objectIncludes,
-             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+             (py::arg("object"), "path", "point"),
+             "Return true if the specified object contains given point"
+            )
         .def("object_contains", (bool(Geometry2DCylindrical::*)(const GeometryObject&,const Vec<2>&)const)&Geometry2DCylindrical::objectIncludes,
-             (py::arg("object"), "point"), "Return true if the specified object contains given point")
+             (py::arg("object"), "point"))
         .def("object_contains", &objectIncludes1_2D<Geometry2DCylindrical>, (py::arg("object"), "path", "c0", "c1"),
-             "Return true if the specified child contains given point")
-        .def("object_contains", &objectIncludes2_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"),
-             "Return true if the specified child contains given point")
-//         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
+             "Test if the specified geometry object contains a point.\n\n"
+             "The given geometry object must be located somewhere within the *self*\n"
+             "geometry tree.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    bool: True if the specified geometry object contains the given point."
+            )
+        .def("object_contains", &objectIncludes2_2D<Geometry2DCylindrical>, (py::arg("object"), "c0", "c1"))
+//         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
 
@@ -492,42 +784,192 @@ void register_calculation_spaces() {
         "Geometry in 3D space\n\n"
         "Cartesian3D(geometry, **borders)\n"
         "    Create a space around the two-dimensional geometry object.\n\n"
-        "    'geometry' should be either a 3D geometry object.\n"
-        "    'borders' is a dictionary specifying the type of the surroundings around the structure.", //TODO
+        "Args:\n"
+        "    root (GeometryObject3D): Root object of the geometry.\n"
+        "    borders (dict): Optional borders specification.\n"
+        "        Borders are given as additional constructor keyword arguments. Available\n"
+        "        keys are *back*, *front*, *left*, *right*, *top*, and *bottom* and their\n"
+        "        values must be strings specifying the border (either a material name or\n"
+        "        *mirror*, *periodic*, or *extend*).\n\n"
+        "Example:\n"
+        "    >>> block = geometry.Block3D(4, 2, 1, 'GaAs')\n"
+        "    >>> geometry.Cartesian3D(block, left='mirror', bottom='GaAs',\n"
+        "    ...                      front='periodic', back='periodic')\n"
+        "    <plask.geometry.Cartesian3D object at (0x3dd6c70)>",
         py::no_init)
         .def("__init__", raw_constructor(Geometry3D__init__, 1))
-        .add_property("item", &Geometry3D::getChild, "GeometryObject2D at the root of the tree")
-        .add_property("bbox", &Space_childBoundingBox<Geometry3D>, "Minimal rectangle which contains all points of the geometry object")
-        .def_readwrite("default_material", &Geometry3D::defaultMaterial, "Material of the 'empty' regions of the geometry")
+        .add_property("item", &Geometry3D::getChild,
+                      ":class:`~plask.geometry.GeometryObject3D` at the root of the geometry tree."
+                     )
+        .add_property("bbox", &Space_childBoundingBox<Geometry3D>,
+                      "Minimal rectangle which contains all points of the geometry object.\n\n"
+                      "See also:\n"
+                      "    :class:`plask.geometry.Box3D`\n"
+                     )
+        .def_readwrite("default_material", &Geometry3D::defaultMaterial,
+                       "Material of the *empty* regions of the geometry.\n\n"
+                       "This material is returned by :meth:`~plask.geometry.Cartesian3D.get_material`\n"
+                       "for the points that do not belong to any object in the geometry tree.\n"
+                      )
         .add_property("borders", &Geometry3D_getBorders, &Space_setBorders,
-                      "Dictionary specifying the type of the surroundings around the structure")
-        .def("get_material", &Geometry3D::getMaterial, "Return material at given point", (py::arg("point")))
-        .def("get_material", &Space_getMaterial<Geometry3D>::call, "Return material at given point", (py::arg("c0"), "c1", "c2"))
-        .def("get_leafs", &Space_getLeafs<Geometry3D>, (py::arg("path")=py::object()),  "Return list of all leafs in the subtree originating from this object")
+                      "Dictionary specifying the geometry borders.")
+        .def("get_material", &Geometry3D::getMaterial, (py::arg("point")))
+        .def("get_material", &Space_getMaterial<Geometry3D>::call, (py::arg("c0"), "c1", "c2"),
+             "Get material at the given point.\n\n"
+             "This method returns a material object with the material at the given point if\n"
+             "this point is located within the geometry object *self*. Otherwise the method\n"
+             "returns :attr:`~plask.geometry.Cartesian3D.default_material`.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1, c2: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    Material at the specified point."
+            )
+        .def("get_leafs", &Space_getLeafs<Geometry3D>, (py::arg("path")=py::object()),
+             "Get list of the geometry tree leafs.\n\n"
+             "This method returns all the geometry tree leafs located under this geometry\n"
+             "object. By *leaf* we understand a proper geometry object, in contrast to any\n"
+             "container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of translations of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_translations`.\n"
+            )
         .def("get_leafs_positions", (std::vector<Vec<3>>(Geometry3D::*)(const PathHints&)const) &Geometry3D::getLeafsPositions,
-             (py::arg("path")=py::object()), "Calculate positions of all leafs")
+             (py::arg("path")=py::object()),
+             "Calculate positions of all the geometry tree leafs.\n\n"
+             "This method computes position of all the geometry tree leafs located under this\n"
+             "geometry object. By *leaf* we understand a proper geometry object, in contrast\n"
+             "to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_translations`.\n"
+            )
         .def("get_leafs_bboxes", (std::vector<Box3D>(Geometry3D::*)(const PathHints&)const) &Geometry3D::getLeafsBoundingBoxes,
-             (py::arg("path")=py::object()), "Calculate bounding boxes of all leafs")
-        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry3D>, (py::arg("path")=py::object()), "Return list of Translation objects holding all leafs")
-        .def("get_object_positions", (std::vector<Vec<3>>(Geometry3D::*)(const GeometryObject&, const PathHints&)const) &Geometry3D::getObjectPositions,
-             (py::arg("object"), py::arg("path")=py::object()), "Calculate positions of all all instances of specified object (in local coordinates)")
-        .def("get_object_bboxes", (std::vector<Box3D>(Geometry3D::*)(const GeometryObject&, const PathHints&)const) &Geometry3D::getObjectBoundingBoxes,
-             (py::arg("object"), py::arg("path")=py::object()), "Calculate bounding boxes of all instances of specified object (in local coordinates)")
+             (py::arg("path")=py::object()),
+             "Calculate bounding boxes of all the geometry tree leafs.\n\n"
+             "This method computes the bounding boxes of all the geometry tree leafs located\n"
+             "under this geometry object. By *leaf* we understand a proper geometry object,\n"
+             "in contrast to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_translations`.\n"
+            )
+        .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry3D>, (py::arg("path")=py::object()),
+             "Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
+             "This method computes the :class:`Translation` objects of all the geometry tree\n"
+             "leafs located under this geometry object. By *leaf* we understand a proper\n"
+             "geometry object, in contrast to any container or transformation.\n\n"
+             "Args:\n"
+             "    path: Path that can be used to select only some leafs.\n"
+             "Returns:\n"
+             "    sequence: List of translations of the leafs.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order:\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_positions`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_leafs_translations`.\n"
+            )
+        .def("get_object_positions", (std::vector<Vec<3>>(Geometry3D::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry3D::getObjectPositions,
+             (py::arg("object"), py::arg("path")=py::object()),
+             "Calculate positions of all instances of the specified object.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "Returns:\n"
+             "    sequence: List of vectors containing the position of the instances of\n"
+             "    the object.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order,\n"
+             "provided they are called with the same arguments:\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_object_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_object_positions`\n"
+            )
+        .def("get_object_bboxes", (std::vector<Box3D>(Geometry3D::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry3D::getObjectBoundingBoxes,
+             (py::arg("object"), py::arg("path")=py::object()),
+             "Calculate bounding boxes of all instances of specified object.\n\n"
+             "The bounding boxes are computed in the local coordinates of *self*.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "Returns:\n"
+             "    sequence: List of bounding boxes of the instances of the object.\n\n"
+             "All these methods are guaranteed to return their sequences in the same order,\n"
+             "provided they are called with the same arguments:\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_object_bboxes`,\n"
+             ":meth:`~plask.geometry.Cartesian3D.get_object_positions`\n"
+            )
         .def("get_paths", &Geometry3D::getPathsAt, (py::arg("point"), py::arg("all")=false),
-             "Return subtree containing paths to all leafs covering specified point")
-        .def("get_paths", &Space_getMaterial<Geometry3D>::call, "Return subtree containing paths to all leafs covering specified point", (py::arg("c0"), py::arg("c1"), py::arg("c2"), py::arg("all")=false))
-        .def("get_roles", &Geometry_getRolesAt<Geometry3D>, py::arg("point"), "Return roles of objects at specified point")
-        .def("get_roles", &Geometry3D_getRolesAt, (py::arg("c0"), "c1", "c2"), "Return roles of objects at specified point")
-        .def("has_role", &Geometry_hasRoleAt<Geometry3D>, (py::arg("role"), "point"), "Return true if the specified point has given role")
-        .def("has_role", &Geometry3D_hasRoleAt, (py::arg("role"), "c0", "c1", "c2"), "Return true if the specified point has given role")
+             "Get subtree containing paths to all leafs covering the specified point.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1, c2: Coordinates of the tested point.\n"
+             "    bool all: If *True* then all the leafs intersecting the point are\n"
+             "              considered. Otherwise, only the path to the topmost (i.e. visible)\n"
+             "              object is returned.\n"
+             "Returns:\n"
+             "    Subtree with the path to the specified point.\n"
+             "See also:\n"
+             "    :class:`plask.geometry.Subtree`"
+            )
+        .def("get_paths", &Space_getPathsTo<Geometry3D>::call, (py::arg("c0"), "c1", "c2", py::arg("all")=false))
+        .def("get_roles", &Geometry_getRolesAt<Geometry3D>, py::arg("point"),
+             "Get roles of objects at specified point.\n\n"
+             "This method returns a set of all the roles given to the every object\n"
+             "intersecting the specified point.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1, c2: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    set: Set of the roles at given point."
+            )
+        .def("get_roles", &Geometry3D_getRolesAt, (py::arg("c0"), "c1", "c2"))
+        .def("has_role", &Geometry_hasRoleAt<Geometry3D>, (py::arg("role"), "point"),
+             "Test if the specified point has a given role.\n\n"
+             "This method checks if any object intersecting the specified point has the role\n"
+             "*role*.\n\n"
+             "Args:\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1, c2: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    bool: True if the point has the role *role*."
+            )
+        .def("has_role", &Geometry3D_hasRoleAt, (py::arg("role"), "c0", "c1", "c2"))
         .def("object_contains", (bool(Geometry3D::*)(const GeometryObject&,const PathHints&,const Vec<3>&)const)&Geometry3D::objectIncludes,
-             (py::arg("object"), "path", "point"), "Return true if the specified object contains given point")
+             (py::arg("object"), "path", "point"),
+             "Return true if the specified object contains given point"
+            )
         .def("object_contains", (bool(Geometry3D::*)(const GeometryObject&,const Vec<3>&)const)&Geometry3D::objectIncludes,
-             (py::arg("object"), "point"), "Return true if the specified object contains given point")
-        .def("object_contains", &objectIncludes1_3D, (py::arg("object"), "path", "c0", "c1"),
-             "Return true if the specified child contains given point")
-        .def("object_contains", &objectIncludes2_3D, (py::arg("object"), "c0", "c1"),
-             "Return true if the specified child contains given point")
+             (py::arg("object"), "point"))
+        .def("object_contains", &objectIncludes1_3D, (py::arg("object"), "path", "c0", "c1", "c2"),
+             "Test if the specified geometry object contains a point.\n\n"
+             "The given geometry object must be located somewhere within the *self*\n"
+             "geometry tree.\n\n"
+             "Args:\n"
+             "    object: Object to test.\n"
+             "    path: Path specifying a particular object instance.\n"
+             "    plask.vector point: Vector with local coordinates of the tested point.\n"
+             "    float c0, c1, c2: Coordinates of the tested point.\n"
+             "Returns:\n"
+             "    bool: True if the specified geometry object contains the given point."
+            )
+        .def("object_contains", &objectIncludes2_3D, (py::arg("object"), "c0", "c1", "c2"))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              "Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and borders of the new space")
     ;
