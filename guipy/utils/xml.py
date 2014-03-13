@@ -1,4 +1,4 @@
-from lxml.etree import ElementTree
+from lxml import etree as ElementTree
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""

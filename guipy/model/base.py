@@ -1,7 +1,7 @@
 # coding: utf8
 
 from lxml import etree as ElementTree
-from utils import Signal
+from utils.signal import Signal
 from info import Info
 import os
 from model.info import InfoSource

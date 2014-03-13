@@ -1,5 +1,5 @@
 from PyQt4 import QtGui
-from utils import exceptionToMsg
+from utils.gui import exceptionToMsg
 from controller.source import SourceEditController
 
 class MultiEditorController(object):

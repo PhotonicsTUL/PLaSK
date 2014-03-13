@@ -1,6 +1,6 @@
 from PyQt4 import QtGui
 from qhighlighter.XML import XMLHighlighter
-from utils import defaultFont
+from utils.gui import defaultFont
 from controller.base import Controller
 
 class SourceEditController(Controller):

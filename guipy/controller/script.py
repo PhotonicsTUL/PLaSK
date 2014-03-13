@@ -1,7 +1,7 @@
 from controller.source import SourceEditController
 from PyQt4 import QtGui
 from model.script import ScriptModel
-from utils import defaultFont
+from utils.gui import defaultFont
 
 try:
     from pyeditor import PyEdit

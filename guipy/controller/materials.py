@@ -3,7 +3,7 @@ from controller.base import Controller
 from PyQt4.QtGui import QSplitter
 from model import materials
 from model.materials import MaterialPropertyModel
-from utils import HTMLDelegate, table_last_col_fill
+from utils.gui import HTMLDelegate, table_last_col_fill
 from controller.defines import DefinesCompletionDelegate
 from controller.table import tableWithManipulators
 

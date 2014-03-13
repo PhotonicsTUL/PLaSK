@@ -9,7 +9,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from XPLDocument import XPLDocument
-from utils import exceptionToMsg
+from utils.gui import exceptionToMsg
 from model.info import InfoTreeModel, Info
 
 class MainWindow(QtGui.QMainWindow):

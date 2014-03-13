@@ -1,6 +1,6 @@
 from PyQt4 import QtCore, QtGui
 import weakref
-from utils import Signal
+from utils.signal import Signal
 
 class Info(object):
     
