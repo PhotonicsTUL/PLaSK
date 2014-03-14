@@ -68,9 +68,14 @@ struct ExpansionPW3D: public Expansion {
     void computeMaterialCoefficients() {
         size_t nlayers = lcount();
         assert(coeffs.size() == nlayers);
+        std::exception_ptr error;
         #pragma omp parallel for
-        for (size_t l = 0; l < nlayers; ++l)
-            layerMaterialCoefficients(l);
+        for (size_t l = 0; l < nlayers; ++l) {
+            if (error) continue;
+            try { layerMaterialCoefficients(l); }
+            catch(...) { error = std::current_exception(); }
+        }
+        if (error) std::rethrow_exception(error);
     }
 
     virtual size_t lcount() const;

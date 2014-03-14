@@ -162,7 +162,6 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         double T = 0.; // average temperature in all vertical points
         for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
         T /= axis1.size();
-        #pragma omp critical
         NR[i] = material->NR(lambda, T);
         if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
             if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");

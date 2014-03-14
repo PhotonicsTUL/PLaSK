@@ -61,11 +61,10 @@ struct ExpansionPW2D: public Expansion {
     void computeMaterialCoefficients() {
         size_t nlayers = lcount();
         assert(coeffs.size() == nlayers);
-        #pragma omp parallel for
         for (size_t l = 0; l < nlayers; ++l)
             layerMaterialCoefficients(l);
     }
-    
+
     virtual size_t lcount() const;
 
     virtual bool diagonalQE(size_t l) const {
