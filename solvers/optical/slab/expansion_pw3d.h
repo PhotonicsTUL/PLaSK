@@ -88,17 +88,17 @@ struct ExpansionPW3D: public Expansion {
 //     void cleanupField() override;
 //
     DataVector<Vec<3,dcomplex>> getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H) override;
-//
-//     /**
-//      * Get refractive index back from expansion
-//      * \param l layer number
-//      * \param mesh mesh to get parameters to
-//      * \param interp interpolation method
-//      * \return computed refractive indices
-//      */
-//     DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearAxis mesh,
-//                                                       InterpolationMethod interp=INTERPOLATION_DEFAULT);
-//
+
+    /**
+     * Get refractive index back from expansion
+     * \param l layer number
+     * \param mesh mesh to get parameters to
+     * \param interp interpolation method
+     * \return computed refractive indices
+     */
+    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearAxis mesh,
+                                                      InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
 //   private:
 //
 //     DataVector<Vec<3,dcomplex>> field;

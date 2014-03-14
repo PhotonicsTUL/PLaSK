@@ -60,12 +60,7 @@ class PythonXMLFilter {
         try {
             return py::extract<std::string>(py::str(py::eval(py::str(str), xml_globals, manager->locals)));
         } catch (py::error_already_set) {
-            PyObject *value, *type, *original_traceback;
-            PyErr_Fetch(&type, &value, &original_traceback);
-            PyErr_NormalizeException(&type, &value, &original_traceback);
-            PyErr_Clear();
-            py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
-            throw Exception(py::extract<std::string>(py::str(value_h)));
+            throw Exception(getPythonExceptionMessage());
         }
     }
 
@@ -240,11 +235,7 @@ void PythonManager::loadConnects(XMLReader& reader)
                 else
                     receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
             } catch (py::error_already_set) {
-                PyObject *value, *type, *original_traceback;
-                PyErr_Fetch(&type, &value, &original_traceback);
-                PyErr_NormalizeException(&type, &value, &original_traceback);
-                py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
-                throw XMLException(reader, py::extract<std::string>(py::str(value_h)));
+                throw XMLException(reader, getPythonExceptionMessage());
             } catch(std::exception err) {
                 throw XMLException(reader, err.what());
             }

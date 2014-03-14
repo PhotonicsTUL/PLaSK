@@ -32,6 +32,14 @@ void register_python_log();
 
 void register_standard_properties();
 
+std::string getPythonExceptionMessage() {
+    PyObject *value, *type, *original_traceback;
+    PyErr_Fetch(&type, &value, &original_traceback);
+    PyErr_NormalizeException(&type, &value, &original_traceback);
+    py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
+    return py::extract<std::string>(py::str(value_h));
+}
+
 // Config
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)

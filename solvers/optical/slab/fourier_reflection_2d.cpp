@@ -144,6 +144,10 @@ DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfi
                                                                                    InterpolationMethod interp)
 {
     initCalculation();
+    if (recompute_coefficients) {
+        computeCoefficients();
+        recompute_coefficients = false;
+    }
     std::map<size_t,DataVector<const Tensor3<dcomplex>>> cache;
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t y = 0; y != dst_mesh.axis1.size(); ++y) {

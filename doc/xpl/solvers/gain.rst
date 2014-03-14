@@ -25,16 +25,17 @@ Gain solvers
 
          Configuration of the self-consistent loop.
 
-         :attr lifetime: Carriers lifetime.
-         :attr matrix-elem: Value of the matrix element in gain computations (if not set it is estimated automatically).
+         :attr lifetime: Carriers lifetime. (float)
+         :attr matrix-elem: Value of the matrix element in gain computations (if not set it is estimated automatically). (float)
+         :attr strained: Boolean attribute indicated if the solver should consider strain in the active region. If set to *yes* than there must a layer with the role "\ *substrate*\ " in the geometry. The strain is computed by comparing the atomic lattice constants of the substrate and the quantum wells. (*yes* or *no*)
 
       .. xml:tag:: <levels/> [in Fermi2D gain solver]
 
          Custom energy levels in quantum wells. If this tag is used all levels must be set.
 
-         :attr required le: Comma-separated list of electron levels.
-         :attr required hh: Comma-separated list of heavy hole levels.
-         :attr required lh: Comma-separated list of light hole levels.
+         :attr required le: Comma-separated list of electron levels. (list of floats)
+         :attr required hh: Comma-separated list of heavy hole levels. (list of floats)
+         :attr required lh: Comma-separated list of light hole levels. (list of floats)
 
 .. xml:tag:: <gain solver="FermiCyl"> [FermiCyl]
 

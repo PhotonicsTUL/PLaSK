@@ -226,11 +226,12 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
 py::object FourierReflection2D_computeReflectivity(FourierReflection2D* self,
                                                    py::object wavelength,
                                                    ExpansionPW2D::Component polarization,
-                                                   FourierReflection2D::IncidentDirection incidence
+                                                   FourierReflection2D::IncidentDirection incidence,
+                                                   bool dispersive
                                                   )
 {
     return UFUNC<double>([=](double lam)->double {
-        self->setWavelength(lam);
+        self->setWavelength(lam, dispersive);
         return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
@@ -238,11 +239,12 @@ py::object FourierReflection2D_computeReflectivity(FourierReflection2D* self,
 py::object FourierReflection2D_computeTransmitticity(FourierReflection2D* self,
                                                      py::object wavelength,
                                                      ExpansionPW2D::Component polarization,
-                                                     FourierReflection2D::IncidentDirection incidence
+                                                     FourierReflection2D::IncidentDirection incidence,
+                                                     bool dispersive
                                                     )
 {
     return UFUNC<double>([=](double lam)->double {
-        self->setWavelength(lam);
+        self->setWavelength(lam, dispersive);
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }
@@ -266,6 +268,9 @@ double FourierReflection2D_Mode_Neff(const FourierReflection2D::Mode& mode) {
 double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
     return real(mode.ktran);
 }
+
+template <typename SolverT>
+void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
 
 shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(FourierReflection2D* parent,
                                                                 double wavelength,
@@ -295,7 +300,7 @@ BOOST_PYTHON_MODULE(slab)
                "Args:\n"
                "    neff: starting effective index.\n"
                , "neff");
-        RW_PROPERTY(wavelength, getWavelength, setWavelength, "Wavelength of the light.");
+        solver.add_property("wavelength", &FourierReflection2D::getWavelength, Solver_setWavelength<FourierReflection2D>, "Wavelength of the light.");
         RW_PROPERTY(klong, getKlong, setKlong, "Longitudinal propagation constant of the light.");
         RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light.");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
@@ -309,11 +314,13 @@ BOOST_PYTHON_MODULE(slab)
                    "Args:\n"
                    "    lam (float or array of floats): Incident light wavelength.\n"
                    "    polarization: Specification of the incident light polarization.\n"
-                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-                   "        of the non-vanishing electric field component.\n"
+                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                   "        name of the non-vanishing electric field component.\n"
                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                    "        present.\n"
-                   , (py::arg("lam"), "polarization", "side"));
+                   "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+                   "        wavelength, as they may change due to the dispersion.\n"
+                   , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
         solver.def("compute_transmittivity", &FourierReflection2D_computeTransmitticity,
                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
@@ -323,7 +330,9 @@ BOOST_PYTHON_MODULE(slab)
                    "        of the non-vanishing electric field component.\n"
                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                    "        present.\n"
-                   , (py::arg("lam"), "polarization", "side"));
+                   "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+                   "        wavelength, as they may change due to the dispersion.\n"
+                   , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
                    "Fresnel equations.");
@@ -384,7 +393,7 @@ BOOST_PYTHON_MODULE(slab)
             )
         ;
     }
-    
+
     py::class_<PmlWrapper>("PML", "Perfectly matched layer details.", py::no_init)
         .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
         .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
@@ -402,6 +411,6 @@ BOOST_PYTHON_MODULE(slab)
         .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
     ;
 
-    
+
 }
 

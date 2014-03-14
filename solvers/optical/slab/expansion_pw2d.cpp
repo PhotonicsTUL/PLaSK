@@ -148,16 +148,12 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     auto temperature = SOLVER->inTemperature(mesh);
 
-    bool need_gain = false;
-    for (auto point: mesh) {
-        auto roles = geometry->getRolesAt(point);
-        if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-            need_gain = true;
-            break;
-        }
-    }
     DataVector<const double> gain;
-    if (need_gain) gain = SOLVER->inGain(mesh, lambda);
+    bool have_gain = false;
+    if (SOLVER->inGain.hasProvider()) {
+        gain = SOLVER->inGain(mesh, lambda);
+        have_gain = true;
+    }
 
     double maty = axis1[0]; // at each point along any vertical axis material is the same
     for (size_t i = 0; i < M; ++i) {
@@ -172,7 +168,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
             if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
             if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
         }
-        if (need_gain) {
+        if (have_gain) {
             auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                 double g = 0.; // average gain in all vertical points
@@ -527,20 +523,23 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
         DataVector<Vec<3,dcomplex>> result(dest_mesh.size());
         double L = right - left;
         if (!symmetric) {
+            dcomplex B = 2*M_PI * I / L;
+            dcomplex ikx = I * kx;
             result.reset(dest_mesh.size(), Vec<3,dcomplex>(0.,0.,0.));
             for (int k = -order; k <= order; ++k) {
                 size_t j = (k>=0)? k : k + N;
                 for (size_t i = 0; i != dest_mesh.size(); ++i) {
-                    result[i] += field[j] * exp(2*M_PI * k * I * (dest_mesh[i][0]-left) / L);
+                    result[i] += field[j] * exp((B * double(k) - ikx) * (dest_mesh[i][0]-left));
                 }
             }
         } else {
+            double B = M_PI / L;
             result.reset(dest_mesh.size());
             for (size_t i = 0; i != dest_mesh.size(); ++i) {
                 result[i] = field[0];
                 for (int k = 1; k <= order; ++k) {
-                    double cs =  2. * cos(M_PI * k * dest_mesh[i][0] / L);
-                    double sn =  2. * sin(M_PI * k * dest_mesh[i][0] / L);
+                    double cs =  2. * cos(B * k * dest_mesh[i][0]);
+                    double sn =  2. * sin(B * k * dest_mesh[i][0]);
                     if (sym == E_TRAN) {
                         result[i].lon() += field[k].lon() * sn;
                         result[i].tran() += field[k].tran() * cs;
@@ -580,8 +579,12 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
             fft.execute(reinterpret_cast<dcomplex*>(field.data()));
             field[N] = field[0];
             RegularMesh2D src_mesh(RegularAxis(left, right, field.size()), RegularAxis(vpos, vpos, 1));
-            return interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), true),
-                               defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
+            auto result = interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), true),
+                                      defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
+            dcomplex ikx = I * kx;
+            for (size_t i = 0; i != dest_mesh.size(); ++i)
+                result[i] *= exp(ikx * dest_mesh[i].c0);
+            return result;
         }
     }
 }

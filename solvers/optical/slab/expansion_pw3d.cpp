@@ -185,21 +185,16 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     auto temperature = SOLVER->inTemperature(mesh);
 
-    bool need_gain = false;
-    for (auto point: mesh) {
-        auto roles = geometry->getRolesAt(point);
-        if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-            need_gain = true;
-            break;
-        }
-    }
     DataVector<const double> gain;
-    if (need_gain) gain = SOLVER->inGain(mesh, lambda);
+    bool have_gain = false;
+    if (SOLVER->inGain.hasProvider()) {
+        gain = SOLVER->inGain(mesh, lambda);
+        have_gain = true;
+    }
 
     double matv = axis2[0]; // at each point along any vertical axis material is the same
-    for (size_t it = 0; it < M; ++it) {
-        for (size_t il = 0; il < Ml; ++il) {
-            size_t i = Ml*it + il;
+    for (size_t it = 0, i = 0; it < M; ++it) {
+        for (size_t il = 0; il < Ml; ++il, ++i) {
             auto material = geometry->getMaterial(vec(long_mesh[il], tran_mesh[it], matv));
             double T = 0.; // average temperature in all vertical points
             for (size_t j = mesh.index(il, it, 0) * axis2.size(), end = mesh.index(il, it, axis2.size())+1; j != end; ++j) T += temperature[j];
@@ -209,7 +204,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
                 if (symmetric_long || symmetric_tran) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
             }
-            if (need_gain) {
+            if (have_gain) {
                 auto roles = geometry->getRolesAt(vec(long_mesh[il], tran_mesh[it], matv));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                     double g = 0.; // average gain in all vertical points
@@ -243,16 +238,34 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 //         }
 //     }
 
-//     // Average material parameters
-//     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
-//     double factor = 1. / refine;
-//     for (size_t i = 0; i != nN; ++i) {
-//         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
-//             coeffs[l][i] += Tensor3<dcomplex>(NR[j].c00, 1./NR[j].c11, NR[j].c22, NR[j].c01, NR[j].c10);
-//         coeffs[l][i] *= factor;
-//         coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
-//         coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)
-//     }
+    // Average material parameters
+    coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
+
+    for (size_t it = 0; it != nNt; ++it) {
+
+        size_t tbegin = reft*it, tend = reft*(it+1);
+        double tran0 = 0.5 * (tran_mesh[tbegin] + tran_mesh[tend-1]);
+
+        for (size_t il = 0; il != nNl; ++il) {
+            size_t lbegin = refl*il, lend = refl*(il+1);
+            double long0 = 0.5 * (long_mesh[tbegin] + long_mesh[tend-1]);
+
+            // Compute surface normal
+            Vec<2> norm(0.,0.);
+            for (size_t t = tbegin; t != tend; ++t) {
+                for (size_t l = lbegin; l != lend; ++l) {
+                    auto& n = NR[Ml * t + l];
+                    norm += (0.5 * (real(n.c00) + real(n.c11))) * Vec<2>(long_mesh[l] - long0, tran_mesh[t] - tran0);
+                }
+            }
+            double a = abs(norm); if (a != 0.) norm /= a;
+
+            // Average permittivity tensor according to:
+            // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
+            auto& N = coeffs[l][nNl * it + il];
+            N = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
+        }
+    }
 
     // Check if the layer is uniform
     if (periodic_tran && periodic_long) {
@@ -290,8 +303,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 }
 
 
-// DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
-// {
+DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
+{
 //     double L = right - left;
 //     DataVector<Tensor3<dcomplex>> result;
 //     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
@@ -313,9 +326,11 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 //             }
 //         }
 //     } else {
-//         DataVector<Tensor3<dcomplex>> params(symmetric? nN : nN+1);
+//         size_t nl = symmetric_long? nNl : nNl+1, nt = symmetric_tran? nNt : nNt+1;
+//         DataVector<Tensor3<dcomplex>> params(nl * nt);
 //         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-//         FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
+//         FFT::Backward1D(5, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE)
+//             .execute(reinterpret_cast<dcomplex*>(params.data()));
 //         RegularAxis cmesh;
 //         if (symmetric) {
 //             double dx = 0.5 * (right-left) / nN;
@@ -327,17 +342,17 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 //         }
 //         RegularMesh3D src_mesh(cmesh, RegularAxis(0,0,1));
 //         RectilinearMesh3D dst_mesh(mesh, RectilinearAxis({0}));
-//         result = interpolate(src_mesh, params, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
+//         result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry()), interp);
 //     }
 //     for (Tensor3<dcomplex>& eps: result) {
 //         eps.c22 = 1. / eps.c22;
 //         eps.sqrt_inplace();
 //     }
 //     return result;
-// }
-//
-//
-//
+}
+
+
+
 void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
 {
 //     assert(initialized);

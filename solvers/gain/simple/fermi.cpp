@@ -272,9 +272,9 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     double qstrain = 0.; // strain in well
     double bstrain = 0.; // strain in barrier
 
-    if (if_strain == true)
+    if (if_strain)
     {
-        if (!this->materialSubstrate) throw ComputationError(this->getId(), "No layer with role=substrate has been found");
+        if (!this->materialSubstrate) throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
 
         qstrain = (this->materialSubstrate->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
         bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');

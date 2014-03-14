@@ -85,6 +85,7 @@ struct IOError: public Exception {
     IOError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
 };
 
+std::string getPythonExceptionMessage();
 
 // ----------------------------------------------------------------------------------------------------------------------
 // String functions for Python3

@@ -106,6 +106,7 @@ material.simple.__doc__ = """Decorator for simple custom material class."""
 material.complex = lambda mat, **kwargs: material.register_material(mat, is_complex=True, **kwargs)
 material.complex.__doc__ = """Decorator for complex custom material class."""
 
+material.const = staticmethod
 
 ## ## plask.geometry ## ##
 

@@ -1,4 +1,5 @@
 #include "python_globals.h"
+#include "python_material.h"
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <algorithm>
@@ -110,8 +111,6 @@ namespace detail {
         }
     };
 
-
-
 }
 
 /**
@@ -122,6 +121,9 @@ class PythonMaterial : public Material
 {
     shared_ptr<Material> base;
     PyObject* self;
+
+    static std::map<PyObject*, std::unique_ptr<MaterialCache>> cacheMap;
+    MaterialCache* cache;
 
     bool overriden(char const* name) const {
         py::converter::registration const& r = py::converter::registered<Material>::converters;
@@ -140,14 +142,15 @@ class PythonMaterial : public Material
     }
 
     template <typename R, typename F, typename... Args>
-    inline R override(const char* name, F f, Args... args) const {
+    inline R call(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
+        if (cached) return *cached;
         if (overriden(name)) return py::call_method<R>(self, name, args...);
         return ((*base).*f)(args...);
     }
 
   public:
-    PythonMaterial () : base(new EmptyMaterial) {}
-    PythonMaterial (shared_ptr<Material> base) : base(base) {
+    PythonMaterial(): base(new EmptyMaterial) {}
+    PythonMaterial(shared_ptr<Material> base): base(base) {
         if (!base) base = shared_ptr<Material>(new EmptyMaterial);
     }
 
@@ -170,7 +173,61 @@ class PythonMaterial : public Material
             ptr = new PythonMaterial();
         }
         auto sptr = shared_ptr<Material>(ptr);
-        ptr->self = py::object(args[0]).ptr();  // key line !!!
+        py::object self(args[0]);
+        ptr->self = self.ptr();  // key line !!!
+        // Update cache
+        py::object cls = self.attr("__class__");
+        auto found = cacheMap.find(cls.ptr());
+        if (found != cacheMap.end())
+            ptr->cache = found->second.get();
+        else {
+            std::string cls_name = py::extract<std::string>(cls.attr("__name__"));
+            MaterialCache* cache = cacheMap.emplace(cls.ptr(), std::unique_ptr<MaterialCache>(new MaterialCache)).first->second.get();
+            ptr->cache = cache;
+            #define CHECK_CACHE(Type, fun, name, ...) \
+                if (PyObject_HasAttrString(cls.ptr(), name) && PyFunction_Check(py::object(cls.attr(name)).ptr())) { \
+                    cache->fun.reset(py::extract<Type>(cls.attr(name)())); \
+                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%1%'", cls_name); \
+                }
+            CHECK_CACHE(double, lattC, "lattC", 300., py::object())
+            CHECK_CACHE(double, Eg, "Eg", 300., 0., "G")
+            CHECK_CACHE(double, CB, "CB", 300., 0., "G")
+            CHECK_CACHE(double, VB, "VB", 300., 0., "H")
+            CHECK_CACHE(double, Dso, "Dso", 300., 0.)
+            CHECK_CACHE(double, Mso, "Mso", 300., 0.)
+            CHECK_CACHE(Tensor2<double>, Me, "Me", 300., 0.)
+            CHECK_CACHE(Tensor2<double>, Mhh, "Mhh", 300., 0.)
+            CHECK_CACHE(Tensor2<double>, Mlh, "Mlh", 300., 0.)
+            CHECK_CACHE(Tensor2<double>, Mh, "Mh", 300., 0.)
+            CHECK_CACHE(double, ac, "ac", 300.)
+            CHECK_CACHE(double, av, "av", 300.)
+            CHECK_CACHE(double, b, "b", 300.)
+            CHECK_CACHE(double, d, "d", 300.)
+            CHECK_CACHE(double, c11, "c11", 300.)
+            CHECK_CACHE(double, c12, "c12", 300.)
+            CHECK_CACHE(double, c44, "c44", 300.)
+            CHECK_CACHE(double, eps, "eps", 300.)
+            CHECK_CACHE(double, chi, "chi", 300., 0., "G")
+            CHECK_CACHE(double, Nc, "Nc", 300., 0., "G")
+            CHECK_CACHE(double, Nv, "Nv", 300., 0., "G")
+            CHECK_CACHE(double, Ni, "Ni", 300.)
+            CHECK_CACHE(double, Nf, "Nf", 300.)
+            CHECK_CACHE(double, EactD, "EactD", 300.)
+            CHECK_CACHE(double, EactA, "EactA", 300.)
+            CHECK_CACHE(Tensor2<double>, mob, "mob", 300.)
+            CHECK_CACHE(Tensor2<double>, cond, "cond", 300.)
+            CHECK_CACHE(double, A, "A", 300.)
+            CHECK_CACHE(double, B, "B", 300.)
+            CHECK_CACHE(double, C, "C", 300.)
+            CHECK_CACHE(double, D, "D", 300.)
+            CHECK_CACHE(Tensor2<double>, thermk, "thermk", 300., INFINITY)
+            CHECK_CACHE(double, dens, "dens", 300.)
+            CHECK_CACHE(double, cp, "cp", 300.)
+            CHECK_CACHE(double, nr, "nr", py::object(), 300., 0.)
+            CHECK_CACHE(double, absp, "absp", py::object(), 300.)
+            CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300.)
+            CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", 0., 300.)
+        }
         return sptr;
     }
 
@@ -228,62 +285,64 @@ class PythonMaterial : public Material
         return py::extract<Material::Kind>(okind);
     }
 
-    virtual double lattC(double T, char x) const override { return override<double>("lattC", &Material::lattC, T, x); }
-    virtual double Eg(double T, double e, char point) const override { return override<double>("Eg", &Material::Eg, T, e, point); }
+    virtual double lattC(double T, char x) const override { return call<double>("lattC", &Material::lattC, cache->lattC, T, x); }
+    virtual double Eg(double T, double e, char point) const override { return call<double>("Eg", &Material::Eg, cache->Eg, T, e, point); }
     virtual double CB(double T, double e, char point) const override {
-        try { return override<double>("CB", &Material::CB, T, e, point); }
+        try { return call<double>("CB", &Material::CB, cache->CB, T, e, point); }
         catch (NotImplemented) { return VB(T, e, point, 'H') + Eg(T, e, point); }  // D = µ kB T / e
     }
-    virtual double VB(double T, double e, char point, char hole) const  override{ return override<double>("VB", &Material::VB, T, e, point, hole); }
-    virtual double Dso(double T, double e) const override { return override<double>("Dso", &Material::Dso, T, e); }
-    virtual double Mso(double T, double e) const override { return override<double>("Mso", &Material::Mso, T, e); }
-    virtual Tensor2<double> Me(double T, double e, char point) const override { return override<Tensor2<double>>("Me", &Material::Me, T, e, point); }
-    virtual Tensor2<double> Mhh(double T, double e) const override { return override<Tensor2<double>>("Mhh", &Material::Mhh, T, e); }
-    virtual Tensor2<double> Mlh(double T, double e) const override { return override<Tensor2<double>>("Mlh", &Material::Mlh, T, e); }
-    virtual Tensor2<double> Mh(double T, double e) const override { return override<Tensor2<double>>("Mh", &Material::Mh, T, e); }
-    virtual double ac(double T) const override { return override<double>("ac", &Material::ac, T); }
-    virtual double av(double T) const override { return override<double>("av", &Material::av, T); }
-    virtual double b(double T) const override { return override<double>("b", &Material::b, T); }
-    virtual double d(double T) const override { return override<double>("d", &Material::d, T); }
-    virtual double c11(double T) const override { return override<double>("c11", &Material::c11, T); }
-    virtual double c12(double T) const override { return override<double>("c12", &Material::c12, T); }
-    virtual double c44(double T) const override { return override<double>("c44", &Material::c44, T); }
-    virtual double eps(double T) const override { return override<double>("eps", &Material::eps, T); }
-    virtual double chi(double T, double e, char point) const override { return override<double>("chi", &Material::chi, T, e, point); }
-    virtual double Nc(double T, double e, char point) const override { return override<double>("Nc", &Material::Nc, T, e, point); }
-    virtual double Nv(double T, double e, char point) const override { return override<double>("Nv", &Material::Nv, T, e, point); }
-    virtual double Ni(double T) const override { return override<double>("Ni", &Material::Ni, T); }
-    virtual double Nf(double T) const override { return override<double>("Nf", &Material::Nf, T); }
-    virtual double EactD(double T) const override { return override<double>("EactD", &Material::EactD, T); }
-    virtual double EactA(double T) const override { return override<double>("EactA", &Material::EactA, T); }
-    virtual Tensor2<double> mob(double T) const override { return override<Tensor2<double>>("mob", &Material::mob, T); }
-    virtual Tensor2<double> cond(double T) const override { return override<Tensor2<double>>("cond", &Material::cond, T); }
-    virtual double A(double T) const override { return override<double>("A", &Material::A, T); }
-    virtual double B(double T) const override { return override<double>("B", &Material::B, T); }
-    virtual double C(double T) const override { return override<double>("C", &Material::C, T); }
+    virtual double VB(double T, double e, char point, char hole) const  override{ return call<double>("VB", &Material::VB, cache->VB, T, e, point, hole); }
+    virtual double Dso(double T, double e) const override { return call<double>("Dso", &Material::Dso, cache->Dso, T, e); }
+    virtual double Mso(double T, double e) const override { return call<double>("Mso", &Material::Mso, cache->Mso, T, e); }
+    virtual Tensor2<double> Me(double T, double e, char point) const override { return call<Tensor2<double>>("Me", &Material::Me, cache->Me, T, e, point); }
+    virtual Tensor2<double> Mhh(double T, double e) const override { return call<Tensor2<double>>("Mhh", &Material::Mhh, cache->Mhh, T, e); }
+    virtual Tensor2<double> Mlh(double T, double e) const override { return call<Tensor2<double>>("Mlh", &Material::Mlh, cache->Mlh, T, e); }
+    virtual Tensor2<double> Mh(double T, double e) const override { return call<Tensor2<double>>("Mh", &Material::Mh, cache->Mh, T, e); }
+    virtual double ac(double T) const override { return call<double>("ac", &Material::ac, cache->ac, T); }
+    virtual double av(double T) const override { return call<double>("av", &Material::av, cache->av, T); }
+    virtual double b(double T) const override { return call<double>("b", &Material::b, cache->b, T); }
+    virtual double d(double T) const override { return call<double>("d", &Material::d, cache->d, T); }
+    virtual double c11(double T) const override { return call<double>("c11", &Material::c11, cache->c11, T); }
+    virtual double c12(double T) const override { return call<double>("c12", &Material::c12, cache->c12, T); }
+    virtual double c44(double T) const override { return call<double>("c44", &Material::c44, cache->c44, T); }
+    virtual double eps(double T) const override { return call<double>("eps", &Material::eps, cache->eps, T); }
+    virtual double chi(double T, double e, char point) const override { return call<double>("chi", &Material::chi, cache->chi, T, e, point); }
+    virtual double Nc(double T, double e, char point) const override { return call<double>("Nc", &Material::Nc, cache->Nc, T, e, point); }
+    virtual double Nv(double T, double e, char point) const override { return call<double>("Nv", &Material::Nv, cache->Nv, T, e, point); }
+    virtual double Ni(double T) const override { return call<double>("Ni", &Material::Ni, cache->Ni, T); }
+    virtual double Nf(double T) const override { return call<double>("Nf", &Material::Nf, cache->Nf, T); }
+    virtual double EactD(double T) const override { return call<double>("EactD", &Material::EactD, cache->EactD, T); }
+    virtual double EactA(double T) const override { return call<double>("EactA", &Material::EactA, cache->EactA, T); }
+    virtual Tensor2<double> mob(double T) const override { return call<Tensor2<double>>("mob", &Material::mob, cache->mob, T); }
+    virtual Tensor2<double> cond(double T) const override { return call<Tensor2<double>>("cond", &Material::cond, cache->cond, T); }
+    virtual double A(double T) const override { return call<double>("A", &Material::A, cache->A, T); }
+    virtual double B(double T) const override { return call<double>("B", &Material::B, cache->B, T); }
+    virtual double C(double T) const override { return call<double>("C", &Material::C, cache->C, T); }
     virtual double D(double T) const override {
-        try { return override<double>("D", &Material::D, T); }
+        try { return call<double>("D", &Material::D, cache->D, T); }
         catch (NotImplemented) { return mob(T).c00 * T * 8.6173423e-5; }  // D = µ kB T / e
     }
-    virtual Tensor2<double> thermk(double T, double t) const override { return override<Tensor2<double>>("thermk", &Material::thermk, T, t); }
-    virtual double dens(double T) const override { return override<double>("dens", &Material::dens, T); }
-    virtual double cp(double T) const override { return override<double>("cp", &Material::cp, T); }
-    virtual double nr(double wl, double T, double n) const override { return override<double>("nr", &Material::nr, wl, T, n); }
-    virtual double absp(double wl, double T) const override { return override<double>("absp", &Material::absp, wl, T); }
+    virtual Tensor2<double> thermk(double T, double t) const override { return call<Tensor2<double>>("thermk", &Material::thermk, cache->thermk, T, t); }
+    virtual double dens(double T) const override { return call<double>("dens", &Material::dens, cache->dens, T); }
+    virtual double cp(double T) const override { return call<double>("cp", &Material::cp, cache->cp, T); }
+    virtual double nr(double wl, double T, double n) const override { return call<double>("nr", &Material::nr, cache->nr, wl, T, n); }
+    virtual double absp(double wl, double T) const override { return call<double>("absp", &Material::absp, cache->absp, wl, T); }
     virtual dcomplex Nr(double wl, double T, double n) const override {
+        if (cache->Nr) return *cache->Nr;
         if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T, n);
-        if (overriden("nr") || overriden("absp"))
-            return dcomplex(override<double>("nr", &Material::nr, wl, T, n), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        if (cache->nr || cache->absp || overriden("nr") || overriden("absp"))
+            return dcomplex(call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
         return base->Nr(wl, T, n);
     }
     virtual Tensor3<dcomplex> NR(double wl, double T, double n) const override {
+        if (cache->NR) return *cache->NR;
         if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
-        if (overriden("Nr")) {
-            dcomplex nr = py::call_method<dcomplex>(self, "Nr", wl, T, n);
+        if (cache->NR || overriden("Nr")) {
+            dcomplex nr = cache->Nr? *cache->Nr : py::call_method<dcomplex>(self, "Nr", wl, T, n);
             return Tensor3<dcomplex>(nr, nr, nr, 0., 0.);
         }
-        if (overriden("nr") || overriden("absp")) {
-            dcomplex nr (override<double>("nr", &Material::nr, wl, T, n), -7.95774715459e-09*override<double>("absp", &Material::absp, wl,T)*wl);
+        if (cache->nr || cache->absp || overriden("nr") || overriden("absp")) {
+            dcomplex nr (call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
             return Tensor3<dcomplex>(nr, nr, nr, 0., 0.);
         }
         return base->NR(wl, T, n);
@@ -293,6 +352,7 @@ class PythonMaterial : public Material
 
 };
 
+std::map<PyObject*, std::unique_ptr<MaterialCache>> PythonMaterial::cacheMap;
 
 /**
  * Object constructing custom simple Python material when read from XML file
@@ -641,7 +701,7 @@ void initMaterials() {
         .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
         .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get electron affinity Chi [eV]")
         .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get effective density of states in the conduction band Nc [m**(-3)]")
-        .def("Nv", &Material::Nv, (py::arg("T")=300., py::arg("e")=0), "Get effective density of states in the valence band Nv [m**(-3)]")
+        .def("Nv", &Material::Nv, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get effective density of states in the valence band Nv [m**(-3)]")
         .def("Ni", &Material::Ni, (py::arg("T")=300.), "Get intrinsic carrier concentration Ni [m**(-3)]")
         .def("Nf", &Material::Nf, (py::arg("T")=300.), "Get free carrier concentration N [m**(-3)]")
         .def("EactD", &Material::EactD, (py::arg("T")=300.), "Get donor ionisation energy EactD [eV]")

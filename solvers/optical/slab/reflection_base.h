@@ -55,7 +55,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     bool emitting;                              ///< \c True if the structure is emitting vertically.
 
     bool recompute_coefficients;                ///< Force recomputation of material coefficients
-    
+
   private:
 
     cdiagonal phas;                             ///< current phase shift matrix
@@ -65,7 +65,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
         recompute_coefficients = true;
     }
-    
+
   public:
 
     ~ReflectionSolver();
@@ -73,23 +73,23 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     /// Get current wavelength
     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
     /// Set current wavelength
-    void setWavelength(dcomplex lambda) {
+    void setWavelength(dcomplex lambda, bool recompute=true) {
         dcomplex k = 2e3*M_PI / lambda;
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            recompute_coefficients = true;
+            recompute_coefficients |= recompute;
         }
     }
 
     /// Get current k0
     dcomplex getK0() const { return k0; }
     /// Set current k0
-    void setK0(dcomplex k) {
+    void setK0(dcomplex k, bool recompute=true) {
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            recompute_coefficients = true;
+            recompute_coefficients |= recompute;
         }
     }
 
@@ -190,10 +190,10 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
         }
         diagonalizer->initDiagonalization(k0, klong, ktran);
     }
-    
+
     /// Recompute expansion coefficients
     virtual void computeCoefficients() = 0;
-    
+
     /// Compute discontinuity matrix determinant for the current parameters
     dcomplex determinant();
 

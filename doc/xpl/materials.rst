@@ -22,6 +22,8 @@ This section contains specification of custom materials that can be used togethe
 
       Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
 
+      Each of the material property tags can have an optional attribute ``const`` that can take a Boolean value (*yes* or *no*). If it is present and set to *yes* then PLaSK assumes that the parameter value is constant and will be able to provide its value more efficiently. However, in such a case, no variables can be used in the property definition.
+
       The accepted material properties are as follows:
 
       .. xml:tag:: <A>
@@ -97,9 +99,9 @@ This section contains specification of custom materials that can be used togethe
          Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
 
          Variables: ``T`` — temperature [K].
-         
+
       .. xml:tag:: <condtype>
-      
+
          Electrical conductivity type. In semiconductors this indicates what type of carriers :xml:tag:`<Nf>` refers to. Value of this property is not interpreted as Python code. Instead, one of the following values is required: ``n``, ``i``, ``p``, ``other`` (or: ``N``, ``I``, ``P``, ``OTHER``).
 
       .. xml:tag:: <cp>
