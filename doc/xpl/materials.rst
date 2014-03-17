@@ -24,6 +24,17 @@ This section contains specification of custom materials that can be used togethe
 
       Each of the material property tags can have an optional attribute ``const`` that can take a Boolean value (*yes* or *no*). If it is present and set to *yes* then PLaSK assumes that the parameter value is constant and will be able to provide its value more efficiently. However, in such a case, no variables can be used in the property definition.
 
+      .. rubric:: Example:
+
+      .. code-block:: xml
+
+         <materials>
+           <material name="MyMaterial" base="Semiconductor">
+             <nr>3.5 + 0.01*T</nr>
+             <absp const="yes">10.</absp>
+           </material>
+         <materials>
+
       The accepted material properties are as follows:
 
       .. xml:tag:: <A>

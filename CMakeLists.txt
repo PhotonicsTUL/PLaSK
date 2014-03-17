@@ -464,10 +464,10 @@ endif()
 
 
 find_package(Doxygen)
+configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile)
 if(BUILD_DEVEL_DOC)
     if(DOXYGEN_FOUND)
-        file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
-        add_custom_target(dox ALL ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
+        add_custom_target(dox ALL ${DOXYGEN} ${CMAKE_BINARY_DIR}/Doxyfile ${plask_headers} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
         install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION ${doc_dest}/devel COMPONENT dev-doc
                 PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
     else()
@@ -475,8 +475,7 @@ if(BUILD_DEVEL_DOC)
     endif()
 else()
     if(DOXYGEN_FOUND)
-        file(COPY ${CMAKE_SOURCE_DIR}/doxygen.css DESTINATION ${CMAKE_BINARY_DIR})
-        add_custom_target(dox ${DOXYGEN} ${CMAKE_SOURCE_DIR}/Doxyfile DEPENDS ${CMAKE_SOURCE_DIR}/Doxyfile ${plask_headers})
+        add_custom_target(dox ${DOXYGEN} ${CMAKE_BINARY_DIR}/Doxyfile DEPENDS ${plask_headers} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     endif()
 endif()
 
