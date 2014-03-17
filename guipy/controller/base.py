@@ -5,14 +5,14 @@ class Controller(object):
         self.document = document
         self.model = model
         
-    def saveDataInModel(self):
+    def save_data_in_model(self):
         """Called to force save data from editor in model."""
         pass  
         
-    def onEditEnter(self):
+    def on_edit_enter(self):
         """Called when editor is entered and will be visible."""
         pass
 
-    def onEditExit(self):
-        """Called when editor is left and will be not visible. Typically and by default it calls saveDataInModel."""
-        self.saveDataInModel()       
+    def on_edit_exit(self):
+        """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
+        self.save_data_in_model()       

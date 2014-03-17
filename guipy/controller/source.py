@@ -21,21 +21,21 @@ class SourceEditController(Controller):
         return self.sourceEditor
 
     # GUI editor, by default use source editor
-    def getEditor(self):
+    def get_editor(self):
         return self.getSourceEditor()
 
     def refreshEditor(self, *ignore):
         self.getSourceEditor().setPlainText(self.model.getText())
         
-    def saveDataInModel(self):
+    def save_data_in_model(self):
         if not self.getSourceEditor().isReadOnly():
             self.model.setText(self.getSourceEditor().toPlainText())
 
-    def onEditEnter(self):
+    def on_edit_enter(self):
         self.refreshEditor()
         self.model.changed += self.refreshEditor 
 
     # when editor is turn off, model should be update
-    def onEditExit(self):
-        self.saveDataInModel()
+    def on_edit_exit(self):
+        self.save_data_in_model()
         self.model.changed -= self.refreshEditor

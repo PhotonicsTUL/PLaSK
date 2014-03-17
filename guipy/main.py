@@ -24,7 +24,7 @@ class MainWindow(QtGui.QMainWindow):
     def modelIsNew(self):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
-            self.tabs.addTab(self.document.getControllerByName(m).getEditor(), m)
+            self.tabs.addTab(self.document.getControllerByName(m).get_editor(), m)
         self.current_tab_index = 0
         self.currentSectionEnter()
         
@@ -65,7 +65,7 @@ class MainWindow(QtGui.QMainWindow):
         """"Is called just before save, return True if document can be saved."""
         if self.current_tab_index != -1:
             try:
-                self.document.getControllerByIndex(self.current_tab_index).saveDataInModel()
+                self.document.getControllerByIndex(self.current_tab_index).save_data_in_model()
             except Exception as e:
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText("Edited content of the current section is invalid.")
@@ -90,7 +90,7 @@ class MainWindow(QtGui.QMainWindow):
     def currentSectionExit(self):
         """"Should be called just before left the current section."""
         if self.current_tab_index != -1:
-            if not exceptionToMsg(lambda: self.document.getControllerByIndex(self.current_tab_index).onEditExit(),
+            if not exceptionToMsg(lambda: self.document.getControllerByIndex(self.current_tab_index).on_edit_exit(),
                                   self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
                 return False
@@ -101,7 +101,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.current_tab_index != -1:
             c = self.document.getControllerByIndex(self.current_tab_index)
             self.info_model.setModel(c.model)
-            c.onEditEnter()
+            c.on_edit_enter()
         else:
             self.info_model.setModel(None)
         

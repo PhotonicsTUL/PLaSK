@@ -22,7 +22,7 @@ class DefinesModel(TableModel):
             if val.name == name: return idx
         return -1
         
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
         if element is not None:
             self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")) for c in element.iter("define")]
@@ -32,7 +32,7 @@ class DefinesModel(TableModel):
         self.fireChanged()
     
     # XML element that represents whole section
-    def getXMLElement(self):
+    def get_XML_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries:
             ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }).tail = '\n'

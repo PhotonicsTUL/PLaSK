@@ -185,7 +185,7 @@ class MaterialsModel(TableModel):
     def __init__(self, parent=None, info_cb = None, *args):
         super(MaterialsModel, self).__init__('materials', parent, info_cb, *args)
         
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
         del self.entries[:]
         if element is not None:
@@ -197,7 +197,7 @@ class MaterialsModel(TableModel):
         self.fireChanged()
     
     # XML element that represents whole section
-    def getXMLElement(self):
+    def get_XML_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries: e.addToXML(res)
         return res

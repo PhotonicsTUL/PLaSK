@@ -8,7 +8,7 @@ class TableActions(object):
         self.table = table
         self.model = model if model != None else table.model()
         
-    def addEntry(self):
+    def add_entry(self):
         index = self.table.selectionModel().currentIndex()
         if index.isValid():
             row = self.model.insert(index.row()+1)
@@ -16,12 +16,12 @@ class TableActions(object):
             row = self.model.insert()
         if row != None: self.table.selectRow(row)
     
-    def removeEntry(self):
+    def remove_entry(self):
         index = self.table.selectionModel().currentIndex()
         if index.isValid():
             self.model.remove(index.row())
     
-    def moveUp(self):
+    def move_up(self):
         index = self.table.selectionModel().currentIndex()
         if not index.isValid(): return
         index = index.row()
@@ -29,7 +29,7 @@ class TableActions(object):
             self.model.swapNeighbourEntries(index-1, index)
             #self.table.selectRow(index-1)
     
-    def moveDown(self):
+    def move_down(self):
         index = self.table.selectionModel().currentIndex()
         if not index.isValid(): return
         index = index.row()
@@ -40,19 +40,19 @@ class TableActions(object):
     def get(self, parent):
         self.addAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-add'), '&Add', parent)
         self.addAction.setStatusTip('Add new entry to the list')
-        self.addAction.triggered.connect(self.addEntry)
+        self.addAction.triggered.connect(self.add_entry)
             
         self.removeAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', parent)
         self.removeAction.setStatusTip('Remove selected entry from the list')
-        self.removeAction.triggered.connect(self.removeEntry)
+        self.removeAction.triggered.connect(self.remove_entry)
             
         self.moveUpAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', parent)
         self.moveUpAction.setStatusTip('Change order of entries: move current entry up')
-        self.moveUpAction.triggered.connect(self.moveUp)
+        self.moveUpAction.triggered.connect(self.move_up)
             
         self.moveDownAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', parent)
         self.moveDownAction.setStatusTip('Change order of entries: move current entry down')
-        self.moveDownAction.triggered.connect(self.moveDown)
+        self.moveDownAction.triggered.connect(self.move_down)
             
         return self.addAction, self.removeAction, self.moveUpAction, self.moveDownAction
 
@@ -93,17 +93,17 @@ class TableController(Controller):
         for c in range(0, cols): self.table.setColumnWidth(c, 200)
         self.table.horizontalHeader().setResizeMode(cols-1, QtGui.QHeaderView.Stretch);
         
-    def getEditor(self):
+    def get_editor(self):
         return self.table
 
-    def onEditEnter(self):
-        self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
+    def on_edit_enter(self):
+        self.save_data_in_model()  #this should do nothing, but is called in case of subclass use it
         if not self.model.isReadOnly():
-            self.document.mainWindow.setSectionActions(*self.getTableEditActions())
+            self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
-    def onEditExit(self):
+    def on_edit_exit(self):
         self.document.mainWindow.setSectionActions()
     
-    def getTableEditActions(self):
+    def get_table_edit_actions(self):
         return self.tableActions.get(self.document.mainWindow)

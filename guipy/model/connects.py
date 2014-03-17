@@ -15,7 +15,7 @@ class ConnectsModel(TableModel):
     def __init__(self, parent=None, info_cb = None, *args):
         TableModel.__init__(self, 'connects', parent, info_cb, *args)
         
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
         if element is not None:
             self.entries = [ConnectsModel.Entry(c.attrib.get("out", ""), c.attrib.get("in", "")) for c in element.iter("connect")]
@@ -25,7 +25,7 @@ class ConnectsModel(TableModel):
         self.fireChanged()
     
     # XML element that represents whole section
-    def getXMLElement(self):
+    def get_XML_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries:
             ElementTree.SubElement(res, "connect", { "out": e.output, "in": e.input }).tail = '\n'

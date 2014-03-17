@@ -7,11 +7,11 @@ class ScriptModel(SectionModel):
         SectionModel.__init__(self, 'script', info_cb)
         self.code = ''
 
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.setText(element.text if element is not None else '')
 
     # XML element that represents whole section
-    def getXMLElement(self):
+    def get_XML_element(self):
         res = ElementTree.Element(self.tagname)
         res.text = self.code
         return res

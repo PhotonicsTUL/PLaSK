@@ -35,7 +35,7 @@ class GridsModel(TableModel):
     def __init__(self, parent=None, info_cb = None, *args):
         super(GridsModel, self).__init__('grids', parent, info_cb, *args)
         
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
         del self.entries[:]
         if element is not None:
@@ -45,9 +45,9 @@ class GridsModel(TableModel):
         self.fireChanged()
         
     # XML element that represents whole section
-    def getXMLElement(self):
+    def get_XML_element(self):
         res = ElementTree.Element(self.name)
-        for e in self.entries: res.append(e.getXMLElement())
+        for e in self.entries: res.append(e.get_XML_element())
         return res
     
     def columnCount(self, parent = QtCore.QModelIndex()): 

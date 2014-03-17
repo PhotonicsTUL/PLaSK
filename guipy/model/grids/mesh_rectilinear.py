@@ -16,7 +16,7 @@ class AxisConf(object):
         if self.num: axisElement.attrib['num'] = self.num
         if self.points: axisElement.text = ", ".join(self.points)
         
-    def setXMLElement(self, axis_element):
+    def set_XML_element(self, axis_element):
         if not axis_element: return
         for attr in ['start', 'stop', 'num']:
             setattr(self, attr, axis_element.attrib.get(attr, None))
@@ -28,7 +28,7 @@ class RectilinearMesh(Grid):
     @staticmethod
     def from_XML(element):
         e = RectilinearMesh(int(element.attrib['type'][-2]), element.attrib['name'])
-        e.setXMLElement(element)
+        e.set_XML_element(element)
         return e
     
     def __init__(self, dim, name):
@@ -43,13 +43,13 @@ class RectilinearMesh(Grid):
         else:
             for i in range(0, self.dim): yield i, "axis%d" % i
     
-    def getXMLElement(self):
-        res = super(RectilinearMesh, self).getXMLElement()
+    def get_XML_element(self):
+        res = super(RectilinearMesh, self).get_XML_element()
         for i, n in self.axes_index_name:
             self.axis[i].fillXMLElement(ElementTree.SubElement(res, n))
         return res;
     
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         for i, n in self.axis_index_name:
-            self.axis[i].setXMLElement(element.find(n))
+            self.axis[i].set_XML_element(element.find(n))
     

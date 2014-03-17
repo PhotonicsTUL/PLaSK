@@ -62,8 +62,8 @@ class TreeFragmentModel(InfoSource):
         if refreshInfo: self.fireInfoChanged()
 
     def getText(self):
-        return print_interior(self.getXMLElement())
-        #return ElementTree.tostring(self.getXMLElement())
+        return print_interior(self.get_XML_element())
+        #return ElementTree.tostring(self.get_XML_element())
 
 
 class SectionModel(TreeFragmentModel):
@@ -78,7 +78,7 @@ class SectionModel(TreeFragmentModel):
         self.externalSource = None
 
     def setText(self, text):
-        self.setXMLElement(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>']))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>']))   # .encode('utf-8') wymagane (tylko) przez lxml
         
     def isReadOnly(self):
         """
@@ -94,7 +94,7 @@ class SectionModel(TreeFragmentModel):
         if self.externalSource != None:
             return ElementTree.Element(self.name, { "external": self.externalSource.fileName })
         else:
-            return self.getXMLElement()
+            return self.get_XML_element()
         
     def clear(self):
         """Make this section empty."""
@@ -107,7 +107,7 @@ class SectionModel(TreeFragmentModel):
             :param oryginalFileName: name of XPL file where self.externalSource was given in external attribute, used only for optimization in circular reference finding
         """
         try:
-            self.setXMLElement(getSectionXMLFromFile(self.name, self.externalSource.fileNameAbs, oryginalFileName))
+            self.set_XML_element(getSectionXMLFromFile(self.name, self.externalSource.fileNameAbs, oryginalFileName))
         except Exception as e:
             self.externalSource.error = str(e) 
         else:
@@ -121,7 +121,7 @@ class SectionModel(TreeFragmentModel):
         if 'external' in element.attrib:
             self.setExternalSource(element.attrib['external'], fileName)
             return
-        self.setXMLElement(element)
+        self.set_XML_element(element)
         
     def createInfo(self):
         res = super(SectionModel, self).createInfo()
@@ -142,7 +142,7 @@ class SectionModelTreeBased(SectionModel):
         SectionModel.__init__(self, name)
         self.element = ElementTree.Element(name)
 
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.element = element
         self.fireChanged()
         
@@ -151,7 +151,7 @@ class SectionModelTreeBased(SectionModel):
         self.fireChanged()
 
     # XML element that represents whole section
-    def getXMLElement(self):
+    def get_XML_element(self):
         return self.element
 
 

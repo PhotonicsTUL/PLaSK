@@ -14,7 +14,7 @@ class MultiEditorController(object):
         
         self.editorWidget = QtGui.QStackedWidget()
         for c in controllers:
-            self.editorWidget.addWidget(c.getEditor())
+            self.editorWidget.addWidget(c.get_editor())
 
     @property
     def model(self):
@@ -24,7 +24,7 @@ class MultiEditorController(object):
     def document(self):
         return self.controllers[0].document
     
-    def getEditor(self):
+    def get_editor(self):
         return self.editorWidget
     
     def getCurrentIndex(self):
@@ -32,24 +32,24 @@ class MultiEditorController(object):
     
     def setCurrentIndex(self, new_index):
         if self.getCurrentIndex() == new_index: return False;
-        if not exceptionToMsg(lambda: self.getCurrectController().onEditExit(),
+        if not exceptionToMsg(lambda: self.getCurrectController().on_edit_exit(),
                               self.document.mainWindow, 'Error while trying to store data from editor'):
             return False
         self.editorWidget.setCurrentIndex(new_index)
-        self.getCurrectController().onEditEnter()  
+        self.getCurrectController().on_edit_enter()  
         return True     
     
     def getCurrectController(self):
         return self.controllers[self.getCurrentIndex()]
     
-    def saveDataInModel(self):
-        self.getCurrectController().saveDataInModel()
+    def save_data_in_model(self):
+        self.getCurrectController().save_data_in_model()
     
-    def onEditEnter(self):
-        self.getCurrectController().onEditEnter()
+    def on_edit_enter(self):
+        self.getCurrectController().on_edit_enter()
 
-    def onEditExit(self):
-        self.getCurrectController().onEditExit()
+    def on_edit_exit(self):
+        self.getCurrectController().on_edit_exit()
     
     
 class GUIAndSourceController(MultiEditorController):
@@ -69,10 +69,10 @@ class GUIAndSourceController(MultiEditorController):
             self.showSourceAction.triggered.connect(self.changeEditor)
         return self.showSourceAction
     
-    def onEditEnter(self):
+    def on_edit_enter(self):
         self.document.mainWindow.setEditorSelectActions(self.getShowSourceAction())
-        super(GUIAndSourceController, self).onEditEnter()
+        super(GUIAndSourceController, self).on_edit_enter()
 
-    def onEditExit(self):
-        super(GUIAndSourceController, self).onEditExit()
+    def on_edit_exit(self):
+        super(GUIAndSourceController, self).on_edit_exit()
         self.document.mainWindow.setEditorSelectActions()

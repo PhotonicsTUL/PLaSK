@@ -41,6 +41,6 @@ class ScriptController(SourceEditController):
         edit.setReadOnly(self.model.isReadOnly())
         return edit
     
-    def onEditEnter(self):
-        super(ScriptController, self).onEditEnter()
+    def on_edit_enter(self):
+        super(ScriptController, self).on_edit_enter()
         self.pyedit.prefix = self.document.stubs()

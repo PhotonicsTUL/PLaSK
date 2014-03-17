@@ -78,24 +78,24 @@ class MaterialsController(Controller):
         
     def material_selected(self, newSelection, oldSelection):
         indexes = newSelection.indexes()
-        if len(indexes) >= 1:
+        if indexes:
             self.property_model.material = self.model.entries[indexes[0].row()]
         else:
             self.property_model.material = None
         #self.properties_table.resizeColumnsToContents()
         self.properties_table.resizeRowsToContents()
         
-    def getEditor(self):
+    def get_editor(self):
         return self.splitter
 
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
     #    if not self.model.isReadOnly():
-    #        self.document.mainWindow.setSectionActions(*self.getTableEditActions())
+    #        self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
     #def onEditExit(self):
     #    self.document.mainWindow.setSectionActions()
     
-    def getTableEditActions(self):
+    def get_table_edit_actions(self):
         return self.tableActions.get(self.document.mainWindow)

@@ -20,7 +20,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
         if type != None: self.type = type
         if method != None: self.__method__ = method
        
-    def getXMLElement(self):
+    def get_XML_element(self):
         return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
         
     @property
@@ -40,7 +40,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
             tab = ['<generator name="', quoteattr(self.name), '" type="', quoteattr(self.type), '" method="', quoteattr(self.method), '">', text.encode('utf-8'), '</generator>' ]
         else:
             tab = ['<mesh name="', quoteattr(self.name), '" type="', quoteattr(self.type), '">', text.encode('utf-8'), '</mesh>' ]
-        self.setXMLElement(ElementTree.fromstringlist(tab))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(ElementTree.fromstringlist(tab))   # .encode('utf-8') wymagane (tylko) przez lxml
         
     @property
     def type_and_kind_str(self):
@@ -71,15 +71,15 @@ class GridTreeBased(Grid):
             self.element = element
         #Grid.__init__(self, name, type, method)
 
-    def setXMLElement(self, element):
+    def set_XML_element(self, element):
         self.element = element
     #    self.fireChanged()    #TODO ???
 
-    def getXMLElement(self):
+    def get_XML_element(self):
         return self.element
   
     def getText(self):
-        return print_interior(self.getXMLElement())
+        return print_interior(self.get_XML_element())
 
     @property
     def method(self):
