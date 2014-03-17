@@ -6,6 +6,7 @@ from controller.script import ScriptController
 from controller.multi import GUIAndSourceController
 from controller.connects import ConnectsController
 from controller import materials
+from controller.grids.section import GridsController
 
 class XPLDocument(object):
     
@@ -15,11 +16,13 @@ class XPLDocument(object):
         object.__init__(self)
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
+        #geometry
+        self.grids = GUIAndSourceController(GridsController(self))
         self.controllers = [
               self.defines,
               self.materials,
               SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  #geometry
-              SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[3])),  #grids
+              self.grids,
               SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  #solvers
               GUIAndSourceController(ConnectsController(self)),   #connects
               ScriptController(self)   #script

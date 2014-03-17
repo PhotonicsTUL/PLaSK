@@ -55,22 +55,22 @@ class GridsModel(TableModel):
     
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            if col == 0: return 'type (and method)'
-            if col == 1: return 'name'
+            if col == 0: return 'name'
+            if col == 1: return 'type (and method)'
             if col == 2: return 'comment'
         return None
     
     def get(self, col, row): 
-        if col == 0: return self.entries[row].type_and_kind_str
-        if col == 1: return self.entries[row].name
+        if col == 0: return self.entries[row].name
+        if col == 1: return self.entries[row].type_and_kind_str
         if col == 2: return self.entries[row].comment
         raise IndexError('column number for GridsModel should be 0, 1, or 2, but is %d' % col)
     
     def set(self, col, row, value):
-        if col == 1: self.entries[row].name = value
+        if col == 0: self.entries[row].name = value
         #else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)       
         
     def flags(self, index):
         flags = super(GridsModel, self).flags(index)
-        if index.column() == 0: flags &= ~QtCore.Qt.ItemIsEditable
+        if index.column() == 1: flags &= ~QtCore.Qt.ItemIsEditable
         return flags
