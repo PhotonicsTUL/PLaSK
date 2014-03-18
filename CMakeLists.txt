@@ -65,8 +65,6 @@ option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for w
 
 option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
 
-option(BUILD_MANUAL "Build user manual." OFF)
-
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build Python interface as external module." OFF "BUILD_PYTHON" OFF)
 
@@ -479,11 +477,8 @@ else()
     endif()
 endif()
 
-if(BUILD_MANUAL)
-    add_custom_target(manual ALL DEPENDS doc-latexpdf)
-    file(GLOB examples ${CMAKE_SOURCE_DIR}/doc/*.xpl ${CMAKE_SOURCE_DIR}/doc/*.py)
-    install(FILES ${examples} DESTINATION ${doc_dest} COMPONENT doc)
-endif()
+file(GLOB examples ${CMAKE_SOURCE_DIR}/doc/*.xpl ${CMAKE_SOURCE_DIR}/doc/*.py)
+install(FILES ${examples} DESTINATION ${doc_dest}/examples COMPONENT doc)
 
 add_subdirectory(doc)
 
