@@ -1,9 +1,10 @@
 class Controller(object):
     
-    def __init__(self, document, model):
+    def __init__(self, document = None, model = None):
+        """Optionally set document and/or model."""
         object.__init__(self)
-        self.document = document
-        self.model = model
+        if document: self.document = document
+        if model: self.model = model
         
     def save_data_in_model(self):
         """Called to force save data from editor in model."""

@@ -26,13 +26,13 @@ class RectilinearMesh(Grid):
     """Model of RectilinearMesh (1D, 2D, or 3D - see self.dim)"""
     
     @staticmethod
-    def from_XML(element):
-        e = RectilinearMesh(int(element.attrib['type'][-2]), element.attrib['name'])
+    def from_XML(grids_model, element):
+        e = RectilinearMesh(grids_model, int(element.attrib['type'][-2]), element.attrib['name'])
         e.set_XML_element(element)
         return e
     
-    def __init__(self, dim, name):
-        super(RectilinearMesh, self).__init__(self, name, "rectilinear%dd" % dim)
+    def __init__(self, grids_model, dim, name):
+        super(RectilinearMesh, self).__init__(grids_model, name, "rectilinear%dd" % dim)
         self.dim = dim
         self.axis = [AxisConf() for _ in range(0, dim)]
     

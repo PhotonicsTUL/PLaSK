@@ -2,10 +2,11 @@ from PyQt4 import QtGui
 from qhighlighter.XML import XMLHighlighter
 from utils.gui import defaultFont
 from controller.base import Controller
+from rabbitvcs.util.log import changed
 
 class SourceEditController(Controller):
 
-    def __init__(self, document, model):
+    def __init__(self, document = None, model = None):
         Controller.__init__(self, document, model)
 
     def create_source_editor(self, parent = None):
@@ -33,9 +34,9 @@ class SourceEditController(Controller):
 
     def on_edit_enter(self):
         self.refresh_editor()
-        self.model.changed += self.refresh_editor 
+        if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor 
 
     # when editor is turn off, model should be update
     def on_edit_exit(self):
         self.save_data_in_model()
-        self.model.changed -= self.refresh_editor
+        if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor

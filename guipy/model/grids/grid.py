@@ -1,8 +1,9 @@
 # Base classes for entries in grids model
-from lxml.etree import ElementTree
+from lxml import etree as ElementTree
 from model.info import InfoSource
 from utils.xml import print_interior
 from xml.sax.saxutils import quoteattr
+from controller.source import SourceEditController
 
 class Grid(InfoSource): # or (TreeFragmentModel)??
     """Base class for models of grids (meshes or generators)"""
@@ -14,8 +15,9 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
         else:
             return ElementTree.Element("mesh", { "name": name, "type": type })
     
-    def __init__(self, name = None, type = None, method = None):
+    def __init__(self, grids_model, name = None, type = None, method = None):
         object.__init__(self)
+        self.model = grids_model
         if name != None: self.name = name
         if type != None: self.type = type
         if method != None: self.__method__ = method
@@ -33,10 +35,10 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
     
     @property
     def is_mesh(self):
-        return not self.method == None
+        return self.method == None
         
     def set_text(self, text):
-        if self.is_generator():
+        if self.is_generator:
             tab = ['<generator name="', quoteattr(self.name), '" type="', quoteattr(self.type), '" method="', quoteattr(self.method), '">', text.encode('utf-8'), '</generator>' ]
         else:
             tab = ['<mesh name="', quoteattr(self.name), '" type="', quoteattr(self.type), '">', text.encode('utf-8'), '</mesh>' ]
@@ -49,6 +51,12 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
         else:
             return "%s mesh" % self.type
         
+    def is_read_only(self):
+        return self.model.is_read_only()
+    
+    def get_controller(self):
+        return SourceEditController(model = self)
+        
 #class Generator(Grid):
 #    """Base class for models of generators"""
 
@@ -59,12 +67,12 @@ class GridTreeBased(Grid):
     """Universal grid model, used for grids not supported in other way (data are stored as XML element)"""
 
     @staticmethod
-    def from_XML(element):
-        return GridTreeBased(element = element)
+    def from_XML(grids_model, element):
+        return GridTreeBased(grids_model, element = element)
 
-    def __init__(self, name = None, type = None, method = None, element = None):
+    def __init__(self, grids_model, name = None, type = None, method = None, element = None):
         """Either element or rest of parameters (method is still optional), should be provided."""
-        super(GridTreeBased, self).__init__()
+        super(GridTreeBased, self).__init__(grids_model)
         if element == None:
             self.element = Grid.contruct_empty_XML_element(name, type, method)
         else:

@@ -4,28 +4,28 @@ from model.grids.mesh_rectilinear import RectilinearMesh
 from lxml import etree as ElementTree
 from PyQt4 import QtCore
 
-def contruct_mesh(element):
+def contruct_mesh(grids_model, element):
     t = element.attrib['type']
-    if t in ['rectilinear1d', 'rectilinear2d', 'rectilinear3d']: return RectilinearMesh.from_XML(element)
-    return GridTreeBased.from_XML(element)
+    if t in ['rectilinear1d', 'rectilinear2d', 'rectilinear3d']: return RectilinearMesh.from_XML(grids_model, element)
+    return GridTreeBased.from_XML(grids_model, element)
 
-def contruct_generator(element):
-    return GridTreeBased.from_XML(element)
+def contruct_generator(grids_model, element):
+    return GridTreeBased.from_XML(grids_model, element)
 
 
-def contruct_grid(element):
+def contruct_grid(grids_model, element):
     
     if element.tag == "mesh":
         k = element.attrib.keys()
         k.sort()
         if k != ['name', 'type']: raise ValueError('<mesh> tag must have two attributes (name and type), but has: %s' % ', '.join(k))
-        return contruct_mesh(element)
+        return contruct_mesh(grids_model, element)
     
     if element.tag == "generator":
         k = element.attrib.keys()
         k.sort()
         if k != ['method', 'name', 'type']: raise ValueError('<generator> tag must have attributes "method", "name" and "type", but has: %s' % ', '.join(k))
-        return contruct_generator(element)
+        return contruct_generator(grids_model, element)
     
     raise ValueError('In <grids> section only <mesh> and <generator> tags are allowed, but got "%s".' % element.tag)
 
@@ -40,7 +40,7 @@ class GridsModel(TableModel):
         del self.entries[:]
         if element is not None:
             for g in element:
-                self.entries.append(contruct_grid(g))
+                self.entries.append(contruct_grid(self, g))
         self.layoutChanged.emit()
         self.fire_changed()
         
