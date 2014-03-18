@@ -42,7 +42,7 @@ class GridsModel(TableModel):
             for g in element:
                 self.entries.append(contruct_grid(g))
         self.layoutChanged.emit()
-        self.fireChanged()
+        self.fire_changed()
         
     # XML element that represents whole section
     def get_XML_element(self):

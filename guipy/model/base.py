@@ -52,7 +52,7 @@ class TreeFragmentModel(InfoSource):
         InfoSource.__init__(self, info_cb)
         self.changed = Signal()
         
-    def fireChanged(self, refreshInfo = True):
+    def fire_changed(self, refreshInfo = True):
         """
             Inform listeners that this section was changed.
             :param bool refreshInfo: only if True, info of this section will be refresh
@@ -61,7 +61,7 @@ class TreeFragmentModel(InfoSource):
         self.changed(self)
         if refreshInfo: self.fireInfoChanged()
 
-    def getText(self):
+    def get_text(self):
         return print_interior(self.get_XML_element())
         #return ElementTree.tostring(self.get_XML_element())
 
@@ -77,16 +77,16 @@ class SectionModel(TreeFragmentModel):
         self.name = name
         self.externalSource = None
 
-    def setText(self, text):
+    def set_text(self, text):
         self.set_XML_element(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>']))   # .encode('utf-8') wymagane (tylko) przez lxml
         
-    def isReadOnly(self):
+    def is_read_only(self):
         """
             :return: true if model is read-only (typically: has been read from external source)
         """
         return self.externalSource != None
     
-    def getFileXMLElement(self):
+    def get_file_XML_element(self):
         """
             Get XML element ready to save in XPL document.
             It represents the whole section and either contains data or points to external source (has external attribute).
@@ -98,10 +98,10 @@ class SectionModel(TreeFragmentModel):
         
     def clear(self):
         """Make this section empty."""
-        self.setText('')
-        self.fireChanged()
+        self.set_text('')
+        self.fire_changed()
         
-    def reloadExternalSource(self, oryginalFileName = None):
+    def reload_external_source(self, oryginalFileName = None):
         """
             Load section from external source.
             :param oryginalFileName: name of XPL file where self.externalSource was given in external attribute, used only for optimization in circular reference finding
@@ -113,19 +113,19 @@ class SectionModel(TreeFragmentModel):
         else:
             if hasattr(self.externalSource, 'error'): del self.externalSource.error
         
-    def setExternalSource(self, fileName, oryginalFileName = None):
+    def set_external_source(self, fileName, oryginalFileName = None):
         self.externalSource = ExternalSource(fileName, oryginalFileName)
-        self.reloadExternalSource(oryginalFileName)
+        self.reload_external_source(oryginalFileName)
             
-    def setFileXMLElement(self, element, fileName = None):
+    def set_file_XML_element(self, element, fileName = None):
         if 'external' in element.attrib:
-            self.setExternalSource(element.attrib['external'], fileName)
+            self.set_external_source(element.attrib['external'], fileName)
             return
         self.set_XML_element(element)
         
-    def createInfo(self):
-        res = super(SectionModel, self).createInfo()
-        if self.isReadOnly():
+    def create_info(self):
+        res = super(SectionModel, self).create_info()
+        if self.is_read_only():
             res.append(Info('%s section is read-only' % self.name, Info.INFO))
         if self.externalSource != None:
             res.append(Info('%s section is loaded from external file "%s" ("%s")' % (self.name, self.externalSource.fileName, self.externalSource.fileNameAbs), Info.INFO))
@@ -144,11 +144,11 @@ class SectionModelTreeBased(SectionModel):
 
     def set_XML_element(self, element):
         self.element = element
-        self.fireChanged()
+        self.fire_changed()
         
     def clear(self):
         self.element.clear()
-        self.fireChanged()
+        self.fire_changed()
 
     # XML element that represents whole section
     def get_XML_element(self):

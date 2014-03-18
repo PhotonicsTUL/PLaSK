@@ -117,7 +117,7 @@ class InfoSource(object):
         """
         self.infoChanged(self)
         
-    def createInfo(self):
+    def create_info(self):
         """
             Create table with messages.
             :return: array of Info objects
@@ -129,7 +129,7 @@ class InfoSource(object):
             Get array of Info objects on given level connected with this object.
         """
         if self.__info__ == None:
-            self.__info__ = self.createInfo()
+            self.__info__ = self.create_info()
         if level != None:
             return filter(lambda m: m.level == level, self.__info__)
         else:

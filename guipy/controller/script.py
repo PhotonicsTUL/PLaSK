@@ -38,7 +38,7 @@ class ScriptController(SourceEditController):
         if SyntaxHighlighter:
             parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
             self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
-        edit.setReadOnly(self.model.isReadOnly())
+        edit.setReadOnly(self.model.is_read_only())
         return edit
     
     def on_edit_enter(self):

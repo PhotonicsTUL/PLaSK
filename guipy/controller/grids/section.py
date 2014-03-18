@@ -17,7 +17,7 @@ class GridsController(Controller):
         self.grids_table.setModel(self.model)
         #self.grids_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.grids_table))
         #self.materialsTableActions = TableActions(self.grids_table)
-        table_last_col_fill(self.grids_table, self.model.columnCount(None), 250)
+        table_last_col_fill(self.grids_table, self.model.columnCount(None), 150)
         self.splitter.addWidget(tableWithManipulators(self.grids_table, self.splitter, title="Meshes and generators"))
         
         #self.splitter.addWidget(tableWithManipulators(self.properties_table, self.splitter, title="Properties of the material"))

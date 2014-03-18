@@ -105,14 +105,14 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
     
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
-        #self.fireChanged()
+        #self.fire_changed()
         self.dataChanged.emit(index, index)
         return True
     
     def flags(self, index):
         flags = super(MaterialPropertyModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled  
 
-        if index.column() in [0, 1] and not self.materialsModel.isReadOnly(): flags |= QtCore.Qt.ItemIsEditable
+        if index.column() in [0, 1] and not self.materialsModel.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
         #flags |= QtCore.Qt.ItemIsDragEnabled
         #flags |= QtCore.Qt.ItemIsDropEnabled
 
@@ -147,10 +147,10 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
     def entries(self):
         return self.__material.properties
         
-    def isReadOnly(self):
-        return self.material == None or self.materialsModel.isReadOnly()
+    def is_read_only(self):
+        return self.material == None or self.materialsModel.is_read_only()
     
-    def fireChanged(self):
+    def fire_changed(self):
         pass
     
     def createDefaultEntry(self):
@@ -167,7 +167,7 @@ class MaterialsModel(TableModel):
             self.properties = properties    #TODO what with duplicate properties, should be supported?
             self.comment = comment
             
-        def addToXML(self, material_section_element):
+        def add_to_XML(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
             mat.tail = '\n'
             if self.base: mat.attrib['base'] = self.base 
@@ -194,12 +194,12 @@ class MaterialsModel(TableModel):
                         MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None),  [ (prop.tag, prop.text) for prop in mat ])
                 )
         self.layoutChanged.emit()
-        self.fireChanged()
+        self.fire_changed()
     
     # XML element that represents whole section
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
-        for e in self.entries: e.addToXML(res)
+        for e in self.entries: e.add_to_XML(res)
         return res
     
     def get(self, col, row): 
@@ -229,8 +229,8 @@ class MaterialsModel(TableModel):
             if col == 2: return 'comment'
         return None
     
-    def createInfo(self):
-        res = super(MaterialsModel, self).createInfo()
+    def create_info(self):
+        res = super(MaterialsModel, self).create_info()
         
         names = OrderedDict()
         for i, d in enumerate(self.entries):

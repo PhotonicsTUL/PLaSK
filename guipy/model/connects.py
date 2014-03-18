@@ -22,7 +22,7 @@ class ConnectsModel(TableModel):
         else:
             self.entries = []
         self.layoutChanged.emit()
-        self.fireChanged()
+        self.fire_changed()
     
     # XML element that represents whole section
     def get_XML_element(self):
@@ -58,8 +58,8 @@ class ConnectsModel(TableModel):
             if col == 2: return 'comment'
         return None
     
-    def createInfo(self):
-        res = super(ConnectsModel, self).createInfo()
+    def create_info(self):
+        res = super(ConnectsModel, self).create_info()
         for i, d in enumerate(self.entries):
             if not d.output: res.append(Info('Connection output is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
             if not d.input: res.append(Info('Connection input is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))

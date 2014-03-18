@@ -27,29 +27,37 @@ class MultiEditorController(object):
     def get_editor(self):
         return self.editorWidget
     
-    def getCurrentIndex(self):
+    def get_current_index(self):
+        """:return: an index of current controller (int)"""
         return self.editorWidget.currentIndex()
     
-    def setCurrentIndex(self, new_index):
-        if self.getCurrentIndex() == new_index: return False;
-        if not exceptionToMsg(lambda: self.getCurrectController().on_edit_exit(),
+    def set_current_index(self, new_index):
+        """
+            Try to change current controller.
+            :param int new_index: index of new current controller
+            :return: true only when controller was changed (bool)
+        """
+        if self.get_current_index() == new_index: return False
+        if not exceptionToMsg(lambda: self.currect_controller.on_edit_exit(),
                               self.document.mainWindow, 'Error while trying to store data from editor'):
             return False
         self.editorWidget.setCurrentIndex(new_index)
-        self.getCurrectController().on_edit_enter()  
+        self.currect_controller.on_edit_enter()  
         return True     
     
-    def getCurrectController(self):
-        return self.controllers[self.getCurrentIndex()]
+    @property
+    def currect_controller(self):
+        """:return: current controller"""
+        return self.controllers[self.get_current_index()]
     
     def save_data_in_model(self):
-        self.getCurrectController().save_data_in_model()
+        self.currect_controller.save_data_in_model()
     
     def on_edit_enter(self):
-        self.getCurrectController().on_edit_enter()
+        self.currect_controller.on_edit_enter()
 
     def on_edit_exit(self):
-        self.getCurrectController().on_edit_exit()
+        self.currect_controller.on_edit_exit()
     
     
 class GUIAndSourceController(MultiEditorController):
@@ -58,8 +66,8 @@ class GUIAndSourceController(MultiEditorController):
         MultiEditorController.__init__(self, controller, SourceEditController(controller.document, controller.model))
     
     def changeEditor(self):
-        if not self.setCurrentIndex(int(self.showSourceAction.isChecked())):
-            self.showSourceAction.setChecked(bool(self.getCurrentIndex()))
+        if not self.set_current_index(int(self.showSourceAction.isChecked())):
+            self.showSourceAction.setChecked(bool(self.get_current_index()))
     
     def getShowSourceAction(self):
         if not hasattr(self, 'showSourceAction'):

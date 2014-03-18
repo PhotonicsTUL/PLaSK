@@ -29,7 +29,7 @@ class DefinesModel(TableModel):
         else:
             self.entries = []
         self.layoutChanged.emit()
-        self.fireChanged()
+        self.fire_changed()
     
     # XML element that represents whole section
     def get_XML_element(self):
@@ -50,8 +50,8 @@ class DefinesModel(TableModel):
         elif col == 2: self.entries[row].comment = value
         else: raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)
         
-    def createInfo(self):
-        res = super(DefinesModel, self).createInfo()
+    def create_info(self):
+        res = super(DefinesModel, self).create_info()
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:

@@ -5,7 +5,7 @@ from model import info
 class TableModelEditMethods(object):
     
     def insert(self, index = None, value = None):
-        if self.isReadOnly(): return
+        if self.is_read_only(): return
         if not value: value = self.createDefaultEntry()
         if 0 <= index <= len(self.entries):
             self.beginInsertRows(QtCore.QModelIndex(), index, index)
@@ -14,23 +14,23 @@ class TableModelEditMethods(object):
             index = len(self.entries)
             self.beginInsertRows(QtCore.QModelIndex(), index, index)
             self.entries.append(value)
-        self.fireChanged()
+        self.fire_changed()
         self.endInsertRows()
         return index
     
     def remove(self, index):
-        if self.isReadOnly() or index < 0 or index >= len(self.entries): return
+        if self.is_read_only() or index < 0 or index >= len(self.entries): return
         self.beginRemoveRows(QtCore.QModelIndex(), index, index)
         del self.entries[index]
-        self.fireChanged()
+        self.fire_changed()
         self.endRemoveRows()        
 
-    def swapNeighbourEntries(self, index1, index2):
-        if self.isReadOnly(): return
+    def swap_neighbour_entries(self, index1, index2):
+        if self.is_read_only(): return
         if index2 < index1: index1, index2 = index2, index1 
         self.beginMoveRows(QtCore.QModelIndex(), index2, index2, QtCore.QModelIndex(), index1)
         self.entries[index1], self.entries[index2] = self.entries[index2], self.entries[index1]
-        self.fireChanged()
+        self.fire_changed()
         self.endMoveRows()
         
 
@@ -87,7 +87,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
     def flags(self, index):
         flags = super(TableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled  
 
-        if not self.isReadOnly(): flags |= QtCore.Qt.ItemIsEditable
+        if not self.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
         #flags |= QtCore.Qt.ItemIsDragEnabled
         #flags |= QtCore.Qt.ItemIsDropEnabled
 
@@ -95,7 +95,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
     
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
-        self.fireChanged()
+        self.fire_changed()
         self.dataChanged.emit(index, index)
         return True
     

@@ -12,7 +12,7 @@ class SourceEditController(Controller):
         ed = QtGui.QTextEdit(parent)
         ed.setFont(defaultFont)
         self.highlighter = XMLHighlighter(ed.document())   # highlighter varible is required, in other case it is deleted and text is not highlighted
-        ed.setReadOnly(self.model.isReadOnly())
+        ed.setReadOnly(self.model.is_read_only())
         return ed
 
     # text, source editor
@@ -25,11 +25,11 @@ class SourceEditController(Controller):
         return self.getSourceEditor()
 
     def refreshEditor(self, *ignore):
-        self.getSourceEditor().setPlainText(self.model.getText())
+        self.getSourceEditor().setPlainText(self.model.get_text())
         
     def save_data_in_model(self):
         if not self.getSourceEditor().isReadOnly():
-            self.model.setText(self.getSourceEditor().toPlainText())
+            self.model.set_text(self.getSourceEditor().toPlainText())
 
     def on_edit_enter(self):
         self.refreshEditor()

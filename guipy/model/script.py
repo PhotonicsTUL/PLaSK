@@ -8,7 +8,7 @@ class ScriptModel(SectionModel):
         self.code = ''
 
     def set_XML_element(self, element):
-        self.setText(element.text if element is not None else '')
+        self.set_text(element.text if element is not None else '')
 
     # XML element that represents whole section
     def get_XML_element(self):
@@ -16,10 +16,10 @@ class ScriptModel(SectionModel):
         res.text = self.code
         return res
     
-    def getText(self):
+    def get_text(self):
         return self.code
 
-    def setText(self, text):
+    def set_text(self, text):
         self.code = text
-        self.fireChanged()
+        self.fire_changed()
 

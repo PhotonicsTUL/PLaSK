@@ -26,7 +26,7 @@ class TableActions(object):
         if not index.isValid(): return
         index = index.row()
         if 1 <= index < len(self.model.entries):
-            self.model.swapNeighbourEntries(index-1, index)
+            self.model.swap_neighbour_entries(index-1, index)
             #self.table.selectRow(index-1)
     
     def move_down(self):
@@ -34,7 +34,7 @@ class TableActions(object):
         if not index.isValid(): return
         index = index.row()
         if 0 <= index < len(self.model.entries)-1:
-            self.model.swapNeighbourEntries(index, index+1)
+            self.model.swap_neighbour_entries(index, index+1)
             #self.table.selectRow(index+1)
     
     def get(self, parent):
@@ -98,7 +98,7 @@ class TableController(Controller):
 
     def on_edit_enter(self):
         self.save_data_in_model()  #this should do nothing, but is called in case of subclass use it
-        if not self.model.isReadOnly():
+        if not self.model.is_read_only():
             self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update

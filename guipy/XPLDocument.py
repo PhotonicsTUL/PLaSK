@@ -35,14 +35,14 @@ class XPLDocument(object):
         for i in range(len(XPLDocument.SECTION_NAMES)):
             element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
             if element is not None:
-                self.getModelByIndex(i).setFileXMLElement(element, fileName)
+                self.getModelByIndex(i).set_file_XML_element(element, fileName)
             else:
                 self.getModelByIndex(i).clear()
         
     def saveToFile(self, fileName):
         root = ElementTree.Element("plask")
         for c in self.controllers:
-            root.append(c.model.getFileXMLElement())
+            root.append(c.model.get_file_XML_element())
         ElementTree.ElementTree(root).write(fileName, encoding="UTF-8") #, encoding, xml_declaration, default_namespace, method)
         
     def getControllerByIndex(self, index):

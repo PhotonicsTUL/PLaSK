@@ -35,7 +35,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
     def is_mesh(self):
         return not self.method == None
         
-    def setText(self, text):
+    def set_text(self, text):
         if self.is_generator():
             tab = ['<generator name="', quoteattr(self.name), '" type="', quoteattr(self.type), '" method="', quoteattr(self.method), '">', text.encode('utf-8'), '</generator>' ]
         else:
@@ -78,7 +78,7 @@ class GridTreeBased(Grid):
     def get_XML_element(self):
         return self.element
   
-    def getText(self):
+    def get_text(self):
         return print_interior(self.get_XML_element())
 
     @property
