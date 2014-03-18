@@ -5,7 +5,7 @@ from model import materials
 from model.materials import MaterialPropertyModel
 from utils.gui import HTMLDelegate, table_last_col_fill
 from controller.defines import DefinesCompletionDelegate
-from controller.table import tableWithManipulators
+from controller.table import table_with_manipulators
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
     
@@ -60,7 +60,7 @@ class MaterialsController(Controller):
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.materials_table))
         #self.materialsTableActions = TableActions(self.materials_table)
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 150)
-        self.splitter.addWidget(tableWithManipulators(self.materials_table, self.splitter, title="Materials"))
+        self.splitter.addWidget(table_with_manipulators(self.materials_table, self.splitter, title="Materials"))
         
         self.property_model = MaterialPropertyModel(model)
         self.properties_table = QtGui.QTableView()
@@ -72,7 +72,7 @@ class MaterialsController(Controller):
         #self.properties_table.setWordWrap(True)        
         table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [100, 150])
         self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        self.splitter.addWidget(tableWithManipulators(self.properties_table, self.splitter, title="Properties of the material"))
+        self.splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter, title="Properties of the material"))
         
         self.materials_table.selectionModel().selectionChanged.connect(self.material_selected) #currentChanged ??
         

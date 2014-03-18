@@ -6,7 +6,7 @@ class TableModelEditMethods(object):
     
     def insert(self, index = None, value = None):
         if self.is_read_only(): return
-        if not value: value = self.createDefaultEntry()
+        if not value: value = self.create_default_entry()
         if 0 <= index <= len(self.entries):
             self.beginInsertRows(QtCore.QModelIndex(), index, index)
             self.entries.insert(index, value)

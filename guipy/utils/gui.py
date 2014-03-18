@@ -2,20 +2,17 @@ from PyQt4 import QtCore
 from PyQt4 import QtGui
 import collections
 
-def exceptionToMsg(f, parent = None, err_title = None):   
+def exception_to_msg(f, parent = None, err_title = None):
+    """
+        Call f() in try block, and after catch exception show Qt message.
+        :return: false obly if F() has thrown an exception, true in other cases (bool)
+    """   
     try:
         f()
         return True
     except Exception as e:
         QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
-
-#deprecated, to remove
-def toPythonStr(qstr):
-    if isinstance(qstr, QtCore.QString):
-        return unicode (qstr.toUtf8(), "utf-8")
-    else:
-        return qstr
     
 defaultFont = QtGui.QFont()
 defaultFont.setFamily("Courier")

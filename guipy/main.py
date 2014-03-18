@@ -9,7 +9,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 from XPLDocument import XPLDocument
-from utils.gui import exceptionToMsg
+from utils.gui import exception_to_msg
 from model.info import InfoTreeModel, Info
 
 class MainWindow(QtGui.QMainWindow):
@@ -19,53 +19,53 @@ class MainWindow(QtGui.QMainWindow):
         self.document = XPLDocument(self)
         self.current_tab_index = -1
         self.fileName = None
-        self.initUI()
+        self.init_UI()
         
-    def modelIsNew(self):
+    def model_is_new(self):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
-            self.tabs.addTab(self.document.getControllerByName(m).get_editor(), m)
+            self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m)
         self.current_tab_index = 0
-        self.currentSectionEnter()
+        self.current_section_enter()
         
-    def setNewModel(self, model):
+    def set_model(self, model):
         self.document = model
-        self.modelIsNew()
+        self.model_is_new()
         
     def new(self):
         reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
         self.fileName = None
-        self.setNewModel(XPLDocument(self))
+        self.set_model(XPLDocument(self))
         
     def open(self):
         fileName = QtGui.QFileDialog.getOpenFileName(self, "Choose the name of experiment file to open", ".", "XPL (*.xpl)");
         if not fileName: return;
-        self.document.loadFromFile(fileName)
+        self.document.load_from_file(fileName)
         
     def save(self):
         if self.fileName != None:
-            if not self.beforeSave(): return False
-            self.document.saveToFile(self.fileName)
+            if not self.before_save(): return False
+            self.document.save_to_file(self.fileName)
             return True
         else:
-            return self.saveAs()
+            return self.save_as()
         
-    def saveAs(self):
+    def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
-        if not self.beforeSave(): return False
+        if not self.before_save(): return False
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
         if not fileName: return False
         self.fileName = fileName
-        self.document.saveToFile(fileName)
+        self.document.save_to_file(fileName)
         return True
     
-    def beforeSave(self):
+    def before_save(self):
         """"Is called just before save, return True if document can be saved."""
         if self.current_tab_index != -1:
             try:
-                self.document.getControllerByIndex(self.current_tab_index).save_data_in_model()
+                self.document.controller_by_index(self.current_tab_index).save_data_in_model()
             except Exception as e:
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText("Edited content of the current section is invalid.")
@@ -75,7 +75,7 @@ class MainWindow(QtGui.QMainWindow):
                 msgBox.setIcon(QtGui.QMessageBox.Warning)
                 #msgBox.setDefaultButton(QtGui.QMessageBox.Yes);
                 return msgBox.exec_() == QtGui.QMessageBox.Yes
-        errors = self.document.getInfo(Info.ERROR)
+        errors = self.document.get_info(Info.ERROR)
         if errors:
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Document contains some non-critical errors. It is possible to save it but probably not to run.")
@@ -87,33 +87,33 @@ class MainWindow(QtGui.QMainWindow):
             return msgBox.exec_() == QtGui.QMessageBox.Yes
         return True
     
-    def currentSectionExit(self):
+    def current_section_exit(self):
         """"Should be called just before left the current section."""
         if self.current_tab_index != -1:
-            if not exceptionToMsg(lambda: self.document.getControllerByIndex(self.current_tab_index).on_edit_exit(),
+            if not exception_to_msg(lambda: self.document.controller_by_index(self.current_tab_index).on_edit_exit(),
                                   self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
                 return False
         return True
     
-    def currentSectionEnter(self):
+    def current_section_enter(self):
         """"Should be called just after set the current section."""
         if self.current_tab_index != -1:
-            c = self.document.getControllerByIndex(self.current_tab_index)
+            c = self.document.controller_by_index(self.current_tab_index)
             self.info_model.setModel(c.model)
             c.on_edit_enter()
         else:
             self.info_model.setModel(None)
         
-    def tabChange(self, index):
+    def tab_change(self, index):
         if index == self.current_tab_index: return
-        if not self.currentSectionExit():
+        if not self.current_section_exit():
             self.tabs.setCurrentIndex(self.current_tab_index)
             return
         self.current_tab_index = index
-        self.currentSectionEnter()
+        self.current_section_enter()
         
-    def setActions(self, toolbar_name, *actions):
+    def set_actions(self, toolbar_name, *actions):
         try:
             toolbar = self.extra_toolbars[toolbar_name]
         except KeyError:
@@ -127,13 +127,13 @@ class MainWindow(QtGui.QMainWindow):
                 toolbar.addAction(a)
         toolbar.setVisible(bool(actions))
             
-    def setSectionActions(self, *actions):
-        self.setActions('Section edit', *actions)
+    def set_section_actions(self, *actions):
+        self.set_actions('Section edit', *actions)
         
-    def setEditorSelectActions(self, *actions):
-        self.setActions('Section editor', *actions)
+    def set_editor_select_actions(self, *actions):
+        self.set_actions('Section editor', *actions)
         
-    def initUI(self):
+    def init_UI(self):
         
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
         
@@ -157,7 +157,7 @@ class MainWindow(QtGui.QMainWindow):
         saveAsAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'), 'Save &As...', self)
         saveAsAction.setShortcut(QtGui.QKeySequence.SaveAs)
         saveAsAction.setStatusTip('Save XPL file, ask for name of file')
-        saveAsAction.triggered.connect(self.saveAs)
+        saveAsAction.triggered.connect(self.save_as)
 
         exitAction = QtGui.QAction(QtGui.QIcon.fromTheme('exit'), 'E&xit', self)
         exitAction.setShortcut(QtGui.QKeySequence.Quit)
@@ -192,7 +192,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
     
-        self.tabs.connect(self.tabs, SIGNAL("currentChanged(int)"), self.tabChange)
+        self.tabs.connect(self.tabs, SIGNAL("currentChanged(int)"), self.tab_change)
         self.setCentralWidget(self.tabs)
         
         self.info_dock = QtGui.QDockWidget("Warnings", self)
@@ -214,8 +214,8 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(200, 200, 550, 450)
         self.setWindowTitle('Main window')  
         
-        self.document.loadFromFile('test.xpl')
-        self.modelIsNew()
+        self.document.load_from_file('test.xpl')
+        self.model_is_new()
           
         self.show()
         

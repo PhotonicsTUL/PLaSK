@@ -153,7 +153,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
     def fire_changed(self):
         pass
     
-    def createDefaultEntry(self):
+    def create_default_entry(self):
         return "", ""
         
         
@@ -214,7 +214,7 @@ class MaterialsModel(TableModel):
         elif col == 2: self.entries[row].comment = value
         else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)       
         
-    def createDefaultEntry(self):
+    def create_default_entry(self):
         return MaterialsModel.Material("name")
     
     # QAbstractListModel implementation

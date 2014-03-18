@@ -67,7 +67,7 @@ class DefinesModel(TableModel):
                           )
         return res
         
-    def createDefaultEntry(self):
+    def create_default_entry(self):
         return DefinesModel.Entry("new", "")
     
     # QAbstractListModel implementation

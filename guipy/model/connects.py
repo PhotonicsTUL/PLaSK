@@ -43,7 +43,7 @@ class ConnectsModel(TableModel):
         elif col == 2: self.entries[row].comment = value
         else: raise IndexError('column number for ConnectsModel should be 0, 1, or 2, but is %d' % col)       
         
-    def createDefaultEntry(self):
+    def create_default_entry(self):
         return ConnectsModel.Entry("out", "in")
     
     # QAbstractListModel implementation

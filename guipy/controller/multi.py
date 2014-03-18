@@ -1,5 +1,5 @@
 from PyQt4 import QtGui
-from utils.gui import exceptionToMsg
+from utils.gui import exception_to_msg
 from controller.source import SourceEditController
 
 class MultiEditorController(object):
@@ -38,7 +38,7 @@ class MultiEditorController(object):
             :return: true only when controller was changed (bool)
         """
         if self.get_current_index() == new_index: return False
-        if not exceptionToMsg(lambda: self.currect_controller.on_edit_exit(),
+        if not exception_to_msg(lambda: self.currect_controller.on_edit_exit(),
                               self.document.mainWindow, 'Error while trying to store data from editor'):
             return False
         self.editorWidget.setCurrentIndex(new_index)
@@ -78,9 +78,9 @@ class GUIAndSourceController(MultiEditorController):
         return self.showSourceAction
     
     def on_edit_enter(self):
-        self.document.mainWindow.setEditorSelectActions(self.getShowSourceAction())
+        self.document.mainWindow.set_editor_select_actions(self.getShowSourceAction())
         super(GUIAndSourceController, self).on_edit_enter()
 
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
-        self.document.mainWindow.setEditorSelectActions()
+        self.document.mainWindow.set_editor_select_actions()

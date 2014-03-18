@@ -3,7 +3,7 @@ from controller.base import Controller
 from PyQt4.QtGui import QSplitter
 from model import materials
 from utils.gui import table_last_col_fill
-from controller.table import tableWithManipulators
+from controller.table import table_with_manipulators
 from model.grids.section import GridsModel
 
 class GridsController(Controller):
@@ -18,9 +18,9 @@ class GridsController(Controller):
         #self.grids_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.grids_table))
         #self.materialsTableActions = TableActions(self.grids_table)
         table_last_col_fill(self.grids_table, self.model.columnCount(None), 150)
-        self.splitter.addWidget(tableWithManipulators(self.grids_table, self.splitter, title="Meshes and generators"))
+        self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and generators"))
         
-        #self.splitter.addWidget(tableWithManipulators(self.properties_table, self.splitter, title="Properties of the material"))
+        #self.splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter, title="Properties of the material"))
         
         self.grids_table.selectionModel().selectionChanged.connect(self.grid_selected) #currentChanged ??
         

@@ -30,37 +30,37 @@ class XPLDocument(object):
         self.mainWindow = main
         #self.tree = ElementTree()
            
-    def loadFromFile(self, fileName):
+    def load_from_file(self, fileName):
         tree = ElementTree.parse(fileName)
         for i in range(len(XPLDocument.SECTION_NAMES)):
             element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
             if element is not None:
-                self.getModelByIndex(i).set_file_XML_element(element, fileName)
+                self.model_by_index(i).set_file_XML_element(element, fileName)
             else:
-                self.getModelByIndex(i).clear()
+                self.model_by_index(i).clear()
         
-    def saveToFile(self, fileName):
+    def save_to_file(self, fileName):
         root = ElementTree.Element("plask")
         for c in self.controllers:
             root.append(c.model.get_file_XML_element())
         ElementTree.ElementTree(root).write(fileName, encoding="UTF-8") #, encoding, xml_declaration, default_namespace, method)
         
-    def getControllerByIndex(self, index):
+    def controller_by_index(self, index):
         return self.controllers[index]
         
-    def getControllerByName(self, sectionName):
+    def controller_by_name(self, sectionName):
         return self.controllers[XPLDocument.SECTION_NAMES.index(sectionName)]
         
-    def getModelByIndex(self, index):
-        return self.getControllerByIndex(index).model
+    def model_by_index(self, index):
+        return self.controller_by_index(index).model
         
-    def getModelByName(self, sectionName):
-        return self.getControllerByName(sectionName).model
+    def model_by_name(self, sectionName):
+        return self.controller_by_name(sectionName).model
     
-    def getInfo(self, level = None):
+    def get_info(self, level = None):
         """Get messages from all models, on given level (all by default)."""
         res = []
-        for c in self.controllers: res.extend(c.model.getInfo(level))
+        for c in self.controllers: res.extend(c.model.get_info(level))
         return res
     
     def stubs(self):

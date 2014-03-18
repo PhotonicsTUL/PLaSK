@@ -124,7 +124,7 @@ class InfoSource(object):
         """
         return []
             
-    def getInfo(self, level = None):
+    def get_info(self, level = None):
         """
             Get array of Info objects on given level connected with this object.
         """
@@ -137,7 +137,7 @@ class InfoSource(object):
         
     @property
     def info(self):
-        return self.getInfo()
+        return self.get_info()
     
     def getInfoListModel(self):
         return InfoTreeModel(self)

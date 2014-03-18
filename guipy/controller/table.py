@@ -56,7 +56,7 @@ class TableActions(object):
             
         return self.addAction, self.removeAction, self.moveUpAction, self.moveDownAction
 
-def tableWithManipulators(table, parent = None, model = None, title = None):
+def table_with_manipulators(table, parent = None, model = None, title = None):
     toolBar = QtGui.QToolBar()
     table.table_manipulators_actions = TableActions(table, model)
     toolBar.addActions(table.table_manipulators_actions.get(parent))
@@ -99,11 +99,11 @@ class TableController(Controller):
     def on_edit_enter(self):
         self.save_data_in_model()  #this should do nothing, but is called in case of subclass use it
         if not self.model.is_read_only():
-            self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
+            self.document.mainWindow.set_section_actions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
     def on_edit_exit(self):
-        self.document.mainWindow.setSectionActions()
+        self.document.mainWindow.set_section_actions()
     
     def get_table_edit_actions(self):
         return self.tableActions.get(self.document.mainWindow)

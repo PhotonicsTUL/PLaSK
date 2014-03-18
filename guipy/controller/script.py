@@ -30,7 +30,7 @@ class ScriptController(SourceEditController):
     def __init__(self, document, model = ScriptModel()):
         SourceEditController.__init__(self, document, model)
 
-    def createSourceEditor(self, parent = None):
+    def create_source_editor(self, parent = None):
         edit = QtGui.QPlainTextEdit(parent)
         edit.setFont(defaultFont)
         if hasPyCode:

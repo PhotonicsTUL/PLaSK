@@ -8,7 +8,7 @@ class SourceEditController(Controller):
     def __init__(self, document, model):
         Controller.__init__(self, document, model)
 
-    def createSourceEditor(self, parent = None):
+    def create_source_editor(self, parent = None):
         ed = QtGui.QTextEdit(parent)
         ed.setFont(defaultFont)
         self.highlighter = XMLHighlighter(ed.document())   # highlighter varible is required, in other case it is deleted and text is not highlighted
@@ -16,26 +16,26 @@ class SourceEditController(Controller):
         return ed
 
     # text, source editor
-    def getSourceEditor(self, parent = None):
-        if not hasattr(self, 'sourceEditor'): self.sourceEditor = self.createSourceEditor(parent)
-        return self.sourceEditor
+    def get_source_editor(self, parent = None):
+        if not hasattr(self, 'source_editor'): self.source_editor = self.create_source_editor(parent)
+        return self.source_editor
 
     # GUI editor, by default use source editor
     def get_editor(self):
-        return self.getSourceEditor()
+        return self.get_source_editor()
 
-    def refreshEditor(self, *ignore):
-        self.getSourceEditor().setPlainText(self.model.get_text())
+    def refresh_editor(self, *ignore):
+        self.get_source_editor().setPlainText(self.model.get_text())
         
     def save_data_in_model(self):
-        if not self.getSourceEditor().isReadOnly():
-            self.model.set_text(self.getSourceEditor().toPlainText())
+        if not self.get_source_editor().isReadOnly():
+            self.model.set_text(self.get_source_editor().toPlainText())
 
     def on_edit_enter(self):
-        self.refreshEditor()
-        self.model.changed += self.refreshEditor 
+        self.refresh_editor()
+        self.model.changed += self.refresh_editor 
 
     # when editor is turn off, model should be update
     def on_edit_exit(self):
         self.save_data_in_model()
-        self.model.changed -= self.refreshEditor
+        self.model.changed -= self.refresh_editor
