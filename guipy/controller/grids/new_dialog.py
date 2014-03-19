@@ -1,5 +1,7 @@
 from PyQt4 import QtGui
 from PyQt4.Qt import SIGNAL, SLOT, QStringListModel, QLabel
+from model.grids.grid import Grid
+from model.grids.section import construct_grid
  
 class NewGridDialog(QtGui.QDialog):
  
@@ -56,12 +58,17 @@ class NewGridDialog(QtGui.QDialog):
         #    pass    #set model with method names
     
     #TODO
-    def create_grid(self):
-        return None
+    def get_grid(self):
+        return construct_grid(
+                      Grid.contruct_empty_XML_element(
+                            self.name_edit.text(),
+                            self.type_edit.currentText(),
+                            self.method_edit.currentText() if self.kind_generator.isChecked() else None)
+        )
     
 
-def create_grid_using_dialog():
+def construct_grid_using_dialog():
     dial = NewGridDialog()
     if dial.exec_() == QtGui.QDialog.Accepted:
-        return dial.create_grid()
+        return dial.get_grid()
     return None

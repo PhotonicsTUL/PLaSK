@@ -3,7 +3,7 @@ from model.grids.grid import GridTreeBased
 from model.grids.mesh_rectilinear import RectilinearMesh
 from lxml import etree as ElementTree
 from PyQt4 import QtCore
-from controller.grids.new_dialog import create_grid_using_dialog
+from controller.grids.new_dialog import construct_grid_using_dialog
 
 def contruct_mesh(grids_model, element):
     t = element.attrib['type']
@@ -14,7 +14,7 @@ def contruct_generator(grids_model, element):
     return GridTreeBased.from_XML(grids_model, element)
 
 
-def contruct_grid(grids_model, element):
+def construct_grid(grids_model, element):
     
     if element.tag == "mesh":
         k = element.attrib.keys()
@@ -77,4 +77,4 @@ class GridsModel(TableModel):
         return flags
     
     def create_default_entry(self):
-        return create_grid_using_dialog()
+        return construct_grid_using_dialog()
