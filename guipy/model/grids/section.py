@@ -3,6 +3,7 @@ from model.grids.grid import GridTreeBased
 from model.grids.mesh_rectilinear import RectilinearMesh
 from lxml import etree as ElementTree
 from PyQt4 import QtCore
+from controller.grids.new_dialog import create_grid_using_dialog
 
 def contruct_mesh(grids_model, element):
     t = element.attrib['type']
@@ -74,3 +75,6 @@ class GridsModel(TableModel):
         flags = super(GridsModel, self).flags(index)
         if index.column() == 1: flags &= ~QtCore.Qt.ItemIsEditable
         return flags
+    
+    def create_default_entry(self):
+        return create_grid_using_dialog()

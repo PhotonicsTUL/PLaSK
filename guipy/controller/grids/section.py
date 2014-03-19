@@ -1,11 +1,10 @@
 from PyQt4 import QtGui
 from controller.base import Controller
 from PyQt4.QtGui import QSplitter
-from model import materials
 from utils.gui import table_last_col_fill, exception_to_msg
 from controller.table import table_with_manipulators
 from model.grids.section import GridsModel
-from PyQt4.Qt import QWidget, QItemSelectionModel
+from PyQt4.Qt import QItemSelectionModel
 
 class GridsController(Controller):
 
@@ -35,9 +34,9 @@ class GridsController(Controller):
         """
             Try to change current controller.
             :param int new_index: index of new current controller
-            :return: true only when controller was changed (bool)
+            :return: False only when controller should restore old selection
         """
-        if self.current_index == new_index: return False
+        if self.current_index == new_index: return True
         if self.current_controller != None:
             if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
                               self.document.mainWindow, 'Error while trying to store data from current grid editor'):
