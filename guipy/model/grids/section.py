@@ -1,35 +1,8 @@
-from model.table import TableModel
-from model.grids.grid import GridTreeBased
-from model.grids.mesh_rectilinear import RectilinearMesh
 from lxml import etree as ElementTree
 from PyQt4 import QtCore
 from controller.grids.new_dialog import construct_grid_using_dialog
-
-def contruct_mesh(grids_model, element):
-    t = element.attrib['type']
-    if t in ['rectilinear1d', 'rectilinear2d', 'rectilinear3d']: return RectilinearMesh.from_XML(grids_model, element)
-    return GridTreeBased.from_XML(grids_model, element)
-
-def contruct_generator(grids_model, element):
-    return GridTreeBased.from_XML(grids_model, element)
-
-
-def construct_grid(grids_model, element):
-    
-    if element.tag == "mesh":
-        k = element.attrib.keys()
-        k.sort()
-        if k != ['name', 'type']: raise ValueError('<mesh> tag must have two attributes (name and type), but has: %s' % ', '.join(k))
-        return contruct_mesh(grids_model, element)
-    
-    if element.tag == "generator":
-        k = element.attrib.keys()
-        k.sort()
-        if k != ['method', 'name', 'type']: raise ValueError('<generator> tag must have attributes "method", "name" and "type", but has: %s' % ', '.join(k))
-        return contruct_generator(grids_model, element)
-    
-    raise ValueError('In <grids> section only <mesh> and <generator> tags are allowed, but got "%s".' % element.tag)
-
+from model.grids.types import construct_grid
+from model.table import TableModel
 
 class GridsModel(TableModel):
     
@@ -41,7 +14,7 @@ class GridsModel(TableModel):
         del self.entries[:]
         if element is not None:
             for g in element:
-                self.entries.append(contruct_grid(self, g))
+                self.entries.append(construct_grid(self, g))
         self.layoutChanged.emit()
         self.fire_changed()
         
@@ -77,4 +50,4 @@ class GridsModel(TableModel):
         return flags
     
     def create_default_entry(self):
-        return construct_grid_using_dialog()
+        return construct_grid_using_dialog(self)
