@@ -11,16 +11,23 @@ class AxisConf(object):
         self.points = points
         
     def fillXMLElement(self, axisElement):
-        if self.start: axisElement.attrib['start'] = self.start 
-        if self.stop: axisElement.attrib['stop'] = self.stop
-        if self.num: axisElement.attrib['num'] = self.num
-        if self.points: axisElement.text = ", ".join(self.points)
+        for attr in ['start', 'stop', 'num']:
+            a = getattr(self, attr, None)
+            if a != None: axisElement.attrib[attr] = a
+        axisElement.text = self.points if self.points else ''
+        
+        #if self.start: axisElement.attrib['start'] = self.start 
+        #if self.stop: axisElement.attrib['stop'] = self.stop
+        #if self.num: axisElement.attrib['num'] = self.num
+        #if self.points: axisElement.text = ", ".join(self.points)
+        #if self.points: axisElement.attrib['points'] = self.points
         
     def set_XML_element(self, axis_element):
         if not axis_element: return
         for attr in ['start', 'stop', 'num']:
             setattr(self, attr, axis_element.attrib.get(attr, None))
-        self.points = [float(x) for x in axis_element.text.split(',')]
+        self.points = axis_element.text
+        #self.points = [float(x) for x in axis_element.text.split(',')]
         
 class RectilinearMesh(Grid):
     """Model of RectilinearMesh (1D, 2D, or 3D - see self.dim)"""

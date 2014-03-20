@@ -31,12 +31,12 @@ class NewGridDialog(QtGui.QDialog):
         self.method_edit = QtGui.QComboBox()
         self.method_edit.setEditable(True)
         self.method_edit.setInsertPolicy(QtGui.QComboBox.NoInsert)
-        self.method_edit_label = QLabel("Method:")
+        #self.method_edit_label = QLabel("Method:")
         
-        formLayout = QtGui.QFormLayout();
-        formLayout.addRow("Name:", self.name_edit)
-        formLayout.addRow("Type:", self.type_edit)
-        formLayout.addRow(self.method_edit_label, self.method_edit)
+        self.form_layout = QtGui.QFormLayout()
+        self.form_layout.addRow("&Name:", self.name_edit)
+        self.form_layout.addRow("&Type:", self.type_edit)
+        self.form_layout.addRow("M&ethod:", self.method_edit)
         
         self.buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
         self.buttonBox.accepted.connect(self.accept)
@@ -44,7 +44,8 @@ class NewGridDialog(QtGui.QDialog):
         
         mainLayout = QtGui.QVBoxLayout()
         mainLayout.addWidget(kind)
-        mainLayout.addLayout(formLayout)
+        mainLayout.addLayout(self.form_layout)
+        mainLayout.addStretch()
         mainLayout.addWidget(self.buttonBox)
         self.setLayout(mainLayout)
         
@@ -52,7 +53,7 @@ class NewGridDialog(QtGui.QDialog):
         
     def __set_mode__(self, is_generator):
         self.method_edit.setVisible(is_generator)
-        self.method_edit_label.setVisible(is_generator)
+        self.form_layout.labelForField(self.method_edit).setVisible(is_generator)
         #self.method_edit.setEnabled(is_generator)
         #self.type_edit.clear()
         text = self.type_edit.currentText()

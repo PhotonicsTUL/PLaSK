@@ -3,7 +3,6 @@ from lxml import etree as ElementTree
 from model.info import InfoSource
 from utils.xml import print_interior
 from xml.sax.saxutils import quoteattr
-from controller.source import SourceEditController
 
 class Grid(InfoSource): # or (TreeFragmentModel)??
     """Base class for models of grids (meshes or generators)"""
@@ -56,6 +55,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
         return self.model.is_read_only()
     
     def get_controller(self):
+        from controller.source import SourceEditController
         return SourceEditController(model = self)
         
 #class Generator(Grid):
