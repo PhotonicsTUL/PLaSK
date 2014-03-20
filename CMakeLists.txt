@@ -1,7 +1,7 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-cmake_policy(SET CMP0017 OLD)	# ensure our CMake modules are loaded first
+cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
 
 project(plask)
 
