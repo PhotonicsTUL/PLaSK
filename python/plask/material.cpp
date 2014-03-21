@@ -183,7 +183,7 @@ class PythonMaterial : public Material
         else {
             std::string cls_name = py::extract<std::string>(cls.attr("__name__"));
             // MaterialCache* cache = cacheMap.emplace(cls.ptr(), std::unique_ptr<MaterialCache>(new MaterialCache)).first->second.get();
-            MaterialCache* cache = (cacheMap[cls.ptr()] = std::move(std::unique_ptr<MaterialCache>(new MaterialCache))).get()
+            MaterialCache* cache = (cacheMap[cls.ptr()] = std::move(std::unique_ptr<MaterialCache>(new MaterialCache))).get();
             ptr->cache = cache;
             #define CHECK_CACHE(Type, fun, name, ...) \
                 if (PyObject_HasAttrString(cls.ptr(), name) && PyFunction_Check(py::object(cls.attr(name)).ptr())) { \
