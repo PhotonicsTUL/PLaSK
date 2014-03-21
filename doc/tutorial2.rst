@@ -26,7 +26,7 @@ Because of the axial symmetry of the device, the natural coordinate system used 
    <geometry>
      <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
 
-The empty :xml:tag:`<materials>` section will be discussed and expanded later. Geometry of the type :xml:tag:`cylindrical2d` means a set of axi-symmetrical disk created by rotating all two-dimensional objects around the vertical axis (*z* in this case). Its attributes top and bottom specify materials directly below and above the defined structure. ``outer="extend"`` tells PLaSK that all the outermost objects in the defined cylinder should be extended to infinity. This way we are able to simulate infinite lateral layers with only an oxide aperture located at the origin having some finite radius of 8µm. The objects outside of this aperture need to have some dimension defined, but it will be ignored as long as the outer radius of each layer is equal (we set it to 10µm).
+The empty :xml:tag:`<materials>` section will be discussed and expanded later. Geometry of the type :xml:tag:`cylindrical2d` means a set of axi-symmetrical disk created by rotating all two-dimensional objects around the vertical axis (*z* in this case). Its attributes ``top`` and ``bottom`` specify materials directly below and above the defined structure. ``outer="extend"`` tells PLaSK that all the outermost objects in the defined cylinder should be extended to infinity. This way we are able to simulate infinite lateral layers with only an oxide aperture located at the origin having some finite radius of 8µm. The objects outside of this aperture need to have some dimension defined, but it will be ignored as long as the outer radius of each layer is equal (we set it to 10µm).
 
 Again, the most convenient way of defining the geometry is creating the stack and specifying the consecutive layers starting from the top. First we need to define 24 pairs of identical quarter-wavelength layers of DBR. As doing it by hand would be a tedious task, we may create another stack (within the original one) and tell PLaSK to repeat its contents 24 times:
 
@@ -96,7 +96,7 @@ The whole XPL file with VCSEL geometry specification is presented in :ref:`Listi
 .. topic:: Listing of :file:`tutorial2.xpl`
 
    .. _lis-Listing-of-tutorial2.xpl:
-    
+
    .. code-block:: xml
 
       <plask>

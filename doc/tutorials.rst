@@ -12,17 +12,6 @@ Tutorials and Examples
    tutorial3
 
 
-Finding the threshold current of a gallium-arsenide VCSEL
----------------------------------------------------------
-
-putting all the above together
-
-manual refinements of divide mesh generator
-
-diffusion, gain
-
-real-time structure modifications
-
 .. _sec-tutorial-threshold-of-array:
 
 Searching the threshold of a gallium-nitride array
