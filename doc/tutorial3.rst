@@ -23,15 +23,15 @@ We will run our simulations on a structure similar to the one introduced in prev
 
 .. code-block:: xml
 
- <plask>
+   <plask>
 
- <defines>
-  <define name="mesa" value="10."/>
-  <define name="aperture" value="{mesa-6.}"/>
- </defines>
+   <defines>
+     <define name="mesa" value="10."/>
+     <define name="aperture" value="{mesa-6.}"/>
+   </defines>
 
- <materials>
- </materials>
+   <materials>
+   </materials>
 
 The values defined in the ``<defines>`` section have to be a value of a basic type (f.e. a float ``value="10."`` or a string: ``value="'Al(0.9)GaAs'"``), or an expression that returns a value. Then, any value assignment in the XML part of the XPL file can be an expression, in such case it has to be enclosed in ``{}`` (assigning a single predefined value is treated as an expression, therefore it has to include ``{}`` as well). This way we can make the oxide aperture (``aperture`` parameter) dependent on the ``mesa`` value (however, in such a case, we must define this parameters in the proper order).
 
@@ -53,30 +53,30 @@ Next we can define a VCSEL structure:
 
 .. code-block:: xml
 
-       <stack name="VCSEL">
-         <stack name="top-DBR" repeat="24">
+         <stack name="VCSEL">
+           <stack name="top-DBR" repeat="24">
+             <block dr="{mesa}" dz="0.07003" material="GaAs:Si=2e+18"/>
+             <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs:Si=2e+18"/>
+           </stack>
            <block dr="{mesa}" dz="0.07003" material="GaAs:Si=2e+18"/>
-           <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs:Si=2e+18"/>
-         </stack>
-         <block dr="{mesa}" dz="0.07003" material="GaAs:Si=2e+18"/>
-         <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
-         <shelf>
-           <block dr="{aperture}" dz="0.01603" material="AlAs:Si=2e+18"
-                  name="aperture"/>
-           <block dr="{mesa-aperture}" dz="0.01603" material="AlxOy"
-                  name="oxide"/>
-         </shelf>
-         <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
-         <block dr="{mesa}" dz="0.13756" material="GaAs:Si=5e+17"/>
-         <block dr="{mesa}" dz="0.005" material="GaAs" name="junction"
-                role="active"/>
-         <block dr="{mesa}" dz="0.13756" material="GaAs:C=5e+17"/>
-         <stack name="bottom-DBR" repeat="29">
+           <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
+           <shelf>
+             <block dr="{aperture}" dz="0.01603" material="AlAs:Si=2e+18"
+                    name="aperture"/>
+             <block dr="{mesa-aperture}" dz="0.01603" material="AlxOy"
+                    name="oxide"/>
+           </shelf>
+           <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
+           <block dr="{mesa}" dz="0.13756" material="GaAs:Si=5e+17"/>
+           <block dr="{mesa}" dz="0.005" material="GaAs" name="junction"
+                  role="active"/>
+           <block dr="{mesa}" dz="0.13756" material="GaAs:C=5e+17"/>
+           <stack name="bottom-DBR" repeat="29">
+             <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
+             <block dr="{mesa}" dz="0.07003" material="GaAs:C=2e+18"/>
+           </stack>
            <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
-           <block dr="{mesa}" dz="0.07003" material="GaAs:C=2e+18"/>
          </stack>
-         <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
-       </stack>
 
 
 In the above definition we have several named geometry objects (mind that the name *‘aperture’* has nothing to do with the ``{aperture}`` parameter). The whole laser is contained it in a stack named *‘VCSEL’*, so we can reuse it when creating a geometry for optical calculations. You probably have noticed that the active region is different than the one defined in the previous tutorial: it has been replaced with a more realistic multiple-quantum-well structure. Also the spacer thicknesses were adjusted to maintain the proper resonator length. Mind that it is possible to assign a ``role`` to a whole container, like we just did with the *‘junction’* stack. The ``role="active"`` tells the :class:`~plask.electrical.fem.ShockleyCyl` electrical solver to consider the current flow through it using the Shockley equation. The ``role="QW"`` is used to mark a quantum-well layer and it is important for the diffusion and gain solvers.
@@ -85,11 +85,11 @@ Finally, we have to add a substrate with copper heatsink on the bottom side. The
 
 .. code-block:: xml
 
-       <zero/>
-       <block dr="200." dz="150." material="GaAs:C=2e+18"/>
-       <block dr="2500." dz="5000." material="Cu" name="p-contact"/>
-     </stack>
-   </cylindrical2d>
+         <zero/>
+         <block dr="200." dz="150." material="GaAs:C=2e+18"/>
+         <block dr="2500." dz="5000." material="Cu" name="p-contact"/>
+       </stack>
+     </cylindrical2d>
 
 We included the ``<zero/>`` tag, to keep the thermo-electrical ``GeoTE`` geometry coordinates compatible with an optical geometry ``GeoO``, which we are going to add now:
 
@@ -180,7 +180,7 @@ Having our solvers defined, we must connect them properly:
      <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>
 
      <connect in="DIFFUSION.inTemperature" out="THERMAL.outTemperature"/>
-     <connect in="DIFFUSION.inCurrentDensity" out="THERMAL.outCurrentDensity"/>
+     <connect in="DIFFUSION.inCurrentDensity" out="ELECTRICAL.outCurrentDensity"/>
 
      <connect in="GAIN.inTemperature" out="THERMAL.outTemperature"/>
      <connect in="GAIN.inCarriersConcentration"
