@@ -30,9 +30,6 @@ We will run our simulations on a structure similar to the one introduced in prev
      <define name="aperture" value="{mesa-6.}"/>
    </defines>
 
-   <materials>
-   </materials>
-
 The values defined in the ``<defines>`` section have to be a value of a basic type (f.e. a float ``value="10."`` or a string: ``value="'Al(0.9)GaAs'"``), or an expression that returns a value. Then, any value assignment in the XML part of the XPL file can be an expression, in such case it has to be enclosed in ``{}`` (assigning a single predefined value is treated as an expression, therefore it has to include ``{}`` as well). This way we can make the oxide aperture (``aperture`` parameter) dependent on the ``mesa`` value (however, in such a case, we must define this parameters in the proper order).
 
 Having ``mesa`` and ``aperture`` parameters defined, we can move on to the geometry definition (for now we can skip the ``<materials>`` section). We start with a 4 µm golden ring contact at the top of the structure. its inner radius is 1 µm smaller than the mesa edge:

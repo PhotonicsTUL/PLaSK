@@ -5,9 +5,6 @@
   <define name="aperture" value="{mesa-6.}"/>
 </defines>
 
-<materials>
-</materials>
-
 <geometry>
 
   <cylindrical2d axes="rz" name="GeoTE">

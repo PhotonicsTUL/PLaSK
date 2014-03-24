@@ -12,13 +12,15 @@ Tutorials and Examples
    tutorial3
 
 
-.. _sec-tutorial-threshold-of-array:
+.. _sec-tutorial-LI-of-VCSEL:
 
 Computing the L-I curve of a gallium-arsenide VCSEL
 ---------------------------------------------------
 
 overthreshold
 
+
+.. _sec-tutorial-threshold-of-array:
 
 Searching the threshold of a gallium-nitride array
 --------------------------------------------------
