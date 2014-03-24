@@ -13,6 +13,7 @@ using namespace plask::python;
 #endif
 
 #include "../fourier_reflection_2d.h"
+#include "../fourier_reflection_3d.h"
 using namespace plask::solvers::slab;
 
 #define ROOTDIGGER_ATTRS_DOC \
@@ -108,11 +109,17 @@ inline void export_base(Class solver) {
                         );
 }
 
+template <typename SolverT>
+void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
+
 template <typename Class>
 inline void export_reflection_base(Class solver) {
     export_base(solver);
     typedef typename Class::wrapped_type Solver;
     solver.add_property("emitting", &Solver::getEmitting, &Solver::setEmitting, "Should emitted field be computed?");
+    solver.add_property("wavelength", &Solver::getWavelength, Solver_setWavelength<Solver>, "Wavelength of the light.");
+    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light.");
+    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light.");
     py::scope scope = solver;
     py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
         .value("TOP", Solver::INCIDENCE_TOP)
@@ -269,9 +276,6 @@ double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
     return real(mode.ktran);
 }
 
-template <typename SolverT>
-void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
-
 shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(FourierReflection2D* parent,
                                                                 double wavelength,
                                                                 ExpansionPW2D::Component polarization,
@@ -300,9 +304,6 @@ BOOST_PYTHON_MODULE(slab)
                "Args:\n"
                "    neff: starting effective index.\n"
                , "neff");
-        solver.add_property("wavelength", &FourierReflection2D::getWavelength, Solver_setWavelength<FourierReflection2D>, "Wavelength of the light.");
-        RW_PROPERTY(klong, getKlong, setKlong, "Longitudinal propagation constant of the light.");
-        RW_PROPERTY(ktran, getKtran, setKtran, "Transverse propagation constant of the light.");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
@@ -411,6 +412,87 @@ BOOST_PYTHON_MODULE(slab)
         .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
     ;
 
+    {CLASS(FourierReflection3D, "FourierReflection3D",
+        "Optical Solver using Fourier expansion in 3D.\n\n"
+        "It calculates optical modes and optical field distribution using Fourier slab method\n"
+        "and reflection transfer in three-dimensional Cartesian space.")
+        export_reflection_base(solver);
+//         METHOD(find_mode, findMode,
+//                "Compute the mode near the specified effective index.\n\n"
+//                "Args:\n"
+//                "    neff: starting effective index.\n"
+//                , "neff");
+//         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
+//         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
+//         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
+//         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
+//         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
+//                    "Compute discontinuity matrix determinant.");
+//         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
+//                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
+//                    "Args:\n"
+//                    "    lam (float or array of floats): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+//                    "        name of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+//                    "        wavelength, as they may change due to the dispersion.\n"
+//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+//         solver.def("compute_transmittivity", &FourierReflection2D_computeTransmitticity,
+//                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+//                    "Args:\n"
+//                    "    lam (float or array of floats): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+//                    "        of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+//                    "        wavelength, as they may change due to the dispersion.\n"
+//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+//         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
+//                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
+//                    "Fresnel equations.");
+//         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
+//                    "Get profile of the expanded refractive index.\n\n"
+//                    "Args:\n"
+//                    "    mesh: Target mesh.\n"
+//                    "    interp: Interpolation method\n"
+//                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
+//         RO_PROPERTY(tran_mesh, getXmesh, "Transverse mesh with points where materials parameters are sampled.");
+//         solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()),
+//                             "Side Perfectly Matched Layers boundary conditions.\n\n"
+//                             PML_ATTRS_DOC
+//                            );
+//         RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
+//         RO_FIELD(modes, "Computed modes.");
+//         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
+//                    "Access to the reflected field.\n\n"
+//                    "Args:\n"
+//                    "    lam (float): Incident light wavelength.\n"
+//                    "    polarization: Specification of the incident light polarization.\n"
+//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+//                    "        of the non-vanishing electric field component.\n"
+//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+//                    "        present.\n"
+//                    , (py::arg("lam"), "polarization", "side"));
+//         py::scope scope = solver;
+
+//         register_vector_of<FourierReflection2D::Mode>("Modes");
+//         py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
+//             .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry.")
+//             .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization.")
+//             .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
+//             .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
+//             .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm].")
+//             .add_property("beta", &FourierReflection2D_Mode_Beta, "Mode longitudinal wavevector.")
+//             .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal wavevector.")
+//             .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
+//             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
+//         ;
+    }
 
 }
 

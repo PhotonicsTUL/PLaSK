@@ -1,18 +1,18 @@
-// #include "fourier_reflection_2d.h"
-// #include "expansion_pw2d.h"
-// 
-// namespace plask { namespace solvers { namespace slab {
-// 
-// FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSolver<Geometry3DCartesian>(name),
+#include "fourier_reflection_3d.h"
+#include "expansion_pw3d.h"
+
+namespace plask { namespace solvers { namespace slab {
+
+FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSolver<Geometry3D>(name),
 //     size(12),
-//     expansion(this),
+    expansion(this)//,
 //     refine(8),
 //     outNeff(this, &FourierReflection3D::getEffectiveIndex, &FourierReflection3D::nummodes)
-// {
+{
 //     detlog.global_prefix = this->getId();
-// }
-// 
-// 
+}
+//
+//
 // void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
 // {
 //     while (reader.requireTagOrEnd()) {
@@ -24,29 +24,29 @@
 //             parseStandardConfiguration(reader, manager, "TODO");
 //     }
 // }
-// 
-// 
-// 
-// void FourierReflection3D::onInitialize()
-// {
-//     setupLayers();
-//     expansion.init();
-//     diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
-//     init();
-//     expansion.computeMaterialCoefficients();
-// }
-// 
-// 
-// void FourierReflection3D::onInvalidate()
-// {
-//     cleanup();
-//     modes.clear();
-//     expansion.free();
-//     diagonalizer.reset();
-//     fields.clear();
-// }
-// 
-// 
+//
+//
+//
+void FourierReflection3D::onInitialize()
+{
+    setupLayers();
+    expansion.init();
+    diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
+    init();
+    expansion.computeMaterialCoefficients();
+}
+
+
+void FourierReflection3D::onInvalidate()
+{
+    cleanup();
+    modes.clear();
+    expansion.free();
+    diagonalizer.reset();
+    fields.clear();
+}
+//
+//
 // size_t FourierReflection3D::findMode(dcomplex neff)
 // {
 //     if (expansion.polarization != ExpansionPW3D::E_UNSPECIFIED)
@@ -60,8 +60,8 @@
 //                    detlog, root)(neff);
 //     return insertMode();
 // }
-// 
-// 
+//
+//
 // DataVector<const Tensor3<dcomplex>> FourierReflection3D::getRefractiveIndexProfile(const RectilinearMesh3D& dst_mesh,
 //                                                                                    InterpolationMethod interp)
 // {
@@ -81,8 +81,8 @@
 //     }
 //     return result;
 // }
-// 
-// 
+//
+//
 // cvector FourierReflection3D::getReflectedAmplitudes(ExpansionPW3D::Component polarization,
 //                                                     IncidentDirection incidence, size_t* savidx)
 // {
@@ -92,8 +92,8 @@
 //     initCalculation();
 //     return getReflectionVector(incidentVector(polarization, savidx), incidence);
 // }
-// 
-// 
+//
+//
 // cvector FourierReflection3D::getTransmittedAmplitudes(ExpansionPW3D::Component polarization,
 //                                                       IncidentDirection incidence, size_t* savidx)
 // {
@@ -103,22 +103,22 @@
 //     initCalculation();
 //     return getTransmissionVector(incidentVector(polarization, savidx), incidence);
 // }
-// 
-// 
+//
+//
 // double FourierReflection3D::getReflection(ExpansionPW3D::Component polarization, IncidentDirection incidence)
 // {
 //     size_t idx;
 //     cvector reflected = getReflectedAmplitudes(polarization, incidence, &idx).claim();
-// 
+//
 //     if (!expansion.periodic)
 //         throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
-// 
+//
 //     size_t n = (incidence == INCIDENCE_BOTTOM)? 0 : stack.size()-1;
 //     size_t l = stack[n];
 //     if (!expansion.diagonalQE(l))
 //         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
 //                               (incidence == INCIDENCE_BOTTOM)? "Bottom" : "Top");
-// 
+//
 //     auto gamma = diagonalizer->Gamma(l);
 //     dcomplex gamma0 = gamma[idx];
 //     dcomplex igamma0 = 1. / gamma0;
@@ -138,20 +138,20 @@
 //                 reflected[i] = reflected[i] * conj(reflected[i]) *  gamma0 / gamma[i];
 //         }
 //     }
-// 
-// 
+//
+//
 //     return sumAmplitutes(reflected);
 // }
-// 
-// 
+//
+//
 // double FourierReflection3D::getTransmission(ExpansionPW3D::Component polarization, IncidentDirection incidence)
 // {
 //     size_t idx;
 //     cvector transmitted = getTransmittedAmplitudes(polarization, incidence, &idx).claim();
-// 
+//
 //     if (!expansion.periodic)
 //         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
-// 
+//
 //     size_t ni = (incidence == INCIDENCE_TOP)? stack.size()-1 : 0;
 //     size_t nt = stack.size()-1-ni;
 //     size_t li = stack[ni], lt = stack[nt];
@@ -161,7 +161,7 @@
 //     if (!expansion.diagonalQE(li))
 //         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
 //                  (incidence == INCIDENCE_TOP)? "Top" : "Bottom");
-// 
+//
 //     auto gamma = diagonalizer->Gamma(lt);
 //     dcomplex igamma0 = 1. / diagonalizer->Gamma(li)[idx];
 //     dcomplex gamma0 = gamma[idx] * gamma[idx] * igamma0;
@@ -181,13 +181,13 @@
 //                 transmitted[i] = transmitted[i] * conj(transmitted[i]) *  gamma0 / gamma[i];
 //         }
 //     }
-// 
+//
 //     return sumAmplitutes(transmitted);
 // }
-// 
-// 
-// const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
-// {
+//
+//
+const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
+{
 //     if (modes.size() <= num) throw NoValue(OpticalElectricField::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -196,11 +196,11 @@
 //         fields_determined = DETERMINED_NOTHING;
 //     }
 //     return getFieldE(dst_mesh, method);
-// }
-// 
-// 
-// const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
-// {
+}
+
+
+const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
+{
 //     if (modes.size() <= num) throw NoValue(OpticalMagneticField::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -209,11 +209,11 @@
 //         fields_determined = DETERMINED_NOTHING;
 //     }
 //     return getFieldH(dst_mesh, method);
-// }
-// 
-// 
-// const DataVector<const double> FourierReflection3D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
-// {
+}
+
+
+const DataVector<const double> FourierReflection3D::getIntensity(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
+{
 //     if (modes.size() <= num) throw NoValue(LightIntensity::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -222,7 +222,7 @@
 //         fields_determined = DETERMINED_NOTHING;
 //     }
 //     return getFieldIntensity(modes[num].power, dst_mesh, method);
-// }
-// 
-// 
-// }}} // namespace
+}
+//
+//
+}}} // namespace

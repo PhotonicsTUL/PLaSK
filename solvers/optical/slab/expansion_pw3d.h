@@ -120,7 +120,7 @@ struct ExpansionPW3D: public Expansion {
      * \param l layer number
      */
     void layerMaterialCoefficients(size_t l);
-//
+
 //   public:
 //
 //     /// Get \f$ \varepsilon_{zz} \f$

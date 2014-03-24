@@ -281,25 +281,25 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     } else
         diagonals[l] = false;
 
-    if (diagonals[l]) {
-        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-        for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
-    } else {
-        // Perform FFT
-        matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
-        // Smooth coefficients
-        if (SOLVER->smooth) {
-            double bb4 = 2.*M_PI / ((right-left) * (symmetric_tran? 2 : 1)) / ((front-back) * (symmetric_long? 2 : 1));
-            bb4 *= bb4; bb4 *= 0.25;  // (2π/Lt)² (2π/Ll)² / 4
-            for (size_t it = 0; it != nNl; ++it) {
-                int kt = it; if (kt > nNt/2) kt -= nNt;
-                for (size_t il = 0; il != nNl; ++il) {
-                    int kl = il; if (kl > nNl/2) kl -= nNl;
-                    coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * bb4 * kt*kt * kl*kl);
-                }
-            }
-        }
-    }
+//     if (diagonals[l]) {
+//         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
+//         for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
+//     } else {
+//         // Perform FFT
+//         matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+//         // Smooth coefficients
+//         if (SOLVER->smooth) {
+//             double bb4 = 2.*M_PI / ((right-left) * (symmetric_tran? 2 : 1)) / ((front-back) * (symmetric_long? 2 : 1));
+//             bb4 *= bb4; bb4 *= 0.25;  // (2π/Lt)² (2π/Ll)² / 4
+//             for (size_t it = 0; it != nNl; ++it) {
+//                 int kt = it; if (kt > nNt/2) kt -= nNt;
+//                 for (size_t il = 0; il != nNl; ++il) {
+//                     int kl = il; if (kl > nNl/2) kl -= nNl;
+//                     coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * bb4 * kt*kt * kl*kl);
+//                 }
+//             }
+//         }
+//     }
 }
 
 

@@ -68,8 +68,8 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
     /// Transverse PMLs
     PML pml_tran;
 
-//     FourierReflection3D(const std::string& name="");
-//
+    FourierReflection3D(const std::string& name="");
+
 //     void loadConfiguration(XMLReader& reader, Manager& manager);
 //
 //     /**
@@ -305,9 +305,9 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //         outLightIntensity.fireChanged();
 //         return modes.size()-1;
 //     }
-//
-//     size_t nummodes() const { return outNeff.size(); }
-//
+
+    size_t nummodes() const { return 1; }
+
 //     /**
 //      * Return mode effective index
 //      * \param n mode number
@@ -316,31 +316,13 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //         if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
 //         return modes[n].klong / modes[n].k0;
 //     }
-//
-//     /**
-//      * Compute electric field
-//      * \param num mode number
-//      * \param dst_mesh destination mesh
-//      * \param method interpolation method
-//      */
-//     const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
-//
-//     /**
-//      * Compute magnetic field
-//      * \param num mode number
-//      * \param dst_mesh destination mesh
-//      * \param method interpolation method
-//      */
-//     const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
-//
-//     /**
-//      * Compute light intensity
-//      * \param num mode number
-//      * \param dst_mesh destination mesh
-//      * \param method interpolation method
-//      */
-//     const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
-//
+
+    const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method) override;
+
+    const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method) override;
+
+    const DataVector<const double> getIntensity(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method) override;
+
 //   public:
 //
 //     /**
