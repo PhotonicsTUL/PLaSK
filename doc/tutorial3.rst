@@ -144,8 +144,12 @@ It's now time to define the solvers:
        <mesh ref="default"/>
        <junction js="1" beta="18"/>
        <voltage>
-         <condition value="2.0"><place object="p-contact" side="bottom"/></condition>
-         <condition value="0.0"><place object="n-contact" side="top"/></condition>
+         <condition value="2.0">
+           <place object="p-contact" side="bottom"/>
+         </condition>
+         <condition value="0.0">
+           <place object="n-contact" side="top"/>
+         </condition>
        </voltage>
      </electrical>
 
@@ -180,7 +184,8 @@ Having our solvers defined, we must connect them properly:
      <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>
 
      <connect in="DIFFUSION.inTemperature" out="THERMAL.outTemperature"/>
-     <connect in="DIFFUSION.inCurrentDensity" out="ELECTRICAL.outCurrentDensity"/>
+     <connect in="DIFFUSION.inCurrentDensity"
+              out="ELECTRICAL.outCurrentDensity"/>
 
      <connect in="GAIN.inTemperature" out="THERMAL.outTemperature"/>
      <connect in="GAIN.inCarriersConcentration"

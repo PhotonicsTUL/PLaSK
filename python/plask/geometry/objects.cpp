@@ -507,7 +507,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
         .def("get_leafs_translations", &GeometryObjectD_getLeafsAsTranslations<dim>, (py::arg("path")=py::object()),
              USE_23D_DOC(GeometryObjectD, get_leafs_translations))
 
-        .def("get_leafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_leafs_translations))
+        .def("get_leafs", &GeometryObject_getLeafs, (py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_leafs))
 
         .def("get_object_positions", (std::vector<DVec>(GeometryObjectD<dim>::*)(const GeometryObject&, const PathHints&)const) &GeometryObjectD<dim>::getObjectPositions,
              (py::arg("object"), py::arg("path")=py::object()), USE_23D_DOC(GeometryObjectD, get_object_positions))
