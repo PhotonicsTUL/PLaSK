@@ -12,8 +12,8 @@ class ScriptModel(SectionModel):
 
     # XML element that represents whole section
     def get_XML_element(self):
-        res = ElementTree.Element(self.tagname)
-        res.text = self.code
+        res = ElementTree.Element(self.name)
+        res.text = ElementTree.CDATA(self.code)
         return res
     
     def get_text(self):

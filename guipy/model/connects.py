@@ -28,6 +28,7 @@ class ConnectsModel(TableModel):
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries:
+            if e.comment: res.append(ElementTree.Comment(e.comment))
             ElementTree.SubElement(res, "connect", { "out": e.output, "in": e.input })  #.tail = '\n'
         return res
     

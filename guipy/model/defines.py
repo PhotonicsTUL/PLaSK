@@ -17,7 +17,7 @@ class DefinesModel(TableModel):
         TableModel.__init__(self, 'defines', parent, info_cb, *args)
         
     def nameToIndex(self, name):
-        """return index of entry with given name or -1"""
+        """:return: index of entry with given name or -1"""
         for idx, val in enumerate(self.entries):
             if val.name == name: return idx
         return -1
@@ -35,6 +35,7 @@ class DefinesModel(TableModel):
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries:
+            if e.comment: res.append(ElementTree.Comment(e.comment))
             ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }) #.tail = '\n'
         return res
     

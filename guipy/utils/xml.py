@@ -1,5 +1,6 @@
 from lxml import etree as ElementTree
 
+# default, used XML parser
 XML_parser = ElementTree.XMLParser(remove_blank_text = True, remove_comments = False, strip_cdata = False)
 
 def print_interior(element):

@@ -190,7 +190,9 @@ class MaterialsModel(TableModel):
     # XML element that represents whole section
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
-        for e in self.entries: e.add_to_XML(res)
+        for e in self.entries:
+            if e.comment: res.append(ElementTree.Comment(e.comment))
+            e.add_to_XML(res)
         return res
     
     def get(self, col, row): 

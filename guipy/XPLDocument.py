@@ -44,7 +44,7 @@ class XPLDocument(object):
         root = ElementTree.Element("plask")
         for c in self.controllers:
             root.append(c.model.get_file_XML_element())
-        ElementTree.ElementTree(root).write(fileName, encoding="UTF-8") #, encoding, xml_declaration, default_namespace, method)
+        ElementTree.ElementTree(root).write(fileName, encoding="UTF-8", pretty_print=True) #, encoding, xml_declaration, default_namespace, method)
         
     def controller_by_index(self, index):
         return self.controllers[index]
