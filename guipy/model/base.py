@@ -5,7 +5,7 @@ from utils.signal import Signal
 from info import Info
 import os
 from model.info import InfoSource
-from utils.xml import print_interior
+from utils.xml import print_interior, XML_parser
 
 def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
         """
@@ -78,7 +78,7 @@ class SectionModel(TreeFragmentModel):
         self.externalSource = None
 
     def set_text(self, text):
-        self.set_XML_element(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>']))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>'], parser = XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
         
     def is_read_only(self):
         """

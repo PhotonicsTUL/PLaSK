@@ -1,7 +1,7 @@
 # Base classes for entries in grids model
 from lxml import etree as ElementTree
 from model.info import InfoSource
-from utils.xml import print_interior
+from utils.xml import print_interior, XML_parser
 from xml.sax.saxutils import quoteattr
 
 class Grid(InfoSource): # or (TreeFragmentModel)??
@@ -42,7 +42,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
         else:
             tab = ['<mesh name=', quoteattr(self.name), ' type=', quoteattr(self.type), '>', text.encode('utf-8'), '</mesh>' ]
         #print ''.join(tab)
-        self.set_XML_element(ElementTree.fromstringlist(tab))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(ElementTree.fromstringlist(tab, parser = XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
         
     @property
     def type_and_kind_str(self):

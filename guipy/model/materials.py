@@ -169,18 +169,9 @@ class MaterialsModel(TableModel):
             
         def add_to_XML(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
-            mat.tail = '\n'
             if self.base: mat.attrib['base'] = self.base 
-            if len(self.properties) > 0:
-                mat.text = '\n  '
-                prev = None
-                for (n, v) in self.properties:
-                    if prev is not None: prev.tail = '\n  '
-                    p = ElementTree.SubElement(mat, n)
-                    p.text = v
-                    prev = p
-                prev.tail = '\n'
-            
+            for (n, v) in self.properties:
+                ElementTree.SubElement(mat, n).text = v
     
     def __init__(self, parent=None, info_cb = None, *args):
         super(MaterialsModel, self).__init__('materials', parent, info_cb, *args)

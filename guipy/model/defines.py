@@ -35,7 +35,7 @@ class DefinesModel(TableModel):
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries:
-            ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }).tail = '\n'
+            ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }) #.tail = '\n'
         return res
     
     def get(self, col, row):

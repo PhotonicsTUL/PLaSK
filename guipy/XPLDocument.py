@@ -7,6 +7,7 @@ from controller.multi import GUIAndSourceController
 from controller.connects import ConnectsController
 from controller import materials
 from controller.grids.section import GridsController
+from utils.xml import XML_parser
 
 class XPLDocument(object):
     
@@ -31,7 +32,7 @@ class XPLDocument(object):
         #self.tree = ElementTree()
            
     def load_from_file(self, fileName):
-        tree = ElementTree.parse(fileName)
+        tree = ElementTree.parse(fileName, XML_parser)
         for i in range(len(XPLDocument.SECTION_NAMES)):
             element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
             if element is not None:

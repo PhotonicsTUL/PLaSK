@@ -1,5 +1,6 @@
 from model.grids.grid import Grid
 from lxml.etree import ElementTree
+from utils.xml import AttributeReader
 
 class AxisConf(object):
     """Store axis configuration of RectilinearMesh"""
@@ -24,8 +25,9 @@ class AxisConf(object):
         
     def set_XML_element(self, axis_element):
         if not axis_element: return
-        for attr in ['start', 'stop', 'num']:
-            setattr(self, attr, axis_element.attrib.get(attr, None))
+        with AttributeReader(axis_element) as a:
+            for attr in ['start', 'stop', 'num']:
+                setattr(self, attr, a.get(attr, None))
         self.points = axis_element.text
         #self.points = [float(x) for x in axis_element.text.split(',')]
         
