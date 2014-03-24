@@ -131,7 +131,6 @@ void register_geometry_leafs()
         .add_property("radius", py::make_getter(&Cylinder::radius), &Cylinder::setRadius, "Radius of the cylinder.")
         .add_property("height", py::make_getter(&Cylinder::height), &Cylinder::setHeight, "Height of the cylinder.")
     ;
-    scope.attr("Block3D") = block3D;
 
 
 }

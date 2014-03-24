@@ -250,65 +250,33 @@ def plot_stream(field, scale=8.0, color='k', **kwargs):
         return streamplot(m0, m1, data[:,:,0], data[:,:,1], color=color, **kwargs)
 
 
-
-def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
-    '''Plot geometry.'''
+def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
+    '''Plot points of specified boundary'''
     #TODO documentation
-
-    axes = matplotlib.pylab.gca()
-    patches = []
-
-    if type(geometry) == plask.geometry.Cartesian3D:
+    if type(cmap) == str: cmap = get_cmap(cmap)
+    if cmap is not None: c = []
+    else: c = color
+    if isinstance(mesh, plask.mesh.Mesh3D):
         if plane is None:
-            raise ValueError("for 3D geometry plane must be specified")
+            raise ValueError("for 3D mesh plane must be specified")
         ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
         if len(ax) != 2:
             raise ValueError("bad plane specified")
-        dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
     else:
         ax = (0,1)
-        dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
-                ("top", "bottom"))
+    x = []
+    y = []
+    for place, value in boundary:
+        points = place(mesh, geometry)
+        for i in points:
+            x.append(mesh[i][ax[0]])
+            y.append(mesh[i][ax[1]])
+        if cmap is not None:
+            c.extend(len(points) * [value])
+    return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
 
-    hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
-    vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
 
-    for leaf,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
-
-        #TODO other shapes than rectangles (use collection of _draw_outline functions)
-        def add_path(bottom):
-            lefts = []
-            if hmirror:
-                if box.lower[ax[0]] == 0.:
-                    box.lower[ax[0]] = -box.upper[ax[0]]
-                elif box.upper[ax[0]] == 0.:
-                    box.upper[ax[0]] = -box.lower[ax[0]]
-                else:
-                    lefts.append(-box.upper[ax[0]])
-            lefts.append(box.lower[ax[0]])
-            for left in lefts:
-                patches.append(matplotlib.patches.Rectangle([left, bottom],
-                                                            box.upper[ax[0]]-box.lower[ax[0]], box.upper[ax[1]]-box.lower[ax[1]],
-                                                            ec=color, lw=width, fill=False, zorder=zorder))
-        if vmirror:
-            if box.lower[ax[1]] == 0.:
-                box.lower[ax[1]] = -box.upper[ax[1]]
-            elif box.upper[ax[1]] == 0.:
-                box.upper[ax[1]] = -box.lower[ax[1]]
-            else:
-                add_path(-box.upper[ax[1]])
-
-        add_path(box.lower[ax[1]])
-
-    for patch in patches:
-        axes.add_patch(patch)
-    if set_limits:
-        box = geometry.bbox
-        axes.set_xlim(box.lower[ax[0]], box.upper[ax[0]])
-        axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
-
-    return patches
-
+# ### plot_mesh ###
 
 def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
@@ -348,56 +316,78 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
 
     return lines
 
+# ### plot_geometry ###
 
-def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
-    '''Plot points of specified boundary'''
+_geometry_plotters = {}
+
+def _add_path_Block(patches, trans, box, ax, mirror, color, width, zorder):
+    hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
+    vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+
+    def add_path(bottom):
+        lefts = []
+        if hmirror:
+            if box.lower[ax[0]] == 0.:
+                box.lower[ax[0]] = -box.upper[ax[0]]
+            elif box.upper[ax[0]] == 0.:
+                box.upper[ax[0]] = -box.lower[ax[0]]
+            else:
+                lefts.append(-box.upper[ax[0]])
+        lefts.append(box.lower[ax[0]])
+        for left in lefts:
+            patches.append(matplotlib.patches.Rectangle((left, bottom),
+                                                        box.upper[ax[0]]-box.lower[ax[0]], box.upper[ax[1]]-box.lower[ax[1]],
+                                                        ec=color, lw=width, fill=False, zorder=zorder))
+    if vmirror:
+        if box.lower[ax[1]] == 0.:
+            box.lower[ax[1]] = -box.upper[ax[1]]
+        elif box.upper[ax[1]] == 0.:
+            box.upper[ax[1]] = -box.lower[ax[1]]
+        else:
+            add_path(-box.upper[ax[1]])
+
+    add_path(box.lower[ax[1]])
+_geometry_plotters[plask.geometry.Block2D] = _add_path_Block
+_geometry_plotters[plask.geometry.Block3D] = _add_path_Block
+
+def _add_path_Cylinder(patches, trans, box, ax, mirror, color, width, zorder):
+    if ax != (0,1):
+        _add_path_Block(patches, trans, box, ax, mirror, color, width, zorder)
+    else:
+           patches.append(matplotlib.patches.Circle(trans.translation, trans.item.radius,
+                                                    ec=color, lw=width, fill=False, zorder=zorder))
+_geometry_plotters[plask.geometry.Cylinder] = _add_path_Cylinder
+
+
+def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
+    '''Plot geometry.'''
     #TODO documentation
 
-    if type(cmap) == str: cmap = get_cmap(cmap)
-    if cmap is not None: c = []
-    else: c = color
+    axes = matplotlib.pylab.gca()
+    patches = []
 
-    if isinstance(mesh, plask.mesh.Mesh3D):
+    if type(geometry) == plask.geometry.Cartesian3D:
         if plane is None:
-            raise ValueError("for 3D mesh plane must be specified")
+            raise ValueError("for 3D geometry plane must be specified")
         ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
         if len(ax) != 2:
             raise ValueError("bad plane specified")
+        dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
     else:
         ax = (0,1)
+        dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
+                ("top", "bottom"))
 
+    for trans,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
+        _geometry_plotters[type(trans.item)](patches, trans, box, ax, mirror, color, width, zorder)
 
-    x = []
-    y = []
-    for place, value in boundary:
-        points = place(mesh, geometry)
-        for i in points:
-            x.append(mesh[i][ax[0]])
-            y.append(mesh[i][ax[1]])
-        if cmap is not None:
-            c.extend(len(points) * [value])
+    for patch in patches:
+        axes.add_patch(patch)
+    if set_limits:
+        box = geometry.bbox
+        axes.set_xlim(box.lower[ax[0]], box.upper[ax[0]])
+        axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
 
-    return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
+    return patches
 
-
-def plot_material_param(geometry, param, axes=None, mirror=False, **kwargs):
-    '''Plot selected material parameter as color map'''
-    #TODO merge into plot_geometry
-    if axes is None: axes = matplotlib.pylab.gca()
-    if type(param) == str:
-        param = eval('lambda m: m.' + param)
-    #TODO for different shapes of leafs, plot it somehow better (how? make patches instead of pcolor?)
-    grid = plask.mesh.Rectilinear2D.SimpleGenerator()(geometry.item)
-    grid.ordering = '10'
-    if mirror:
-        if type(geometry) == plask.geometry.Cylindrical2D or \
-           geometry.borders['left'] == 'mirror' or geometry.borders['right'] == 'mirror':
-            ax = array(grid.axis0)
-            grid.axis0 = concatenate((-ax, ax))
-        if geometry.borders['top'] == 'mirror' or geometry.borders['bottom'] == 'mirror':
-            ax = array(grid.axis1)
-            grid.axis1 = concatenate((-ax, ax))
-    points = grid.get_midpoints()
-    data = array([ param(geometry.get_material(p)) for p in points ]).reshape((len(points.axis1), len(points.axis0)))
-    return pcolor(array(grid.axis0), array(grid.axis1), data, antialiased=True, edgecolors='none', **kwargs)
 
