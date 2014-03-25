@@ -20,6 +20,8 @@ struct Cylinder: public GeometryObjectLeaf<3> {
 
     Cylinder(double radius, double height, const shared_ptr<Material>& material = shared_ptr<Material>());
 
+    Cylinder(double radius, double height, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom);
+
     virtual Box getBoundingBox() const;
 
     virtual bool contains(const DVec& p) const;

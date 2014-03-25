@@ -7,6 +7,10 @@ Cylinder::Cylinder(double radius, double height, const shared_ptr<Material>& mat
     : GeometryObjectLeaf<3>(material), radius(radius), height(height)
 {}
 
+Cylinder::Cylinder(double radius, double height, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom)
+    : GeometryObjectLeaf<3>(materialTopBottom), radius(radius), height(height)
+{}
+
 Cylinder::Box Cylinder::getBoundingBox() const {
     return Box(vec(- radius, - radius, 0.0), vec(+ radius, + radius, height));
 }

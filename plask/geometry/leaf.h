@@ -54,6 +54,8 @@ protected:
     struct SolidMaterial: public MaterialProvider {
         shared_ptr<Material> material;
 
+        SolidMaterial() = default;
+
         SolidMaterial(shared_ptr<Material> material): material(material) {}
 
         virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const {
@@ -113,7 +115,22 @@ public:
 
     //shared_ptr<Material> material;  //TODO support for XML (checking if MixedCompositionFactory is solid), add singleMaterial
 
+    /**
+     * Construct leaf with uninitialized material (all material getting methods returns nullptr).
+     */
+    GeometryObjectLeaf<dim>(): materialProvider(new SolidMaterial()) {}
+
+    /**
+     * Construct leaf which uses solid material.
+     * @param material to set (solid on all surface)
+     */
     GeometryObjectLeaf<dim>(shared_ptr<Material> material): materialProvider(new SolidMaterial(material)) {}
+
+    /**
+     * Construct leaf which uses lineary changeble material.
+     * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
+     */
+    GeometryObjectLeaf<dim>(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): materialProvider(new MixedCompositionMaterial(materialTopBottom)) {}
 
     bool singleMaterialInBB(Primitive<3>::Direction direction) const override {
         return materialProvider->singleMaterialInBB(direction);
@@ -135,19 +152,35 @@ public:
         return materialProvider->singleMaterial();
     }
 
+    /**
+     * Set new, solid on all surface, material.
+     * @param new_material material to set
+     */
     void setMaterial(shared_ptr<Material> new_material) {
         materialProvider.reset(new SolidMaterial(new_material));
         this->fireChanged();
     }
 
+    /**
+     * Set new, solid on all surface, material. Do not inform listeners about the change.
+     * @param new_material material to set
+     */
     void setMaterialFast(shared_ptr<Material> new_material) {
         materialProvider.reset(new SolidMaterial(new_material));
     }
 
+    /**
+     * Set new, lineary changeble, material.
+     * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
+     */
     void setMaterialTopBottomCompositionFast(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
         materialProvider.reset(new MixedCompositionMaterial(materialTopBottom));
     }
 
+    /**
+     * Set new, lineary changeble, material. Do not inform listeners about the change.
+     * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
+     */
     void setMaterialTopBottomComposition(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
         setMaterialTopBottomCompositionFast(materialTopBottom);
         this->fireChanged();
@@ -280,6 +313,8 @@ struct Block: public GeometryObjectLeaf<dim> {
      */
     explicit Block(const DVec& size = Primitive<dim>::ZERO_VEC, const shared_ptr<Material>& material = shared_ptr<Material>())
         : GeometryObjectLeaf<dim>(material), size(size) {}
+
+    explicit Block(const DVec& size, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): GeometryObjectLeaf<dim>(materialTopBottom), size(size) {}
 
     virtual Box getBoundingBox() const {
         return Box(Primitive<dim>::ZERO_VEC, size);

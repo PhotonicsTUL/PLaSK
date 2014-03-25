@@ -424,22 +424,23 @@ public:
      * Construct mixed material factory.
      * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[:dopant], see get(const std::string& name_with_components, const std::string& dopant_descr),
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
-     * @return constructed factory created using operator new, should by delete by caller
+     * @return constructed factory
      */
     shared_ptr<MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const;
 
-    /**
+    /*
      * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
      */
    // void addSimple(const MaterialConstructor* constructor);
+
     /**
      * Add simple material (which does snot require composition parsing) to DB. Replace existing material if there is one already in DB.
-     * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
+     * @param constructor object which can create material instance
      */
     void addSimple(shared_ptr<MaterialConstructor> constructor);
 
-    /**
+    /*
      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
      */
@@ -447,7 +448,7 @@ public:
 
     /**
      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
-     * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
+     * @param constructor object which can create material instance
      */
     void addComplex(shared_ptr<MaterialConstructor> constructor);
 
