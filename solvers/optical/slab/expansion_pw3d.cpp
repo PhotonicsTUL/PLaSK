@@ -193,7 +193,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     }
 
     double matv = axis2[0]; // at each point along any vertical axis material is the same
-    for (size_t it = 0, i = 0; it < M; ++it) {
+    for (size_t it = 0, i = 0; it < Mt; ++it) {
         for (size_t il = 0; il < Ml; ++il, ++i) {
             auto material = geometry->getMaterial(vec(long_mesh[il], tran_mesh[it], matv));
             double T = 0.; // average temperature in all vertical points
@@ -303,52 +303,59 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
+DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const RectilinearAxis lmesh, const RectilinearAxis tmesh, InterpolationMethod interp)
 {
-//     double L = right - left;
-//     DataVector<Tensor3<dcomplex>> result;
+    double Lt = right - left;
+    double Ll = front - back;
+    DataVector<Tensor3<dcomplex>> result;
 //     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
 //         if (!symmetric) {
 //             result.reset(mesh.size(), Tensor3<dcomplex>(0.));
 //             for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
 //                 size_t j = (k>=0)? k : k + nN;
 //                 for (size_t i = 0; i != mesh.size(); ++i) {
-//                     result[i] += coeffs[l][j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
+//                     result[i] += coeffs[lay][j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
 //                 }
 //             }
 //         } else {
 //             result.reset(mesh.size());
 //             for (size_t i = 0; i != mesh.size(); ++i) {
-//                 result[i] = coeffs[l][0];
+//                 result[i] = coeffs[lay][0];
 //                 for (int k = 1; k != nN; ++k) {
-//                     result[i] += 2. * coeffs[l][k] * cos(M_PI * k * mesh[i] / L);
+//                     result[i] += 2. * coeffs[lay][k] * cos(M_PI * k * mesh[i] / L);
 //                 }
 //             }
 //         }
 //     } else {
-//         size_t nl = symmetric_long? nNl : nNl+1, nt = symmetric_tran? nNt : nNt+1;
-//         DataVector<Tensor3<dcomplex>> params(nl * nt);
-//         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-//         FFT::Backward1D(5, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE)
+        size_t nl = symmetric_long? nNl : nNl+1, nt = symmetric_tran? nNt : nNt+1;
+        DataVector<Tensor3<dcomplex>> params(nl * nt);
+        for (size_t t = 0; t != nNt; ++t) {
+            size_t op = nl * t, oc = nNl * t;
+            for (size_t l = 0; l != nNl; ++l) {
+                params[op+l] = coeffs[lay][oc+l];
+            }
+        }
+//         FFT::Backward2D(5, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE)
 //             .execute(reinterpret_cast<dcomplex*>(params.data()));
-//         RegularAxis cmesh;
+        RegularAxis lcmesh, tcmesh;
 //         if (symmetric) {
 //             double dx = 0.5 * (right-left) / nN;
 //             cmesh.reset(left + dx, right - dx, nN);
 //         } else {
-//             cmesh.reset(left, right, nN+1);
-//             auto old = coeffs[l];
-//             params[nN] = params[0];
+            lcmesh.reset(back, front, nNl+1);
+            tcmesh.reset(left, right, nNt+1);
+            for (size_t l = 0, last = nl*nNt; l != nNl; ++l) params[last+l] = params[l];
+            for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
 //         }
-//         RegularMesh3D src_mesh(cmesh, RegularAxis(0,0,1));
-//         RectilinearMesh3D dst_mesh(mesh, RectilinearAxis({0}));
-//         result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry()), interp);
+        RegularMesh3D src_mesh(lcmesh, tcmesh, RegularAxis(0,0,1));
+        RectilinearMesh3D dst_mesh(lmesh, tmesh, RectilinearAxis({0}));
+        result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry()), interp);
 //     }
 //     for (Tensor3<dcomplex>& eps: result) {
 //         eps.c22 = 1. / eps.c22;
 //         eps.sqrt_inplace();
 //     }
-//     return result;
+    return result;
 }
 
 

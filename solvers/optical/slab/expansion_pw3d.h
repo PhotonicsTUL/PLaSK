@@ -97,11 +97,11 @@ struct ExpansionPW3D: public Expansion {
     /**
      * Get refractive index back from expansion
      * \param l layer number
-     * \param mesh mesh to get parameters to
+     * \param lmesh,tmesh mesh to get parameters to
      * \param interp interpolation method
      * \return computed refractive indices
      */
-    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearAxis mesh,
+    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, const RectilinearAxis lmesh, const RectilinearAxis tmesh,
                                                       InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
 //   private:

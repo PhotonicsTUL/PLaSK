@@ -273,7 +273,6 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
             cmesh.reset(left + dx, right - dx, nN);
         } else {
             cmesh.reset(left, right, nN+1);
-            auto old = coeffs[l];
             params[nN] = params[0];
         }
         RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));

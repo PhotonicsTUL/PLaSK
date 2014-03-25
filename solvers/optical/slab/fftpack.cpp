@@ -150,8 +150,8 @@ Forward2D& Forward2D::operator=(Forward2D&& old) {
     return *this;
 }
 
-Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid):
-    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), symmetry1(symmetry1), symmetry2(symmetry2),
+Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int istrid):
+    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), istrid(istrid?istrid:n1), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -184,10 +184,10 @@ void Forward2D::execute(dcomplex* data) {
         // n1 is changing faster than n2
         if (symmetry1 == SYMMETRY_NONE) {
             for (int i = 0; i != n2; ++i)
-                cfftmf_(lot, 1, n1, strid, data+strid*n1*i, strid*n1, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                cfftmf_(lot, 1, n1, strid, data+strid*istrid*i, strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
         } else {
             for (int i = 0; i != n2; ++i)
-                cosqmb_(2*lot, 1, n1, 2*strid, (double*)data+2*strid*n1*i, 2*strid*n1, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                cosqmb_(2*lot, 1, n1, 2*strid, (double*)data+2*strid*istrid*i, 2*strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
             double factor = 1./n1;
             for (int i = 0, N = strid*n1*n2; i < N; i += strid)
                 for (int j = 0; j < lot; ++j)
@@ -195,10 +195,10 @@ void Forward2D::execute(dcomplex* data) {
         }
         if (symmetry2 == SYMMETRY_NONE) {
             for (int i = 0; i != n1; ++i)
-                cfftmf_(lot, 1, n2, strid*n1, data+strid*i, strid*(n1*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                cfftmf_(lot, 1, n2, strid*istrid, data+strid*i, strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
         } else {
             for (int i = 0; i != n1; ++i)
-                cosqmb_(2*lot, 1, n1, 2*strid*n1, (double*)data+2*strid*i, 2*strid*(n1*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                cosqmb_(2*lot, 1, n2, 2*strid*istrid, (double*)data+2*strid*i, 2*strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
             double factor = 1./n2;
             for (int i = 0, N = strid*n1*n2; i < N; i += strid)
                 for (int j = 0; j < lot; ++j)

@@ -67,8 +67,9 @@ struct Forward2D {
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
      * \param strid data stride (defaults to \c lot)
+     * \param istrid major row stride (defaults to \c n1)
      */
-    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0);
+    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0, int istrid=0);
     ~Forward2D();
     /** Execute transform
      * \param data data to execute FFT
@@ -77,7 +78,7 @@ struct Forward2D {
   private:
     int lot;
     int n1, n2;
-    int strid;
+    int strid, istrid;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;
@@ -131,8 +132,9 @@ struct Backward2D {
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
      * \param strid data stride (defaults to \c lot)
+     * \param istrid major row stride (defaults to \c n1)
      */
-    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0);
+    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0, int istrid=0);
     ~Backward2D();
     /// Execute transform
     void execute();
@@ -143,7 +145,7 @@ struct Backward2D {
   private:
     int lot;
     int n1, n2;
-    int strid;
+    int strid, istrid;
     Symmetry symmetry1, symmetry2;
 #ifdef USE_FFTW
     fftw_plan plan;

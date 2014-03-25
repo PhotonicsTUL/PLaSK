@@ -153,12 +153,16 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //         return result;
 //     }
 //
-//     /**
-//      * Get refractive index after expansion
-//      */
-//     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh3D& dst_mesh,
-//                                                                   InterpolationMethod interp=INTERPOLATION_DEFAULT);
-//
+    /// Get refractive index after expansion
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh3D& dst_mesh,
+                                                                  InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
+    /// Get mesh at which material parameters are sampled along longitudinal axis
+    RegularAxis getLongMesh() const { return expansion.long_mesh; }
+
+    /// Get mesh at which material parameters are sampled along transverse axis
+    RegularAxis getTranMesh() const { return expansion.tran_mesh; }
+
 //   private:
 //
 //     /**

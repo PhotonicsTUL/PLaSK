@@ -455,13 +455,14 @@ BOOST_PYTHON_MODULE(slab)
 //         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
 //                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
 //                    "Fresnel equations.");
-//         solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
-//                    "Get profile of the expanded refractive index.\n\n"
-//                    "Args:\n"
-//                    "    mesh: Target mesh.\n"
-//                    "    interp: Interpolation method\n"
-//                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-//         RO_PROPERTY(tran_mesh, getXmesh, "Transverse mesh with points where materials parameters are sampled.");
+        solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
+                   "Get profile of the expanded refractive index.\n\n"
+                   "Args:\n"
+                   "    mesh: Target mesh.\n"
+                   "    interp: Interpolation method\n"
+                   , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
+        RO_PROPERTY(long_mesh, getLongMesh, "Longitudinal mesh with points where materials parameters are sampled.");
+        RO_PROPERTY(tran_mesh, getTranMesh, "Transverse mesh with points where materials parameters are sampled.");
 //         solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()),
 //                             "Side Perfectly Matched Layers boundary conditions.\n\n"
 //                             PML_ATTRS_DOC

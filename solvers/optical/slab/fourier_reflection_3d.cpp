@@ -60,29 +60,32 @@ void FourierReflection3D::onInvalidate()
 //                    detlog, root)(neff);
 //     return insertMode();
 // }
-//
-//
-// DataVector<const Tensor3<dcomplex>> FourierReflection3D::getRefractiveIndexProfile(const RectilinearMesh3D& dst_mesh,
-//                                                                                    InterpolationMethod interp)
-// {
-//     initCalculation();
-//     std::map<size_t,DataVector<const Tensor3<dcomplex>>> cache;
-//     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
-//     for (size_t y = 0; y != dst_mesh.axis1.size(); ++y) {
-//         double h = dst_mesh.axis1[y];
-//         size_t n = getLayerFor(h);
-//         size_t l = stack[n];
-//         if (cache.find(l) == cache.end()) {
-//             cache[l] = expansion.getMaterialNR(l, dst_mesh.axis0, interp);
-//         }
-//         for (size_t x = 0; x != dst_mesh.axis0.size(); ++x) {
-//             result[dst_mesh.index(x,y)] = cache[l][x];
-//         }
-//     }
-//     return result;
-// }
-//
-//
+
+
+DataVector<const Tensor3<dcomplex>> FourierReflection3D::getRefractiveIndexProfile(const RectilinearMesh3D& dst_mesh,
+                                                                                   InterpolationMethod interp)
+{
+    initCalculation();
+    std::map<size_t,DataVector<const Tensor3<dcomplex>>> cache;
+    DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
+    for (size_t z = 0; z != dst_mesh.axis2.size(); ++z) {
+        double h = dst_mesh.axis2[z];
+        size_t n = getLayerFor(h);
+        size_t l = stack[n];
+        if (cache.find(l) == cache.end()) {
+            cache[l] = expansion.getMaterialNR(l, dst_mesh.axis0, dst_mesh.axis1, interp);
+        }
+        for (size_t y = 0; y != dst_mesh.axis1.size(); ++y) {
+            size_t offset = y * dst_mesh.axis0.size();
+            for (size_t x = 0; x != dst_mesh.axis0.size(); ++x) {
+                result[dst_mesh.index(x,y,z)] = cache[l][offset+x];
+            }
+        }
+    }
+    return result;
+}
+
+
 // cvector FourierReflection3D::getReflectedAmplitudes(ExpansionPW3D::Component polarization,
 //                                                     IncidentDirection incidence, size_t* savidx)
 // {
