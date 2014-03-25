@@ -1,7 +1,7 @@
 .. _sec-index-solvers:
 
 *****************
-Available solvers
+Available Solvers
 *****************
 
 Thermal model

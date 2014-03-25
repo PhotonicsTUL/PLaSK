@@ -1,7 +1,7 @@
 .. _sec-algorithms:
 
 *********************
-High-level algorithms
+High-Level Algorithms
 *********************
 
 See section :mod:`plask.algorithm`.
