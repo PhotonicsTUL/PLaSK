@@ -260,9 +260,8 @@ class RectangularMesh<3,AxisT>: public MeshD<3> {
 
     /**
      * Iteration orders:
-     * - normal iteration order (ORDER_012) is:
-     *   (c0[0], c1[0]), (c0[1], c1[0]), ..., (c0[c0.size-1], c1[0]), (c0[0], c1[1]), ..., (c0[c0.size()-1], c1[c1.size()-1])
-     * Every other order is proper permutation of indices
+     * Every other order is proper permutation of indices.
+     * They mean ORDER_major,medium,minor, i.e. the last index changes fastest
      * @see setIterationOrder, getIterationOrder, setOptimalIterationOrder
      */
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };

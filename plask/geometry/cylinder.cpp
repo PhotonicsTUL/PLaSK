@@ -16,8 +16,8 @@ Cylinder::Box Cylinder::getBoundingBox() const {
 }
 
 bool Cylinder::contains(const Cylinder::DVec &p) const {
-    return 0.0 >= p.vert() && p.vert() <= height &&
-            std::fma(p.lon(), p.lon(), p.tran() * p.tran()) <= radius * radius;
+    return 0.0 <= p.vert() && p.vert() <= height &&
+           std::fma(p.lon(), p.lon(), p.tran() * p.tran()) <= radius * radius;
 }
 
 void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
@@ -26,10 +26,10 @@ void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
 }
 
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {
-    shared_ptr< Cylinder > result(new Cylinder(
+    shared_ptr<Cylinder> result(new Cylinder(
                                reader.source.requireAttribute<double>("radius"),
                                reader.source.requireAttribute<double>("height")
-                           ));
+                         ));
     result->readMaterial(reader);
     reader.source.requireTagEnd();
     return result;

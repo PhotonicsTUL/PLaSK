@@ -6,7 +6,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-#include "plask/utils.h"
+#include "python_ptr.h"
 
 #if NPY_API_VERSION < 0x00000007
 inline static void PyArray_SetBaseObject(PyArrayObject* arr, PyObject* obj) {
@@ -45,9 +45,9 @@ namespace detail {
  */
 template <typename T>
 inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
-    PObj<PyArray_Descr> descr;
+    PyHandle<PyArray_Descr> descr;
     if(PyArray_DescrConverter(dtype.ptr(), &descr.ref()) && descr->type_num != detail::typenum<T>()) {
-        PObj<PyArrayObject> oarr = reinterpret_cast<PyArrayObject*>(arr);
+        PyHandle<PyArrayObject> oarr = reinterpret_cast<PyArrayObject*>(arr);
         arr = PyArray_CastToType(oarr, descr, 1);
         if (arr == nullptr) throw TypeError("cannot convert array to required dtype");
     } else {

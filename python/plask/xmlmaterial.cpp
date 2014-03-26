@@ -5,7 +5,7 @@
 #include <plask/material/db.h>
 
 #include "python_material.h"
-#include "utils.h"
+#include "python_ptr.h"
 
 namespace plask { namespace python {
 
@@ -28,7 +28,7 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     Material::Kind kind;
     Material::ConductivityType condtype;
 
-    PObj<PyCodeObject>
+    PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Nc, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR;
@@ -231,7 +231,7 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
                     writelog(LOG_DEBUG, "Caching parameter '" name "' in material '%1%'", name); \
                     constructor->cache.func.reset( \
                         py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                            py::handle<>(PyEval_EvalCode((PyObject*)constructor->func, xml_globals.ptr(), locals.ptr())).get() \
+                            py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals.ptr(), locals.ptr())).get() \
                         ) \
                     ); \
                 } catch (py::error_already_set) { \

@@ -170,16 +170,17 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     auto geometry = SOLVER->getGeometry();
     const RectilinearAxis& axis2 = SOLVER->getLayerPoints(l);
 
-    size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran;
-    if (refl == 0) refl = 1; if (reft == 0) reft = 1;
-    size_t Ml = refl * nNl,  Mt = reft * nNt;
-    size_t M = Ml * Mt;
+    const double Lt = right - left, Ll = front - back;
+    const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
+                 reft = (SOLVER->refine_tran)? SOLVER->refine_tran : 1;
+    const size_t Ml = refl * nNl,  Mt = reft * nNt;
+    const size_t M = Ml * Mt;
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
 
     DataVector<Tensor3<dcomplex>> NR(M);
 
-    RectilinearMesh3D mesh(long_mesh, tran_mesh, axis2, RectilinearMesh3D::ORDER_210);
+    RectilinearMesh3D mesh(long_mesh, tran_mesh, axis2, RectilinearMesh3D::ORDER_012);
 
     double lambda = real(SOLVER->getWavelength());
 
@@ -197,7 +198,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         for (size_t il = 0; il < Ml; ++il, ++i) {
             auto material = geometry->getMaterial(vec(long_mesh[il], tran_mesh[it], matv));
             double T = 0.; // average temperature in all vertical points
-            for (size_t j = mesh.index(il, it, 0) * axis2.size(), end = mesh.index(il, it, axis2.size())+1; j != end; ++j) T += temperature[j];
+            for (size_t j = mesh.index(il, it, 0), end = mesh.index(il, it, axis2.size()); j != end; ++j) T += temperature[j];
             T /= axis2.size();
             #pragma omp critical
             NR[i] = material->NR(lambda, T);
@@ -241,24 +242,29 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     // Average material parameters
     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
 
+    const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
+
     for (size_t it = 0; it != nNt; ++it) {
 
-        size_t tbegin = reft*it, tend = reft*(it+1);
+        size_t tbegin = reft * it; size_t tend = tbegin + reft;
         double tran0 = 0.5 * (tran_mesh[tbegin] + tran_mesh[tend-1]);
 
         for (size_t il = 0; il != nNl; ++il) {
-            size_t lbegin = refl*il, lend = refl*(il+1);
-            double long0 = 0.5 * (long_mesh[tbegin] + long_mesh[tend-1]);
+            size_t lbegin = refl * il; size_t lend = lbegin + refl;
+            double long0 = 0.5 * (long_mesh[lbegin] + long_mesh[lend-1]);
 
             // Compute surface normal
             Vec<2> norm(0.,0.);
             for (size_t t = tbegin; t != tend; ++t) {
+                size_t toff = Ml * t;
                 for (size_t l = lbegin; l != lend; ++l) {
-                    auto& n = NR[Ml * t + l];
-                    norm += (0.5 * (real(n.c00) + real(n.c11))) * Vec<2>(long_mesh[l] - long0, tran_mesh[t] - tran0);
+                    const auto& n = NR[toff + l];
+                    norm += (real(n.c00) + real(n.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
                 }
             }
-            double a = abs(norm); if (a != 0.) norm /= a;
+            double a = abs(norm);
+            if (a > normlim) norm /= a;
+            else norm = vec(0., 0.);
 
             // Average permittivity tensor according to:
             // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
@@ -281,34 +287,33 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     } else
         diagonals[l] = false;
 
-//     if (diagonals[l]) {
-//         solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
-//         for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
-//     } else {
-//         // Perform FFT
-//         matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
-//         // Smooth coefficients
-//         if (SOLVER->smooth) {
-//             double bb4 = 2.*M_PI / ((right-left) * (symmetric_tran? 2 : 1)) / ((front-back) * (symmetric_long? 2 : 1));
-//             bb4 *= bb4; bb4 *= 0.25;  // (2π/Lt)² (2π/Ll)² / 4
-//             for (size_t it = 0; it != nNl; ++it) {
-//                 int kt = it; if (kt > nNt/2) kt -= nNt;
-//                 for (size_t il = 0; il != nNl; ++il) {
-//                     int kl = il; if (kl > nNl/2) kl -= nNl;
-//                     coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * bb4 * kt*kt * kl*kl);
-//                 }
-//             }
-//         }
-//     }
+    if (diagonals[l]) {
+        solver->writelog(LOG_DETAIL, "Layer %1% is uniform", l);
+        for (size_t i = 1; i != nN; ++i) coeffs[l][i] = Tensor3<dcomplex>(0.);
+    } else {
+        // Perform FFT
+        matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
+        // Smooth coefficients
+        if (SOLVER->smooth) {
+            double bb4 = 2.*M_PI / ((right-left) * (symmetric_tran? 2 : 1)) / ((front-back) * (symmetric_long? 2 : 1));
+            bb4 *= bb4; bb4 *= 0.25;  // (2π/Lt)² (2π/Ll)² / 4
+            for (size_t it = 0; it != nNl; ++it) {
+                int kt = it; if (kt > nNt/2) kt -= nNt;
+                for (size_t il = 0; il != nNl; ++il) {
+                    int kl = il; if (kl > nNl/2) kl -= nNl;
+                    coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * bb4 * kt*kt * kl*kl);
+                }
+            }
+        }
+    }
 }
 
 
 DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const RectilinearAxis lmesh, const RectilinearAxis tmesh, InterpolationMethod interp)
 {
-    double Lt = right - left;
-    double Ll = front - back;
     DataVector<Tensor3<dcomplex>> result;
 //     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
+//         const double Lt = right - left, Ll = front - back;
 //         if (!symmetric) {
 //             result.reset(mesh.size(), Tensor3<dcomplex>(0.));
 //             for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
@@ -335,8 +340,12 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, con
                 params[op+l] = coeffs[lay][oc+l];
             }
         }
-//         FFT::Backward2D(5, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE)
-//             .execute(reinterpret_cast<dcomplex*>(params.data()));
+        FFT::Backward2D(5, nNl, nNt,
+                        symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE,
+                        symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE,
+                        0, nl
+                       )
+            .execute(reinterpret_cast<dcomplex*>(params.data()));
         RegularAxis lcmesh, tcmesh;
 //         if (symmetric) {
 //             double dx = 0.5 * (right-left) / nN;

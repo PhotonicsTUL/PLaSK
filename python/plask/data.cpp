@@ -253,12 +253,12 @@ namespace detail {
         size_t last_dim = PyArray_DIMS(arr)[ndim-1];
         if (ndim == dim+1) {
             if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
-            else if (last_dim == 3) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
+            else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
         } else if (ndim == 1) {
             if (last_dim == 2 * mesh->size()) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3 * mesh->size()) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
         }
-        return makeDataVectorImpl<double, dim>(arr, mesh);
+        return makeDataVectorImpl<T, dim>(arr, mesh);
     }
 
 } // namespace  detail

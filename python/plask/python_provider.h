@@ -41,7 +41,7 @@ struct DataVectorWrap : public DataVector<T> {
     }
 
     ~DataVectorWrap() {
-        mesh->changedDisconnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+        if (mesh) mesh->changedDisconnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
     void onMeshChanged(const typename MeshD<dim>::Event& event) { mesh_changed = true; }

@@ -216,6 +216,89 @@ Forward2D::~Forward2D() {
 
 
 
+Backward2D::Backward2D(): wsave1(nullptr), wsave2(nullptr) {}
+
+Backward2D::Backward2D(Backward2D&& old):
+    lot(old.lot), n1(old.n1), n2(old.n2), strid(old.strid),
+    symmetry1(old.symmetry1), symmetry2(old.symmetry2),
+    wsave1(old.wsave1), wsave2(old.wsave2) {
+    old.wsave1 = nullptr; old.wsave2 = nullptr;
+}
+
+Backward2D& Backward2D::operator=(Backward2D&& old) {
+    lot = old.lot; n1 = old.n1; n2 = old.n2; strid = old.strid;
+    symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
+    aligned_free(wsave1); aligned_free(wsave2);
+    wsave1 = old.wsave1; wsave2 = old.wsave2;
+    old.wsave1 = nullptr;  old.wsave2 = nullptr;
+    return *this;
+}
+
+Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int istrid):
+    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), istrid(istrid?istrid:n1), symmetry1(symmetry1), symmetry2(symmetry2),
+    wsave1(aligned_malloc<double>(lensav(n1))) {
+    if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
+    else wsave2 = aligned_malloc<double>(lensav(n2));
+    try {
+        int ier;
+        if (symmetry1 == SYMMETRY_NONE)
+            cfftmi_(n1, wsave1, lensav(n1), ier);
+        else if (symmetry1 == SYMMETRY_EVEN)
+            cosqmi_(n1, wsave1, lensav(n1), ier);
+        else
+            throw NotImplemented("backward FFT for odd symmetry");
+        if (wsave1 != wsave2) {
+            if (symmetry2 == SYMMETRY_NONE)
+                cfftmi_(n2, wsave2, lensav(n2), ier);
+            else if (symmetry2 == SYMMETRY_EVEN)
+                cosqmi_(n2, wsave2, lensav(n2), ier);
+            else
+                throw NotImplemented("backward FFT for odd symmetry");
+        }
+    } catch (const std::string& msg) {
+        throw CriticalException("FFT::Backward2D::Backward2D: %1%", msg);
+    }
+}
+
+void Backward2D::execute(dcomplex* data) {
+    if (!wsave1 || !wsave2) throw CriticalException("FFTPACX not initialized");
+    try {
+        int ier;
+        double work[2*lot*max(n1,n2)];
+        // n1 is changing faster than n2
+        if (symmetry1 == SYMMETRY_NONE) {
+            for (int i = 0; i != n2; ++i)
+                cfftmb_(lot, 1, n1, strid, data+strid*istrid*i, strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
+        } else {
+            for (int i = 0; i != n2; ++i)
+                cosqmf_(2*lot, 1, n1, 2*strid, (double*)data+2*strid*istrid*i, 2*strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
+            double factor = n1;
+            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
+                for (int j = 0; j < lot; ++j)
+                    data[i+j] *= factor;
+        }
+        if (symmetry2 == SYMMETRY_NONE) {
+            for (int i = 0; i != n1; ++i)
+                cfftmb_(lot, 1, n2, strid*istrid, data+strid*i, strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+        } else {
+            for (int i = 0; i != n1; ++i)
+                cosqmf_(2*lot, 1, n2, 2*strid*istrid, (double*)data+2*strid*i, 2*strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+            double factor = n2;
+            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
+                for (int j = 0; j < lot; ++j)
+                    data[i+j] *= factor;
+        }
+    } catch (const std::string& msg) {
+        throw CriticalException("FFT::Backward2D::execute: %1%", msg);
+    }
+}
+
+Backward2D::~Backward2D() {
+    if (wsave2 != wsave1) aligned_free(wsave2);
+    aligned_free(wsave1);
+}
+
+
 
 
 

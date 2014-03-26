@@ -125,8 +125,7 @@ public:
 
     /**
      * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
-     * \param min_ply minimum ply after split single, non-solid layer
+     * \param min_ply minimum ply after splitting single, non-solid layer
      * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
     RectilinearMesh3DSimpleGenerator(double min_ply = 0.01, long max_points = 10)

@@ -362,8 +362,8 @@ else:
 
 ## ##  ## ##
 
-import phys
+import plask.phys
 
-import algorithm
+import plask.algorithm
 
 ## ##  ## ##

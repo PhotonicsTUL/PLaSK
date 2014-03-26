@@ -285,6 +285,14 @@ shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(Four
 }
 
 
+DataVectorWrap<const Tensor3<dcomplex>,3> FourierReflection3D_getRefractiveIndexProfile(FourierReflection3D& self,
+                const shared_ptr<RectilinearMesh3D>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
+    return DataVectorWrap<const Tensor3<dcomplex>,3>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
+}
+
+
+
+
 BOOST_PYTHON_MODULE(slab)
 {
     plask_import_array();
@@ -455,7 +463,7 @@ BOOST_PYTHON_MODULE(slab)
 //         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
 //                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
 //                    "Fresnel equations.");
-        solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
+        solver.def("get_refractive_index_profile", &FourierReflection3D_getRefractiveIndexProfile,
                    "Get profile of the expanded refractive index.\n\n"
                    "Args:\n"
                    "    mesh: Target mesh.\n"

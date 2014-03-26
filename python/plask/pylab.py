@@ -200,10 +200,9 @@ def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
 
     if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
         axis0, axis1 = m.axis0, m.axis1
-        i0, i1 = -2, -1
         data = field.array.transpose((1,0,2))
     elif type(m) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
-        iaxes = [ iaxis for iaxis in enumerate,(m.axis0, m.axis1, m.axis2) if len(axis) > 1 ]
+        iaxes = [ iaxis for iaxis in enumerate([m.axis0, m.axis1, m.axis2]) if len(iaxis[1]) > 1 ]
         if len(axes) != 2:
             raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
         (i0, axis0), (i1, axis1) = iaxes
@@ -211,7 +210,7 @@ def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
     else:
         raise NotImplementedError("mesh type not supported")
 
-    return quiver(array(axis0), array(axis1), data[:,:,0], data[:,:,1], angles=angles, scale_units=scale_units, **kwargs)
+    return quiver(array(axis0), array(axis1), data[:,:,0].real, data[:,:,1].real, angles=angles, scale_units=scale_units, **kwargs)
 
 
 def plot_stream(field, scale=8.0, color='k', **kwargs):
@@ -228,9 +227,9 @@ def plot_stream(field, scale=8.0, color='k', **kwargs):
         i0, i1 = -2, -1
         data = field.array.transpose((1,0,2))
     elif type(m) == plask.mesh.Regular3D:
-        iaxes = [ iaxis for iaxis in enumerate,(m.axis0, m.axis1, m.axis2) if len(axis) > 1 ]
+        iaxes = [ iaxis for iaxis in enumerate([m.axis0, m.axis1, m.axis2]) if len(iaxis[1]) > 1 ]
         if len(axes) != 2:
-            raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
+            raise TypeError("'plot_stream' only accepts 3D mesh with exactly one axis of size 1")
         (i0, axis0), (i1, axis1) = iaxes
         data = field.array.reshape((len(axis0), len(axis1), field.array.shape[-1]))[:,:,[i0,i1]].transpose((1,0,2))
     else:
@@ -245,9 +244,9 @@ def plot_stream(field, scale=8.0, color='k', **kwargs):
     if color == 'norm':
         color = norm
     if scale:
-        return streamplot(m0, m1, data[:,:,0], data[:,:,1], linewidth=scale*norm, color=color, **kwargs)
+        return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, linewidth=scale*norm, color=color, **kwargs)
     else:
-        return streamplot(m0, m1, data[:,:,0], data[:,:,1], color=color, **kwargs)
+        return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, color=color, **kwargs)
 
 
 def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):

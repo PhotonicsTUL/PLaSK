@@ -127,4 +127,7 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         msh = self.solver.mesh.get_midpoints()
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(980., 300.) for point in msh]
-        self.assertEqual( [str(complex(nr[0])) for nr in self.solver.outRefractiveIndex(msh, 0.)], [str(complex(r)) for r in refr] )
+        self.assertEqual(
+            ["%.8g%+.8gj" % (nr[0].real,nr[0].imag) for nr in self.solver.outRefractiveIndex(msh, 0.)],
+            ["%.8g%+.8gj" % (r.real,r.imag) for r in refr]
+        )

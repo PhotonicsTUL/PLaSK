@@ -48,6 +48,7 @@ void SlabSolver<GeometryT>::setupLayers()
     struct LayerItem {
         shared_ptr<Material> material;
         std::set<std::string> roles;
+        bool operator!=(const LayerItem& other) { return *material != *other.material || roles != other.roles; }
     };
 
     std::vector<std::vector<LayerItem>> layers;
@@ -70,7 +71,7 @@ void SlabSolver<GeometryT>::setupLayers()
             layer[i].material = this->geometry->getMaterial(p);
             for (const std::string& role: this->geometry->getRolesAt(p)) {
                 if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
-                if (role == "QW" || role == "QD" || role == "gain") { layer[i].roles.insert(role); gain = true; }
+                else if (role == "QW" || role == "QD" || role == "gain") { layer[i].roles.insert(role); gain = true; }
             }
         }
 
@@ -78,7 +79,7 @@ void SlabSolver<GeometryT>::setupLayers()
         for (size_t i = 0; i != layers.size(); ++i) {
             unique = false;
             for (size_t j = 0; j != layers[i].size(); ++j) {
-                if (*layers[i][j].material != *layer[j].material || layers[i][j].roles != layer[j].roles) {
+                if (layers[i][j] != layer[j]) {
                     unique = true;
                     break;
                 }
@@ -127,15 +128,16 @@ void SlabSolver<Geometry3D>::setupLayers()
     for (auto v: points->vert()) {
         bool gain = false;
 
-        std::vector<LayerItem> layer(points->axis0.size() * points->axis0.size());
-        for (size_t i = 0; i != points->axis0.size(); ++i) {
-            for (size_t j = 0; j != points->axis1.size(); ++j) {
+        std::vector<LayerItem> layer(points->axis0.size() * points->axis1.size());
+        for (size_t i = 0; i != points->axis1.size(); ++i) {
+            size_t offs = i * points->axis0.size();
+            for (size_t j = 0; j != points->axis0.size(); ++j) {
                 Vec<3> p(points->axis0[i], points->axis1[j], v);
-                size_t n = i + points->axis0.size() * j;
+                size_t n = offs + j;
                 layer[n].material = this->geometry->getMaterial(p);
                 for (const std::string& role: this->geometry->getRolesAt(p)) {
                     if (role.substr(0,3) == "opt") layer[n].roles.insert(role);
-                    if (role == "QW" || role == "QD" || role == "gain") { layer[n].roles.insert(role); gain = true; }
+                    else if (role == "QW" || role == "QD" || role == "gain") { layer[n].roles.insert(role); gain = true; }
                 }
             }
         }
@@ -144,7 +146,7 @@ void SlabSolver<Geometry3D>::setupLayers()
         for (size_t i = 0; i != layers.size(); ++i) {
             unique = false;
             for (size_t j = 0; j != layers[i].size(); ++j) {
-                if (*layers[i][j].material != *layer[j].material || layers[i][j].roles != layer[j].roles) {
+                if (layers[i][j] != layer[j]) {
                     unique = true;
                     break;
                 }

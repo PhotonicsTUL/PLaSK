@@ -150,7 +150,7 @@ struct Backward2D {
 #ifdef USE_FFTW
     fftw_plan plan;
 #else
-    double *wsave;
+    double *wsave1, *wsave2;
 #endif
 };
 

@@ -186,8 +186,8 @@ class PythonMaterial : public Material
             MaterialCache* cache = (cacheMap[cls.ptr()] = std::move(std::unique_ptr<MaterialCache>(new MaterialCache))).get();
             ptr->cache = cache;
             #define CHECK_CACHE(Type, fun, name, ...) \
-                if (PyObject_HasAttrString(cls.ptr(), name) && PyFunction_Check(py::object(cls.attr(name)).ptr())) { \
-                    cache->fun.reset(py::extract<Type>(cls.attr(name)())); \
+                if (PyObject_HasAttrString(self.ptr(), name) && PyFunction_Check(py::object(self.attr(name)).ptr())) { \
+                    cache->fun.reset(py::extract<Type>(self.attr(name)())); \
                     writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%1%'", cls_name); \
                 }
             CHECK_CACHE(double, lattC, "lattC", 300., py::object())
@@ -242,7 +242,9 @@ class PythonMaterial : public Material
 
         if (overriden("__eq__")) return py::call_method<bool>(self, "__eq__", oother);
 
-        return *base == *theother.base && oself.attr("__class__") == oother.attr("__class__");
+        return *base == *theother.base &&
+                oself.attr("__class__") == oother.attr("__class__") &&
+                oself.attr("__dict__") == oother.attr("__dict__");
     }
 
     virtual std::string name() const override {
