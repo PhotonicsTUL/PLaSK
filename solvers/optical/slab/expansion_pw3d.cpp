@@ -263,13 +263,18 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 }
             }
             double a = abs(norm);
-            if (a > normlim) norm /= a;
-            else norm = vec(0., 0.);
+            if (a < normlim) {
+                // Nothing to average
+                //coeffs[l][nNl * it + il] = NR[Ml * (tbegin+tend)/2 + (lbegin+lend)/2];
+                coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
+            } else {
+                norm /= a;
+                auto& nr = coeffs[l][nNl * it + il];
 
-            // Average permittivity tensor according to:
-            // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
-            auto& N = coeffs[l][nNl * it + il];
-            N = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
+                // Average permittivity tensor according to:
+                // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
+                nr = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
+            }
         }
     }
 
@@ -347,15 +352,20 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, con
                        )
             .execute(reinterpret_cast<dcomplex*>(params.data()));
         RegularAxis lcmesh, tcmesh;
-//         if (symmetric) {
-//             double dx = 0.5 * (right-left) / nN;
-//             cmesh.reset(left + dx, right - dx, nN);
-//         } else {
+        if (symmetric_long) {
+            double dx = 0.5 * (front-back) / nNl;
+            lcmesh.reset(back+dx, front-dx, nNl);
+        } else {
             lcmesh.reset(back, front, nNl+1);
-            tcmesh.reset(left, right, nNt+1);
             for (size_t l = 0, last = nl*nNt; l != nNl; ++l) params[last+l] = params[l];
+        }
+        if (symmetric_tran) {
+            double dx = 0.5 * (right-left) / nNt;
+            tcmesh.reset(left+dx, right-dx, nNt);
+        } else {
+            tcmesh.reset(left, right, nNt+1);
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
-//         }
+        }
         RegularMesh3D src_mesh(lcmesh, tcmesh, RegularAxis(0,0,1));
         RectilinearMesh3D dst_mesh(lmesh, tmesh, RectilinearAxis({0}));
         result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry()), interp);

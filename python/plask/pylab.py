@@ -319,10 +319,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
 
 _geometry_plotters = {}
 
-def _add_path_Block(patches, trans, box, ax, mirror, color, width, zorder):
-    hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
-    vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
-
+def _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
     def add_path(bottom):
         lefts = []
         if hmirror:
@@ -349,11 +346,17 @@ def _add_path_Block(patches, trans, box, ax, mirror, color, width, zorder):
 _geometry_plotters[plask.geometry.Block2D] = _add_path_Block
 _geometry_plotters[plask.geometry.Block3D] = _add_path_Block
 
-def _add_path_Cylinder(patches, trans, box, ax, mirror, color, width, zorder):
+def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
     if ax != (0,1):
-        _add_path_Block(patches, trans, box, ax, mirror, color, width, zorder)
+        _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
     else:
-           patches.append(matplotlib.patches.Circle(trans.translation, trans.item.radius,
+        tr = trans.translation
+        vecs = [ tr ]
+        if hmirror: vecs.append(plask.vec(-tr[0], tr[1]))
+        if vmirror: vecs.append(plask.vec(tr[0], -tr[1]))
+        if hmirror and vmirror: vecs.append(plask.vec(-tr[0], -tr[1]))
+        for vec in vecs:
+            patches.append(matplotlib.patches.Circle(vec, trans.item.radius,
                                                     ec=color, lw=width, fill=False, zorder=zorder))
 _geometry_plotters[plask.geometry.Cylinder] = _add_path_Cylinder
 
@@ -377,15 +380,26 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
 
+    hmirror = mirror and (geometry.borders[dirs[0][0]] == 'mirror' or geometry.borders[dirs[0][1]] == 'mirror' or dirs[0][0] == "inner")
+    vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
+
     for trans,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
-        _geometry_plotters[type(trans.item)](patches, trans, box, ax, mirror, color, width, zorder)
+        _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
 
     for patch in patches:
         axes.add_patch(patch)
     if set_limits:
         box = geometry.bbox
-        axes.set_xlim(box.lower[ax[0]], box.upper[ax[0]])
-        axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
+        if hmirror:
+            m = max(abs(box.lower[ax[0]]), abs(box.upper[ax[0]]))
+            axes.set_xlim(-m, m)
+        else:
+            axes.set_xlim(box.lower[ax[0]], box.upper[ax[0]])
+        if vmirror:
+            m = max(abs(box.lower[ax[1]]), abs(box.upper[ax[1]]))
+            axes.set_ylim(-m, m)
+        else:
+            axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
 
     return patches
 
