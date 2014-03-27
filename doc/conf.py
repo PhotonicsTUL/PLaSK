@@ -107,6 +107,12 @@ pygments_style = 'sphinx'
 #modindex_common_prefix = []
 
 
+# -- Autodoc options -------------------------------------------------------
+
+autoclass_content = 'class'
+
+autodoc_docstring_signature = False
+
 # -- Autosummary options -------------------------------------------------------
 
 autosummary_generate = True
