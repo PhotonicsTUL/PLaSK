@@ -142,7 +142,10 @@ template <> struct Clip_constructor2<2> {
     }
     const static py::detail::keywords<5> args;
 };
-const py::detail::keywords<5> Clip_constructor2<2>::args = (py::arg("item"), py::arg("left"), py::arg("bottom"), py::arg("right"), py::arg("top"));
+const py::detail::keywords<5> Clip_constructor2<2>::args = (py::arg("item"),
+                                                            py::arg("left")=-INFINITY, py::arg("right")=INFINITY,
+                                                            py::arg("bottom")=-INFINITY, py::arg("top")=INFINITY
+                                                           );
 
 template <> struct Clip_constructor2<3> {
     static inline shared_ptr<Clip<3>> call(shared_ptr<GeometryObjectD<3>> object, double back, double left, double bottom, double front, double right, double top) {
@@ -150,9 +153,12 @@ template <> struct Clip_constructor2<3> {
     }
     const static py::detail::keywords<7> args;
 };
-const py::detail::keywords<7> Clip_constructor2<3>::args = (py::arg("item"), py::arg("back"), py::arg("left"), py::arg("bottom"), py::arg("front"), py::arg("right"), py::arg("top"));
+const py::detail::keywords<7> Clip_constructor2<3>::args = (py::arg("item"),
+                                                            py::arg("left")=-INFINITY, py::arg("right")=INFINITY,
+                                                            py::arg("back")=-INFINITY, py::arg("front")=INFINITY,
+                                                            py::arg("bottom")=-INFINITY, py::arg("top")=INFINITY);
 
-DECLARE_GEOMETRY_ELEMENT_23D(Clip, "Clip", "Transform that holds a clipped geometry object together with clipping box ("," version)")
+DECLARE_GEOMETRY_ELEMENT_23D(Clip, "Clip", "Transform that clips the held geometry object to the specified clip-box ("," version)")
 {
     GEOMETRY_ELEMENT_23D(Clip, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Clip_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("clip_box"))))
