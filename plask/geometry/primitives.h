@@ -671,6 +671,9 @@ struct Primitive<2> {
     /// NaNed 2d vector.
     static const DVec NAN_VEC;
 
+    /// infinit box
+    static const Box INF_BOX;
+
     enum Direction {
         DIRECTION_TRAN = 0,
         DIRECTION_VERT = 1
@@ -701,6 +704,9 @@ struct Primitive<3> {
 
     /// NaNed 3d vector.
     static const DVec NAN_VEC;
+
+    /// infinit box
+    static const Box INF_BOX;
 
     enum Direction {
         DIRECTION_LONG = 0,

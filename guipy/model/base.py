@@ -2,7 +2,7 @@
 
 from lxml import etree as ElementTree
 from utils.signal import Signal
-from info import Info
+from .info import Info
 import os
 from model.info import InfoSource
 from utils.xml import print_interior, XML_parser

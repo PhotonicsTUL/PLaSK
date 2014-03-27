@@ -39,10 +39,10 @@ struct Clip: public GeometryObjectTransform<dim> {
      * @param child child geometry object to clip
      * @param Clip Clip
      */
-    explicit Clip(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >(), const Box& clipBox = Box())
+    explicit Clip(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >(), const Box& clipBox = Primitive<dim>::INF_BOX)
         : GeometryObjectTransform<dim>(child), clipBox(clipBox) {}
 
-    explicit Clip(GeometryObjectD<dim>& child, const Box& clipBox = Box())
+    explicit Clip(GeometryObjectD<dim>& child, const Box& clipBox = Primitive<dim>::INF_BOX)
         : GeometryObjectTransform<dim>(child), clipBox(clipBox) {}
 
     virtual Box getBoundingBox() const override {

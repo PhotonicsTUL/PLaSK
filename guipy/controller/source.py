@@ -2,7 +2,6 @@ from PyQt4 import QtGui
 from qhighlighter.XML import XMLHighlighter
 from utils.gui import defaultFont
 from controller.base import Controller
-from rabbitvcs.util.log import changed
 
 class SourceEditController(Controller):
 

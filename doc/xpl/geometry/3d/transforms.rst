@@ -15,12 +15,12 @@ Transforms always contain a single geometry object (possibly container) as their
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
-   :attr required front: front edge of the clipping cuboid
-   :attr required back: back edge of the clipping cuboid
-   :attr required left: left edge of the clipping cuboid
-   :attr required right: right edge of the clipping cuboid
-   :attr required bottom: bottom edge of the clipping cuboid
-   :attr required top: top edge of the clipping cuboid
+   :attr back: back edge of the clipping cuboid (-INF by default)
+   :attr front: front edge of the clipping cuboid (+INF by default)
+   :attr left: left edge of the clipping cuboid (-INF by default)
+   :attr right: right edge of the clipping cuboid (+INF by default)
+   :attr bottom: bottom edge of the clipping cuboid (-INF by default)
+   :attr top: top edge of the clipping cuboid (+INF by default)
 
    .. xml:contents::
 

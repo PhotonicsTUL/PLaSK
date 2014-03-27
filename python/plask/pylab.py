@@ -403,4 +403,22 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
 
     return patches
 
+class GeometryGraphic(Artist):
 
+   def __init__(geometry, *arg, **kwargs):
+      super(GeometryGraphic, self).__init__(*arg, **kwargs)
+      self.geometry = geometry
+
+   @classmethod
+   def __draw_obj__(to_draw, renderer, transform, clip_box):
+      if isinstance(to_draw, plask.geometry.Block2D):
+         renderer.draw_path()
+      elif isinstance(to_draw, plask.geometry.GeometryObjectTransform):
+         pass
+      else:
+         for c in to_draw: GeometryGraphic.__draw_obj__(to_draw, renderer, transform, clip_box)
+
+   def draw(self, renderer):
+      if not self.get_visible():  return
+
+      renderer.draw_path(graphics_context, path, transform)

@@ -150,4 +150,6 @@ const Primitive<3>::DVec Primitive<3>::ZERO_VEC = Vec<3>(0.0, 0.0, 0.0);
 const Primitive<2>::DVec Primitive<2>::NAN_VEC = Vec<2>(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
 const Primitive<3>::DVec Primitive<3>::NAN_VEC = Vec<3>(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
 
+const Primitive<2>::Box Primitive<2>::INF_BOX = Box2D(- std::numeric_limits<double>::infinity(), - std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+const Primitive<3>::Box Primitive<3>::INF_BOX = Box3D(- std::numeric_limits<double>::infinity(), - std::numeric_limits<double>::infinity(), - std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 }

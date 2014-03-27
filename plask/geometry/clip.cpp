@@ -2,6 +2,8 @@
 
 #include "reader.h"
 
+#include <limits>
+
 namespace plask {
 
 template <int dim>
@@ -58,10 +60,10 @@ void Clip<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames&
 
 template <typename ClipType>
 inline static void setupClip2D3D(GeometryReader& reader, ClipType& clip) {
-    clip.clipBox.left() = reader.source.requireAttribute<double>("left");
-    clip.clipBox.right() = reader.source.requireAttribute<double>("right");
-    clip.clipBox.top() = reader.source.requireAttribute<double>("top");
-    clip.clipBox.bottom() = reader.source.requireAttribute<double>("bottom");
+    clip.clipBox.left() = reader.source.getAttribute<double>("left", - std::numeric_limits<double>::infinity());
+    clip.clipBox.right() = reader.source.getAttribute<double>("right", std::numeric_limits<double>::infinity());
+    clip.clipBox.top() = reader.source.getAttribute<double>("top", std::numeric_limits<double>::infinity());
+    clip.clipBox.bottom() = reader.source.getAttribute<double>("bottom", - std::numeric_limits<double>::infinity());
     clip.setChild(reader.readExactlyOneChild<typename ClipType::ChildType>());
 }
 
@@ -75,8 +77,8 @@ shared_ptr<GeometryObject> read_Clip2D(GeometryReader& reader) {
 shared_ptr<GeometryObject> read_Clip3D(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     shared_ptr< Clip<3> > clip(new Clip<3>());
-    clip->clipBox.back() = reader.source.requireAttribute<double>("back");
-    clip->clipBox.front() = reader.source.requireAttribute<double>("front");
+    clip->clipBox.back() = reader.source.getAttribute<double>("back", - std::numeric_limits<double>::infinity());
+    clip->clipBox.front() = reader.source.getAttribute<double>("front", std::numeric_limits<double>::infinity());
     setupClip2D3D(reader, *clip);
     return clip;
 }
