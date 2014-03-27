@@ -534,7 +534,7 @@ namespace detail {
         const std::string property_name;
         py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable> provider_class;
         RegisterProviderBase(const std::string& suffix="", const std::string& space="") :
-            property_name (type_name<typename ProviderT::PropertyTag>()),
+            property_name(type_name<typename ProviderT::PropertyTag>()),
             provider_class((property_name + "Provider" + suffix).c_str(), py::no_init) {
             py::class_<PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>,
                        py::bases<ProviderT>, boost::noncopyable>((property_name + "Provider" + suffix).c_str(),

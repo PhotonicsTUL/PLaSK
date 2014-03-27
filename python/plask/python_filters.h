@@ -160,12 +160,12 @@ namespace detail {
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
         filter_class((type_name<PropertyT>()+"Filter"+suffix).c_str(),
                      format(
-                         "%1%Filter%3%(geometry)     \n\n"
-                         "Data filter for %1% into %2% geometry.\n\n"
+                         "%1%Filter%4%(geometry)\n\n"
+                         "Data filter for %2% into %3% geometry.\n\n"
                          "Args:\n"
-                         "    geometry (geometry.%2%): Target geometry.\n\n"
+                         "    geometry (geometry.%3%): Target geometry.\n\n"
                          "See also:\n    :mod:`plask.filter` for details on filter usage.",
-                         std::string(PropertyT::NAME), spaceName<GeometryT>(), suffix).c_str(),
+                         type_name<PropertyT>(), std::string(PropertyT::NAME), spaceName<GeometryT>(), suffix).c_str(),
                      py::init<shared_ptr<GeometryT>>((py::arg("geometry")))
                     );
         filter_class
