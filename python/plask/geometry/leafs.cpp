@@ -78,8 +78,10 @@ void register_geometry_leafs()
     init_GeometryObjectLeaf<3>();
 
     py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> block2D("Rectangle",
-        "Rectangular block filled with one material.\n\n"
-        "Geometry object 2D.\n\n"
+        "Rectangular block filled with one material (2D geometry object).\n\n"
+        "Rectangle(width, height, material)\n"
+        "Rectangle(dims, material)\n\n"
+        "Create a rectangle.\n\n"
         "Args:\n"
         "    width (float): Rectangle width.\n"
         "    height (float): Rectangle height.\n"
@@ -98,8 +100,10 @@ void register_geometry_leafs()
     scope.attr("Block2D") = block2D;
 
     py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> block3D("Cuboid",
-        "Cuboidal block filled with one material.\n\n"
-        "Geometry object 3D.\n\n"
+        "Cuboidal block filled with one material (3D geometry object).\n\n"
+        "Cuboid(depth, width, height, material)\n"
+        "Cuboid(dims, material)\n\n"
+        "Create a cuboid.\n\n"
         "Args:\n"
         "    depth (float): Cuboid depth.\n"
         "    width (float): Cuboid width.\n"
@@ -120,8 +124,9 @@ void register_geometry_leafs()
     scope.attr("Block3D") = block3D;
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
-        "Vertical cylinder filled with one material.\n\n"
-        "Geometry object 3D.\n\n"
+        "Vertical cylinder filled with one material (3D geometry object).\n\n"
+        "Cylinder(radius, height, material)\n\n"
+        "Create a cylinder.\n\n"
         "Args:\n"
         "    radius (float): Cylinder radius.\n"
         "    height (float): Cylinder height.\n"

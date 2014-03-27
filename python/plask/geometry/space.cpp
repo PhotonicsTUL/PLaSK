@@ -381,7 +381,7 @@ void register_calculation_spaces() {
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
         "Geometry in 2D Cartesian space.\n\n"
         "Cartesian2D(root, length=infty, **borders)\n\n"
-        "Create a space around the two-dimensional geometry object with given length.\n\n"
+        "Create a space around a two-dimensional geometry object with a given length.\n\n"
         "Args:\n"
         "    root (GeometryObject2D Extrusion): Root object of the geometry.\n"
         "        If this parameters is an extrusion, the `length` should be skipped,\n"
@@ -587,7 +587,7 @@ void register_calculation_spaces() {
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
         "Geometry in 2D cylindrical space\n\n"
         "Cylindrical2D(root, **borders)\n"
-        "Create a cylindrical space around the two-dimensional geometry object.\n\n"
+        "Create a cylindrical space around a two-dimensional geometry object.\n\n"
         "Args:\n"
         "    root (GeometryObject2D or Revolution): Root object of the geometry.\n"
         "    borders (dict): Optional borders specification.\n"
@@ -783,7 +783,7 @@ void register_calculation_spaces() {
     py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
         "Geometry in 3D space\n\n"
         "Cartesian3D(geometry, **borders)\n"
-        "    Create a space around the two-dimensional geometry object.\n\n"
+        "    Create a space around a two-dimensional geometry object.\n\n"
         "Args:\n"
         "    root (GeometryObject3D): Root object of the geometry.\n"
         "    borders (dict): Optional borders specification.\n"
