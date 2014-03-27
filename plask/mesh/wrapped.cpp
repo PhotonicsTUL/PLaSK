@@ -2,6 +2,15 @@
 
 namespace plask {
 
+template <>
+WrappedMesh<2>::WrappedMesh(const MeshD<2>& original, const shared_ptr<const GeometryD<2>>& geometry):
+        original(original), geometry(geometry), ignore_symmetry{false, false} {}
+
+template <>
+WrappedMesh<3>::WrappedMesh(const MeshD<3>& original, const shared_ptr<const GeometryD<3>>& geometry):
+        original(original), geometry(geometry), ignore_symmetry{false, false, false} {}
+
+
 template <int dim>
 std::size_t WrappedMesh<dim>::size() const {
     return original.size();
@@ -17,7 +26,7 @@ Vec<dim> WrappedMesh<dim>::at(std::size_t index) const {
            double l = box.lower[i], h = box.upper[i];
            double d = h - l;
            if (geometry->isSymmetric(dir)) {
-                if (ignore_symmetry) {
+                if (ignore_symmetry[i]) {
                     pos[i] = std::fmod(pos[i], 2*d);
                     if (pos[i] > d) pos[i] = -2*d + pos[i];
                     else if (pos[i] < -d) pos[i] = 2*d + pos[i];
@@ -30,7 +39,7 @@ Vec<dim> WrappedMesh<dim>::at(std::size_t index) const {
                pos[i] += (pos[i] >= 0)? l : h;
            }
        } else {
-           if (geometry->isSymmetric(dir) && !ignore_symmetry) pos[i] = abs(pos[i]);
+           if (geometry->isSymmetric(dir) && !ignore_symmetry[i]) pos[i] = abs(pos[i]);
         }
     }
     return pos;

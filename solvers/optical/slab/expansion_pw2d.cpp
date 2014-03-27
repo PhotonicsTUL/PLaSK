@@ -277,7 +277,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
         }
         RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));
         RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
-        result = interpolate(src_mesh, params, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry()), interp);
+        const bool ignore_symmetry[2] = { !symmetric, false };
+        result = interpolate(src_mesh, params, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
     }
     for (Tensor3<dcomplex>& eps: result) {
         eps.c22 = 1. / eps.c22;
@@ -577,7 +578,8 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
             fft.execute(reinterpret_cast<dcomplex*>(field.data()));
             field[N] = field[0];
             RegularMesh2D src_mesh(RegularAxis(left, right, field.size()), RegularAxis(vpos, vpos, 1));
-            auto result = interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), true),
+            const bool ignore_symmetry[2] = { true, false };
+            auto result = interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
                                       defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
             dcomplex ikx = I * kx;
             for (size_t i = 0; i != dest_mesh.size(); ++i)

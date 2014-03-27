@@ -46,7 +46,7 @@ void ExpansionPW3D::init()
             std::swap(back, front);
         }
         if (back != 0) throw BadMesh(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
-        if (!symmetric_long) back = -back;
+        if (!symmetric_long) back = -front;
     }
     if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
         if (right <= 0) {
@@ -368,7 +368,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, con
         }
         RegularMesh3D src_mesh(lcmesh, tcmesh, RegularAxis(0,0,1));
         RectilinearMesh3D dst_mesh(lmesh, tmesh, RectilinearAxis({0}));
-        result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry()), interp);
+        const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
+        result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
 //     }
 //     for (Tensor3<dcomplex>& eps: result) {
 //         eps.c22 = 1. / eps.c22;
