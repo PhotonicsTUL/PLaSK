@@ -18,6 +18,7 @@ Below there follows the documentation of Matplotlib pylab:
 import matplotlib.colors
 import matplotlib.lines
 import matplotlib.patches
+import matplotlib.artist.Artist
 
 import matplotlib.pylab
 from matplotlib.pylab import *
@@ -403,7 +404,7 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
 
     return patches
 
-class GeometryGraphic(Artist):
+class GeometryGraphic(matplotlib.artist.Artist):
 
    def __init__(geometry, *arg, **kwargs):
       super(GeometryGraphic, self).__init__(*arg, **kwargs)
@@ -412,7 +413,26 @@ class GeometryGraphic(Artist):
    @classmethod
    def __draw_obj__(to_draw, renderer, transform, clip_box):
       if isinstance(to_draw, plask.geometry.Block2D):
-         renderer.draw_path()
+         path = matplotlib.patches.Path(
+            [
+                (0., 0.), # left, bottom
+                (0., to_draw.height), # left, top
+                (to_draw.width, to_draw.height), # right, top
+                (to_draw.width, 0.), # right, bottom
+                (0., 0.), # ignored
+            ],
+            [
+                matplotlib.patches.Path.MOVETO,
+                matplotlib.patches.Path.LINETO,
+                matplotlib.patches.Path.LINETO,
+                matplotlib.patches.Path.LINETO,
+                matplotlib.patches.Path.CLOSEPOLY,
+            ]
+         )
+         gc = renderer.new_gc()
+         if clip_box != None: path.clip_to_bbox(clip_box)
+         # moze gc.set_clip_rectangle
+         renderer.draw_path(gc, path, transform)
       elif isinstance(to_draw, plask.geometry.GeometryObjectTransform):
          pass
       else:
