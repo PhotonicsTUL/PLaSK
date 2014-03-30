@@ -48,7 +48,8 @@ void SlabSolver<GeometryT>::setupLayers()
     struct LayerItem {
         shared_ptr<Material> material;
         std::set<std::string> roles;
-        bool operator!=(const LayerItem& other) { return *material != *other.material || roles != other.roles; }
+        bool operator==(const LayerItem& other) { return *this->material == *other.material && this->roles == other.roles; }
+        bool operator!=(const LayerItem& other) { return !(*this == other); }
     };
 
     std::vector<std::vector<LayerItem>> layers;
