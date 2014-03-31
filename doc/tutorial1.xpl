@@ -74,7 +74,7 @@ curry = [ abs(j.y) for j in current ]
 
 figure()
 plot(junction_mesh.axis0, curry)
-xlabel("$x$ [um]")
+xlabel(u"$x$ [\xb5m]")
 ylabel("current density [kA/cm$^2$]")
 
 show()

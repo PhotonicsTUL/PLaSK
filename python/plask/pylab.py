@@ -18,7 +18,7 @@ Below there follows the documentation of Matplotlib pylab:
 import matplotlib.colors
 import matplotlib.lines
 import matplotlib.patches
-import matplotlib.artist.Artist
+import matplotlib.artist
 
 import matplotlib.pylab
 from matplotlib.pylab import *
@@ -147,7 +147,19 @@ if True:
 
 import plask
 
-def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor=1.0, **kwargs):
+
+def _get_2d_axes(plane):
+    if plane is None:
+        raise ValueError("Must specify plane for 3D projection")
+    axes = tuple(int(a) if a in ('0', '1', '2') else 'ltv'.find(a) if a in 'ltv' else plask.config.axes.find(a) for a in plane)
+    if -1 in axes:
+        raise ValueError("Wrong plane '%s'" % plane)
+    if axes[0] == axes[1]:
+        raise ValueError("Repeated axis in plane '%s'" % plane)
+    return axes
+
+
+def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, factor=1.0, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
 
@@ -157,8 +169,9 @@ def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor
         comp = plask.config.axes.index(comp)
 
     if type(field.mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
-        axis0 = field.mesh.axis0
-        axis1 = field.mesh.axis1
+        ax = 0, 1
+        xaxis = field.mesh.axis0
+        yaxis = field.mesh.axis1
         if len(data.shape) == 3:
             if comp is None:
                 raise TypeError("specify vector component to plot")
@@ -166,16 +179,17 @@ def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor
                 data = data[:,:,comp]
         data = data.transpose()
     elif type(field.mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
-        axes = [ axis for axis in (field.mesh.axis0, field.mesh.axis1, field.mesh.axis2) if len(axis) > 1 ]
-        if len(axes) != 2:
-            raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
-        axis0, axis1 = axes
+        ax = _get_2d_axes(plane)
+        xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:
             if comp is None:
                 raise TypeError("specify vector component to plot")
             else:
                 data = data[:,:,:,comp]
-        data = data.reshape((len(axis0), len(axis1))).transpose()
+        if ax[0] < ax[1]:
+            data = data.reshape((len(xaxis), len(yaxis))).transpose()
+        else:
+            data = data.reshape((len(yaxis), len(xaxis)))
     else:
         raise NotImplementedError("mesh type not supported")
 
@@ -184,37 +198,52 @@ def plot_field(field, levels=16, fill=True, antialiased=False, comp=None, factor
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
     if fill:
-        result = contourf(axis0, axis1, data*factor, levels, antialiased=antialiased, **kwargs)
+        result = contourf(xaxis, yaxis, data*factor, levels, antialiased=antialiased, **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
-            result = contour(axis0, axis1, data, levels, colors='k', antialiased=antialiased, **kwargs)
+            result = contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)
         else:
-            result = contour(axis0, axis1, data, levels, antialiased=antialiased, **kwargs)
+            result = contour(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
+
+    axes = matplotlib.pylab.gca()
+    if ax[0] > ax[1] and not axes.yaxis_inverted():
+        axes.invert_yaxis()
+    xlabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ax[0]])
+    ylabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ax[1]])
+
     return result
 
 
-def plot_vectors(field, angles='xy', scale_units='xy', **kwargs):
+def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
     '''Plot vector field'''
     #TODO documentation
 
     m = field.mesh
 
     if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
-        axis0, axis1 = m.axis0, m.axis1
+        ix, iy = 0, 1
+        xaxis, yaxis = m.axis0, m.axis1
         data = field.array.transpose((1,0,2))
     elif type(m) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
-        iaxes = [ iaxis for iaxis in enumerate([m.axis0, m.axis1, m.axis2]) if len(iaxis[1]) > 1 ]
-        if len(axes) != 2:
-            raise TypeError("'plot_field' only accepts 3D mesh with exactly one axis of size 1")
-        (i0, axis0), (i1, axis1) = iaxes
-        data = field.array.reshape((len(axis0), len(axis1), field.array.shape[-1]))[:,:,[i0,i1]].transpose((1,0,2,3))
+        ix, iy = _get_2d_axes(plane)
+        xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
+        if ix < iy:
+            data = field.array.reshape((len(xaxis), len(yaxis), field.array.shape[-1]))[:,:,[ix,iy]].transpose((1,0,2))
+        else:
+            data = field.array.reshape((len(yaxis), len(xaxis), field.array.shape[-1]))[:,:,[ix,iy]]
     else:
         raise NotImplementedError("mesh type not supported")
 
-    return quiver(array(axis0), array(axis1), data[:,:,0].real, data[:,:,1].real, angles=angles, scale_units=scale_units, **kwargs)
+    axes = matplotlib.pylab.gca()
+    if ix > iy and not axes.yaxis_inverted():
+        axes.invert_yaxis()
+    xlabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ix])
+    ylabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+iy])
+
+    return quiver(array(xaxis), array(yaxis), data[:,:,0].real, data[:,:,1].real, angles=angles, scale_units=scale_units, **kwargs)
 
 
-def plot_stream(field, scale=8.0, color='k', **kwargs):
+def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
     '''Plot vector field as a streamlines'''
     #TODO documentation
 
@@ -224,26 +253,34 @@ def plot_stream(field, scale=8.0, color='k', **kwargs):
         raise TypeError("plot_stream can be only used for data obtained for regular mesh")
 
     if type(m) == plask.mesh.Regular2D:
-        axis0, axis1 = m.axis0, m.axis1
-        i0, i1 = -2, -1
+        xaxis, yaxis = m.axis0, m.axis1
+        ix, iy = -2, -1
         data = field.array.transpose((1,0,2))
     elif type(m) == plask.mesh.Regular3D:
-        iaxes = [ iaxis for iaxis in enumerate([m.axis0, m.axis1, m.axis2]) if len(iaxis[1]) > 1 ]
-        if len(axes) != 2:
-            raise TypeError("'plot_stream' only accepts 3D mesh with exactly one axis of size 1")
-        (i0, axis0), (i1, axis1) = iaxes
-        data = field.array.reshape((len(axis0), len(axis1), field.array.shape[-1]))[:,:,[i0,i1]].transpose((1,0,2))
+        ix, iy = _get_2d_axes(plane)
+        xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
+        if ix < iy:
+            data = field.array.reshape((len(xaxis), len(yaxis), field.array.shape[-1]))[:,:,[ix,iy]].transpose((1,0,2))
+        else:
+            data = field.array.reshape((len(yaxis), len(xaxis), field.array.shape[-1]))[:,:,[ix,iy]]
     else:
         raise NotImplementedError("mesh type not supported")
 
     if 'linewidth' in kwargs: scale = None
 
-    m0, m1 = meshgrid(array(axis0), array(axis1))
+    m0, m1 = meshgrid(array(xaxis), array(yaxis))
     if scale or color == 'norm':
         norm = sum(data**2, 2)
         norm /= norm.max()
     if color == 'norm':
         color = norm
+
+    axes = matplotlib.pylab.gca()
+    if ix > iy and not axes.yaxis_inverted():
+        axes.invert_yaxis()
+    xlabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ix])
+    ylabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+iy])
+
     if scale:
         return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, linewidth=scale*norm, color=color, **kwargs)
     else:
@@ -257,11 +294,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
     if cmap is not None: c = []
     else: c = color
     if isinstance(mesh, plask.mesh.Mesh3D):
-        if plane is None:
-            raise ValueError("for 3D mesh plane must be specified")
-        ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
-        if len(ax) != 2:
-            raise ValueError("bad plane specified")
+        ax = _get_2d_axes(plane)
     else:
         ax = (0,1)
     x = []
@@ -273,6 +306,13 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
             y.append(mesh[i][ax[1]])
         if cmap is not None:
             c.extend(len(points) * [value])
+
+    axes = matplotlib.pylab.gca()
+    if ax[0] > ax[1] and not axes.yaxis_inverted():
+        axes.invert_yaxis()
+    xlabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+ax[0]])
+    ylabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+ax[1]])
+
     return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
 
 
@@ -286,6 +326,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
     lines = []
 
     if type(mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+        ix, iy = 0, 1
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
         for x in mesh.axis0:
             lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=width, zorder=zorder))
@@ -294,11 +335,8 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
 
     elif type(mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
-        if plane is None:
-            raise ValueError("for 3D mesh plane must be specified")
-        axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i,c in enumerate(plask.config.axes) if c in plane)
-        if len(axis) != 2:
-            raise ValueError("bad plane specified")
+        ix, iy = _get_2d_axes(plane)
+        axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i in (ix,iy))
 
         y_min = axis[1][0]; y_max = axis[1][-1]
         for x in axis[0]:
@@ -313,6 +351,12 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
     if set_limits:
         axes.set_xlim(x_min, x_max)
         axes.set_ylim(y_min, y_max)
+
+    if ix > iy and not axes.yaxis_inverted():
+        axes.invert_yaxis()
+    xlabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+ix])
+    ylabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+iy])
+
 
     return lines
 
@@ -348,17 +392,18 @@ _geometry_plotters[plask.geometry.Block2D] = _add_path_Block
 _geometry_plotters[plask.geometry.Block3D] = _add_path_Block
 
 def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
-    if ax != (0,1):
+    if ax != (0,1) and ax != (1,0):
         _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
     else:
         tr = trans.translation
+        if ax == (1,0): tr = plask.vec(tr[1], tr[0])
         vecs = [ tr ]
         if hmirror: vecs.append(plask.vec(-tr[0], tr[1]))
         if vmirror: vecs.append(plask.vec(tr[0], -tr[1]))
         if hmirror and vmirror: vecs.append(plask.vec(-tr[0], -tr[1]))
         for vec in vecs:
             patches.append(matplotlib.patches.Circle(vec, trans.item.radius,
-                                                    ec=color, lw=width, fill=False, zorder=zorder))
+                                                     ec=color, lw=width, fill=False, zorder=zorder))
 _geometry_plotters[plask.geometry.Cylinder] = _add_path_Cylinder
 
 
@@ -370,13 +415,11 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
     patches = []
 
     if type(geometry) == plask.geometry.Cartesian3D:
-        if plane is None:
-            raise ValueError("for 3D geometry plane must be specified")
-        ax = tuple(i for i,c in enumerate(plask.config.axes) if c in plane)
-        if len(ax) != 2:
-            raise ValueError("bad plane specified")
+        dd = 0
+        ax = _get_2d_axes(plane)
         dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
     else:
+        dd = 1
         ax = (0,1)
         dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
                 ("top", "bottom"))
@@ -402,7 +445,13 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
         else:
             axes.set_ylim(box.lower[ax[1]], box.upper[ax[1]])
 
+    if ax[0] > ax[1] and not axes.yaxis_inverted():
+        axes.invert_yaxis()
+    xlabel(u"$%s$ [µm]" % plask.config.axes[dd+ax[0]])
+    ylabel(u"$%s$ [µm]" % plask.config.axes[dd+ax[1]])
+
     return patches
+
 
 class GeometryGraphic(matplotlib.artist.Artist):
 

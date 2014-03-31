@@ -364,10 +364,10 @@ The above line means: make list consisting of absolute values of ``j.y``, where 
 
     figure()
     plot(junction_mesh.axis0, curry)
-    xlabel("$x [um]")
+    xlabel(u"$x$ [\xb5m]")
     ylabel("current density [kA/cm$^2$]")
 
-junction.axis0 gives the list of points in the horizontal axis of the two-dimensional mesh i.e. axis *x*. The last two lines add labels to the plot axes (see, you can use basic LaTeX in the labels).
+junction.axis0 gives the list of points in the horizontal axis of the two-dimensional mesh i.e. axis *x*. The last two lines add labels to the plot axes (see, you can use both basic LaTeX and Unicode codes for special characters: ``\xb5`` means ‘µ’).
 
 Ensure that the commands to create the last figure are before ``show()``. Save your file (for your reference :ref:`the whole script is shown in listing <lis-Listing-of-tutorial1-script>`) and run it wih PLaSK. You should see three figures now. Zoom them to your liking and save the images, successfully finishing this tutorial.
 
@@ -400,7 +400,7 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
         curry = [ abs(j.y) for j in current ]
         figure()
         plot(junction_mesh.axis0, curry)
-        xlabel("$x [um]")
+        xlabel(u"$x$ [\xb5m]")
         ylabel("current density [kA/cm$^2$]")
 
         show()

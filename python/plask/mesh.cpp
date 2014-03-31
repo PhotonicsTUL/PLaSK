@@ -29,20 +29,26 @@ void register_mesh()
         .def("__len__", &Mesh::size)
     ;
 
-    py::class_<MeshD<1>, shared_ptr<MeshD<1>>, py::bases<Mesh>, boost::noncopyable>("Mesh1D",
-        "Base class for every one-dimensional transverse mesh in two-dimensional geometry", py::no_init)
+    py::class_<MeshD<1>, shared_ptr<MeshD<1>>, py::bases<Mesh>, boost::noncopyable> mesh1d("Mesh1D",
+        "Base class for every one-dimensional transverse mesh in two-dimensional geometry", py::no_init); mesh1d
         .def("__iter__", py::range(&MeshD<1>::begin, &MeshD<1>::end))
     ;
+    mesh1d.attr("dim") = 1;
 
-    py::class_<MeshD<2>, shared_ptr<MeshD<2>>, py::bases<Mesh>, boost::noncopyable>("Mesh2D", "Base class for every two-dimensional mesh", py::no_init)
+    py::class_<MeshD<2>, shared_ptr<MeshD<2>>, py::bases<Mesh>, boost::noncopyable> mesh2d("Mesh2D",
+        "Base class for every two-dimensional mesh", py::no_init); mesh2d
         .def("__iter__", py::range(&MeshD<2>::begin, &MeshD<2>::end))
     ;
+    mesh2d.attr("dim") = 2;
 
-    py::class_<MeshD<3>, shared_ptr<MeshD<3>>, py::bases<Mesh>, boost::noncopyable>("Mesh3D", "Base class for every two-dimensional mesh", py::no_init)
+    py::class_<MeshD<3>, shared_ptr<MeshD<3>>, py::bases<Mesh>, boost::noncopyable> mesh3d("Mesh3D",
+        "Base class for every two-dimensional mesh", py::no_init); mesh3d
         .def("__iter__", py::range(&MeshD<3>::begin, &MeshD<3>::end))
     ;
+    mesh3d.attr("dim") = 3;
 
-    py::class_<MeshGenerator, shared_ptr<MeshGenerator>, boost::noncopyable>("MeshGenerator", "Base class for all mesh generators", py::no_init)
+    py::class_<MeshGenerator, shared_ptr<MeshGenerator>, boost::noncopyable>("MeshGenerator",
+        "Base class for all mesh generators", py::no_init)
     ;
 
     register_mesh_rectangular();
