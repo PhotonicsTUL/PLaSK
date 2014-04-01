@@ -140,8 +140,6 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
 
-    DataVector<Tensor3<dcomplex>> NR(M);
-
     RectilinearMesh2D mesh(xmesh, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
 
     double lambda = real(SOLVER->getWavelength());
@@ -155,55 +153,54 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         have_gain = true;
     }
 
+    double factor = 1. / refine;
     double maty = axis1[0]; // at each point along any vertical axis material is the same
-    for (size_t i = 0; i < M; ++i) {
-        auto material = geometry->getMaterial(vec(xmesh[i],maty));
-        // assert([&]()->bool{for(auto y: axis1)if(geometry->getMaterial(vec(xmesh[i],y))!=material)return false; return true;}());
-        double T = 0.; // average temperature in all vertical points
-        for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) T += temperature[j];
-        T /= axis1.size();
-        NR[i] = material->NR(lambda, T);
-        if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
-            if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-            if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
-        }
-        if (have_gain) {
-            auto roles = geometry->getRolesAt(vec(xmesh[i],maty));
-            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                double g = 0.; // average gain in all vertical points
-                for (size_t j = i * axis1.size(), end = (i+1) * axis1.size(); j != end; ++j) g += gain[j];
-                double ni = lambda * g/axis1.size() * 7.95774715459e-09;
-                NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);
-            }
-        }
-    }
-
-    for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR
-
-    // Add PMLs
+    double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
+    Tensor3<dcomplex> refl, refr;
     if (!periodic) {
-        Tensor3<dcomplex> ref;
-        double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-        ref = NR[pil];
-        for (size_t i = 0; i < pil; ++i) {
-            double h = (pl - xmesh[i]) / SOLVER->pml.size;
-            dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-            NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
-        }
-        ref = NR[min(pir,xmesh.size()-1)];
-        for (size_t i = pir+1; i < xmesh.size(); ++i) {
-            double h = (xmesh[i] - pr) / SOLVER->pml.size;
-            dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-            NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
-        }
+        double Tl = 0.; for (size_t v = pil * axis1.size(), end = (pil+1) * axis1.size(); v != end; ++v) Tl += temperature[v]; Tl /= axis1.size();
+        double Tr = 0.; for (size_t v = pir * axis1.size(), end = (pir+1) * axis1.size(); v != end; ++v) Tr += temperature[v]; Tr /= axis1.size();
+        refl = geometry->getMaterial(vec(pl,maty))->NR(lambda, Tl).sqr();
+        refr = geometry->getMaterial(vec(pr,maty))->NR(lambda, Tr).sqr();
     }
 
     // Average material parameters
     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
-    double factor = 1. / refine;
+
     for (size_t i = 0; i != nN; ++i) {
-        for (size_t j = refine*i, end = refine*(i+1); j != end; ++j)
-            coeffs[l][i] += Tensor3<dcomplex>(NR[j].c00, 1./NR[j].c11, NR[j].c22, NR[j].c01, NR[j].c10);
+        for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
+            auto material = geometry->getMaterial(vec(xmesh[j],maty));
+            double T = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) T += temperature[v]; T /= axis1.size();
+            Tensor3<dcomplex> nr = material->NR(lambda, T);
+            if (nr.c10 != 0. || nr.c01 != 0.) {
+                if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+                if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+            }
+            if (have_gain) {
+                auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
+                if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                    double g = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) g += gain[v];
+                    double ni = lambda * g/axis1.size() * 7.95774715459e-09;
+                    nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.); nr.c10.imag(0.);
+                }
+            }
+            nr.sqr_inplace();
+
+            // Add PMLs
+            if (!periodic) {
+                if (j < pil) {
+                    double h = (pl - xmesh[j]) / SOLVER->pml.size;
+                    dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
+                    nr = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
+                } else if (j > pir) {
+                    double h = (xmesh[j] - pr) / SOLVER->pml.size;
+                    dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
+                    nr = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
+                }
+            }
+
+            coeffs[l][i] += Tensor3<dcomplex>(nr.c00, 1./nr.c11, nr.c22, nr.c01, nr.c10);
+        }
         coeffs[l][i] *= factor;
         coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
         coeffs[l][i].c22 = 1. / coeffs[l][i].c22; // We need inverse of c22 (yy)

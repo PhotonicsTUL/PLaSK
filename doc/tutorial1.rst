@@ -412,5 +412,5 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
 .. [#GEO.name] For your convenience it can be also accessed as ``GEO.main``.
 .. [#plot_field-limit] Actually ``plot_field`` sets the axes limit to the area covered by the mesh on which the field was computed. However, in this case it just covers the whole structure.
 .. [#show] ``show()`` will probably not work if you run PLaSK remotely or using any batch system. In such case, you should replace it with ``savefig("filename")`` in order to save the figure directly to disk. However, you should also adjust the plot ranges in advance: ``xlim(0, 150); ylim(0, 305)``
-.. [#mesh-is-module] Specifically, mesh is a Python module and :class:`Rectilinear2D <plask.mesh.Rectilinear2D>` a class defined inside of this module.
+.. [#mesh-is-module] Specifically, :mod:`mesh` is a Python module and :class:`~plask.mesh.Rectilinear2D` a class defined inside of this module.
 
