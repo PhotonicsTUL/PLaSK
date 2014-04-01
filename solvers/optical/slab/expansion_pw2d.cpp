@@ -78,26 +78,24 @@ void ExpansionPW2D::init()
     if (periodic) {
         mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
     } else {
-        DataVector<dcomplex> Sy(M, 1.);   // PML coeffs for mu
         // Add PMLs
         SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
         if (symmetric) pil = 0;
         else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
-        for (size_t i = 0; i < pil; ++i) {
-            double h = (pl - xmesh[i]) / SOLVER->pml.size;
-            Sy[i] = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
-        }
-        for (size_t i = pir+1; i < xmesh.size(); ++i) {
-            double h = (xmesh[i] - pr) / SOLVER->pml.size;
-            Sy[i] = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
-        }
-        // Average mu
         std::fill(mag.begin(), mag.end(), Tensor2<dcomplex>(0.));
         for (size_t i = 0; i != nN; ++i) {
             for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-                mag[i] += Tensor2<dcomplex>(Sy[j], 1./Sy[j]);
+                dcomplex sy = 1.;
+                if (j < pil) {
+                    double h = (pl - xmesh[j]) / SOLVER->pml.size;
+                    sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
+                } else if (j > pir) {
+                    double h = (xmesh[j] - pr) / SOLVER->pml.size;
+                    sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
+                }
+                mag[i] += Tensor2<dcomplex>(sy, 1./sy);
             }
             mag[i] /= refine;
         }

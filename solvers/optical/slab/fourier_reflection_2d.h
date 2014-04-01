@@ -145,7 +145,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * Get mesh at which material parameters are sampled
      */
     RegularAxis getXmesh() const { return expansion.xmesh; }
-    
+
   private:
 
     /**
@@ -293,7 +293,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
         return modes.size()-1;
     }
 
-    size_t nummodes() const { return outNeff.size(); }
+    size_t nummodes() const { return modes.size(); }
 
     /**
      * Return mode effective index
