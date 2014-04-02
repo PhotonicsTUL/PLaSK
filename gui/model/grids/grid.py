@@ -1,8 +1,9 @@
 # Base classes for entries in grids model
 from lxml import etree as ElementTree
-from model.info import InfoSource
-from utils.xml import print_interior, XML_parser
 from xml.sax.saxutils import quoteattr
+
+from ..info import InfoSource
+from ...utils.xml import print_interior, XML_parser
 
 class Grid(InfoSource): # or (TreeFragmentModel)??
     """Base class for models of grids (meshes or generators)"""
@@ -13,29 +14,29 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
             return ElementTree.Element("generator", { "name": name, "type": type, "method": method })
         else:
             return ElementTree.Element("mesh", { "name": name, "type": type })
-    
+
     def __init__(self, grids_model, name = None, type = None, method = None):
         object.__init__(self)
         self.model = grids_model
         if name != None: self.name = name
         if type != None: self.type = type
         if method != None: self.__method__ = method
-       
+
     def get_XML_element(self):
         return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
-        
+
     @property
     def method(self):
         return getattr(self, '__method__', None)
-        
+
     @property
     def is_generator(self):
         return self.method != None
-    
+
     @property
     def is_mesh(self):
         return self.method == None
-        
+
     def set_text(self, text):
         if self.is_generator:
             tab = ['<generator name=', quoteattr(self.name), ' type=', quoteattr(self.type), ' method=', quoteattr(self.method), '>', text.encode('utf-8'), '</generator>' ]
@@ -43,21 +44,21 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
             tab = ['<mesh name=', quoteattr(self.name), ' type=', quoteattr(self.type), '>', text.encode('utf-8'), '</mesh>' ]
         #print ''.join(tab)
         self.set_XML_element(ElementTree.fromstringlist(tab, parser = XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
-        
+
     @property
     def type_and_kind_str(self):
         if self.is_generator:
             return "%s generator (%s)" % (self.type, self.method)
         else:
             return "%s mesh" % self.type
-        
+
     def is_read_only(self):
         return self.model.is_read_only()
-    
+
     def get_controller(self):
         from controller.source import SourceEditController
         return SourceEditController(model = self)
-        
+
 #class Generator(Grid):
 #    """Base class for models of generators"""
 
@@ -86,22 +87,22 @@ class GridTreeBased(Grid):
 
     def get_XML_element(self):
         return self.element
-  
+
     def get_text(self):
         return print_interior(self.get_XML_element())
 
     @property
     def method(self):
         return self.element.attrib.get('method', None)
-    
+
     @property
     def name(self):
         return self.element.attrib.get('name', '')
-    
+
     @name.setter
     def name(self, v):
         self.element.attrib['name'] = v
-        
+
     @property
     def type(self):
-        return self.element.attrib.get('type', '')  
+        return self.element.attrib.get('type', '')

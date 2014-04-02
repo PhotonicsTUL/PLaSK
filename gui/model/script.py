@@ -1,5 +1,6 @@
-from model.base import SectionModel
 from lxml import etree as ElementTree
+
+from .base import SectionModel
 
 class ScriptModel(SectionModel):
 
@@ -15,7 +16,7 @@ class ScriptModel(SectionModel):
         res = ElementTree.Element(self.name)
         res.text = ElementTree.CDATA(self.code)
         return res
-    
+
     def get_text(self):
         return self.code
 

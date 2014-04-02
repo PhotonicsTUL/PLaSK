@@ -1,5 +1,5 @@
-from model.grids.grid import GridTreeBased
-from model.grids.mesh_rectilinear import RectilinearMesh
+from .grid import GridTreeBased
+from .mesh_rectilinear import RectilinearMesh
 
 MESHES_TYPES = {
     'rectilinear1d': RectilinearMesh.from_XML,
@@ -8,7 +8,7 @@ MESHES_TYPES = {
     'regular1d': GridTreeBased.from_XML,
     'regular2d': GridTreeBased.from_XML,
     'regular3d': GridTreeBased.from_XML,
-} 
+}
 
 GENERATORS_TYPES = {
     'rectilinear1d': {
@@ -22,33 +22,33 @@ GENERATORS_TYPES = {
     'rectilinear3d': {
             'divide': GridTreeBased.from_XML,
             'simple': GridTreeBased.from_XML,
-    },    
+    },
 }
 
 def contruct_mesh(grids_model, element):
     t = MESHES_TYPES.get(element.attrib['type'], None)
-    return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element) 
+    return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element)
 
 def contruct_generator(grids_model, element):
     t = GENERATORS_TYPES.get(element.attrib['type'], None)
     if t: t = t.get(element.attrib['method'], None)
-    return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element) 
+    return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element)
 
 
 def construct_grid(grids_model, element):
-    
+
     if element.tag == "mesh":
         k = element.attrib.keys()
         k.sort()
         if k != ['name', 'type']: raise ValueError('<mesh> tag must have two attributes (name and type), but has: %s' % ', '.join(k))
         return contruct_mesh(grids_model, element)
-    
+
     if element.tag == "generator":
         k = element.attrib.keys()
         k.sort()
         if k != ['method', 'name', 'type']: raise ValueError('<generator> tag must have attributes "method", "name" and "type", but has: %s' % ', '.join(k))
         return contruct_generator(grids_model, element)
-    
+
     raise ValueError('In <grids> section only <mesh> and <generator> tags are allowed, but got "%s".' % element.tag)
 
 def meshes_types():

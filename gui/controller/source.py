@@ -1,7 +1,8 @@
 from PyQt4 import QtGui
-from qhighlighter.XML import XMLHighlighter
-from utils.gui import defaultFont
-from controller.base import Controller
+
+from ..qhighlighter.XML import XMLHighlighter
+from ..utils.gui import defaultFont
+from .base import Controller
 
 class SourceEditController(Controller):
 
@@ -26,14 +27,14 @@ class SourceEditController(Controller):
 
     def refresh_editor(self, *ignore):
         self.get_source_editor().setPlainText(self.model.get_text())
-        
+
     def save_data_in_model(self):
         if not self.get_source_editor().isReadOnly():
             self.model.set_text(self.get_source_editor().toPlainText())
 
     def on_edit_enter(self):
         self.refresh_editor()
-        if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor 
+        if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
 
     # when editor is turn off, model should be update
     def on_edit_exit(self):

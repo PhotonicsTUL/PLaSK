@@ -2,9 +2,10 @@
 
 from PyQt4 import QtCore
 from lxml import etree as ElementTree
-from model.table import TableModel, TableModelEditMethods
-from model.info import Info
 from collections import OrderedDict
+
+from .table import TableModel, TableModelEditMethods
+from .info import Info
 #from guis import DefinesEditor
 
 MATERIALS_PROPERTES = {
@@ -38,7 +39,7 @@ MATERIALS_PROPERTES = {
     'Nc': ('Effective density of states in the conduction band Nc [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
     'Nf': ('Free carrier concentration N [cm<sup>-3</sup>]', [('T', 'temperature [K]')]),
     'Ni': ('Intrinsic carrier concentration N<sub>i</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]')]),
-    'Nr': ('Complex refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]), 
+    'Nr': ('Complex refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
     'nr': ('Real refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
     'NR': ('Anisotropic complex refractive index tensor n<sub>R</sub> [-]. Tensor must have the form [ n<sub>00</sub>, n<sub>11</sub>, n<sub>22</sub>, n<sub>01</sub>, n<sub>10</sub> ]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
     'Nv': ('Effective density of states in the valance band N<sub>v</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
@@ -59,20 +60,20 @@ def materialHTMLHelp(property_name, font_size = None):
     return res
 
 class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
-    
+
     def __init__(self, materialsModel, material = None, parent=None, *args):
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.materialsModel = materialsModel
         self.__material = material
-    
+
     def rowCount(self, parent = QtCore.QModelIndex()):
         if not self.__material or parent.isValid(): return 0
         return len(self.__material.properties)
-    
-    def columnCount(self, parent = QtCore.QModelIndex()): 
+
+    def columnCount(self, parent = QtCore.QModelIndex()):
         return 3    # 3 if comment supported
-    
+
     def get(self, col, row):
         n, v = self.__material.properties[row]
         if col == 2:
@@ -80,10 +81,10 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
             #return '<span style="font-size: 9pt">' + prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr]) + '</span>'
             return materialHTMLHelp(n, '9pt')
         return n if col == 0 else v
-    
+
     def data(self, index, role = QtCore.Qt.DisplayRole):
-        if not index.isValid(): return None 
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole: 
+        if not index.isValid(): return None
+        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
 #         if role == QtCore.Qt.ToolTipRole:
 #             return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
@@ -95,46 +96,46 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 #                     if err.level > max_level: max_level = err.level
 #             return info.infoLevelIcon(max_level)
         return None
-    
+
     def set(self, col, row, value):
         n, v = self.__material.properties[row]
         if col == 0:
             self.__material.properties[row] = (value, v)
         elif col == 1:
             self.__material.properties[row] = (n, value)
-    
+
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
         #self.fire_changed()
         self.dataChanged.emit(index, index)
         return True
-    
+
     def flags(self, index):
-        flags = super(MaterialPropertyModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled  
+        flags = super(MaterialPropertyModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
 
         if index.column() in [0, 1] and not self.materialsModel.is_read_only(): flags |= QtCore.Qt.ItemIsEditable
         #flags |= QtCore.Qt.ItemIsDragEnabled
         #flags |= QtCore.Qt.ItemIsDropEnabled
 
         return flags
-            
+
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             if col == 0: return 'name'
             if col == 1: return 'value'
             if col == 2: return 'help'
         return None
-    
+
     @property
     def material(self):
         return self.__material
-    
+
     @material.setter
     def material(self, material):
         self.layoutAboutToBeChanged.emit()
         self.__material = material
         self.layoutChanged.emit()
-        
+
     def options_to_choose(self, index):
         """:return: list of available options to choose at given index or None"""
         if index.column() == 0: return MATERIALS_PROPERTES.keys()
@@ -142,40 +143,40 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
             if self.__material.properties[index.row()][0] == 'condtype':
                 return ['n', 'i', 'p', 'other']
         return None
-        
+
     @property
     def entries(self):
         return self.__material.properties
-        
+
     def is_read_only(self):
         return self.material == None or self.materialsModel.is_read_only()
-    
+
     def fire_changed(self):
         pass
-    
+
     def create_default_entry(self):
         return "", ""
-        
-        
+
+
 class MaterialsModel(TableModel):
-             
+
     class Material: #(InfoSource)
-        
+
         def __init__(self, name, base = None, properties = [], comment = None):
             self.name = name
             self.base = base
             self.properties = properties    #TODO what with duplicate properties, should be supported?
             self.comment = comment
-            
+
         def add_to_XML(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
-            if self.base: mat.attrib['base'] = self.base 
+            if self.base: mat.attrib['base'] = self.base
             for (n, v) in self.properties:
                 ElementTree.SubElement(mat, n).text = v
-    
+
     def __init__(self, parent=None, info_cb = None, *args):
         super(MaterialsModel, self).__init__('materials', parent, info_cb, *args)
-        
+
     def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
         del self.entries[:]
@@ -186,7 +187,7 @@ class MaterialsModel(TableModel):
                 )
         self.layoutChanged.emit()
         self.fire_changed()
-    
+
     # XML element that represents whole section
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
@@ -194,37 +195,37 @@ class MaterialsModel(TableModel):
             if e.comment: res.append(ElementTree.Comment(e.comment))
             e.add_to_XML(res)
         return res
-    
-    def get(self, col, row): 
+
+    def get(self, col, row):
         if col == 0: return self.entries[row].name
         if col == 1: return self.entries[row].base
         if col == 2: return self.entries[row].comment
         raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
-    
+
     def set(self, col, row, value):
         if col == 0: self.entries[row].name = value
         elif col == 1: self.entries[row].base = value
         elif col == 2: self.entries[row].comment = value
-        else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)       
-        
+        else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
+
     def create_default_entry(self):
         return MaterialsModel.Material("name")
-    
+
     # QAbstractListModel implementation
-    
-    def columnCount(self, parent = QtCore.QModelIndex()): 
+
+    def columnCount(self, parent = QtCore.QModelIndex()):
         return 2    # 3 if comment supported
-            
+
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             if col == 0: return 'name'
             if col == 1: return 'base'
             if col == 2: return 'comment'
         return None
-    
+
     def create_info(self):
         res = super(MaterialsModel, self).create_info()
-        
+
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:

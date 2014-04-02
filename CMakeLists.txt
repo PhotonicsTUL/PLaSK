@@ -62,8 +62,6 @@ message(STATUS "PLaSK version ${VERSION}")
 # ---------- Configurable options --------------------------------------------
 include(CMakeDependentOption)
 
-option(BUILD_GUI "Build GUI program (require QT)" OFF) # FIXME: install QT for windows users
-
 option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
@@ -257,30 +255,32 @@ if(BUILD_PYTHON)
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-    add_executable(plask python/exe_main.cpp ${python_plask_src} ${plask_manifest})
+    add_library(plask-python SHARED ${python_plask_src})
+    target_link_libraries(plask-python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    # if(BUILD_PYTHON_MODULE)
+    #     if(WIN32)
+    #         add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
+    #         set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
+    #         install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
+    #                                 LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
+    #     else()
+    #         add_library(_plask MODULE ${python_plask_src} ${plask_manifest})
+    #         install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
+    #     endif()
+    #     target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    #     set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
+    #     add_dependencies(_plask python-scripts)
+    # endif()
+
+    add_executable(plask python/exe_main.cpp ${plask_manifest})
     if(WIN32)
             # For some reason MinGW wants to create import library for executable,
             # which overwrites libplask.dll.a. With this hack we name this useless
             # stuff libplask.exe.dll.a
             set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
     endif()
-    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask)
+    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} plask-python libplask)
     add_dependencies(plask python-scripts)
-
-    if(BUILD_PYTHON_MODULE)
-        if(WIN32)
-            add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
-            set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
-            install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
-                                   LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
-        else()
-            add_library(_plask MODULE ${python_plask_src} ${plask_manifest})
-            install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
-        endif()
-        target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
-        set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
-        add_dependencies(_plask python-scripts)
-    endif()
 
     if(DEFINED no_strict_aliasing_flag)
         set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
@@ -290,37 +290,13 @@ if(BUILD_PYTHON)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
 
+    # GUI
+    add_executable(plaskgui python/exe_gui.cpp ${plask_manifest})
+    target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} plask-python libplask)
+    install(DIRECTORY gui DESTINATION lib/plask/ COMPONENT GUI PATTERN *.pyc EXCLUDE)
+    install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
+
 endif(BUILD_PYTHON)
-
-
-# ---------- GUI program --------------------------------------------
-if(BUILD_GUI)
-    set(PLASK_GUI_MOC_HDRS gui/mainwindow.h gui/tree.h gui/utils/slots.h gui/view/objectview.h)
-    #set(PLASK_GUI_UIS ./src/ui/Dialog1.ui)
-    set(PLASK_GUI_RCS gui/plaskgui.qrc)
-
-     # Find includes in corresponding build directories
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-    find_package(Qt5Widgets)
-    include_directories(${Qt5Widgets_INCLUDE_DIRS})
-    add_definitions(${Qt5Widgets_DEFINITIONS} "-DQT_DISABLE_DEPRECATED_BEFORE=0x000000")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-
-    # this directory contains prop. brow. src + our CMakeLists.txt based on https://github.com/commontk/QtPropertyBrowser/blob/master/src/CMakeLists.txt
-    add_subdirectory(extlib/qtpropertybrowser)  #this build qtpropertybrowser
-
-    include_directories(extlib/qtpropertybrowser)   # allow for finding qtpropertybrowser headers
-
-    qt5_add_resources(PLASK_GUI_RC_SRCS ${PLASK_GUI_RCS})
-    #qt5_wrap_ui(PLASK_GUI_UI_HDRS ${PLASK_GUI_UIS})
-    qt5_wrap_cpp(PLASK_GUI_MOC_SRCS ${PLASK_GUI_MOC_HDRS})
-    add_executable(plaskgui ${plaskgui_src} ${property_browser_src} ${PLASK_GUI_MOC_SRCS} ${PLASK_GUI_RC_SRCS} ) # ${PLASK_GUI_UI_HDRS}
-    target_link_libraries(plaskgui libplask ${Qt5Widgets_LIBRARIES} qtpropertybrowser)
-
-    install(TARGETS plaskgui RUNTIME DESTINATION bin COMPONENT GUI)
-
-endif(BUILD_GUI)
 
 
 # ---------- Macro for testing --------------------------------------------

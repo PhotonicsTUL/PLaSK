@@ -1,11 +1,12 @@
 # coding: utf8
 
-from lxml import etree as ElementTree
-from utils.signal import Signal
-from .info import Info
 import os
-from model.info import InfoSource
-from utils.xml import print_interior, XML_parser
+from lxml import etree as ElementTree
+
+from ..model.info import InfoSource
+from ..utils.signal import Signal
+from ..utils.xml import print_interior, XML_parser
+from .info import Info
 
 def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
         """
@@ -31,7 +32,7 @@ def getSectionXMLFromFile(sectionName, fileName, oryginalFileName=None):
 
 class ExternalSource(object):
     """Store information about data source of section if the source is external (file name)"""
-    
+
     def __init__(self, fileName, oryginalFileName = None):
         """
             :param str fileName: name of file with source of section (or reference to next file)
@@ -44,14 +45,14 @@ class ExternalSource(object):
 
 class TreeFragmentModel(InfoSource):
     """Base class for fragment of tree (with change signal and info)"""
-    
+
     def __init__(self, info_cb = None):
         """
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
         InfoSource.__init__(self, info_cb)
         self.changed = Signal()
-        
+
     def fire_changed(self, refreshInfo = True):
         """
             Inform listeners that this section was changed.
@@ -67,7 +68,7 @@ class TreeFragmentModel(InfoSource):
 
 
 class SectionModel(TreeFragmentModel):
-    
+
     def __init__(self, name, info_cb = None):
         """
             :param str name: name of section
@@ -79,13 +80,13 @@ class SectionModel(TreeFragmentModel):
 
     def set_text(self, text):
         self.set_XML_element(ElementTree.fromstringlist(['<', self.name, '>', text.encode('utf-8'), '</', self.name, '>'], parser = XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
-        
+
     def is_read_only(self):
         """
             :return: true if model is read-only (typically: has been read from external source)
         """
         return self.externalSource != None
-    
+
     def get_file_XML_element(self):
         """
             Get XML element ready to save in XPL document.
@@ -95,12 +96,12 @@ class SectionModel(TreeFragmentModel):
             return ElementTree.Element(self.name, { "external": self.externalSource.fileName })
         else:
             return self.get_XML_element()
-        
+
     def clear(self):
         """Make this section empty."""
         self.set_text('')
         self.fire_changed()
-        
+
     def reload_external_source(self, oryginalFileName = None):
         """
             Load section from external source.
@@ -109,20 +110,20 @@ class SectionModel(TreeFragmentModel):
         try:
             self.set_XML_element(getSectionXMLFromFile(self.name, self.externalSource.fileNameAbs, oryginalFileName))
         except Exception as e:
-            self.externalSource.error = str(e) 
+            self.externalSource.error = str(e)
         else:
             if hasattr(self.externalSource, 'error'): del self.externalSource.error
-        
+
     def set_external_source(self, fileName, oryginalFileName = None):
         self.externalSource = ExternalSource(fileName, oryginalFileName)
         self.reload_external_source(oryginalFileName)
-            
+
     def set_file_XML_element(self, element, fileName = None):
         if 'external' in element.attrib:
             self.set_external_source(element.attrib['external'], fileName)
             return
         self.set_XML_element(element)
-        
+
     def create_info(self):
         res = super(SectionModel, self).create_info()
         if self.is_read_only():
@@ -132,7 +133,7 @@ class SectionModel(TreeFragmentModel):
             if hasattr(self.externalSource, 'error'):
                 res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
         return res
-        
+
     def stubs(self):
         return ""
 
@@ -145,7 +146,7 @@ class SectionModelTreeBased(SectionModel):
     def set_XML_element(self, element):
         self.element = element
         self.fire_changed()
-        
+
     def clear(self):
         self.element.clear()
         self.fire_changed()

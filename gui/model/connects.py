@@ -1,20 +1,21 @@
 from PyQt4 import QtCore
 from lxml import etree as ElementTree
-from model.table import TableModel
-from model.info import Info
+
+from .table import TableModel
+from .info import Info
 #from guis import DefinesEditor
 
 class ConnectsModel(TableModel):
-    
+
     class Entry:
         def __init__(self, output, input, comment = None):
             self.output = output
             self.input = input
             self.comment = comment
-    
+
     def __init__(self, parent=None, info_cb = None, *args):
         TableModel.__init__(self, 'connects', parent, info_cb, *args)
-        
+
     def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
         if element is not None:
@@ -23,7 +24,7 @@ class ConnectsModel(TableModel):
             self.entries = []
         self.layoutChanged.emit()
         self.fire_changed()
-    
+
     # XML element that represents whole section
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
@@ -31,34 +32,34 @@ class ConnectsModel(TableModel):
             if e.comment: res.append(ElementTree.Comment(e.comment))
             ElementTree.SubElement(res, "connect", { "out": e.output, "in": e.input })  #.tail = '\n'
         return res
-    
+
     def get(self, col, row):
         if col == 0: return self.entries[row].output
         if col == 1: return self.entries[row].input
         if col == 2: return self.entries[row].comment
         raise IndexError('column number for ConnectsModel should be 0, 1, or 2, but is %d' % col)
-    
+
     def set(self, col, row, value):
         if col == 0: self.entries[row].output = value
         elif col == 1: self.entries[row].input = value
         elif col == 2: self.entries[row].comment = value
-        else: raise IndexError('column number for ConnectsModel should be 0, 1, or 2, but is %d' % col)       
-        
+        else: raise IndexError('column number for ConnectsModel should be 0, 1, or 2, but is %d' % col)
+
     def create_default_entry(self):
         return ConnectsModel.Entry("out", "in")
-    
+
     # QAbstractListModel implementation
-    
-    def columnCount(self, parent = QtCore.QModelIndex()): 
+
+    def columnCount(self, parent = QtCore.QModelIndex()):
         return 2    # 3 if comment supported
-            
+
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             if col == 0: return 'output provider'
             if col == 1: return 'input receiver'
             if col == 2: return 'comment'
         return None
-    
+
     def create_info(self):
         res = super(ConnectsModel, self).create_info()
         for i, d in enumerate(self.entries):

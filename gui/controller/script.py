@@ -1,13 +1,14 @@
-from controller.source import SourceEditController
 from PyQt4 import QtGui
-from model.script import ScriptModel
-from utils.gui import defaultFont
+
+from ..model.script import ScriptModel
+from ..utils.gui import defaultFont
+from .source import SourceEditController
 
 try:
     from pyeditor import PyEdit
     hasPyCode = True
 except ImportError as e:
-    hasPyCode = False 
+    hasPyCode = False
 
     #sys.path.append("./pycodelocal/syntaxhighlighter")
 try:
@@ -22,11 +23,11 @@ try:
             }
 except ImportError:
         SyntaxHighlighter = None
-    
+
 
 
 class ScriptController(SourceEditController):
-    
+
     def __init__(self, document, model = ScriptModel()):
         SourceEditController.__init__(self, document, model)
 
@@ -40,7 +41,7 @@ class ScriptController(SourceEditController):
             self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
         edit.setReadOnly(self.model.is_read_only())
         return edit
-    
+
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
         self.pyedit.prefix = self.document.stubs()
