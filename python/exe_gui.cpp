@@ -113,19 +113,17 @@ void endPlask() {
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <windows.h>
-int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
+{
+    int argc = 1;
+    const char* argv = { "plaskgui" };
 #else
 int main(int argc, const char *argv[])
-#endif
 {
+#endif
     // Initalize python and load the plask module
     try {
-#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-            const char *argv[] = { "plaskgui" };
-            initPlask(1, argv);
-#       else
-            initPlask(argc, argv);
-#       endif
+        initPlask(argc, argv);
     } catch (plask::CriticalException) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
         endPlask();
