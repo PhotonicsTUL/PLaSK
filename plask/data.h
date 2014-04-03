@@ -13,6 +13,7 @@ This file contains classes which can hold (or points to) datas.
 #include <type_traits>
 #include <memory>   //std::unique_ptr
 #include <cassert>
+#include <type_traits>  //std::is_trivially_destructible, std::false_type, std::true_type
 
 #include "memalloc.h"
 #include "exceptions.h"
@@ -20,6 +21,23 @@ This file contains classes which can hold (or points to) datas.
 namespace plask {
 
 namespace detail {
+
+    template <class T>
+    inline void do_destroy_array(T* first, T* last, const std::false_type&) {
+       while(first != last) {
+          first->~T();
+          ++first;
+       }
+    }
+
+    template <class T>
+    inline void do_destroy_array(T*, T*, const std::true_type&) {
+    }
+
+    template <class T>
+    inline void destroy_array(T* first, T* last) {
+       do_destroy_array(first, last, std::is_trivially_destructible<T>());
+    }
 
     /// Garbage collector info for DataVector
     struct DataVectorGC {
@@ -44,7 +62,8 @@ namespace detail {
 
         ~DataVectorGC() { delete deleter; }
     };
-}
+
+}   // namespace detail
 
 /**
  * Store pointer and size. Is like intelligent pointer for plain data arrays.
@@ -73,7 +92,7 @@ struct DataVector {
     void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
         if (gc_ && gc_->count.fetch_sub(1, std::memory_order_release) == 1) {
             std::atomic_thread_fence(std::memory_order_acquire);
-            while (size_) data_[--size_].~T();
+            detail::destroy_array(data_, data_ + size_);
             gc_->free(reinterpret_cast<void*>(const_cast<VT*>(data_)));
             delete gc_;
         }
