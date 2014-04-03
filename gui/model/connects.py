@@ -55,9 +55,9 @@ class ConnectsModel(TableModel):
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            if col == 0: return 'output provider'
-            if col == 1: return 'input receiver'
-            if col == 2: return 'comment'
+            if col == 0: return 'Output Provider'
+            if col == 1: return 'Input Receiver'
+            if col == 2: return 'Comment'
         return None
 
     def create_info(self):

@@ -5,7 +5,7 @@ Partition-based syntax highlighter
 import re
 from PyQt4.QtCore import QVariant
 from PyQt4.QtGui import (
-    QSyntaxHighlighter, 
+    QSyntaxHighlighter,
     QColor, QTextCharFormat, QFont, QBrush, QTextFormat)
 
 
@@ -13,7 +13,7 @@ from PyQt4.QtGui import (
 class Format(object):
 
     __slots__ = ("NAME", "name", "tcf")
-    
+
     NAME = QTextFormat.UserProperty + 1
 
 
@@ -43,7 +43,7 @@ class Format(object):
 
 class Partition(object):
     # every partition maps to a specific state in QSyntaxHighlighter
-    
+
     __slots__ = ("name", "start", "end", "is_multiline", "search_end")
 
 
@@ -59,7 +59,7 @@ class Partition(object):
 class PartitionScanner(object):
     # The idea to partition the source into different contexts comes from Eclipse.
     # http://wiki.eclipse.org/FAQ_What_is_a_document_partition%3F
-    
+
 
     def __init__(self, partitions):
         start_groups = []
@@ -126,7 +126,7 @@ class Token(object):
         self.prefix = prefix
         self.suffix = suffix
 
-        
+
 
 class Scanner(object):
     __slots__ = ("tokens", "search")
@@ -145,14 +145,14 @@ class Scanner(object):
             if gdef in t.pattern:
                 p = t.pattern
             else:
-                p = ("(%s%s)" % (gdef, t.pattern)) 
+                p = ("(%s%s)" % (gdef, t.pattern))
             p = t.prefix + p + t.suffix
             groups.append(p)
             self.tokens.append(t)
         pat = "|".join(groups)
         self.search = re.compile(pat).search
 
-        
+
     def scan(self, s):
         search = self.search
         #length = len(s)
@@ -177,14 +177,14 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         :param parent: QDocument or QTextEdit/QPlainTextEdit instance
         'partition_scanner:
             PartitionScanner instance
-        :param scanner: 
+        :param scanner:
             dictionary of token scanners for each partition
             The key is the name of the partition, the value is a Scanner instance
             The default scanner has the key None
-        :formats: 
+        :formats:
             list of tuples consisting of a name and a format definition
             The name is the name of a partition or token
-            
+
         """
         QSyntaxHighlighter.__init__(self, parent)
         parent.setDefaultFont(default_font)
@@ -207,7 +207,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                 assert isinstance(f, Format), "Format expected, %r found" % f
             f.tcf.setFontFamily(parent.defaultFont().family())
             self.formats[f.name] = f.tcf
-            
+
 
         scan_inside = {}
         for inside_part, inside_scanner in self.scanner.items():
@@ -216,7 +216,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.get_scanner = scan_inside.get
         self.scan_partitions = partition_scanner.scan
         self.get_format = self.formats.get
-        
+
 
     def highlightBlock(self, text):
         "automatically called by Qt"
@@ -227,7 +227,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         get_format = self.get_format
         set_format = self.setFormat
         get_scanner = self.get_scanner
-        
+
         for start, end, partition, new_state, is_inside in self.scan_partitions(previous_state, text):
             f = get_format(partition, None)
             if f:
@@ -245,7 +245,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
 
 
-        
+
 def load_syntax(syntax, context=None):
     context = context or {}
 

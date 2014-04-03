@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 from lxml import etree as ElementTree
 from collections import OrderedDict
 
@@ -8,44 +8,44 @@ from .table import TableModel, TableModelEditMethods
 from .info import Info
 #from guis import DefinesEditor
 
-MATERIALS_PROPERTES = {
-    'A': ('Monomolecular recombination coefficient A [1/s]', [('T', 'temperature [K]')]),
-    'absb': ('Absorption coefficient α [cm<sup>-1</sup>]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]')]),
-    'ac': ('Hydrostatic deformation potential for the conduction band a<sub>c</sub> [eV]', [('T', 'temperature [K]')]),
-    'av': ('Hydrostatic deformation potential for the valence band a<sub>v</sub> [eV]', [('T', 'temperature [K]')]),
-    'B': ('Radiative recombination coefficient B [m<sup>3</sup>/s]', [('T', 'temperature [K]')]),
-    'b': ('Shear deformation potential b [eV]', [('T', 'temperature [K]')]),
-    'C': ('Auger recombination coefficient C [m<sup>6</sup>/s]', [('T', 'temperature [K]')]),
-    'c11': ('Elastic constant c<sub>11</sub> [GPa]', [('T', 'temperature [K]')]),
-    'c12': ('Elastic constant c<sub>12</sub> [GPa]', [('T', 'temperature [K]')]),
-    'CB': ('Conduction band level CB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
-    'chi': ('Electron affinity χ [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
-    'cond': ('Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m]', [('T', 'temperature [K]')]),
-    'condtype': ('Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.', []),
-    'cp': ('Specific heat at constant pressure [J/(kg K)]', [('T', 'temperature [K]')]),
-    'D': ('Ambipolar diffusion coefficient D [m<sup>2</sup>/s]', [('T', 'temperature [K]')]),
-    'dens': ('Density [kg/m<sup>3</sup>]', [('T', 'temperature [K]')]),
-    'Dso': ('Split-off energy D<sub>so</sub> [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
-    'EactA': ('Acceptor ionization energy E<sub>actA</sub> [eV]', [('T', 'temperature [K]')]),
-    'EactD': ('Acceptor ionization energy E<sub>actD</sub> [eV]', [('T', 'temperature [K]')]),
-    'Eg': ('Energy gap E<sub>g</sub> [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin')]),
-    'eps': ('Donor ionization energy ε<sub>R</sub> [-]', [('T', 'temperature [K]')]),
-    'lattC': ('Lattice constant [Å]', [('T', 'temperature [K]'), ('x', 'lattice parameter [-]')]),
-    'Me': ('Electron effective mass M<sub>e</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the irreducible Brillouin zone [-]')]),
-    'Mh': ('Hole effective mass M<sub>h</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
-    'Mhh': ('Heavy hole effective mass M<sub>hh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
-    'Mlh': ('Light hole effective mass M<sub>lh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
-    'Mso': ('Split-off mass M<sub>so</sub>` [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')]),
-    'Nc': ('Effective density of states in the conduction band Nc [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
-    'Nf': ('Free carrier concentration N [cm<sup>-3</sup>]', [('T', 'temperature [K]')]),
-    'Ni': ('Intrinsic carrier concentration N<sub>i</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]')]),
-    'Nr': ('Complex refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
-    'nr': ('Real refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
-    'NR': ('Anisotropic complex refractive index tensor n<sub>R</sub> [-]. Tensor must have the form [ n<sub>00</sub>, n<sub>11</sub>, n<sub>22</sub>, n<sub>01</sub>, n<sub>10</sub> ]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')]),
-    'Nv': ('Effective density of states in the valance band N<sub>v</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')]),
-    'thermk': ('Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k [W/(m K)]', [('T', 'temperature [K]'), ('h', 'layer thickness [µm]')]),
-    'VB': ('Valance band level offset VB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('hole', 'hole type (\'H\' or \'L\') [-]')]),
-}
+MATERIALS_PROPERTES = OrderedDict((
+    ('A', ('Monomolecular recombination coefficient A [1/s]', [('T', 'temperature [K]')])),
+    ('absb', ('Absorption coefficient α [cm<sup>-1</sup>]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]')])),
+    ('ac', ('Hydrostatic deformation potential for the conduction band a<sub>c</sub> [eV]', [('T', 'temperature [K]')])),
+    ('av', ('Hydrostatic deformation potential for the valence band a<sub>v</sub> [eV]', [('T', 'temperature [K]')])),
+    ('B', ('Radiative recombination coefficient B [m<sup>3</sup>/s]', [('T', 'temperature [K]')])),
+    ('b', ('Shear deformation potential b [eV]', [('T', 'temperature [K]')])),
+    ('C', ('Auger recombination coefficient C [m<sup>6</sup>/s]', [('T', 'temperature [K]')])),
+    ('c11', ('Elastic constant c<sub>11</sub> [GPa]', [('T', 'temperature [K]')])),
+    ('c12', ('Elastic constant c<sub>12</sub> [GPa]', [('T', 'temperature [K]')])),
+    ('CB', ('Conduction band level CB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
+    ('chi', ('Electron affinity χ [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
+    ('cond', ('Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m]', [('T', 'temperature [K]')])),
+    ('condtype', ('Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.', [])),
+    ('cp', ('Specific heat at constant pressure [J/(kg K)]', [('T', 'temperature [K]')])),
+    ('D', ('Ambipolar diffusion coefficient D [m<sup>2</sup>/s]', [('T', 'temperature [K]')])),
+    ('dens', ('Density [kg/m<sup>3</sup>]', [('T', 'temperature [K]')])),
+    ('Dso', ('Split-off energy D<sub>so</sub> [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
+    ('EactA', ('Acceptor ionization energy E<sub>actA</sub> [eV]', [('T', 'temperature [K]')])),
+    ('EactD', ('Acceptor ionization energy E<sub>actD</sub> [eV]', [('T', 'temperature [K]')])),
+    ('Eg', ('Energy gap E<sub>g</sub> [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin')])),
+    ('eps', ('Donor ionization energy ε<sub>R</sub> [-]', [('T', 'temperature [K]')])),
+    ('lattC', ('Lattice constant [Å]', [('T', 'temperature [K]'), ('x', 'lattice parameter [-]')])),
+    ('Me', ('Electron effective mass M<sub>e</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the irreducible Brillouin zone [-]')])),
+    ('Mh', ('Hole effective mass M<sub>h</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
+    ('Mhh', ('Heavy hole effective mass M<sub>hh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
+    ('Mlh', ('Light hole effective mass M<sub>lh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
+    ('Mso', ('Split-off mass M<sub>so</sub>` [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
+    ('Nc', ('Effective density of states in the conduction band Nc [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
+    ('Nf', ('Free carrier concentration N [cm<sup>-3</sup>]', [('T', 'temperature [K]')])),
+    ('Ni', ('Intrinsic carrier concentration N<sub>i</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]')])),
+    ('Nr', ('Complex refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')])),
+    ('nr', ('Real refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')])),
+    ('NR', ('Anisotropic complex refractive index tensor n<sub>R</sub> [-]. Tensor must have the form [ n<sub>00</sub>, n<sub>11</sub>, n<sub>22</sub>, n<sub>01</sub>, n<sub>10</sub> ]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')])),
+    ('Nv', ('Effective density of states in the valance band N<sub>v</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
+    ('thermk', ('Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k [W/(m K)]', [('T', 'temperature [K]'), ('h', 'layer thickness [µm]')])),
+    ('VB', ('Valance band level offset VB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('hole', 'hole type (\'H\' or \'L\') [-]')])),
+))
 
 def materialHTMLHelp(property_name, font_size = None):
     prop_name, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None))
@@ -95,7 +95,8 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 #                 if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row massages has decoration only in first column
 #                     if err.level > max_level: max_level = err.level
 #             return info.infoLevelIcon(max_level)
-        return None
+        if role == QtCore.Qt.BackgroundRole and index.column() == 2:
+            return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
 
     def set(self, col, row, value):
         n, v = self.__material.properties[row]
@@ -121,9 +122,9 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            if col == 0: return 'name'
-            if col == 1: return 'value'
-            if col == 2: return 'help'
+            if col == 0: return 'Name'
+            if col == 1: return 'Value'
+            if col == 2: return 'Help'
         return None
 
     @property
@@ -209,7 +210,7 @@ class MaterialsModel(TableModel):
         else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
     def create_default_entry(self):
-        return MaterialsModel.Material("name")
+        return MaterialsModel.Material("name", "Semiconductor")
 
     # QAbstractListModel implementation
 
@@ -218,9 +219,9 @@ class MaterialsModel(TableModel):
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            if col == 0: return 'name'
-            if col == 1: return 'base'
-            if col == 2: return 'comment'
+            if col == 0: return 'Name'
+            if col == 1: return 'Base'
+            if col == 2: return 'Comment'
         return None
 
     def create_info(self):

@@ -21,13 +21,15 @@ class GridsController(Controller):
         self.grids_table.setModel(self.model)
         #self.grids_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.grids_table))
         #self.materialsTableActions = TableActions(self.grids_table)
-        table_last_col_fill(self.grids_table, self.model.columnCount(None), 150)
+        table_last_col_fill(self.grids_table, self.model.columnCount(None), 80)
+        self.grids_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.grids_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and generators"))
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)
 
-        #self.splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter, title="Properties of the material"))
+        self.splitter.setSizes([10000,36000])
 
         self.grids_table.selectionModel().selectionChanged.connect(self.grid_selected) #currentChanged ??
 

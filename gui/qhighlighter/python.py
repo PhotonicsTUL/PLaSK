@@ -39,23 +39,23 @@ class PythonHighlighter(QSyntaxHighlighter):
         "continue",  "exec",      "import",    "pass",      "yield",
         "def",       "finally",   "in",        "print",     "with"
         )
-    builtins = ('ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', 'BytesWarning', 
-    'DeprecationWarning', 'EOFError', 'Ellipsis', 'EnvironmentError', 'Exception', 'False', 'FloatingPointError', 'FutureWarning', 
-    'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning', 'IndentationError', 'IndexError', 'KeyError', 'KeyboardInterrupt', 
-    'LookupError', 'MemoryError', 'NameError', 'None', 
-    'NotImplemented', 'NotImplementedError', 'OSError', 'OverflowError', 'PendingDeprecationWarning', 'ReferenceError', 'RuntimeError', 'RuntimeWarning', 
-    'StandardError', 'StopIteration', 'SyntaxError', 'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'True', 'TypeError', 'UnboundLocalError', 
-    'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning', 
-    'UserWarning', 'ValueError', 'Warning', 'ZeroDivisionError', '__debug__', '__doc__', '__import__', '__name__', '__package__', 
-    'abs', 'all', 'any', 'apply', 'basestring', 'bin', 'bool', 'buffer', 'bytearray', 'bytes', 'callable', 'chr', 'classmethod', 
-    'cmp', 'coerce', 'compile', 'complex', 'copyright', 'credits', 'delattr', 'dict', 'dir', 'divmod', 
-    'enumerate', 'eval', 'execfile', 'exit', 'file', 'filter', 'float', 'format', 'frozenset', 'getattr', 
-    'globals', 'hasattr', 'hash', 'help', 'hex', 'id', 'input', 'int', 'intern', 'isinstance', 
-    'issubclass', 'iter', 'len', 'license', 'list', 'locals', 'long', 'map', 'max', 'min', 'next', 
-    'object', 'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'raw_input', 'reduce', 'reload', 
-    'repr', 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str', 
-    'sum', 'super', 'tuple', 'type', 'unichr', 'unicode', 'vars', 'xrange', 'zip') 
-    
+    builtins = ('ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', 'BytesWarning',
+    'DeprecationWarning', 'EOFError', 'Ellipsis', 'EnvironmentError', 'Exception', 'False', 'FloatingPointError', 'FutureWarning',
+    'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning', 'IndentationError', 'IndexError', 'KeyError', 'KeyboardInterrupt',
+    'LookupError', 'MemoryError', 'NameError', 'None',
+    'NotImplemented', 'NotImplementedError', 'OSError', 'OverflowError', 'PendingDeprecationWarning', 'ReferenceError', 'RuntimeError', 'RuntimeWarning',
+    'StandardError', 'StopIteration', 'SyntaxError', 'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'True', 'TypeError', 'UnboundLocalError',
+    'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning',
+    'UserWarning', 'ValueError', 'Warning', 'ZeroDivisionError', '__debug__', '__doc__', '__import__', '__name__', '__package__',
+    'abs', 'all', 'any', 'apply', 'basestring', 'bin', 'bool', 'buffer', 'bytearray', 'bytes', 'callable', 'chr', 'classmethod',
+    'cmp', 'coerce', 'compile', 'complex', 'copyright', 'credits', 'delattr', 'dict', 'dir', 'divmod',
+    'enumerate', 'eval', 'execfile', 'exit', 'file', 'filter', 'float', 'format', 'frozenset', 'getattr',
+    'globals', 'hasattr', 'hash', 'help', 'hex', 'id', 'input', 'int', 'intern', 'isinstance',
+    'issubclass', 'iter', 'len', 'license', 'list', 'locals', 'long', 'map', 'max', 'min', 'next',
+    'object', 'oct', 'open', 'ord', 'pow', 'print', 'property', 'quit', 'range', 'raw_input', 'reduce', 'reload',
+    'repr', 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod', 'str',
+    'sum', 'super', 'tuple', 'type', 'unichr', 'unicode', 'vars', 'xrange', 'zip')
+
 
     def __init__(self, edit):
         self.textedit = edit
@@ -66,30 +66,30 @@ class PythonHighlighter(QSyntaxHighlighter):
         base_format.setFont(edit.font())
         self.base_format = base_format
         self.document = document
-        
+
         self.updateHighlighter(base_format.font())
 
 
     def highlightBlock(self, text):
         self.setCurrentBlockState(0)
-        
+
         if text.trimmed().isEmpty():
             self.setFormat(0, len(text), self.empty_format)
             return
-        
+
         self.setFormat(0, len(text), self.base_format)
-        
+
         startIndex = 0
         if self.previousBlockState() != 1:
             startIndex = self.multiLineStringBegin.indexIn(text)
-        
+
         if startIndex > -1:
             self.highlightRules(text, 0, startIndex)
         else:
             self.highlightRules(text, 0, len(text))
-        
+
         while startIndex >= 0:
-            endIndex = self.multiLineStringEnd.indexIn(text, 
+            endIndex = self.multiLineStringEnd.indexIn(text,
                   startIndex + len(self.multiLineStringBegin.pattern()))
             if endIndex == -1:
                 self.setCurrentBlockState(1)
@@ -98,12 +98,12 @@ class PythonHighlighter(QSyntaxHighlighter):
                 commentLength = endIndex - startIndex + \
                                 self.multiLineStringEnd.matchedLength()
                 self.highlightRules(text, endIndex, len(text))
-            
+
             self.setFormat(startIndex, commentLength, self.multiLineStringFormat)
-            startIndex = self.multiLineStringBegin.indexIn(text, 
+            startIndex = self.multiLineStringBegin.indexIn(text,
                                            startIndex + commentLength)
-    
-    
+
+
     def highlightRules(self, text, start, finish):
         for expression, format in self.rules:
             index = expression.indexIn(text, start)
@@ -111,9 +111,9 @@ class PythonHighlighter(QSyntaxHighlighter):
                 length = expression.matchedLength()
                 self.setFormat(index, min(length, finish - index), format)
                 index = expression.indexIn(text, index + length)
-    
 
-    def updateFonts(self, font):    
+
+    def updateFonts(self, font):
         self.base_format.setFont(font)
         self.empty_format = QTextCharFormat(self.base_format)
         #self.empty_format.setFontPointSize(font.pointSize()/4.0)
@@ -161,9 +161,9 @@ class PythonHighlighter(QSyntaxHighlighter):
         self.multiLineStringEnd = QRegExp(r'\"\"\"')
         self.rules.append((QRegExp(r'\"[^\n\"]*\"'), self.quotationFormat1))
         self.rules.append((QRegExp(r"'[^\n\']*'"), self.quotationFormat2))
-    
 
-    def updateHighlighter(self, font):    
+
+    def updateHighlighter(self, font):
         self.updateFonts(font)
         self.updateRules()
         self.setDocument(self.document)

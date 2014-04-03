@@ -56,7 +56,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
         return self.model.is_read_only()
 
     def get_controller(self):
-        from controller.source import SourceEditController
+        from ...controller.source import SourceEditController
         return SourceEditController(model = self)
 
 #class Generator(Grid):

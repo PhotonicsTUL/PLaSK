@@ -5,21 +5,21 @@ from ..utils.gui import defaultFont
 from .source import SourceEditController
 
 try:
-    from pyeditor import PyEdit
+    from ..pyeditor import PyEdit
     hasPyCode = True
 except ImportError as e:
     hasPyCode = False
 
     #sys.path.append("./pycodelocal/syntaxhighlighter")
 try:
-        from external.highlighter import SyntaxHighlighter, load_syntax
-        from external.highlighter.python27 import syntax
+        from ..external.highlighter import SyntaxHighlighter, load_syntax
+        from ..external.highlighter.python27 import syntax
         scheme = {
                 "syntax_comment": dict(color="green", italic=True),
-                "syntax_string": "magenta",
+                "syntax_string": "blue",
                 "syntax_builtin": "red",
-                "syntax_keyword": ("darkred", True),
-                "syntax_number": "blue",
+                "syntax_keyword": dict(color="black", bold=True),
+                "syntax_number": "darkblue",
             }
 except ImportError:
         SyntaxHighlighter = None
@@ -44,4 +44,5 @@ class ScriptController(SourceEditController):
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
-        self.pyedit.prefix = self.document.stubs()
+        if hasPyCode:
+            self.pyedit.prefix = self.document.stubs()

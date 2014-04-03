@@ -6,9 +6,11 @@ import sip
 for n in ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"]: sip.setapi(n, 2)
 
 import sys
+import os
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 
+from .resources import APP_ICON
 from .XPLDocument import XPLDocument
 from .utils.gui import exception_to_msg
 from .model.info import InfoTreeModel, Info
@@ -137,6 +139,11 @@ class MainWindow(QtGui.QMainWindow):
     def init_UI(self):
 
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+        icon_pixmap = QtGui.QPixmap()
+        icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(APP_ICON))
+        icon = QtGui.QIcon()
+        icon.addPixmap(icon_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.setWindowIcon(icon)
 
         #self.statusBar()
 
@@ -212,10 +219,13 @@ class MainWindow(QtGui.QMainWindow):
 
         #viewMenu.addAction(self.info_dock.toggleViewAction());
 
-        self.setGeometry(200, 200, 550, 450)
+        self.setGeometry(100, 100, 1200, 750)
         self.setWindowTitle('Main window')
 
-        self.document.load_from_file('test.xpl')
+        try:
+            self.document.load_from_file(os.path.join(os.path.dirname(__file__), 'test.xpl'))
+        except IOError:
+            pass
         self.model_is_new()
 
         self.show()

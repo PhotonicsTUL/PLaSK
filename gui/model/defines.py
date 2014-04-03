@@ -79,9 +79,9 @@ class DefinesModel(TableModel):
 
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            if col == 0: return 'name'
-            if col == 1: return 'value'
-            if col == 2: return 'comment'
+            if col == 0: return 'Name'
+            if col == 1: return 'Value'
+            if col == 2: return 'Comment'
         return None
 
     #zapis DEF.cos nie dziala w PLaSKu

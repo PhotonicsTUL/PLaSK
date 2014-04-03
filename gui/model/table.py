@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 
 from .base import SectionModel
 from . import info
@@ -78,14 +78,13 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
             max_level = -1
             c = index.column()
             for err in self.info_by_row.get(index.row(), []):
-                if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row massages has decoration only in first column
+                if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row messages hav decoration only in first column
                     if err.level > max_level: max_level = err.level
             return info.infoLevelIcon(max_level)
             #c = QtGui.QPalette().color(QtGui.QPalette.Window)    #default color
             #if max_level == info.Info.ERROR: return QtGui.QColor(255, 220, 220)
             #if max_level == info.Info.WARNING: return QtGui.QColor(255, 255, 160)
             #if max_level == info.Info.INFO: return QtGui.QColor(220, 220, 255)
-        return None
 
     def flags(self, index):
         flags = super(TableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled

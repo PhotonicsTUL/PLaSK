@@ -1,5 +1,5 @@
 syntax = {'formats': {'builtin': '%(syntax_builtin)s',
-          'comment': '%(syntax_comment)s',
+                      'comment': '%(syntax_comment)s',
                       'hexnumber': '%(syntax_number)s',
                       'keyword': '%(syntax_keyword)s',
                       'number': '%(syntax_number)s',

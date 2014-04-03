@@ -56,9 +56,9 @@ class RectilinearMesh(Grid):
     def get_XML_element(self):
         res = super(RectilinearMesh, self).get_XML_element()
         for i, n in self.axes_index_name:
-            self.axis[i].fillXMLElement(ElementTree.SubElement(res, n))
+            self.axis[i].fillXMLElement(ElementTree().SubElement(res, n))
         return res;
 
     def set_XML_element(self, element):
-        for i, n in self.axis_index_name:
+        for i, n in self.axes_index_name:
             self.axis[i].set_XML_element(element.find(n))

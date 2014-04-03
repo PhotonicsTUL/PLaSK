@@ -91,8 +91,13 @@ class TableController(Controller):
         self.tableActions = TableActions(self.table)
 
         cols = self.model.columnCount(None) #column widths:
-        for c in range(0, cols): self.table.setColumnWidth(c, 200)
+        for c in range(0, cols-1):
+            self.table.setColumnWidth(c, 200)
+            #self.table.horizontalHeader().setResizeMode(c, QtGui.QHeaderView.ResizeToContents);
         self.table.horizontalHeader().setResizeMode(cols-1, QtGui.QHeaderView.Stretch);
+
+        self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
     def get_editor(self):
         return self.table

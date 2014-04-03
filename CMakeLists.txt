@@ -190,9 +190,6 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.h)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
-# GUI sources
-file(GLOB_RECURSE plaskgui_src FOLLOW_SYMLINKS gui/*.cpp gui/*.h)
-
 
 # ---------- External libraries built by us -----------------------------------------
 
@@ -276,6 +273,13 @@ if(BUILD_PYTHON)
     #     add_dependencies(_plask python-scripts)
     # endif()
 
+    if(WIN32)
+        install(TARGETS libplask-python RUNTIME DESTINATION bin COMPONENT core
+                                        ARCHIVE DESTINATION lib COMPONENT dev)
+    else()
+        install(TARGETS libplask-python LIBRARY DESTINATION lib COMPONENT core)
+    endif()
+
     add_executable(plask python/exe_main.cpp ${plask_manifest})
     if(WIN32)
             # For some reason MinGW wants to create import library for executable,
@@ -297,7 +301,13 @@ if(BUILD_PYTHON)
     # GUI
     add_executable(plaskgui python/exe_gui.cpp ${plask_manifest})
     target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
-    install(DIRECTORY gui DESTINATION lib/plask/ COMPONENT GUI PATTERN *.pyc EXCLUDE)
+    if(DEFINED no_strict_aliasing_flag)
+        set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+    endif()
+    if(WIN32)
+        set_target_properties(plaskgui PROPERTIES LINK_FLAGS -mwindows)
+    endif()
+    install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI PATTERN *.pyc EXCLUDE)
     install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
 endif(BUILD_PYTHON)

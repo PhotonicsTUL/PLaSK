@@ -172,7 +172,7 @@ int main(int argc, const char *argv[])
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
     bool python_logger = true;
-    
+
     std::deque<const char*> defs;
 
     while (argc > 1) {
@@ -207,6 +207,11 @@ int main(int argc, const char *argv[])
             plask::forcedLoglevel = true;
             if (level == argv[2]) { argc -= 2; argv += 2; }
             else { --argc; ++argv; }
+        } else if (arg == "-c") {
+            command = argv[2];
+            argv[2] = "-c";
+            --argc; ++argv;
+            break;
         } else if (arg == "-c") {
             command = argv[2];
             argv[2] = "-c";

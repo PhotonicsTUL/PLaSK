@@ -92,11 +92,13 @@ int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) 
     PyObject* type;
     PyObject* original_traceback;
 
-    PyErr_Fetch(&type, &value, &original_traceback);
-    PyErr_NormalizeException(&type, &value, &original_traceback);
-
-    py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
-    return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
+    PyErr_Print();
+//     PyErr_Fetch(&type, &value, &original_traceback);
+//     PyErr_NormalizeException(&type, &value, &original_traceback);
+//
+//     py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
+//     return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
+    return 1;
 }
 
 
@@ -109,24 +111,21 @@ void endPlask() {
 
 
 //******************************************************************************
-int main(int argc, const char *argv[])
-{
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-    SetDllDirectory(plask::exePath().c_str());
-    DWORD procIDs[2];
-    unsigned console_count = GetConsoleProcessList(procIDs, 2);
-    if (console_count == 1) { // we are the only ones using the console
-        HWND hwnd = GetConsoleWindow();
-        ShowWindow(hwnd, SW_HIDE);
-        console_count = 0;
-    }
+#include <windows.h>
+int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #else
-    unsigned console_count = 1;
+int main(int argc, const char *argv[])
 #endif
-
+{
     // Initalize python and load the plask module
     try {
-        initPlask(argc, argv);
+#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+            const char *argv[] = { "plaskgui" };
+            initPlask(1, argv);
+#       else
+            initPlask(argc, argv);
+#       endif
     } catch (plask::CriticalException) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
         endPlask();
@@ -142,10 +141,9 @@ int main(int argc, const char *argv[])
 
     // Import and run GUI
     try {
-        
+
         py::object gui = py::import("gui");
         gui.attr("main")();
-
 
     } catch (std::invalid_argument& err) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
