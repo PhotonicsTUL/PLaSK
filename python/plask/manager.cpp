@@ -122,6 +122,9 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
 /**
  * Load data from XML
  */
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+//__declspec(dllexport)
+#endif
 void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object())
 {
     PythonManager* manager = py::extract<PythonManager*>(self);

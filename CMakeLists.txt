@@ -210,10 +210,10 @@ if(WIN32)
     target_link_libraries(libplask kernel32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
                              ARCHIVE DESTINATION lib COMPONENT dev)
-else(WIN32)
+else()
     target_link_libraries(libplask dl)
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
-endif(WIN32)
+endif()
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask)
 
 #if (NOT WIN32) #can be usefull if more threads libraries will be used
@@ -255,8 +255,12 @@ if(BUILD_PYTHON)
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-    add_library(plask-python SHARED ${python_plask_src})
-    target_link_libraries(plask-python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    add_library(libplask-python SHARED ${python_plask_src})
+    target_link_libraries(libplask-python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    set_target_properties(libplask-python PROPERTIES OUTPUT_NAME plask-python)
+    if(WIN32)
+        set_target_properties(libplask-python PROPERTIES LINK_FLAGS -Wl,--export-all-symbols)
+    endif()
     # if(BUILD_PYTHON_MODULE)
     #     if(WIN32)
     #         add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
@@ -279,7 +283,7 @@ if(BUILD_PYTHON)
             # stuff libplask.exe.dll.a
             set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
     endif()
-    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} plask-python libplask)
+    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
     add_dependencies(plask python-scripts)
 
     if(DEFINED no_strict_aliasing_flag)
@@ -292,7 +296,7 @@ if(BUILD_PYTHON)
 
     # GUI
     add_executable(plaskgui python/exe_gui.cpp ${plask_manifest})
-    target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} plask-python libplask)
+    target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
     install(DIRECTORY gui DESTINATION lib/plask/ COMPONENT GUI PATTERN *.pyc EXCLUDE)
     install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
@@ -417,10 +421,6 @@ if(BUILD_TESTING)
             add_python_test(${test} ${test_file})
         endforeach()
     endif(BUILD_PYTHON)
-
-    if(BUILD_GUI)
-        set(plask_test_depends ${plask_test_depends} plaskgui qtpropertybrowser)
-    endif()
 
     if (RUN_TESTS)
         add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${solvers_test_targets})

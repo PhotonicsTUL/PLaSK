@@ -177,6 +177,9 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 }
 
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+//__declspec(dllexport)
+#endif
 shared_ptr<Logger> makePythonLogger() {
     return shared_ptr<Logger>(new PythonSysLogger);
 }
