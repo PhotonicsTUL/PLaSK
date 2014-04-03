@@ -277,7 +277,7 @@ struct DataVector {
     /**
      * Make this data vector points to nullptr data with 0-size.
      *
-     * Same as: DataVector().swap(*this);
+     * Same effect as: DataVector().swap(*this);
      */
     void reset() {
         dec_ref();
@@ -332,10 +332,13 @@ struct DataVector {
      *
      * Reserve memory using aligned_malloc<T>(size) call.
      *
-     * Same as: DataVector(size).swap(*this);
+     * Same effect as: DataVector(size).swap(*this);
      * @param size total size of the data
      */
     void reset(std::size_t size) {
+        //TODO to consider: (when clang will be fixed, now it has no std::is_default_constructible but only non-standard std::has_trivial_default_constructor)
+        //if (std::is_default_constructible<T>::value &&   //this is known at compile time and I belive that compiler optimize-out whole if when it is false
+        //    size == size_ && gc_ && gc_->count == 1 && ! gc_->deleter) return;
         dec_ref();
         data_ = aligned_malloc<T>(size);
         gc_ = new Gc(1);
