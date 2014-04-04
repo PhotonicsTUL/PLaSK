@@ -36,7 +36,13 @@ namespace detail {
 
     template <class T>
     inline void destroy_array(T* first, T* last) {
-       do_destroy_array(first, last, std::is_trivially_destructible<T>());
+       do_destroy_array(first, last,
+#if defined(__clang__) || !defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 7)
+                        std::is_trivially_destructible<T>()
+#else
+                        std::has_trivial_destructor<T>()
+#endif
+       );
     }
 
     /// Garbage collector info for DataVector
