@@ -666,6 +666,7 @@ void initMaterials() {
         .def("load_all", &MaterialsDB::loadAllToDefault, "Load all materials from specified directory to default database", py::arg("directory")=plaskMaterialsPath())
         .staticmethod("load_all") // TODO make it non-static
         .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
+        .def("__getitem__", (shared_ptr<Material>(MaterialsDB::*)(const std::string&)const)&MaterialsDB::get)
         .add_property("all", &MaterialsDB_list, "List of all materials in database")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)

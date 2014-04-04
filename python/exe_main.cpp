@@ -348,7 +348,6 @@ int main(int argc, const char *argv[])
                 globals["__manager__"] = py::object(manager);
                 plask::python::PythonManager_load(globals["__manager__"], py::str(filename), locals);
                 scriptline = manager->scriptline;
-                // manager->script = plask::python::PythonManager::removeSpaces(manager->script);
                 plask::python::PythonManager::export_dict(globals["__manager__"], globals);
                 py::delitem(manager->locals, py::str("self"));
 

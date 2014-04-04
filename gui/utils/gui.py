@@ -49,8 +49,10 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
 
         textRect = style.subElementRect(QtGui.QStyle.SE_ItemViewItemText, options)
         painter.save()
-        painter.translate(textRect.topLeft())
-        painter.setClipRect(textRect.translated(-textRect.topLeft()))
+        topleft = textRect.topLeft()
+        topleft.setY(topleft.y() + max(int((textRect.height() - doc.size().height()) / 2), 0))
+        painter.translate(topleft)
+        painter.setClipRect(textRect.translated(-topleft))
         doc.documentLayout().draw(painter, ctx)
 
         painter.restore()

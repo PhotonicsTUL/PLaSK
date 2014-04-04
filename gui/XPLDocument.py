@@ -32,20 +32,20 @@ class XPLDocument(object):
         self.mainWindow = main
         #self.tree = ElementTree()
 
-    def load_from_file(self, fileName):
-        tree = ElementTree.parse(fileName, XML_parser)
+    def load_from_file(self, filename):
+        tree = ElementTree.parse(filename, XML_parser)
         for i in range(len(XPLDocument.SECTION_NAMES)):
             element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
             if element is not None:
-                self.model_by_index(i).set_file_XML_element(element, fileName)
+                self.model_by_index(i).set_file_XML_element(element, filename)
             else:
                 self.model_by_index(i).clear()
 
-    def save_to_file(self, fileName):
+    def save_to_file(self, filename):
         root = ElementTree.Element("plask")
         for c in self.controllers:
             root.append(c.model.get_file_XML_element())
-        ElementTree.ElementTree(root).write(fileName, encoding="UTF-8", pretty_print=True) #, encoding, xml_declaration, default_namespace, method)
+        ElementTree.ElementTree(root).write(filename, encoding="UTF-8", pretty_print=True) #, encoding, xml_declaration, default_namespace, method)
 
     def controller_by_index(self, index):
         return self.controllers[index]

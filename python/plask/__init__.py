@@ -49,15 +49,15 @@ _sys.path.insert(2, _os.path.join(lib_path, "solvers"))
 
 ## ## plask.material ## ##
 
-materialdb = material.database = material.MaterialsDB.get_default()
+material.db = material.MaterialsDB.get_default()
 
 def update_factories():
     '''For each material in default database make factory in ``plask.material``.'''
     def factory(name):
-        func = lambda **kwargs: materialdb.get(name, **kwargs)
+        func = lambda **kwargs: material.db.get(name, **kwargs)
         func.__doc__ = "Create %s material." % name
         return func
-    for mat in material.database:
+    for mat in material.db:
         if mat == 'air': continue
         name = mat.split(":")[0]
         if name not in material.__dict__:
@@ -65,10 +65,10 @@ def update_factories():
 material.update_factories = update_factories
 del update_factories
 
-material.air = materialdb.get("air")
+material.air = material.db.get("air")
 material.Air = lambda: material.air
 
-materialdb.load_all()
+material.db.load_all()
 material.update_factories()
 
 def register_material(cls=None, name=None, is_complex=False, DB=None):
@@ -89,7 +89,7 @@ def register_material(cls=None, name=None, is_complex=False, DB=None):
         cls.name = cls.__name__
 
     if DB is None:
-        DB = material.database
+        DB = material.db
 
     if is_complex:
         material._register_material_complex(cls.name, cls, DB)

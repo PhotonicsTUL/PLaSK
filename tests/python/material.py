@@ -50,7 +50,7 @@ class Material(unittest.TestCase):
             return 1.5
 
     def setUp(self):
-        ptest.add_my_material(plask.materialdb)
+        ptest.add_my_material(plask.material.db)
 
     def testMaterial(self):
         '''Test basic behavior of Material class'''
@@ -62,7 +62,7 @@ class Material(unittest.TestCase):
     def testCustomMaterial(self):
         '''Test creation of custom materials'''
 
-        self.assertIn( "AlGaAs", plask.materialdb )
+        self.assertIn( "AlGaAs", plask.material.db )
 
         m = Material.AlGaAs()
         self.assertEqual(m.name, "AlGaAs")
@@ -71,14 +71,14 @@ class Material(unittest.TestCase):
         self.assertEqual( m.NR(980., 300.), (3.5, 3.5, 3.5, 0., 0.) )
         del m
 
-        self.assertEqual( ptest.material_name("Al(0.2)GaAs", plask.materialdb), "AlGaAs" )
-        self.assertEqual( ptest.material_VB("Al(0.2)GaAs", plask.materialdb, 1.0), 2.0 )
+        self.assertEqual( ptest.material_name("Al(0.2)GaAs", plask.material.db), "AlGaAs" )
+        self.assertEqual( ptest.material_VB("Al(0.2)GaAs", plask.material.db, 1.0), 2.0 )
 
-        print(plask.materialdb.all)
-        with self.assertRaises(ValueError): plask.materialdb.get("Al(0.2)GaAs:Np=1e14")
+        print(plask.material.db.all)
+        with self.assertRaises(ValueError): plask.material.db.get("Al(0.2)GaAs:Np=1e14")
 
-        print(plask.materialdb.all)
-        m = plask.materialdb.get("Al(0.2)GaAs:Dp=3.0")
+        print(plask.material.db.all)
+        m = plask.material.db.get("Al(0.2)GaAs:Dp=3.0")
         self.assertEqual( m.__class__, Material.AlGaAsDp )
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VB(1.0), 3.0 )
@@ -87,7 +87,7 @@ class Material(unittest.TestCase):
 
         with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")): m = Material.AlGaAsDp(Al=0.2, N=0.9)
 
-        AlGaAs = lambda **kwargs: plask.materialdb.get("AlGaAs", **kwargs)
+        AlGaAs = lambda **kwargs: plask.material.db.get("AlGaAs", **kwargs)
         m = AlGaAs(Al=0.2, dp="Dp", dc=5.0)
         self.assertEqual( m.name, "AlGaAs:Dp" )
         self.assertEqual( m.VB(), 1500.0 )
@@ -95,8 +95,8 @@ class Material(unittest.TestCase):
         for k in correct:
             self.assertAlmostEqual( m.composition[k], correct[k] )
         del m
-        self.assertEqual( ptest.material_name("Al(0.2)GaAs:Dp=3.0", plask.materialdb), "AlGaAs:Dp" )
-        self.assertEqual( ptest.material_VB("Al(0.2)GaAs:Dp=3.0", plask.materialdb, 1.0), 3.0 )
+        self.assertEqual( ptest.material_name("Al(0.2)GaAs:Dp=3.0", plask.material.db), "AlGaAs:Dp" )
+        self.assertEqual( ptest.material_VB("Al(0.2)GaAs:Dp=3.0", plask.material.db, 1.0), 3.0 )
 
         c = Material.WithChar()
         self.assertEqual( c.name, "WithChar" )
@@ -105,24 +105,24 @@ class Material(unittest.TestCase):
 
 
     def testDefaultMaterials(self):
-        self.assertIn( "GaN", plask.materialdb )
+        self.assertIn( "GaN", plask.material.db )
         self.assertEqual( str(plask.material.AlGaN(Al=0.2)), "Al(0.2)GaN" )
         self.assertRegexpMatches( str(plask.material.AlGaN(Ga=0.8, dp="Si", dc=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''
-        m = plask.materialdb.get("MyMaterial")
-        self.assertEqual( plask.materialdb.get("MyMaterial").name, "MyMaterial" )
-        self.assertEqual( plask.materialdb.get("MyMaterial").VB(1.0), 0.5 )
-        self.assertEqual( ptest.material_name("MyMaterial", plask.materialdb), "MyMaterial" )
-        self.assertEqual( ptest.material_VB("MyMaterial", plask.materialdb, 1.0), 0.5 )
+        m = plask.material.db.get("MyMaterial")
+        self.assertEqual( plask.material.db.get("MyMaterial").name, "MyMaterial" )
+        self.assertEqual( plask.material.db.get("MyMaterial").VB(1.0), 0.5 )
+        self.assertEqual( ptest.material_name("MyMaterial", plask.material.db), "MyMaterial" )
+        self.assertEqual( ptest.material_VB("MyMaterial", plask.material.db, 1.0), 0.5 )
         self.assertEqual( ptest.call_chi(m, 'B'), 1.0)
         self.assertEqual( m.VB(), 150.0)
         self.assertEqual( m.chi(point='C'), 1.0)
 
 
     def testMaterialWithBase(self):
-        mm = plask.materialdb.get("MyMaterial")
+        mm = plask.material.db.get("MyMaterial")
 
         @plask.material.simple
         class WithBase(plask.material.Material):
@@ -133,12 +133,12 @@ class Material(unittest.TestCase):
         self.assertEqual( m1.name, "WithBase" )
         self.assertEqual( m1.VB(1.0), 0.5 )
 
-        m2 = plask.materialdb.get("WithBase")
+        m2 = plask.material.db.get("WithBase")
         self.assertEqual( m2.name, "WithBase" )
         self.assertEqual( m2.VB(2.0), 1.0 )
 
-        self.assertEqual( ptest.material_name("WithBase", plask.materialdb), "WithBase" )
-        self.assertEqual( ptest.material_VB("WithBase", plask.materialdb, 1.0), 0.5 )
+        self.assertEqual( ptest.material_name("WithBase", plask.material.db), "WithBase" )
+        self.assertEqual( ptest.material_VB("WithBase", plask.material.db, 1.0), 0.5 )
 
 
     def testPassingMaterialsByName(self):
@@ -154,8 +154,8 @@ class Material(unittest.TestCase):
         class Therm(material.Material):
             def thermk(self, T, t): return T + t
 
-        self.assertEqual( ptest.material_thermk("Therm", materialdb, 300.), (infty,infty) )
-        self.assertEqual( ptest.material_thermk("Therm", materialdb, 300., 2.), (302.,302.) )
+        self.assertEqual( ptest.material_thermk("Therm", material.db, 300.), (infty,infty) )
+        self.assertEqual( ptest.material_thermk("Therm", material.db, 300., 2.), (302.,302.) )
 
 
     def testComparison(self):

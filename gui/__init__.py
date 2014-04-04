@@ -21,13 +21,13 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self.document = XPLDocument(self)
         self.current_tab_index = -1
-        self.fileName = None
+        self.filename = None
         self.init_UI()
 
     def model_is_new(self):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
-            self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m)
+            self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m.title())
         self.current_tab_index = 0
         self.current_section_enter()
 
@@ -39,18 +39,18 @@ class MainWindow(QtGui.QMainWindow):
         reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
-        self.fileName = None
+        self.filename = None
         self.set_model(XPLDocument(self))
 
     def open(self):
-        fileName = QtGui.QFileDialog.getOpenFileName(self, "Choose the name of experiment file to open", ".", "XPL (*.xpl)");
-        if not fileName: return;
-        self.document.load_from_file(fileName)
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "XPL (*.xpl)");
+        if not filename: return;
+        self.document.load_from_file(filename)
 
     def save(self):
-        if self.fileName != None:
+        if self.filename != None:
             if not self.before_save(): return False
-            self.document.save_to_file(self.fileName)
+            self.document.save_to_file(self.filename)
             return True
         else:
             return self.save_as()
@@ -58,10 +58,10 @@ class MainWindow(QtGui.QMainWindow):
     def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.before_save(): return False
-        fileName = QtGui.QFileDialog.getSaveFileName(self, "Choose the name of experiment file to save", ".", "XPL (*.xpl)");
-        if not fileName: return False
-        self.fileName = fileName
-        self.document.save_to_file(fileName)
+        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", "", "XPL (*.xpl)");
+        if not filename: return False
+        self.filename = filename
+        self.document.save_to_file(filename)
         return True
 
     def before_save(self):
@@ -226,6 +226,8 @@ class MainWindow(QtGui.QMainWindow):
             self.document.load_from_file(os.path.join(os.path.dirname(__file__), 'test.xpl'))
         except IOError:
             pass
+        else:
+            self.filename = 'test.xpl'
         self.model_is_new()
 
         self.show()

@@ -88,16 +88,16 @@ static py::object initPlask(int argc, const char* argv[])
 
 //******************************************************************************
 int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) {
-    PyObject* value;
-    PyObject* type;
-    PyObject* original_traceback;
-
-    PyErr_Print();
+//     PyObject* value;
+//     PyObject* type;
+//     PyObject* original_traceback;
+//
 //     PyErr_Fetch(&type, &value, &original_traceback);
 //     PyErr_NormalizeException(&type, &value, &original_traceback);
 //
 //     py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
 //     return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
+    PyErr_Print();
     return 1;
 }
 
@@ -116,7 +116,7 @@ void endPlask() {
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
 {
     int argc = 1;
-    const char* argv = { "plaskgui" };
+    const char* argv[] = { "plaskgui" };
 #else
 int main(int argc, const char *argv[])
 {

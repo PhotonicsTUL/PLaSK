@@ -2,8 +2,8 @@
 from lxml import etree as ElementTree
 from xml.sax.saxutils import quoteattr
 
-from ..info import InfoSource
 from ...utils.xml import print_interior, XML_parser
+from ..info import InfoSource
 
 class Grid(InfoSource): # or (TreeFragmentModel)??
     """Base class for models of grids (meshes or generators)"""
@@ -47,10 +47,11 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
 
     @property
     def type_and_kind_str(self):
+        from .types import display_name
         if self.is_generator:
-            return "%s generator (%s)" % (self.type, self.method)
+            return "%s generator (%s)" % (display_name(self.type), display_name(self.method))
         else:
-            return "%s mesh" % self.type
+            return "%s mesh" % display_name(self.type)
 
     def is_read_only(self):
         return self.model.is_read_only()

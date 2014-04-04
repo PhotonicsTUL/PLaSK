@@ -1,12 +1,16 @@
-from PyQt4 import QtGui
+from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QSplitter
 
-from ..model import materials
-from ..model.materials import MaterialPropertyModel
+from ..model.materials import MaterialsModel, MaterialPropertyModel, materialShortHelp
 from ..utils.gui import HTMLDelegate, table_last_col_fill
 from .base import Controller
 from .defines import DefinesCompletionDelegate
 from .table import table_with_manipulators
+
+try:
+    import plask
+except ImportError:
+    pass
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
 
@@ -15,8 +19,14 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
     def createEditor(self, parent, option, index):
 
-        earlier_names = [ 'Semiconductor', 'Metal', 'Oxide', 'Dielectric', 'LiquidCrystal' ]
-        earlier_names.extend([e.name for e in index.model().entries[0:index.row()]])
+        earlier_names = ['semiconductor', 'metal', 'oxide', 'dielectric', 'liquid_crystal']
+
+        try:
+            earlier_names.extend(mat for mat in plask.material.db if mat not in earlier_names)
+        except NameError:
+            pass
+
+        earlier_names.extend(e.name for e in index.model().entries[0:index.row()])
 
         if not earlier_names: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
 
@@ -24,6 +34,8 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(earlier_names)
+        combo.insertSeparator(5)
+        combo.insertSeparator(len(earlier_names)-index.row()+1)
         combo.setEditText(index.data())
         combo.setCompleter(self.getDefinesCompleter(parent))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
@@ -47,6 +59,9 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         combo.addItems(opts)
         combo.setEditText(index.data())
         combo.setAutoCompletionCaseSensitivity(True)
+        combo.highlighted.connect(lambda i:
+            QtGui.QToolTip.showText(QtGui.QCursor.pos(), materialShortHelp(combo.itemText(i)))
+        )
         #combo.setCompleter(completer)
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
@@ -55,7 +70,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
 class MaterialsController(Controller):
 
-    def __init__(self, document, model = materials.MaterialsModel()):
+    def __init__(self, document, model=MaterialsModel()):
         Controller.__init__(self, document, model)
 
         self.splitter = QSplitter()
@@ -64,22 +79,24 @@ class MaterialsController(Controller):
         self.materials_table.setModel(self.model)
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.materials_table))
         #self.materialsTableActions = TableActions(self.materials_table)
-        table_last_col_fill(self.materials_table, self.model.columnCount(None), 100)
+        table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         self.splitter.addWidget(table_with_manipulators(self.materials_table, self.splitter, title="Materials"))
 
         self.property_model = MaterialPropertyModel(model)
         self.properties_table = QtGui.QTableView()
         self.properties_table.setModel(self.property_model)
         self.properties_delegate = MaterialPropertiesDelegate(self.document.defines.model, self.properties_table)
+        self.unit_delegate = HTMLDelegate()
         self.properties_table.setItemDelegateForColumn(0, self.properties_delegate)
         self.properties_table.setItemDelegateForColumn(1, self.properties_delegate)
-        self.properties_table.setItemDelegateForColumn(2, HTMLDelegate())
+        self.properties_table.setItemDelegateForColumn(2, self.unit_delegate)
+        self.properties_table.setItemDelegateForColumn(3, HTMLDelegate())
         #self.properties_table.setWordWrap(True)
-        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [90, 180])
+        table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [90, 180, 50])
         self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         self.splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter, title="Properties of the material"))
 
-        self.splitter.setSizes([1,3])
+        self.splitter.setSizes([10000,30000])
 
         self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)

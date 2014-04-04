@@ -25,13 +25,22 @@ GENERATORS_TYPES = {
     },
 }
 
+DISPLAY_NAMES = {
+    'rectilinear1d': "Rectilinear1D",
+    'rectilinear2d': "Rectilinear2D",
+    'rectilinear3d': "Rectilinear3D",
+    'regular1d': "Regular1D",
+    'regular2d': "Regular2D",
+    'regular3d': "Regular3D",
+}
+
 def contruct_mesh(grids_model, element):
-    t = MESHES_TYPES.get(element.attrib['type'], None)
+    t = MESHES_TYPES.get(element.attrib['type'])
     return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element)
 
 def contruct_generator(grids_model, element):
-    t = GENERATORS_TYPES.get(element.attrib['type'], None)
-    if t: t = t.get(element.attrib['method'], None)
+    t = GENERATORS_TYPES.get(element.attrib['type'])
+    if t: t = t.get(element.attrib['method'])
     return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element)
 
 
@@ -51,13 +60,22 @@ def construct_grid(grids_model, element):
 
     raise ValueError('In <grids> section only <mesh> and <generator> tags are allowed, but got "%s".' % element.tag)
 
+
+def display_name(item):
+    ''':return: name of the mesh/generator to display in the GUI'''
+    name = DISPLAY_NAMES.get(item)
+    if name is None:
+        name = item.title()
+    return name
+
+
 def meshes_types():
     """:return: known types of meshes (list of strings)"""
-    return MESHES_TYPES.keys()
+    return (display_name(i) for i in MESHES_TYPES.keys())
 
 def generators_types():
     """:return: known types of generator (list of strings)"""
-    return GENERATORS_TYPES.keys()
+    return (display_name(i) for i in GENERATORS_TYPES.keys())
 
 def generator_methods(generator_name):
     """

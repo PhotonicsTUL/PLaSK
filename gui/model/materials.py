@@ -9,59 +9,69 @@ from .info import Info
 #from guis import DefinesEditor
 
 MATERIALS_PROPERTES = OrderedDict((
-    ('A', ('Monomolecular recombination coefficient A [1/s]', [('T', 'temperature [K]')])),
-    ('absb', ('Absorption coefficient α [cm<sup>-1</sup>]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]')])),
-    ('ac', ('Hydrostatic deformation potential for the conduction band a<sub>c</sub> [eV]', [('T', 'temperature [K]')])),
-    ('av', ('Hydrostatic deformation potential for the valence band a<sub>v</sub> [eV]', [('T', 'temperature [K]')])),
-    ('B', ('Radiative recombination coefficient B [m<sup>3</sup>/s]', [('T', 'temperature [K]')])),
-    ('b', ('Shear deformation potential b [eV]', [('T', 'temperature [K]')])),
-    ('C', ('Auger recombination coefficient C [m<sup>6</sup>/s]', [('T', 'temperature [K]')])),
-    ('c11', ('Elastic constant c<sub>11</sub> [GPa]', [('T', 'temperature [K]')])),
-    ('c12', ('Elastic constant c<sub>12</sub> [GPa]', [('T', 'temperature [K]')])),
-    ('CB', ('Conduction band level CB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
-    ('chi', ('Electron affinity χ [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
-    ('cond', ('Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m]', [('T', 'temperature [K]')])),
-    ('condtype', ('Electrical conductivity type. In semiconductors this indicates what type of carriers Nf refers to.', [])),
-    ('cp', ('Specific heat at constant pressure [J/(kg K)]', [('T', 'temperature [K]')])),
-    ('D', ('Ambipolar diffusion coefficient D [m<sup>2</sup>/s]', [('T', 'temperature [K]')])),
-    ('dens', ('Density [kg/m<sup>3</sup>]', [('T', 'temperature [K]')])),
-    ('Dso', ('Split-off energy D<sub>so</sub> [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
-    ('EactA', ('Acceptor ionization energy E<sub>actA</sub> [eV]', [('T', 'temperature [K]')])),
-    ('EactD', ('Acceptor ionization energy E<sub>actD</sub> [eV]', [('T', 'temperature [K]')])),
-    ('Eg', ('Energy gap E<sub>g</sub> [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin')])),
-    ('eps', ('Donor ionization energy ε<sub>R</sub> [-]', [('T', 'temperature [K]')])),
-    ('lattC', ('Lattice constant [Å]', [('T', 'temperature [K]'), ('x', 'lattice parameter [-]')])),
-    ('Me', ('Electron effective mass M<sub>e</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the irreducible Brillouin zone [-]')])),
-    ('Mh', ('Hole effective mass M<sub>h</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
-    ('Mhh', ('Heavy hole effective mass M<sub>hh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
-    ('Mlh', ('Light hole effective mass M<sub>lh</sub> in in-plane (lateral) and cross-plane (vertical) direction [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
-    ('Mso', ('Split-off mass M<sub>so</sub>` [m<sub>0</sub>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]')])),
-    ('Nc', ('Effective density of states in the conduction band Nc [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
-    ('Nf', ('Free carrier concentration N [cm<sup>-3</sup>]', [('T', 'temperature [K]')])),
-    ('Ni', ('Intrinsic carrier concentration N<sub>i</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]')])),
-    ('Nr', ('Complex refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')])),
-    ('nr', ('Real refractive index n<sub>R</sub> [-]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')])),
-    ('NR', ('Anisotropic complex refractive index tensor n<sub>R</sub> [-]. Tensor must have the form [ n<sub>00</sub>, n<sub>11</sub>, n<sub>22</sub>, n<sub>01</sub>, n<sub>10</sub> ]', [('wl', 'wavelength [nm]'), ('T', 'temperature [K]'), ('n', 'injected carriers concentration [1/cm]')])),
-    ('Nv', ('Effective density of states in the valance band N<sub>v</sub> [cm<sup>-3</sup>]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('point', 'point in the Brillouin zone [-]')])),
-    ('thermk', ('Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k [W/(m K)]', [('T', 'temperature [K]'), ('h', 'layer thickness [µm]')])),
-    ('VB', ('Valance band level offset VB [eV]', [('T', 'temperature [K]'), ('e', 'lateral strain [-]'), ('hole', 'hole type (\'H\' or \'L\') [-]')])),
+    (u'A', (u'Monomolecular recombination coefficient <i>A</i>', '1/s', [(u'T', 'temperature [K]')])),
+    (u'absb', (u'Absorption coefficient <i>α</i>', 'cm<sup>-1</sup>', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]')])),
+    (u'ac', (u'Hydrostatic deformation potential for the conduction band <i>a<sub>c</sub></i>', 'eV', [(u'T', 'temperature [K]')])),
+    (u'av', (u'Hydrostatic deformation potential for the valence band <i>a<sub>v</sub></i>', 'eV', [(u'T', 'temperature [K]')])),
+    (u'B', (u'Radiative recombination coefficient <i>B</i>', 'm<sup>3</sup>/s', [(u'T', 'temperature [K]')])),
+    (u'b', (u'Shear deformation potential <i>b</i>', 'eV', [(u'T', 'temperature [K]')])),
+    (u'C', (u'Auger recombination coefficient <i>C</i>', 'm<sup>6</sup>/s', [(u'T', 'temperature [K]')])),
+    (u'c11', (u'Elastic constant <i>c<sub>11</sub></i>', 'GPa', [(u'T', 'temperature [K]')])),
+    (u'c12', (u'Elastic constant <i>c<sub>12</sub></i>', 'GPa', [(u'T', 'temperature [K]')])),
+    (u'CB', (u'Conduction band level <i>CB</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
+    (u'chi', (u'Electron affinity <i>χ</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
+    (u'cond', (u'Electrical conductivity <i>σ</i> in-plane (lateral) and cross-plane (vertical) direction', 'S/m', [(u'T', 'temperature [K]')])),
+    (u'condtype', (u'Electrical conductivity type. In semiconductors this indicates what type of carriers <i>Nf</i> refers to.', [])),
+    (u'cp', (u'Specific heat at constant pressure', 'J/(kg K)', [(u'T', 'temperature [K]')])),
+    (u'D', (u'Ambipolar diffusion coefficient <i>D</i>', 'm<sup>2</sup>/s', [(u'T', 'temperature [K]')])),
+    (u'dens', (u'Density', 'kg/m<sup>3</sup>', [(u'T', 'temperature [K]')])),
+    (u'Dso', (u'Split-off energy <i>D</i><sub>so</sub>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
+    (u'EactA', (u'Acceptor ionization energy <i>E</i><sub>actA</sub>', 'eV', [(u'T', 'temperature [K]')])),
+    (u'EactD', (u'Acceptor ionization energy <i>E</i><sub>actD</sub>', 'eV', [(u'T', 'temperature [K]')])),
+    (u'Eg', (u'Energy gap <i>E<sub>g</sub></i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin')])),
+    (u'eps', (u'Donor ionization energy <i>ε<sub>R</sub></i>', '-', [(u'T', 'temperature [K]')])),
+    (u'lattC', (u'Lattice constant', 'Å', [(u'T', 'temperature [K]'), (u'x', 'lattice parameter [-]')])),
+    (u'Me', (u'Electron effective mass <i>M<sub>e</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the irreducible Brillouin zone [-]')])),
+    (u'Mh', (u'Hole effective mass <i>M<sub>h</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
+    (u'Mhh', (u'Heavy hole effective mass <i>M<sub>hh</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
+    (u'Mlh', (u'Light hole effective mass <i>M<sub>lh</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
+    (u'Mso', (u'Split-off mass <i>M</i><sub>so</sub>', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
+    (u'Nc', (u'Effective density of states in the conduction band <i>Nc</i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
+    (u'Nf', (u'Free carrier concentration <i>N<i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]')])),
+    (u'Ni', (u'Intrinsic carrier concentration <i>N<sub>i</sub></i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]')])),
+    (u'Nr', (u'Complex refractive index <i>n<sub>R</sub></i>', '-', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]'), (u'n', 'injected carriers concentration [1/cm]')])),
+    (u'nr', (u'Real refractive index <i>n<sub>R</sub></i>', '-', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]'), (u'n', 'injected carriers concentration [1/cm]')])),
+    (u'NR', (u'Anisotropic complex refractive index tensor <i>n<sub>R</sub></i> [-]. Tensor must have the form', ' n<sub>00</sub>, n<sub>11</sub>, n<sub>22</sub>, n<sub>01</sub>, n<sub>10</sub> ', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]'), (u'n', 'injected carriers concentration [1/cm]')])),
+    (u'Nv', (u'Effective density of states in the valance band <i>N<sub>v</sub></i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
+    (u'thermk', (u'Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction <i>k</i>', 'W/(m K)', [(u'T', 'temperature [K]'), (u'h', 'layer thickness [µm]')])),
+    (u'VB', (u'Valance band level offset <i>VB</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'hole', 'hole type (\'H\' or \'L\') [-]')])),
 ))
 
-def materialHTMLHelp(property_name, font_size = None):
-    prop_name, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None))
+def materialShortHelp(property_name):
+    help, unit = MATERIALS_PROPERTES.get(property_name, (None, None, None))[:2]
+    if help is None: return None
+    if unit is None: return help
+    return "%s [%s]" % (help, unit)
+
+def materialHTMLHelp(property_name, font_size=None):
+    prop_help, prop_unit, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None))
     res = ''
-    if font_size != None: res += '<span style="font-size: %s">' % font_size
-    if prop_name == None:
+    if font_size is not None: res += '<span style="font-size: %s">' % font_size
+    if prop_help is None:
         res += "unknown property '%s'" % property_name
     else:
-        res += prop_name
-        if len(prop_attr) > 0: res += '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr])
-    if font_size != None: res += '</span>'
+        res += prop_help
+        if len(prop_attr) > 0: res += '<br>' + ', '.join(['<b><i>%s</i></b> - %s' % (n, v) for (n, v) in prop_attr])
+    if font_size is not None: res += '</span>'
     return res
+
+def materialUnit(property_name):
+    return MATERIALS_PROPERTES.get(property_name, (None, '', None))[1]
+
 
 class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
-    def __init__(self, materialsModel, material = None, parent=None, *args):
+    def __init__(self, materialsModel, material=None, parent=None, *args):
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.materialsModel = materialsModel
@@ -72,14 +82,16 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         return len(self.__material.properties)
 
     def columnCount(self, parent = QtCore.QModelIndex()):
-        return 3    # 3 if comment supported
+        return 4    # 5 if comment supported
 
     def get(self, col, row):
         n, v = self.__material.properties[row]
         if col == 2:
+            return '<span style="font-size: 12pt;">%s</span>' % materialUnit(n)
+        elif col == 3:
             #prop_name, prop_attr = MATERIALS_PROPERTES[n]
             #return '<span style="font-size: 9pt">' + prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr]) + '</span>'
-            return materialHTMLHelp(n, '9pt')
+            return materialHTMLHelp(n, '10pt')
         return n if col == 0 else v
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
@@ -87,15 +99,15 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
 #         if role == QtCore.Qt.ToolTipRole:
-#             return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
+#             return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection(u'cols', index.column())])
 #         if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
 #             max_level = -1
 #             c = index.column()
 #             for err in self.info_by_row.get(index.row(), []):
-#                 if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row massages has decoration only in first column
+#                 if err.has_connection(u'cols', c, c == 0):   # c == 0 -> whole row massages has decoration only in first column
 #                     if err.level > max_level: max_level = err.level
 #             return info.infoLevelIcon(max_level)
-        if role == QtCore.Qt.BackgroundRole and index.column() == 2:
+        if role == QtCore.Qt.BackgroundRole and index.column() >= 2:
             return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
 
     def set(self, col, row, value):
@@ -124,7 +136,8 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Value'
-            if col == 2: return 'Help'
+            if col == 2: return 'Unit'
+            if col == 3: return 'Help'
         return None
 
     @property
@@ -176,7 +189,7 @@ class MaterialsModel(TableModel):
                 ElementTree.SubElement(mat, n).text = v
 
     def __init__(self, parent=None, info_cb = None, *args):
-        super(MaterialsModel, self).__init__('materials', parent, info_cb, *args)
+        super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
     def set_XML_element(self, element):
         self.layoutAboutToBeChanged.emit()
@@ -201,16 +214,16 @@ class MaterialsModel(TableModel):
         if col == 0: return self.entries[row].name
         if col == 1: return self.entries[row].base
         if col == 2: return self.entries[row].comment
-        raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
+        raise IndexError(u'column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
     def set(self, col, row, value):
         if col == 0: self.entries[row].name = value
         elif col == 1: self.entries[row].base = value
         elif col == 2: self.entries[row].comment = value
-        else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
+        else: raise IndexError(u'column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
     def create_default_entry(self):
-        return MaterialsModel.Material("name", "Semiconductor")
+        return MaterialsModel.Material("name", "semiconductor")
 
     # QAbstractListModel implementation
 
@@ -230,14 +243,14 @@ class MaterialsModel(TableModel):
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:
-                res.append(Info('Material name is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
+                res.append(Info(u'Material name is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
             else:
                 names.setdefault(d.name, []).append(i)
             if not d.base:
-                res.append(Info('Material base is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
+                res.append(Info(u'Material base is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
         for name, indexes in names.items():
             if len(indexes) > 1:
-                res.append(Info('Duplicated material name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
+                res.append(Info(u'Duplicated material name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
                                 Info.ERROR, rows = indexes, cols = [0]
                                 )
                           )
