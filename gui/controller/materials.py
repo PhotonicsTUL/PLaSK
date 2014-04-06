@@ -1,7 +1,7 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QSplitter
 
-from ..model.materials import MaterialsModel, MaterialPropertyModel, materialShortHelp
+from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp
 from ..utils.gui import HTMLDelegate, table_last_col_fill
 from .base import Controller
 from .defines import DefinesCompletionDelegate
@@ -60,7 +60,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         combo.setEditText(index.data())
         combo.setAutoCompletionCaseSensitivity(True)
         combo.highlighted.connect(lambda i:
-            QtGui.QToolTip.showText(QtGui.QCursor.pos(), materialShortHelp(combo.itemText(i)))
+            QtGui.QToolTip.showText(QtGui.QCursor.pos(), materialHTMLHelp(combo.itemText(i)))
         )
         #combo.setCompleter(completer)
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
@@ -87,12 +87,14 @@ class MaterialsController(Controller):
         self.properties_table.setModel(self.property_model)
         self.properties_delegate = MaterialPropertiesDelegate(self.document.defines.model, self.properties_table)
         self.unit_delegate = HTMLDelegate()
+        self.help_delegate = HTMLDelegate()
         self.properties_table.setItemDelegateForColumn(0, self.properties_delegate)
         self.properties_table.setItemDelegateForColumn(1, self.properties_delegate)
         self.properties_table.setItemDelegateForColumn(2, self.unit_delegate)
-        self.properties_table.setItemDelegateForColumn(3, HTMLDelegate())
+        self.properties_table.setItemDelegateForColumn(3, self.help_delegate)
         #self.properties_table.setWordWrap(True)
         table_last_col_fill(self.properties_table, self.property_model.columnCount(None), [90, 180, 50])
+
         self.properties_table.verticalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
         self.splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter, title="Properties of the material"))
 

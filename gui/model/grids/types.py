@@ -68,6 +68,10 @@ def display_name(item):
         name = item.title()
     return name
 
+def xml_name(name):
+    ''':return: XML tag name of the mesh/generator'''
+    return name.lower() #TODO make it better if needed
+
 
 def meshes_types():
     """:return: known types of meshes (list of strings)"""
@@ -82,4 +86,4 @@ def generator_methods(generator_name):
         :param str generator_type: name of generator type
         :return: known methods for generator with given type (empty if the type of a generator is not known)
     """
-    return GENERATORS_TYPES.get(generator_name, {}).keys()
+    return (display_name(i) for i in GENERATORS_TYPES.get(generator_name, {}).keys())

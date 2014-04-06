@@ -2,7 +2,7 @@ from PyQt4 import QtGui
 from PyQt4.Qt import QLabel, QStringListModel
 from ...model.grids.grid import Grid
 from ...model.grids.types import construct_grid , meshes_types, generators_types,\
-    generator_methods
+    generator_methods, xml_name
 
 class NewGridDialog(QtGui.QDialog):
 
@@ -67,16 +67,16 @@ class NewGridDialog(QtGui.QDialog):
     def __type_changed__(self, new_type):
         if not self.method_edit.isVisible(): return
         text = self.method_edit.currentText()
-        self.method_edit.setModel(QStringListModel(sorted(generator_methods(new_type))))
+        self.method_edit.setModel(QStringListModel(sorted(generator_methods(xml_name(new_type)))))
         self.method_edit.setEditText(text)
 
     def get_grid(self, grids_model):
         return construct_grid(
                 grids_model,
                 Grid.contruct_empty_XML_element(
-                    self.name_edit.text(),
-                    self.type_edit.currentText(),
-                    self.method_edit.currentText() if self.kind_generator.isChecked() else None
+                    xml_name(self.name_edit.text()),
+                    xml_name(self.type_edit.currentText()),
+                    xml_name(self.method_edit.currentText()) if self.kind_generator.isChecked() else None
                 )
         )
 

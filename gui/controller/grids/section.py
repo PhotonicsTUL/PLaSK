@@ -29,7 +29,7 @@ class GridsController(Controller):
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)
 
-        self.splitter.setSizes([10000,36000])
+        self.splitter.setSizes([10000,26000])
 
         self.grids_table.selectionModel().selectionChanged.connect(self.grid_selected) #currentChanged ??
 
