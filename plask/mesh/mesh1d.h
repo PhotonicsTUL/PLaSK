@@ -47,7 +47,7 @@ class RectangularMesh<1,AxisT>: public MeshD<1> {
         return axis.size();
     }
 
-    virtual Vec<1> at(size_t index) const {
+    virtual double at(size_t index) const {
         return axis[index];
     }
 

@@ -29,11 +29,11 @@ bool RectilinearAxis::operator==(const plask::RectilinearAxis& to_compare) const
 
 
 
-RectilinearAxis::const_iterator RectilinearAxis::find(double to_find) const {
+RectilinearAxis::native_const_iterator RectilinearAxis::find(double to_find) const {
     return std::lower_bound(points.begin(), points.end(), to_find);
 }
 //
-RectilinearAxis::const_iterator RectilinearAxis::findNearest(double to_find) const {
+RectilinearAxis::native_const_iterator RectilinearAxis::findNearest(double to_find) const {
     return find_nearest_binary(points.begin(), points.end(), to_find);
 }
 

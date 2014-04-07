@@ -229,7 +229,7 @@ struct MeshD: public Mesh {
     bool empty() const { return size() == 0; }
 
     /// Type of vector representing coordinates in local space
-    typedef Vec<DIM, double> LocalCoords;
+    typedef typename Primitive<DIM>::DVec LocalCoords;
 
     /**
      * Get point with given mesh index.
@@ -323,7 +323,7 @@ inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
 
 
 /** Base template for rectangular mesh of any dimension */
-template <int dim, typename AxisT>
+template <int dim>
 class RectangularMesh {};
 
 

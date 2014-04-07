@@ -6,20 +6,16 @@
 namespace plask {
 
 #define RECTANGULAR_MESH_3D_DECLARE_ITERATION_ORDER(first, second, third) \
-    template <typename AxisT> \
-    static std::size_t index_##first##second##third(const RectangularMesh<3,AxisT>* mesh, std::size_t index0, std::size_t index1, std::size_t index2) { \
+    static std::size_t index_##first##second##third(const RectangularMesh<3>* mesh, std::size_t index0, std::size_t index1, std::size_t index2) { \
         return index##third + mesh->axis##third.size() * (index##second + mesh->axis##second.size() * index##first); \
     } \
-    template <typename AxisT> \
-    static std::size_t index##first##_##first##second##third(const RectangularMesh<3,AxisT>* mesh, std::size_t mesh_index) { \
+    static std::size_t index##first##_##first##second##third(const RectangularMesh<3>* mesh, std::size_t mesh_index) { \
         return mesh_index / mesh->axis##third.size() / mesh->axis##second.size(); \
     } \
-    template <typename AxisT> \
-    static std::size_t index##second##_##first##second##third(const RectangularMesh<3,AxisT>* mesh, std::size_t mesh_index) { \
+    static std::size_t index##second##_##first##second##third(const RectangularMesh<3>* mesh, std::size_t mesh_index) { \
         return (mesh_index / mesh->axis##third.size()) % mesh->axis##second.size(); \
     } \
-    template <typename AxisT> \
-    static std::size_t index##third##_##first##second##third(const RectangularMesh<3,AxisT>* mesh, std::size_t mesh_index) { \
+    static std::size_t index##third##_##first##second##third(const RectangularMesh<3>* mesh, std::size_t mesh_index) { \
         return mesh_index % mesh->axis##third.size(); \
     }
 
@@ -31,8 +27,7 @@ RECTANGULAR_MESH_3D_DECLARE_ITERATION_ORDER(2,0,1)
 RECTANGULAR_MESH_3D_DECLARE_ITERATION_ORDER(2,1,0)
 
 
-template <typename AxisT>
-void RectangularMesh<3,AxisT>::setIterationOrder(IterationOrder iterationOrder) {
+void RectangularMesh<3>::setIterationOrder(IterationOrder iterationOrder) {
 #   define RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(o1,o2,o3) \
         case ORDER_##o1##o2##o3: \
             index_f = index_##o1##o2##o3; index0_f = index0_##o1##o2##o3; \
@@ -54,8 +49,7 @@ void RectangularMesh<3,AxisT>::setIterationOrder(IterationOrder iterationOrder) 
 }
 
 
-template <typename AxisT>
-typename RectangularMesh<3,AxisT>::IterationOrder RectangularMesh<3,AxisT>::getIterationOrder() const {
+typename RectangularMesh<3>::IterationOrder RectangularMesh<3,AxisT>::getIterationOrder() const {
     return this->index_f == decltype(this->index_f)(index_012) ? ORDER_012 :
            this->index_f == decltype(this->index_f)(index_021) ? ORDER_021 :
            this->index_f == decltype(this->index_f)(index_102) ? ORDER_102 :
@@ -64,8 +58,7 @@ typename RectangularMesh<3,AxisT>::IterationOrder RectangularMesh<3,AxisT>::getI
                                                                  ORDER_210;
 }
 
-template <typename AxisT>
-void RectangularMesh<3,AxisT>::setOptimalIterationOrder() {
+void RectangularMesh<3>::setOptimalIterationOrder() {
 #   define RECTANGULAR_MESH_3D_DETERMINE_ITERATION_ORDER(first, second, third) \
         if (this->axis##third.size() <= this->axis##second.size() && this->axis##second.size() <= this->axis##first.size()) { \
             setIterationOrder(ORDER_##first##second##third); return; \
@@ -80,8 +73,7 @@ void RectangularMesh<3,AxisT>::setOptimalIterationOrder() {
 
 
 // Particular instantations
-template class RectangularMesh<3,RegularAxis>;
-template class RectangularMesh<3,RectilinearAxis>;
+template class RectangularMesh<3>;
 
 
 } // namespace plask

@@ -11,13 +11,14 @@ This file defines regular mesh for 1d space.
 #include "../utils/interpolation.h"
 #include "../utils/stl.h"
 
+#include "rectangular1d.h"
 
 namespace plask {
 
 /**
  * Regular mesh in 1d space.
  */
-class RegularAxis {
+class RegularAxis: public RectangularAxis {
 
     double lo, _step;
     std::size_t points_count;
@@ -27,14 +28,13 @@ class RegularAxis {
     /// Type of points in this mesh.
     typedef double PointType;
 
-    typedef IndexedIterator<const RegularAxis, PointType> iterator;
-    typedef IndexedIterator<const RegularAxis, PointType> const_iterator;
+    typedef IndexedIterator<const RegularAxis, PointType> native_const_iterator;
 
     /// @return iterator referring to the first point in this mesh
-    const_iterator begin() const { return const_iterator(this, 0); }
+    native_const_iterator begin() const { return native_const_iterator(this, 0); }
 
     /// @return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return const_iterator(this, points_count); }
+    native_const_iterator end() const { return native_const_iterator(this, points_count); }
 
     /// Pointer to mesh holding this axis
     Mesh* owner;
@@ -101,7 +101,7 @@ class RegularAxis {
     double step() const { return _step; }
 
     /// @return number of points in the mesh
-    std::size_t size() const { return points_count; }
+    virtual std::size_t size() const override { return points_count; }
 
     /**
      * Compare meshes
@@ -139,6 +139,8 @@ class RegularAxis {
      */
     const double operator[](std::size_t index) const { return lo + index * _step; }
 
+    virtual double at(std::size_t index) const override { return lo + index * _step; }
+
     /**
      * Remove all points from mesh.
      */
@@ -166,7 +168,7 @@ class RegularAxis {
      *         Can be equal to end() if to_find is higher than all points in mesh
      *         (in such case returned iterator can't be dereferenced).
      */
-    const_iterator find(double to_find) const {
+    native_const_iterator find(double to_find) const {
         return begin() + findIndex(to_find);
     }
 
@@ -175,7 +177,7 @@ class RegularAxis {
      * @param to_find
      * @return position pos for which abs(*pos-to_find) is minimal
      */
-    const_iterator findNearest(double to_find) const {
+    native_const_iterator findNearest(double to_find) const {
         return find_nearest_using_lower_bound(begin(), end(), to_find, find(to_find));
     }
 
