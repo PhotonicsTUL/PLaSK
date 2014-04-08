@@ -1409,8 +1409,13 @@ public:
  * @tparam DataGetter2D functor
  */
 template <typename DataGetter2D>
-auto interpolateLinear2D(DataGetter2D data, const double& point_axis0, const double& point_axis1, const* RectangularAxis axis0, const const* RectangularAxis axis1, std::size_t index0, std::size_t index1)
-  -> typename std::remove_reference<decltype(data(0, 0))>::type {
+auto interpolateLinear2D(
+        DataGetter2D data,
+        const double& point_axis0, const double& point_axis1,
+        const RectangularAxis* axis0, const RectangularAxis* axis1,
+        std::size_t index0, std::size_t index1)
+  -> typename std::remove_reference<decltype(data(0, 0))>::type
+{
     if (index0 == 0) {
         if (index1 == 0) return data(0, 0);
         if (index1 == axis1->size()) return data(0, index1-1);
