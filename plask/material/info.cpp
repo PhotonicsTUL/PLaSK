@@ -4,6 +4,12 @@
 
 namespace plask {
 
+void MaterialInfo::override(const MaterialInfo &to_override) {
+    this->parent = to_override.parent;
+    for (auto& prop: to_override.propertyInfo)
+        this->propertyInfo[prop.first] = prop.second;
+}
+
 MaterialInfo::PropertyInfo& MaterialInfo::operator()(PROPERTY_NAME property) {
     return propertyInfo[property];
 }
@@ -21,7 +27,10 @@ const MaterialInfo::PropertyInfo::ArgumentRange& MaterialInfo::PropertyInfo::get
 }
 
 MaterialInfo::PropertyInfo& MaterialInfo::PropertyInfo::setArgumentRange(MaterialInfo::ARGUMENT_NAME argument, MaterialInfo::PropertyInfo::ArgumentRange range) {
-    _argumentRange[argument] = range;
+    if (range == NO_RANGE)
+        _argumentRange.erase(argument);
+    else
+        _argumentRange[argument] = range;
     return *this;
 }
 
@@ -38,6 +47,21 @@ MaterialInfo & MaterialInfo::DB::add(const std::string &materialName, const std:
 
 MaterialInfo & MaterialInfo::DB::add(const std::string& materialName) {
     return materialInfo[materialName];
+}
+
+boost::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialName, bool with_inharited_info) {
+    auto this_mat_info = materialInfo.find(materialName);
+    if (this_mat_info == materialInfo.end())
+        return boost::optional<MaterialInfo>();
+
+    if (!with_inharited_info || this_mat_info->second.parent.empty())
+        return boost::optional<MaterialInfo>(this_mat_info->second);
+
+    boost::optional<MaterialInfo> parent_info = get(this_mat_info->second.parent, true);
+    if (!parent_info)
+        return boost::optional<MaterialInfo>(this_mat_info->second);
+    parent_info->override(this_mat_info->second);
+    return parent_info;
 }
 
 

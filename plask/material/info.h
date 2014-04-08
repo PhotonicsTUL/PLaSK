@@ -10,6 +10,8 @@ This file contains classes which stores meta-informations about materials.
 #include <vector>
 #include <utility>
 
+#include <boost/optional.hpp>
+
 namespace plask {
 
 /**
@@ -23,8 +25,8 @@ struct MaterialInfo {
         kind,       ///< material kind
         lattC,      ///< lattice constant
         Eg,         ///< energy gap
-        CB,        ///< conduction band offset
-        VB,        ///< valence band offset
+        CB,         ///< conduction band offset
+        VB,         ///< valence band offset
         Dso,        ///< split-off energy
         Mso,        ///< split-off mass
         Me,         ///< electron effective mass
@@ -85,9 +87,6 @@ struct MaterialInfo {
             : className(className), property(property), comment(comment) {}
     };
 
-    ///Name of parent class
-    std::string parent;
-
     ///Collect information about material property.
     struct PropertyInfo {
 
@@ -119,37 +118,108 @@ struct MaterialInfo {
 
     public:
 
-        /// Returned by getArgumentRange if there is no range for given argument, hold two NaNs
+        /// Returned by getArgumentRange if there is no range for given argument, holds two NaNs
         static const ArgumentRange NO_RANGE;
 
+        /**
+         * Set bibliography source of calculation method of this material property.
+         * @param new_source bibliography source
+         * @return *this
+         */
         PropertyInfo& setSource(const std::string& new_source) { this->_source = new_source; return *this; }
 
+        /**
+         * Get bibliography source of calculation method of this material property.
+         * @return bibliography source of calculation method of this material property
+         */
         const std::string& getSource() const { return _source; }
 
+        /**
+         * Set comment for this material property.
+         * @param new_comment comment
+         * @return *this
+         */
         PropertyInfo& setComment(const std::string& new_comment) { this->_comment = new_comment; return *this; }
 
+        /**
+         * Get comment for this material property.
+         * @return comment for this material property
+         */
         const std::string& getComment() const { return _comment; }
 
+        /**
+         * Get the range of argument's values for which calculation method is known to works fine.
+         * @param argument name of requested argument
+         * @return range (NO_RANGE if the information is not available)
+         */
         const ArgumentRange& getArgumentRange(ARGUMENT_NAME argument);
 
+        /**
+         * Get array of "see also" links.
+         * @return array of "see also" links
+         */
         const std::vector<Link>& getLinks() const { return _links; }
 
+        /**
+         * Append bibliography source to string returned by getSource().
+         * @param sourceToAdd bibliography source to append
+         * @return *this
+         */
         PropertyInfo& addSource(const std::string& sourceToAdd) { addToString(this->_source, sourceToAdd); return *this; }
 
+        /**
+         * Append comment to string returned by getComment().
+         * @param commentToAdd comment to append
+         * @return *this
+         */
         PropertyInfo& addComment(const std::string& commentToAdd) { addToString(this->_comment, commentToAdd); return *this; }
 
+        /**
+         * Set the range of argument's values for which calculation method is known to works fine.
+         * @param argument name of argument
+         * @param range range of values for which calculation method is known to works fine (NO_RANGE if the information is not available)
+         * @return *this
+         */
         PropertyInfo& setArgumentRange(ARGUMENT_NAME argument, ArgumentRange range);
 
+        /**
+         * Set the range of argument's values for which calculation method is known to works fine.
+         * @param argument name of argument
+         * @param from, to range of values for which calculation method is known to works fine
+         * @return *this
+         */
         PropertyInfo& setArgumentRange(ARGUMENT_NAME argument, double from, double to) {
             return setArgumentRange(argument, ArgumentRange(from, to));
         }
 
+        /**
+         * Add link to array of "see also" links.
+         * @param link link to add
+         * @return *this
+         */
         PropertyInfo& addLink(const Link& link) { _links.push_back(link); return *this; }
 
-        PropertyInfo& addLink(Link&& link) { _links.push_back(link); return *this; }
+        /**
+         * Move link to array of "see also" links.
+         * @param link link to add (move)
+         * @return *this
+         */
+        PropertyInfo& addLink(Link&& link) { _links.push_back(std::move(link)); return *this; }
     };
 
+    /// Name of parent class
+    std::string parent;
+
+    /// Information about properties.
     std::map<PROPERTY_NAME, PropertyInfo> propertyInfo;
+
+    /**
+     * Override all information about this by informations from @p to_override.
+     *
+     * It can be used to override the information in this by its subclass informations.
+     * @param to_override
+     */
+    void override(const MaterialInfo &to_override);
 
     /**
      * Get property info object (add new, empty one if there is no information about property).
@@ -163,6 +233,10 @@ struct MaterialInfo {
 
     public:
 
+        /**
+         * Get default database of materials' meta-informations.
+         * @return default database of materials' meta-informations
+         */
         static DB& getDefault();
 
         /// Material name -> material information
@@ -176,7 +250,20 @@ struct MaterialInfo {
          */
         MaterialInfo& add(const std::string& materialName, const std::string& parentMaterial);
 
+        /**
+         * Add meta-informations about material to database.
+         * @param materialName name of material to add
+         * @return material info object which allow to fill detailed information
+         */
         MaterialInfo& add(const std::string& materialName);
+
+        /**
+         * Get meta-informations about material from database.
+         * @param materialName name of material to get information about
+         * @param with_inharited_info if true (default) returned object will consists also with information inharited from parent, grand-parent, etc. materials
+         * @return meta-informations about material with name @p materialName, no value if meta-informations of requested material are not included in data-base
+         */
+        boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inharited_info = true);
 
     };
 
