@@ -210,8 +210,11 @@ struct MaterialInfo {
     /// Name of parent class
     std::string parent;
 
+    private:
     /// Information about properties.
     std::map<PROPERTY_NAME, PropertyInfo> propertyInfo;
+
+    public:
 
     /**
      * Override all information about this by informations from @p to_override.
@@ -239,6 +242,9 @@ struct MaterialInfo {
     /// Material info database
     class DB {
 
+        /// Material name -> material information
+        std::map<std::string, MaterialInfo> materialInfo;
+
     public:
 
         /**
@@ -246,9 +252,6 @@ struct MaterialInfo {
          * @return default database of materials' meta-informations
          */
         static DB& getDefault();
-
-        /// Material name -> material information
-        std::map<std::string, MaterialInfo> materialInfo;
 
         /**
          * Add meta-informations about material to database.
