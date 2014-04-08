@@ -14,6 +14,12 @@ MaterialInfo::PropertyInfo& MaterialInfo::operator()(PROPERTY_NAME property) {
     return propertyInfo[property];
 }
 
+boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(MaterialInfo::PROPERTY_NAME property)
+{
+    auto i = propertyInfo.find(property);
+    return i == propertyInfo.end() ? boost::optional<MaterialInfo::PropertyInfo>() : boost::optional<MaterialInfo::PropertyInfo>(i->second);
+}
+
 /*const MaterialInfo::PropertyInfo& MaterialInfo::operator()(PROPERTY_NAME property) const {
     return propertyInfo[property];
 }*/
@@ -62,6 +68,15 @@ boost::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialN
         return boost::optional<MaterialInfo>(this_mat_info->second);
     parent_info->override(this_mat_info->second);
     return parent_info;
+}
+
+boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::string &materialName, PROPERTY_NAME propertyName, bool with_inharited_info) {
+    auto this_mat_info = materialInfo.find(materialName);
+    if (this_mat_info == materialInfo.end())
+        return boost::optional<MaterialInfo::PropertyInfo>();
+
+    auto res = this_mat_info->second.getPropertyInfo(propertyName);
+    return res || !with_inharited_info || this_mat_info->second.parent.empty() ? res : get(this_mat_info->second.parent, propertyName, true);
 }
 
 

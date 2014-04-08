@@ -223,8 +223,16 @@ struct MaterialInfo {
 
     /**
      * Get property info object (add new, empty one if there is no information about property).
+     * @param property
      */
     PropertyInfo& operator()(PROPERTY_NAME property);
+
+    /**
+     * Get info about the @p property of this.
+     * @param property
+     * @return info about the @p property of this
+     */
+    boost::optional<PropertyInfo> getPropertyInfo(PROPERTY_NAME property);
 
     //const PropertyInfo& operator()(PROPERTY_NAME property) const;
 
@@ -264,6 +272,14 @@ struct MaterialInfo {
          * @return meta-informations about material with name @p materialName, no value if meta-informations of requested material are not included in data-base
          */
         boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inharited_info = true);
+
+        /**
+         * Get meta-informations about material's property from database.
+         * @param materialName, propertyName name of material and its property to get information about
+         * @param with_inharited_info if true (default) returned object will consists also with information inharited from parent, grand-parent, etc. materials
+         * @return meta-informations about material's property from database, no value if meta-informations of requested material are not included in data-base
+         */
+        boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inharited_info = true);
 
     };
 
