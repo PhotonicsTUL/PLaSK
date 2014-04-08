@@ -284,6 +284,15 @@ struct MaterialInfo {
          */
         boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inharited_info = true);
 
+        typedef std::map<std::string, MaterialInfo>::iterator iterator;
+        typedef std::map<std::string, MaterialInfo>::const_iterator const_iterator;
+
+        iterator begin() { return materialInfo.begin(); }
+        const_iterator begin() const { return materialInfo.begin(); }
+
+        iterator end() { return materialInfo.end(); }
+        const_iterator end() const { return materialInfo.end(); }
+
     };
 
     /**
