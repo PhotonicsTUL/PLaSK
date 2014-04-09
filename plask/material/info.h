@@ -283,7 +283,16 @@ struct MaterialInfo {
         /// Material name -> material information
         std::map<std::string, MaterialInfo> materialInfo;
 
+        /// Parent database which is requested for all materials not described in this database
+        const DB* parent;
+
     public:
+
+        /**
+         * Create database.
+         * @param parent parent database, which is requested for all materials not described in this database.
+         */
+        explicit DB(const DB* parent = nullptr): parent(parent) {}
 
         /**
          * Get default database of materials' meta-informations.
@@ -312,7 +321,7 @@ struct MaterialInfo {
          * @param with_inharited_info if true (default) returned object will consists also with information inharited from parent, grand-parent, etc. materials
          * @return meta-informations about material with name @p materialName, no value if meta-informations of requested material are not included in data-base
          */
-        boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inharited_info = true);
+        boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inharited_info = true) const;
 
         /**
          * Get meta-informations about material's property from database.
@@ -320,15 +329,36 @@ struct MaterialInfo {
          * @param with_inharited_info if true (default) returned object will consists also with information inharited from parent, grand-parent, etc. materials
          * @return meta-informations about material's property from database, no value if meta-informations of requested material are not included in data-base
          */
-        boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inharited_info = true);
+        boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inharited_info = true) const;
 
+        /// iterator over materials' meta-informations
         typedef std::map<std::string, MaterialInfo>::iterator iterator;
+
+        /// const iterator over materials' meta-informations
         typedef std::map<std::string, MaterialInfo>::const_iterator const_iterator;
 
+        /**
+         * Get begin iterator over materials' meta-informations.
+         * @return begin iterator over  materials' meta-information
+         */
         iterator begin() { return materialInfo.begin(); }
+
+        /**
+         * Get const begin iterator over materials' meta-informations.
+         * @return const begin iterator over  materials' meta-information
+         */
         const_iterator begin() const { return materialInfo.begin(); }
 
+        /**
+         * Get end iterator over materials' meta-informations.
+         * @return end iterator over  materials' meta-information
+         */
         iterator end() { return materialInfo.end(); }
+
+        /**
+         * Get const end iterator over materials' meta-informations.
+         * @return const end iterator over  materials' meta-information
+         */
         const_iterator end() const { return materialInfo.end(); }
 
     };

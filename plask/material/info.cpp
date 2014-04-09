@@ -110,10 +110,10 @@ MaterialInfo & MaterialInfo::DB::add(const std::string& materialName) {
     return materialInfo[materialName];
 }
 
-boost::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialName, bool with_inharited_info) {
+boost::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialName, bool with_inharited_info) const {
     auto this_mat_info = materialInfo.find(materialName);
     if (this_mat_info == materialInfo.end())
-        return boost::optional<MaterialInfo>();
+        return parent ? parent->get(materialName, with_inharited_info) : boost::optional<MaterialInfo>();
 
     if (!with_inharited_info || this_mat_info->second.parent.empty())
         return boost::optional<MaterialInfo>(this_mat_info->second);
@@ -125,10 +125,10 @@ boost::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialN
     return parent_info;
 }
 
-boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::string &materialName, PROPERTY_NAME propertyName, bool with_inharited_info) {
+boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::string &materialName, PROPERTY_NAME propertyName, bool with_inharited_info) const {
     auto this_mat_info = materialInfo.find(materialName);
     if (this_mat_info == materialInfo.end())
-        return boost::optional<MaterialInfo::PropertyInfo>();
+        return parent ? parent->get(materialName, propertyName, with_inharited_info) : boost::optional<MaterialInfo::PropertyInfo>();
 
     auto res = this_mat_info->second.getPropertyInfo(propertyName);
     return res || !with_inharited_info || this_mat_info->second.parent.empty() ? res : get(this_mat_info->second.parent, propertyName, true);
