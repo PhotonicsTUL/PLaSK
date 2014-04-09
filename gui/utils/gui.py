@@ -15,8 +15,8 @@ def exception_to_msg(f, parent = None, err_title = None):
         return False
 
 defaultFont = QtGui.QFont()
-defaultFont.setFamily("Courier")
-defaultFont.setPointSize(10)
+defaultFont.setFamily("monospace")
+#defaultFont.setPointSize(10)
 
 def table_last_col_fill(table, cols_count, col_size=0):
     if isinstance(col_size, collections.Sequence):
