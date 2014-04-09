@@ -41,7 +41,6 @@ struct MaterialInfo {
         c12,        ///< elastic constant
         c44,        ///< elastic constant
         eps,        ///< dielectric constant
-        e,          ///< dielectric constant
         chi,        ///< electron affinity
         Nc,         ///< effective density of states in the conduction band
         Nv,         ///< effective density of states in the valence band
@@ -61,16 +60,25 @@ struct MaterialInfo {
         cp,         ///< specific heat at constant pressure
         nr,         ///< refractive index
         absp,       ///< absorption coefficient alpha
-        Nr          ///< refractive index
+        Nr,         ///< complex refractive index
+        NR          ///< complex refractive index tensor
     };
+
+    /// Names of the properties
+    static const char* PROPERTY_NAME_STRING[];
 
     /// Names of arguments for which we need to give the ranges
     enum ARGUMENT_NAME {
         T,          ///< temperature
-        h,          ///< thickness
+        e,          ///< strain
         wl,         ///< wavelength
+        n,          ///< carriers concentration
+        h,          ///< thickness
         doping      ///< doping
     };
+
+    /// Names of the arguments
+    static const char* ARGUMENT_NAME_STRING[];
 
     /**
      * Represent link ("see also") to property in class.
@@ -152,7 +160,7 @@ struct MaterialInfo {
          * @param argument name of requested argument
          * @return range (NO_RANGE if the information is not available)
          */
-        const ArgumentRange& getArgumentRange(ARGUMENT_NAME argument);
+        const ArgumentRange& getArgumentRange(ARGUMENT_NAME argument) const;
 
         /**
          * Get array of "see also" links.
@@ -235,7 +243,7 @@ struct MaterialInfo {
      * @param property
      * @return info about the @p property of this
      */
-    boost::optional<PropertyInfo> getPropertyInfo(PROPERTY_NAME property);
+    boost::optional<PropertyInfo> getPropertyInfo(PROPERTY_NAME property) const;
 
     /// Iterator over properties
     typedef std::map<PROPERTY_NAME, PropertyInfo>::iterator iterator;

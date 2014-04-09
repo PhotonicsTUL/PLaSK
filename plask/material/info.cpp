@@ -4,6 +4,61 @@
 
 namespace plask {
 
+const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
+    "kind",
+    "lattC",
+    "Eg",
+    "CB",
+    "VB",
+    "Dso",
+    "Mso",
+    "Me",
+    "Mhh",
+    "Mlh",
+    "Mh",
+    "ac",
+    "av",
+    "b",
+    "d",
+    "c11",
+    "c12",
+    "c44",
+    "eps",
+    "chi",
+    "Nc",
+    "Nv",
+    "Ni",
+    "Nf",
+    "EactD",
+    "EactA",
+    "mob",
+    "cond",
+    "condtype",
+    "A",
+    "B",
+    "C",
+    "D",
+    "thermk",
+    "dens",
+    "cp",
+    "nr",
+    "absp",
+    "Nr",
+    "NR"
+};
+
+/// Names of arguments for which we need to give the ranges
+const char* MaterialInfo::ARGUMENT_NAME_STRING[] = {
+    "T",
+    "e",
+    "wl",
+    "n",
+    "h",
+    "doping"
+};
+
+
+
 void MaterialInfo::override(const MaterialInfo &to_override) {
     this->parent = to_override.parent;
     for (auto& prop: to_override.propertyInfo)
@@ -14,7 +69,7 @@ MaterialInfo::PropertyInfo& MaterialInfo::operator()(PROPERTY_NAME property) {
     return propertyInfo[property];
 }
 
-boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(MaterialInfo::PROPERTY_NAME property)
+boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(MaterialInfo::PROPERTY_NAME property) const
 {
     auto i = propertyInfo.find(property);
     return i == propertyInfo.end() ? boost::optional<MaterialInfo::PropertyInfo>() : boost::optional<MaterialInfo::PropertyInfo>(i->second);
@@ -27,7 +82,7 @@ boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(Materi
 const MaterialInfo::PropertyInfo::ArgumentRange MaterialInfo::PropertyInfo::NO_RANGE =
     ArgumentRange(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
 
-const MaterialInfo::PropertyInfo::ArgumentRange& MaterialInfo::PropertyInfo::getArgumentRange(plask::MaterialInfo::ARGUMENT_NAME argument) {
+const MaterialInfo::PropertyInfo::ArgumentRange& MaterialInfo::PropertyInfo::getArgumentRange(plask::MaterialInfo::ARGUMENT_NAME argument) const {
     auto r = _argumentRange.find(argument);
     return r != _argumentRange.end() ? r->second : NO_RANGE;
 }
