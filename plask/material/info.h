@@ -237,6 +237,36 @@ struct MaterialInfo {
      */
     boost::optional<PropertyInfo> getPropertyInfo(PROPERTY_NAME property);
 
+    /// Iterator over properties
+    typedef std::map<PROPERTY_NAME, PropertyInfo>::iterator iterator;
+
+    /// Const iterator over properties
+    typedef std::map<PROPERTY_NAME, PropertyInfo>::const_iterator const_iterator;
+
+    /**
+     * Get begin iterator over properties.
+     * @return begin iterator over properties
+     */
+    iterator begin() { return propertyInfo.begin(); }
+
+    /**
+     * Get const begin iterator over properties.
+     * @return const begin iterator over properties
+     */
+    const_iterator begin() const { return propertyInfo.begin(); }
+
+    /**
+     * Get end iterator over properties.
+     * @return end iterator over properties
+     */
+    iterator end() { return propertyInfo.end(); }
+
+    /**
+     * Get const end iterator over properties.
+     * @return const end iterator over properties
+     */
+    const_iterator end() const { return propertyInfo.end(); }
+
     //const PropertyInfo& operator()(PROPERTY_NAME property) const;
 
     /// Material info database
