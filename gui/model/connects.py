@@ -17,12 +17,12 @@ class ConnectsModel(TableModel):
         TableModel.__init__(self, 'connects', parent, info_cb, *args)
 
     def set_XML_element(self, element):
-        self.layoutAboutToBeChanged.emit()
+        self.modelAboutToBeReset.emit()
         if element is not None:
             self.entries = [ConnectsModel.Entry(c.attrib.get("out", ""), c.attrib.get("in", "")) for c in element.iter("connect")]
         else:
             self.entries = []
-        self.layoutChanged.emit()
+        self.modelReset.emit()
         self.fire_changed()
 
     # XML element that represents whole section

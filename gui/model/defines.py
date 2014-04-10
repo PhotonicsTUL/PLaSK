@@ -24,12 +24,12 @@ class DefinesModel(TableModel):
         return -1
 
     def set_XML_element(self, element):
-        self.layoutAboutToBeChanged.emit()
+        self.modelAboutToBeReset.emit()
         if element is not None:
             self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")) for c in element.iter("define")]
         else:
             self.entries = []
-        self.layoutChanged.emit()
+        self.modelReset.emit()
         self.fire_changed()
 
     # XML element that represents whole section

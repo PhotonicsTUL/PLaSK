@@ -8,6 +8,8 @@ from .table import TableModel, TableModelEditMethods
 from .info import Info
 #from guis import DefinesEditor
 
+import sys
+
 MATERIALS_PROPERTES = OrderedDict((
     (u'A', (u'Monomolecular recombination coefficient <i>A</i>', '1/s', [(u'T', 'temperature [K]')])),
     (u'absb', (u'Absorption coefficient <i>α</i>', 'cm<sup>-1</sup>', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]')])),
@@ -68,11 +70,15 @@ def materialUnit(property_name):
 
 class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
+    def __invalidate__(self):
+        self.material = None
+
     def __init__(self, materialsModel, material=None, parent=None, *args):
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.materialsModel = materialsModel
         self.__material = material
+        self.materialsModel.modelReset.connect(self.__invalidate__)
 
     def rowCount(self, parent = QtCore.QModelIndex()):
         if not self.__material or parent.isValid(): return 0
@@ -142,9 +148,9 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
     @material.setter
     def material(self, material):
-        self.layoutAboutToBeChanged.emit()
+        self.modelAboutToBeReset.emit()
         self.__material = material
-        self.layoutChanged.emit()
+        self.modelReset.emit()
 
     def options_to_choose(self, index):
         """:return: list of available options to choose at given index or None"""
@@ -188,14 +194,14 @@ class MaterialsModel(TableModel):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
     def set_XML_element(self, element):
-        self.layoutAboutToBeChanged.emit()
+        self.modelAboutToBeReset.emit()
         del self.entries[:]
         if element is not None:
             for mat in element.iter("material"):
                 self.entries.append(
                         MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None),  [ (prop.tag, prop.text) for prop in mat ])
                 )
-        self.layoutChanged.emit()
+        self.modelReset.emit()
         self.fire_changed()
 
     # XML element that represents whole section
