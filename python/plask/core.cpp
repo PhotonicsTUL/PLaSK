@@ -303,7 +303,7 @@ BOOST_PYTHON_MODULE(_plask)
                       "    mysolver:category.type")
         .add_property("initialized", &plask::Solver::isInitialized,
                       "True if the solver has been initialized. (read only)\n\n"
-                      "Solvers usually get initialized at the beginnig of the computations.\n"
+                      "Solvers usually get initialized at the beginning of the computations.\n"
                       "You can clean the initialization state and free the memory by calling\n"
                       "the :meth:`invalidate` method.")
         .def("invalidate", &plask::Solver::invalidate,

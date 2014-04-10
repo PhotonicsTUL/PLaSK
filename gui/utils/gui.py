@@ -5,7 +5,7 @@ import collections
 def exception_to_msg(f, parent = None, err_title = None):
     """
         Call f() in try block, and after catch exception show Qt message.
-        :return: false obly if F() has thrown an exception, true in other cases (bool)
+        :return: false only if F() has thrown an exception, true in other cases (bool)
     """
     try:
         f()
@@ -16,7 +16,7 @@ def exception_to_msg(f, parent = None, err_title = None):
 
 defaultFont = QtGui.QFont()
 defaultFont.setFamily("monospace")
-#defaultFont.setPointSize(10)
+defaultFont.setPointSize(int(0.99*defaultFont.pointSize()))
 
 def table_last_col_fill(table, cols_count, col_size=0):
     if isinstance(col_size, collections.Sequence):

@@ -303,7 +303,7 @@ struct MaterialInfo {
         /**
          * Add meta-informations about material to database.
          * @param materialName name of material to add
-         * @param parentMaterial parent material, from which all properties all inharited (some may be overwritten)
+         * @param parentMaterial parent material, from which all properties all inherited (some may be overwritten)
          * @return material info object which allow to fill detailed information
          */
         MaterialInfo& add(const std::string& materialName, const std::string& parentMaterial);
@@ -318,18 +318,18 @@ struct MaterialInfo {
         /**
          * Get meta-informations about material from database.
          * @param materialName name of material to get information about
-         * @param with_inharited_info if true (default) returned object will consists also with information inharited from parent, grand-parent, etc. materials
+         * @param with_inherited_info if true (default) returned object will consists also with information inherited from parent, grand-parent, etc. materials
          * @return meta-informations about material with name @p materialName, no value if meta-informations of requested material are not included in data-base
          */
-        boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inharited_info = true) const;
+        boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inherited_info = true) const;
 
         /**
          * Get meta-informations about material's property from database.
          * @param materialName, propertyName name of material and its property to get information about
-         * @param with_inharited_info if true (default) returned object will consists also with information inharited from parent, grand-parent, etc. materials
+         * @param with_inherited_info if true (default) returned object will consists also with information inherited from parent, grand-parent, etc. materials
          * @return meta-informations about material's property from database, no value if meta-informations of requested material are not included in data-base
          */
-        boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inharited_info = true) const;
+        boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inherited_info = true) const;
 
         /// iterator over materials' meta-informations
         typedef std::map<std::string, MaterialInfo>::iterator iterator;
