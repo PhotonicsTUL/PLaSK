@@ -9,12 +9,12 @@ class ScriptModel(SectionModel):
         self.code = ''
 
     def set_XML_element(self, element):
-        self.set_text(element.text if element is not None else '')
+        self.set_text(element.text.lstrip('\n\r') if element is not None else '')
 
     # XML element that represents whole section
     def get_XML_element(self):
         res = ElementTree.Element(self.name)
-        res.text = ElementTree.CDATA(self.code)
+        res.text = ElementTree.CDATA('\n' + self.code)
         return res
 
     def get_text(self):
