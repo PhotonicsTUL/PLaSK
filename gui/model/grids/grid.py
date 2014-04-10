@@ -39,9 +39,9 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
 
     def set_text(self, text):
         if self.is_generator:
-            tab = ['<generator name=', quoteattr(self.name), ' type=', quoteattr(self.type), ' method=', quoteattr(self.method), '>', text.encode('utf-8'), '</generator>' ]
+            tab = ['<generator name=', quoteattr(self.name).encode('utf-8'), ' type=', quoteattr(self.type).encode('utf-8'), ' method=', quoteattr(self.method).encode('utf-8'), '>', text.encode('utf-8'), '</generator>' ]
         else:
-            tab = ['<mesh name=', quoteattr(self.name), ' type=', quoteattr(self.type), '>', text.encode('utf-8'), '</mesh>' ]
+            tab = ['<mesh name=', quoteattr(self.name).encode('utf-8'), ' type=', quoteattr(self.type).encode('utf-8'), '>', text.encode('utf-8'), '</mesh>' ]
         #print ''.join(tab)
         self.set_XML_element(ElementTree.fromstringlist(tab, parser = XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
 
