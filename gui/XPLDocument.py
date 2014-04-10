@@ -42,11 +42,13 @@ class XPLDocument(object):
                 self.model_by_index(i).clear()
 
     def save_to_file(self, filename):
-        root = ElementTree.Element("plask")
-        for c in self.controllers:
-            root.append(c.model.get_file_XML_element())
-        ElementTree.ElementTree(root).write(filename, encoding="UTF-8", pretty_print=True) #, encoding, xml_declaration, default_namespace, method)
-
+        with open(filename, 'w') as f:
+            f.write('<plask>\n\n')
+            for c in self.controllers:
+                f.write( ElementTree.tostring( c.model.get_file_XML_element() , encoding="UTF-8", pretty_print=True) )
+                f.write('\n')
+            f.write('</plask>')
+            
     def controller_by_index(self, index):
         return self.controllers[index]
 
