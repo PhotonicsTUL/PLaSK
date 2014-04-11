@@ -62,6 +62,10 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
             return getBoundingBox().contains(point);
         }
 
+        // LUKASZ
+        std::vector< shared_ptr<Material> > actMaterials; ///< All materials in the active region
+        std::vector<double> lens; ///< Thicknesses of the layers in the active region
+
         shared_ptr<Material> materialQW;        ///< Quantum well material
         shared_ptr<Material> materialBarrier;   ///< Barrier material
         double qwlen;                           ///< Single quantum well thickness [Å]
@@ -159,6 +163,7 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     double gainTEST; // for test only
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
+    QW::warstwa *mpLay;
     QW::struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
     int buildStructure();
     int buildEc();
