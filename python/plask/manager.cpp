@@ -313,37 +313,43 @@ void PythonManager::export_dict(py::object self, py::dict dict) {
 
 void PythonManager::loadScript(XMLReader &reader) {
     AssignWithBackup<XMLReader::Filter> backup(reader.contentFilter);   // do not filter script content
+    unsigned line = reader.getLineNr();
     Manager::loadScript(reader);
+    removeSpaces(line);
 }
 
 
-// std::string PythonManager::removeSpaces(const std::string& source) {
-//     auto line =  boost::make_split_iterator(source, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
-//     size_t strip;
-//     for (auto c = line->begin(); c != line->end(); ++c) if (!std::isspace(*c)) throw Exception("There must be a newline after <script>");
-//     auto firstline = ++line;
-//     auto beg = line->begin();
-//     do { // Search for the first non-empty line to get initial indentation
-//         strip = 0;
-//         for (; beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
-//             if (*beg == ' ') ++strip;
-//             else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
-//         }
-//     } while (beg == line->end());
-//     std::string result;
-//     line = firstline;
-//     for (size_t lineno = 1; line != decltype(line)(); ++line, ++lineno) { // Indent all lines
-//         size_t pos = 0;
-//         for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
-//             if (*beg == ' ') ++pos;
-//             else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
-//             else throw Exception("Line %1% in <script> section indented less than the first one", lineno);
-//         }
-//         result += std::string(beg, line->end());
-//         result += "\n";
-//     }
-//     return result;
-// }
+void PythonManager::removeSpaces(unsigned xmlline) {
+    auto line =  boost::make_split_iterator(script, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
+    size_t strip;
+    auto firstline = line;
+    auto beg = line->begin();
+    do { // Search for the first non-empty line to get initial indentation
+        strip = 0;
+        for (; beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
+            if (*beg == ' ') ++strip;
+            else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
+        }
+    } while (beg == line->end());
+    if (beg == line->begin()) return;
+    std::string result;
+    line = firstline;
+    for (size_t lineno = 1; line != decltype(line)(); ++line, ++lineno) { // Indent all lines
+        size_t pos = 0;
+        for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
+            if (*beg == ' ') ++pos;
+            else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
+            else {
+                ptrdiff_t d = std::distance(line->begin(), beg);
+                throw XMLException(format("XML line %1%: Current script line indentation (%2% space%3%) is less than the indentation of the first script line (%4% space%5%)",
+                                          xmlline+lineno, d, (d==1)?"":"s", strip, (strip==1)?"":"s"));
+            }
+        }
+        result += std::string(beg, line->end());
+        result += "\n";
+    }
+    script = std::move(result);
+}
 
 
 

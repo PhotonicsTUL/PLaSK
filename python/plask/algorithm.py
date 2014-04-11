@@ -43,7 +43,7 @@ class ThermoElectric(object):
         tfreq (int): Number of electrical iterations per single thermal step.
             As temperature tends to converge faster, it is reasonable to repeat
             thermal solution less frequently.
-            
+
         connect (bool): If True, solvers are automatically connected by the
             alogrithm in its constructor.
 
@@ -156,8 +156,6 @@ class ThermoElectric(object):
         field = self.thermal.outTemperature(self.thermal.mesh)
         plask.plot_field(field)
         cbar = plask.colorbar(use_gridspec=True)
-        plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-2])
-        plask.ylabel(u"$%s$ [\xb5m]" % plask.config.axes[-1])
         cbar.set_label("Temperature [K]")
         if geometry_color is not None:
             plask.plot_geometry(self.thermal.geometry, color=geometry_color)
@@ -184,8 +182,6 @@ class ThermoElectric(object):
         field = self.electrical.outVoltage(self.electrical.mesh)
         plask.plot_field(field)
         cbar = plask.colorbar(use_gridspec=True)
-        plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-2])
-        plask.ylabel(u"$%s$ [\xb5m]" % plask.config.axes[-1])
         cbar.set_label("Voltage [V]")
         if geometry_color is not None:
             plask.plot_geometry(self.electrical.geometry, color=geometry_color)
@@ -210,13 +206,15 @@ class ThermoElectric(object):
         plask.gcf().canvas.set_window_title("Voltage")
 
 
-    def plot_junction_current(self, refine=16):
+    def plot_junction_current(self, refine=16, bounds=True):
         '''
         Plot current density at the active region.
 
         Args:
             refine (int): Number of points in the plot between each two points
                           in the computational mesh.
+            bounds (bool): If *True* then the geometry objects boundaries are
+                           plotted.
         '''
         # A little magic to get junction position first
         points = self.electrical.mesh.get_midpoints()
@@ -251,6 +249,10 @@ class ThermoElectric(object):
             plask.legend(loc='best')
         plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-2])
         plask.ylabel(u"Current Density [kA/cm\xb2]")
+        if bounds:
+            simplemesh = plask.mesh.Rectilinear2D.SimpleGenerator()(self.electrical.geometry.item)
+            for x in simplemesh.axis0:
+                plask.axvline(x, ls=":", color="k")
         plask.gcf().canvas.set_window_title("Current Density")
 
 

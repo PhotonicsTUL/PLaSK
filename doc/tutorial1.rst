@@ -222,9 +222,9 @@ After you have specified the above connections, bi-directional data exchange bet
           <connect in="therm.inHeat" out="electr.outHeat"/>
         </connects>
 
-        <script>
+        <script><![CDATA[
         <!-- Here will go the script presented in the rest of this tutorial -->
-        </script>
+        ]]></script>
 
         </plask>
 
@@ -242,7 +242,9 @@ They give simple introduction to performing advanced scientific computations in 
 
 However, in order to just use PLaSK and perform basic computations, you do not need any knowledge of Python other than presented in this manual. Even so, the Python syntax is so simple and readable that you should have no problems reading and understanding moderately advanced scripts and writing simple ones on your own.
 
-As you have noticed, there is already a :xml:tag:`<script>` section in :ref:`listing of tutorial1.xpl <lis-Listing-of-tutorial1.xpl>`. All the Python code presented from now on in this tutorial must be put inside this section. Hence, we will skip the XML elements from the examples.
+As you have noticed, there is already a :xml:tag:`<script>` section in :ref:`listing of tutorial1.xpl <lis-Listing-of-tutorial1.xpl>`. In order to allow using ``<`` symbol in the script (which would normally be interpreted as a start of the XML tag by the parser), we additionally enclose the script between the ``<![CDATA[`` ``]]>`` markings. Everything inside it is not interpreted as XML.
+
+As all the Python code presented from now on in this tutorial must be put inside this section, we will skip the XML elements from the examples below.
 
 In our tutorial we want to self-consistently compute temperature and electric current distribution. Having all the solvers set in the XPL file, we just need to launch calculations::
 

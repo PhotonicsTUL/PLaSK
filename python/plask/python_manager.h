@@ -32,7 +32,8 @@ struct PythonManager: public Manager {
 
     virtual void loadScript(XMLReader& reader) override;
 
-    // static std::string removeSpaces(const std::string& source);
+  private:
+    void removeSpaces(unsigned xmlline);
 };
 
 }} // namespace plask::python

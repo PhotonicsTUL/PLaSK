@@ -251,7 +251,7 @@ def read_dan(fname):
         regions.append(r)
 
     # boundary conditions
-    def parse_bc():
+    def parse_bc(vname='value', opt=''):
         bounds = []
         line = input.next()
         nbc = int(line[0])
@@ -262,9 +262,9 @@ def read_dan(fname):
             except IndexError: val = 0.
             except ValueError: val = 0.
             if (x0 == x1):
-                bounds.append(dict(dir='vertical', at=x0, start=y0, stop=y1, value=val))
+                bounds.append(dict(dir='vertical', at=x0, start=y0, stop=y1, optional=opt, value=val, valname=vname))
             elif (y0 == y1):
-                bounds.append(dict(dir='horizontal', at=y0, start=x0, stop=x1, value=val))
+                bounds.append(dict(dir='horizontal', at=y0, start=x0, stop=x1, optional=opt, value=val, valname=vname))
             else:
                 raise ValueError("boundary condition line is neither horizontal nor vertical")
         return bounds
@@ -272,8 +272,8 @@ def read_dan(fname):
     boundaries = {}
     boundaries['voltage'] = parse_bc()
     boundaries['temperature'] = parse_bc()
-    boundaries['convection'] = parse_bc()
-    boundaries['radiation'] = parse_bc()
+    boundaries['convection'] = parse_bc('coeff', 'ambient="300"')
+    boundaries['radiation'] = parse_bc('emissivity', 'ambient="300"')
     try: boundaries['mesh'] = parse_bc()
     except: pass
 
@@ -298,7 +298,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
     ofile = open(name+'.xpl', 'w')
 
-    def out(text):
+    def out(text=''):
         ofile.write(text)
         ofile.write('\n')
 
@@ -323,23 +323,22 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
 
     # geometry
     out('<geometry>\n  <%s name="main" axes="%s"%s>' % (geometry, axes, geomore))
-    out('    <container>')
+    out('<container>')
     for r in regions:
         r.write(ofile)
-    out('    </container>')
+    out('</container>')
     out('  </%s>\n</geometry>\n' % geometry)
 
     # default mesh generator
     out('<grids>')
     out('  <generator type="rectilinear2d" method="divide" name="default">\n    <postdiv by0="4" by1="2"/>\n  </generator>')
-    out('  <generator type="rectilinear2d" method="divide" name="plots">\n    <postdiv by="10"/>\n  </generator>')
     out('</grids>\n')
 
     def save_boundaries(name):
         if boundaries[name]:
             out('    <%s>' % name)
             for data in boundaries[name]:
-                out(('      <condition value="%(value)s"><place line="%(dir)s"' +
+                out(('      <condition %(valname)s="%(value)s" %(optional)s><place line="%(dir)s"' +
                              ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>') % data)
             out('    </%s>' % name)
 
@@ -357,7 +356,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             save_boundaries('radiation')
             out('  </thermal>')
         if electr:
-            out('  <electrical solver="Beta%s" name="ELECTRICAL">' % suffix)
+            out('  <electrical solver="Shockley%s" name="ELECTRICAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             if pnjcond is not None:
                 out('    <junction pnjcond="%g" heat="wavelength"/>' % pnjcond[1])
@@ -378,6 +377,9 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
     ## script
     out('<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
 
+    if bool(therm) ^ bool(electr):
+        out('import sys, os')
+
 
     if heats:
         out('heat_profile = StepProfile(GEO.main)')
@@ -385,9 +387,9 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('heat_profile[GEO.%s] = %s' % heat)
 
         if electr:
-            out('THERMAL.inHeat = ELECTRICAL.outHeat + ProviderForHeat%s(heat_profile)\n' % suffix)
+            out('THERMAL.inHeat = ELECTRICAL.outHeat + heat_profile.outHeat\n')
         else:
-            out('THERMAL.inHeat = ProviderForHeat%s(heat_profile)\n' % suffix)
+            out('THERMAL.inHeat = heat_profile.outHeat\n')
 
     if electr:
         out('# Adjust the values below!')
@@ -396,96 +398,92 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
         out('ELECTRICAL.beta = 19.\n')
 
     if therm and electr:
-        out('terr = 300.')
-        out('verr = 10.')
-        out('ELECTRICAL.compute(1)')
-        out('THERMAL.compute(1)')
-        out('while terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr:')
-        out('    verr = ELECTRICAL.compute(6)')
-        out('    terr = THERMAL.compute(1)')
+        out('task = algorithm.ThermoElectric(THERMAL, ELECTRICAL)')
+        out('task.run()')
     else:
         if therm:
-            out('THERMAL.compute(0)')
+            out('THERMAL.compute()')
         elif electr:
-            out('ELECTRICAL.compute(0)')
+            out('ELECTRICAL.compute()')
 
     if electr:
         out('\nprint_log(LOG_INFO, "Total current: %.3g mA" % abs(ELECTRICAL.get_total_current()))')
 
-    if therm or electr:
-        out('\nplotgrid = MSG.plots(GEO.main.item)')
-
+    if bool(therm) ^ bool(electr):
         if actlevel is not False:
             if actlevel is True:
-                out('actbox = GEO.main.get_object_bboxes(GEO.active)[0]')
+                out('\nactbox = GEO.main.get_object_bboxes(GEO.active)[0]')
                 out('actlevel = 0.5 * (actbox.lower[1] + actbox.upper[1])')
             else:
                 out('actlevel = %g' % actlevel)
-            out('actgrid = mesh.Rectilinear2D(plotgrid.axis0, [actlevel])')
-            out('plotgrid.axis1.insert(actlevel)')
-        out('')
-
+            out('actgrid = mesh.Rectilinear2D(ELECTRICAL.mesh.axis0, [actlevel])')
         if therm:
-            out('temperature = THERMAL.outTemperature(plotgrid)')
-            out('heats = THERMAL.inHeat(plotgrid)')
+            out('\ntemperature = THERMAL.outTemperature(THERMAL.mesh)')
+            out('heats = THERMAL.inHeat(THERMAL.mesh)')
         if electr:
-            out('voltage = ELECTRICAL.outPotential(plotgrid)')
-            out('current = ELECTRICAL.outCurrentDensity(plotgrid)')
+            out('voltage = ELECTRICAL.outPotential(ELECTRICAL.mesh)')
+            out('current = ELECTRICAL.outCurrentDensity(ELECTRICAL.mesh)')
             if actlevel is not False:
                 out('acurrent = ELECTRICAL.outCurrentDensity(actgrid, "SPLINE")')
-
-        h5mode = 'w'
-        out('\nif has_hdf5:')
-        out('    import sys, os')
-        out('    h5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")')
+        out('\nh5file = h5py.File(os.path.splitext(sys.argv[0])[0]+".h5", "w")')
         if therm:
-            out('    save_field(temperature, h5file, "Temperature")')
-            out('    save_field(heats, h5file, "Heat")')
+            out('save_field(temperature, h5file, "Temperature")')
+            out('save_field(heats, h5file, "Heat")')
         if electr:
-            out('    save_field(voltage, h5file, "Voltage")')
-            out('    save_field(current, h5file, "CurrentDensity")')
+            out('save_field(voltage, h5file, "Voltage")')
+            out('save_field(current, h5file, "CurrentDensity")')
 
-        out('    h5file.close()')
+        out('h5file.close()')
 
-        out('\nif has_pylab:')
-        out('    plot_geometry(GEO.main, set_limits=True)')
-        out('    defmesh = MSG.default(GEO.main.item)')
-        out('    plot_mesh(defmesh, color="0.75")')
-        if electr:
-            out('    plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")')
+    out('\nplot_geometry(GEO.main, set_limits=True)')
+    out('defmesh = MSG.default(GEO.main.item)')
+    out('plot_mesh(defmesh, color="0.75")')
+    if electr:
+        out('plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")')
+    if therm:
+        out('plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")')
+        out('plot_boundary(THERMAL.convection_boundary, defmesh, THERMAL.geometry, color="g")')
+        out('plot_boundary(THERMAL.radiation_boundary, defmesh, THERMAL.geometry, color="y")')
+    out('gcf().canvas.set_window_title("Default mesh")')
+
+    if therm and electr:
+        out('\nfigure()')
+        out('task.plot_temperature()')
+        out('\nfigure()')
+        out('task.plot_voltage()')
+        out('\nfigure()')
+        out('task.plot_junction_current()')
+
+    elif therm or electr:
         if therm:
-            out('    plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")')
-            out('    plot_boundary(THERMAL.convection_boundary, defmesh, THERMAL.geometry, color="g")')
-            out('    plot_boundary(THERMAL.radiation_boundary, defmesh, THERMAL.geometry, color="y")')
-        out('    gcf().canvas.set_window_title("Default mesh")')
-        if therm:
-            out('\n    figure()')
-            out('    plot_field(temperature, 16)')
-            out('    colorbar()')
-            out('    plot_geometry(GEO.main, color="w")')
-            out('    gcf().canvas.set_window_title("Temperature")')
-            out('\n    figure()')
-            out('    plot_field(heats, 16)')
-            out('    colorbar()')
-            out('    plot_geometry(GEO.main, color="w")')
-            out('    gcf().canvas.set_window_title("Heat sources density")')
+            out('\nfigure()')
+            out('plot_field(temperature, 16)')
+            out('colorbar()')
+            out('plot_geometry(GEO.main, color="w")')
+            out('gcf().canvas.set_window_title("Temperature")')
+            out('\nfigure()')
+            out('plot_field(heats, 16)')
+            out('colorbar()')
+            out('plot_geometry(GEO.main, color="w")')
+            out('gcf().canvas.set_window_title("Heat sources density")')
         if electr:
-            out('\n    figure()')
-            out('    plot_field(voltage, 16)')
-            out('    colorbar()')
-            out('    plot_geometry(GEO.main, color="w")')
-            out('    gcf().canvas.set_window_title("Electric potential")')
+            out('\nfigure()')
+            out('plot_field(voltage, 16)')
+            out('colorbar()')
+            out('plot_geometry(GEO.main, color="w")')
+            out('gcf().canvas.set_window_title("Electric potential")')
             if actlevel is not False:
-                out('\n    figure()')
-                out('    plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
-                out('    xlabel(u"%s [\\xb5m]")' % axes[0])
-                out('    ylabel("current density [kA/cm$^2$]")')
-                out('    simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.item)')
-                out('    for x in simplemesh.axis0:')
-                out('        axvline(x, ls=":", color="k")')
-                out('    xlim(0., simplemesh.axis0[-2])')
-                out('    gcf().canvas.set_window_title("Current density in the active region")')
-        out('\n    show()')
+                out('\nfigure()')
+                out('plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
+                out('xlabel(u"%s [\\xb5m]")' % axes[0])
+                out('ylabel("current density [kA/cm$^2$]")')
+                out('simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.item)')
+                out('for x in simplemesh.axis0:')
+                out('    axvline(x, ls=":", color="k")')
+                out('xlim(0., simplemesh.axis0[-2])')
+                out('gcf().canvas.set_window_title("Current density in the active region")')
+
+    out('\nshow()')
 
     out('\n]]></script>\n')
 
