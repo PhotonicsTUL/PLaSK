@@ -222,12 +222,13 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(100, 100, 1200, 750)
         self.setWindowTitle('Main window')
 
-        try:
-            self.document.load_from_file(os.path.join(os.path.dirname(__file__), 'test.xpl'))
-        except IOError:
-            pass
-        else:
-            self.filename = 'test.xpl'
+        if len(sys.argv) > 1:
+            try:
+                self.document.load_from_file(os.path.join(os.path.dirname(__file__), sys.argv[1]))
+            except IOError:
+                pass
+            else:
+                self.filename = sys.argv[1]
         self.model_is_new()
 
         self.show()

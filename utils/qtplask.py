@@ -476,10 +476,11 @@ if __name__ == "__main__":
         si = subprocess.STARTUPINFO()
         si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
         si.wShowWindow = subprocess.SW_HIDE
-        proc = subprocess.Popen(['plask', '-version'], startupinfo=si, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
         version, err = proc.communicate()
+        prog, ver = version.strip().split()
         wp = ctypes.c_wchar_p
-        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(version.strip()))
+        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
         winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
         winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
         winsparkle.win_sparkle_init()

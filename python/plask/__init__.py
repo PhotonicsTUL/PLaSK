@@ -44,9 +44,6 @@ PLaSK %s --- Photonic Laser Simulation Kit
 %s
 ''' % (version, copyright)
 
-_sys.path.insert(2, _os.path.join(lib_path, "solvers"))
-
-
 ## ## plask.material ## ##
 
 material.db = material.MaterialsDB.get_default()
