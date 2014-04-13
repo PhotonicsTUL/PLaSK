@@ -1,10 +1,10 @@
 [Desktop Entry]
 Comment=
-Exec=qtplask
+Exec=plaskgui
 GenericName=Photonic Laser Simulation Kit
 Icon=plask
 MimeType=application/x-plask
-Name=PLaSK Launcher
+Name=PLaSK GUI
 Path=
 StartupNotify=true
 Terminal=false

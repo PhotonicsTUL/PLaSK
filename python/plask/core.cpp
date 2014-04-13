@@ -355,6 +355,7 @@ BOOST_PYTHON_MODULE(_plask)
     plask::python::xml_globals = py::dict(numpy.attr("__dict__")).copy();
     plask::python::xml_globals.update(scope.attr("__dict__"));
     plask::python::xml_globals["plask"] = scope;
+    py::incref(plask::python::xml_globals.ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();

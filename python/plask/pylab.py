@@ -15,10 +15,19 @@ Below there follows the documentation of Matplotlib pylab:
 ----------------------------------------------------------------------
 '''
 
+import matplotlib
 import matplotlib.colors
 import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
+
+# Specify Qt4 API v2 while it is not too late
+if matplotlib.rcParams['backend'] == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':
+    try:
+        import sip
+        for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"): sip.setapi(n, 2)
+    except:
+        pass
 
 import matplotlib.pylab
 from matplotlib.pylab import *

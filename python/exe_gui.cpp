@@ -30,9 +30,6 @@ namespace py = boost::python;
 #endif
 
 //******************************************************************************
-py::dict globals;
-
-//******************************************************************************
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
@@ -57,6 +54,7 @@ static py::object initPlask(int argc, const char* argv[])
     std::string plask_path = plask::prefixPath();
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
+    path.insert(0, plask_path);
     std::string solvers_path = plask_path;
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
     solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
@@ -83,9 +81,6 @@ static py::object initPlask(int argc, const char* argv[])
 
     // mainTS = PyEval_SaveThread();
     //PyEval_ReleaseLock();
-
-    globals = py::dict(py::import("__main__").attr("__dict__"));
-    _plask.attr("__globals") = globals;
 
     return _plask;
 }

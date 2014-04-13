@@ -12,41 +12,42 @@ import h5py
 import plask
 
 def save_field(field, file, path='', mode='a'):
-    '''Save field to HDF5 file.
+    """
+    Save field to HDF5 file.
 
-       Args:
-            file (str or file): File to save to.
-                It should be eiher a filename or a h5py.File object opened for
-                writing.
-            field (plask.Data): Field to save.
-               It should be an object returned by PLaSK provider that contains
-               calculated field.
-            path (str): HDF5 path (group and dataset name), under which the
-               data is saved in the HDF5 file.
-            mode (str): Mode used for opening new files.
+    Args:
+        file (str or file): File to save to.
+            It should be eiher a filename or a h5py.File object opened for
+            writing.
+        field (plask.Data): Field to save.
+           It should be an object returned by PLaSK provider that contains
+           calculated field.
+        path (str): HDF5 path (group and dataset name), under which the
+           data is saved in the HDF5 file.
+        mode (str): Mode used for opening new files.
 
-       If ``file`` is a string, a new HDF5 file is opened with the mode
-       specified by ``mode``. Then both the data and its mesh are written to
-       this file under the path specified by the ``path`` argument. It can
-       contain slashes ('/'), in which case a corresponding hierarchy is created
-       in the HDF5 file.
+    If ``file`` is a string, a new HDF5 file is opened with the mode
+    specified by ``mode``. Then both the data and its mesh are written to
+    this file under the path specified by the ``path`` argument. It can
+    contain slashes ('/'), in which case a corresponding hierarchy is created
+    in the HDF5 file.
 
-       Saved data can later be restored by any HDF5-aware application, or by
-       ``load_field`` function of PLaSK.
+    Saved data can later be restored by any HDF5-aware application, or by
+    ``load_field`` function of PLaSK.
 
-       Example:
-           You may save data retrieved from a provider to file as follows:
+    Example:
+       You may save data retrieved from a provider to file as follows:
 
-           >>> data = my_solver.outMyData(my_mesh)
-           >>> save_field('myfile.h5', data, 'mygroup/mydata', 'a')
+       >>> data = my_solver.outMyData(my_mesh)
+       >>> save_field('myfile.h5', data, 'mygroup/mydata', 'a')
 
-           In another PLaSK session, you may retrieve this data and plot it
-           or provide to some receiver:
+       In another PLaSK session, you may retrieve this data and plot it
+       or provide to some receiver:
 
-           >>> data = load_field('myfile.h5', 'mygroup/mydata')
-           >>> plot_field(data)
-           >>> other_solver.inMyData = data
-    '''
+       >>> data = load_field('myfile.h5', 'mygroup/mydata')
+       >>> plot_field(data)
+       >>> other_solver.inMyData = data
+    """
     msh = field.mesh
     mst = type(msh)
     if mst in (plask.mesh.Rectilinear1D, plask.mesh.Regular1D):
@@ -95,35 +96,36 @@ def save_field(field, file, path='', mode='a'):
 
 
 def load_field(file, path=''):
-    '''Load field from HDF5 file.
+    """
+    Load field from HDF5 file.
 
-       Args:
-            file (str or file): File to load from.
-                It should be eiher a filename or a h5py.File object opened for
-                reading.
-            path (str): HDF5 path (group and dataset name), under which the
-               data is located in the HDF5 file.
-       Returns:
-            Read plask.Data object.
+    Args:
+        file (str or file): File to load from.
+            It should be eiher a filename or a h5py.File object opened for
+            reading.
+        path (str): HDF5 path (group and dataset name), under which the
+           data is located in the HDF5 file.
+    Returns:
+        Read plask.Data object.
 
-       If ``file`` is a string, a new HDF5 file is opened for reading. Then both
-       the data and its mesh are read from this file from the path specified by
-       the ``path`` argument. ``path`` can contain slashes ('/'), in which case
-       the corresponding hierarchy in the HDF5 file is used.
+    If ``file`` is a string, a new HDF5 file is opened for reading. Then both
+    the data and its mesh are read from this file from the path specified by
+    the ``path`` argument. ``path`` can contain slashes ('/'), in which case
+    the corresponding hierarchy in the HDF5 file is used.
 
-       Example:
-           You may save data retrieved from a provider to file as follows:
+    Example:
+       You may save data retrieved from a provider to file as follows:
 
-           >>> data = my_solver.outMyData(my_mesh)
-           >>> save_field('myfile.h5', data, 'mygroup/mydata', 'a')
+       >>> data = my_solver.outMyData(my_mesh)
+       >>> save_field('myfile.h5', data, 'mygroup/mydata', 'a')
 
-           In another PLaSK session, you may retrieve this data and plot it
-           or provide to some receiver:
+       In another PLaSK session, you may retrieve this data and plot it
+       or provide to some receiver:
 
-           >>> data = load_field('myfile.h5', 'mygroup/mydata')
-           >>> plot_field(data)
-           >>> other_solver.inMyData = data
-    '''
+       >>> data = load_field('myfile.h5', 'mygroup/mydata')
+       >>> plot_field(data)
+       >>> other_solver.inMyData = data
+    """
     if type(file) == str:
         file = h5py.File(file, 'r')
         close = True

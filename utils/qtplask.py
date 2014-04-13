@@ -12,7 +12,7 @@ sys.argv[0] = os.path.abspath(sys.argv[0])
 
 from PySide import QtCore, QtGui
 
-APP_ICON = '''
+APP_ICON = B'''
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBI
 WXMAADddAAA3XQEZgEZdAAAAB3RJTUUH3QMDEwoeKeG4rwAAE3lJREFUeNrlm2uQZVd1mL+9z/u+
 7+3u2++e98jSDBKjx9hYNgIsCilGJZUisJwUlfygiJWglOMUduKQAj/KqYqNX1ESDJRMOQURRsDE
@@ -105,7 +105,7 @@ XtPg0Wh0ybuFfxdE3/ep1+t/pz4X07b/UJKg4zivXVpME9u2f6j/VJ7n32f89xqslCIIgjd/Dniz
 yU/85en/BUFo1JV1G1EMAAAAAElFTkSuQmCC
 '''
 
-STOP_ICON = '''
+STOP_ICON = B'''
 iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABF1BMVEX///+AAACoAACtAACHAACK
 AACRAACYAACcAACqAACAAACoAACvBAScAACHDg6OAABuAABtAABqAACiAACWKyt/HhaCJBvSeHXD
 SknJYF2dHxy/NCrFRz+kHxOkHxWkIRqkIx6lHhKmHhCrJBevJxuzMSazKx++Sj/DSkDITEPKVkyA
@@ -295,7 +295,7 @@ class MainWindow(QtGui.QMainWindow):
         self.messages = []
         self.threads = []
 
-        config = QtCore.QSettings("PLaSK", "qtplask")
+        config = QtCore.QSettings("plask", "qtplask")
 
         try:
             self.last_dir = os.environ['HOME']
@@ -405,7 +405,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def quitting(self):
-        config = QtCore.QSettings("PLaSK", "qtplask")
+        config = QtCore.QSettings("plask", "qtplask")
         config.setValue("recentdir", self.last_dir)
         config.setValue("window/size", self.size())
         config.setValue("window/pos", self.pos())

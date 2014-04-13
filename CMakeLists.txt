@@ -310,6 +310,11 @@ if(BUILD_PYTHON)
     install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI PATTERN *.pyc EXCLUDE)
     install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
+    if(UNIX)
+        install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT GUI)
+        install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
+    endif()
+
 endif(BUILD_PYTHON)
 
 
@@ -544,7 +549,8 @@ if(WIN32)
         install(FILES ${dlls} DESTINATION bin COMPONENT core)
     endif()
     set(CPACK_PACKAGE_NAME "PLaSK")
-    list(APPEND CPACK_PACKAGE_EXECUTABLES "qtplask;PLaSK")
+    list(APPEND CPACK_PACKAGE_EXECUTABLES "plaskgui;PLaSK GUI")
+    list(APPEND CPACK_PACKAGE_EXECUTABLES "qtplask;PLaSK Runner")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "plask;PLaSK Console")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "PLaSK")
     set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "plask")

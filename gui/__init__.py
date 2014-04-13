@@ -3,7 +3,7 @@
 
 # use new v2 API, Python types instead of Qt
 import sip
-for n in ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"]: sip.setapi(n, 2)
+for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"): sip.setapi(n, 2)
 
 import sys
 import os

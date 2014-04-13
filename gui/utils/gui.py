@@ -2,6 +2,8 @@ from PyQt4 import QtCore
 from PyQt4 import QtGui
 import collections
 
+from ..utils.config import CONFIG as CONF
+
 def exception_to_msg(f, parent = None, err_title = None):
     """
         Call f() in try block, and after catch exception show Qt message.
@@ -15,8 +17,8 @@ def exception_to_msg(f, parent = None, err_title = None):
         return False
 
 defaultFont = QtGui.QFont()
-defaultFont.setFamily("monospace")
-defaultFont.setPointSize(defaultFont.pointSize())
+defaultFont.setFamily(CONF('editor/font_family', "monospace"))
+defaultFont.setPointSize(int(CONF('editor/font_size', defaultFont.pointSize())))
 
 def table_last_col_fill(table, cols_count, col_size=0):
     if isinstance(col_size, collections.Sequence):
