@@ -181,7 +181,7 @@ class MaterialsModel(TableModel):
         def __init__(self, name, base = None, properties = [], comment = None):
             self.name = name
             self.base = base
-            self.properties = properties    #TODO what with duplicate properties, should be supported?
+            self.properties = properties    # TODO what with duplicated properties, should be supported?
             self.comment = comment
 
         def add_to_XML(self, material_section_element):
@@ -199,7 +199,8 @@ class MaterialsModel(TableModel):
         if element is not None:
             for mat in element.iter("material"):
                 self.entries.append(
-                        MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None),  [ (prop.tag, prop.text) for prop in mat ])
+                        MaterialsModel.Material(mat.attrib.get("name", ""), mat.attrib.get("base", None),
+                                                [(prop.tag, prop.text) for prop in mat])
                 )
         self.modelReset.emit()
         self.fire_changed()
@@ -245,15 +246,15 @@ class MaterialsModel(TableModel):
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:
-                res.append(Info(u'Material name is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
+                res.append(Info(u'Material name is required [row: %d]' % i, Info.ERROR, rows=[i], cols=[0]))
             else:
                 names.setdefault(d.name, []).append(i)
             if not d.base:
-                res.append(Info(u'Material base is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
+                res.append(Info(u'Material base is required [row: %d]' % i, Info.ERROR, rows=[i], cols=[1]))
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info(u'Duplicated material name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
-                                Info.ERROR, rows = indexes, cols = [0]
+                                Info.ERROR, rows=indexes, cols=[0]
                                 )
                           )
         return res

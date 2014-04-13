@@ -300,12 +300,8 @@ class StepProfile(object):
     def __call__(self, mesh, *args):
         result = ones(len(mesh), self.dtype) * self._default
         for xobj,val in self.steps.items():
-            try:
-                obj, pth = xobj
-            except TypeError:
-                obj_iter = (self._geometry.object_contains(xobj, p) for p in mesh)
-            else:
-                obj_iter = (self._geometry.object_contains(obj, pth, p) for p in mesh)
+            obj, pth = xobj if type(xobj) is tuple else (xobj, None)
+            obj_iter = (self._geometry.object_contains(obj, pth, p) for p in mesh)
             result[fromiter(obj_iter, bool, len(mesh))] = val
         return result
 
