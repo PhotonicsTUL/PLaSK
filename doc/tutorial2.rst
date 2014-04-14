@@ -273,9 +273,8 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
       mode_number = efm.find_mode(980.)
       mode_wavelength = efm.outWavelength(mode_number)
       print_log(LOG_INFO,
-               "Threshold material gain is %s /cm with resonant wavelength %s nm" %
-               (threshold_gain, mode_wavelength)
-               )
+                "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+                .format(threshold_gain, mode_wavelength))
 
 .. rubric:: Footnotes
 .. [#module-sys] In Python modules are some external libraries that extend its functionality. The ``sys`` module give access to many system function and objects.

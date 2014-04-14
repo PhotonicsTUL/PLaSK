@@ -40,9 +40,9 @@ except ImportError:
     pass
 
 banner = '''\
-PLaSK %s --- Photonic Laser Simulation Kit
-%s
-''' % (version, copyright)
+PLaSK {0} --- Photonic Laser Simulation Kit
+{1}
+'''.format(version, copyright)
 
 ## ## plask.material ## ##
 
@@ -52,7 +52,7 @@ def update_factories():
     '''For each material in default database make factory in ``plask.material``.'''
     def factory(name):
         func = lambda **kwargs: material.db.get(name, **kwargs)
-        func.__doc__ = "Create %s material." % name
+        func.__doc__ = u"Create {} material.".format(name)
         return func
     for mat in material.db:
         if mat == 'air': continue
@@ -193,7 +193,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
     try: lineno += __globals['__manager__'].script_first_line
     except NameError: pass
     except KeyError: pass
-    print_log(LOG_WARNING, "%s, line %s: %s: %s" % (filename, lineno, category.__name__, message))
+    print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, message))
 
 import warnings
 warnings.showwarning = _showwarning

@@ -78,7 +78,7 @@ def save_field(field, file, path='', mode='a'):
     mesh.attrs['ordering'] = msh.ordering
     if mst in (plask.mesh.Rectilinear1D, plask.mesh.Rectilinear2D, plask.mesh.Rectilinear3D):
         for i,ax in enumerate(axes):
-            axis = mesh.create_dataset('axis%d' % (n-1-i), data=numpy.array(ax))
+            axis = mesh.create_dataset('axis{:d}'.format(n-1-i), data=numpy.array(ax))
             try:
                 data.dims[i].label = plask.current_axes[3-n+i]
                 data.dims.create_scale(axis)
@@ -88,7 +88,7 @@ def save_field(field, file, path='', mode='a'):
     elif mst in (plask.mesh.Regular1D, plask.mesh.Regular2D, plask.mesh.Regular2D):
         dt = numpy.dtype([('start', float), ('stop', float), ('num', int)])
         for i,ax in enumerate(axes):
-            axis = mesh.create_dataset('axis%d' % (n-1-i), (1,), dtype=dt)
+            axis = mesh.create_dataset('axis{:d}'.format(n-1-i), (1,), dtype=dt)
             axis[0] = ax.start, ax.stop, len(ax)
 
     if close:

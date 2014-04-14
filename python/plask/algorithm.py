@@ -201,7 +201,7 @@ class ThermoElectric(object):
         mesh = plask.mesh.Rectilinear2D([at], self.electrical.mesh.axis1)
         field = self.electrical.outVoltage(mesh)
         plask.plot(mesh.axis1, field)
-        plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-1])
+        plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-1]))
         plask.ylabel("Voltage [V]")
         plask.gcf().canvas.set_window_title("Voltage")
 
@@ -244,10 +244,10 @@ class ThermoElectric(object):
             curr = self.electrical.outCurrentDensity(msh, 'spline').array[:,0,1]
             s = sum(curr)
             plask.plot(msh.axis0, curr if s > 0 else -curr,
-                       label="Junction %d" % (i + 1))
+                       label="Junction {:d}".format(i + 1))
         if len(act) > 1:
             plask.legend(loc='best')
-        plask.xlabel(u"$%s$ [\xb5m]" % plask.config.axes[-2])
+        plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))
         plask.ylabel(u"Current Density [kA/cm\xb2]")
         if bounds:
             simplemesh = plask.mesh.Rectilinear2D.SimpleGenerator()(self.electrical.geometry.item)

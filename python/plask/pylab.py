@@ -43,7 +43,7 @@ if True:
             name = _Rc.aliases.get(attr) or attr
             key = self._group + '.' + name
             if key not in rcParams:
-                raise KeyError('Unrecognized key "%s"' % key)
+                raise KeyError(u'Unrecognized key "{}"'.format(key))
             rcParams[key] = value
 
         def __getattr__(self, attr):
@@ -132,16 +132,16 @@ if True:
             for g in group:
                 for k,v in kwargs.items():
                     name = _Rc.aliases.get(k) or k
-                    key = '%s.%s' % (g, name)
+                    key = '{}.{}'.format(g, name)
                     if key not in rcParams:
-                        raise KeyError('Unrecognized key "%s" for group "%s" and name "%s"' %
-                                    (key, g, name))
+                        raise KeyError(
+                            'Unrecognized key "{0}" for group "{1}" and name "{2}"'.format(key, g, name))
                     rcParams[key] = v
 
         def __setattr__(self, attr, value):
             key = _Rc.aliases.get(attr) or attr
             if key not in rcParams:
-                raise KeyError('Unrecognized key "%s"' % key)
+                raise KeyError(u'Unrecognized key "{}"'.format(key))
             rcParams[key] = value
 
         def __getattribute__(self, attr):
@@ -162,9 +162,9 @@ def _get_2d_axes(plane):
         raise ValueError("Must specify plane for 3D projection")
     axes = tuple(int(a) if a in ('0', '1', '2') else 'ltv'.find(a) if a in 'ltv' else plask.config.axes.find(a) for a in plane)
     if -1 in axes:
-        raise ValueError("Wrong plane '%s'" % plane)
+        raise ValueError("Wrong plane '{}'".format(plane))
     if axes[0] == axes[1]:
-        raise ValueError("Repeated axis in plane '%s'" % plane)
+        raise ValueError("Repeated axis in plane '{}'".format(plane))
     return axes
 
 
@@ -217,8 +217,8 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     axes = matplotlib.pylab.gca()
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ax[0]])
-    ylabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ax[1]])
+    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[0]]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
 
     return result
 
@@ -246,8 +246,8 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
     axes = matplotlib.pylab.gca()
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ix])
-    ylabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+iy])
+    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
     return quiver(array(xaxis), array(yaxis), data[:,:,0].real, data[:,:,1].real, angles=angles, scale_units=scale_units, **kwargs)
 
@@ -287,8 +287,8 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
     axes = matplotlib.pylab.gca()
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+ix])
-    ylabel(u"$%s$ [µm]" % plask.config.axes[3-field.mesh.dim+iy])
+    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
     if scale:
         return streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, linewidth=scale*norm, color=color, **kwargs)
@@ -319,8 +319,8 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
     axes = matplotlib.pylab.gca()
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+ax[0]])
-    ylabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+ax[1]])
+    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ax[0]]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ax[1]]))
 
     return scatter(x, y, c=c, zorder=zorder, cmap=cmap, **kwargs)
 
@@ -363,8 +363,8 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+ix])
-    ylabel(u"$%s$ [µm]" % plask.config.axes[3-mesh.dim+iy])
+    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ix]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + iy]))
 
 
     return lines
@@ -456,8 +456,8 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
 
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    xlabel(u"$%s$ [µm]" % plask.config.axes[dd+ax[0]])
-    ylabel(u"$%s$ [µm]" % plask.config.axes[dd+ax[1]])
+    xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
+    ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
 
     return patches
 

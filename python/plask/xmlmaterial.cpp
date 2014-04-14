@@ -206,8 +206,8 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
-    std::string name = reader.requireAttribute("name");
-    shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(name, reader.requireAttribute("base"));
+    std::string material_name = reader.requireAttribute("name");
+    shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(material_name, reader.requireAttribute("base"));
 
     constructor->self = constructor;
     constructor->db = &materialsDB;
@@ -219,48 +219,40 @@ void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) 
     };
 
 #   if PY_VERSION_HEX >= 0x03000000
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
-        else if (reader.getNodeName() == name) { \
-            bool is_const = reader.getAttribute<bool>("const", false); \
-            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), BOOST_PP_STRINGIZE(func), Py_eval_input); \
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
+        else if (reader.getNodeName() == funcname) { \
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
             if (constructor->func == nullptr) \
-                throw XMLException(format("XML line %1% in <%2%>", reader.getLineNr(), BOOST_PP_STRINGIZE(func)), "Material parameter syntax error"); \
-            if (is_const) { \
-                try { \
-                    py::dict locals; \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material '%1%'", name); \
-                    constructor->cache.func.reset( \
-                        py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                            py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals.ptr(), locals.ptr())).get() \
-                        ) \
-                    ); \
-                } catch (py::error_already_set) { \
-                    throw XMLException(reader, format("Error in the constant parameter '" name "' in material '%1%': %2%", \
-                                       name, getPythonExceptionMessage())); \
-                } \
+            throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+            try { \
+                py::dict locals; \
+                constructor->cache.func.reset( \
+                    py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
+                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals.ptr(), locals.ptr())).get() \
+                    ) \
+                ); \
+                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '%1%'", material_name); \
+            } catch (py::error_already_set) { \
+                PyErr_Clear(); \
             } \
         }
 #   else
         PyCompilerFlags flags { CO_FUTURE_DIVISION };
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(name, func) \
-        else if (reader.getNodeName() == name) { \
-            bool is_const = reader.getAttribute<bool>("const", false); \
-            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), name, Py_eval_input, &flags); \
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
+        else if (reader.getNodeName() == funcname) { \
+            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
             if (constructor->func == nullptr) \
-                throw XMLException(format("XML line %1% in <%2%>", reader.getLineNr(), name), "Material parameter syntax error"); \
-            if (is_const) { \
-                try { \
-                    py::dict locals; \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material '%1%'", name); \
-                    constructor->cache.func.reset( \
-                        py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                            py::handle<>(PyEval_EvalCode(constructor->func, xml_globals.ptr(), locals.ptr())).get() \
-                        ) \
-                    ); \
-                } catch (py::error_already_set) { \
-                    throw XMLException(reader, format("Error in the constant parameter '" name "' in material '%1%': %2%", \
-                                       name, getPythonExceptionMessage())); \
-                } \
+            throw XMLException(format("XML line %1% in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+            try { \
+                py::dict locals; \
+                constructor->cache.func.reset( \
+                    py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
+                        py::handle<>(PyEval_EvalCode(constructor->func, xml_globals.ptr(), locals.ptr())).get() \
+                    ) \
+                ); \
+                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '%1%'", material_name); \
+            } catch (py::error_already_set) { \
+                PyErr_Clear(); \
             } \
         }
 #   endif
