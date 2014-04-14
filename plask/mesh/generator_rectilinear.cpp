@@ -17,16 +17,16 @@ inline static void addPoints(RectilinearAxis& dst, double lo, double up, bool si
     }
 }
 
-shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = make_shared<RectilinearMesh1D>();
+    auto mesh = make_shared<RectilinearAxis>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid())
-            addPoints(mesh->axis, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+            addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
 
     /*for (auto& box: boxes) {
         mesh->axis.addPoint(box.lower.c0);
@@ -36,26 +36,26 @@ shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::makeGeometryGrid
     return mesh;
 }
 
-shared_ptr<RectilinearMesh1D> RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid1D(geometry);
-    if (extend_to_zero) mesh->axis.addPoint(0.);
-    writelog(LOG_DETAIL, "mesh.Rectilinear1D::SimpleGenerator: Generating new mesh (%1%)", mesh->axis.size());
+    if (extend_to_zero) mesh->addPoint(0.);
+    writelog(LOG_DETAIL, "mesh.Rectilinear1D::SimpleGenerator: Generating new mesh (%1%)", mesh->size());
     return mesh;
 }
 
 
-shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply, long max_points)
+shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply, long max_points, bool extend_to_zero)
 {
-    auto mesh = make_shared<RectilinearMesh2D>();
+    std::unique_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis);
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-            addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
         }
 
     /*for (auto& box: boxes) {
@@ -65,38 +65,39 @@ shared_ptr<RectilinearMesh2D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
         mesh->axis1.addPoint(box.upper.c1);
     }*/
 
+    if (extend_to_zero) axis0->addPoint(0.);
+
+    shared_ptr<RectangularMesh<2>> mesh = make_shared<RectangularMesh<2>>(std::move(axis0), std::move(axis1));
     mesh->setOptimalIterationOrder();
-
     return mesh;
 }
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectangularMesh<2>> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = makeGeometryGrid(geometry, min_ply, max_points);
-    if (extend_to_zero) mesh->axis0.addPoint(0.);
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0.size(), mesh->axis1.size());
+    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, min_ply, max_points, extend_to_zero);
+    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
 
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectangularMesh<2>> RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    return make_shared<RectilinearMesh2D>((*horizontal_generator)(geometry)->axis, makeGeometryGrid(geometry, min_ply, max_points)->axis1);
+    return make_shared<RectangularMesh<2>>((*horizontal_generator)(geometry), makeGeometryGrid(geometry, min_ply, max_points)->axis1);
 }
 
 
-shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply, long max_points)
+shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply, long max_points)
 {
-    auto mesh = make_shared<RectilinearMesh3D>();
+    std::unique_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis), axis2(new RectilinearAxis);
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(mesh->axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
-            addPoints(mesh->axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
-            addPoints(mesh->axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
+            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_LONG), min_ply, max_points);
+            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_TRAN), min_ply, max_points);
+            addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->singleMaterialInBB(Primitive<3>::DIRECTION_VERT), min_ply, max_points);
         }
 
     /*for (auto& box: boxes) {
@@ -108,26 +109,26 @@ shared_ptr<RectilinearMesh3D> makeGeometryGrid(const shared_ptr<GeometryObjectD<
         mesh->axis2.addPoint(box.upper.c2);
     }*/
 
+    shared_ptr<RectangularMesh<3>> mesh = make_shared<RectangularMesh<3>>(std::move(axis0), std::move(axis1), std::move(axis2));
     mesh->setOptimalIterationOrder();
-
     return mesh;
 }
 
-shared_ptr<RectilinearMesh3D> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
+shared_ptr<RectangularMesh<3>> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry, min_ply, max_points);
-    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
     return mesh;
 }
 
 
 template <int dim>
-RectilinearAxis RectilinearMeshDivideGenerator<dim>::getAxis(const RectilinearAxis& initial, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+shared_ptr<RectilinearAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<RectilinearAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
 {
     if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
     if (post_divisions[dir] == 0) post_divisions[dir] = 1;
 
-    RectilinearAxis result = initial;
+    RectilinearAxis& result = *initial_and_result.get();
 
     // First add refinement points
     for (auto ref: refinements[dir]) {
@@ -211,73 +212,75 @@ RectilinearAxis RectilinearMeshDivideGenerator<dim>::getAxis(const RectilinearAx
 
     result.addOrderedPoints(points.begin(), points.end());
 
-    return result;
+    return initial_and_result;
 }
 
-template <> shared_ptr<RectilinearMesh1D>
+template <> shared_ptr<RectilinearAxis>
 RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
-    RectilinearAxis initial;
+    shared_ptr<RectilinearAxis> mesh;
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
         if (box.isValid()) {
-            initial.addPoint(box.lower.c0);
-            initial.addPoint(box.upper.c0);
+            mesh->addPoint(box.lower.c0);
+            mesh->addPoint(box.upper.c0);
         }
 
-    auto mesh = make_shared<RectilinearMesh1D>(getAxis(initial, geometry, 0));
+    getAxis(mesh, geometry, 0);
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear1D::DivideGenerator: Generating new mesh (%1%)", mesh->axis.size());
+    writelog(LOG_DETAIL, "mesh.Rectilinear1D::DivideGenerator: Generating new mesh (%1%)", mesh->size());
     return mesh;
 }
 
-template <> shared_ptr<RectilinearMesh2D>
+template <> shared_ptr<RectangularMesh<2>>
 RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
-    RectangularMesh<2,RectilinearAxis> initial;
+    shared_ptr<RectilinearAxis> axis0, axis1;
+
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
         if (box.isValid()) {
-            initial.axis0.addPoint(box.lower.c0);
-            initial.axis0.addPoint(box.upper.c0);
-            initial.axis1.addPoint(box.lower.c1);
-            initial.axis1.addPoint(box.upper.c1);
+            axis0->addPoint(box.lower.c0);
+            axis0->addPoint(box.upper.c0);
+            axis1->addPoint(box.lower.c1);
+            axis1->addPoint(box.upper.c1);
         }
 
-    auto mesh = make_shared<RectangularMesh<2,RectilinearAxis>>(getAxis(initial.axis0, geometry, 0), getAxis(initial.axis1, geometry, 1));
+    auto mesh = make_shared<RectangularMesh<2>>(getAxis(axis0, geometry, 0), getAxis(axis1, geometry, 1));
 
     mesh->setOptimalIterationOrder();
 
     writelog(LOG_DETAIL, "mesh.Rectilinear2D::DivideGenerator: Generating new mesh (%1%x%2%)",
-             mesh->axis0.size(), mesh->axis1.size());
+             axis0->size(), axis1->size());
     return mesh;
 }
 
-template <> shared_ptr<RectilinearMesh3D>
+template <> shared_ptr<RectangularMesh<3>>
 RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
-    RectangularMesh<3,RectilinearAxis> initial;
+    shared_ptr<RectilinearAxis> axis0, axis1, axis2;
+
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
         if (box.isValid()) {
-            initial.axis0.addPoint(box.lower.c0);
-            initial.axis0.addPoint(box.upper.c0);
-            initial.axis1.addPoint(box.lower.c1);
-            initial.axis1.addPoint(box.upper.c1);
-            initial.axis2.addPoint(box.lower.c2);
-            initial.axis2.addPoint(box.upper.c2);
+            axis0->addPoint(box.lower.c0);
+            axis0->addPoint(box.upper.c0);
+            axis1->addPoint(box.lower.c1);
+            axis1->addPoint(box.upper.c1);
+            axis2->addPoint(box.lower.c2);
+            axis2->addPoint(box.upper.c2);
         }
 
-    auto mesh = make_shared<RectangularMesh<3,RectilinearAxis>>(
-        getAxis(initial.axis0, geometry, 0),
-        getAxis(initial.axis1, geometry, 1),
-        getAxis(initial.axis2, geometry, 2)
+    auto mesh = make_shared<RectangularMesh<3>>(
+        getAxis(axis0, geometry, 0),
+        getAxis(axis1, geometry, 1),
+        getAxis(axis2, geometry, 2)
     );
 
     mesh->setOptimalIterationOrder();
 
     writelog(LOG_DETAIL, "mesh.Rectilinear3D::DivideGenerator: Generating new mesh (%1%x%2%x%3%)",
-             mesh->axis0.size(), mesh->axis1.size(), mesh->axis2.size());
+             axis0->size(), axis1->size(), axis2->size());
     return mesh;
 }
 

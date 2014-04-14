@@ -187,8 +187,10 @@ inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager,
  * Includes two 1D rectilinear meshes:
  * - axis0 (alternative names: tran, ee_x(), r())
  * - axis1 (alternative names: up(), ee_y(), z())
- * Represent all points (x, y) such that x is in axis0 and y is in axis1->
+ * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
+//TODO !!! zmiana axis0, axis1, powinny aktualizować inne wskaźniki (także 3D)
+//TODO !!! podłączenie sygnału o zmianach, zmiana osi 1D powinna powodować powiadominie o zmianach przez ten mesh
 template<>
 class RectangularMesh<2>: public MeshD<2> {
 
@@ -366,10 +368,10 @@ class RectangularMesh<2>: public MeshD<2> {
     typedef plask::Boundary<RectangularMesh<2>> Boundary;
 
     /// First coordinate of points in this mesh.
-    std::unique_ptr<RectangularAxis> axis0;
+    shared_ptr<RectangularAxis> axis0;
 
     /// Second coordinate of points in this mesh.
-    std::unique_ptr<RectangularAxis> axis1;
+    shared_ptr<RectangularAxis> axis1;
 
     /// Accessor to FEM-like elements.
     const Elements elements;
@@ -412,7 +414,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @param mesh1 mesh for the second coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(std::unique_ptr<RectangularAxis>&& axis0, std::unique_ptr<RectangularAxis>&& axis1, IterationOrder iterationOrder = ORDER_NORMAL)
+    RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder = ORDER_NORMAL)
         : axis0(std::move(axis0)), axis1(std::move(axis1)), elements(this) {
         //TODO  axis0->owner = this; axis1->owner = this;
         setIterationOrder(iterationOrder);

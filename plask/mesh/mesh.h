@@ -321,11 +321,8 @@ inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
     return typename MeshD<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
 }
 
-
 /** Base template for rectangular mesh of any dimension */
-template <int dim>
-class RectangularMesh {};
-
+template <int dim> class RectangularMesh {};
 
 /** Base class for every mesh generator */
 class MeshGenerator {

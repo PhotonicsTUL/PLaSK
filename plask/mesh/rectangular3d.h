@@ -242,13 +242,13 @@ class RectangularMesh<3>: public MeshD<3> {
     typedef ::plask::Boundary<RectangularMesh<3>> Boundary;
 
     /// First coordinate of points in this mesh.
-    std::unique_ptr<RectangularAxis> axis0;
+    shared_ptr<RectangularAxis> axis0;
 
     /// Second coordinate of points in this mesh.
-    std::unique_ptr<RectangularAxis> axis1;
+    shared_ptr<RectangularAxis> axis1;
 
     /// Third coordinate of points in this mesh.
-    std::unique_ptr<RectangularAxis> axis2;
+    shared_ptr<RectangularAxis> axis2;
 
     /// Accessor to FEM-like elements.
     const Elements elements;
@@ -300,7 +300,7 @@ class RectangularMesh<3>: public MeshD<3> {
      * @param mesh2 mesh for the third coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(std::unique_ptr<RectangularAxis>&& mesh0, std::unique_ptr<RectangularAxis>&& mesh1, std::unique_ptr<RectangularAxis>&& mesh2, IterationOrder iterationOrder = ORDER_210) :
+    RectangularMesh(shared_ptr<RectangularAxis> mesh0, shared_ptr<RectangularAxis> mesh1, shared_ptr<RectangularAxis> mesh2, IterationOrder iterationOrder = ORDER_210) :
         axis0(std::move(mesh0)),
         axis1(std::move(mesh1)),
         axis2(std::move(mesh2)),

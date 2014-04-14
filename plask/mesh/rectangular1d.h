@@ -7,9 +7,10 @@
 
 namespace plask {
 
-struct RectangularAxis: public MeshD<1> {
+template<>
+struct RectangularMesh<1>: public MeshD<1> {
 
-    virtual std::unique_ptr<RectangularAxis> clone() const = 0;
+    virtual std::unique_ptr<RectangularMesh<1>> clone() const = 0;
 
     virtual void clear() = 0;
 
@@ -22,6 +23,8 @@ struct RectangularAxis: public MeshD<1> {
      */
     virtual std::size_t findNearestIndex(double to_find) const = 0;
 };
+
+typedef RectangularMesh<1> RectangularAxis;
 
 
 

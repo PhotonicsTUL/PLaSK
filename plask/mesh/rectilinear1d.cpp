@@ -75,4 +75,8 @@ void RectilinearAxis::clear() {
     if (owner) owner->fireResized();
 }
 
+std::unique_ptr<RectangularAxis> RectilinearAxis::clone() const {
+    return std::unique_ptr<RectangularAxis>(new RectilinearAxis(*this));
+}
+
 }   // namespace plask
