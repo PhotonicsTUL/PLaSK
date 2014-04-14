@@ -30,7 +30,11 @@ class SourceEditController(Controller):
 
     def save_data_in_model(self):
         if not self.get_source_editor().isReadOnly():
-            self.model.set_text(self.get_source_editor().toPlainText())
+            if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
+            try:
+                self.model.set_text(self.get_source_editor().toPlainText())
+            finally:
+                if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
 
     def on_edit_enter(self):
         self.refresh_editor()
