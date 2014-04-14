@@ -398,13 +398,13 @@ class RectangularMesh<3>: public MeshD<3> {
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    RectangularAxis& rad_phi() { return axis1; }
+    RectangularAxis& rad_phi() { return *axis1; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return c1
      */
-    const RectangularAxis& rad_phi() const { return axis1; }
+    const RectangularAxis& rad_phi() const { return *axis1; }
 
     /**
      * Get thirs coordinate of points in this mesh.

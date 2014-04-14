@@ -81,8 +81,8 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
                     i1 = src_mesh.axis1->findIndex(p.c1);
                 if (i0 == 0) { ++i0; p.c0 = src_mesh.axis0->at(0); }
                 else if (i0 == n0) { --i0; p.c0 = src_mesh.axis0->at(i0); }
-                if (i1 == 0) { ++i1; p.c1 = src_mesh.axis1[1]; }
-                else if (i1 == n1) { --i1; p.c1 = src_mesh.axis1[i1]; }
+                if (i1 == 0) { ++i1; p.c1 = src_mesh.axis1->at(1); }
+                else if (i1 == n1) { --i1; p.c1 = src_mesh.axis1->at(i1); }
                 // Compute derivatives if necessary
                 for (int j0 = max(i0-1,0); j0 < min(i0+1,n0); ++j0) {
                     for (int j1 = max(i1-1,0); j1 < min(i1+1,n1); ++j1) {
@@ -144,16 +144,16 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
             std::vector<bool> have_diff(src_mesh.size(), false);
             for (int di = 0; di < dst_mesh.size(); ++di) {
                 Vec<2> p = dst_mesh[di];
-                int i = src_mesh.axis0.findIndex(p.c0);
-                if (i == 0) { ++i; p.c0 = src_mesh.axis0[0]; }
-                else if (i == n0) { --i; p.c0 = src_mesh.axis0[i]; }
+                int i = src_mesh.axis0->findIndex(p.c0);
+                if (i == 0) { ++i; p.c0 = src_mesh.axis0->at(0); }
+                else if (i == n0) { --i; p.c0 = src_mesh.axis0->at(i); }
                 // Compute derivatives if necessary
                 for (int j = max(i-1,0); j < min(i+1,n0); ++j) {
                     if (!have_diff[j]) { // we need to compute derivatives
                         const int ja = max(j-1, 0),
                                   jb = min(j+1, n0-1);
-                        const double da = src_mesh.axis0[j] - src_mesh.axis0[ja],
-                                     db = src_mesh.axis0[jb] - src_mesh.axis0[j];
+                        const double da = src_mesh.axis0->at(j) - src_mesh.axis0->at(ja),
+                                     db = src_mesh.axis0->at(jb) - src_mesh.axis0->at(j);
                         const DataT sa = da? (src_vec[j] - src_vec[ja]) / da : 0. * SrcT(),
                                     sb = db? (src_vec[jb] - src_vec[j]) / db : 0. * SrcT();
                         // Use parabolic estimation of the derivative
@@ -164,8 +164,8 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
                         have_diff[j] = true;
                     }
                 }
-                double d = src_mesh.axis0[i] - src_mesh.axis0[i-1];
-                double x = (p.c0 - src_mesh.axis0[i-1]) / d;
+                double d = src_mesh.axis0->at(i) - src_mesh.axis0->at(i-1);
+                double x = (p.c0 - src_mesh.axis0->at(i-1)) / d;
                 // Hermite 3rd order spline polynomials (in Horner form)
                 double ha = ( 2.*x - 3.) * x*x + 1.,
                        hb = (-2.*x + 3.) * x*x,
@@ -180,16 +180,16 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
             std::vector<bool> have_diff(src_mesh.size(), false);
             for (int di = 0; di < dst_mesh.size(); ++di) {
                 Vec<2> p = dst_mesh[di];
-                int i = src_mesh.axis1.findIndex(p.c1);
-                if (i == 0) { ++i; p.c1 = src_mesh.axis1[0]; }
-                else if (i == n1) { --i; p.c1 = src_mesh.axis1[i]; }
+                int i = src_mesh.axis1->findIndex(p.c1);
+                if (i == 0) { ++i; p.c1 = src_mesh.axis1->at(0); }
+                else if (i == n1) { --i; p.c1 = src_mesh.axis1->at(i); }
                 // Compute derivatives if necessary
                 for (int j = max(i-1,0); j < min(i+1,n1); ++j) {
                     if (!have_diff[j]) { // we need to compute derivatives
                         const int ja = max(j-1, 0),
                                   jb = min(j+1, n1-1);
-                        const double da = src_mesh.axis1[j] - src_mesh.axis1[ja],
-                                     db = src_mesh.axis1[jb] - src_mesh.axis1[j];
+                        const double da = src_mesh.axis1->at(j) - src_mesh.axis1->at(ja),
+                                     db = src_mesh.axis1->at(jb) - src_mesh.axis1->at(j);
                         const DataT sa = da? (src_vec[j] - src_vec[ja]) / da : 0. * SrcT(),
                                     sb = db? (src_vec[jb] - src_vec[j]) / db : 0. * SrcT();
                         // Use parabolic estimation of the derivative
@@ -200,8 +200,8 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
                         have_diff[j] = true;
                     }
                 }
-                double d = src_mesh.axis1[i] - src_mesh.axis1[i-1];
-                double x = (p.c1 - src_mesh.axis1[i-1]) / d;
+                double d = src_mesh.axis1->at(i) - src_mesh.axis1->at(i-1);
+                double x = (p.c1 - src_mesh.axis1->at(i-1)) / d;
                 // Hermite 3rd order spline polynomials (in Horner form)
                 double ha = ( 2.*x - 3.) * x*x + 1.,
                        hb = (-2.*x + 3.) * x*x,

@@ -2,8 +2,6 @@
 #define PLASK__GENERATOR_RECTILINEAR_H
 
 #include "mesh.h"
-#include "mesh1d.h"
-#include "rectilinear.h"
 #include <plask/geometry/path.h>
 
 namespace plask {
