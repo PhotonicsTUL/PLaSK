@@ -47,7 +47,7 @@ class RopeEditorAdapter(object):
         self.textedit = textedit
 
     def length(self):
-        return self.textedit.toPlainText().length()
+        return len(self.textedit.toPlainText())
 
     def get_line(self, line_no=None):
         block = self.textedit.document().findBlockByNumber(line_no)
