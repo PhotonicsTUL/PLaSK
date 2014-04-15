@@ -8,8 +8,6 @@ from .table import TableModel, TableModelEditMethods
 from .info import Info
 #from guis import DefinesEditor
 
-import sys
-
 MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', '1/s', [(u'T', 'temperature [K]')])),
     ('absb', (u'Absorption coefficient <i>α</i>', 'cm<sup>-1</sup>', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]')])),
