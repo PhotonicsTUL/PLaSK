@@ -9,21 +9,21 @@
 BOOST_AUTO_TEST_SUITE(boundary_conditions) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_rect_simple) {
-    plask::BoundaryConditions<plask::RectilinearMesh2D, double> conditions;
+    plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
     BOOST_CHECK(conditions.empty());
-    conditions.add(plask::RectilinearMesh2D::getLeftBoundary(), 1.0);
-    conditions.add(plask::RectilinearMesh2D::getRightBoundary(), 2.0);
+    conditions.add(plask::RectangularMesh<2>::getLeftBoundary(), 1.0);
+    conditions.add(plask::RectangularMesh<2>::getRightBoundary(), 2.0);
     BOOST_CHECK_EQUAL(conditions.size(), 2);
     BOOST_CHECK_EQUAL(conditions[0].value, 1.0);
 
-    plask::RectilinearMesh2D mesh;
+    /*plask::RectangularMesh<2> mesh;
     mesh.axis0.addPointsLinear(1.0, 3.0, 3);   // 1.0, 2.0, 3.0
     mesh.axis1.addPointsLinear(5.0, 6.0, 2);   // 5.0, 6.0
-    //BOOST_CHECK(conditions(mesh).find(0) == conditions(mesh).begin());
+    BOOST_CHECK(conditions(mesh).find(0) == conditions(mesh).begin()); //this line was commented out in trunk*/
 }
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
-    plask::BoundaryConditions<plask::RectilinearMesh2D, double> conditions;
+    plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
     plask::MaterialsDB materialsDB;
     initDumbMaterialDb(materialsDB);
     plask::Manager manager;
@@ -32,21 +32,23 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
                     "<block name=\"top\" dx=\"5\" dy=\"3\" material=\"Al\" />"
                     "<block name=\"bottom\" dx=\"5\" dy=\"3\" material=\"Al\" />"
                 "</stack></cartesian2d></geometry></plask>", materialsDB); //repeat=\"2\"
-    plask::RectilinearMesh2D::Boundary bottom_b = plask::RectilinearMesh2D::getBottomOfBoundary(manager.getGeometryObject("bottom"));
-    plask::RectilinearMesh2D mesh;
-    mesh.axis0.addPointsLinear(1.0, 5.0, 5);   // 1.0, 2.0, 3.0, 4.0, 5.0
-    mesh.axis1.addPointsLinear(0.0, 4.0, 5);   // 0.0, 1.0, 2.0, 3.0, 4.0
-    plask::RectilinearMesh2D::Boundary::WithMesh wm = bottom_b.get(mesh, manager.getGeometry<plask::GeometryD<2> >("space"));
+    plask::RectangularMesh<2>::Boundary bottom_b = plask::RectangularMesh<2>::getBottomOfBoundary(manager.getGeometryObject("bottom"));
+    auto axis0 = plask::make_shared<plask::RectilinearAxis>();
+    auto axis1 = plask::make_shared<plask::RectilinearAxis>();
+    plask::RectangularMesh<2> mesh(axis0, axis1);
+    axis0->addPointsLinear(1.0, 5.0, 5);   // 1.0, 2.0, 3.0, 4.0, 5.0
+    axis1->addPointsLinear(0.0, 4.0, 5);   // 0.0, 1.0, 2.0, 3.0, 4.0
+    plask::RectangularMesh<2>::Boundary::WithMesh wm = bottom_b.get(mesh, manager.getGeometry<plask::GeometryD<2> >("space"));
     for (int i = 0; i < 5; ++i) BOOST_CHECK(wm.contains(i));
     for (int i = 5; i < 25; ++i) BOOST_CHECK(!wm.contains(i));
-    plask::RectilinearMesh2D::Boundary top_b = plask::RectilinearMesh2D::getTopOfBoundary(manager.getGeometryObject("top"));
+    plask::RectangularMesh<2>::Boundary top_b = plask::RectangularMesh<2>::getTopOfBoundary(manager.getGeometryObject("top"));
     wm = top_b.get(mesh, manager.getGeometry<plask::GeometryD<2> >("space"));
     for (int i = 0; i < 20; ++i) BOOST_CHECK(!wm.contains(i));
     for (int i = 20; i < 25; ++i) BOOST_CHECK(wm.contains(i));
 }
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
-    plask::BoundaryConditions<plask::RectilinearMesh2D, double> conditions;
+    plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
     plask::Manager manager;
     std::string xml_content = "<cond><condition place=\"bottom\" value=\"123\"/><condition place=\"left\" value=\"234\"/></cond>";
     plask::XMLReader reader(new std::stringstream(xml_content));
