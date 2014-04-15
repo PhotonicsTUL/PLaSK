@@ -704,7 +704,7 @@ class RectangularMesh<2>: public MeshD<2> {
     auto interpolateLinear(const RandomAccessContainer& data, const Vec<2, double>& point) const -> typename std::remove_reference<decltype(data[0])>::type {
         return interpolateLinear2D(
             [&] (std::size_t i0, std::size_t i1) { return data[this->index(i0, i1)]; },
-            point.c0, point.c1, axis0, axis1, axis0->findIndex(point.c0), axis1->findIndex(point.c1)
+            point.c0, point.c1, *axis0, *axis1, axis0->findIndex(point.c0), axis1->findIndex(point.c1)
         );
     }
 
@@ -1414,33 +1414,33 @@ template <typename DataGetter2D>
 auto interpolateLinear2D(
         DataGetter2D data,
         const double& point_axis0, const double& point_axis1,
-        const RectangularAxis* axis0, const RectangularAxis* axis1,
+        const RectangularAxis& axis0, const RectangularAxis& axis1,
         std::size_t index0, std::size_t index1)
   -> typename std::remove_reference<decltype(data(0, 0))>::type
 {
     if (index0 == 0) {
         if (index1 == 0) return data(0, 0);
-        if (index1 == axis1->size()) return data(0, index1-1);
-        return interpolation::linear(axis1->at(index1-1), data(0, index1-1), axis1->at(index1), data(0, index1), point_axis1);
+        if (index1 == axis1.size()) return data(0, index1-1);
+        return interpolation::linear(axis1.at(index1-1), data(0, index1-1), axis1.at(index1), data(0, index1), point_axis1);
     }
 
-    if (index0 == axis0->size()) {
+    if (index0 == axis0.size()) {
         --index0;
         if (index1 == 0) return data(index0, 0);
-        if (index1 == axis1->size()) return data(index0, index1-1);
-        return interpolation::linear(axis1->at(index1-1), data(index0, index1-1), axis1->at(index1), data(index0, index1), point_axis1);
+        if (index1 == axis1.size()) return data(index0, index1-1);
+        return interpolation::linear(axis1.at(index1-1), data(index0, index1-1), axis1.at(index1), data(index0, index1), point_axis1);
     }
 
     if (index1 == 0)
-        return interpolation::linear(axis0->at(index0-1), data(index0-1, 0), axis0->at(index0), data(index0, 0), point_axis0);
+        return interpolation::linear(axis0.at(index0-1), data(index0-1, 0), axis0.at(index0), data(index0, 0), point_axis0);
 
-    if (index1 == axis1->size()) {
+    if (index1 == axis1.size()) {
         --index1;
-        return interpolation::linear(axis0->at(index0-1), data(index0-1, index1), axis0->at(index0), data(index0, index1), point_axis0);
+        return interpolation::linear(axis0.at(index0-1), data(index0-1, index1), axis0.at(index0), data(index0, index1), point_axis0);
     }
 
-    return interpolation::bilinear(axis0->at(index0-1), axis0->at(index0),
-                                   axis1->at(index1-1), axis1->at(index1),
+    return interpolation::bilinear(axis0.at(index0-1), axis0.at(index0),
+                                   axis1.at(index1-1), axis1.at(index1),
                                    data(index0-1, index1-1),
                                    data(index0,   index1-1),
                                    data(index0,   index1  ),

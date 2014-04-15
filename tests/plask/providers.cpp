@@ -3,8 +3,7 @@
 
 #include <plask/provider/provider.h>
 #include <plask/geometry/space.h>
-#include <plask/mesh/rectilinear.h>
-#include <plask/mesh/regular.h>
+#include <plask/mesh/rectangular.h>
 #include <plask/properties/thermal.h>
 
 BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
@@ -95,7 +94,7 @@ BOOST_AUTO_TEST_CASE(polymorphic_receivers) {
 
 BOOST_AUTO_TEST_CASE(attach_datavector)
 {
-    auto mesh1 = plask::make_shared<plask::RegularMesh2D>(plask::RegularAxis(0., 4., 3), plask::RegularAxis(0., 20., 3));
+    auto mesh1 = plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(0., 4., 3), plask::make_shared<plask::RegularAxis>(0., 20., 3));
 
     auto mesh2 = mesh1->getMidpointsMesh();
 
@@ -116,7 +115,7 @@ BOOST_AUTO_TEST_CASE(attach_datavector)
     BOOST_CHECK_EQUAL(result2[3], 400.);
 
     BOOST_CHECK_EQUAL(data.unique(), false);
-    mesh1->setIterationOrder(plask::RegularMesh2D::ORDER_TRANSPOSED);
+    mesh1->setIterationOrder(plask::RectangularMesh<2>::ORDER_TRANSPOSED);
     BOOST_CHECK_EQUAL(data.unique(), true);
 }
 

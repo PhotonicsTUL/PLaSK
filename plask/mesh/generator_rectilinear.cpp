@@ -47,7 +47,7 @@ shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::generate(const sha
 
 shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply, long max_points, bool extend_to_zero)
 {
-    std::unique_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis);
+    shared_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis);
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
@@ -88,7 +88,7 @@ shared_ptr<RectangularMesh<2>> RectilinearMesh2DFrom1DGenerator::generate(const 
 
 shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply, long max_points)
 {
-    std::unique_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis), axis2(new RectilinearAxis);
+    shared_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis), axis2(new RectilinearAxis);
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();

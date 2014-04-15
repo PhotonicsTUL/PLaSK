@@ -10,7 +10,7 @@ namespace plask {
 template<>
 struct RectangularMesh<1>: public MeshD<1> {
 
-    virtual std::unique_ptr<RectangularMesh<1>> clone() const = 0;
+    virtual shared_ptr<RectangularMesh<1>> clone() const = 0;
 
     virtual void clear() = 0;
 

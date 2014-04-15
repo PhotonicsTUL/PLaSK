@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/mesh/rectilinear.h>
+#include <plask/mesh/rectangular.h>
 #include <plask/mesh/boundary_conditions.h>
 #include <plask/manager.h>
 #include <plask/utils/xml.h>

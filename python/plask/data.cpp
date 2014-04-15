@@ -3,8 +3,7 @@
 #include "python_numpy.h"
 
 #include <plask/mesh/mesh.h>
-#include <plask/mesh/rectilinear.h>
-#include <plask/mesh/regular.h>
+#include <plask/mesh/rectangular.h>
 #include <plask/data.h>
 #include <plask/vec.h>
 

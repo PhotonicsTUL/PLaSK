@@ -247,7 +247,7 @@ public:
      */
     void clear();
 
-    std::unique_ptr<RectangularAxis> clone() const override;
+    shared_ptr<RectangularAxis> clone() const override;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.

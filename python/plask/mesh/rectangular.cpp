@@ -6,9 +6,7 @@
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
-#include <plask/mesh/rectilinear.h>
 #include <plask/mesh/generator_rectilinear.h>
-#include <plask/mesh/regular.h>
 
 #if PY_VERSION_HEX >= 0x03000000
 #   define NEXT "__next__"
@@ -77,15 +75,6 @@ static py::object RectilinearAxis__array__(py::object self, py::object dtype) {
     return py::object(py::handle<>(arr));
 }
 
-static py::object RectilinearMesh1D__array__(py::object self, py::object dtype) {
-    RectilinearMesh1D* mesh = py::extract<RectilinearMesh1D*>(self);
-    npy_intp dims[] = { mesh->size() };
-    PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*mesh->axis.begin()));
-    if (arr == nullptr) throw TypeError("cannot create array");
-    confirm_array<double>(arr, self, dtype);
-    return py::object(py::handle<>(arr));
-}
-
 template <typename RectilinearT>
 shared_ptr<RectilinearT> Rectilinear__init__seq(py::object seq) {
     py::stl_input_iterator<double> begin(seq), end;
@@ -96,19 +85,9 @@ static std::string RectilinearAxis__repr__(const RectilinearAxis& self) {
     return "RectilinearAxis(" + __str__(self) + ")";
 }
 
-static std::string RectilinearMesh1D__repr__(const RectilinearMesh1D& self) {
-    return "Rectilinear1D(" + __str__(self) + ")";
-}
-
 static double RectilinearAxis__getitem__(const RectilinearAxis& self, int i) {
     if (i < 0) i = self.size() + i;
     if (i < 0) throw IndexError("axis index out of range");
-    return self[i];
-}
-
-static double RectilinearMesh1D__getitem__(const RectilinearMesh1D& self, int i) {
-    if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("mesh index out of range");
     return self[i];
 }
 
@@ -118,28 +97,11 @@ static void RectilinearAxis__delitem__(RectilinearAxis& self, int i) {
     self.removePoint(i);
 }
 
-static void RectilinearMesh1D__delitem__(RectilinearMesh1D& self, int i) {
-    if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("mesh index out of range");
-    self.axis.removePoint(i);
-}
-
-static void RectilinearMesh1D_insert(RectilinearMesh1D& self, double p) {
-    self.axis.addPoint(p);
-}
-
 static void RectilinearAxis_extend(RectilinearAxis& self, py::object sequence) {
     py::stl_input_iterator<double> begin(sequence), end;
     std::vector<double> points(begin, end);
     std::sort(points.begin(), points.end());
     self.addOrderedPoints(points.begin(), points.end());
-}
-
-static void RectilinearMesh1D_extend(RectilinearMesh1D& self, py::object sequence) {
-    py::stl_input_iterator<double> begin(sequence), end;
-    std::vector<double> points(begin, end);
-    std::sort(points.begin(), points.end());
-    self.axis.addOrderedPoints(points.begin(), points.end());
 }
 
 
@@ -193,19 +155,9 @@ static std::string RegularAxis__repr__(const RegularAxis& self) {
     return format("RegularAxis(%1%, %2%, %3%)", self.first(), self.last(), self.size());
 }
 
-static std::string RegularMesh1D__repr__(const RegularMesh1D& self) {
-    return format("Regular1D(%1%, %2%, %3%)", self.axis.first(), self.axis.last(), self.size());
-}
-
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
     if (i < 0) i = self.size() + i;
     if (i < 0) throw IndexError("axis index out of range");
-    return self[i];
-}
-
-static double RegularMesh1D__getitem__(const RegularMesh1D& self, int i) {
-    if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("mesh index out of range");
     return self[i];
 }
 
@@ -213,37 +165,14 @@ static void RegularAxis_resize(RegularAxis& self, int count) {
     self.reset(self.first(), self.last(), count);
 }
 
-static void RegularMesh1D_resize(RegularMesh1D& self, int count) {
-    self.axis.reset(self.axis.first(), self.axis.last(), count);
-}
-
-static double RegularMesh1D_getFirst(const RegularMesh1D& self) {
-    return self.axis.first();
-}
-
-static double RegularMesh1D_getLast(const RegularMesh1D& self) {
-    return self.axis.last();
-}
-
-static double RegularMesh1D_getStep(const RegularMesh1D& self) {
-    return self.axis.step();
-}
-
 static void RegularAxis_setFirst(RegularAxis& self, double first) {
     self.reset(first, self.last(), self.size());
-}
-
-static void RegularMesh1D_setFirst(RegularMesh1D& self, double first) {
-    self.axis.reset(first, self.axis.last(), self.size());
 }
 
 static void RegularAxis_setLast(RegularAxis& self, double last) {
     self.reset(self.first(), last, self.size());
 }
 
-static void RegularMesh1D_setLast(RegularMesh1D& self, double last) {
-    self.axis.reset(self.axis.first(), last, self.size());
-}
 
 template <typename MeshT, typename AxesT>
 static shared_ptr<MeshT> RectangularMesh1D__init__axis(const AxesT& axis) {
@@ -376,13 +305,13 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
 
 
 
-shared_ptr<RectilinearMesh2D> RectilinearMesh2D__init__geometry(const shared_ptr<GeometryObjectD<2>>& geometry, std::string order) {
+shared_ptr<RectangularMesh<2>> RectilinearMesh2D__init__geometry(const shared_ptr<GeometryObjectD<2>>& geometry, std::string order) {
     auto mesh = RectilinearMesh2DSimpleGenerator().generate(geometry);
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
 
-shared_ptr<RectilinearMesh3D> RectilinearMesh3D__init__geometry(const shared_ptr<GeometryObjectD<3>>& geometry, std::string order) {
+shared_ptr<RectangularMesh<3>> RectilinearMesh3D__init__geometry(const shared_ptr<GeometryObjectD<3>>& geometry, std::string order) {
     auto mesh = RectilinearMesh3DSimpleGenerator().generate(geometry);
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
@@ -650,7 +579,7 @@ shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__
 template <int dim>
 void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
-                   py::bases<MeshGeneratorOf<RectangularMesh<dim,RectilinearAxis>>>, boost::noncopyable>
+                   py::bases<MeshGeneratorOf<RectangularMesh<dim>>>, boost::noncopyable>
             dividecls("DivideGenerator",
             format("Generator of Rectilinear%1%D mesh by simple division of the geometry.\n\n"
             "DivideGenerator()\n"

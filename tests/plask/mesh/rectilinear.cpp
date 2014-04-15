@@ -3,7 +3,6 @@
 #include <plask/geometry/stack.h>
 #include <plask/geometry/leaf.h>
 
-#include <plask/mesh/rectilinear.h>
 #include <plask/mesh/generator_rectilinear.h>
 
 BOOST_AUTO_TEST_SUITE(rectilinear) // MUST be the same as the file name

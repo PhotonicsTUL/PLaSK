@@ -4,8 +4,7 @@
 #include <plask/utils/xml/writer.h>
 #include <plask/utils/xml/reader.h>
 
-#include <plask/mesh/rectilinear.h>
-#include <plask/mesh/regular.h>
+#include <plask/mesh/rectangular.h>
 
 #define HEADER "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 
@@ -116,10 +115,14 @@ BOOST_AUTO_TEST_CASE(mesh) {
     writer.writeHeader();
     auto grids = writer.addTag("grids");
 
-    auto mesh2 = plask::RegularMesh2D(plask::RegularAxis(1,5,3), plask::RegularAxis(10, 40, 4));
+    auto mesh2 = plask::RectangularMesh<2>(plask::make_shared<plask::RegularAxis>(1,5,3), plask::make_shared<plask::RegularAxis>(10, 40, 4));
     mesh2.writeXML(writer.addTag("mesh").attr("name", "reg"));
 
-    auto mesh3 = plask::RectilinearMesh3D({1,2,3}, {20,50}, {10});
+    auto mesh3 = plask::RectangularMesh<3>(
+                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{1, 2, 3}),
+                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{20, 50}),
+                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{10})
+         );
     mesh3.writeXML(writer.addTag("mesh").attr("name", "rec"));
 
     grids.end();
