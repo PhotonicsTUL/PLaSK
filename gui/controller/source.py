@@ -8,6 +8,8 @@ class SourceEditController(Controller):
 
     def __init__(self, document = None, model = None):
         Controller.__init__(self, document, model)
+        self.fresh = False
+        self.visible = False
 
     def create_source_editor(self, parent = None):
         ed = QtGui.QTextEdit(parent)
@@ -26,7 +28,11 @@ class SourceEditController(Controller):
         return self.get_source_editor()
 
     def refresh_editor(self, *ignore):
-        self.get_source_editor().setPlainText(self.model.get_text())
+        if self.visible:
+            self.get_source_editor().setPlainText(self.model.get_text())
+            self.fresh = True
+        else:
+            self.fresh = False
 
     def save_data_in_model(self):
         if not self.get_source_editor().isReadOnly():
@@ -37,10 +43,12 @@ class SourceEditController(Controller):
                 if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
 
     def on_edit_enter(self):
-        self.refresh_editor()
+        self.visible = True
+        if not self.fresh: self.refresh_editor()
         if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
 
     # when editor is turn off, model should be update
     def on_edit_exit(self):
         self.save_data_in_model()
-        if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
+        #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
+        self.visible = False
