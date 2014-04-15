@@ -23,7 +23,7 @@ MATERIALS_PROPERTES = OrderedDict((
     ('CB', (u'Conduction band level <i>CB</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
     ('chi', (u'Electron affinity <i>χ</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
     ('cond', (u'Electrical conductivity <i>σ</i> in-plane (lateral) and cross-plane (vertical) direction', 'S/m', [(u'T', 'temperature [K]')])),
-    ('condtype', (u'Electrical conductivity type. In semiconductors this indicates what type of carriers <i>Nf</i> refers to.', [])),
+    ('condtype', (u'Electrical conductivity type. In semiconductors this indicates what type of carriers <i>Nf</i> refers to.', '-', [])),
     ('cp', (u'Specific heat at constant pressure', 'J/(kg K)', [(u'T', 'temperature [K]')])),
     ('D', (u'Ambipolar diffusion coefficient <i>D</i>', 'm<sup>2</sup>/s', [(u'T', 'temperature [K]')])),
     ('dens', (u'Density', 'kg/m<sup>3</sup>', [(u'T', 'temperature [K]')])),
@@ -122,7 +122,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
-        #self.fire_changed()
+        self.fire_changed()
         self.dataChanged.emit(index, index)
         return True
 
@@ -168,7 +168,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         return self.material == None or self.materialsModel.is_read_only()
 
     def fire_changed(self):
-        pass
+        self.materialsModel.fire_changed()
 
     def create_default_entry(self):
         return "", ""
