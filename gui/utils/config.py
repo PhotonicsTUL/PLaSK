@@ -14,7 +14,14 @@ class Config(object):
         else:
             return current
 
+    def __getitem__(self, key):
+        return self.qsettings.value(key)
+
     def __setitem__(self, key, value):
         self.qsettings.setValue(key, value)
+
+    def sync(self):
+        """Synchronize settings"""
+        self.qsettings.sync()
 
 CONFIG = Config()

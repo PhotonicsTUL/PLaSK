@@ -206,26 +206,27 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
         while (traceback) {
             int lineno = traceback->tb_lineno;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            if (scriptname != nullptr && filename == scriptname) lineno += startline;
+            int flineno = (scriptname != nullptr && filename == scriptname)? startline + lineno : lineno;
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2% (%3%), function '%4%' calling:", filename, flineno, lineno, funcname);
             else {
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2% (%3%), function '%4%' calling:", filename, flineno, lineno, funcname);
                     std::string form = message;
                     std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
-                        int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                        int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                        int flineno = startline + lineno;
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2% (%3%): %4%: %5%", file, flineno, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
                         plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
                     }
                 } else
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2% (%3%), function '%4%': %5%: %6%", filename, flineno, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
@@ -235,8 +236,9 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
-                    int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                    int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                    int flineno = startline + lineno;
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2% (%3%): %4%: %5%", file, flineno, lineno, error_name, msg);
                 } catch (boost::bad_lexical_cast) {
                     plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
                 }

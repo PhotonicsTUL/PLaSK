@@ -463,6 +463,7 @@ class PlaskThread(QtCore.QThread):
             line = line.replace(' ', '&nbsp;')
             self.lines.append('<span style="color:%s;">%s</span>' % (color, line))
 
+
     def kill_process(self):
         self.proc.terminate()
 

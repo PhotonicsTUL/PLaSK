@@ -15,6 +15,8 @@ from .XPLDocument import XPLDocument
 from .utils.gui import exception_to_msg
 from .model.info import InfoTreeModel, Info
 
+from .utils.config import CONFIG
+
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
@@ -36,7 +38,8 @@ class MainWindow(QtGui.QMainWindow):
         self.model_is_new()
 
     def new(self):
-        reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
+        reply = QtGui.QMessageBox.question(self, "Save", "Save current project?",
+                                           QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
         self.filename = None
@@ -219,8 +222,15 @@ class MainWindow(QtGui.QMainWindow):
 
         #viewMenu.addAction(self.info_dock.toggleViewAction());
 
-        self.setGeometry(100, 100, 1200, 750)
-        self.setWindowTitle('Main window')
+        geometry = CONFIG['session/geometry']
+        if geometry is None:
+            desktop = QtGui.QDesktopWidget()
+            screen = desktop.availableGeometry(desktop.primaryScreen())
+            self.setFixedSize(screen.width()*0.8, screen.height()*0.9)
+        else:
+            self.setGeometry(geometry)
+
+        self.setWindowTitle('PLaSK')
 
         if len(sys.argv) > 1:
             try:
@@ -233,8 +243,14 @@ class MainWindow(QtGui.QMainWindow):
 
         self.show()
 
+    def quitting(self):
+        geometry = self.geometry()
+        CONFIG['session/geometry'] = geometry
+        CONFIG.sync()
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
-    ex = MainWindow()
+    mw = MainWindow()
+    app.aboutToQuit.connect(mw.quitting)
     sys.exit(app.exec_())
