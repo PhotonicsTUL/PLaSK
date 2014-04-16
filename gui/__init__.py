@@ -7,6 +7,11 @@ for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVar
 
 import sys
 import os
+import ctypes
+import subprocess
+import pkgutil
+from importlib import import_module
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import SIGNAL
 
@@ -17,6 +22,12 @@ from .model.info import InfoTreeModel, Info
 
 from .utils.config import CONFIG
 
+try:
+    winsparkle = ctypes.CDLL('WinSparkle.dll')
+except OSError:
+    winsparkle = None
+
+
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
@@ -24,7 +35,7 @@ class MainWindow(QtGui.QMainWindow):
         self.document = XPLDocument(self)
         self.current_tab_index = -1
         self.filename = None
-        self.init_UI()
+        self.init_ui()
 
     def model_is_new(self):
         self.tabs.clear()
@@ -139,7 +150,7 @@ class MainWindow(QtGui.QMainWindow):
     def set_editor_select_actions(self, *actions):
         self.set_actions('Section editor', *actions)
 
-    def init_UI(self):
+    def init_ui(self):
 
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
         icon_pixmap = QtGui.QPixmap()
@@ -150,52 +161,73 @@ class MainWindow(QtGui.QMainWindow):
 
         #self.statusBar()
 
-        newAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'), '&New', self)
-        newAction.setShortcut(QtGui.QKeySequence.New)
-        newAction.setStatusTip('New XPL file')
-        newAction.triggered.connect(self.new)
+        new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'), '&New', self)
+        new_action.setShortcut(QtGui.QKeySequence.New)
+        new_action.setStatusTip('New XPL file')
+        new_action.triggered.connect(self.new)
 
-        openAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'), '&Open...', self)
-        openAction.setShortcut(QtGui.QKeySequence.Open)
-        openAction.setStatusTip('Open XPL file')
-        openAction.triggered.connect(self.open)
+        open_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'), '&Open...', self)
+        open_action.setShortcut(QtGui.QKeySequence.Open)
+        open_action.setStatusTip('Open XPL file')
+        open_action.triggered.connect(self.open)
 
-        saveAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'), '&Save', self)
-        saveAction.setShortcut(QtGui.QKeySequence.Save)
-        saveAction.setStatusTip('Save XPL file')
-        saveAction.triggered.connect(self.save)
+        save_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'), '&Save', self)
+        save_action.setShortcut(QtGui.QKeySequence.Save)
+        save_action.setStatusTip('Save XPL file')
+        save_action.triggered.connect(self.save)
 
-        saveAsAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'), 'Save &As...', self)
-        saveAsAction.setShortcut(QtGui.QKeySequence.SaveAs)
-        saveAsAction.setStatusTip('Save XPL file, ask for name of file')
-        saveAsAction.triggered.connect(self.save_as)
+        saveas_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'), 'Save &As...', self)
+        saveas_action.setShortcut(QtGui.QKeySequence.SaveAs)
+        saveas_action.setStatusTip('Save XPL file, ask for name of file')
+        saveas_action.triggered.connect(self.save_as)
 
-        exitAction = QtGui.QAction(QtGui.QIcon.fromTheme('exit'), 'E&xit', self)
-        exitAction.setShortcut(QtGui.QKeySequence.Quit)
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(self.close)
+        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit'), 'E&xit', self)
+        exit_action.setShortcut(QtGui.QKeySequence.Quit)
+        exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(self.close)
 
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(newAction)
-        fileMenu.addAction(openAction)
-        fileMenu.addSeparator()
-        fileMenu.addAction(saveAction)
-        fileMenu.addAction(saveAsAction)
-        fileMenu.addSeparator()
-        fileMenu.addAction(exitAction)
+        self.menubar = self.menuBar()
+        self.file_menu = self.menubar.addMenu('&File')
+        self.file_menu.addAction(new_action)
+        self.file_menu.addAction(open_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(save_action)
+        self.file_menu.addAction(saveas_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(exit_action)
 
         #viewMenu = menubar.addMenu('&View')
 
         #editMenu = menubar.addMenu('&Edit')
         #editMenu.addAction(showSourceAction)
 
-        toolbar = self.addToolBar('File')
-        toolbar.addAction(newAction)
-        toolbar.addAction(openAction)
-        toolbar.addAction(saveAction)
-        toolbar.addAction(saveAsAction)
-        #toolbar.addAction(exitAction)
+        global winsparkle
+        if winsparkle:
+            tools_menu = self.menubar.addMenu('&Tools')
+            if winsparkle:
+                tools_menu.addSeparator()
+                try:
+                    actionWinSparkleAutoupdate = QtGui.QAction(self)
+                    actionWinSparkleAutoupdate.setText(self.tr("Automatic Updates"))
+                    actionWinSparkleAutoupdate.setCheckable(True)
+                    actionWinSparkleAutoupdate.setChecked(winsparkle.win_sparkle_get_automatic_check_for_updates())
+                    actionWinSparkleAutoupdate.triggered.connect(
+                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(
+                            int(actionWinSparkleAutoupdate.isChecked())))
+                    tools_menu.addAction(actionWinSparkleAutoupdate)
+                except AttributeError:
+                    pass
+                actionWinSparkle = QtGui.QAction(self)
+                actionWinSparkle.setText("Check for Updates Now...")
+                actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
+                tools_menu.addAction(actionWinSparkle)
+
+        self.toolbar = self.addToolBar('File')
+        self.toolbar.addAction(new_action)
+        self.toolbar.addAction(open_action)
+        self.toolbar.addAction(save_action)
+        self.toolbar.addAction(saveas_action)
+        #toolbar.addAction(exit_action)
         #toolbar.addSeparator()
         #toolbar.addAction(showSourceAction)
         self.extra_toolbars = {}
@@ -250,7 +282,30 @@ class MainWindow(QtGui.QMainWindow):
 
 
 def main():
+    if winsparkle:
+        si = subprocess.STARTUPINFO()
+        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = subprocess.SW_HIDE
+        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+        version, err = proc.communicate()
+        prog, ver = version.strip().split()
+        wp = ctypes.c_wchar_p
+        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
+        winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
+        winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
+        winsparkle.win_sparkle_init()
+
     app = QtGui.QApplication(sys.argv)
-    mw = MainWindow()
-    app.aboutToQuit.connect(mw.quitting)
-    sys.exit(app.exec_())
+    global MAIN_WINDOW
+    MAIN_WINDOW = MainWindow()
+    app.aboutToQuit.connect(MAIN_WINDOW.quitting)
+
+    for importer, modname, ispkg in pkgutil.walk_packages('plugins'):
+        pass
+
+    exit_code = app.exec_()
+
+    if winsparkle:
+        winsparkle.win_sparkle_cleanup()
+
+    sys.exit(exit_code)

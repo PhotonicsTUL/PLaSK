@@ -27,6 +27,30 @@ else:
     _suffix = time.strftime("-%Y%m%d-%H%M", time.localtime())
 
 
+def _h5_open(filename, group):
+    import h5py
+    if filename is None:
+        import sys
+        filename = sys.argv[0]
+        if filename.endswith('.py'): filename = filename[:-3]
+        elif filename.endswith('.xpl'): filename = filename[:-4]
+        filename += _suffix + '.h5'
+    if type(filename) is h5py.File:
+        h5file = filename
+        filename = h5file.filename
+    else:
+        h5file = h5py.File(filename, 'a')
+    orig_group = group; idx = 1
+    while group in h5file:
+        group = "{}-{}".format(orig_group, idx)
+        idx += 1
+    if group is not orig_group:
+        plask.print_log(plask.LOG_WARNING,
+                        "Group '{}' exists in HDF5 file '{}'. Saving to group '{}'" \
+                            .format(orig_group, filename, group))
+    return h5file, group
+
+
 class ThermoElectric(object):
     '''
     Algorithm for thermo-electric calculations without the optical part.
@@ -127,28 +151,13 @@ class ThermoElectric(object):
 
             group (str): HDF5 group to save the data under.
         '''
-        if filename is None:
-            import sys
-            filename = sys.argv[0]
-            if filename.endswith('.py'): filename = filename[:-3]
-            elif filename.endswith('.xpl'): filename = filename[:-4]
-            filename += _suffix + '.h5'
+        h5file, group = _h5_open(filename, group)
         tmesh = self.thermal.mesh
         vmesh = self.electrical.mesh
         jmesh = vmesh.get_midpoints()
         temp = self.thermal.outTemperature(tmesh)
         volt = self.electrical.outVoltage(vmesh)
         curr = self.electrical.outCurrentDensity(jmesh)
-        import h5py
-        h5file = h5py.File(filename, 'a')
-        orig_group = group; idx = 1
-        while group in h5file:
-            group = "{}-{}".format(orig_group, idx)
-            idx += 1
-        if group is not orig_group:
-            plask.print_log(plask.LOG_WARNING,
-                            "Group '{}' exists in HDF5 file '{}'. Saving to group '{}'" \
-                                .format(orig_group, filename, group))
         plask.save_field(temp, h5file, group + '/Temperature')
         plask.save_field(volt, h5file, group + '/Potential')
         plask.save_field(curr, h5file, group + '/CurrentDensity')
@@ -411,8 +420,10 @@ class ThresholdSearch(ThermoElectric):
             optical.inGain = gain.outGain
         self.gain = gain
         self.optical = optical
-        self.ab = vmin,vmax
+        self.vmin = vmin
+        self.vmax = vmax
         self.ivb = ivolt
+        self.vtol = vtol
         self.optstart = approx_mode
         self.invalidate = invalidate
         if quick:
@@ -461,7 +472,7 @@ class ThresholdSearch(ThermoElectric):
 
         def func(volt):
             '''Function to search zero of'''
-            self.electrical.voltage_boundary[self.ivb] = volt
+            self.electrical.voltage_boundary[self.ivb].value = volt
             if self.invalidate:
                 self.thermal.invalidate()
                 self.electrical.invalidate()
@@ -496,22 +507,7 @@ class ThresholdSearch(ThermoElectric):
 
             group (str): HDF5 group to save the data under.
         '''
-        if filename is None:
-            import sys
-            filename = sys.argv[0]
-            if filename.endswith('.py'): filename = filename[:-3]
-            elif filename.endswith('.xpl'): filename = filename[:-4]
-            filename += _suffix + '.h5'
-        tmesh = self.thermal.mesh
-        vmesh = self.electrical.mesh
-        jmesh = vmesh.get_midpoints()
-        temp = self.thermal.outTemperature(tmesh)
-        volt = self.electrical.outVoltage(vmesh)
-        curr = self.electrical.outCurrentDensity(jmesh)
-        import h5py
-        h5file = h5py.File(filename, 'a')
-        plask.save_field(temp, h5file, group + '/Temperature')
-        plask.save_field(volt, h5file, group + '/Potential')
-        plask.save_field(curr, h5file, group + '/CurrentDensity')
+        h5file, group = _h5_open(filename, group)
+        ThermoElectric.save(self, h5file, group)
 
 
