@@ -18,6 +18,11 @@ else()
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas")
 
+if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+    set(WIN64 YES) # CMake cannot automatically detect that we compile for WIN64
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMS_WIN64")
+endif()
+
 # Turn-off strict aliasing for Python code and set some other specific compiler options
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-maybe-uninitialized")
@@ -155,15 +160,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes") # get rid of annoying warnings in Boost
-    #list(APPEND Boost_PYTHON_LIBRARIES "msvcr90")   #TODO check
-    #set(plask_manifest "mingw/msvcrc.o")
-    # TODO link all targets to: msvcr90
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
-    # set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
-    # set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${CMAKE_SOURCE_DIR}/mingw/msvcrc.o")
-    set(plask_manifest "")  #TODO remove plask_manifest
-else()
-    set(plask_manifest "")
 endif()
 
 ## ---------- Fortran name mangling --------------------------------------------
@@ -190,6 +186,11 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.h)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 
+if(WIN32)
+    set(manifest "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcr90.manifest\"\n")
+else()
+    set(manifest "")
+endif()
 
 # ---------- External libraries built by us -----------------------------------------
 
@@ -255,22 +256,13 @@ if(BUILD_PYTHON)
     add_library(libplask-python SHARED ${python_plask_src})
     target_link_libraries(libplask-python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
     set_target_properties(libplask-python PROPERTIES OUTPUT_NAME plask-python)
+    if(DEFINED no_strict_aliasing_flag)
+        set_target_properties(libplask-python PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+    endif()
     if(WIN32)
         set_target_properties(libplask-python PROPERTIES LINK_FLAGS -Wl,--export-all-symbols)
     endif()
     # if(BUILD_PYTHON_MODULE)
-    #     if(WIN32)
-    #         add_library(_plask SHARED ${python_plask_src} ${plask_manifest})
-    #         set_target_properties(_plask PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}" SUFFIX ".pyd")
-    #         install(TARGETS _plask RUNTIME DESTINATION lib/plask/python/plask COMPONENT core
-    #                                 LIBRARY DESTINATION lib/plask/python/plask COMPONENT dev)
-    #     else()
-    #         add_library(_plask MODULE ${python_plask_src} ${plask_manifest})
-    #         install(TARGETS _plask LIBRARY DESTINATION lib/plask/python/plask COMPONENT core)
-    #     endif()
-    #     target_link_libraries(_plask ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
-    #     set_target_properties(_plask PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PLASK_PYTHON_PATH} PREFIX "")
-    #     add_dependencies(_plask python-scripts)
     # endif()
 
     if(WIN32)
@@ -280,18 +272,24 @@ if(BUILD_PYTHON)
         install(TARGETS libplask-python LIBRARY DESTINATION lib COMPONENT core)
     endif()
 
-    add_executable(plask python/exe_main.cpp ${plask_manifest})
     if(WIN32)
-            # For some reason MinGW wants to create import library for executable,
-            # which overwrites libplask.dll.a. With this hack we name this useless
-            # stuff libplask.exe.dll.a
-            set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plask.rc "${manifest}")
+        add_executable(plask python/exe_main.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plask.rc)
+        # For some reason MinGW wants to create import library for executable,
+        # which overwrites libplask.dll.a. With this hack we name this useless
+        # stuff libplask.exe.dll.a
+        set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+    else()
+        add_executable(plask python/exe_main.cpp)
     endif()
     target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
     add_dependencies(plask python-scripts)
 
-    if(DEFINED no_strict_aliasing_flag)
-        set_target_properties(plask PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+    if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
+        set_target_properties(plask PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
+    endif()
+    if(DEFINED EXE_FLAGS)
+        set_target_properties(plask PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
 
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
@@ -299,15 +297,22 @@ if(BUILD_PYTHON)
     install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
 
     # GUI
-    add_executable(plaskgui python/exe_gui.cpp ${plask_manifest})
+    if(WIN32)
+        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/qtplask.ico\"\n")
+        add_executable(plaskgui python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc)
+    else()
+        add_executable(plaskgui python/exe_gui.cpp)
+    endif()
     target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
-    if(DEFINED no_strict_aliasing_flag)
-        set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+    if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
+        set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flags} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
     endif()
     if(WIN32)
-        set_target_properties(plaskgui PROPERTIES LINK_FLAGS -mwindows)
+        set_target_properties(plaskgui PROPERTIES LINK_FLAGS "-mwindows ${EXE_FLAGS}")
+    elseif(DEFINED EXE_FLAGS)
+        set_target_properties(plaskgui PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
-    install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI PATTERN *.pyc EXCLUDE)
+    install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI PATTERN *.pyc EXCLUDE PATTERN .* EXCLUDE)
     install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
     if(UNIX)
@@ -487,10 +492,10 @@ if(WIN32)
         set(script_rc "${UTILS_BINARY_DIR}/${script}.rc")
         set(script_pyc "${UTILS_BINARY_DIR}/${script}.pyc")
         if(DEFINED ARGV1)
-            file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n2 ICON \"${ARGV1}\"\n101 256 \"${script_pyc}\"\n")
+            file(WRITE ${script_rc} "${manifest}2 ICON \"${ARGV1}\"\n101 256 \"${script_pyc}\"\n")
             set(exe_type windows)
         else()
-            file(WRITE ${script_rc} "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/msvcrt.manifest\"\n101 256 \"${script_pyc}\"\n")
+            file(WRITE ${script_rc} "${manifest}101 256 \"${script_pyc}\"\n")
             set(exe_type console)
         endif()
         add_custom_command(OUTPUT ${script_pyc}
@@ -501,7 +506,7 @@ if(WIN32)
         set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS ${script_pyc})
         set_source_files_properties(toolset/run_python.cpp PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
         target_link_libraries(${script} ${PYTHON_LIBRARIES})
-        set_target_properties(${script} PROPERTIES LINK_FLAGS "-m${exe_type}")
+        set_target_properties(${script} PROPERTIES LINK_FLAGS "-m${exe_type} ${EXE_FLAGS}")
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
     endfunction()
 
@@ -552,6 +557,10 @@ if(WIN32)
     list(APPEND CPACK_PACKAGE_EXECUTABLES "plaskgui;PLaSK GUI")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "qtplask;PLaSK Runner")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "plask;PLaSK Console")
+    if(WIN64)
+        set(CPACK_SYSTEM_NAME "win64")
+        set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+    endif()
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "PLaSK")
     set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "plask")
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")

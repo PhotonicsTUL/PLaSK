@@ -324,17 +324,19 @@ void PythonManager::removeSpaces(unsigned xmlline) {
     size_t strip;
     auto firstline = line;
     auto beg = line->begin();
+    const auto endline = decltype(line)();
     do { // Search for the first non-empty line to get initial indentation
         strip = 0;
         for (; beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
             if (*beg == ' ') ++strip;
             else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
         }
-    } while (beg == line->end());
-    if (beg == line->begin()) return;
+        ++line;
+    } while (beg == line->end() && line != endline);
+    if (beg == line->begin() || line == endline) return;
     std::string result;
     line = firstline;
-    for (size_t lineno = 1; line != decltype(line)(); ++line, ++lineno) { // Indent all lines
+    for (size_t lineno = 1; line != endline; ++line, ++lineno) { // Indent all lines
         size_t pos = 0;
         for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
             if (*beg == ' ') ++pos;
