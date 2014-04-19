@@ -253,23 +253,23 @@ if(BUILD_PYTHON)
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
 
-    add_library(libplask-python SHARED ${python_plask_src})
-    target_link_libraries(libplask-python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
-    set_target_properties(libplask-python PROPERTIES OUTPUT_NAME plask-python)
+    add_library(libplask_python SHARED ${python_plask_src})
+    target_link_libraries(libplask_python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    set_target_properties(libplask_python PROPERTIES OUTPUT_NAME plask_python)
     if(DEFINED no_strict_aliasing_flag)
-        set_target_properties(libplask-python PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
+        set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS ${no_strict_aliasing_flag}) # necessary for all code which includes "Python.h"
     endif()
     if(WIN32)
-        set_target_properties(libplask-python PROPERTIES LINK_FLAGS -Wl,--export-all-symbols)
+        set_target_properties(libplask_python PROPERTIES LINK_FLAGS -Wl,--export-all-symbols)
     endif()
     # if(BUILD_PYTHON_MODULE)
     # endif()
 
     if(WIN32)
-        install(TARGETS libplask-python RUNTIME DESTINATION bin COMPONENT core
+        install(TARGETS libplask_python RUNTIME DESTINATION bin COMPONENT core
                                         ARCHIVE DESTINATION lib COMPONENT dev)
     else()
-        install(TARGETS libplask-python LIBRARY DESTINATION lib COMPONENT core)
+        install(TARGETS libplask_python LIBRARY DESTINATION lib COMPONENT core)
     endif()
 
     if(WIN32)
@@ -282,7 +282,7 @@ if(BUILD_PYTHON)
     else()
         add_executable(plask python/exe_main.cpp)
     endif()
-    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
+    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
     add_dependencies(plask python-scripts)
 
     if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
@@ -303,7 +303,7 @@ if(BUILD_PYTHON)
     else()
         add_executable(plaskgui python/exe_gui.cpp)
     endif()
-    target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask-python libplask)
+    target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
     if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
         set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flags} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
     endif()

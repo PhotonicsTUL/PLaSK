@@ -84,24 +84,24 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 self.document.controller_by_index(self.current_tab_index).save_data_in_model()
             except Exception as e:
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText("Edited content of the current section is invalid.")
-                msgBox.setDetailedText(str(e))
-                msgBox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                msgBox.setIcon(QtGui.QMessageBox.Warning)
-                #msgBox.setDefaultButton(QtGui.QMessageBox.Yes);
-                return msgBox.exec_() == QtGui.QMessageBox.Yes
+                msgbox = QtGui.QMessageBox()
+                msgbox.setText("Edited content of the current section is invalid.")
+                msgbox.setDetailedText(str(e))
+                msgbox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
+                msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                msgbox.setIcon(QtGui.QMessageBox.Warning)
+                #msgbox.setDefaultButton(QtGui.QMessageBox.Yes);
+                return msgbox.exec_() == QtGui.QMessageBox.Yes
         errors = self.document.get_info(Info.ERROR)
         if errors:
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Document contains some non-critical errors. It is possible to save it but probably not to run.")
-            msgBox.setDetailedText('\n'.join(map(str, errors)))
-            msgBox.setInformativeText("Do you want to save anyway?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            msgBox.setIcon(QtGui.QMessageBox.Warning)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            return msgBox.exec_() == QtGui.QMessageBox.Yes
+            msgbox = QtGui.QMessageBox()
+            msgbox.setText("Document contains some non-critical errors. It is possible to save it but probably not to run.")
+            msgbox.setDetailedText('\n'.join(map(str, errors)))
+            msgbox.setInformativeText("Do you want to save anyway?")
+            msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            msgbox.setIcon(QtGui.QMessageBox.Warning)
+            msgbox.setDefaultButton(QtGui.QMessageBox.Yes)
+            return msgbox.exec_() == QtGui.QMessageBox.Yes
         return True
 
     def current_section_exit(self):
@@ -300,8 +300,9 @@ def main():
     MAIN_WINDOW = MainWindow()
     app.aboutToQuit.connect(MAIN_WINDOW.quitting)
 
-    for importer, modname, ispkg in pkgutil.walk_packages('plugins'):
-        pass
+    plugins_dir = os.path.join(__path__[0], 'plugins')
+    for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
+        mod = loader.find_module(modname).load_module(modname)
 
     exit_code = app.exec_()
 

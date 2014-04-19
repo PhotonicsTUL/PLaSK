@@ -1,24 +1,36 @@
 #coding utf:8
 
+import sys
+
 from PyQt4 import QtCore, QtGui
+
+from gui.launch import LAUNCHERS
+from gui.utils.config import CONFIG
+
+LAUNCHERS.inser(0, ("Local process",))
+
 
 class OutputWindow(QtGui.QMainWindow):
     '''Main Qt window class'''
 
-    def __init__(self, filename):
-        super(OutputWindow, self).__init__()
+    def __init__(self, filename, parent=None):
+        super(OutputWindow, self).__init__(parent)
 
         self.setWindowTitle(filename)
 
         font = QtGui.QFont()
-        if sys.platform == 'win32':
-            font.setFamily("Consolas")
-        elif sys.platform == 'darwin':
-            font.setFamily("Monaco")
-        else:
-            font.setFamily("Monospace")
-        font.setStyleHint(QtGui.QFont.TypeWriter)
-        font.setPointSize(10)
+        font_family = CONFIG['launcher/local/font_family']
+        if font_family is None:
+            if sys.platform == 'win32':
+                font_family = "Consolas"
+            elif sys.platform == 'darwin':
+                font_family = "Monaco"
+            else:
+                font_family = "Monospace"
+            CONFIG['launcher/local/font_family'] = font_family
+            font.setStyleHint(QtGui.QFont.TypeWriter)
+        font.setFamily(font_family)
+        font.setPointSize(CONFIG('launcher/local/font_size', 10))
         self.messages = QtGui.QTextEdit()
         self.messages.setReadOnly(True)
         self.messages.setAcceptRichText(True)

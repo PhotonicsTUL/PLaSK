@@ -85,4 +85,3 @@ def construct_grid_using_dialog(grids_model):
     dial = NewGridDialog()
     if dial.exec_() == QtGui.QDialog.Accepted:
         return dial.get_grid(grids_model)
-    return None
