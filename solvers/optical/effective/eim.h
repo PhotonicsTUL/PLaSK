@@ -13,7 +13,7 @@ namespace plask { namespace solvers { namespace effective {
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D> {
+struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>> {
 
     /// Mode symmetry in horizontal axis
     enum Symmetry {
@@ -219,11 +219,11 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(const RectilinearAxis& meshx) {
+    void setHorizontalMesh(shared_ptr<RectangularAxis> meshx) { //TODO pointer to mesh is holt now, is this fine?
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
-        auto meshxy = make_shared<RectilinearMesh2D>(*RectilinearMesh2DSimpleGenerator()(geometry->getChild()));
-        meshxy->axis0 = meshx;
+        auto meshxy = make_shared<RectangularMesh<2>>(*RectilinearMesh2DSimpleGenerator()(geometry->getChild()));
+        meshxy->setAxis0(meshx);
         setMesh(meshxy);
     }
 
@@ -422,7 +422,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     DataVector<const double> getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
   private:
-    template <typename MeshT>
+
     bool getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
                                      const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                      const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky);

@@ -16,7 +16,7 @@ template <typename GeometryT> struct GainSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct FermiGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
+struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> //TODO rectilinear only?
 {
     /// Structure containing information about each active region
     struct ActiveRegionInfo

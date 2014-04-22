@@ -432,6 +432,16 @@ class RectangularMesh<2>: public MeshD<2> {
         setIterationOrder(src.getIterationOrder());
     }
 
+    void setAxis0(shared_ptr<RectangularAxis> a0) {
+        axis0 = a0;
+        //TODO other pointers
+    }
+
+    void setAxis1(shared_ptr<RectangularAxis> a1) {
+        axis1 = a1;
+        //TODO other pointers
+    }
+
     /*
      * Construct mesh with is based on given 1D meshes
      *
