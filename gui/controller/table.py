@@ -1,4 +1,4 @@
-from PyQt4 import QtGui
+from ..qt import QtGui
 
 from .base import Controller
 

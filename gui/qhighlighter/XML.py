@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from ..qt import QtGui, QtCore
 
 # potencjalnie do zastzpienia przez przyklady HTML-a z https://bitbucket.org/henning/syntaxhighlighter/src
 class XMLHighlighter(QtGui.QSyntaxHighlighter):

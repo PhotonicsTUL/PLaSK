@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 
-from PyQt4.QtCore import SIGNAL, QAbstractListModel, Qt, QVariant, QModelIndex, QAbstractTableModel, pyqtSignal, QThread
-from PyQt4.QtGui import (
-    QToolTip, QTreeWidget, QTreeWidgetItem, QTextCursor, QFrame, QIcon, QCompleter, QTableView, QAbstractItemView, QKeyEvent)
+from ..qt import Qt
+from ..qt.QtCore import SIGNAL, QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, QThread
+from ..qt.QtGui import QToolTip, QTreeWidget, QTreeWidgetItem, QTextCursor, QFrame, QIcon, \
+    QCompleter, QTableView, QAbstractItemView, QKeyEvent
+try:
+    from ..qt.QtCore import Signal
+except ImportError:
+    from ..qt.QtCore import pyqtSignal as Signal
+
 
 from pycode.ropeassist import completions, calltip, definition_location
 from pycode.indenter import PythonCodeIndenter
@@ -39,7 +45,7 @@ def call_background(func, *args, **kwargs):
 class RopeEditorAdapter(object):
 
     """
-    Wrapper for PyQt4 to provide the Line-editor interface
+    Wrapper for ..qt to provide the Line-editor interface
     for the Indenter classes
     """
 
@@ -225,7 +231,7 @@ class CompleterPopup(QTableView):
         self.setShowGrid(False)
         self.setWordWrap(False)
 
-    visibility_changed = pyqtSignal(bool)
+    visibility_changed = Signal(bool)
 
     def showEvent(self, event):
         self.visibility_changed.emit(True)
@@ -246,7 +252,7 @@ class Completer(QCompleter):
         self.setCompletionColumn(1)
         # self.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
         self.setWidget(self._textedit)
-        self.setCaseSensitivity(case_sensitivity)
+        self.setCaseSensitivity(Qt.CaseSensitive if case_sensitivity else Qt.CaseInsensitive)
         self.activated[str].connect(self.insert_completion)
         self._textedit.removeEventFilter(self)
 

@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from ..qt import QtCore
 
 class Config(object):
     """Configuration wrapper"""

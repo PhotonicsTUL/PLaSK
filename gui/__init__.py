@@ -2,25 +2,26 @@
 # -*- coding: utf-8 -*-
 
 # use new v2 API, Python types instead of Qt
-import sip
-for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"): sip.setapi(n, 2)
-
 import sys
 import os
 import ctypes
 import subprocess
 import pkgutil
-from importlib import import_module
 
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import SIGNAL
+from .qt import QtGui, QtCore
 
 from .resources import APP_ICON
 from .XPLDocument import XPLDocument
 from .utils.gui import exception_to_msg
 from .model.info import InfoTreeModel, Info
+from .launch import launch_plask
 
 from .utils.config import CONFIG
+
+try:
+    import plask
+except ImportError:
+    pass
 
 try:
     winsparkle = ctypes.CDLL('WinSparkle.dll')
@@ -36,6 +37,12 @@ class MainWindow(QtGui.QMainWindow):
         self.current_tab_index = -1
         self.filename = None
         self.init_ui()
+
+    def make_window_title(self):
+        if self.filename:
+            self.setWindowTitle("{} - PLaSK".format(self.filename))
+        else:
+            self.setWindowTitle("PLaSK")
 
     def model_is_new(self):
         self.tabs.clear()
@@ -54,12 +61,15 @@ class MainWindow(QtGui.QMainWindow):
         if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
             return
         self.filename = None
+        self.make_window_title()
         self.set_model(XPLDocument(self))
 
     def open(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "XPL (*.xpl)");
         if not filename: return;
+        self.filename = filename
         self.document.load_from_file(filename)
+        self.make_window_title()
 
     def save(self):
         if self.filename != None:
@@ -75,6 +85,7 @@ class MainWindow(QtGui.QMainWindow):
         filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", "", "XPL (*.xpl)");
         if not filename: return False
         self.filename = filename
+        self.make_window_title()
         self.document.save_to_file(filename)
         return True
 
@@ -132,10 +143,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def set_actions(self, toolbar_name, *actions):
         try:
-            toolbar = self.extra_toolbars[toolbar_name]
+            toolbar = self.toolbars[toolbar_name]
         except KeyError:
             toolbar = self.addToolBar(toolbar_name)
-            self.extra_toolbars[toolbar_name] = toolbar
+            self.toolbars[toolbar_name] = toolbar
         toolbar.clear()
         for a in actions:
             if not a:
@@ -181,6 +192,11 @@ class MainWindow(QtGui.QMainWindow):
         saveas_action.setStatusTip('Save XPL file, ask for name of file')
         saveas_action.triggered.connect(self.save_as)
 
+        launch_action = QtGui.QAction(QtGui.QIcon.fromTheme('media-playback-start'), '&Launch...', self)
+        launch_action.setShortcut('F5')
+        launch_action.setStatusTip('Launch current file in PLaSK')
+        launch_action.triggered.connect(lambda: launch_plask(self.filename))
+
         exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit'), 'E&xit', self)
         exit_action.setShortcut(QtGui.QKeySequence.Quit)
         exit_action.setStatusTip('Exit application')
@@ -194,12 +210,14 @@ class MainWindow(QtGui.QMainWindow):
         self.file_menu.addAction(save_action)
         self.file_menu.addAction(saveas_action)
         self.file_menu.addSeparator()
+        self.file_menu.addAction(launch_action)
+        self.file_menu.addSeparator()
         self.file_menu.addAction(exit_action)
 
-        #viewMenu = menubar.addMenu('&View')
+        #view_menu = menubar.addMenu('&View')
 
-        #editMenu = menubar.addMenu('&Edit')
-        #editMenu.addAction(showSourceAction)
+        #edit_menu = menubar.addMenu('&Edit')
+        #edit_menu.addAction(showSourceAction)
 
         global winsparkle
         if winsparkle:
@@ -222,20 +240,23 @@ class MainWindow(QtGui.QMainWindow):
                 actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
                 tools_menu.addAction(actionWinSparkle)
 
-        self.toolbar = self.addToolBar('File')
-        self.toolbar.addAction(new_action)
-        self.toolbar.addAction(open_action)
-        self.toolbar.addAction(save_action)
-        self.toolbar.addAction(saveas_action)
+        toolbar = self.addToolBar('File')
+        toolbar.addAction(new_action)
+        toolbar.addAction(open_action)
+        toolbar.addAction(save_action)
+        toolbar.addAction(saveas_action)
+        toolbar.addSeparator()
+        toolbar.addAction(launch_action)
         #toolbar.addAction(exit_action)
         #toolbar.addSeparator()
         #toolbar.addAction(showSourceAction)
-        self.extra_toolbars = {}
+        self.toolbars = {}
+        self.toolbars['File'] = toolbar
 
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
 
-        self.tabs.connect(self.tabs, SIGNAL("currentChanged(int)"), self.tab_change)
+        self.tabs.connect(self.tabs, QtCore.SIGNAL("currentChanged(int)"), self.tab_change)
         self.setCentralWidget(self.tabs)
 
         self.info_dock = QtGui.QDockWidget("Warnings", self)
@@ -262,7 +283,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.setGeometry(geometry)
 
-        self.setWindowTitle('PLaSK')
+        self.make_window_title()
 
         if len(sys.argv) > 1:
             try:
@@ -271,6 +292,7 @@ class MainWindow(QtGui.QMainWindow):
                 pass
             else:
                 self.filename = sys.argv[1]
+                self.make_window_title()
         self.model_is_new()
 
         self.show()
@@ -286,13 +308,16 @@ def main():
         si = subprocess.STARTUPINFO()
         si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
         si.wShowWindow = subprocess.SW_HIDE
-        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-        version, err = proc.communicate()
-        prog, ver = version.strip().split()
+        try:
+            ver = plask.version
+        except NameError:
+            proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+            version, err = proc.communicate()
+            prog, ver = version.strip().split()
         wp = ctypes.c_wchar_p
         winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
         winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
-        winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
+        winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
         winsparkle.win_sparkle_init()
 
     app = QtGui.QApplication(sys.argv)

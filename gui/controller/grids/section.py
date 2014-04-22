@@ -1,6 +1,5 @@
-from PyQt4 import QtGui
-from PyQt4.QtGui import QSplitter
-from PyQt4.Qt import QItemSelectionModel
+from ...qt import QtGui
+from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from ..base import Controller
 from ...utils.gui import table_last_col_fill, exception_to_msg
@@ -31,7 +30,8 @@ class GridsController(Controller):
 
         self.splitter.setSizes([10000,26000])
 
-        self.grids_table.selectionModel().selectionChanged.connect(self.grid_selected) #currentChanged ??
+        selection_model = self.grids_table.selectionModel()
+        selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
 
     def set_current_index(self, new_index):
         """

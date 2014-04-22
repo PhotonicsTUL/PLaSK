@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from ..qt import QtCore, QtGui
 import weakref
 
 from ..utils.signal import Signal

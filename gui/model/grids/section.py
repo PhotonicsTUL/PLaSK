@@ -1,5 +1,5 @@
 from lxml import etree as ElementTree
-from PyQt4 import QtCore
+from ...qt import QtCore
 
 from ...controller.grids.new_dialog import construct_grid_using_dialog
 from ..table import TableModel

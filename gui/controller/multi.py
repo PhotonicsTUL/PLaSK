@@ -1,4 +1,4 @@
-from PyQt4 import QtGui
+from ..qt import QtGui
 
 from ..utils.gui import exception_to_msg
 from .source import SourceEditController

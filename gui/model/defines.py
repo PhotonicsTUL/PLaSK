@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from ..qt import QtCore
 from collections import OrderedDict
 from lxml import etree as ElementTree
 
@@ -6,10 +6,11 @@ from .table import TableModel
 from .info import Info
 #from guis import DefinesEditor
 
+
 class DefinesModel(TableModel):
 
     class Entry:
-        def __init__(self, name, value, comment = None):
+        def __init__(self, name, value, comment=None):
             self.name = name
             self.value = value
             self.comment = comment
@@ -26,7 +27,8 @@ class DefinesModel(TableModel):
     def set_XML_element(self, element):
         self.modelAboutToBeReset.emit()
         if element is not None:
-            self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", "")) for c in element.iter("define")]
+            self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", ""))
+                            for c in element.iter("define")]
         else:
             self.entries = []
         self.modelReset.emit()

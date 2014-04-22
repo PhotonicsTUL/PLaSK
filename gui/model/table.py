@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from ..qt import QtCore, QtGui
 
 from .base import SectionModel
 from . import info
@@ -39,9 +39,9 @@ class TableModelEditMethods(object):
 
 class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods):
 
-    def __init__(self, name, parent=None, info_cb = None, *args):
+    def __init__(self, name, parent=None, info_cb=None, *args):
         SectionModel.__init__(self, name, info_cb)
-        QtCore.QAbstractListModel.__init__(self, parent, *args)
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.entries = []
         self.__row_to_errors__ = None

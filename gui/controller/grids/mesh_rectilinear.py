@@ -1,5 +1,5 @@
 from ..base import Controller
-from PyQt4 import QtGui
+from ...qt import QtGui
 
 class AxisEdit(object):
 

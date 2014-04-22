@@ -271,7 +271,6 @@ class MainWindow(QtGui.QMainWindow):
         self.stopicon = QtGui.QIcon()
         self.stopicon.addPixmap(stop_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
-
     def dragEnterEvent(self, event):
         data = event.mimeData()
         urls = data.urls()
@@ -288,7 +287,6 @@ class MainWindow(QtGui.QMainWindow):
             if os.name == 'nt':
                 filepath = filepath[1:]
             self.start_plask(filepath)
-
 
     def __init__(self):
         #self.outputs = []
@@ -325,7 +323,6 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.timeout.connect(self.update_outputs)
         self.timer.start(250)
 
-
     def find_tool(self, name):
         fname = os.path.join(os.path.dirname(sys.argv[0]), name)
         if os.path.exists(fname+'.py'):
@@ -335,13 +332,11 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return None
 
-
     def runConvert(self, tool, filter):
         fname, _ = QtGui.QFileDialog.getOpenFileName(self, self.tr("Choose file to convert"), self.last_dir, self.tr(filter))
         if not fname: return
         self.last_dir = os.path.dirname(fname)
         self.start_plask(tool, fname)
-
 
     def runFile(self):
         '''Load and run XPL script in an external program'''
@@ -349,7 +344,6 @@ class MainWindow(QtGui.QMainWindow):
         if not fname: return
         self.last_dir = os.path.dirname(fname)
         self.start_plask(fname)
-
 
     def start_plask(self, fname, *args):
         #self.outputs.append([])
@@ -370,17 +364,14 @@ class MainWindow(QtGui.QMainWindow):
         button.clicked.connect(thread.kill_process)
         thread.start()
 
-
     def set_finished(self, idx):
         self.tabBar.setTabButton(idx, QtGui.QTabBar.RightSide, None)
         self.tabBar.setTabText(idx, self.tabBar.tabText(idx) + " (%s)" % strftime('%X'))
-
 
     def switch_tab(self):
         self.messagesView.clear()
         self.printed_lines = 0
         self.update_outputs()
-
 
     def update_outputs(self):
         n = self.tabBar.currentIndex()
@@ -402,7 +393,6 @@ class MainWindow(QtGui.QMainWindow):
             if lines: self.messagesView.append("<br/>\n".join(lines))
             self.printed_lines = total_lines
             if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)
-
 
     def quitting(self):
         config = QtCore.QSettings("plask", "qtplask")
@@ -462,7 +452,6 @@ class PlaskThread(QtCore.QThread):
             else: color = "black; font-weight:bold"
             line = line.replace(' ', '&nbsp;')
             self.lines.append('<span style="color:%s;">%s</span>' % (color, line))
-
 
     def kill_process(self):
         self.proc.terminate()

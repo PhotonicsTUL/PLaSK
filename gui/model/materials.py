@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4 import QtCore, QtGui
+from ..qt import QtCore, QtGui
 from lxml import etree as ElementTree
 from collections import OrderedDict
 
@@ -71,10 +71,10 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
     def __invalidate__(self):
         self.material = None
 
-    def __init__(self, materialsModel, material=None, parent=None, *args):
-        QtCore.QAbstractListModel.__init__(self, parent, *args)
+    def __init__(self, materials_model, material=None, parent=None, *args):
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
-        self.materialsModel = materialsModel
+        self.materialsModel = materials_model
         self.__material = material
         self.materialsModel.modelReset.connect(self.__invalidate__)
 

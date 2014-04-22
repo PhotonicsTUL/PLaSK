@@ -1,6 +1,7 @@
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from ..qt import QtCore
+from ..qt import QtGui
 import collections
+import sys
 
 from ..utils.config import CONFIG
 
@@ -17,7 +18,18 @@ def exception_to_msg(f, parent = None, err_title = None):
         return False
 
 defaultFont = QtGui.QFont()
-defaultFont.setFamily(CONFIG('editor/font_family', "monospace"))
+_font_family = CONFIG['editor/font_family']
+if _font_family is None:
+    if sys.platform == 'win32':
+        _font_family = "Consolas"
+    elif sys.platform == 'darwin':
+        _font_family = "Monaco"
+    else:
+        _font_family = "Monospace"
+    CONFIG['editor/font_family'] = _font_family
+    defaultFont.setStyleHint(QtGui.QFont.TypeWriter)
+defaultFont.setFamily(_font_family)
+del _font_family
 defaultFont.setPointSize(int(CONFIG('editor/font_size', defaultFont.pointSize())))
 
 def table_last_col_fill(table, cols_count, col_size=0):

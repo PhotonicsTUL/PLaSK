@@ -1,5 +1,5 @@
-from PyQt4 import QtGui
-from PyQt4.QtGui import QDialogButtonBox
+from .qt import QtGui
+from .qt.QtGui import QDialogButtonBox
 
 class SourceSelectDialog(QtGui.QDialog):
     

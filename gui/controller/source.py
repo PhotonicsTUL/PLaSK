@@ -1,4 +1,4 @@
-from PyQt4 import QtGui
+from ..qt import QtGui
 
 from ..qhighlighter.XML import XMLHighlighter
 from ..utils.gui import defaultFont

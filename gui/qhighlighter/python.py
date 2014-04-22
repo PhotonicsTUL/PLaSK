@@ -25,9 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 http://www.henning-schroeder.de/codeaide/
 """
 
-from PyQt4.QtCore import QRegExp
-from PyQt4.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor
-from PyQt4 import QtCore, QtGui
+from ..qt.QtCore import QRegExp
+from ..qt.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor
+from ..qt import QtCore, QtGui
 
 class PythonHighlighter(QSyntaxHighlighter):
 

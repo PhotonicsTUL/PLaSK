@@ -3,10 +3,7 @@
 Partition-based syntax highlighter
 """
 import re
-from PyQt4.QtCore import QVariant
-from PyQt4.QtGui import (
-    QSyntaxHighlighter,
-    QColor, QTextCharFormat, QFont, QBrush, QTextFormat)
+from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat
 
 
 

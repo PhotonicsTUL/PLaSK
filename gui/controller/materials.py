@@ -1,5 +1,5 @@
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QSplitter
+from ..qt import QtCore, QtGui
+from ..qt.QtGui import QSplitter
 
 from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp
 from ..utils.gui import HTMLDelegate, table_last_col_fill
@@ -70,8 +70,8 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
 class MaterialsController(Controller):
 
-    def __init__(self, document, model=MaterialsModel()):
-        Controller.__init__(self, document, model)
+    def __init__(self, document, selection_model=MaterialsModel()):
+        Controller.__init__(self, document, selection_model)
 
         self.splitter = QSplitter()
 
@@ -82,7 +82,7 @@ class MaterialsController(Controller):
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         self.splitter.addWidget(table_with_manipulators(self.materials_table, self.splitter, title="Materials"))
 
-        self.property_model = MaterialPropertyModel(model)
+        self.property_model = MaterialPropertyModel(selection_model)
         self.properties_table = QtGui.QTableView()
         self.properties_table.setModel(self.property_model)
         self.properties_delegate = MaterialPropertiesDelegate(self.document.defines.model, self.properties_table)
@@ -102,7 +102,8 @@ class MaterialsController(Controller):
 
         self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.materials_table.selectionModel().selectionChanged.connect(self.material_selected) #currentChanged ??
+        selection_model = self.materials_table.selectionModel()
+        selection_model.selectionChanged.connect(self.material_selected) #currentChanged ??
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)

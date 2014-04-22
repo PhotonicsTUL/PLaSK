@@ -1,4 +1,4 @@
-from PyQt4 import QtGui, QtCore
+from ..qt import QtGui, QtCore
 
 from ..model.defines import DefinesModel
 from .table import TableController
@@ -27,9 +27,9 @@ class AfterBracketCompleter(QtGui.QCompleter):
 
 class DefineHintsTableModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, defineModel, parent = None, info_cb = None, *args):
-        QtCore.QAbstractListModel.__init__(self, parent, *args)   #QtCore.QObject.parent(defineModel)
-        self.model = defineModel
+    def __init__(self, defines_model, parent = None, info_cb = None, *args):
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)   #QtCore.QObject.parent(defines_model)
+        self.model = defines_model
 
     def rowCount(self, parent = QtCore.QModelIndex()):
         return self.model.rowCount(parent)
@@ -56,7 +56,7 @@ class DefineHintsTableModel(QtCore.QAbstractTableModel):
 class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
 
     def __init__(self, model, parent):
-        QtGui.QItemDelegate.__init__(self, parent)
+        QtGui.QStyledItemDelegate.__init__(self, parent)
         self.model = DefineHintsTableModel(model, parent)
         #self.model = model
 

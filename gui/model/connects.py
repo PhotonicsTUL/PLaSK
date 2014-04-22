@@ -1,4 +1,4 @@
-from PyQt4 import QtCore
+from ..qt import QtCore
 from lxml import etree as ElementTree
 
 from .table import TableModel
