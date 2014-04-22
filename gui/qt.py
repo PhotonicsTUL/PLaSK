@@ -3,9 +3,6 @@ for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVar
     sip.setapi(n, 2)
 from PyQt4 import Qt, QtCore, QtGui
 
-# from PySide import QtCore, QtGui
-# from PySide.QtCore import Qt
-
 import sys
 sys.modules['gui.qt.Qt'] = Qt
 sys.modules['gui.qt.QtCore'] = QtCore

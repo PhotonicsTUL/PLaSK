@@ -312,7 +312,14 @@ if(BUILD_PYTHON)
     elseif(DEFINED EXE_FLAGS)
         set_target_properties(plaskgui PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
-    install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI PATTERN *.pyc EXCLUDE PATTERN .* EXCLUDE)
+
+    #TODO compile pyc files
+    install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
+            PATTERN *.pyc EXCLUDE
+            PATTERN .* EXCLUDE
+            PATTERN gui/qt.py* EXCLUDE
+    )
+    install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
     install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
     if(UNIX)

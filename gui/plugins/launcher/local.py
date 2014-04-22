@@ -16,7 +16,7 @@ class OutputWindow(QtGui.QMainWindow):
 
     def __init__(self, filename, launcher, parent=None):
         super(OutputWindow, self).__init__(parent)
-
+        self.launcher = launcher
         self.setWindowTitle("{} @ {}".format(filename, strftime('%X')))
 
         font = QtGui.QFont()
@@ -164,60 +164,7 @@ class OutputWindow(QtGui.QMainWindow):
                 return
         CONFIG['launcher_local/window_size'] = self.size()
         super(OutputWindow, self).closeEvent(event)
-
-
-class Launcher(object):
-    name = 'Local Process'
-
-    def __init__(self):
-        self.windows = set()
-
-
-    def widget(self):
-        widget = QtGui.QWidget()
-        layout = QtGui.QVBoxLayout()
-        widget.setLayout(layout)
-        layout.addWidget(QtGui.QLabel("Select default log levels:"))
-        self.error = QtGui.QCheckBox("&Error")
-        self.error.setChecked(CONFIG('launcher_local/show_error', '2') == '2')
-        self.error.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_error', state))
-        layout.addWidget(self.error)
-        self.warning = QtGui.QCheckBox("&Warning")
-        self.warning.setChecked(CONFIG('launcher_local/show_warning', '2') == '2')
-        layout.addWidget(self.warning)
-        self.warning.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_warning', state))
-        self.info = QtGui.QCheckBox("&Info")
-        self.info.setChecked(CONFIG('launcher_local/show_info', '2') == '2')
-        layout.addWidget(self.info)
-        self.info.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_info', state))
-        self.result = QtGui.QCheckBox("&Result")
-        self.result.setChecked(CONFIG('launcher_local/show_result', '2') == '2')
-        layout.addWidget(self.result)
-        self.result.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_result', state))
-        self.data = QtGui.QCheckBox("&Data")
-        self.data.setChecked(CONFIG('launcher_local/show_data', '2') == '2')
-        layout.addWidget(self.data)
-        self.data.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_data', state))
-        self.detail = QtGui.QCheckBox("De&tail")
-        self.detail.setChecked(CONFIG('launcher_local/show_detail', '0') == '2')
-        layout.addWidget(self.detail)
-        self.detail.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_detail', state))
-        self.debug = QtGui.QCheckBox("De&bug")
-        self.debug.setChecked(CONFIG('launcher_local/show_debug', '0') == '2')
-        self.debug.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_debug', state))
-        layout.addWidget(self.debug)
-        return widget
-
-    def launch(self, filename, *args):
-        MAIN_WINDOW.save() # TODO check if the file was saved and notify user or save to /tmp
-        window = OutputWindow(filename, self)
-        self.windows.add(window)
-        window.show()
-
-        window.thread = PlaskThread(filename, os.path.dirname(os.path.abspath(filename)), window.lines, *args)
-        window.thread.finished.connect(window.thread_finished)
-        window.halt_action.triggered.connect(window.thread.kill_process)
-        window.thread.start()
+        self.launcher.windows.remove(self)
 
 
 class PlaskThread(QtCore.QThread):
@@ -260,6 +207,91 @@ class PlaskThread(QtCore.QThread):
 
     def kill_process(self):
         self.proc.terminate()
+
+
+class Launcher(object):
+    name = 'Local Process'
+
+    def __init__(self):
+        self.windows = set()
+        self.dirname = None
+
+
+    def widget(self):
+        widget = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
+        widget.setLayout(layout)
+        layout.addWidget(QtGui.QLabel("Working directory:"))
+        dirbutton = QtGui.QPushButton()
+        if self.dirname:
+            dirname = self.dirname
+        else:
+            dirname = os.path.dirname(os.path.abspath(MAIN_WINDOW.filename))
+        dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
+        dirbutton.pressed.connect(self.select_workdir)
+        dirlayout = QtGui.QHBoxLayout()
+        self.diredit = QtGui.QLineEdit()
+        self.diredit.setReadOnly(True)
+        self.diredit.setText(dirname)
+        pal = self.diredit.palette()
+        pal.setColor(QtGui.QPalette.Base, QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
+        self.diredit.setPalette(pal)
+        dirlayout.addWidget(self.diredit)
+        dirlayout.addWidget(dirbutton)
+        layout.addLayout(dirlayout)
+        layout.addWidget(QtGui.QLabel("Default log levels:"))
+        self.error = QtGui.QCheckBox("&Error")
+        self.error.setChecked(CONFIG('launcher_local/show_error', '2') == '2')
+        self.error.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_error', state))
+        layout.addWidget(self.error)
+        self.warning = QtGui.QCheckBox("&Warning")
+        self.warning.setChecked(CONFIG('launcher_local/show_warning', '2') == '2')
+        layout.addWidget(self.warning)
+        self.warning.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_warning', state))
+        self.info = QtGui.QCheckBox("&Info")
+        self.info.setChecked(CONFIG('launcher_local/show_info', '2') == '2')
+        layout.addWidget(self.info)
+        self.info.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_info', state))
+        self.result = QtGui.QCheckBox("&Result")
+        self.result.setChecked(CONFIG('launcher_local/show_result', '2') == '2')
+        layout.addWidget(self.result)
+        self.result.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_result', state))
+        self.data = QtGui.QCheckBox("&Data")
+        self.data.setChecked(CONFIG('launcher_local/show_data', '2') == '2')
+        layout.addWidget(self.data)
+        self.data.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_data', state))
+        self.detail = QtGui.QCheckBox("De&tail")
+        self.detail.setChecked(CONFIG('launcher_local/show_detail', '0') == '2')
+        layout.addWidget(self.detail)
+        self.detail.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_detail', state))
+        self.debug = QtGui.QCheckBox("De&bug")
+        self.debug.setChecked(CONFIG('launcher_local/show_debug', '0') == '2')
+        self.debug.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_debug', state))
+        layout.addWidget(self.debug)
+        layout.setMargin(1)
+        return widget
+
+    def launch(self, filename, *args):
+        if self.dirname:
+            dirname = self.dirname
+        else:
+            dirname = os.path.dirname(os.path.abspath(filename))
+
+        if MAIN_WINDOW.save(): # TODO check if the file was saved and notify user or save to /tmp
+            window = OutputWindow(filename, self)
+            self.windows.add(window)
+            window.thread = PlaskThread(filename, dirname, window.lines, *args)
+            window.thread.finished.connect(window.thread_finished)
+            window.halt_action.triggered.connect(window.thread.kill_process)
+            window.thread.start()
+            window.show()
+
+    def select_workdir(self):
+        dirname = QtGui.QFileDialog.getExistingDirectory(None, None,
+                                                         os.path.dirname(os.path.abspath(MAIN_WINDOW.filename)))
+        if dirname:
+            self.dirname = dirname
+            self.diredit.setText(dirname)
 
 
 LAUNCHERS.insert(0, Launcher())

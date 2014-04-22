@@ -67,6 +67,8 @@ class MainWindow(QtGui.QMainWindow):
     def open(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "XPL (*.xpl)");
         if not filename: return;
+        if type(filename) == tuple:
+            filename = filename[0]
         self.filename = filename
         self.document.load_from_file(filename)
         self.make_window_title()

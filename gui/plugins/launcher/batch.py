@@ -16,4 +16,4 @@ class Launcher(object):
         return widget
 
 
-LAUNCHERS.append(Launcher())
+# LAUNCHERS.append(Launcher())
