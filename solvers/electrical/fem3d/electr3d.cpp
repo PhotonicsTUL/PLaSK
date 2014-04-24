@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace electrical3d {
 
 FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
-    algorithm(ALGORITHM_ITERATIVE),
+    algorithm(ALGORITHM_CHOLESKY),
     loopno(0),
     default_junction_conductivity(5.),
     maxerr(0.05),
@@ -708,7 +708,7 @@ double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
             double dvz = - 0.25e6 * (- potential[lll] + potential[llu] - potential[lul] + potential[luu]
                                      - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
                                 / (el.getUpper2() - el.getLower2()); // 1e6 - from µm to m
-        double w = this->geometry->getMaterial(el.getMidpoint())->eps(T[el.getIndex()]) * (dvx*dvx + dvy*dvy + dvz*dvz); 
+        double w = this->geometry->getMaterial(el.getMidpoint())->eps(T[el.getIndex()]) * (dvx*dvx + dvy*dvy + dvz*dvz);
         double d0 = el.getUpper0() - el.getLower0();
         double d1 = el.getUpper1() - el.getLower1();
         double d2 = el.getUpper2() - el.getLower2();
@@ -720,13 +720,13 @@ double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
 
 
 double FiniteElementMethodElectrical3DSolver::getCapacitance() {
-    
+
     if (this->voltage_boundary.size() != 2) {
         throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
     }
-    
+
     double U = voltage_boundary[0].value - voltage_boundary[1].value;
-    
+
     return 2e12 * getTotalEnergy() / (U*U); // 1e12 F -> pF
 }
 

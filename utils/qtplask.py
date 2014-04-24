@@ -250,8 +250,8 @@ class MainWindow(QtGui.QMainWindow):
                     self.actionWinSparkleAutoupdate.setCheckable(True)
                     self.actionWinSparkleAutoupdate.setChecked(winsparkle.win_sparkle_get_automatic_check_for_updates())
                     self.actionWinSparkleAutoupdate.triggered.connect(
-                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(int(self.actionWinSparkleAutoupdate.isChecked()))
-                    )
+                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(
+                            int(self.actionWinSparkleAutoupdate.isChecked())))
                     self.menuTools.addAction(self.actionWinSparkleAutoupdate)
                 except AttributeError:
                     pass

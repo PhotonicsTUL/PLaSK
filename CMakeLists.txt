@@ -315,11 +315,15 @@ if(BUILD_PYTHON)
 
     #TODO compile pyc files
     install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
-            PATTERN *.pyc EXCLUDE
             PATTERN .* EXCLUDE
+            PATTERN *.xpl EXCLUDE
+            PATTERN *.qrc EXCLUDE
+            PATTERN *.pyc EXCLUDE
             PATTERN gui/qt.py* EXCLUDE
+            PATTERN gui/_resources.py* EXCLUDE
     )
     install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
+    install(FILES gui/_resources.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME _resources.py)
     install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
     if(UNIX)

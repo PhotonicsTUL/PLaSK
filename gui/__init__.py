@@ -66,7 +66,7 @@ class MainWindow(QtGui.QMainWindow):
         self.set_model(XPLDocument(self))
 
     def open(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "XPL (*.xpl)");
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "PLaSK structure data (*.xpl)")
         if not filename: return;
         if type(filename) == tuple:
             filename = filename[0]
@@ -85,7 +85,9 @@ class MainWindow(QtGui.QMainWindow):
     def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.before_save(): return False
-        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", "", "XPL (*.xpl)");
+        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.filename or "",
+                                                     "PLaSK structure data  (*.xpl)")
+        if type(filename) is tuple: filename = filename[0]
         if not filename: return False
         self.filename = filename
         self.make_window_title()
