@@ -1,6 +1,10 @@
-LAUNCHERS = []
+import shlex
 
 from .qt import QtGui
+
+
+LAUNCHERS = []
+_launch_args = ''
 
 class LaunchDialog(QtGui.QDialog):
 
@@ -15,6 +19,11 @@ class LaunchDialog(QtGui.QDialog):
         combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS])
         combo.currentIndexChanged.connect(self.launcher_changed)
         self.layout.addWidget(combo)
+
+        self.layout.addWidget(QtGui.QLabel("Command line arguments:"))
+        self.args = QtGui.QLineEdit()
+        self.args.setText(_launch_args)
+        self.layout.addWidget(self.args)
 
         self.launcher_widgets = [l.widget() for l in LAUNCHERS]
         for widget in self.launcher_widgets:
@@ -38,6 +47,9 @@ class LaunchDialog(QtGui.QDialog):
 
 def launch_plask(filename):
     dialog = LaunchDialog()
-    if dialog.exec_() == QtGui.QDialog.Accepted:
+    global _launch_args
+    result = dialog.exec_()
+    _launch_args = dialog.args.text()
+    if result == QtGui.QDialog.Accepted:
         launcher = LAUNCHERS[dialog.current]
-        launcher.launch(filename)
+        launcher.launch(filename, *shlex.split(_launch_args))

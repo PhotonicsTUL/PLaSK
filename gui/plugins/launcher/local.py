@@ -226,7 +226,7 @@ class Launcher(object):
         if self.dirname:
             dirname = self.dirname
         else:
-            dirname = os.path.dirname(os.path.abspath(MAIN_WINDOW.filename))
+            dirname = os.path.dirname(os.path.abspath(MAIN_WINDOW.filename or 'dummy'))
         dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
         dirbutton.pressed.connect(self.select_workdir)
         dirlayout = QtGui.QHBoxLayout()
@@ -268,7 +268,7 @@ class Launcher(object):
         self.debug.setChecked(CONFIG('launcher_local/show_debug', '0') == '2')
         self.debug.stateChanged.connect(lambda state: CONFIG.__setitem__('launcher_local/show_debug', state))
         layout.addWidget(self.debug)
-        layout.setMargin(1)
+        layout.setContentsMargins(1, 1, 1, 1)
         return widget
 
     def launch(self, filename, *args):
@@ -287,8 +287,8 @@ class Launcher(object):
             window.show()
 
     def select_workdir(self):
-        dirname = QtGui.QFileDialog.getExistingDirectory(None, None,
-                                                         os.path.dirname(os.path.abspath(MAIN_WINDOW.filename)))
+        dirname = QtGui.QFileDialog.getExistingDirectory(None, None, os.path.dirname(
+            os.path.abspath(MAIN_WINDOW.filename or 'dummy')))
         if dirname:
             self.dirname = dirname
             self.diredit.setText(dirname)
