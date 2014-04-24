@@ -7,7 +7,6 @@ from time import strftime
 
 from gui.qt import QtCore, QtGui
 
-from gui import MAIN_WINDOW
 from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
@@ -94,14 +93,14 @@ class OutputWindow(QtGui.QMainWindow):
         menu_button = QtGui.QToolButton()
         menu_button.setMenu((view_menu))
         menu_button.setPopupMode(QtGui.QToolButton.InstantPopup)
-        menu_button.setIcon(QtGui.QIcon.fromTheme('edit-find'))
+        menu_button.setIcon(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')))
         menu_button.setFocusPolicy(QtCore.Qt.NoFocus)
         # menu_button.setText("Log Levels")
         tool_action = QtGui.QWidgetAction(self)
         tool_action.setDefaultWidget(menu_button)
         toolbar.addAction(tool_action)
 
-        self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop'), "Halt", self)
+        self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop', QtGui.QIcon(':/process-stop.png')), "Halt", self)
         self.halt_action.setShortcut('Ctrl+h')
         toolbar.addAction(self.halt_action)
 
@@ -217,7 +216,7 @@ class Launcher(object):
         self.dirname = None
 
 
-    def widget(self):
+    def widget(self, main_window):
         widget = QtGui.QWidget()
         layout = QtGui.QVBoxLayout()
         widget.setLayout(layout)
@@ -226,9 +225,9 @@ class Launcher(object):
         if self.dirname:
             dirname = self.dirname
         else:
-            dirname = os.path.dirname(os.path.abspath(MAIN_WINDOW.filename or 'dummy'))
-        dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
-        dirbutton.pressed.connect(self.select_workdir)
+            dirname = os.path.dirname(os.path.abspath(main_window.filename or 'dummy'))
+        dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open', QtGui.QIcon(':/folder-open.png')))
+        dirbutton.pressed.connect(lambda: self.select_workdir(main_window.filename))
         dirlayout = QtGui.QHBoxLayout()
         self.diredit = QtGui.QLineEdit()
         self.diredit.setReadOnly(True)
@@ -271,24 +270,27 @@ class Launcher(object):
         layout.setContentsMargins(1, 1, 1, 1)
         return widget
 
-    def launch(self, filename, *args):
+    def launch(self, main_window, *args):
         if self.dirname:
             dirname = self.dirname
         else:
-            dirname = os.path.dirname(os.path.abspath(filename))
+            dirname = os.path.dirname(os.path.abspath(main_window.filename or 'dummy'))
 
-        if MAIN_WINDOW.save(): # TODO check if the file was saved and notify user or save to /tmp
-            window = OutputWindow(filename, self)
+        if main_window.save(): # TODO check if the file was saved and notify user or save to /tmp
+            window = OutputWindow(main_window.filename, self)
             self.windows.add(window)
-            window.thread = PlaskThread(filename, dirname, window.lines, *args)
+            window.thread = PlaskThread(main_window.filename, dirname, window.lines, *args)
             window.thread.finished.connect(window.thread_finished)
             window.halt_action.triggered.connect(window.thread.kill_process)
             window.thread.start()
             window.show()
 
-    def select_workdir(self):
-        dirname = QtGui.QFileDialog.getExistingDirectory(None, None, os.path.dirname(
-            os.path.abspath(MAIN_WINDOW.filename or 'dummy')))
+    def select_workdir(self, filename):
+        if self.dirname:
+            dname = self.dirname
+        else:
+            dname = os.path.dirname(os.path.abspath(filename or 'dummy'))
+        dirname = QtGui.QFileDialog.getExistingDirectory(None, None, dname)
         if dirname:
             self.dirname = dirname
             self.diredit.setText(dirname)

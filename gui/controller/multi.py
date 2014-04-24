@@ -72,7 +72,7 @@ class GUIAndSourceController(MultiEditorController):
 
     def getShowSourceAction(self):
         if not hasattr(self, 'showSourceAction'):
-            self.showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor'), '&Show source', self.document.mainWindow)
+            self.showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor', QtGui.QIcon(':/accessories-text-editor.png')), '&Show source', self.document.mainWindow)
             self.showSourceAction.setCheckable(True)
             self.showSourceAction.setStatusTip('Show XPL source of the current section')
             self.showSourceAction.triggered.connect(self.changeEditor)

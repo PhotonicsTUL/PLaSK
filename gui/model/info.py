@@ -39,10 +39,10 @@ class Info(object):
         return ans_if_non_attr
 
 def infoLevelIcon(level):
-    if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder')
-    if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information')
-    if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning')
-    if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error')
+    if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder', QtGui.QIcon(':/folder.png'))
+    if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information', QtGui.QIcon(':/dialog-information.png'))
+    if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning', QtGui.QIcon(':/dialog-warning.png'))
+    if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error', QtGui.QIcon(':/dialog-error.png'))
     return None
 
 #TODO support for groups using tree model QAbstractItemModel

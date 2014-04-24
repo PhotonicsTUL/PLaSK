@@ -10,7 +10,8 @@ import pkgutil
 
 from .qt import QtGui, QtCore
 
-from .resources import APP_ICON
+from . import _resources
+
 from .XPLDocument import XPLDocument
 from .utils.gui import exception_to_msg
 from .model.info import InfoTreeModel, Info
@@ -166,40 +167,43 @@ class MainWindow(QtGui.QMainWindow):
     def init_ui(self):
 
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
-        icon_pixmap = QtGui.QPixmap()
-        icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(APP_ICON))
-        icon = QtGui.QIcon()
-        icon.addPixmap(icon_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = QtGui.QIcon(':/plask.png')
         self.setWindowIcon(icon)
 
         #self.statusBar()
 
-        new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'), '&New', self)
+        new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new', QtGui.QIcon(':/document-new.png')),
+                                   '&New', self)
         new_action.setShortcut(QtGui.QKeySequence.New)
         new_action.setStatusTip('New XPL file')
         new_action.triggered.connect(self.new)
 
-        open_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'), '&Open...', self)
+        open_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open', QtGui.QIcon(':/document-open.png')),
+                                    '&Open...', self)
         open_action.setShortcut(QtGui.QKeySequence.Open)
         open_action.setStatusTip('Open XPL file')
         open_action.triggered.connect(self.open)
 
-        save_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'), '&Save', self)
+        save_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save', QtGui.QIcon(':/document-save.png')),
+                                    '&Save', self)
         save_action.setShortcut(QtGui.QKeySequence.Save)
         save_action.setStatusTip('Save XPL file')
         save_action.triggered.connect(self.save)
 
-        saveas_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'), 'Save &As...', self)
+        saveas_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as', QtGui.QIcon(':/document-save-as.png')),
+                                      'Save &As...', self)
         saveas_action.setShortcut(QtGui.QKeySequence.SaveAs)
         saveas_action.setStatusTip('Save XPL file, ask for name of file')
         saveas_action.triggered.connect(self.save_as)
 
-        launch_action = QtGui.QAction(QtGui.QIcon.fromTheme('media-playback-start'), '&Launch...', self)
+        launch_action = QtGui.QAction(QtGui.QIcon.fromTheme('media-playback-start',
+                                                            QtGui.QIcon(':/media-playback-start.png')),
+                                      '&Launch...', self)
         launch_action.setShortcut('F5')
         launch_action.setStatusTip('Launch current file in PLaSK')
-        launch_action.triggered.connect(lambda: launch_plask(self.filename))
+        launch_action.triggered.connect(lambda: launch_plask(self))
 
-        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit'), 'E&xit', self)
+        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit', QtGui.QIcon(':/exit.png')), 'E&xit', self)
         exit_action.setShortcut(QtGui.QKeySequence.Quit)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
@@ -323,9 +327,8 @@ def main():
         winsparkle.win_sparkle_init()
 
     app = QtGui.QApplication(sys.argv)
-    global MAIN_WINDOW
-    MAIN_WINDOW = MainWindow()
-    app.aboutToQuit.connect(MAIN_WINDOW.quitting)
+    main_window = MainWindow()
+    app.aboutToQuit.connect(main_window.quitting)
 
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):

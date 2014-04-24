@@ -1,0 +1,23 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="accessories-text-editor.png">images/icons/16x16/accessories-text-editor.png</file>
+    <file alias="dialog-error.png">images/icons/16x16/dialog-error.png</file>
+    <file alias="dialog-information.png">images/icons/16x16/dialog-information.png</file>
+    <file alias="dialog-warning.png">images/icons/16x16/dialog-warning.png</file>
+    <file alias="document-new.png">images/icons/16x16/document-new.png</file>
+    <file alias="document-open.png">images/icons/16x16/document-open.png</file>
+    <file alias="document-save.png">images/icons/16x16/document-save.png</file>
+    <file alias="document-save-as.png">images/icons/16x16/document-save-as.png</file>
+    <file alias="edit-find.png">images/icons/16x16/edit-find.png</file>
+    <file alias="exit.png">images/icons/16x16/exit.png</file>
+    <file alias="folder.png">images/icons/16x16/folder.png</file>
+    <file alias="folder-open.png">images/icons/16x16/folder-open.png</file>
+    <file alias="go-down.png">images/icons/16x16/go-down.png</file>
+    <file alias="go-up.png">images/icons/16x16/go-up.png</file>
+    <file alias="list-add.png">images/icons/16x16/list-add.png</file>
+    <file alias="list-remove.png">images/icons/16x16/list-remove.png</file>
+    <file alias="media-playback-start.png">images/icons/16x16/media-playback-start.png</file>
+    <file alias="process-stop.png">images/icons/16x16/process-stop.png</file>
+    <file alias="plask.png">images/icons/64x64/plask.png</file>
+</qresource>
+</RCC>

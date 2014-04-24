@@ -39,19 +39,19 @@ class TableActions(object):
             #self.table.selectRow(index+1)
 
     def get(self, parent):
-        self.addAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-add'), '&Add', parent)
+        self.addAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-add', QtGui.QIcon(':/list-add.png')), '&Add', parent)
         self.addAction.setStatusTip('Add new entry to the list')
         self.addAction.triggered.connect(self.add_entry)
 
-        self.removeAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', parent)
+        self.removeAction = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove', QtGui.QIcon(':/list-remove.png')), '&Remove', parent)
         self.removeAction.setStatusTip('Remove selected entry from the list')
         self.removeAction.triggered.connect(self.remove_entry)
 
-        self.moveUpAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', parent)
+        self.moveUpAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-up', QtGui.QIcon(':/go-up.png')), 'Move &up', parent)
         self.moveUpAction.setStatusTip('Change order of entries: move current entry up')
         self.moveUpAction.triggered.connect(self.move_up)
 
-        self.moveDownAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', parent)
+        self.moveDownAction = QtGui.QAction(QtGui.QIcon.fromTheme('go-down', QtGui.QIcon(':/go-down.png')), 'Move &down', parent)
         self.moveDownAction.setStatusTip('Change order of entries: move current entry down')
         self.moveDownAction.triggered.connect(self.move_down)
 

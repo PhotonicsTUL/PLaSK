@@ -6,9 +6,10 @@ from .qt import QtGui
 LAUNCHERS = []
 _launch_args = ''
 
+
 class LaunchDialog(QtGui.QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, window, parent=None):
         super(LaunchDialog, self).__init__(parent)
         self.setWindowTitle("Launch Computations")
 
@@ -25,14 +26,14 @@ class LaunchDialog(QtGui.QDialog):
         self.args.setText(_launch_args)
         self.layout.addWidget(self.args)
 
-        self.launcher_widgets = [l.widget() for l in LAUNCHERS]
+        self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
         for widget in self.launcher_widgets:
             widget.setVisible(False)
             self.layout.addWidget(widget)
         self.current = combo.currentIndex()
         self.launcher_widgets[self.current].setVisible(True)
 
-        self.setMinimumWidth(2.0*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
+        self.setMinimumWidth(4*QtGui.QFontMetrics(QtGui.QFont()).width(self.windowTitle()))
 
         buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -45,11 +46,12 @@ class LaunchDialog(QtGui.QDialog):
         self.launcher_widgets[self.current].setVisible(True)
         self.resize(self.width(), 0)
 
-def launch_plask(filename):
-    dialog = LaunchDialog()
+
+def launch_plask(window):
+    dialog = LaunchDialog(window)
     global _launch_args
     result = dialog.exec_()
     _launch_args = dialog.args.text()
     if result == QtGui.QDialog.Accepted:
         launcher = LAUNCHERS[dialog.current]
-        launcher.launch(filename, *shlex.split(_launch_args))
+        launcher.launch(window, *shlex.split(_launch_args))
