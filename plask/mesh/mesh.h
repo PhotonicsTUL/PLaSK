@@ -115,7 +115,7 @@ namespace plask {
  * @see @ref meshes
  */
 
-struct Mesh {
+struct Mesh: public Printable {
 
 
     /**
@@ -195,6 +195,9 @@ struct Mesh {
 
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
+
+    /// @return @c true only if mesh is empty
+    virtual bool empty() const { return size() == 0; }
 
     /**
      * Write mesh to XML
@@ -285,7 +288,14 @@ struct MeshD: public Mesh {
         return true;
     }
 
+    /**
+     * Check if this mesh and @p to_compare represent different sequences of points.
+     * @param to_compare mesh to compare
+     * @return @c true only if this mesh and @p to_compare represent different sequences of points
+     */
     bool operator!=(const MeshD& to_compare) const { return ! (*this == to_compare); }
+
+    void print(std::ostream& out) const override;
 
 };
 
@@ -389,27 +399,36 @@ class MeshGenerator {
 };
 
 /** Base class for specific mesh generator */
-template <typename MeshT, int dim=((MeshT::DIM < 2)? 2 : MeshT::DIM)>
-class MeshGeneratorOf: public MeshGenerator
+template <int MESH_DIM>
+class MeshGeneratorD: public MeshGenerator
 {
-  protected:
-    WeakCache<GeometryObject, MeshT, CacheRemoveOnEachChange> cache;
+  public:
+      /// Type of the generated mesh
+      typedef MeshD<MESH_DIM> MeshType;
 
-    void onChange(const Event& evt) { clearCache(); }
+      /// Number of geometry dimensions
+      enum { DIM = (MESH_DIM < 2) ? 2 : MESH_DIM };
+
+  protected:
+    WeakCache<GeometryObject, MeshType, CacheRemoveOnEachChange> cache;
+
+    void onChange(const Event&) { clearCache(); }
+
+    template <typename RequiredType>
+    static shared_ptr<RequiredType> cast(const shared_ptr<MeshType>& res) {
+        auto finall_res = dynamic_pointer_cast<RequiredType>(res);
+        if (res && !finall_res) throw Exception("Wrong type of generated %1%D mesh.", MESH_DIM);
+        return finall_res;
+    }
 
   public:
-    /// Type of the generated mesh
-    typedef MeshT MeshType;
 
-    /// Number of geometry dimensions
-    enum { DIM = dim };
-    
     /**
      * Generate new mesh
      * \param geometry on which the mesh should be generated
      * \return new generated mesh
      */
-    virtual shared_ptr<MeshT> generate(const shared_ptr<GeometryObjectD<dim>>& geometry) = 0;
+    virtual shared_ptr<MeshType> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) = 0;
 
     /**
      * Clear the cache of generated meshes.
@@ -420,11 +439,21 @@ class MeshGeneratorOf: public MeshGenerator
     }
 
     /// Get generated mesh if it is cached or create a new one
-    shared_ptr<MeshT> operator()(const shared_ptr<GeometryObjectD<dim>>& geometry) {
+    shared_ptr<MeshType> operator()(const shared_ptr<GeometryObjectD<DIM>>& geometry) {
         if (auto res = cache.get(geometry))
             return res;
         else
             return cache(geometry, generate(geometry));
+    }
+
+    template <typename RequiredType>
+    shared_ptr<RequiredType> get(const shared_ptr<GeometryObjectD<DIM>>& geometry) {
+        return cast<RequiredType> ( this->operator ()(geometry) );
+    }
+
+    template <typename RequiredType>
+    shared_ptr<RequiredType> generate_t(const shared_ptr<GeometryObjectD<DIM>>& geometry) {
+        return cast<RequiredType> ( this->ogenerate(geometry) );
     }
 
 };

@@ -36,7 +36,7 @@ shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::makeGeometryGrid1D
     return mesh;
 }
 
-shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<MeshD<1> > RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid1D(geometry);
     if (extend_to_zero) mesh->addPoint(0.);
@@ -72,7 +72,7 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
     return mesh;
 }
 
-shared_ptr<RectangularMesh<2>> RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<MeshD<2> > RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, min_ply, max_points, extend_to_zero);
     writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0->size(), mesh->axis1->size());
@@ -80,9 +80,9 @@ shared_ptr<RectangularMesh<2>> RectilinearMesh2DSimpleGenerator::generate(const 
 }
 
 
-shared_ptr<RectangularMesh<2>> RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<MeshD<2> > RectilinearMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    return make_shared<RectangularMesh<2>>((*horizontal_generator)(geometry), makeGeometryGrid(geometry, min_ply, max_points)->axis1);
+    return make_shared<RectangularMesh<2>>(horizontal_generator->get<RectangularMesh<1>>(geometry), makeGeometryGrid(geometry, min_ply, max_points)->axis1);
 }
 
 
@@ -114,7 +114,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
     return mesh;
 }
 
-shared_ptr<RectangularMesh<3>> RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
+shared_ptr<MeshD<3> > RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry, min_ply, max_points);
     writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
@@ -215,7 +215,7 @@ shared_ptr<RectilinearAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_
     return initial_and_result;
 }
 
-template <> shared_ptr<RectilinearAxis>
+template <> shared_ptr<MeshD<1>>
 RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectilinearAxis> mesh;
@@ -232,7 +232,7 @@ RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::Geome
     return mesh;
 }
 
-template <> shared_ptr<RectangularMesh<2>>
+template <> shared_ptr<MeshD<2>>
 RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectilinearAxis> axis0, axis1;
@@ -255,7 +255,7 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
     return mesh;
 }
 
-template <> shared_ptr<RectangularMesh<3>>
+template <> shared_ptr<MeshD<3>>
 RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
     shared_ptr<RectilinearAxis> axis0, axis1, axis2;

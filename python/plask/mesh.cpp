@@ -10,6 +10,9 @@ namespace plask { namespace python {
 
 void register_mesh_rectangular();
 
+template <typename T>
+static bool __nonempty__(const T& self) { return !self.empty(); }
+
 void register_mesh()
 {
     py_enum<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");
@@ -27,6 +30,7 @@ void register_mesh()
 
     py::class_<Mesh, shared_ptr<Mesh>, boost::noncopyable>("Mesh", "Base class for all meshes", py::no_init)
         .def("__len__", &Mesh::size)
+        .def("__nonzero__", &__nonempty__<Mesh>, "Return True if the mesh is empty")
     ;
 
     py::class_<MeshD<1>, shared_ptr<MeshD<1>>, py::bases<Mesh>, boost::noncopyable> mesh1d("Mesh1D",
@@ -54,6 +58,7 @@ void register_mesh()
     register_mesh_rectangular();
 
     register_vector_of<RectilinearAxis>("Rectilinear1D");
+
 }
 
 }} // namespace plask::python

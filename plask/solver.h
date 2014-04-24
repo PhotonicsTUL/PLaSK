@@ -674,7 +674,7 @@ class SolverOver: public Solver {
 template <typename SpaceT, typename MeshT>
 class SolverWithMesh: public SolverOver<SpaceT> {
 
-    shared_ptr<MeshGeneratorOf<MeshT>> mesh_generator;
+    shared_ptr<MeshGeneratorD<MeshT::DIM>> mesh_generator;
 
     void disconnectMesh() {
         if (this->mesh)
@@ -703,7 +703,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * This method is called when the mesh generator is changed.
      * @param evt information about mesh changes
      */
-    void onGeneratorChange(const typename MeshGeneratorOf<MeshT>::Event& evt) {
+    void onGeneratorChange(const typename MeshGenerator::Event&) {
         regenerateMesh();
     }
 
@@ -782,7 +782,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * Set new mesh got from generator
      * \param generator mesh generator
      */
-    void setMesh(const shared_ptr<MeshGeneratorOf<MeshT>>& generator) {
+    void setMesh(const shared_ptr<MeshGeneratorD<MeshT::DIM>>& generator) {
         clearGenerator();
         this->writelog(LOG_INFO, "Attaching mesh generator to solver");
         mesh_generator = generator;
@@ -843,7 +843,7 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
         else {
             auto found = manager.generators.find(*name);
             if (found != manager.generators.end()) {
-                auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
+                auto generator = dynamic_pointer_cast<MeshGeneratorD<MeshT::DIM>>(found->second);
                 if (!generator) throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
                 this->setMesh(generator);
             } else

@@ -46,6 +46,10 @@ typename RectangularMesh<2>::IterationOrder RectangularMesh<2>::getIterationOrde
     return (index_f == &transposed_index)? ORDER_TRANSPOSED : ORDER_NORMAL;
 }
 
+shared_ptr<RectangularMesh<2> > RectangularMesh<2>::getMidpointsMesh() {
+    return make_shared<RectangularMesh<2>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), getIterationOrder());
+}
+
 // Particular instantations
 template class RectangularMesh<2>;
 

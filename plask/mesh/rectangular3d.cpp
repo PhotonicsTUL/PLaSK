@@ -71,6 +71,11 @@ void RectangularMesh<3>::setOptimalIterationOrder() {
     RECTANGULAR_MESH_3D_DETERMINE_ITERATION_ORDER(2,1,0)
 }
 
+shared_ptr<RectangularMesh<3> > RectangularMesh<3>::getMidpointsMesh() {
+    return make_shared<RectangularMesh<3>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), axis2->getMidpointsMesh(), getIterationOrder());
+}
+
+
 
 // Particular instantations
 template class RectangularMesh<3>;

@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(dim2) {
     BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(-0.5, -0.5)), 0.0);
     BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(1.5, -1.5)), 2.0);
     BOOST_CHECK_EQUAL(mesh.interpolateLinear(data, plask::vec(-1.5, 0.2)), 2.0 / 5.0);
-    mesh.clear();
-    BOOST_CHECK_EQUAL(mesh.empty(), true);
+    //mesh.clear();
+    //BOOST_CHECK_EQUAL(mesh.empty(), true);
 }
 
 BOOST_AUTO_TEST_CASE(dim2boundary) {

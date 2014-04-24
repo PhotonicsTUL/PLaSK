@@ -48,6 +48,21 @@ struct Printable {
 };
 
 /**
+ * Print all values from sequence [begin, end) sepparating by @p sep.
+ * @param out print destination
+ * @param begin, end sequence to print
+ * @param sep
+ * @return out
+ */
+template <typename Iter>
+std::ostream& print_seq(std::ostream& out, Iter begin, Iter end, const char* sep = ", ") {
+    if (begin == end) return out;
+    out << *begin;
+    while (++begin != end) { out << sep << *begin; }
+    return out;
+}
+
+/**
  * Split string to two parts: before @a spliter and after @a spliter.
  * If @a spliter is not included in string return pair: @a to_split and empty string.
  * @param to_split string to split

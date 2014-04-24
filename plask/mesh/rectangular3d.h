@@ -292,6 +292,11 @@ class RectangularMesh<3>: public MeshD<3> {
      */
     void setOptimalIterationOrder();
 
+    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_210)
+        : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), axis2(make_shared<RectilinearAxis>()), elements(this) {
+        setIterationOrder(iterationOrder);
+    }
+
     /**
      * Construct mesh with is based on given 1D meshes
      *
@@ -604,11 +609,11 @@ class RectangularMesh<3>: public MeshD<3> {
     /**
      * Remove all points from mesh.
      */
-    void clear() {
+    /*void clear() {
         axis0->clear();
         axis1->clear();
         axis2->clear();
-    }
+    }*/
 
     /**
      * Return a mesh that enables iterating over middle points of the rectangles

@@ -1,5 +1,68 @@
 #include "rectangular1d.h"
 
+#include "../utils/stl.h"
+
+namespace plask {
+
+std::size_t plask::RectangularMesh<1>::findIndex(double to_find) const {
+    return std::lower_bound(begin(), end(), to_find).index;
+}
+
+std::size_t plask::RectangularMesh<1>::findNearestIndex(double to_find) const {
+    return find_nearest_binary(begin(), end(), to_find).index;
+}
+
+shared_ptr<RectangularMesh<1> > plask::RectangularMesh<1>::getMidpointsMesh() const {
+    return make_shared<MidpointsMesh>(*this);
+}
+
+
+/*shared_ptr<RectangularMesh<1> > MidpointsMesh::getWrapped() const {
+    return wrapped;
+}
+
+void MidpointsMesh::setWrapped(shared_ptr<RectangularMesh<1> > value) {
+    wrapped = value;
+}
+
+shared_ptr<RectangularMesh<1> > MidpointsMesh::clone() const {
+    return make_shared<MidpointMesh>(wrapped->clone());
+}
+
+std::size_t MidpointsMesh::size() const {
+    if (!wrapped) return 0;
+    std::size_t wrapped_size = wrapped->size();
+    return wrapped_size ? wrapped_size - 1 : 0;
+}
+
+double MidpointsMesh::at(std::size_t index) const {
+    return (wrapped->at(index) + wrapped->at(index+1)) * 0.5;
+}*/
+
+shared_ptr<RectangularMesh<1> > MidpointsMesh::clone() const {
+    return make_shared<MidpointsMesh>(wrapped);
+}
+
+std::size_t MidpointsMesh::size() const {
+    //if (!wrapped) return 0;
+    std::size_t wrapped_size = wrapped.size();
+    return wrapped_size ? wrapped_size - 1 : 0;
+}
+
+double MidpointsMesh::at(std::size_t index) const {
+    return (wrapped.at(index) + wrapped.at(index+1)) * 0.5;
+}
+
+
+
+
+
+
+
+}
+
+
+
 /*template <>
 void RectangularMesh<1,RectilinearAxis>::writeXML(XMLElement& object) const {
     object.attr("type", "rectilinear1d");
@@ -74,3 +137,7 @@ static shared_ptr<Mesh> readRegularMesh1D(XMLReader& reader)
 
 static RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D);
 static RegisterMeshReader regularmesh1d_reader("regular1d", readRegularMesh1D);*/
+
+
+
+

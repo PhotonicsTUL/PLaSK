@@ -18,6 +18,7 @@ This file contains rectilinear mesh for 2d space.
 #include "../manager.h"
 
 #include "rectangular1d.h"
+#include "rectilinear1d.h"
 
 namespace plask {
 
@@ -407,6 +408,11 @@ class RectangularMesh<2>: public MeshD<2> {
         setIterationOrder(axis0->size() > axis1->size() ? ORDER_TRANSPOSED : ORDER_NORMAL);
     }
 
+    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_NORMAL)
+        : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), elements(this) {
+        setIterationOrder(iterationOrder);
+    }
+
     /**
      * Construct mesh with is based on given 1D meshes
      *
@@ -693,10 +699,10 @@ class RectangularMesh<2>: public MeshD<2> {
     /**
      * Remove all points from mesh.
      */
-    void clear() {
+    /*void clear() {
         axis0->clear();
         axis1->clear();
-    }
+    }*/
 
     /**
      * Return a mesh that enables iterating over middle points of the rectangles

@@ -33,4 +33,13 @@ RegisterMeshGeneratorReader::ReadingFunction* RegisterMeshGeneratorReader::getRe
     return reader->second;
 }
 
+template <int dimension>
+void MeshD<dimension>::print(std::ostream& out) const {
+    print_seq(out << "Mesh" << dimension << "D: ", begin(), end(), ", ") << '.';
+}
+
+template struct MeshD<1>;
+template struct MeshD<2>;
+template struct MeshD<3>;
+
 }   // namespace plask

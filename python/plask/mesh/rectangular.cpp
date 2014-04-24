@@ -20,9 +20,6 @@ namespace plask { namespace python {
 
 extern AxisNames current_axes;
 
-template <typename T>
-static bool __nonempty__(const T& self) { return !self.empty(); }
-
 
 template <typename T>
 shared_ptr<T> __init__empty() {
@@ -228,29 +225,27 @@ static std::string RectangularMesh2D__getOrdering(RectangularMesh<2>& self) {
     return (self.getIterationOrder() == RectangularMesh<2>::ORDER_NORMAL) ? "10" : "01";
 }
 
-template <typename MeshT>
-void RectangularMesh3D__setOrdering(MeshT& self, std::string order) {
+void RectangularMesh3D__setOrdering(RectangularMesh<3>& self, std::string order) {
     if (order == "best" || order == "optimal") self.setOptimalIterationOrder();
-    else if (order == "012") self.setIterationOrder(MeshT::ORDER_012);
-    else if (order == "021") self.setIterationOrder(MeshT::ORDER_021);
-    else if (order == "102") self.setIterationOrder(MeshT::ORDER_102);
-    else if (order == "120") self.setIterationOrder(MeshT::ORDER_120);
-    else if (order == "201") self.setIterationOrder(MeshT::ORDER_201);
-    else if (order == "210") self.setIterationOrder(MeshT::ORDER_210);
+    else if (order == "012") self.setIterationOrder(RectangularMesh<3>::ORDER_012);
+    else if (order == "021") self.setIterationOrder(RectangularMesh<3>::ORDER_021);
+    else if (order == "102") self.setIterationOrder(RectangularMesh<3>::ORDER_102);
+    else if (order == "120") self.setIterationOrder(RectangularMesh<3>::ORDER_120);
+    else if (order == "201") self.setIterationOrder(RectangularMesh<3>::ORDER_201);
+    else if (order == "210") self.setIterationOrder(RectangularMesh<3>::ORDER_210);
     else {
         throw ValueError("order must be any permutation of '012' or 'best'");
     }
 }
 
-template <typename MeshT>
-std::string RectangularMesh3D__getOrdering(MeshT& self) {
+std::string RectangularMesh3D__getOrdering(RectangularMesh<3>& self) {
     switch (self.getIterationOrder()) {
-        case MeshT::ORDER_012: return "012";
-        case MeshT::ORDER_021: return "021";
-        case MeshT::ORDER_102: return "102";
-        case MeshT::ORDER_120: return "120";
-        case MeshT::ORDER_201: return "201";
-        case MeshT::ORDER_210: return "210";
+        case RectangularMesh<3>::ORDER_012: return "012";
+        case RectangularMesh<3>::ORDER_021: return "021";
+        case RectangularMesh<3>::ORDER_102: return "102";
+        case RectangularMesh<3>::ORDER_120: return "120";
+        case RectangularMesh<3>::ORDER_201: return "201";
+        case RectangularMesh<3>::ORDER_210: return "210";
     }
     return "unknown";
 }
@@ -262,9 +257,8 @@ shared_ptr<MeshT> RectangularMesh3D__init__empty(std::string order) {
     return mesh;
 }
 
-template <typename MeshT, typename AxesT>
-shared_ptr<MeshT> RectangularMesh3D__init__axes(const AxesT& axis0, const AxesT& axis1, const AxesT& axis2, std::string order) {
-    auto mesh = make_shared<MeshT>(axis0, axis1, axis2);
+shared_ptr<RectangularMesh<3>> RectangularMesh3D__init__axes(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, shared_ptr<RectangularAxis> axis2, std::string order) {
+    auto mesh = make_shared<RectangularMesh<3>>(axis0, axis1, axis2);
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -280,19 +274,19 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 = self.axis0.size() - index0;
-    if (index0 < 0 || index0 >= int(self.axis0.size())) {
-        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.axis0.size());
+    if (index0 < 0) index0 = self.axis0->size() - index0;
+    if (index0 < 0 || index0 >= int(self.axis0->size())) {
+        throw IndexError("first mesh index (%1%) out of range (0<=index<%2%)", index0, self.axis0->size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 = self.axis1.size() - index1;
-    if (index1 < 0 || index1 >= int(self.axis1.size())) {
-        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.axis1.size());
+    if (index1 < 0) index1 = self.axis1->size() - index1;
+    if (index1 < 0 || index1 >= int(self.axis1->size())) {
+        throw IndexError("second mesh index (%1%) out of range (0<=index<%2%)", index1, self.axis1->size());
     }
     int index2 = py::extract<int>(index[2]);
-    if (index2 < 0) index2 = self.axis2.size() - index2;
-    if (index2 < 0 || index2 >= int(self.axis2.size())) {
-        throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.axis2.size());
+    if (index2 < 0) index2 = self.axis2->size() - index2;
+    if (index2 < 0 || index2 >= int(self.axis2->size())) {
+        throw IndexError("third mesh index (%1%) out of range (0<=index<%2%)", index2, self.axis2->size());
     }
     return self(index0, index1, index2);
 }
@@ -302,13 +296,13 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
 
 
 shared_ptr<RectangularMesh<2>> RectilinearMesh2D__init__geometry(const shared_ptr<GeometryObjectD<2>>& geometry, std::string order) {
-    auto mesh = RectilinearMesh2DSimpleGenerator().generate(geometry);
+    auto mesh = RectilinearMesh2DSimpleGenerator().generate_t< RectangularMesh<2> >(geometry);
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
 
 shared_ptr<RectangularMesh<3>> RectilinearMesh3D__init__geometry(const shared_ptr<GeometryObjectD<3>>& geometry, std::string order) {
-    auto mesh = RectilinearMesh3DSimpleGenerator().generate(geometry);
+    auto mesh = RectilinearMesh3DSimpleGenerator().generate_t< RectangularMesh<3> >(geometry);
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -575,7 +569,7 @@ shared_ptr<RectilinearMeshDivideGenerator<dim>> RectilinearMeshDivideGenerator__
 template <int dim>
 void register_divide_generator() {
      py::class_<RectilinearMeshDivideGenerator<dim>, shared_ptr<RectilinearMeshDivideGenerator<dim>>,
-                   py::bases<MeshGeneratorOf<RectangularMesh<dim>>>, boost::noncopyable>
+                   py::bases<MeshGeneratorD<dim>>, boost::noncopyable>
             dividecls("DivideGenerator",
             format("Generator of Rectilinear%1%D mesh by simple division of the geometry.\n\n"
             "DivideGenerator()\n"
@@ -648,15 +642,20 @@ void register_mesh_rectangular()
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<MeshD<1>>>("RectilinearAxis",
+    py::class_<RectangularMesh<1>, shared_ptr<RectangularMesh<1>>, py::bases<MeshD<1>>, boost::noncopyable>
+            ("RectangularAxis",
+             "Base class for all 1D rectangular meshes (used as axes by 2D and 3D rectangular meshes)",
+             py::no_init)
+
+    ;
+
+    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("RectilinearAxis",
         "One-dimesnional rectilinear mesh, used also as rectangular mesh axis\n\n"
         "RectilinearAxis()\n    create empty mesh\n\n"
         "RectilinearAxis(points)\n    create mesh filled with points provides in sequence type"
-        )
-        .def("__init__", py::make_constructor(&__init__empty<RectilinearAxis>))
+        );
+    rectilinear1d.def("__init__", py::make_constructor(&__init__empty<RectilinearAxis>))
         .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearAxis>, py::default_call_policies(), (py::arg("points"))))
-        .def("__len__", &RectilinearAxis::size)
-        .def("__nonzero__", __nonempty__<RectilinearAxis>)
         .def("__getitem__", &RectilinearAxis__getitem__)
         .def("__delitem__", &RectilinearAxis__delitem__)
         .def("__str__", &__str__<RectilinearAxis>)
@@ -669,14 +668,51 @@ void register_mesh_rectangular()
     ;
     detail::RectilinearAxis_from_Sequence();
 
-    py::class_<RectangularMesh<2>, shared_ptr<RectangularMesh<2>>, py::bases<MeshD<2>>> rectilinear2d("Rectilinear2D",
+    ExportMeshGenerator<RectilinearAxis>(rectilinear1d);    //TODO zarejestrowac razem wszystkie generatory 1, 2, 3 D ?
+    {
+        py::scope scope = rectilinear1d;
+
+        py::class_<RectilinearMesh1DSimpleGenerator, shared_ptr<RectilinearMesh1DSimpleGenerator>,
+                   py::bases<MeshGeneratorOf<RectilinearAxis>>, boost::noncopyable>("SimpleGenerator",  //MeshGeneratorOf -> MeshGeneratorD
+            "Generator of Rectilinear1D mesh with lines at transverse edges of all objects.\n\n"
+            "SimpleGenerator()\n    create generator")
+        ;
+
+        register_divide_generator<1>();
+    }
+
+
+    py::class_<RegularAxis, shared_ptr<RegularAxis>, py::bases<RectangularMesh<1>>>("RegularAxis",
+        "Regular mesh axis\n\n"
+        "RegularAxis()\n    create empty mesh\n\n"
+        "RegularAxis(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
+        )
+        .def("__init__", py::make_constructor(&__init__empty<RegularAxis>))
+        .def("__init__", py::make_constructor(&Regular__init__one_param<RegularAxis>, py::default_call_policies(), (py::arg("value"))))
+        .def("__init__", py::make_constructor(&Regular__init__params<RegularAxis>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
+        .add_property("start", &RegularAxis::first, &RegularAxis_setFirst, "Position of the beginning of the mesh")
+        .add_property("stop", &RegularAxis::last, &RegularAxis_setLast, "Position of the end of the mesh")
+        .add_property("step", &RegularAxis::step)
+        .def("__getitem__", &RegularAxis__getitem__)
+        .def("__str__", &__str__<RegularAxis>)
+        .def("__repr__", &RegularAxis__repr__)
+        .def("resize", &RegularAxis_resize, "Change number of points in this mesh", (py::arg("num")))
+        .def(py::self == py::self)
+        .def("__iter__", py::range(&RegularAxis::begin, &RegularAxis::end))
+    ;
+    detail::RegularAxisFromTupleOrFloat();
+    py::implicitly_convertible<RegularAxis, RectilinearAxis>();
+
+
+
+    py::class_<RectangularMesh<2>, shared_ptr<RectangularMesh<2>>, py::bases<MeshD<2>>> rectangular2D("Rectangular2D",
         "Two-dimensional mesh\n\n"
         "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
         "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
         "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
-        ); rectilinear2d
+        ); rectangular2D
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RectangularMesh<2>>, py::default_call_policies(), (py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
         .def("__init__", py::make_constructor(&RectilinearMesh2D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="01")))
@@ -686,8 +722,7 @@ void register_mesh_rectangular()
         .def_readwrite("axis1", &RectangularMesh<2>::axis1, "The second (vertical) axis of the mesh")
         .add_property("major_axis", py::make_function((RectangularAxis&(RectangularMesh<2>::*)())&RectangularMesh<2>::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
         .add_property("minor_axis", py::make_function((RectangularAxis&(RectangularMesh<2>::*)())&RectangularMesh<2>::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
-        .def("__nonzero__", &__nonempty__<RectangularMesh<2>>, "Return True if the mesh is empty")
-        .def("clear", &RectangularMesh<2>::clear, "Remove all points from the mesh")
+        //.def("clear", &RectangularMesh<2>::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh2D__getitem__)
         .def("index", &RectangularMesh<2>::index, "Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
         .def("index0", &RectangularMesh<2>::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
@@ -719,215 +754,14 @@ void register_mesh_rectangular()
              "Boundary at vertical line", py::arg("at")).staticmethod("Vertical")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectangularMesh<2>> { rectilinear2d };   //TODO ??
+    ExportBoundary<RectangularMesh<2>> { rectangular2D };
 
-    py::class_<RectilinearMesh<3>, shared_ptr<RectilinearMesh<3>>, py::bases<MeshD<3>>> rectilinear3d("Rectilinear3D",
-        "Two-dimensional mesh\n\n"
-        "Rectilinear3D(ordering='012')\n    create empty mesh\n\n"
-        "Rectilinear3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RectilinearAxis\n\n"
-        "Rectilinear3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
-        "ordering can be any a string containing any permutation of and specifies ordering of the\n"
-        "mesh points (last index changing fastest).",
-        py::no_init
-        ); rectilinear3d
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectilinearMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RectilinearMesh3D,RectilinearAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh3D, RegularMesh3D>, py::default_call_policies(), py::arg("src")))
-        .def("copy", &Mesh__init__<RectilinearMesh3D, RectilinearMesh3D>, "Make a copy of this mesh")
-        .def_readwrite("axis0", &RectilinearMesh3D::axis0, "The first (longitudinal) axis of the mesh")
-        .def_readwrite("axis1", &RectilinearMesh3D::axis1, "The second (transverse) axis of the mesh")
-        .def_readwrite("axis2", &RectilinearMesh3D::axis2, "The third (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RectilinearAxis&(RectilinearMesh3D::*)())&RectilinearMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
-        .add_property("medium_axis", py::make_function((RectilinearAxis&(RectilinearMesh3D::*)())&RectilinearMesh3D::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
-        .add_property("minor_axis", py::make_function((RectilinearAxis&(RectilinearMesh3D::*)())&RectilinearMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
-        .def("__nonzero__", &__nonempty__<RectilinearMesh3D>)
-        .def("clear", &RectilinearMesh3D::clear, "Remove all points from the mesh")
-        .def("__getitem__", &RectangularMesh3D__getitem__<RectilinearMesh3D>)
-        .def("index", &RectilinearMesh3D::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
-             "Return single index of the point indexed with index0, index1, and index2")
-        .def("index0", &RectilinearMesh3D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
-        .def("index1", &RectilinearMesh3D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
-        .def("index2", &RectilinearMesh3D::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
-        .def("major_index", &RectilinearMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("middle_index", &RectilinearMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
-        .def("minor_index", &RectilinearMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("set_optimal_ordering", &RectilinearMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .add_property("ordering", &RectangularMesh3D__getOrdering<RectilinearMesh3D>, &RectangularMesh3D__setOrdering<RectilinearMesh3D>, "Ordering of the points in this mesh")
-        .def("get_midpoints", &RectilinearMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
-        .def("Front", &RectilinearMesh3D::getFrontBoundary, "Front side of the mesh for setting boundary conditions").staticmethod("Front")
-        .def("Back", &RectilinearMesh3D::getBackBoundary, "Back side of the mesh for setting boundary conditions").staticmethod("Back")
-        .def("Left", &RectilinearMesh3D::getLeftBoundary, "Left side of the mesh for setting boundary conditions").staticmethod("Left")
-        .def("Right", &RectilinearMesh3D::getRightBoundary, "Right side of the mesh for setting boundary conditions").staticmethod("Right")
-        .def("Top", &RectilinearMesh3D::getTopBoundary, "Top side of the mesh for setting boundary conditions").staticmethod("Top")
-        .def("Bottom", &RectilinearMesh3D::getBottomBoundary, "Bottom side of the mesh for setting boundary conditions").staticmethod("Bottom")
-        .def("FrontOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getFrontOfBoundary,
-             "Boundary in front of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("FrontOf")
-        .def("BackOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getBackOfBoundary,
-             "Boundary back of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BackOf")
-        .def("LeftOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getLeftOfBoundary,
-             "Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
-        .def("RightOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getRightOfBoundary,
-             "Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
-        .def("TopOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getTopOfBoundary,
-             "Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
-        .def("BottomOf", (RectilinearMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectilinearMesh3D::getBottomOfBoundary,
-             "Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
-        .def(py::self == py::self)
-    ;
-    ExportBoundary<RectilinearMesh3D> { rectilinear3d };
-
-    py::class_<RegularAxis, shared_ptr<RegularAxis>>("RegularAxis",
-        "Regular mesh axis\n\n"
-        "RegularAxis()\n    create empty mesh\n\n"
-        "RegularAxis(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
-        )
-        .def("__init__", py::make_constructor(&__init__empty<RegularAxis>))
-        .def("__init__", py::make_constructor(&Regular__init__one_param<RegularAxis>, py::default_call_policies(), (py::arg("value"))))
-        .def("__init__", py::make_constructor(&Regular__init__params<RegularAxis>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
-        .add_property("start", &RegularAxis::first, &RegularAxis_setFirst, "Position of the beginning of the mesh")
-        .add_property("stop", &RegularAxis::last, &RegularAxis_setLast, "Position of the end of the mesh")
-        .add_property("step", &RegularAxis::step)
-        .def("__len__", &RegularAxis::size)
-        .def("__nonzero__", __nonempty__<RegularAxis>)
-        .def("__getitem__", &RegularAxis__getitem__)
-        .def("__str__", &__str__<RegularAxis>)
-        .def("__repr__", &RegularAxis__repr__)
-        .def("resize", &RegularAxis_resize, "Change number of points in this mesh", (py::arg("num")))
-        .def(py::self == py::self)
-        .def("__iter__", py::range(&RegularAxis::begin, &RegularAxis::end))
-    ;
-    detail::RegularAxisFromTupleOrFloat();
-    py::implicitly_convertible<RegularAxis, RectilinearAxis>();
-
-    py::class_<RegularMesh1D, shared_ptr<RegularMesh1D>, py::bases<MeshD<1>>> regular1d("Regular1D",
-        "One-dimensional regular mesh\n\n"
-        "Regular1D()\n    create empty mesh\n\n"
-        "Regular1D(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
-        ); regular1d
-        .def("__init__", py::make_constructor(&__init__empty<RegularMesh1D>))
-        .def("__init__", py::make_constructor(&Regular__init__one_param<RegularMesh1D>, py::default_call_policies(), (py::arg("value"))))
-        .def("__init__", py::make_constructor(&Regular__init__params<RegularMesh1D>, py::default_call_policies(), (py::arg("start"), "stop", "num")))
-        .def("__init__", py::make_constructor(&RectangularMesh1D__init__axis<RegularMesh1D,RegularAxis>, py::default_call_policies(), py::arg("axis0")))
-        .def_readonly("axis", &RegularMesh1D::axis, "Axis of the mesh")
-        .add_property("start", &RegularMesh1D_getFirst, &RegularMesh1D_setFirst, "Position of the beginning of the mesh")
-        .add_property("stop", RegularMesh1D_getLast, &RegularMesh1D_setLast, "Position of the end of the mesh")
-        .add_property("step", &RegularMesh1D_getStep)
-        .def("__getitem__", &RegularMesh1D__getitem__)
-        .def("__str__", &__str__<RegularMesh1D>)
-        .def("__repr__", &RegularMesh1D__repr__)
-        .def("resize", &RegularMesh1D_resize, "Change number of points in this mesh", (py::arg("num")))
-        .def(py::self == py::self)
-    ;
-    py::implicitly_convertible<RegularAxis, RegularMesh1D>();
-    py::implicitly_convertible<RegularMesh1D, RegularAxis>();
-    py::implicitly_convertible<RegularMesh1D, RectilinearAxis>();
-
-    py::class_<RegularMesh2D, shared_ptr<RegularMesh2D>, py::bases<MeshD<2>>> regular2d("Regular2D",
-        "Two-dimensional mesh\n\n"
-        "Regular2D(ordering='01')\n    create empty mesh\n\n"
-        "Regular2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
-        "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
-        py::no_init
-        ); regular2d
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__empty<RegularMesh2D>, py::default_call_policies(), (py::arg("ordering")="01")))
-        .def("__init__", py::make_constructor(&RectangularMesh2D__init__axes<RegularMesh2D,RegularAxis>, py::default_call_policies(), (py::arg("axis0"), py::arg("axis1"), py::arg("ordering")="01")))
-        .def("copy", &Mesh__init__<RegularMesh2D, RegularMesh2D>, "Make a copy of this mesh")
-        .def_readwrite("axis0", &RegularMesh2D::axis0, "The first (transverse) axis of the mesh")
-        .def_readwrite("axis1", &RegularMesh2D::axis1, "The second (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RegularAxis&(RegularMesh2D::*)())&RegularMesh2D::majorAxis, py::return_internal_reference<>()), "The slower changing axis")
-        .add_property("minor_axis", py::make_function((RegularAxis&(RegularMesh2D::*)())&RegularMesh2D::minorAxis, py::return_internal_reference<>()), "The quicker changing axis")
-        .def("__nonzero__", &__nonempty__<RegularMesh2D>)
-        .def("clear", &RegularMesh2D::clear, "Remove all points from the mesh")
-        .def("__getitem__", &RectangularMesh2D__getitem__<RegularMesh2D>)
-        .def("index", &RegularMesh2D::index, "Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
-        .def("index0", &RegularMesh2D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
-        .def("index1", &RegularMesh2D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
-        .def("major_index", &RegularMesh2D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("minor_index", &RegularMesh2D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("set_optimal_ordering", &RegularMesh2D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .add_property("ordering", &RectangularMesh2D__getOrdering<RegularMesh2D>, &RectangularMesh2D__setOrdering<RegularMesh2D>, "Ordering of the points in this mesh")
-        .def("get_midpoints", &RegularMesh2D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
-        .add_static_property("left", &RegularMesh2D::getLeftBoundary, "Left edge of the mesh for setting boundary conditions")
-        .add_static_property("right", &RegularMesh2D::getRightBoundary, "Right edge of the mesh for setting boundary conditions")
-        .add_static_property("top", &RegularMesh2D::getTopBoundary, "Top edge of the mesh for setting boundary conditions")
-        .add_static_property("bottom", &RegularMesh2D::getBottomBoundary, "Bottom edge of the mesh for setting boundary conditions")
-        .def("LeftOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getLeftOfBoundary,
-             "Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
-        .def("RightOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getRightOfBoundary,
-             "Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
-        .def("TopOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getTopOfBoundary,
-             "Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
-        .def("BottomOf", (RegularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RegularMesh2D::getBottomOfBoundary,
-             "Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
-        .def("Horizontal", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Boundary at horizontal line", (py::arg("at"), "start", "stop"))
-        .def("Horizontal", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getHorizontalBoundaryNear,
-             "Boundary at horizontal line", py::arg("at")).staticmethod("Horizontal")
-        .def("Vertical", (RegularMesh2D::Boundary(*)(double,double,double))&RegularMesh2D::getVerticalBoundaryNear,
-             "Boundary at vertical line", (py::arg("at"), "start", "stop"))
-        .def("Vertical", (RegularMesh2D::Boundary(*)(double))&RegularMesh2D::getVerticalBoundaryNear,
-             "Boundary at vertical line", py::arg("at")).staticmethod("Vertical")
-        .def(py::self == py::self)
-    ;
-    ExportBoundary<RegularMesh2D> { regular2d };
-    py::implicitly_convertible<RegularMesh2D, RectilinearMesh2D>();
-
-    py::class_<RegularMesh3D, shared_ptr<RegularMesh3D>, py::bases<MeshD<3>>, boost::noncopyable>regular3d("Regular3D",
-        "Two-dimensional mesh\n\n"
-        "Regular3D(ordering='012')\n    create empty mesh\n\n"
-        "Regular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RegularAxis\n\n"
-        "ordering can be any a string containing any permutation of and specifies ordering of the\n"
-        "mesh points (last index changing fastest).",
-        py::no_init
-        ); regular3d
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RegularMesh3D>, py::default_call_policies(), (py::arg("ordering")="012")))
-        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes<RegularMesh3D,RegularAxis>, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
-        .def("copy", &Mesh__init__<RegularMesh3D, RegularMesh3D>, "Make a copy of this mesh")
-        .def_readwrite("axis0", &RegularMesh3D::axis0, "The first (longitudinal) axis of the mesh")
-        .def_readwrite("axis1", &RegularMesh3D::axis1, "The second (transverse) axis of the mesh")
-        .def_readwrite("axis2", &RegularMesh3D::axis2, "The third (vertical) axis of the mesh")
-        .add_property("major_axis", py::make_function((RegularAxis&(RegularMesh3D::*)())&RegularMesh3D::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
-        .add_property("medium_axis", py::make_function((RegularAxis&(RegularMesh3D::*)())&RegularMesh3D::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
-        .add_property("minor_axis", py::make_function((RegularAxis&(RegularMesh3D::*)())&RegularMesh3D::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
-        .def("__nonzero__", &__nonempty__<RegularMesh3D>)
-        .def("clear", &RegularMesh3D::clear, "Remove all points from the mesh")
-        .def("__getitem__", &RectangularMesh3D__getitem__<RegularMesh3D>)
-        .def("index", &RegularMesh3D::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
-             "Return single index of the point indexed with index0, index1, and index2")
-        .def("index0", &RegularMesh3D::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
-        .def("index1", &RegularMesh3D::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
-        .def("index2", &RegularMesh3D::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
-        .def("major_index", &RegularMesh3D::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
-        .def("middle_index", &RegularMesh3D::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
-        .def("minor_index", &RegularMesh3D::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
-        .def("set_optimal_ordering", &RegularMesh3D::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
-        .add_property("ordering", &RectangularMesh3D__getOrdering<RegularMesh3D>, &RectangularMesh3D__setOrdering<RegularMesh3D>, "Ordering of the points in this mesh")
-        .def("get_midpoints", &RegularMesh3D::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
-        .def(py::self == py::self)
-    ;
-    ExportBoundary<RegularMesh3D> { regular3d };
-    py::implicitly_convertible<RegularMesh3D, RectilinearMesh3D>();
-
-    ExportMeshGenerator<RectilinearMesh1D>(rectilinear1d);
+    ExportMeshGenerator<RectangularMesh<2>>(rectangular2D);
     {
-        py::scope scope = rectilinear1d;
-
-        py::class_<RectilinearMesh1DSimpleGenerator, shared_ptr<RectilinearMesh1DSimpleGenerator>,
-                   py::bases<MeshGeneratorOf<RectilinearMesh1D>>, boost::noncopyable>("SimpleGenerator",
-            "Generator of Rectilinear1D mesh with lines at transverse edges of all objects.\n\n"
-            "SimpleGenerator()\n    create generator")
-        ;
-
-        register_divide_generator<1>();
-    }
-
-    ExportMeshGenerator<RectilinearMesh2D>(rectilinear2d);
-    {
-        py::scope scope = rectilinear2d;
+        py::scope scope = rectangular2D;
 
         py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
-                   py::bases<MeshGeneratorOf<RectilinearMesh2D>>, boost::noncopyable>("SimpleGenerator",
+                   py::bases<MeshGeneratorOf<RectangularMesh<2>>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear2D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
@@ -935,12 +769,69 @@ void register_mesh_rectangular()
         register_divide_generator<2>();
     }
 
-    ExportMeshGenerator<RectilinearMesh3D>(rectilinear3d);
+
+    py::class_<RectangularMesh<3>, shared_ptr<RectangularMesh<3>>, py::bases<MeshD<3>>> rectangular3D("Rectangular3D",
+        "Three-dimensional mesh\n\n"
+        "Rectilinear3D(ordering='012')\n    create empty mesh\n\n"
+        "Rectilinear3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RectilinearAxis\n\n"
+        "Rectilinear3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
+        "ordering can be any a string containing any permutation of and specifies ordering of the\n"
+        "mesh points (last index changing fastest).",
+        py::no_init
+        ); rectangular3D
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__empty<RectangularMesh<3>>, py::default_call_policies(), (py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectangularMesh3D__init__axes, py::default_call_policies(), (py::arg("axis0"), "axis1", "axis2", py::arg("ordering")="012")))
+        .def("__init__", py::make_constructor(&RectilinearMesh3D__init__geometry, py::default_call_policies(), (py::arg("geometry"), py::arg("ordering")="012")))
+        //.def("__init__", py::make_constructor(&Mesh__init__<RectilinearMesh3D, RegularMesh3D>, py::default_call_policies(), py::arg("src")))
+        .def("copy", &Mesh__init__<RectangularMesh<3>, RectangularMesh<3>>, "Make a copy of this mesh")
+        .def_readwrite("axis0", &RectangularMesh<3>::axis0, "The first (longitudinal) axis of the mesh")
+        .def_readwrite("axis1", &RectangularMesh<3>::axis1, "The second (transverse) axis of the mesh")
+        .def_readwrite("axis2", &RectangularMesh<3>::axis2, "The third (vertical) axis of the mesh")
+        .add_property("major_axis", py::make_function((RectangularAxis&(RectangularMesh<3>::*)())&RectangularMesh<3>::majorAxis, py::return_internal_reference<>()), "The slowest changing axis")
+        .add_property("medium_axis", py::make_function((RectangularAxis&(RectangularMesh<3>::*)())&RectangularMesh<3>::mediumAxis, py::return_internal_reference<>()), "The middle changing axis")
+        .add_property("minor_axis", py::make_function((RectangularAxis&(RectangularMesh<3>::*)())&RectangularMesh<3>::minorAxis, py::return_internal_reference<>()), "The quickest changing axis")
+        //.def("clear", &RectangularMesh<3>::clear, "Remove all points from the mesh")
+        .def("__getitem__", &RectangularMesh3D__getitem__<RectangularMesh<3>>)
+        .def("index", &RectangularMesh<3>::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
+             "Return single index of the point indexed with index0, index1, and index2")
+        .def("index0", &RectangularMesh<3>::index0, "Return index in the first axis of the point with given index", (py::arg("index")))
+        .def("index1", &RectangularMesh<3>::index1, "Return index in the second axis of the point with given index", (py::arg("index")))
+        .def("index2", &RectangularMesh<3>::index2, "Return index in the third axis of the point with given index", (py::arg("index")))
+        .def("major_index", &RectangularMesh<3>::majorIndex, "Return index in the major axis of the point with given index", (py::arg("index")))
+        .def("middle_index", &RectangularMesh<3>::middleIndex, "Return index in the middle axis of the point with given index", (py::arg("index")))
+        .def("minor_index", &RectangularMesh<3>::minorIndex, "Return index in the minor axis of the point with given index", (py::arg("index")))
+        .def("set_optimal_ordering", &RectangularMesh<3>::setOptimalIterationOrder, "Set the optimal ordering of the points in this mesh")
+        .add_property("ordering", &RectangularMesh3D__getOrdering, &RectangularMesh3D__setOrdering, "Ordering of the points in this mesh")
+        .def("get_midpoints", &RectangularMesh<3>::getMidpointsMesh, "Get new mesh with points in the middles of objects described by this mesh")
+        .def("Front", &RectangularMesh<3>::getFrontBoundary, "Front side of the mesh for setting boundary conditions").staticmethod("Front")
+        .def("Back", &RectangularMesh<3>::getBackBoundary, "Back side of the mesh for setting boundary conditions").staticmethod("Back")
+        .def("Left", &RectangularMesh<3>::getLeftBoundary, "Left side of the mesh for setting boundary conditions").staticmethod("Left")
+        .def("Right", &RectangularMesh<3>::getRightBoundary, "Right side of the mesh for setting boundary conditions").staticmethod("Right")
+        .def("Top", &RectangularMesh<3>::getTopBoundary, "Top side of the mesh for setting boundary conditions").staticmethod("Top")
+        .def("Bottom", &RectangularMesh<3>::getBottomBoundary, "Bottom side of the mesh for setting boundary conditions").staticmethod("Bottom")
+        .def("FrontOf", (RectangularMesh<3>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<3>::getFrontOfBoundary,
+             "Boundary in front of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("FrontOf")
+        .def("BackOf", (RectangularMesh<3>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<3>::getBackOfBoundary,
+             "Boundary back of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BackOf")
+        .def("LeftOf", (RectangularMesh<3>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<3>::getLeftOfBoundary,
+             "Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
+        .def("RightOf", (RectangularMesh<3>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<3>::getRightOfBoundary,
+             "Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
+        .def("TopOf", (RectangularMesh<3>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<3>::getTopOfBoundary,
+             "Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
+        .def("BottomOf", (RectangularMesh<3>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<3>::getBottomOfBoundary,
+             "Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
+        .def(py::self == py::self)
+    ;
+    ExportBoundary<RectangularMesh<3>> { rectangular3D };
+
+
+    ExportMeshGenerator<RectangularMesh<3>>(rectangular3D);
     {
-        py::scope scope = rectilinear3d;
+        py::scope scope = rectangular3D;
 
         py::class_<RectilinearMesh3DSimpleGenerator, shared_ptr<RectilinearMesh3DSimpleGenerator>,
-                   py::bases<MeshGeneratorOf<RectilinearMesh3D>>, boost::noncopyable>("SimpleGenerator",
+                   py::bases<MeshGeneratorOf<RectangularMesh<3>>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear3D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;

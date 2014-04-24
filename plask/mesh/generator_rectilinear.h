@@ -24,7 +24,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 /**
  * Generator of basic 2D geometry grid
  */
-class RectilinearMesh1DSimpleGenerator: public MeshGeneratorOf<RectilinearAxis> {
+class RectilinearMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -48,14 +48,14 @@ class RectilinearMesh1DSimpleGenerator: public MeshGeneratorOf<RectilinearAxis> 
     RectilinearMesh1DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
         : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
 
-    virtual shared_ptr<RectilinearAxis> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
+    virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 
 /**
  * Generator of basic 2D geometry grid
  */
-class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectangularMesh<2>> {
+class RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -77,15 +77,15 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorOf<RectangularMesh<2
     RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
         : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
 
-    virtual shared_ptr<RectangularMesh<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
+    virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 /**
  * Generator of 2D geometry grid using other generator for horizontal axis
  */
-class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorOf<RectangularMesh<2>> {
+class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 
-    shared_ptr<MeshGeneratorOf<RectilinearAxis>> horizontal_generator;
+    shared_ptr<MeshGeneratorD<1>> horizontal_generator;
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -101,10 +101,10 @@ class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorOf<RectangularMesh<2
      * \param min_ply minimum ply after split single, non-solid layer
      * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorOf<RectilinearAxis>>& source, double min_ply = 0.01, long max_points = 10):
+    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source, double min_ply = 0.01, long max_points = 10):
         horizontal_generator(source), min_ply(min_ply), max_points(max_points) {}
 
-    virtual shared_ptr<RectangularMesh<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry);
+    virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 
@@ -112,7 +112,7 @@ class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorOf<RectangularMesh<2
 /**
  * Generator of basic 3D geometry grid
  */
-struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorOf<RectangularMesh<3>> {
+struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorD<3> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -130,21 +130,21 @@ public:
     RectilinearMesh3DSimpleGenerator(double min_ply = 0.01, long max_points = 10)
         : min_ply(min_ply), max_points(max_points) {}
 
-    virtual shared_ptr<RectangularMesh<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry);
+    virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
 
 /**
  * Dividing generator ensuring no rapid change of element size
  */
 template <int dim>
-struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<typename Rectangular_t<dim>::Rectilinear> {
+struct RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
 
     size_t pre_divisions[dim];
     size_t post_divisions[dim];
     bool gradual;
 
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
-    using MeshGeneratorOf<GeneratedMeshType>::DIM;
+    using MeshGeneratorD<dim>::DIM;
 
 
     typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>,PathHints>, std::set<double>> Refinements;
@@ -169,8 +169,7 @@ struct RectilinearMeshDivideGenerator: public MeshGeneratorOf<typename Rectangul
         }
     }
 
-    shared_ptr<GeneratedMeshType>
-    generate(const shared_ptr<GeometryObjectD<DIM>>& geometry);
+    shared_ptr<MeshD<dim>> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) override;
 
     /// Get initial division of the smallest object in the mesh
     inline size_t getPreDivision(typename Primitive<DIM>::Direction direction) const {
