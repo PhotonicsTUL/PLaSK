@@ -19,10 +19,10 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
     def createEditor(self, parent, option, index):
 
-        earlier_names = ['semiconductor', 'metal', 'oxide', 'dielectric', 'liquid_crystal']
+        earlier_names = ['semiconductor', 'metal', 'dielectric', 'liquid_crystal']
 
         try:
-            earlier_names.extend(mat for mat in plask.material.db if mat not in earlier_names)
+            earlier_names.extend(sorted(mat for mat in plask.material.db if mat not in earlier_names))
         except NameError:
             pass
 
