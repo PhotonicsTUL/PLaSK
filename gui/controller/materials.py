@@ -38,7 +38,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.insertSeparator(4)
         combo.insertSeparator(len(earlier_names)-index.row()+1)
         combo.setEditText(index.data())
-        combo.setCompleter(self.getDefinesCompleter(parent))
+        combo.setCompleter(self.get_defines_completer(parent))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
         return combo
@@ -59,7 +59,9 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(opts)
         combo.setEditText(index.data())
-        combo.setAutoCompletionCaseSensitivity(True)
+        completer = combo.completer()
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
+        combo.setCompleter(completer)
         combo.highlighted.connect(lambda i:
             QtGui.QToolTip.showText(QtGui.QCursor.pos(), materialHTMLHelp(combo.itemText(i)))
         )

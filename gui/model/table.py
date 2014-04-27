@@ -5,7 +5,7 @@ from . import info
 
 class TableModelEditMethods(object):
 
-    def insert(self, index=None):
+    def insert(self, index=None, value=None):
         if self.is_read_only(): return
         if not value:
             value = self.create_default_entry()

@@ -3,15 +3,16 @@ from ..qt import QtGui, QtCore
 from ..model.defines import DefinesModel
 from .table import TableController
 
+
 class AfterBracketCompleter(QtGui.QCompleter):
 
     def pathFromIndex(self, index):
         path = QtGui.QCompleter.pathFromIndex(self, index)
 
         try:
-            text = self.widget().text()         #text field
+            text = self.widget().text()         # text field
         except AttributeError:
-            text = self.widget().currentText()  #combo box
+            text = self.widget().currentText()  # combo box
 
         lst = text.rsplit('{', 1)
         if len(lst) > 1:
@@ -24,6 +25,7 @@ class AfterBracketCompleter(QtGui.QCompleter):
     def splitPath(self, path):
         path = path.rsplit('{', 1)[-1].lstrip(' ')
         return [path]
+
 
 class DefineHintsTableModel(QtCore.QAbstractTableModel):
 
@@ -53,6 +55,7 @@ class DefineHintsTableModel(QtCore.QAbstractTableModel):
     def headerData(self, col, orientation, role):
         return self.model.headerData(col, orientation, role)
 
+
 class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
 
     def __init__(self, model, parent):
@@ -60,8 +63,8 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
         self.model = DefineHintsTableModel(model, parent)
         #self.model = model
 
-    def getDefinesCompleter(self, parent):
-        completer = AfterBracketCompleter(self.model, self)
+    def get_defines_completer(self, parent):
+        completer = AfterBracketCompleter(self.model, parent)
         tab = QtGui.QTableView(parent)
         #tab.resizeColumnsToContents()
         tab.setModel(self.model)
@@ -82,11 +85,9 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
         return completer
 
     def createEditor(self, parent, option, index):
-        ed = super(DefinesCompletionDelegate, self).createEditor(parent, option, index)
-
-        #completer.setWrapAround(False)
-        #completer->setCaseSensitivity(Qt::CaseInsensitive);
-        ed.setCompleter(self.getDefinesCompleter(parent))
+        ed = QtGui.QLineEdit(parent)
+        completer = self.get_defines_completer(parent)
+        ed.setCompleter(completer)
         return ed
 
     #def setEditorData(self, editor, index):

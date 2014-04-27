@@ -61,7 +61,7 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         #if (optionV4.state & QStyle::State_Selected)
             #ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-        textRect = style.subElementRect(QtGui.QStyle.SE_ItemViewItemText, options)
+        textRect = style.subElementRect(QtGui.QStyle.SE_ItemViewItemText, options, None)
         painter.save()
         topleft = textRect.topLeft()
         topleft.setY(topleft.y() + max(int((textRect.height() - doc.size().height()) / 2), 0))

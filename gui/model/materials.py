@@ -9,42 +9,42 @@ from .info import Info
 #from guis import DefinesEditor
 
 MATERIALS_PROPERTES = OrderedDict((
-    ('A', (u'Monomolecular recombination coefficient <i>A</i>', '1/s', [(u'T', 'temperature [K]')])),
-    ('absb', (u'Absorption coefficient <i>α</i>', 'cm<sup>-1</sup>', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]')])),
-    ('ac', (u'Hydrostatic deformation potential for the conduction band <i>a<sub>c</sub></i>', 'eV', [(u'T', 'temperature [K]')])),
-    ('av', (u'Hydrostatic deformation potential for the valence band <i>a<sub>v</sub></i>', 'eV', [(u'T', 'temperature [K]')])),
-    ('B', (u'Radiative recombination coefficient <i>B</i>', 'm<sup>3</sup>/s', [(u'T', 'temperature [K]')])),
-    ('b', (u'Shear deformation potential <i>b</i>', 'eV', [(u'T', 'temperature [K]')])),
-    ('C', (u'Auger recombination coefficient <i>C</i>', 'm<sup>6</sup>/s', [(u'T', 'temperature [K]')])),
-    ('c11', (u'Elastic constant <i>c<sub>11</sub></i>', 'GPa', [(u'T', 'temperature [K]')])),
-    ('c12', (u'Elastic constant <i>c<sub>12</sub></i>', 'GPa', [(u'T', 'temperature [K]')])),
-    ('CB', (u'Conduction band level <i>CB</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
-    ('chi', (u'Electron affinity <i>χ</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
-    ('cond', (u'Electrical conductivity <i>σ</i> in-plane (lateral) and cross-plane (vertical) direction', 'S/m', [(u'T', 'temperature [K]')])),
-    ('condtype', (u'Electrical conductivity type. In semiconductors this indicates what type of carriers <i>Nf</i> refers to.', '-', [])),
-    ('cp', (u'Specific heat at constant pressure', 'J/(kg K)', [(u'T', 'temperature [K]')])),
-    ('D', (u'Ambipolar diffusion coefficient <i>D</i>', 'm<sup>2</sup>/s', [(u'T', 'temperature [K]')])),
-    ('dens', (u'Density', 'kg/m<sup>3</sup>', [(u'T', 'temperature [K]')])),
-    ('Dso', (u'Split-off energy <i>D</i><sub>so</sub>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
-    ('EactA', (u'Acceptor ionization energy <i>E</i><sub>actA</sub>', 'eV', [(u'T', 'temperature [K]')])),
-    ('EactD', (u'Acceptor ionization energy <i>E</i><sub>actD</sub>', 'eV', [(u'T', 'temperature [K]')])),
-    ('Eg', (u'Energy gap <i>E<sub>g</sub></i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin')])),
-    ('eps', (u'Donor ionization energy <i>ε<sub>R</sub></i>', '-', [(u'T', 'temperature [K]')])),
-    ('lattC', (u'Lattice constant', 'Å', [(u'T', 'temperature [K]'), (u'x', 'lattice parameter [-]')])),
-    ('Me', (u'Electron effective mass <i>M<sub>e</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the irreducible Brillouin zone [-]')])),
-    ('Mh', (u'Hole effective mass <i>M<sub>h</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
-    ('Mhh', (u'Heavy hole effective mass <i>M<sub>hh</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
-    ('Mlh', (u'Light hole effective mass <i>M<sub>lh</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
-    ('Mso', (u'Split-off mass <i>M</i><sub>so</sub>', '<i>m</i><sub>0</sub>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]')])),
-    ('Nc', (u'Effective density of states in the conduction band <i>Nc</i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
-    ('Nf', (u'Free carrier concentration <i>N</i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]')])),
-    ('Ni', (u'Intrinsic carrier concentration <i>N<sub>i</sub></i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]')])),
-    ('Nr', (u'Complex refractive index <i>n<sub>R</sub></i>', '-', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]'), (u'n', 'injected carriers concentration [1/cm]')])),
-    ('nr', (u'Real refractive index <i>n<sub>R</sub></i>', '-', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]'), (u'n', 'injected carriers concentration [1/cm]')])),
-    ('NR', (u'Anisotropic complex refractive index tensor <i>n<sub>R</sub></i>. Tensor must have the form [<i>n</i><sub>00</sub>, <i>n</i><sub>11</sub>, <i>n</i><sub>22</sub>, <i>n</i><sub>01</sub>, <i>n</i><sub>10</sub>]', '-', [(u'wl', 'wavelength [nm]'), (u'T', 'temperature [K]'), (u'n', 'injected carriers concentration [1/cm]')])),
-    ('Nv', (u'Effective density of states in the valance band <i>N<sub>v</sub></i>', 'cm<sup>-3</sup>', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'point', 'point in the Brillouin zone [-]')])),
-    ('thermk', (u'Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction <i>k</i>', 'W/(m K)', [(u'T', 'temperature [K]'), (u'h', 'layer thickness [µm]')])),
-    ('VB', (u'Valance band level offset <i>VB</i>', 'eV', [(u'T', 'temperature [K]'), (u'e', 'lateral strain [-]'), (u'hole', 'hole type (\'H\' or \'L\') [-]')])),
+    ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s', [(u'T', u'temperature [K]')])),
+    ('absb', (u'Absorption coefficient <i>α</i>', u'cm<sup>-1</sup>', [(u'wl', u'wavelength [nm]'), (u'T', u'temperature [K]')])),
+    ('ac', (u'Hydrostatic deformation potential for the conduction band <i>a<sub>c</sub></i>', u'eV', [(u'T', u'temperature [K]')])),
+    ('av', (u'Hydrostatic deformation potential for the valence band <i>a<sub>v</sub></i>', u'eV', [(u'T', u'temperature [K]')])),
+    ('B', (u'Radiative recombination coefficient <i>B</i>', u'm<sup>3</sup>/s', [(u'T', u'temperature [K]')])),
+    ('b', (u'Shear deformation potential <i>b</i>', u'eV', [(u'T', u'temperature [K]')])),
+    ('C', (u'Auger recombination coefficient <i>C</i>', u'm<sup>6</sup>/s', [(u'T', u'temperature [K]')])),
+    ('c11', (u'Elastic constant <i>c<sub>11</sub></i>', u'GPa', [(u'T', u'temperature [K]')])),
+    ('c12', (u'Elastic constant <i>c<sub>12</sub></i>', u'GPa', [(u'T', u'temperature [K]')])),
+    ('CB', (u'Conduction band level <i>CB</i>', u'eV', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'point', u'point in the Brillouin zone [-]')])),
+    ('chi', (u'Electron affinity <i>χ</i>', u'eV', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'point', u'point in the Brillouin zone [-]')])),
+    ('cond', (u'Electrical conductivity <i>σ</i> in-plane (lateral) and cross-plane (vertical) direction', u'S/m', [(u'T', u'temperature [K]')])),
+    ('condtype', (u'Electrical conductivity type. In semiconductors this indicates what type of carriers <i>Nf</i> refers to.', u'-', [])),
+    ('cp', (u'Specific heat at constant pressure', u'J/(kg K)', [(u'T', u'temperature [K]')])),
+    ('D', (u'Ambipolar diffusion coefficient <i>D</i>', u'm<sup>2</sup>/s', [(u'T', u'temperature [K]')])),
+    ('dens', (u'Density', u'kg/m<sup>3</sup>', [(u'T', u'temperature [K]')])),
+    ('Dso', (u'Split-off energy <i>D</i><sub>so</sub>', u'eV', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
+    ('EactA', (u'Acceptor ionization energy <i>E</i><sub>actA</sub>', u'eV', [(u'T', u'temperature [K]')])),
+    ('EactD', (u'Acceptor ionization energy <i>E</i><sub>actD</sub>', u'eV', [(u'T', u'temperature [K]')])),
+    ('Eg', (u'Energy gap <i>E<sub>g</sub></i>', u'eV', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'point', u'point in the Brillouin')])),
+    ('eps', (u'Donor ionization energy <i>ε<sub>R</sub></i>', u'-', [(u'T', u'temperature [K]')])),
+    ('lattC', (u'Lattice constant', u'Å', [(u'T', u'temperature [K]'), (u'x', u'lattice parameter [-]')])),
+    ('Me', (u'Electron effective mass <i>M<sub>e</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'point', u'point in the irreducible Brillouin zone [-]')])),
+    ('Mh', (u'Hole effective mass <i>M<sub>h</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
+    ('Mhh', (u'Heavy hole effective mass <i>M<sub>hh</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
+    ('Mlh', (u'Light hole effective mass <i>M<sub>lh</sub></i> in in-plane (lateral) and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
+    ('Mso', (u'Split-off mass <i>M</i><sub>so</sub>', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
+    ('Nc', (u'Effective density of states in the conduction band <i>Nc</i>', u'cm<sup>-3</sup>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'point', u'point in the Brillouin zone [-]')])),
+    ('Nf', (u'Free carrier concentration <i>N</i>', u'cm<sup>-3</sup>', [(u'T', u'temperature [K]')])),
+    ('Ni', (u'Intrinsic carrier concentration <i>N<sub>i</sub></i>', u'cm<sup>-3</sup>', [(u'T', u'temperature [K]')])),
+    ('Nr', (u'Complex refractive index <i>n<sub>R</sub></i>', u'-', [(u'wl', u'wavelength [nm]'), (u'T', u'temperature [K]'), (u'n', u'injected carriers concentration [1/cm]')])),
+    ('nr', (u'Real refractive index <i>n<sub>R</sub></i>', u'-', [(u'wl', u'wavelength [nm]'), (u'T', u'temperature [K]'), (u'n', u'injected carriers concentration [1/cm]')])),
+    ('NR', (u'Anisotropic complex refractive index tensor <i>n<sub>R</sub></i>. Tensor must have the form [<i>n</i><sub>00</sub>, <i>n</i><sub>11</sub>, <i>n</i><sub>22</sub>, <i>n</i><sub>01</sub>, <i>n</i><sub>10</sub>]', u'-', [(u'wl', u'wavelength [nm]'), (u'T', u'temperature [K]'), (u'n', u'injected carriers concentration [1/cm]')])),
+    ('Nv', (u'Effective density of states in the valance band <i>N<sub>v</sub></i>', u'cm<sup>-3</sup>', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'point', u'point in the Brillouin zone [-]')])),
+    ('thermk', (u'Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction <i>k</i>', u'W/(m K)', [(u'T', u'temperature [K]'), (u'h', u'layer thickness [µm]')])),
+    ('VB', (u'Valance band level offset <i>VB</i>', u'eV', [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'), (u'hole', u'hole type (\'H\' or \'L\') [-]')])),
 ))
 
 def materialHTMLHelp(property_name, with_unit=True, with_attr=False, font_size=None):
@@ -176,7 +176,8 @@ class MaterialsModel(TableModel):
 
     class Material: #(InfoSource)
 
-        def __init__(self, name, base=None, properties=[], comment=None):
+        def __init__(self, name, base=None, properties=None, comment=None):
+            if properties is None: properties = []
             self.name = name
             self.base = base
             self.properties = properties    # TODO what with duplicated properties, should be supported?
