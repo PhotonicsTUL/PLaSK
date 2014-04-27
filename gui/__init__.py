@@ -59,7 +59,8 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m.title())
-        self.current_tab_index = 0
+        self.current_tab_index = 2
+        self.tabs.setCurrentIndex(self.current_tab_index)
         self.current_section_enter()
 
     def set_model(self, model):

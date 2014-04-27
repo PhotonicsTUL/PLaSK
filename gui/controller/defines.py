@@ -65,6 +65,7 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
 
     def get_defines_completer(self, parent):
         completer = AfterBracketCompleter(self.model, parent)
+        completer.setModel(self.model)  # PySide needs this
         tab = QtGui.QTableView(parent)
         #tab.resizeColumnsToContents()
         tab.setModel(self.model)
@@ -80,7 +81,6 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
         tab.setShowGrid(False)
         tab.setWordWrap(False)
         #tab.setContentsMargins(1, 1, 1, 1)
-
         completer.setPopup(tab)
         return completer
 
