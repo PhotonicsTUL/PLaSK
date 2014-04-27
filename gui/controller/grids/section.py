@@ -8,7 +8,8 @@ from ...model.grids.section import GridsModel
 
 class GridsController(Controller):
 
-    def __init__(self, document, model = GridsModel()):
+    def __init__(self, document, model=None):
+        if model is None: model = GridsModel()
         Controller.__init__(self, document, model)
 
         self.current_index = None
@@ -42,7 +43,7 @@ class GridsController(Controller):
         if self.current_index == new_index: return True
         if self.current_controller != None:
             if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
-                              self.document.mainWindow, 'Error while trying to store data from current grid editor'):
+                              self.document.window, 'Error while trying to store data from current grid editor'):
                 return False
         self.current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
@@ -67,11 +68,11 @@ class GridsController(Controller):
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
     #    if not self.model.isReadOnly():
-    #        self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
+    #        self.document.window.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
     #def onEditExit(self):
-    #    self.document.mainWindow.setSectionActions()
+    #    self.document.window.setSectionActions()
 
     def get_table_edit_actions(self):
-        return self.tableActions.get(self.document.mainWindow)
+        return self.tableActions.get(self.document.window)

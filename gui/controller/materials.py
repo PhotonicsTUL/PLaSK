@@ -14,15 +14,16 @@ except ImportError:
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
 
-    def __init__(self, definesModel, parent):
-        DefinesCompletionDelegate.__init__(self, definesModel, parent)
+    def __init__(self, defines_model, parent):
+        DefinesCompletionDelegate.__init__(self, defines_model, parent)
 
     def createEditor(self, parent, option, index):
 
-        earlier_names = ['semiconductor', 'metal', 'dielectric', 'liquid_crystal']
+        earlier_names = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
 
         try:
-            earlier_names.extend(sorted(mat for mat in plask.material.db if mat not in earlier_names))
+            earlier_names.extend(sorted((mat for mat in plask.material.db if mat not in earlier_names),
+                                        key=lambda x: x.lower()))
         except NameError:
             pass
 
@@ -34,7 +35,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(earlier_names)
-        combo.insertSeparator(5)
+        combo.insertSeparator(4)
         combo.insertSeparator(len(earlier_names)-index.row()+1)
         combo.setEditText(index.data())
         combo.setCompleter(self.getDefinesCompleter(parent))
@@ -45,13 +46,13 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
-    def __init__(self, definesModel, parent):
-        DefinesCompletionDelegate.__init__(self, definesModel, parent)
+    def __init__(self, defines_model, parent):
+        DefinesCompletionDelegate.__init__(self, defines_model, parent)
 
     def createEditor(self, parent, option, index):
         opts = index.model().options_to_choose(index)
 
-        if opts == None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
+        if opts is None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
 
         combo = QtGui.QComboBox(parent)
         combo.setEditable(True)
@@ -70,7 +71,8 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
 class MaterialsController(Controller):
 
-    def __init__(self, document, selection_model=MaterialsModel()):
+    def __init__(self, document, selection_model=None):
+        if selection_model is None: selection_model = MaterialsModel()
         Controller.__init__(self, document, selection_model)
 
         self.splitter = QSplitter()
@@ -121,13 +123,13 @@ class MaterialsController(Controller):
         return self.splitter
 
     #def onEditEnter(self):
-    #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
+    #    self.saveDataInModel()  # this should do nothing, but is called in case of subclass use it
     #    if not self.model.isReadOnly():
-    #        self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
+    #        self.document.window.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
     #def onEditExit(self):
-    #    self.document.mainWindow.setSectionActions()
+    #    self.document.window.setSectionActions()
 
     def get_table_edit_actions(self):
-        return self.tableActions.get(self.document.mainWindow)
+        return self.tableActions.get(self.document.window)

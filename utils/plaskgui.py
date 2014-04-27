@@ -8,6 +8,12 @@ sys.path.insert(0, base)
 if len(sys.argv) == 1:
     sys.argv.append(join(base, 'gui', 'test.xpl'))
 
-import gui
-
-gui.main()
+try:
+    import gui
+    gui.main()
+except SystemExit as e:
+    sys.exit(e.code)
+except:
+    import traceback as tb
+    tb.print_exc()
+    sys.exit(1)

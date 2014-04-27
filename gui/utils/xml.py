@@ -1,13 +1,13 @@
 from lxml import etree as ElementTree
 
 # default, used XML parser
-XML_parser = ElementTree.XMLParser(remove_blank_text = True, remove_comments = False, strip_cdata = False)
+XML_parser = ElementTree.XMLParser(remove_blank_text=False, strip_cdata=False)
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""
     text = element.text.lstrip('\n') if element.text else ''
     for c in element:
-        text += ElementTree.tostring(c, pretty_print = True)
+        text += ElementTree.tostring(c, pretty_print=None)
     return text
 
 
@@ -25,7 +25,7 @@ class AttributeReader(object):
         self.attrib = element.attrib
         self.read = set()
         
-    def get(self, key, default = None):
+    def get(self, key, default=None):
         self.read.add(key)
         return self.attrib.get(key, default)
     

@@ -71,9 +71,9 @@ class GridTreeBased(Grid):
 
     @staticmethod
     def from_XML(grids_model, element):
-        return GridTreeBased(grids_model, element = element)
+        return GridTreeBased(grids_model, element=element)
 
-    def __init__(self, grids_model, name = None, type = None, method = None, element = None):
+    def __init__(self, grids_model, name=None, type=None, method=None, element=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
         super(GridTreeBased, self).__init__(grids_model)
         if element == None:

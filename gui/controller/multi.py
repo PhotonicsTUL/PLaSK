@@ -40,7 +40,7 @@ class MultiEditorController(object):
         """
         if self.get_current_index() == new_index: return False
         if not exception_to_msg(lambda: self.currect_controller.on_edit_exit(),
-                              self.document.mainWindow, 'Error while trying to store data from editor'):
+                              self.document.window, 'Error while trying to store data from editor'):
             return False
         self.editorWidget.setCurrentIndex(new_index)
         self.currect_controller.on_edit_enter()
@@ -72,16 +72,18 @@ class GUIAndSourceController(MultiEditorController):
 
     def getShowSourceAction(self):
         if not hasattr(self, 'showSourceAction'):
-            self.showSourceAction = QtGui.QAction(QtGui.QIcon.fromTheme('accessories-text-editor', QtGui.QIcon(':/accessories-text-editor.png')), '&Show source', self.document.mainWindow)
+            self.showSourceAction = QtGui.QAction(
+                QtGui.QIcon.fromTheme('accessories-text-editor', QtGui.QIcon(':/accessories-text-editor.png')),
+                '&Show source', self.document.window)
             self.showSourceAction.setCheckable(True)
             self.showSourceAction.setStatusTip('Show XPL source of the current section')
             self.showSourceAction.triggered.connect(self.changeEditor)
         return self.showSourceAction
 
     def on_edit_enter(self):
-        self.document.mainWindow.set_editor_select_actions(self.getShowSourceAction())
+        self.document.window.set_editor_select_actions(self.getShowSourceAction())
         super(GUIAndSourceController, self).on_edit_enter()
 
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
-        self.document.mainWindow.set_editor_select_actions()
+        self.document.window.set_editor_select_actions()

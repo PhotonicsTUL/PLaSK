@@ -25,7 +25,7 @@ class AxisEdit(object):
 class RectilinearMeshConroller(Controller):
 
     def __init__(self, model):
-        super(RectilinearMeshConroller, self).__init__(model = model)
+        super(RectilinearMeshConroller, self).__init__(model=model)
 
         self.form = QtGui.QWidget()
         form_layout = QtGui.QFormLayout()

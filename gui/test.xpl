@@ -1,7 +1,7 @@
 <plask>
 
 <defines>
-  <define name="v" value="1"/>
+  <define name="v" value="4"/>
 </defines>
 
 <materials>
@@ -31,8 +31,11 @@
   </cartesian2d>
 </geometry>
 
-<grids>
-  <generator type="rectilinear2d" method="divide" name="default">
+
+
+
+
+<grids><generator type="rectilinear2d" method="divide" name="default">
     <postdiv by="2"/>
   </generator>
 </grids>
@@ -59,6 +62,10 @@
     </voltage>
   </electrical>
 </solvers>
+
+
+
+
 
 <connects>
   <connect in="electr.inTemperature" out="therm.outTemperature"/>

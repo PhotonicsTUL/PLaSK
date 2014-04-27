@@ -5,7 +5,7 @@ import sys
 
 from ..utils.config import CONFIG
 
-def exception_to_msg(f, parent = None, err_title = None):
+def exception_to_msg(f, parent=None, err_title=None):
     """
         Call f() in try block, and after catch exception show Qt message.
         :return: false only if F() has thrown an exception, true in other cases (bool)

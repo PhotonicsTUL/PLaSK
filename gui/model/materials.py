@@ -176,7 +176,7 @@ class MaterialsModel(TableModel):
 
     class Material: #(InfoSource)
 
-        def __init__(self, name, base = None, properties = [], comment = None):
+        def __init__(self, name, base=None, properties=[], comment=None):
             self.name = name
             self.base = base
             self.properties = properties    # TODO what with duplicated properties, should be supported?
@@ -188,7 +188,7 @@ class MaterialsModel(TableModel):
             for (n, v) in self.properties:
                 ElementTree.SubElement(mat, n).text = v
 
-    def __init__(self, parent=None, info_cb = None, *args):
+    def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
     def set_XML_element(self, element):
@@ -228,7 +228,7 @@ class MaterialsModel(TableModel):
 
     # QAbstractListModel implementation
 
-    def columnCount(self, parent = QtCore.QModelIndex()):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):

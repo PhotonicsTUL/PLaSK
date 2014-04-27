@@ -4,7 +4,7 @@ from .base import SectionModel
 
 class ScriptModel(SectionModel):
 
-    def __init__(self, info_cb = None):
+    def __init__(self, info_cb=None):
         SectionModel.__init__(self, 'script', info_cb)
         self.code = ''
 

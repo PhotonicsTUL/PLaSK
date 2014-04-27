@@ -15,7 +15,7 @@ class DefinesModel(TableModel):
             self.value = value
             self.comment = comment
 
-    def __init__(self, parent=None, info_cb = None, *args):
+    def __init__(self, parent=None, info_cb=None, *args):
         TableModel.__init__(self, 'defines', parent, info_cb, *args)
 
     def nameToIndex(self, name):
@@ -59,14 +59,14 @@ class DefinesModel(TableModel):
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:
-                res.append(Info('Definition name is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [0]))
+                res.append(Info('Definition name is required [row: %d]' % i, Info.ERROR, rows=[0]))
             else:
                 names.setdefault(d.name, []).append(i)
-            if not d.value: res.append(Info('Definition value is required [row: %d]' % i, Info.ERROR, rows = [i], cols = [1]))
+            if not d.value: res.append(Info('Definition value is required [row: %d]' % i, Info.ERROR, rows=[1]))
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info('Duplicated definition name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
-                                Info.ERROR, rows = indexes, cols = [0]
+                                Info.ERROR, rows=[0]
                                 )
                           )
         return res
@@ -76,7 +76,7 @@ class DefinesModel(TableModel):
 
     # QAbstractListModel implementation
 
-    def columnCount(self, parent = QtCore.QModelIndex()):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):
@@ -89,5 +89,5 @@ class DefinesModel(TableModel):
     #zapis DEF.cos nie dziala w PLaSKu
     #def stubs(self):
         #res = "DEF = object()\n"
-        #res += "\n".join("DEF."%s = 0" % d.name for d in self.entries)
+        #res += "\n".join("DEF."%s=0" % d.name for d in self.entries)
         #return res

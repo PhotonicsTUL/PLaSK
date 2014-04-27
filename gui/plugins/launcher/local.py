@@ -276,14 +276,21 @@ class Launcher(object):
         else:
             dirname = os.path.dirname(os.path.abspath(main_window.filename or 'dummy'))
 
-        if main_window.save():  # TODO check if the file was saved and notify user or save to /tmp
-            window = OutputWindow(main_window.filename, self)
-            self.windows.add(window)
-            window.thread = PlaskThread(main_window.filename, dirname, window.lines, *args)
-            window.thread.finished.connect(window.thread_finished)
-            window.halt_action.triggered.connect(window.thread.kill_process)
-            window.thread.start()
-            window.show()
+        if main_window.isWindowModified():
+            confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
+                                                 "The file must be saved before launching local computations. "
+                                                 "Do you want to save the file now?",
+                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            if confirm == QtGui.QMessageBox.No or not main_window.save():
+                return
+
+        window = OutputWindow(main_window.filename, self)
+        self.windows.add(window)
+        window.thread = PlaskThread(main_window.filename, dirname, window.lines, *args)
+        window.thread.finished.connect(window.thread_finished)
+        window.halt_action.triggered.connect(window.thread.kill_process)
+        window.thread.start()
+        window.show()
 
     def select_workdir(self, filename):
         if self.dirname:

@@ -29,21 +29,31 @@ try:
 except OSError:
     winsparkle = None
 
+WINDOWS = set()
 
 class MainWindow(QtGui.QMainWindow):
 
-    def __init__(self):
+    # def __new__(cls, filename=None):
+    #
+
+    def __init__(self, filename=None):
         super(MainWindow, self).__init__()
-        self.document = XPLDocument(self)
         self.current_tab_index = -1
-        self.filename = None
+        self.filename = filename
+        self.document = XPLDocument(self)
+        if filename is not None:
+            try:
+                self.document.load_from_file(filename)
+            except IOError:
+                pass # TODO: add errors handling in the __new__ method
         self.init_ui()
+        self.model_is_new()
 
     def make_window_title(self):
         if self.filename:
-            self.setWindowTitle("{} - PLaSK".format(self.filename))
+            self.setWindowTitle("{}[*] - PLaSK".format(self.filename))
         else:
-            self.setWindowTitle("PLaSK")
+            self.setWindowTitle("[*] PLaSK")
 
     def model_is_new(self):
         self.tabs.clear()
@@ -57,22 +67,23 @@ class MainWindow(QtGui.QMainWindow):
         self.model_is_new()
 
     def new(self):
-        reply = QtGui.QMessageBox.question(self, "Save", "Save current project?",
-                                           QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
-        if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
-            return
-        self.filename = None
-        self.make_window_title()
-        self.set_model(XPLDocument(self))
+        new_window = MainWindow()
+        new_window.resize(self.size())
+        WINDOWS.add(new_window)
 
     def open(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "PLaSK structure data (*.xpl)")
         if not filename: return;
         if type(filename) == tuple:
             filename = filename[0]
-        self.filename = filename
-        self.document.load_from_file(filename)
-        self.make_window_title()
+        if self.filename is None and not self.isWindowModified():
+            self.filename = filename
+            self.document.load_from_file(filename)
+            self.make_window_title()
+        else:
+            new_window = MainWindow(filename)
+            new_window.resize(self.size())
+            WINDOWS.add(new_window)
 
     def save(self):
         if self.filename != None:
@@ -111,7 +122,8 @@ class MainWindow(QtGui.QMainWindow):
         errors = self.document.get_info(Info.ERROR)
         if errors:
             msgbox = QtGui.QMessageBox()
-            msgbox.setText("Document contains some non-critical errors. It is possible to save it but probably not to run.")
+            msgbox.setText("Document contains some non-critical errors. "
+                           "It is possible to save it but probably not to run.")
             msgbox.setDetailedText('\n'.join(map(str, errors)))
             msgbox.setInformativeText("Do you want to save anyway?")
             msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
@@ -167,7 +179,6 @@ class MainWindow(QtGui.QMainWindow):
         self.set_actions('Section editor', *actions)
 
     def init_ui(self):
-
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
         icon = QtGui.QIcon(':/plask.png')
         self.setWindowIcon(icon)
@@ -293,25 +304,24 @@ class MainWindow(QtGui.QMainWindow):
 
         self.make_window_title()
 
-        if len(sys.argv) > 1:
-            try:
-                self.document.load_from_file(os.path.join(os.path.dirname(__file__), sys.argv[1]))
-            except IOError:
-                pass
-            else:
-                self.filename = sys.argv[1]
-                self.make_window_title()
-        self.model_is_new()
-
         self.show()
 
-    def quitting(self):
+    def closeEvent(self, event):
+        if self.isWindowModified():
+            confirm = QtGui.QMessageBox.question(self, "Unsaved FIle",
+                                                 "File is not saved. Do you want to save it before closing the window?",
+                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
+            if confirm == QtGui.QMessageBox.Cancel or (confirm == QtGui.QMessageBox.Yes and not self.save()):
+                event.ignore()
+                return
+
         geometry = self.geometry()
         CONFIG['session/geometry'] = geometry
         CONFIG.sync()
 
 
 def main():
+    global APPLICATION
     if winsparkle:
         si = subprocess.STARTUPINFO()
         si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
@@ -328,15 +338,19 @@ def main():
         winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
         winsparkle.win_sparkle_init()
 
-    app = QtGui.QApplication(sys.argv)
-    main_window = MainWindow()
-    app.aboutToQuit.connect(main_window.quitting)
+    APPLICATION = QtGui.QApplication(sys.argv)
+    APPLICATION.setApplicationName("PLaSK")
 
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
         mod = loader.find_module(modname).load_module(modname)
 
-    exit_code = app.exec_()
+    if len(sys.argv) > 1:
+        WINDOWS.add(MainWindow(sys.argv[1]))
+    else:
+        WINDOWS.add(MainWindow())
+
+    exit_code = APPLICATION.exec_()
 
     if winsparkle:
         winsparkle.win_sparkle_cleanup()

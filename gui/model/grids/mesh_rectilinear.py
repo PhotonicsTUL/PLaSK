@@ -6,7 +6,7 @@ from .grid import Grid
 class AxisConf(object):
     """Store axis configuration of RectilinearMesh"""
 
-    def __init__(self, start = None, stop = None, num = None, points = None):
+    def __init__(self, start=None, num=None, points=None):
         self.start = start
         self.stop = stop
         self.num = num

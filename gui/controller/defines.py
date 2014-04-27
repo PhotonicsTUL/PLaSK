@@ -27,14 +27,14 @@ class AfterBracketCompleter(QtGui.QCompleter):
 
 class DefineHintsTableModel(QtCore.QAbstractTableModel):
 
-    def __init__(self, defines_model, parent = None, info_cb = None, *args):
+    def __init__(self, defines_model, parent=None, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)   #QtCore.QObject.parent(defines_model)
         self.model = defines_model
 
-    def rowCount(self, parent = QtCore.QModelIndex()):
+    def rowCount(self, parent=QtCore.QModelIndex()):
         return self.model.rowCount(parent)
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if index.isValid() and index.column() == 1:
             if role == QtCore.Qt.FontRole:
                 font = QtGui.QFont()
@@ -47,7 +47,7 @@ class DefineHintsTableModel(QtCore.QAbstractTableModel):
     #def flags(self, index):
     #    return super(DefineHintsTableModel, self).flags(index) | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
 
-    def columnCount(self, parent = QtCore.QModelIndex()):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 2
 
     def headerData(self, col, orientation, role):
@@ -101,8 +101,10 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
     #def currentIndexChanged(self):
     #    self.commitData.emit(self.sender())
 
+
 class DefinesController(TableController):
 
-    def __init__(self, document, model = DefinesModel()):
+    def __init__(self, document, model=None):
+        if model is None: model = DefinesModel()
         TableController.__init__(self, document, model)
         self.table.setItemDelegateForColumn(1, DefinesCompletionDelegate(self.model, self.table))
