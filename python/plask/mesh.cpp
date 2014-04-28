@@ -13,6 +13,21 @@ void register_mesh_rectangular();
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
+/// Generic declaration of base class of xD mesh generator
+template <int mesh_dim>
+py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
+ExportMeshGenerator() {
+   // py::scope scope = parent;
+    //std::string name = py::extract<std::string>(parent.attr("__name__"));
+    std::string nameD = boost::lexical_cast<std::string>(mesh_dim) + "D";
+    py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
+    pyclass(("Generator" + nameD), ("Base class for all " + nameD +  " mesh generators.").c_str(), py::no_init);
+    pyclass.def("__call__", &MeshGeneratorD<mesh_dim>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
+    pyclass.def("generate", &MeshGeneratorD<mesh_dim>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
+    pyclass.def("clear_cache", &MeshGeneratorD<mesh_dim>::clearCache, "Clear cache of generated meshes");
+    return pyclass;
+}
+
 void register_mesh()
 {
     py_enum<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");
@@ -54,6 +69,10 @@ void register_mesh()
     py::class_<MeshGenerator, shared_ptr<MeshGenerator>, boost::noncopyable>("MeshGenerator",
         "Base class for all mesh generators", py::no_init)
     ;
+
+    ExportMeshGenerator<1>();
+    ExportMeshGenerator<2>();
+    ExportMeshGenerator<3>();
 
     register_mesh_rectangular();
 

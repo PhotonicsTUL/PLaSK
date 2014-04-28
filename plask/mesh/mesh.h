@@ -453,7 +453,7 @@ class MeshGeneratorD: public MeshGenerator
 
     template <typename RequiredType>
     shared_ptr<RequiredType> generate_t(const shared_ptr<GeometryObjectD<DIM>>& geometry) {
-        return cast<RequiredType> ( this->ogenerate(geometry) );
+        return cast<RequiredType> ( this->generate(geometry) );
     }
 
 };

@@ -668,12 +668,11 @@ void register_mesh_rectangular()
     ;
     detail::RectilinearAxis_from_Sequence();
 
-    ExportMeshGenerator<RectilinearAxis>(rectilinear1d);    //TODO zarejestrowac razem wszystkie generatory 1, 2, 3 D ?
     {
         py::scope scope = rectilinear1d;
 
         py::class_<RectilinearMesh1DSimpleGenerator, shared_ptr<RectilinearMesh1DSimpleGenerator>,
-                   py::bases<MeshGeneratorOf<RectilinearAxis>>, boost::noncopyable>("SimpleGenerator",  //MeshGeneratorOf -> MeshGeneratorD
+                   py::bases<MeshGeneratorD<1>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear1D mesh with lines at transverse edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
@@ -756,12 +755,11 @@ void register_mesh_rectangular()
     ;
     ExportBoundary<RectangularMesh<2>> { rectangular2D };
 
-    ExportMeshGenerator<RectangularMesh<2>>(rectangular2D);
     {
         py::scope scope = rectangular2D;
 
         py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
-                   py::bases<MeshGeneratorOf<RectangularMesh<2>>>, boost::noncopyable>("SimpleGenerator",
+                   py::bases<MeshGeneratorD<2>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear2D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
@@ -825,13 +823,11 @@ void register_mesh_rectangular()
     ;
     ExportBoundary<RectangularMesh<3>> { rectangular3D };
 
-
-    ExportMeshGenerator<RectangularMesh<3>>(rectangular3D);
     {
         py::scope scope = rectangular3D;
 
         py::class_<RectilinearMesh3DSimpleGenerator, shared_ptr<RectilinearMesh3DSimpleGenerator>,
-                   py::bases<MeshGeneratorOf<RectangularMesh<3>>>, boost::noncopyable>("SimpleGenerator",
+                   py::bases<MeshGeneratorD<3>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear3D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;

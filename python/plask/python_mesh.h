@@ -12,20 +12,6 @@ namespace plask { namespace python {
 
 namespace py = boost::python;
 
-/// Generic declaration of mesh generator
-template <int mesh_dim>
-py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
-ExportMeshGenerator(py::object parent) {
-    py::scope scope = parent;
-    //std::string name = py::extract<std::string>(parent.attr("__name__"));
-    py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
-    pyclass("Generator", ("Base class for all " + boost::lexical_cast<std::string>(mesh_dim) +  "D mesh generators.").c_str(), py::no_init);
-    pyclass.def("__call__", &MeshGeneratorD<mesh_dim>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
-    pyclass.def("generate", &MeshGeneratorD<mesh_dim>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
-    pyclass.def("clear_cache", &MeshGeneratorD<mesh_dim>::clearCache, "Clear cache of generated meshes");
-    return pyclass;
-}
-
 /// Generic declaration of boundary class for a specific mesh type
 template <typename MeshType>
 struct ExportBoundary {

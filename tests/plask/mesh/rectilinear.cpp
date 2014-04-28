@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     stack->push_back(rect2, plask::align::center(0.0));
     stack->push_back(rect3, plask::align::center(0.0));
 
-    auto mesh = plask::RectilinearMesh2DSimpleGenerator().generate(stack);
+    auto mesh = plask::RectilinearMesh2DSimpleGenerator().generate_t<plask::RectangularMesh<2>>(stack);
     BOOST_CHECK_EQUAL(*mesh->axis0, plask::RectilinearAxis({-2., -1., 1., 2.}));
     BOOST_CHECK_EQUAL(*mesh->axis1, plask::RectilinearAxis({0., 3., 8., 10.}));
 }
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     stack->push_back(cub2, plask::align::lonCenter(0.0) & plask::align::tranCenter(0.0));
     stack->push_back(cub3, plask::align::lonCenter(0.0) & plask::align::tranCenter(0.0));
 
-    auto mesh = plask::RectilinearMesh3DSimpleGenerator().generate(stack);
+    auto mesh = plask::RectilinearMesh3DSimpleGenerator().generate_t<plask::RectangularMesh<3>>(stack);
     BOOST_CHECK_EQUAL(*mesh->axis0, plask::RectilinearAxis({-2., -1., 1., 2.}));
     BOOST_CHECK_EQUAL(*mesh->axis1, plask::RectilinearAxis({-1., 1.}));
     BOOST_CHECK_EQUAL(*mesh->axis2, plask::RectilinearAxis({0., 3., 8., 10.}));
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(generator) {
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 1.), plask::shared_ptr<plask::Material>()));
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 8.), plask::shared_ptr<plask::Material>()));
 
-    auto mesh = generator(stack);
+    auto mesh = generator.get<plask::RectangularMesh<2>>(stack);
     BOOST_CHECK_EQUAL(mesh->axis1->at(0),  0.);
     BOOST_CHECK_EQUAL(mesh->axis1->at(1),  2.);
     BOOST_CHECK_EQUAL(mesh->axis1->at(2),  4.);
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(elements) {
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 4.), plask::shared_ptr<plask::Material>()));
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 1.), plask::shared_ptr<plask::Material>()));
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 8.), plask::shared_ptr<plask::Material>()));
-    auto mesh = generator(stack);
+    auto mesh = generator.get<plask::RectangularMesh<2>>(stack);
 
     size_t n = 0;
     for (auto elem = mesh->elements.begin(); elem != mesh->elements.end(); ++elem, ++n) {
