@@ -35,7 +35,7 @@ RegisterMeshGeneratorReader::ReadingFunction* RegisterMeshGeneratorReader::getRe
 
 template <int dimension>
 void MeshD<dimension>::print(std::ostream& out) const {
-    print_seq(out << "Mesh" << dimension << "D: ", begin(), end(), ", ") << '.';
+    print_seq(out << '[', begin(), end(), ", ") << ']';
 }
 
 template struct MeshD<1>;

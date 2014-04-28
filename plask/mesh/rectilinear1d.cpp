@@ -27,6 +27,16 @@ bool RectilinearAxis::operator==(const plask::RectilinearAxis& to_compare) const
     return points == to_compare.points;
 }
 
+void RectilinearAxis::writeXML(XMLElement &object) const {
+    object.attr("type", "rectilinear1d");
+    object.indent();
+    for (auto x: this->points) {
+        object.writeText(x);
+        object.writeText(" ");
+    }
+    object.writeText("\n");
+}
+
 
 
 RectilinearAxis::native_const_iterator RectilinearAxis::find(double to_find) const {

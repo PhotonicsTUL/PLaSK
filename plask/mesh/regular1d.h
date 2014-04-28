@@ -113,22 +113,6 @@ class RegularAxis: public RectangularAxis {
         return this->lo == to_compare.lo && this->_step == to_compare._step && this->points_count == to_compare.points_count;
     }
 
-    /**
-     * Print mesh to stream
-     * @param out stream to print
-     * @param self mesh to print
-     * @return out
-     */
-    friend inline std::ostream& operator<<(std::ostream& out, const RegularAxis& self) {
-        out << "[";
-        for (std::size_t i = 0; i < self.points_count; ++i) {
-            if (i != 0) out << ", ";
-            out << self[i];
-        }
-        out << "]";
-        return out;
-    }
-
     /// @return true only if there are no points in mesh
     bool empty() const { return points_count == 0; }
 

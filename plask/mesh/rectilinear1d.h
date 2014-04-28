@@ -168,20 +168,7 @@ public:
      */
     bool operator==(const RectilinearAxis& to_compare) const;
 
-    /**
-     * Print mesh to stream
-     * @param out stream to print
-     * @param mesh mesh to print
-     * @return out
-     */
-    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearAxis& mesh) {
-        out << "[";
-        for (auto p: mesh.points) {
-            out << p << ((p != mesh.points.back())? ", " : "");
-        }
-        out << "]";
-        return out;
-    }
+    void writeXML(XMLElement& object) const override;
 
     /// @return number of points in mesh
     virtual std::size_t size() const override { return points.size(); }
