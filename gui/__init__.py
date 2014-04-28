@@ -59,9 +59,10 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m.title())
-        self.current_tab_index = 2
-        self.tabs.setCurrentIndex(self.current_tab_index)
-        self.current_section_enter()
+        self.current_tab_index = 0
+        new_index = 2
+        self.tabs.setCurrentIndex(new_index)
+        self.tab_change(new_index)
 
     def set_model(self, model):
         self.document = model
@@ -87,7 +88,7 @@ class MainWindow(QtGui.QMainWindow):
             WINDOWS.add(new_window)
 
     def save(self):
-        if self.filename != None:
+        if self.filename is not None:
             if not self.before_save(): return False
             self.document.save_to_file(self.filename)
             return True

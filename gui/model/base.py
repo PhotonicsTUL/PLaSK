@@ -25,7 +25,7 @@ def getSectionXMLFromFile(section_name, filename, original_filename=None):
             filename = os.path.abspath(filename)
         while True:
             el = ElementTree.parse(filename).getroot().find(section_name)
-            if (el == None) or ('external' not in el.attrib): return el
+            if (el is None) or ('external' not in el.attrib): return el
             usednames.add(filename)
             filename = os.path.join(os.path.dirname(filename), el.attrib['external'])
             if filename in usednames: raise RuntimeError("Error while reading section \"%s\": circular reference was detected." % section_name)
@@ -79,21 +79,24 @@ class SectionModel(TreeFragmentModel):
         self.externalSource = None
 
     def set_text(self, text):
-        self.set_XML_element(ElementTree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</', self.name.encode('utf-8'), '>'], parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(
+            ElementTree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</',
+                                        self.name.encode('utf-8'), '>'], parser=XML_parser))
+                                        # .encode('utf-8') wymagane (tylko) przez lxml
 
     def is_read_only(self):
         """
             :return: true if model is read-only (typically: has been read from external source)
         """
-        return self.externalSource != None
+        return self.externalSource is not None
 
     def get_file_XML_element(self):
         """
             Get XML element ready to save in XPL document.
             It represents the whole section and either contains data or points to external source (has external attribute).
         """
-        if self.externalSource != None:
-            return ElementTree.Element(self.name, { "external": self.externalSource.filename })
+        if self.externalSource is not None:
+            return ElementTree.Element(self.name, {"external": self.externalSource.filename})
         else:
             return self.get_XML_element()
 
@@ -105,7 +108,8 @@ class SectionModel(TreeFragmentModel):
     def reload_external_source(self, original_filename=None):
         """
             Load section from external source.
-            :param original_filename: name of XPL file where self.externalSource was given in external attribute, used only for optimization in circular reference finding
+            :param original_filename: name of XPL file where self.externalSource was given in external attribute,
+                   used only for optimization in circular reference finding
         """
         try:
             self.set_XML_element(getSectionXMLFromFile(self.name, self.externalSource.filenameAbs, original_filename))
@@ -128,10 +132,14 @@ class SectionModel(TreeFragmentModel):
         res = super(SectionModel, self).create_info()
         if self.is_read_only():
             res.append(Info('%s section is read-only' % self.name, Info.INFO))
-        if self.externalSource != None:
-            res.append(Info('%s section is loaded from external file "%s" ("%s")' % (self.name, self.externalSource.filename, self.externalSource.filenameAbs), Info.INFO))
+        if self.externalSource is not None:
+            res.append(Info('{} section is loaded from external file "{}" ("{}")'
+                            .format(self.name,
+                                    self.externalSource.filename,
+                                    self.externalSource.filenameAbs), Info.INFO))
             if hasattr(self.externalSource, 'error'):
-                res.append(Info("Can't load section from external file: %s" % self.externalSource.error, Info.ERROR))
+                res.append(Info(u"Cannot load section from external file: {}"
+                                .format(self.externalSource.error), Info.ERROR))
         return res
 
     def stubs(self):

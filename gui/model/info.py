@@ -53,7 +53,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
         if hasattr(self, 'model'):
             m = self.model()
             if m: m.infoChanged -= self.infoChanged
-        if model == None:
+        if model is None:
             if hasattr(self, 'model'): del self.model
             self.entries = []
         else:
@@ -73,7 +73,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
 
     def setModel(self, model):
         self.__setModel__(model)
-        if model != None: self.infoChanged(model)
+        if model is not None: self.infoChanged(model)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         if parent.isValid(): return 0
@@ -129,9 +129,9 @@ class InfoSource(object):
         """
             Get array of Info objects on given level connected with this object.
         """
-        if self.__info__ == None:
+        if self.__info__ is None:
             self.__info__ = self.create_info()
-        if level != None:
+        if level is not None:
             return filter(lambda m: m.level == level, self.__info__)
         else:
             return self.__info__

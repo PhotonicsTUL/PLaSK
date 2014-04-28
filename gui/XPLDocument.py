@@ -47,7 +47,7 @@ class XPLDocument(object):
         with open(filename, 'w') as f:
             f.write('<plask>\n\n')
             for c in self.controllers:
-                f.write( ElementTree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True))
+                f.write(ElementTree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True))
                 f.write('\n')
             f.write('</plask>')
         self.set_changed(False)

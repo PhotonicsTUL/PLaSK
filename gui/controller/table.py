@@ -14,7 +14,7 @@ class TableActions(object):
             row = self.model.insert(index.row()+1)
         else:
             row = self.model.insert()
-        if row != None: self.table.selectRow(row)
+        if row is not None: self.table.selectRow(row)
 
     def remove_entry(self):
         index = self.table.selectionModel().currentIndex()
@@ -61,12 +61,12 @@ class TableActions(object):
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 
 def table_with_manipulators(table, parent=None, model=None, title=None):
-    toolBar = QtGui.QToolBar()
+    toolbar = QtGui.QToolBar()
     table.table_manipulators_actions = TableActions(table, model)
-    toolBar.addActions(table.table_manipulators_actions.get(parent))
+    toolbar.addActions(table.table_manipulators_actions.get(parent))
 
     vbox = QtGui.QVBoxLayout()
-    vbox.addWidget(toolBar)
+    vbox.addWidget(toolbar)
     vbox.addWidget(table)
 
     external = QtGui.QGroupBox()
@@ -79,7 +79,7 @@ def table_with_manipulators(table, parent=None, model=None, title=None):
     vbox.setContentsMargins(0, 0, 0, 0)
 
     external.setLayout(vbox)
-    #if title == None:
+    #if title is None:
     #widget.setContentsMargins(0, 0, 0, 0)
 
     return external

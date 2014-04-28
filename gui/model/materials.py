@@ -163,7 +163,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         return self.__material.properties
 
     def is_read_only(self):
-        return self.material == None or self.materialsModel.is_read_only()
+        return self.material is None or self.materialsModel.is_read_only()
 
     def fire_changed(self):
         self.materialsModel.fire_changed()

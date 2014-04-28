@@ -41,26 +41,26 @@ class GridsController(Controller):
             :return: False only when controller should restore old selection
         """
         if self.current_index == new_index: return True
-        if self.current_controller != None:
+        if self.current_controller is not None:
             if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
                               self.document.window, 'Error while trying to store data from current grid editor'):
                 return False
         self.current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
             self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
-        if self.current_index == None:
+        if self.current_index is None:
             self.current_controller = None
         else:
-            self.current_controller = self.model.entries[new_index].get_controller()
+            self.current_controller = self.model.entries[new_index].get_controller(self.document)
             self.parent_for_editor_widget.addWidget(self.current_controller.get_editor())
             self.current_controller.on_edit_enter()
         return True
 
-    def grid_selected(self, newSelection, oldSelection):
-        if newSelection.indexes() == oldSelection.indexes(): return
-        indexes = newSelection.indexes()
-        if not self.set_current_index(new_index = indexes[0].row() if indexes else None):
-            self.grids_table.selectionModel().select(oldSelection, QItemSelectionModel.ClearAndSelect)
+    def grid_selected(self, new_selection, old_selection):
+        if new_selection.indexes() == old_selection.indexes(): return
+        indexes = new_selection.indexes()
+        if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
+            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
 
     def get_editor(self):
         return self.splitter

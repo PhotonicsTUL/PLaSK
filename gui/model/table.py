@@ -52,7 +52,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
             Allow to fast access to Info which has rows attributes and for search by row.
             :return: dict: row number -> Info
         """
-        if self.__row_to_errors__ == None:
+        if self.__row_to_errors__ is None:
             self.__row_to_errors__ = {}
             for msg in self.info:
                 for r in getattr(msg, 'rows', []):

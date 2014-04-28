@@ -10,11 +10,13 @@ from optical.slab import FourierReflection2D
 
 @material.simple
 class Glass(material.Material):
-    def Nr(self, wl, T, n): return 1.3
+
+    def Nr(*args): return 1.3
 
 @material.simple
 class Cladding(material.Material):
-    def Nr(self, wl, T, n): return 1.28
+
+    def Nr(*args): return 1.28
 
 
 
@@ -32,4 +34,5 @@ class Reflection2D_Test(unittest.TestCase):
 
     def testComputations(self):
         self.solver.wavelength = 1000.
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15)].neff, 1.147, 3 )
+        show()
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.148)].neff, 1.147, 3 )
