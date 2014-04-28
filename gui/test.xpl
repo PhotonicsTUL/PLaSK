@@ -36,13 +36,13 @@
     <postdiv by0="4" by1="2"/>
     <refinements>
       <!--
-    <axis0 object="TJ" at="2.50"/>
-    <axis0 object="TJ" at="2.90"/>
-    <axis0 object="TJ" at="2.99"/>
-    <axis0 object="laser" at="4.00"/>
-    <axis1 object="top-InP" at="0.1508"/>
-    <axis1 object="bot-InP" at="0.0200"/>
--->
+      <axis0 object="TJ" at="2.50"/>
+      <axis0 object="TJ" at="2.90"/>
+      <axis0 object="TJ" at="2.99"/>
+      <axis0 object="laser" at="4.00"/>
+      <axis1 object="top-InP" at="0.1508"/>
+      <axis1 object="bot-InP" at="0.0200"/>
+      -->
     </refinements>
   </generator>
   <mesh type="regular1d" name="diffusion">

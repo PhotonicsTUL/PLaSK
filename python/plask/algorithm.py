@@ -483,8 +483,8 @@ class ThresholdSearch(ThermoElectric):
                 terr = self.thermal.compute(1)
             try: self.diffusion.compute_threshold()
             except AttributeError: pass
-            mn = self.optical.find_mode(self.optstart)
-            val = self.optical[nm].__getattribute__(self.loss)
+            nm = self.optical.find_mode(self.optstart)
+            val = self.optical.modes[nm].__getattribute__(self.loss)
             if self.loss != 'loss': val = val.imag
             return val
 

@@ -175,12 +175,14 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                  reft = (SOLVER->refine_tran)? SOLVER->refine_tran : 1;
     const size_t Ml = refl * nNl,  Mt = reft * nNt;
     const size_t M = Ml * Mt;
+    size_t nN = nNl * nNt;
+    double factor = 1. / refl / reft;
+    const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
 
-    DataVector<Tensor3<dcomplex>> NR(M);
-
     RectilinearMesh3D mesh(long_mesh, tran_mesh, axis2, RectilinearMesh3D::ORDER_012);
+    double matv = axis2[0]; // at each point along any vertical axis material is the same
 
     double lambda = real(SOLVER->getWavelength());
 
@@ -193,59 +195,12 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         have_gain = true;
     }
 
-    double matv = axis2[0]; // at each point along any vertical axis material is the same
-    for (size_t it = 0, i = 0; it < Mt; ++it) {
-        for (size_t il = 0; il < Ml; ++il, ++i) {
-            auto material = geometry->getMaterial(vec(long_mesh[il], tran_mesh[it], matv));
-            double T = 0.; // average temperature in all vertical points
-            for (size_t j = mesh.index(il, it, 0), end = mesh.index(il, it, axis2.size()); j != end; ++j) T += temperature[j];
-            T /= axis2.size();
-            #pragma omp critical
-            NR[i] = material->NR(lambda, T);
-            if (NR[i].c10 != 0. || NR[i].c01 != 0.) {
-                if (symmetric_long || symmetric_tran) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-            }
-            if (have_gain) {
-                auto roles = geometry->getRolesAt(vec(long_mesh[il], tran_mesh[it], matv));
-                if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                    double g = 0.; // average gain in all vertical points
-                    for (size_t j = mesh.index(il, it, 0) * axis2.size(), end = mesh.index(il, it, axis2.size())+1; j != end; ++j) g += gain[j];
-                    double ni = lambda * g/axis2.size() * 7.95774715459e-09;
-                    NR[i].c00.imag(ni); NR[i].c11.imag(ni); NR[i].c22.imag(ni); NR[i].c01.imag(0.); NR[i].c10.imag(0.);
-                }
-            }
-        }
-    }
-
-    for (Tensor3<dcomplex>& val: NR) val.sqr_inplace(); // make epsilon from NR
-
-    size_t nN = nNl * nNt;
-
-//     // Add PMLs
-//     if (!periodic) {
-//         Tensor3<dcomplex> ref;
-//         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-//         ref = NR[pil];
-//         for (size_t i = 0; i < pil; ++i) {
-//             double h = (pl - xmesh[i]) / SOLVER->pml.size;
-//             dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-//             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
-//         }
-//         ref = NR[min(pir,xmesh.size()-1)];
-//         for (size_t i = pir+1; i < xmesh.size(); ++i) {
-//             double h = (xmesh[i] - pr) / SOLVER->pml.size;
-//             dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-//             NR[i] = Tensor3<dcomplex>(ref.c00*sy, ref.c11/sy, ref.c22*sy);
-//         }
-//     }
-
     // Average material parameters
     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
 
-    const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
+    DataVector<Tensor3<dcomplex>> cell(refl*reft);
 
     for (size_t it = 0; it != nNt; ++it) {
-
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
         double tran0 = 0.5 * (tran_mesh[tbegin] + tran_mesh[tend-1]);
 
@@ -253,27 +208,68 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             size_t lbegin = refl * il; size_t lend = lbegin + refl;
             double long0 = 0.5 * (long_mesh[lbegin] + long_mesh[lend-1]);
 
-            // Compute surface normal
+            // Store epsilons for a single cell and compute surface normal
             Vec<2> norm(0.,0.);
-            for (size_t t = tbegin; t != tend; ++t) {
-                size_t toff = Ml * t;
-                for (size_t l = lbegin; l != lend; ++l) {
-                    const auto& n = NR[toff + l];
-                    norm += (real(n.c00) + real(n.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
+            for (size_t t = tbegin, j = 0; t != tend; ++t) {
+                for (size_t l = lbegin; l != lend; ++l, ++j) {
+                    auto material = geometry->getMaterial(vec(long_mesh[l], tran_mesh[t], matv));
+                    double T = 0.; // average temperature in all vertical points
+                    for (size_t v = mesh.index(l, t, 0), end = mesh.index(l, t, axis2.size()); v != end; ++v) T += temperature[v];
+                    T /= axis2.size();
+                    #pragma omp critical
+                    cell[j] = material->NR(lambda, T);
+                    if (cell[j].c10 != 0. || cell[j].c01 != 0.) {
+                        if (symmetric_long || symmetric_tran) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+                    }
+                    if (have_gain) {
+                        auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
+                        if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                            double g = 0.; // average gain in all vertical points
+                            for (size_t v = mesh.index(l, t, 0) * axis2.size(), end = mesh.index(l, t, axis2.size())+1; v != end; ++v) g += gain[v];
+                            double ni = lambda * g/axis2.size() * 7.95774715459e-09;
+                            cell[j].c00.imag(ni);
+                            cell[j].c11.imag(ni);
+                            cell[j].c22.imag(ni);
+                            cell[j].c01.imag(0.);
+                            cell[j].c10.imag(0.);
+                        }
+                    }
+                    auto& eps = cell[j];
+                    eps.sqr_inplace();  // make epsilon from NR
+
+                    // // Add PMLs
+                    // if (!periodic) {
+                    //     if (j < pil) {
+                    //         double h = (pl - xmesh[j]) / SOLVER->pml.size;
+                    //         dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
+                    //         nr = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
+                    //     } else if (j > pir) {
+                    //         double h = (xmesh[j] - pr) / SOLVER->pml.size;
+                    //         dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
+                    //         nr = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
+                    //     }
+                    // }
+
+                    norm += (real(eps.c00) + real(eps.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
                 }
             }
+
             double a = abs(norm);
             if (a < normlim) {
                 // Nothing to average
-                //coeffs[l][nNl * it + il] = NR[Ml * (tbegin+tend)/2 + (lbegin+lend)/2];
-                coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
+                coeffs[l][nNl * it + il] = cell[cell.size() / 2];
+                // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
             } else {
                 norm /= a;
-                auto& nr = coeffs[l][nNl * it + il];
+                auto& eps = coeffs[l][nNl * it + il];
+                // eps = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
 
                 // Average permittivity tensor according to:
                 // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
-                nr = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
+                
+
+
+
             }
         }
     }
