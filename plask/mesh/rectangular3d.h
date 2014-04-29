@@ -1571,6 +1571,14 @@ struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_NEAR
     }
 };
 
+/**
+ * Copy @p to_copy mesh using RectilinearAxis to represent each axis in returned mesh.
+ * @param to_copy mesh to copy
+ * @return mesh with each axis of type RectilinearAxis
+ */
+shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &to_copy);
+inline shared_ptr<RectangularMesh<3>> make_rectilinear_mesh(shared_ptr<const RectangularMesh<3>> to_copy) { return make_rectilinear_mesh(*to_copy); }
+
 }   // namespace plask
 
 #endif // PLASK__RECTANGULAR3D_H

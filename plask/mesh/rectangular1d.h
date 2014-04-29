@@ -28,6 +28,11 @@ struct RectangularMesh<1>: public MeshD<1> {
      * \return new rectilinear mesh with points in the middles of original ranges
      */
     virtual shared_ptr<RectangularMesh<1>> getMidpointsMesh() const;
+
+    /**
+     * @return @c true only if points are in increasing order, @c false if points are in decreasing order
+     */
+    virtual bool isIncreasing() const = 0;
 };
 
 typedef RectangularMesh<1> RectangularAxis;
@@ -56,7 +61,7 @@ public:
 
     double at(std::size_t index) const override;
 
-
+    bool isIncreasing() const override;
 };
 
 

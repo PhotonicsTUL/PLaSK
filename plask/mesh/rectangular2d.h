@@ -606,7 +606,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * Write mesh to XML
      * \param object XML object to write to
      */
-    virtual void writeXML(XMLElement& object) const;
+    void writeXML(XMLElement& object) const override;
 
     /// @return true only if there are no points in mesh
     bool empty() const { return axis0->empty() || axis1->empty(); }
@@ -1484,6 +1484,14 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_NEAR
             dst_vec[i] = src_mesh.interpolateNearestNeighbor(src_vec, dst_mesh[i]);
     }
 };
+
+/**
+ * Copy @p to_copy mesh using RectilinearAxis to represent each axis in returned mesh.
+ * @param to_copy mesh to copy
+ * @return mesh with each axis of type RectilinearAxis
+ */
+shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(const RectangularMesh<2>& to_copy);
+inline shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(shared_ptr<const RectangularMesh<2>> to_copy) { return make_rectilinear_mesh(*to_copy); }
 
 } // namespace plask
 

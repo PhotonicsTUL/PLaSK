@@ -94,12 +94,12 @@ public:
     /// Move constructor. It does not move the owner.
     RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)), owner(nullptr) {}
     
-    /// Copy constructor from RegularAxis
-    RectilinearAxis(const RegularAxis& src): points(src.size()), owner(nullptr) {
-        if (src.step() < 0.0)
-            std::reverse_copy(src.begin(), src.end(), points.begin());
-        else
+    /// Copy constructor from any RectangularAxis
+    RectilinearAxis(const RectangularAxis& src): points(src.size()), owner(nullptr) {
+        if (src.isIncreasing() < 0.0)
             std::copy(src.begin(), src.end(), points.begin());
+        else
+            std::reverse_copy(src.begin(), src.end(), points.begin());           
     }
 
     /**
@@ -235,6 +235,8 @@ public:
     void clear();
 
     shared_ptr<RectangularAxis> clone() const override;
+
+    bool isIncreasing() const override { return true; }
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.

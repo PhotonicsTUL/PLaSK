@@ -174,6 +174,10 @@ class RegularAxis: public RectangularAxis {
 
     virtual shared_ptr<RectangularMesh<1>> clone() const override { return make_shared<RegularAxis>(*this); }
 
+    void writeXML(XMLElement& object) const override;
+
+    bool isIncreasing() const override;
+
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh

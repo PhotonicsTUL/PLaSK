@@ -105,14 +105,14 @@ py::list testBoundary(const plask::RectangularMesh<2>& mesh, const plask::shared
 
 //// Solver with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
+struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectangularMesh<2>> {
     bool mesh_changed;
     SpaceTest() : mesh_changed(false) {}
     virtual std::string getClassName() const { return "SpaceTest"; }
     void initialize() {
         initCalculation();
     }
-    virtual void onMeshChange(const typename plask::RectilinearMesh2D::Event& evt) {
+    virtual void onMeshChange(const typename plask::RectangularMesh<2>::Event&) {
         mesh_changed = true;
     }
     bool getMeshChanged() {
@@ -137,12 +137,12 @@ struct SimpleSolver : plask::Solver {
 
     plask::ReceiverFor<plask::LightIntensity, plask::Geometry2DCartesian> inIntensity;
 
-    plask::ProviderFor<plask::LightIntensity, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RegularMesh2D>> outLightIntensity;
+    plask::ProviderFor<plask::LightIntensity, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RectangularMesh<2>>> outLightIntensity;
 
     plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
 
     std::string showVectors() {
-        plask::RegularMesh2D mesh(plask::RegularAxis(1., 3., 2), plask::RegularAxis(5., 15., 2));
+        plask::RectangularMesh<2> mesh(plask::make_shared<plask::RegularAxis>(1., 3., 2), plask::make_shared<plask::RegularAxis>(5., 15., 2));
         auto data = inVectors(mesh);
         std::stringstream str;
         for (size_t i = 0; i != 4; i++) {
@@ -152,7 +152,7 @@ struct SimpleSolver : plask::Solver {
     }
 
     SimpleSolver() :
-        outLightIntensity( plask::make_shared<plask::RegularMesh2D>(plask::RegularAxis(0., 4., 3), plask::RegularAxis(0., 20., 3)) )
+        outLightIntensity( plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(0., 4., 3), plask::make_shared<plask::RegularAxis>(0., 20., 3)) )
     {
         plask::DataVector<double> data(9);
         data[0] = 100.; data[1] = 100.; data[2] = 100.;

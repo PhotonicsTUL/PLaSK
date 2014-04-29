@@ -53,6 +53,10 @@ double MidpointsMesh::at(std::size_t index) const {
     return (wrapped.at(index) + wrapped.at(index+1)) * 0.5;
 }
 
+bool MidpointsMesh::isIncreasing() const {
+    return wrapped.isIncreasing();
+}
+
 
 
 

@@ -222,7 +222,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectan
     void setHorizontalMesh(shared_ptr<RectangularAxis> meshx) { //TODO pointer to mesh is holt now, is this fine?
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
-        auto meshxy = make_shared<RectangularMesh<2>>(*RectilinearMesh2DSimpleGenerator()(geometry->getChild()));
+        auto meshxy = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
         meshxy->setAxis0(meshx);
         setMesh(meshxy);
     }

@@ -97,8 +97,8 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             } else {
                 auto found = manager.generators.find(*name);
                 if (found != manager.generators.end()) {
-                    auto generator1 = dynamic_pointer_cast<MeshGeneratorOf<RectangularMesh<1>>>(found->second);
-                    auto generator2 = dynamic_pointer_cast<MeshGeneratorOf<RectangularMesh<2>>>(found->second);
+                    auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
+                    auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);

@@ -594,7 +594,7 @@ class Solver {
 extern "C" typedef Solver* solver_construct_f(const std::string& name);
 
 
-template <typename, typename> class SolverWithMesh;
+template <typename, typename> struct SolverWithMesh;
 
 /**
  * Base class for all solvers operating on specified space
@@ -672,7 +672,12 @@ class SolverOver: public Solver {
  * Base class for all solvers operating on specified olding an external mesh
  */
 template <typename SpaceT, typename MeshT>
-class SolverWithMesh: public SolverOver<SpaceT> {
+struct SolverWithMesh: public SolverOver<SpaceT> {
+
+    /// Type of the mesh for this solver
+    typedef MeshT MeshType;
+
+private:
 
     shared_ptr<MeshGeneratorD<MeshT::DIM>> mesh_generator;
 
@@ -689,7 +694,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
     void regenerateMesh() {
         if (this->mesh_generator && this->geometry) {
-            auto mesh = (*mesh_generator)(this->geometry->getChild());
+            auto mesh = mesh_generator->template get<MeshType>(this->geometry->getChild());
             if (mesh == this->mesh) return;
             disconnectMesh();
             this->mesh = mesh;
@@ -713,9 +718,6 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     shared_ptr<MeshT> mesh;
 
   public:
-
-    /// Type of the mesh for this solver
-    typedef MeshT MeshType;
 
     SolverWithMesh(const std::string& name="") : SolverOver<SpaceT>(name) {}
 
@@ -782,7 +784,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * Set new mesh got from generator
      * \param generator mesh generator
      */
-    void setMesh(const shared_ptr<MeshGeneratorD<MeshT::DIM>>& generator) {
+    void setMesh(shared_ptr<MeshGeneratorD<MeshT::DIM>> generator) {
         clearGenerator();
         this->writelog(LOG_INFO, "Attaching mesh generator to solver");
         mesh_generator = generator;

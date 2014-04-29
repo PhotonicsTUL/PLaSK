@@ -8,7 +8,7 @@ namespace plask { namespace solvers { namespace effective {
 #define DLAM 1e-3
 
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
+    SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     rstripe(-1),

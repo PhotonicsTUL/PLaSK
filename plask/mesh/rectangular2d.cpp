@@ -50,6 +50,13 @@ shared_ptr<RectangularMesh<2> > RectangularMesh<2>::getMidpointsMesh() {
     return make_shared<RectangularMesh<2>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), getIterationOrder());
 }
 
+void RectangularMesh<2>::writeXML(XMLElement& object) const {
+    object.attr("type", "rectangular2d");
+    { auto a = object.addTag("axis0"); axis0->writeXML(a); }
+    { auto a = object.addTag("axis1"); axis1->writeXML(a); }
+}
+
+
 // Particular instantations
 template class RectangularMesh<2>;
 
@@ -297,6 +304,11 @@ static RegisterMeshReader rectilinearmesh3d_reader("rectilinear3d", readRectilin
 */
 
 
-
+shared_ptr<RectangularMesh<2> > make_rectilinear_mesh(const RectangularMesh<2> &to_copy) {
+   return make_shared<RectangularMesh<2>>(make_shared<RectilinearAxis>(*to_copy.axis0), make_shared<RectilinearAxis>(*to_copy.axis1), to_copy.getIterationOrder());
+}
 
 } // namespace plask
+
+
+

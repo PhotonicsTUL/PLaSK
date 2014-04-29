@@ -138,7 +138,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
 
-    RectilinearMesh2D mesh(xmesh, axis1, RectilinearMesh2D::ORDER_TRANSPOSED);
+    RectangularMesh<2> mesh(make_shared<RegularAxis>(xmesh), make_shared<RectilinearAxis>(axis1), RectangularMesh<2>::ORDER_TRANSPOSED);
 
     double lambda = real(SOLVER->getWavelength());
 
@@ -236,7 +236,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const RectilinearAxis mesh, InterpolationMethod interp)
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, RectilinearAxis mesh, InterpolationMethod interp)
 {
     double L = right - left;
     DataVector<Tensor3<dcomplex>> result;
@@ -262,16 +262,16 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const
         DataVector<Tensor3<dcomplex>> params(symmetric? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
         FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
-        RegularAxis cmesh;
+        shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;
-            cmesh.reset(left + dx, right - dx, nN);
+            cmesh->reset(left + dx, right - dx, nN);
         } else {
-            cmesh.reset(left, right, nN+1);
+            cmesh->reset(left, right, nN+1);
             params[nN] = params[0];
         }
-        RegularMesh2D src_mesh(cmesh, RegularAxis(0,0,1));
-        RectilinearMesh2D dst_mesh(mesh, RectilinearAxis({0}));
+        RectangularMesh<2> src_mesh(cmesh, make_shared<RegularAxis>(0,0,1));
+        RectangularMesh<2> dst_mesh(make_shared<RectilinearAxis>(std::move(mesh)), shared_ptr<RectilinearAxis>(new RectilinearAxis({0})));
         const bool ignore_symmetry[2] = { !symmetric, false };
         result = interpolate(src_mesh, params, WrappedMesh<2>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
     }
@@ -553,7 +553,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
             fft_yz.execute(&(field.data()->lon()));
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
-            RegularMesh2D src_mesh(RegularAxis(left+dx, right-dx, field.size()), RegularAxis(vpos, vpos, 1));
+            RectangularMesh<2> src_mesh(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             auto result = interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry()),
                                       defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
             double L = 2. * right;
@@ -572,7 +572,7 @@ DataVector<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const Mesh& dst_me
             FFT::Backward1D fft(3, N, FFT::SYMMETRY_NONE);
             fft.execute(reinterpret_cast<dcomplex*>(field.data()));
             field[N] = field[0];
-            RegularMesh2D src_mesh(RegularAxis(left, right, field.size()), RegularAxis(vpos, vpos, 1));
+            RectangularMesh<2> src_mesh(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             const bool ignore_symmetry[2] = { true, false };
             auto result = interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
                                       defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);

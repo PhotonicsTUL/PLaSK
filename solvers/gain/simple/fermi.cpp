@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace fermi {
 
 template <typename GeometryType>
-FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverWithMesh<GeometryType,RectilinearMesh1D>(name),
+FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
     outGain(this, &FermiGainSolver<GeometryType>::getGain),
     outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
