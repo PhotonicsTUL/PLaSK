@@ -448,6 +448,8 @@ class RectangularMesh<2>: public MeshD<2> {
         //TODO other pointers
     }
 
+
+
     /*
      * Construct mesh with is based on given 1D meshes
      *
@@ -473,6 +475,8 @@ class RectangularMesh<2>: public MeshD<2> {
      */
     const RectangularAxis& tran() const { return *axis0; }
 
+    void setTran(shared_ptr<RectangularAxis> a0) { setAxis0(a0); }
+
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
@@ -484,6 +488,8 @@ class RectangularMesh<2>: public MeshD<2> {
      * @return axis1
      */
     const RectangularAxis& vert() const { return *axis1; }
+
+    void setVert(shared_ptr<RectangularAxis> a1) { setAxis1(a1); }
 
     /**
      * Get first coordinate of points in this mesh.

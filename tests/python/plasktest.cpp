@@ -183,10 +183,10 @@ struct InOutSolver : plask::Solver {
 
 struct MeshTest {
 
-    plask::shared_ptr<plask::RectilinearMesh2D> rectilinear2d;
-    plask::shared_ptr<plask::RectilinearMesh3D> rectilinear3d;
-    plask::shared_ptr<plask::RegularMesh2D> regular2d;
-    plask::shared_ptr<plask::RegularMesh3D> regular3d;
+    plask::shared_ptr<plask::RectangularMesh<2>> rectilinear2d;
+    plask::shared_ptr<plask::RectangularMesh<3>> rectilinear3d;
+    plask::shared_ptr<plask::RectangularMesh<2>> regular2d;
+    plask::shared_ptr<plask::RectangularMesh<3>> regular3d;
 
     bool changed_rectilinear2d, changed_rectilinear3d, changed_regular2d, changed_regular3d;
 
@@ -203,9 +203,12 @@ struct MeshTest {
     bool regular3d_changed() { bool r = changed_regular3d; changed_regular3d = false; return r; }
 
     MeshTest():
-        rectilinear2d(plask::make_shared<plask::RectilinearMesh2D>()), rectilinear3d(plask::make_shared<plask::RectilinearMesh3D>()),
-        regular2d(plask::make_shared<plask::RegularMesh2D>()), regular3d(plask::make_shared<plask::RegularMesh3D>()),
-        changed_rectilinear2d(false), changed_rectilinear3d(false), changed_regular2d(false), changed_regular3d(false) {
+        rectilinear2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>())),
+        rectilinear3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>())),
+        regular2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>())),
+        regular3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>())),
+        changed_rectilinear2d(false), changed_rectilinear3d(false),
+        changed_regular2d(false), changed_regular3d(false) {
         rectilinear2d->changedConnectMethod(this, &MeshTest::change_rectilinear2d);
         rectilinear3d->changedConnectMethod(this, &MeshTest::change_rectilinear3d);
         regular2d->changedConnectMethod(this, &MeshTest::change_regular2d);

@@ -227,7 +227,7 @@ void FiniteElementMethodElectrical3DSolver::saveConductivity()
 
 template <typename MatrixT>
 void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bvoltage)
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
@@ -327,7 +327,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 
 template <typename MatrixT>
 void FiniteElementMethodElectrical3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
-                                                    const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bvoltage) {
+                                                    const BoundaryConditionsWithMesh<RectangularMesh<3>, double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {

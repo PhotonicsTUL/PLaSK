@@ -26,7 +26,7 @@ enum HeatMethod {
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,RectilinearMesh3D> {
+struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
 
@@ -62,11 +62,11 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
      * \param bvoltage boundary conditions: constant voltage
      **/
     template <typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bvoltage);
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage);
 
     /// Apply boundary conditions of the first kind
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bvoltage);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage);
 
     /// Load conductivities
     void loadConductivity();
@@ -92,7 +92,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D,R
     /// Invalidate the data
     virtual void onInvalidate();
 
-    virtual void onMeshChange(const typename RectilinearMesh3D::Event& evt) override {
+    virtual void onMeshChange(const typename RectangularMesh<3>::Event& evt) override {
         SolverWithMesh<Geometry3D,RectilinearMesh3D>::onMeshChange(evt);
         setActiveRegions();
     }

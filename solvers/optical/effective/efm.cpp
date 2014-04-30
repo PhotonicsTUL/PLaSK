@@ -79,16 +79,16 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             else reader.requireTagEnd();
             auto found = manager.meshes.find(*name);
             if (found != manager.meshes.end()) {
-                auto mesh1 = dynamic_pointer_cast<RectilinearMesh1D>(found->second);
-                auto mesh2 = dynamic_pointer_cast<RectilinearMesh2D>(found->second);
-                if (mesh1) this->setHorizontalMesh(mesh1->axis);
+                auto mesh1 = dynamic_pointer_cast<RectangularAxis>(found->second);
+                auto mesh2 = dynamic_pointer_cast<RectangularMesh<2>>(found->second);
+                if (mesh1) this->setHorizontalMesh(mesh1);
                 else if (mesh2) this->setMesh(mesh2);
                 else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
             } else {
                 auto found = manager.generators.find(*name);
                 if (found != manager.generators.end()) {
-                    auto generator1 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh1D>>(found->second);
-                    auto generator2 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh2D>>(found->second);
+                    auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
+                    auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);

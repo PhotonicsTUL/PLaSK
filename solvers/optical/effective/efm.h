@@ -243,11 +243,11 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(const RectilinearAxis& meshx) {
+    void setHorizontalMesh(shared_ptr<RectangularAxis> meshx) {
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto meshxy = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
-        meshxy->tran() = meshx;
+        meshxy->setTran(meshx);
         setMesh(meshxy);
     }
 
