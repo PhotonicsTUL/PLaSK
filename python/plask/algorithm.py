@@ -490,7 +490,7 @@ class ThresholdSearch(ThermoElectric):
             return val
 
         result = scipy.optimize.brentq(func, self.vmin, self.vmax, xtol=self.vtol)
-        self.threshold_current = electrical.get_total_current()
+        self.threshold_current = self.electrical.get_total_current()
 
         if save:
             self.save(None if save is True else save)
