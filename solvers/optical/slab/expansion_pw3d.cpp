@@ -162,6 +162,16 @@ void ExpansionPW3D::free() {
     initialized = false;
 }
 
+template <typename T1, typename T2>
+inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, const Tensor3<T2>& B) {
+    return Tensor3<decltype(T1()*T2())>(
+        A.c00 * B.c00 + A.c01 * B.c01,
+        A.c01 * B.c01 + A.c11 * B.c11,
+        A.c22 * B.c22,
+        0.5 * ((A.c00 + A.c11) * B.c01 + A.c01 * (B.c00 + B.c11))
+    );
+}
+
 void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 {
     if (isnan(real(SOLVER->getWavelength())) || isnan(imag(SOLVER->getWavelength())))
@@ -199,6 +209,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     coeffs[l].reset(nN, Tensor3<dcomplex>(0.));
 
     DataVector<Tensor3<dcomplex>> cell(refl*reft);
+    double nfact = 1. / cell.size();
 
     for (size_t it = 0; it != nNt; ++it) {
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
@@ -255,21 +266,31 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
             double a = abs(norm);
             if (a < normlim) {
+                // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
                 // Nothing to average
                 coeffs[l][nNl * it + il] = cell[cell.size() / 2];
-                // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
             } else {
-                norm /= a;
-                auto& eps = coeffs[l][nNl * it + il];
                 // eps = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
+
+                // Compute avg(eps) and avg(eps**(-1))
+                auto& eps = coeffs[l][nNl * it + il];
+                Tensor3<dcomplex> ieps(0.);
+                for (size_t t = tbegin, j = 0; t != tend; ++t) {
+                    for (size_t l = lbegin; l != lend; ++l, ++j) {
+                        eps += cell[j];
+                        ieps += cell[j].inv();
+                    }
+                }
+                eps *= nfact;
+                ieps *= nfact;
 
                 // Average permittivity tensor according to:
                 // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
-
-
-
-
-
+                norm /= a;
+                Tensor3<double> P(norm.c0*norm.c0, norm.c1*norm.c1, 0., norm.c0*norm.c1);
+                Tensor3<double> P1(1.-P.c00, 1.-P.c11, 1., -P.c01);
+                eps = commutator(P, ieps.inv()) + commutator(P1, eps);
+                eps.c22 = 1./eps.c22;
             }
         }
     }
@@ -366,10 +387,10 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, con
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
         result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
 //     }
-//     for (Tensor3<dcomplex>& eps: result) {
-//         eps.c22 = 1. / eps.c22;
-//         eps.sqrt_inplace();
-//     }
+    for (Tensor3<dcomplex>& eps: result) {
+        eps.c22 = 1. / eps.c22;
+        eps.sqrt_inplace();
+    }
     return result;
 }
 

@@ -32,8 +32,8 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Vec<3,dcomplex>>() { return 3; }
     template <> constexpr inline npy_intp type_dim<const Tensor2<double>>() { return 2; }
     template <> constexpr inline npy_intp type_dim<const Tensor2<dcomplex>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<const Tensor3<double>>() { return 5; }
-    template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 5; }
+    template <> constexpr inline npy_intp type_dim<const Tensor3<double>>() { return 4; }
+    template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
 
 
     inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis0.size(), mesh.axis1.size() }; }

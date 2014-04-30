@@ -236,6 +236,15 @@ struct Tensor3 {
     }
 
     /**
+     * Inverse of the tensor
+     * \return inverse of this
+     */
+    Tensor3<T> inv() const {
+        T M = c00*c11 - c01*c01;
+        return Tensor3<dcomplex>(c11/M, c00/M, 1./c22, -c01/M);
+    }
+
+    /**
      * Print tensor to stream using format (where c00 and c11 are tensor components): [c00, c11]
      * @param out print destination, output stream
      * @param to_print tensor to print

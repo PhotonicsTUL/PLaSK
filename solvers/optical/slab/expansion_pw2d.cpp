@@ -197,7 +197,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
                 }
             }
 
-            coeffs[l][i] += Tensor3<dcomplex>(nr.c00, 1./nr.c11, nr.c22, nr.c01);
+            coeffs[l][i] += Tensor3<dcomplex>(nr.c00, nr.c00/(nr.c00*nr.c11-nr.c01*nr.c01), nr.c22, nr.c01);
         }
         coeffs[l][i] *= factor;
         coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
