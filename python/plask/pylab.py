@@ -437,7 +437,8 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
     vmirror = mirror and (geometry.borders[dirs[1][0]] == 'mirror' or geometry.borders[dirs[1][1]] == 'mirror')
 
     for trans,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
-        _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
+        if box:
+            _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
 
     for patch in patches:
         axes.add_patch(patch)

@@ -180,11 +180,11 @@ class PythonEvalMaterial : public Material
         }
         if (cls->Nr != NULL) {
             dcomplex nc = Nr(wl, T, n);
-            return Tensor3<dcomplex>(nc, nc, nc, 0., 0.);
+            return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
         if (cls->nr != NULL || cls->absp != NULL) {
             dcomplex nc(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
-            return Tensor3<dcomplex>(nc, nc, nc, 0., 0.);
+            return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
         return base->NR(wl, T, n);
     }

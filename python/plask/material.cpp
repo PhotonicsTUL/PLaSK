@@ -66,23 +66,23 @@ namespace detail {
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             py::object src = py::object(py::handle<>(py::borrowed(obj)));
             void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor3<dcomplex>>*)data)->storage.bytes;
-            dcomplex vals[5];
-            int idx[5] = { 0, 1, 2, 3, 4 };
+            dcomplex vals[4];
+            int idx[4] = { 0, 1, 2, 3 };
             auto seq = py::object(py::handle<>(py::borrowed(obj)));
-            if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = idx[4] = -1; }
-            else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
-            else if (py::len(seq) != 5)
-                throw TypeError("sequence of exactly 2, 3, or 5 complex required");
-            for (int i = 0; i < 5; ++i) {
+            if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = -1; }
+            else if (py::len(seq) == 3) { idx[3] = -1; }
+            else if (py::len(seq) != 4)
+                throw TypeError("sequence of exactly 2, 3, or 4 complex required");
+            for (int i = 0; i < 4; ++i) {
                 if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
                 else vals[i] = 0.;
             }
-            new(storage) Tensor3<dcomplex>(vals[0], vals[1], vals[2], vals[3], vals[4]);
+            new(storage) Tensor3<dcomplex>(vals[0], vals[1], vals[2], vals[3]);
             data->convertible = storage;
         }
 
         static PyObject* convert(const Tensor3<dcomplex>& src)  {
-            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01, src.c10);
+            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01);
             return boost::python::incref(tuple.ptr());
         }
     };
@@ -343,11 +343,11 @@ class PythonMaterial : public Material
         if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
         if (cache->NR || overriden("Nr")) {
             dcomplex nr = cache->Nr? *cache->Nr : py::call_method<dcomplex>(self, "Nr", wl, T, n);
-            return Tensor3<dcomplex>(nr, nr, nr, 0., 0.);
+            return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
         if (cache->nr || cache->absp || overriden("nr") || overriden("absp")) {
             dcomplex nr (call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
-            return Tensor3<dcomplex>(nr, nr, nr, 0., 0.);
+            return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
         return base->NR(wl, T, n);
     }

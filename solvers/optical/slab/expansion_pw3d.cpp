@@ -107,7 +107,7 @@ void ExpansionPW3D::init()
                      (!symmetric_long && symmetric_tran)? " symmetric in transverse direction" : " symmetric in longitudinal direction"
                     );
 
-    matFFT = FFT::Forward2D(5, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward2D(4, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
 //     // Compute permeability coefficients
 //     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -218,7 +218,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     T /= axis2.size();
                     #pragma omp critical
                     cell[j] = material->NR(lambda, T);
-                    if (cell[j].c10 != 0. || cell[j].c01 != 0.) {
+                    if (cell[j].c01 != 0.) {
                         if (symmetric_long || symmetric_tran) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
                     if (have_gain) {
@@ -231,7 +231,6 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                             cell[j].c11.imag(ni);
                             cell[j].c22.imag(ni);
                             cell[j].c01.imag(0.);
-                            cell[j].c10.imag(0.);
                         }
                     }
                     auto& eps = cell[j];
@@ -266,7 +265,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
                 // Average permittivity tensor according to:
                 // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
-                
+
+
 
 
 
@@ -279,8 +279,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         diagonals[l] = true;
         for (size_t i = 1; i != nN; ++i) {
             Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
-            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) &&
-                  is_zero(diff.c01) && is_zero(diff.c10))) {
+            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
                 diagonals[l] = false;
                 break;
             }
@@ -341,7 +340,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, con
                 params[op+l] = coeffs[lay][oc+l];
             }
         }
-        FFT::Backward2D(5, nNl, nNt,
+        FFT::Backward2D(4, nNl, nNt,
                         symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE,
                         symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE,
                         0, nl

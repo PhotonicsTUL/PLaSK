@@ -78,7 +78,7 @@ class ThermoElectric(object):
             thermal solution less frequently.
 
         connect (bool): If True, solvers are automatically connected by the
-            alogrithm in its constructor.
+            algorithm in its constructor.
 
     Solvers specified on construction of this algorithm are automatically
     connected if ``connect`` parameter is *True*. Then the computations can be
@@ -426,6 +426,7 @@ class ThresholdSearch(ThermoElectric):
         self.vtol = vtol
         self.optstart = approx_mode
         self.invalidate = invalidate
+        self.threshold_current = None
         if quick:
             raise NotImplemented('Quick threshold search not implemented')
         if loss == 'auto':
@@ -441,7 +442,7 @@ class ThresholdSearch(ThermoElectric):
         if self.loss not in ('neff', 'wavelength', 'loss'):
             raise ValueError("Wrong mode ('loss', 'neff', 'wavelength', or 'auto' allowed)")
 
-    def run(self):
+    def run(self, save=True):
         '''
         Execute the algorithm.
 
@@ -489,6 +490,7 @@ class ThresholdSearch(ThermoElectric):
             return val
 
         result = scipy.optimize.brentq(func, self.vmin, self.vmax, xtol=self.vtol)
+        self.threshold_current = electrical.get_total_current()
 
         if save:
             self.save(None if save is True else save)
