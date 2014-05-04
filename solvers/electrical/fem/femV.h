@@ -156,10 +156,11 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
     /**
      * Integrate vertical total current at certain level.
-     * \param vindex vertical index of the element smesh to perform integration at
+     * \param vindex vertical index of the element mesh to perform integration at
+     * \param onlyactive if true only current in the active region is considered
      * \return computed total current
      */
-    double integrateCurrent(size_t vindex);
+    double integrateCurrent(size_t vindex, bool onlyactive=false);
 
     /**
      * Integrate vertical total current flowing vertically through active region.

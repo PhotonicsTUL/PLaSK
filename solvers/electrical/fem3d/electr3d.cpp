@@ -609,7 +609,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
 }
 
 
-double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex)
+double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!potential) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
@@ -617,7 +617,8 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex)
     for (size_t i = 0; i < mesh->axis0.size()-1; ++i) {
         for (size_t j = 0; j < mesh->axis1.size()-1; ++j) {
             auto element = mesh->elements(i, j, vindex);
-            result += current[element.getIndex()].c2 * element.getSize0() * element.getSize1();
+            if (!onlyactive || isActive(element.getMidpoint()))
+                result += current[element.getIndex()].c2 * element.getSize0() * element.getSize1();
         }
     }
     if (geometry->isSymmetric(Geometry::DIRECTION_LONG)) result *= 2.;

@@ -51,7 +51,10 @@ class SourceEditController(Controller):
 
     # When the editor is turned off, model should be updated
     def on_edit_exit(self):
-        self.source_editor.textChanged.disconnect(self.document.set_changed)
+        try:
+            self.source_editor.textChanged.disconnect(self.document.set_changed)
+        except TypeError:
+            pass
         self.save_data_in_model()
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
