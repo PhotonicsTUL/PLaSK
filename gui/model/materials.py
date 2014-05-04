@@ -4,9 +4,9 @@ from ..qt import QtCore, QtGui
 from lxml import etree as ElementTree
 from collections import OrderedDict
 
+from ..utils.gui import DEFAULT_FONT
 from .table import TableModel, TableModelEditMethods
 from .info import Info
-#from guis import DefinesEditor
 
 MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s',
@@ -115,7 +115,7 @@ def materialHTMLHelp(property_name, with_unit=True, with_attr=False, font_size=N
     res = ''
     if font_size is not None: res += '<span style="font-size: %s">' % font_size
     if prop_help is None:
-        res += "unknown property '%s'" % property_name
+        res += "unknown property"
     else:
         res += prop_help
         if with_unit and prop_unit is not None:
@@ -141,21 +141,20 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         self.__material = material
         self.materialsModel.modelReset.connect(self.__invalidate__)
 
-    def rowCount(self, parent = QtCore.QModelIndex()):
+    def rowCount(self, parent=QtCore.QModelIndex()):
         if not self.__material or parent.isValid(): return 0
         return len(self.__material.properties)
 
-    def columnCount(self, parent = QtCore.QModelIndex()):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 4    # 5 if comment supported
 
     def get(self, col, row):
         n, v = self.__material.properties[row]
         if col == 2:
-            return '<span style="font-size: 12pt;">%s</span>' % materialUnit(n)
+            return materialUnit(n)
         elif col == 3:
-            #prop_name, prop_attr = MATERIALS_PROPERTES[n]
-            #return '<span style="font-size: 9pt">' + prop_name + '<br>' + ', '.join(['<b>%s</b> - %s' % (n, v) for (n, v) in prop_attr]) + '</span>'
-            return materialHTMLHelp(n, with_unit=False, with_attr=True, font_size='10pt')
+            return materialHTMLHelp(n, with_unit=False, with_attr=True,
+                                    font_size="{}pt".format(DEFAULT_FONT.pointSize()-1))
         return n if col == 0 else v
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
@@ -163,12 +162,13 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
 #         if role == QtCore.Qt.ToolTipRole:
-#             return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection(u'cols', index.column())])
+#             return '\n'.join(str(err) for err in self.info_by_row.get(index.row(), [])
+#                              if err.has_connection(u'cols', index.column())s)
 #         if role == QtCore.Qt.DecorationRole: #QtCore.Qt.BackgroundColorRole:   #maybe TextColorRole?
 #             max_level = -1
 #             c = index.column()
 #             for err in self.info_by_row.get(index.row(), []):
-#                 if err.has_connection(u'cols', c, c == 0):   # c == 0 -> whole row massages has decoration only in first column
+#                 if err.has_connection(u'cols', c, c == 0):
 #                     if err.level > max_level: max_level = err.level
 #             return info.infoLevelIcon(max_level)
         if role == QtCore.Qt.BackgroundRole and index.column() >= 2:

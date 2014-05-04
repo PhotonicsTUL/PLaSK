@@ -5,6 +5,7 @@ import sys
 
 from ..utils.config import CONFIG
 
+
 def exception_to_msg(f, parent=None, err_title=None):
     """
         Call f() in try block, and after catch exception show Qt message.
@@ -17,7 +18,8 @@ def exception_to_msg(f, parent=None, err_title=None):
         QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
 
-defaultFont = QtGui.QFont()
+
+DEFAULT_FONT = QtGui.QFont()
 _font_family = CONFIG['editor/font_family']
 if _font_family is None:
     if sys.platform == 'win32':
@@ -27,10 +29,11 @@ if _font_family is None:
     else:
         _font_family = "Monospace"
     CONFIG['editor/font_family'] = _font_family
-    defaultFont.setStyleHint(QtGui.QFont.TypeWriter)
-defaultFont.setFamily(_font_family)
+    DEFAULT_FONT.setStyleHint(QtGui.QFont.TypeWriter)
+DEFAULT_FONT.setFamily(_font_family)
 del _font_family
-defaultFont.setPointSize(int(CONFIG('editor/font_size', defaultFont.pointSize())))
+DEFAULT_FONT.setPointSize(int(CONFIG('editor/font_size', DEFAULT_FONT.pointSize())))
+
 
 def table_last_col_fill(table, cols_count, col_size=0):
     if isinstance(col_size, collections.Sequence):
@@ -42,6 +45,7 @@ def table_last_col_fill(table, cols_count, col_size=0):
 
 
 class HTMLDelegate(QtGui.QStyledItemDelegate):
+
     def paint(self, painter, option, index):
         options = QtGui.QStyleOptionViewItemV4(option)
         self.initStyleOption(options, index)
@@ -49,6 +53,7 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         style = QtGui.QApplication.style() if options.widget is None else options.widget.style()
 
         doc = QtGui.QTextDocument()
+        doc.documentLayout().setPaintDevice(self.parent())
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))    #TODO 300 -> member
 
@@ -61,12 +66,12 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         #if (optionV4.state & QStyle::State_Selected)
             #ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-        textRect = style.subElementRect(QtGui.QStyle.SE_ItemViewItemText, options, None)
+        textrect = style.subElementRect(QtGui.QStyle.SE_ItemViewItemText, options, None)
         painter.save()
-        topleft = textRect.topLeft()
-        topleft.setY(topleft.y() + max(int((textRect.height() - doc.size().height()) / 2), 0))
+        topleft = textrect.topLeft()
+        topleft.setY(topleft.y() + max(int((textrect.height() - doc.size().height()) / 2), 0))
         painter.translate(topleft)
-        painter.setClipRect(textRect.translated(-topleft))
+        painter.setClipRect(textrect.translated(-topleft))
         doc.documentLayout().draw(painter, ctx)
 
         painter.restore()
@@ -76,6 +81,7 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         self.initStyleOption(options, index)
 
         doc = QtGui.QTextDocument()
+        doc.documentLayout().setPaintDevice(self.parent())
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))
         return QtCore.QSize(doc.idealWidth(), doc.size().height())

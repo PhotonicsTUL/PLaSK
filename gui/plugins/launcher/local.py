@@ -100,7 +100,8 @@ class OutputWindow(QtGui.QMainWindow):
         tool_action.setDefaultWidget(menu_button)
         toolbar.addAction(tool_action)
 
-        self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop', QtGui.QIcon(':/process-stop.png')), "Halt", self)
+        self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop', QtGui.QIcon(':/process-stop.png')),
+                                         "Halt", self)
         self.halt_action.setShortcut('Ctrl+h')
         toolbar.addAction(self.halt_action)
 
@@ -146,6 +147,14 @@ class OutputWindow(QtGui.QMainWindow):
             if move:
                 self.messages.moveCursor(QtGui.QTextCursor.End)
 
+    def halt_thread(self):
+        confirm = QtGui.QMessageBox.question(self, "Halt Process",
+                                             "PLaSK is currently running. Do you really want to terminate it? "
+                                             "All computation results may be lost!",
+                                             QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        if confirm == QtGui.QMessageBox.Yes:
+            self.thread.kill_process()
+
     def thread_finished(self):
         self.setWindowTitle(self.windowTitle() + " ({})".format(strftime('%X')))
         self.halt_action.setEnabled(False)
@@ -154,7 +163,8 @@ class OutputWindow(QtGui.QMainWindow):
         if self.thread.isRunning():
             confirm = QtGui.QMessageBox.question(self, "Close Window",
                                                  "PLaSK process is currently running. Closing the window "
-                                                 "will terminate it. Do you really want to proceed?",
+                                                 "will terminate it. Do you really want to proceed? "
+                                                 "All computation results may be lost!",
                                                  QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if confirm == QtGui.QMessageBox.Yes:
                 self.thread.terminate()
@@ -214,7 +224,6 @@ class Launcher(object):
     def __init__(self):
         self.windows = set()
         self.dirname = None
-
 
     def widget(self, main_window):
         widget = QtGui.QWidget()
@@ -288,7 +297,7 @@ class Launcher(object):
         self.windows.add(window)
         window.thread = PlaskThread(main_window.filename, dirname, window.lines, *args)
         window.thread.finished.connect(window.thread_finished)
-        window.halt_action.triggered.connect(window.thread.kill_process)
+        window.halt_action.triggered.connect(window.halt_thread)
         window.thread.start()
         window.show()
 

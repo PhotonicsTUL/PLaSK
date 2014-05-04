@@ -1,7 +1,7 @@
 from ..qt import QtGui
 
 from ..model.script import ScriptModel
-from ..utils.gui import defaultFont
+from ..utils.gui import DEFAULT_FONT
 from .source import SourceEditController
 from ..utils.config import CONFIG
 
@@ -46,12 +46,12 @@ class ScriptController(SourceEditController):
 
     def create_source_editor(self, parent=None):
         edit = QtGui.QPlainTextEdit(parent)
-        edit.setFont(defaultFont)
+        edit.setFont(DEFAULT_FONT)
         if hasPyCode:
             self.pyedit = PyEdit(".", edit)
         if SyntaxHighlighter:
             parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-            self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=defaultFont)
+            self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=DEFAULT_FONT)
         edit.setReadOnly(self.model.is_read_only())
         return edit
 

@@ -1,7 +1,7 @@
 from ..qt import QtGui
 
 from ..qhighlighter.XML import XMLHighlighter
-from ..utils.gui import defaultFont
+from ..utils.gui import DEFAULT_FONT
 from .base import Controller
 
 class SourceEditController(Controller):
@@ -13,7 +13,7 @@ class SourceEditController(Controller):
 
     def create_source_editor(self, parent=None):
         ed = QtGui.QTextEdit(parent)
-        ed.setFont(defaultFont)
+        ed.setFont(DEFAULT_FONT)
         self.highlighter = XMLHighlighter(ed.document())   # highlighter variable is required,
                                                            # in other case it is deleted and text is not highlighted
         ed.setReadOnly(self.model.is_read_only())
