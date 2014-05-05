@@ -341,7 +341,7 @@ class PythonMaterial : public Material
     virtual Tensor3<dcomplex> NR(double wl, double T, double n) const override {
         if (cache->NR) return *cache->NR;
         if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
-        if (cache->NR || overriden("Nr")) {
+        if (cache->Nr || overriden("Nr")) {
             dcomplex nr = cache->Nr? *cache->Nr : py::call_method<dcomplex>(self, "Nr", wl, T, n);
             return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
