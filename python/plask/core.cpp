@@ -44,7 +44,7 @@ std::string getPythonExceptionMessage() {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 //__declspec(dllexport)
 #endif
-AxisNames current_axes = AxisNames::axisNamesRegister.get("xyz");
+AxisNames current_axes = AxisNames::axisNamesRegister.get("zxy");
 
 static LoggingConfig getLoggingConfig(const Config&) {
     return LoggingConfig();

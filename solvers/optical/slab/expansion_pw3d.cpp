@@ -184,9 +184,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
                  reft = (SOLVER->refine_tran)? SOLVER->refine_tran : 1;
     const size_t Ml = refl * nNl,  Mt = reft * nNt;
-    const size_t M = Ml * Mt;
     size_t nN = nNl * nNt;
-    double factor = 1. / refl / reft;
     const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
@@ -265,15 +263,15 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             }
 
             double a = abs(norm);
+            auto& eps = coeffs[l][nNl * it + il];
             if (a < normlim) {
                 // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
                 // Nothing to average
-                coeffs[l][nNl * it + il] = cell[cell.size() / 2];
+                eps = cell[cell.size() / 2];
             } else {
                 // eps = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
 
                 // Compute avg(eps) and avg(eps**(-1))
-                auto& eps = coeffs[l][nNl * it + il];
                 Tensor3<dcomplex> ieps(0.);
                 for (size_t t = tbegin, j = 0; t != tend; ++t) {
                     for (size_t l = lbegin; l != lend; ++l, ++j) {
@@ -290,8 +288,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 Tensor3<double> P(norm.c0*norm.c0, norm.c1*norm.c1, 0., norm.c0*norm.c1);
                 Tensor3<double> P1(1.-P.c00, 1.-P.c11, 1., -P.c01);
                 eps = commutator(P, ieps.inv()) + commutator(P1, eps);
-                eps.c22 = 1./eps.c22;
             }
+            eps.c22 = 1./eps.c22;
         }
     }
 
