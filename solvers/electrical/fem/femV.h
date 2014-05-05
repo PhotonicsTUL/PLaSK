@@ -27,7 +27,7 @@ enum HeatMethod {
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template<typename Geometry2DType>
-struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectilinearMesh2D> {
+struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
 
@@ -87,24 +87,24 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     /// Get info on active region
     void setActiveRegions();
 
-    virtual void onMeshChange(const typename RectilinearMesh2D::Event& evt) override {
-        SolverWithMesh<Geometry2DType,RectilinearMesh2D>::onMeshChange(evt);
+    virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
+        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
         setActiveRegions();
     }
 
     virtual void onGeometryChange(const Geometry::Event& evt) override {
-        SolverWithMesh<Geometry2DType,RectilinearMesh2D>::onGeometryChange(evt);
+        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
         setActiveRegions();
     }
 
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
-    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage);
+    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage);
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
@@ -117,7 +117,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     }
 
     /// Return \c true if the specified element is a junction
-    bool isActive(const RectilinearMesh2D::Element& element) const {
+    bool isActive(const RectangularMesh<2>::Element& element) const {
            return isActive(element.getMidpoint());
     }
 
@@ -128,7 +128,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
     HeatMethod heatmet;         ///< Method of heat computation
 
     /// Boundary condition
-    BoundaryConditions<RectilinearMesh2D,double> voltage_boundary;
+    BoundaryConditions<RectangularMesh<2> ,double> voltage_boundary;
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 
@@ -225,7 +225,7 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
         default_junction_conductivity = cond;
     }
     void setCondJunc(const DataVector<const double>& cond)  {
-        if (!this->mesh || cond.size() != (this->mesh->axis0.size()-1) * getActNo())
+        if (!this->mesh || cond.size() != (this->mesh->axis0->size()-1) * getActNo())
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
     }

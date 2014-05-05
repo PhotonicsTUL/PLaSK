@@ -93,12 +93,12 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
     virtual void onInvalidate();
 
     virtual void onMeshChange(const typename RectangularMesh<3>::Event& evt) override {
-        SolverWithMesh<Geometry3D,RectilinearMesh3D>::onMeshChange(evt);
+        SolverWithMesh<Geometry3D, RectangularMesh<3>>::onMeshChange(evt);
         setActiveRegions();
     }
 
     virtual void onGeometryChange(const Geometry::Event& evt) override {
-        SolverWithMesh<Geometry3D,RectilinearMesh3D>::onGeometryChange(evt);
+        SolverWithMesh<Geometry3D, RectangularMesh<3>>::onGeometryChange(evt);
         setActiveRegions();
     }
 
@@ -116,7 +116,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
     }
 
     /// Return \c true if the specified element is a junction
-    bool isActive(const RectilinearMesh3D::Element& element) const {
+    bool isActive(const RectangularMesh<3>::Element& element) const {
            return isActive(element.getMidpoint());
     }
 
@@ -134,7 +134,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
     size_t logfreq;             ///< Frequency of iteration progress reporting
 
     // Boundary conditions
-    BoundaryConditions<RectilinearMesh3D,double> voltage_boundary;      ///< Boundary condition of constant voltage [K]
+    BoundaryConditions<RectangularMesh<3>, double> voltage_boundary;      ///< Boundary condition of constant voltage [K]
 
     typename ProviderFor<Potential,Geometry3D>::Delegate outPotential;
 
@@ -249,7 +249,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
     }
     /// Set junction effective conductivity to previously read data
     void setCondJunc(const DataVector<const double>& cond)  {
-        if (!this->mesh || cond.size() != (this->mesh->axis0.size()-1) * (this->mesh->axis1.size()-1) * getActNo())
+        if (!this->mesh || cond.size() != (this->mesh->axis0->size()-1) * (this->mesh->axis1->size()-1) * getActNo())
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
     }

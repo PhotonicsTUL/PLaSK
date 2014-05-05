@@ -7,7 +7,7 @@ using namespace plask::python;
 using namespace plask::solvers::electrical;
 
 template <typename Cls>
-static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
+static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
         RectilinearAxis line1;

@@ -4,7 +4,7 @@ namespace plask { namespace solvers { namespace electrical {
 
 template<typename Geometry2DType>
 FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
+    SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
     js(1.),
     beta(20.),
     pcond(5.),
@@ -100,14 +100,14 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
     acthi.clear();
     actd.clear();
 
-    shared_ptr<RectilinearMesh2D> points = this->mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
 
-    size_t ileft = 0, iright = points->axis0.size();
+    size_t ileft = 0, iright = points->axis0->size();
     bool in_active = false;
 
-    for (size_t r = 0; r < points->axis1.size(); ++r) {
+    for (size_t r = 0; r < points->axis1->size(); ++r) {
         bool had_active = false;
-        for (size_t c = 0; c < points->axis0.size(); ++c) { // In the (possible) active region
+        for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
             bool active = isActive(point);
 
@@ -136,21 +136,21 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         // Test if the active region has finished
         if (!in_active && actlo.size() != acthi.size()) {
             acthi.push_back(r);
-            actd.push_back(this->mesh->axis1[acthi.back()] - this->mesh->axis1[actlo.back()]);
+            actd.push_back(this->mesh->axis1->at(acthi.back()) - this->mesh->axis1->at(actlo.back()));
             this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
         }
     }
 
     // Test if the active region has finished
     if (actlo.size() != acthi.size()) {
-        acthi.push_back(points->axis1.size());
-        actd.push_back(this->mesh->axis1[acthi.back()] - this->mesh->axis1[actlo.back()]);
+        acthi.push_back(points->axis1->size());
+        actd.push_back(this->mesh->axis1->at(acthi.back()) - this->mesh->axis1->at(actlo.back()));
         this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
     }
 
     assert(acthi.size() == actlo.size());
 
-    size_t condsize = max(actlo.size() * (this->mesh->axis0.size()-1), size_t(1));
+    size_t condsize = max(actlo.size() * (this->mesh->axis0->size()-1), size_t(1));
 
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
@@ -171,7 +171,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
     currents.reset(this->mesh->elements.size(), vec(0.,0.));
     conds.reset(this->mesh->elements.size());
     if (junction_conductivity.size() == 1) {
-        size_t condsize = max(actlo.size() * (this->mesh->axis0.size()-1), size_t(1));
+        size_t condsize = max(actlo.size() * (this->mesh->axis0->size()-1), size_t(1));
         junction_conductivity.reset(condsize, junction_conductivity[0]);
     }
 }
@@ -214,7 +214,7 @@ inline void FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::setLoc
 template<typename Geometry2DType>
 template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -236,7 +236,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(MatrixT& A, 
 
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
-                                                                    const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage) {
+                                                                    const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -267,7 +267,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::applyBC(SparseBandMa
 template<typename Geometry2DType>
 template <typename MatrixT>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
-                                                                      const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bvoltage)
+                                                                      const BoundaryConditionsWithMesh<RectangularMesh<2>, double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
 
@@ -368,7 +368,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
         if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
             size_t n = std::upper_bound(acthi.begin(), acthi.end(), e.getIndex1()) - acthi.begin();
             assert(n < acthi.size());
-            conds[i] = Tensor2<double>(0., junction_conductivity[n * (this->mesh->axis0.size()-1) + e.getIndex0()]);
+            conds[i] = Tensor2<double>(0., junction_conductivity[n * (this->mesh->axis0->size()-1) + e.getIndex0()]);
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
         } else if (roles.find("n-contact") != roles.end()) {
@@ -382,8 +382,8 @@ template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
 {
     for (size_t n = 0; n < getActNo(); ++n)
-        for (size_t i = 0, j = (actlo[n]+acthi[n])/2; i != this->mesh->axis0.size()-1; ++i)
-            junction_conductivity[n * (this->mesh->axis0.size()-1) + i] = conds[this->mesh->elements(i,j).getIndex()].c11;
+        for (size_t i = 0, j = (actlo[n]+acthi[n])/2; i != this->mesh->axis0->size()-1; ++i)
+            junction_conductivity[n * (this->mesh->axis0->size()-1) + i] = conds[this->mesh->elements(i,j).getIndex()].c11;
 }
 
 
@@ -600,7 +600,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
     if (!potentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0.size()-1; ++i) {
+    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
         result += currents[element.getIndex()].c1 * element.getSize0();
     }
@@ -614,7 +614,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
     if (!potentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0.size()-1; ++i) {
+    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
         double rin = element.getLower0(), rout = element.getUpper0();
         result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
@@ -682,9 +682,9 @@ DataVector<const Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry
     DataVector<Tensor2<double>> result(dst_mesh.size());
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        size_t x = std::upper_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
-        size_t y = std::upper_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
-        if (x == 0 || y == 0 || x == this->mesh->axis0.size() || y == this->mesh->axis1.size())
+        size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
+        size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
+        if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
             result[i] = Tensor2<double>(NAN);
         else
             result[i] = conds[this->mesh->elements(x-1, y-1).getIndex()];

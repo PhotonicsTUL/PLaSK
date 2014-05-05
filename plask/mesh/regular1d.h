@@ -199,6 +199,8 @@ auto RegularAxis::interpolateLinear(const RandomAccessContainer& data, double po
     return interpolation::linear(this->operator[](index-1), data[index-1], this->operator[](index), data[index], point);
 }
 
+typedef RegularAxis RegularMesh1D;
+
 }   // namespace plask
 
 #endif // PLASK__REGULAR1D_H

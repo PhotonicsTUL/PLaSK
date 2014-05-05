@@ -369,10 +369,10 @@ class RectangularMesh<2>: public MeshD<2> {
     typedef plask::Boundary<RectangularMesh<2>> Boundary;
 
     /// First coordinate of points in this mesh.
-    shared_ptr<RectangularAxis> axis0;
+    const shared_ptr<RectangularAxis> axis0;
 
     /// Second coordinate of points in this mesh.
-    shared_ptr<RectangularAxis> axis1;
+    const shared_ptr<RectangularAxis> axis1;
 
     /// Accessor to FEM-like elements.
     const Elements elements;
@@ -438,13 +438,17 @@ class RectangularMesh<2>: public MeshD<2> {
         setIterationOrder(src.getIterationOrder());
     }
 
+    const shared_ptr<RectangularAxis> getAxis0() const { return axis0; }
+
     void setAxis0(shared_ptr<RectangularAxis> a0) {
-        axis0 = a0;
+        const_cast<shared_ptr<RectangularAxis>&>(axis0) = a0;
         //TODO other pointers
     }
 
+    const shared_ptr<RectangularAxis> getAxis1() const { return axis1; }
+
     void setAxis1(shared_ptr<RectangularAxis> a1) {
-        axis1 = a1;
+        const_cast<shared_ptr<RectangularAxis>&>(axis1) = a1;
         //TODO other pointers
     }
 

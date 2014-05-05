@@ -11,7 +11,7 @@ static DataVectorWrap<const double,3> getCondJunc(const FiniteElementMethodElect
         auto midmesh = self->getMesh()->getMidpointsMesh();
         RectilinearAxis line2;
         for (size_t n = 0; n < self->getActNo(); ++n)
-            line2.addPoint(self->getMesh()->axis1[(self->getActLo(n)+self->getActHi(n))/2]);
+            line2.addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
         auto mesh = make_shared<RectilinearMesh3D>(midmesh->axis0, midmesh->axis1, line2);
         return DataVectorWrap<const double,3>(self->getCondJunc(), mesh);
     } else {

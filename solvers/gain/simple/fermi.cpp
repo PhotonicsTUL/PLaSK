@@ -518,11 +518,11 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     this->writelog(LOG_INFO, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
-    RectilinearMesh2D mesh2;
+    RectangularMesh<2> mesh2;    //RectilinearMesh2D
     if (this->mesh) {
-        RectilinearAxis verts;
-        for (auto p: dst_mesh) verts.addPoint(p.vert());
-        mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
+        auto verts = make_shared<RectilinearAxis>();
+        for (auto p: dst_mesh) verts->addPoint(p.vert());
+        mesh2.setAxis0(this->mesh); mesh2.setAxis1(verts);
     }
     const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 
@@ -564,11 +564,11 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     this->writelog(LOG_INFO, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
-    RectilinearMesh2D mesh2;
-    if (this->mesh) {
-        RectilinearAxis verts;
-        for (auto p: dst_mesh) verts.addPoint(p.vert());
-        mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
+    RectangularMesh<2> mesh2;
+    if (this->mesh) {        
+        auto verts = make_shared<RectilinearAxis>();
+        for (auto p: dst_mesh) verts->addPoint(p.vert());
+        mesh2.setAxis0(this->mesh); mesh2.setAxis1(verts);
     }
     const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 

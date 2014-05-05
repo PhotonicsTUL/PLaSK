@@ -444,7 +444,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     DataVector<const double> getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
   private:
-    template <typename MeshT>
     bool getLightIntenisty_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);
 };
 

@@ -271,6 +271,8 @@ inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, st
     if (owner) owner->fireResized();
 };
 
+typedef RectilinearAxis RectilinearMesh1D;
+
 }   // namespace plask
 
 #endif // PLASK__RECTILINEAR1D_H
