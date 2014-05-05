@@ -9,13 +9,15 @@ using namespace plask::solvers::electrical3d;
 static DataVectorWrap<const double,3> getCondJunc(const FiniteElementMethodElectrical3DSolver* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
-        RectilinearAxis line2;
+        shared_ptr<RectilinearAxis> line2 = make_shared<RectilinearAxis>();
         for (size_t n = 0; n < self->getActNo(); ++n)
-            line2.addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
-        auto mesh = make_shared<RectilinearMesh3D>(midmesh->axis0, midmesh->axis1, line2);
+            line2->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
+        auto mesh = make_shared<RectangularMesh<3>>(midmesh->axis0->clone(), midmesh->axis1->clone(), line2);
         return DataVectorWrap<const double,3>(self->getCondJunc(), mesh);
     } else {
-        auto mesh = make_shared<RectilinearMesh3D>(RectilinearAxis({NAN}), RectilinearAxis({NAN}), RectilinearAxis({NAN}));
+        auto mesh = make_shared<RectangularMesh<3>>(make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}),
+                                                    make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}),
+                                                    make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}));
         return DataVectorWrap<const double,3>(self->getCondJunc(), mesh);
     }
 }
@@ -29,18 +31,12 @@ static void setCondJunc(FiniteElementMethodElectrical3DSolver* self, py::object 
         PyErr_Clear();
     }
     if (!self->getMesh()) throw NoMeshException(self->getId());
-    size_t len = (self->getMesh()->axis0.size()-1) * (self->getMesh()->axis1.size()-1);
+    size_t len = (self->getMesh()->axis0->size()-1) * (self->getMesh()->axis1->size()-1);
     try {
         const DataVectorWrap<const double,3>& val = py::extract<DataVectorWrap<const double,3>&>(value);
         {
-            auto mesh = dynamic_pointer_cast<RectilinearMesh3D>(val.mesh);
-            if (mesh && mesh->axis2.size() == self->getActNo() && val.size() == len) {
-                self->setCondJunc(val);
-                return;
-            }
-        }{
-            auto mesh = dynamic_pointer_cast<RegularMesh3D>(val.mesh);
-            if (mesh && mesh->axis2.size() == self->getActNo() && val.size() == len) {
+            auto mesh = dynamic_pointer_cast<RectangularMesh<3>>(val.mesh);
+            if (mesh && mesh->axis2->size() == self->getActNo() && val.size() == len) {
                 self->setCondJunc(val);
                 return;
             }

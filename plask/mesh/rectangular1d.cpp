@@ -1,4 +1,5 @@
 #include "rectangular1d.h"
+#include "rectilinear1d.h"
 
 #include "../utils/stl.h"
 
@@ -40,7 +41,8 @@ double MidpointsMesh::at(std::size_t index) const {
 }*/
 
 shared_ptr<RectangularMesh<1> > MidpointsMesh::clone() const {
-    return make_shared<MidpointsMesh>(wrapped);
+    //return make_shared<MidpointsMesh>(wrapped);
+    return make_shared<RectilinearAxis>(*this);
 }
 
 std::size_t MidpointsMesh::size() const {
