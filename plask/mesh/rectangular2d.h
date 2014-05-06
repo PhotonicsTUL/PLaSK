@@ -427,7 +427,7 @@ class RectangularMesh<2>: public MeshD<2> {
     }
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh<2>& src): axis0(src.axis0->clone()), axis1(src.axis1->clone()), elements(this) {
+    RectangularMesh(const RectangularMesh<2>& src): axis0(src.axis0), axis1(src.axis1), elements(this) {    //clone()??
         //TODO  axis0->owner = this; axis1->owner = this;
         setIterationOrder(src.getIterationOrder());
     }

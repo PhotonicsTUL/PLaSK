@@ -13,10 +13,11 @@ static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
         shared_ptr<RectilinearAxis> line1 = make_shared<RectilinearAxis>();
         for (size_t n = 0; n < self->getActNo(); ++n)
             line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
-        auto mesh = make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);    //TODO is it clone safe here?
+        auto mesh = make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     } else {
-        auto mesh = make_shared<RectangularMesh<2>>(RectilinearAxis({NAN}), RectilinearAxis({NAN}));
+        auto mesh = make_shared<RectangularMesh<2>>(make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}),
+                                                    make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}));
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     }
 }

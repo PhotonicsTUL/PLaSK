@@ -262,7 +262,7 @@ class RectangularMesh<3>: public MeshD<3> {
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh<3>& src): axis0(src.axis0->clone()), axis1(src.axis1->clone()), axis2(src.axis2->clone()), elements(this) {
+    RectangularMesh(const RectangularMesh<3>& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {    //->clone()
         //TODO  axis0->owner = this; axis1->owner = this; axis2->owner = this;
         setIterationOrder(src.getIterationOrder());
     }

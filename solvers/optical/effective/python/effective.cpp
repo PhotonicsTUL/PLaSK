@@ -166,11 +166,11 @@ template <typename SolverT>
 static void Optical_setMesh(SolverT& self, py::object omesh) {
     try {
         shared_ptr<RectilinearMesh1D> mesh = py::extract<shared_ptr<RectilinearMesh1D>>(omesh);
-        self.setHorizontalMesh(mesh->axis);
+        self.setHorizontalMesh(mesh);
     } catch (py::error_already_set) {
         PyErr_Clear();
         try {
-            shared_ptr<MeshGeneratorOf<RectilinearMesh1D>> meshg = py::extract<shared_ptr<MeshGeneratorOf<RectilinearMesh1D>>>(omesh);
+            shared_ptr<MeshGeneratorD<1>> meshg = py::extract<shared_ptr<MeshGeneratorD<1>>>(omesh);
             self.setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(meshg));
         } catch (py::error_already_set) {
             PyErr_Clear();

@@ -5,15 +5,20 @@
 
 namespace plask {
 
-std::size_t plask::RectangularMesh<1>::findIndex(double to_find) const {
+shared_ptr<RectangularMesh<1> > RectangularMesh<1>::clone() const {
+    //return make_shared<MidpointsMesh>(wrapped);
+    return make_shared<RectilinearAxis>(*this);
+}
+
+std::size_t RectangularMesh<1>::findIndex(double to_find) const {
     return std::lower_bound(begin(), end(), to_find).index;
 }
 
-std::size_t plask::RectangularMesh<1>::findNearestIndex(double to_find) const {
+std::size_t RectangularMesh<1>::findNearestIndex(double to_find) const {
     return find_nearest_binary(begin(), end(), to_find).index;
 }
 
-shared_ptr<RectangularMesh<1> > plask::RectangularMesh<1>::getMidpointsMesh() const {
+shared_ptr<RectangularMesh<1> > RectangularMesh<1>::getMidpointsMesh() const {
     return make_shared<MidpointsMesh>(*this);
 }
 
@@ -39,11 +44,6 @@ std::size_t MidpointsMesh::size() const {
 double MidpointsMesh::at(std::size_t index) const {
     return (wrapped->at(index) + wrapped->at(index+1)) * 0.5;
 }*/
-
-shared_ptr<RectangularMesh<1> > MidpointsMesh::clone() const {
-    //return make_shared<MidpointsMesh>(wrapped);
-    return make_shared<RectilinearAxis>(*this);
-}
 
 std::size_t MidpointsMesh::size() const {
     //if (!wrapped) return 0;

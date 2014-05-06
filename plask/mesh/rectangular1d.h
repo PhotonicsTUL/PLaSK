@@ -10,7 +10,13 @@ namespace plask {
 template<>
 struct RectangularMesh<1>: public MeshD<1> {
 
-    virtual shared_ptr<RectangularMesh<1>> clone() const = 0;
+    /**
+     * Create new mesh wich has copy of data included in @c this.
+     *
+     * By default RectangularMesh is used for result, but subclasses can use another types for less memory usage or better performence.
+     * @return new mesh wich has copy of data included in @c this
+     */
+    virtual shared_ptr<RectangularMesh<1>> clone() const;
 
     //virtual void clear() = 0;
 
@@ -52,8 +58,6 @@ public:
     //shared_ptr<const RectangularMesh<1> > getWrapped() const;
 
     //void setWrapped(shared_ptr<const RectangularMesh<1> > wrapped);
-
-    virtual shared_ptr<RectangularMesh<1>> clone() const override;
 
     //virtual void clear() override { setWrapped(nullptr); }
 
