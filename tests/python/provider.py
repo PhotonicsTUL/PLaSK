@@ -13,7 +13,7 @@ class ReceiverTest(unittest.TestCase):
 
     def setUp(self):
         self.solver = plasktest.SimpleSolver()
-        self.mesh1 = plask.mesh.Regular2D((0., 4., 3), (0., 20., 3))
+        self.mesh1 = plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3))
         self.mesh2 = self.mesh1.get_midpoints();
 
 
@@ -80,7 +80,7 @@ class PythonProviderTest(unittest.TestCase):
 
     def testAll(self):
         self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
-        msh = plask.mesh.Regular2D((0.,1., 2), (0.,1., 3))
+        msh = plask.mesh.Rectangular2D(plask.mesh.Regular(0.,1., 2), plask.mesh.Regular(0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
         self.assertEqual(list(res), [0., 10., 20., 30., 40., 50.])
 
@@ -89,7 +89,7 @@ class DataTest(unittest.TestCase):
 
     def testOperations(self):
         v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]]).transpose((1,0,2))
-        data = plask.Data(v, plask.mesh.Regular2D((0., 4., 3), (0., 20., 3)).get_midpoints())
+        data = plask.Data(v, plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3)).get_midpoints())
         self.assertEqual( data + data, 2 * data )
 
 
@@ -106,12 +106,12 @@ class ProfileTest(unittest.TestCase):
         profile[hot] = 1e7
         receiver = plask.flow.HeatReceiverCyl()
         receiver.connect(profile.outHeat)
-        self.assertEqual( list(receiver(mesh.Rectilinear2D([10], [5, 11]))), [0., 1e7] )
+        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]), mesh.Rectilinear([5, 11])))), [0., 1e7] )
         self.assertFalse( receiver.changed )
         profile[hot] = 2e7
         receiver.changed
         self.assertTrue( receiver.changed )
-        self.assertEqual( list(receiver(mesh.Rectilinear2D([10], [5, 11]))), [0., 2e7] )
+        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]),  mesh.Rectilinear([5, 11])))), [0., 2e7] )
 
     def testAdding(self):
         warm = plask.geometry.Rectangle(20, 2, 'GaAs')
@@ -135,4 +135,4 @@ class ProfileTest(unittest.TestCase):
         receiver = plask.flow.HeatReceiverCyl()
         receiver.connect(profile1.outHeat + profile2.outHeat)
 
-        self.assertEqual( list(receiver(mesh.Rectilinear2D([10], [1, 3, 5]))), [1e7, 2e7, 1e7] )
+        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]), mesh.Rectilinear([1, 3, 5])))), [1e7, 2e7, 1e7] )

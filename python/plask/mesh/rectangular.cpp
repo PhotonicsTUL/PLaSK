@@ -79,18 +79,18 @@ shared_ptr<RectilinearT> Rectilinear__init__seq(py::object seq) {
 }
 
 static std::string RectilinearAxis__repr__(const RectilinearAxis& self) {
-    return "RectilinearAxis(" + __str__(self) + ")";
+    return "Rectilinear(" + __str__(self) + ")";
 }
 
 static double RectilinearAxis__getitem__(const RectilinearAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("axis index out of range");
+    if (i < 0) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
 static void RectilinearAxis__delitem__(RectilinearAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("axis index out of range");
+    if (i < 0) throw IndexError("axis/mesh index out of range");
     self.removePoint(i);
 }
 
@@ -132,7 +132,7 @@ namespace detail {
                     throw py::error_already_set();
                 data->convertible = storage;
             } catch (py::error_already_set) {
-                throw TypeError("Must provide either mesh.RegularAxis or a tuple (first[, last=first, count=1])");
+                throw TypeError("Must provide either mesh.Regular or a tuple (first[, last=first, count=1])");
             }
         }
     };
@@ -149,12 +149,12 @@ shared_ptr<RegularT> Regular__init__params(double first, double last, int count)
 }
 
 static std::string RegularAxis__repr__(const RegularAxis& self) {
-    return format("RegularAxis(%1%, %2%, %3%)", self.first(), self.last(), self.size());
+    return format("Regular(%1%, %2%, %3%)", self.first(), self.last(), self.size());
 }
 
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0) throw IndexError("axis index out of range");
+    if (i < 0) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
@@ -643,16 +643,16 @@ void register_mesh_rectangular()
     if (!plask_import_array()) throw(py::error_already_set());
 
     py::class_<RectangularMesh<1>, shared_ptr<RectangularMesh<1>>, py::bases<MeshD<1>>, boost::noncopyable>
-            ("RectangularAxis",
+            ("Rectangular1D",
              "Base class for all 1D rectangular meshes (used as axes by 2D and 3D rectangular meshes)",
              py::no_init)
 
     ;
 
-    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("RectilinearAxis",
+    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("Rectilinear",
         "One-dimesnional rectilinear mesh, used also as rectangular mesh axis\n\n"
-        "RectilinearAxis()\n    create empty mesh\n\n"
-        "RectilinearAxis(points)\n    create mesh filled with points provides in sequence type"
+        "Rectilinear()\n    create empty mesh\n\n"
+        "Rectilinear(points)\n    create mesh filled with points provides in sequence type"
         );
     rectilinear1d.def("__init__", py::make_constructor(&__init__empty<RectilinearAxis>))
         .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearAxis>, py::default_call_policies(), (py::arg("points"))))
@@ -673,7 +673,7 @@ void register_mesh_rectangular()
 
         py::class_<RectilinearMesh1DSimpleGenerator, shared_ptr<RectilinearMesh1DSimpleGenerator>,
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("SimpleGenerator",
-            "Generator of Rectilinear1D mesh with lines at transverse edges of all objects.\n\n"
+            "Generator of Rectilinear (1D) mesh with lines at transverse edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
 
@@ -681,10 +681,10 @@ void register_mesh_rectangular()
     }
 
 
-    py::class_<RegularAxis, shared_ptr<RegularAxis>, py::bases<RectangularMesh<1>>>("RegularAxis",
-        "Regular mesh axis\n\n"
-        "RegularAxis()\n    create empty mesh\n\n"
-        "RegularAxis(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
+    py::class_<RegularAxis, shared_ptr<RegularAxis>, py::bases<RectangularMesh<1>>>("Regular",
+        "One-dimesnional regular mesh, used also as rectangular mesh axis\n\n"
+        "Regular()\n    create empty mesh\n\n"
+        "Regular(start, stop, num)\n    create mesh of count points equally distributed between start and stop"
         )
         .def("__init__", py::make_constructor(&__init__empty<RegularAxis>))
         .def("__init__", py::make_constructor(&Regular__init__one_param<RegularAxis>, py::default_call_policies(), (py::arg("value"))))
@@ -706,9 +706,9 @@ void register_mesh_rectangular()
 
     py::class_<RectangularMesh<2>, shared_ptr<RectangularMesh<2>>, py::bases<MeshD<2>>> rectangular2D("Rectangular2D",
         "Two-dimensional mesh\n\n"
-        "Rectilinear2D(ordering='01')\n    create empty mesh\n\n"
-        "Rectilinear2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
-        "Rectilinear2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
+        "Rectangular2D(ordering='01')\n    create empty mesh\n\n"
+        "Rectangular2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
+        "Rectangular2D(geometry, ordering='01')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be either '01', '10' and specifies ordering of the mesh points (last index changing fastest).",
         py::no_init
         ); rectangular2D
@@ -760,7 +760,7 @@ void register_mesh_rectangular()
 
         py::class_<RectilinearMesh2DSimpleGenerator, shared_ptr<RectilinearMesh2DSimpleGenerator>,
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("SimpleGenerator",
-            "Generator of Rectilinear2D mesh with lines at edges of all objects.\n\n"
+            "Generator of Rectangular2D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
 
@@ -770,9 +770,9 @@ void register_mesh_rectangular()
 
     py::class_<RectangularMesh<3>, shared_ptr<RectangularMesh<3>>, py::bases<MeshD<3>>> rectangular3D("Rectangular3D",
         "Three-dimensional mesh\n\n"
-        "Rectilinear3D(ordering='012')\n    create empty mesh\n\n"
-        "Rectilinear3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RectilinearAxis\n\n"
-        "Rectilinear3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
+        "Rectangular3D(ordering='012')\n    create empty mesh\n\n"
+        "Rectangular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RectilinearAxis\n\n"
+        "Rectangular3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",
         py::no_init
@@ -828,7 +828,7 @@ void register_mesh_rectangular()
 
         py::class_<RectilinearMesh3DSimpleGenerator, shared_ptr<RectilinearMesh3DSimpleGenerator>,
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("SimpleGenerator",
-            "Generator of Rectilinear3D mesh with lines at edges of all objects.\n\n"
+            "Generator of Rectangular3D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
 

@@ -13,8 +13,8 @@ import plasktest
 class RectilinearMeshes(unittest.TestCase):
 
     def setUp(self):
-        self.mesh2 = plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
-        self.mesh3 = plask.mesh.Rectilinear3D([1,2,3], [10,20], [100,200])
+        self.mesh2 = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1,3,2,1]), plask.mesh.Rectilinear(array([10,20], float)))
+        self.mesh3 = plask.mesh.Rectangular3D(plask.mesh.Rectilinear([1,2,3]), plask.mesh.Rectilinear([10,20]), plask.mesh.Rectilinear([100,200]))
 
     def testOrdering2D(self):
         m = self.mesh2
@@ -69,13 +69,13 @@ class RectilinearMeshes(unittest.TestCase):
             self.assertEqual( m.minor_index(i),  m.index2(i) )
             self.assertEqual( m.middle_index(i), m.index1(i) )
             self.assertEqual( m.major_index(i),  m.index0(i) )
-        plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
+        plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1,3,2,1]), plask.mesh.Rectilinear(array([10,20], float)))
 
 
     def testBoundary(self):
         self.mesh2.ordering = "10"
         geo = plask.geometry.Cartesian2D(plask.geometry.Rectangle(0,0,None))
-        b = plask.mesh.Rectilinear2D.Left()(self.mesh2, geo)
+        b = plask.mesh.Rectangular2D.Left()(self.mesh2, geo)
         self.assertIn(0, b)
         self.assertNotIn(1, b)
         self.assertIn(3, b)
@@ -210,7 +210,7 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertTrue(test.rectilinear3d_changed)
 
         self.assertFalse(test.regular2d_changed)
-        test.regular2d.axis0 = (0., 10., 11)
+        test.regular2d.axis0 = Regular(0., 10., 11)
         self.assertTrue(test.regular2d_changed)
         test.regular2d.axis0.start = 2.
         self.assertTrue(test.regular2d_changed)

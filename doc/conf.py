@@ -394,7 +394,7 @@ plask.vec = type(vec)
 plask.vec.__doc__ = doc
 del vec
 
-data = plask.Data(plask.array([1.]), plask.mesh.Rectilinear2D([0],[0]))
+data = plask.Data(plask.array([1.]), plask.mesh.Rectangular2D(plask.mesh.Rectilinear2D([0]), plask.mesh.Rectilinear2D([0])))
 doc = plask.Data.__doc__
 plask.Data = type(data)
 plask.Data.__doc__ = doc

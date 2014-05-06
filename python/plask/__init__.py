@@ -253,14 +253,14 @@ class StepProfile(object):
         >>> profile[hot] = 1e7
         >>> receiver = flow.HeatReceiverCyl()
         >>> receiver.connect(profile.outHeat)
-        >>> list(receiver(mesh.Rectilinear2D([10], [5, 11])))
+        >>> list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]), mesh.Rectilinear([5, 11]))))
         [0.0, 10000000.0]
         >>> receiver.changed
         False
         >>> profile[hot] = 2e7
         >>> receiver.changed
         True
-        >>> list(receiver(mesh.Rectilinear2D([10], [5, 11])))
+        >>> list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]), mesh.Rectilinear([5, 11]))))
         [0.0, 20000000.0]
 
     """

@@ -31,7 +31,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, r"^Effective index \[0\] cannot be provided now$"):
             self.solver.outNeff(0)
         with self.assertRaisesRegexp(ValueError, r"^Light intensity \[0\] cannot be provided now$"):
-            self.solver.outLightIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
+            self.solver.outLightIntensity(0, mesh.Rectangular2D(mesh.Rectilinear([1,2]),mesh.Rectilinear([3,4])))
 
     def testComputations(self):
         self.solver.wavelength = 1000.
@@ -115,7 +115,7 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         #axis1  = [ self.manager.geo.layers.bbox.lower.z-1e-6, 0.0025, self.manager.geo.layers.bbox.upper.z+-1e-6 ]
         axis1  = [ self.manager.geometry.layers.bbox.upper.z+-1e-6 ]
         dr = axis0[1]-axis0[0]
-        msh = mesh.Rectilinear2D(axis0, axis1)
+        msh = mesh.Rectangular2D(axis0, axis1)
         self.solver.find_mode(980., 0)
         self.solver.modes[0].power = 2000.
         field = self.solver.outLightIntensity(0,msh).array[:,-1]

@@ -64,7 +64,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
 
     def testProfile(self):
-        m = plask.mesh.Regular2D((1.,), (1., 5., 2))
+        m = plask.mesh.Rectangular2D(plask.mesh.Regular(1.,), plask.mesh.Regular(1., 5., 2))
         print(list(m))
         print(self.manager.geometry.Space_1.get_leafs_bboxes())
         self.assertEqual( list(self.solver1.inTemperature(m)), [320., 300.] )

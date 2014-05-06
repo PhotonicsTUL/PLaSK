@@ -174,7 +174,7 @@ static py::object DataVectorWrap_Array(py::object oself) {
     if (!arr) arr = DataVectorWrap_ArrayImpl<T, RectangularMesh<3>>(self);
 
     if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
-                                        (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
+                                        (dim == 2)? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
 
     py::incref(oself.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr()); // Make sure the data vector stays alive as long as the array
@@ -373,7 +373,7 @@ void register_data_vector() {
             "The vector components are stored in this dimention.\n\n"
 
             "Example:\n"
-            "    >>> msh = plask.mesh.Rectilinear2D([1, 2], [10, 20])\n"
+            "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]), plask.mesh.Rectilinear([10, 20]))\n"
             "    >>> dat = Data(array([[[1., 0.], [2., 0.]], [[3., 1.], [4., 1.]]]), msh)\n"
             "    >>> dat.array[:,:,0]\n"
             "    array([[1., 2.],\n"
@@ -451,7 +451,7 @@ void register_data_vectors() {
             "Examples:\n"
             "    To create the data from the flat sequential array:\n\n"
 
-            "    >>> msh = plask.mesh.Rectilinear2D([1, 2, 3], [10, 20])\n"
+            "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2, 3]), plask.mesh.Rectilinear([10, 20]))\n"
             "    >>> Data(array([1., 2., 3., 4., 5., 6.]), msh)\n"
             "    <plask.Data at 0x4698938>\n\n"
 
