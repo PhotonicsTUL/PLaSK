@@ -3,7 +3,7 @@
 namespace plask {
 
 void RegularAxis::writeXML(XMLElement &object) const {
-    object.attr("type", "rectilinear1d").attr("start", first()).attr("stop", last()).attr("num", size());
+    object.attr("type", "regular1d").attr("start", first()).attr("stop", last()).attr("num", size());
 }
 
 bool RegularAxis::isIncreasing() const

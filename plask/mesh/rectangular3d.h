@@ -1600,6 +1600,12 @@ struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_NEAR
 shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &to_copy);
 inline shared_ptr<RectangularMesh<3>> make_rectilinear_mesh(shared_ptr<const RectangularMesh<3>> to_copy) { return make_rectilinear_mesh(*to_copy); }
 
+template <>
+inline Boundary<RectangularMesh<3>> parseBoundary<RectangularMesh<3>>(const std::string& boundary_desc, plask::Manager&) { return RectangularMesh<3>::getBoundary(boundary_desc); }
+
+template <>
+inline Boundary<RectangularMesh<3>> parseBoundary<RectangularMesh<3>>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh<3>::getBoundary(boundary_desc, env); }
+
 }   // namespace plask
 
 #endif // PLASK__RECTANGULAR3D_H
