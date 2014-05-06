@@ -251,8 +251,8 @@ struct Tensor3 {
      * @return out stream
      */
     friend inline std::ostream& operator<<(std::ostream& out, const Tensor3<T>& to_print) {
-        return out << '(' << to_print.c00 << ", " <<  to_print.c11 << ", " << to_print.c22 << ", ("
-                          << to_print.c01 << "))";
+        return out << '(' << str(to_print.c00) << ", " <<  str(to_print.c11) << ", " << str(to_print.c22) << ", "
+                          << str(to_print.c01) << ")";
     }
 };
 

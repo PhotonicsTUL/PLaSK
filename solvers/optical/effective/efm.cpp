@@ -325,8 +325,8 @@ void EffectiveFrequencyCylSolver::updateCache()
                     double gs = gain_slope[idx];
                     double nr = real(material->Nr(lam, T));
                     double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
-                    nrCache[ir][iz] = dcomplex(nr, 7.95774715459e-09 * lam * g);
-                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
+                    nrCache[ir][iz] = dcomplex(nr, (0.25e-7/M_PI) * lam * g);
+                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - (0.25e-7/M_PI) * lam*lam * gs);
                 }
             }
             if (zbegin != 0) {
@@ -345,6 +345,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 
     if (!have_veffs) {
         if (rstripe < 0) {
+            size_t main_stripe = getMainStripe();
             // Compute effective frequencies for all stripes
             std::exception_ptr error; // needed to handle exceptions from OMP loop
             #pragma omp parallel for
@@ -372,7 +373,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                         RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
                         dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
                         veffs[i] = freqv(rootdigger(start-DLAM, start+DLAM));
-                        computeStripeNNg(i);
+                        computeStripeNNg(i, i==main_stripe);
                     }
                 } catch (...) {
                     #pragma omp critical
@@ -402,10 +403,11 @@ void EffectiveFrequencyCylSolver::stageOne()
             dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
             veffs[rstripe] = freqv(rootdigger(start-DLAM, start+DLAM));
             // Compute veffs and neffs for other stripes
-            computeStripeNNg(rstripe);
+            computeStripeNNg(rstripe, true);
             for (size_t i = 0; i < rsize; ++i)
                 if (i != rstripe) computeStripeNNg(i);
         }
+        assert(zweights.size() == zsize);
 
 #       ifndef NDEBUG
             std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
@@ -500,7 +502,7 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
 }
 
 
-void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
+void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_weighs)
 {
     size_t stripe0 = (rstripe < 0)? stripe : rstripe;
 
@@ -516,6 +518,8 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     detS1(veff, nrCache[stripe0], ngCache[stripe0], &zfield);
 
     double sum = 0.;
+
+    if (save_weighs) zweights.resize(zsize);
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
@@ -536,12 +540,13 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            weight -= imag(zfield[i].F * conj(zfield[i].F) * w_ff +
-                           zfield[i].F * conj(zfield[i].B) * w_fb +
-                           zfield[i].B * conj(zfield[i].F) * w_bf +
-                           zfield[i].B * conj(zfield[i].B) * w_bb);
+            weight = - imag(zfield[i].F * conj(zfield[i].F) * w_ff +
+                            zfield[i].F * conj(zfield[i].B) * w_fb +
+                            zfield[i].B * conj(zfield[i].F) * w_bf +
+                            zfield[i].B * conj(zfield[i].B) * w_bb);
         }
         sum += weight;
+        if (save_weighs) zweights[i] = weight;
         nng[stripe] += weight * nrCache[stripe][i] * ngCache[stripe][i];
         if (stripe != stripe0) {
             veffs[stripe] += weight * (nrCache[stripe][i]*nrCache[stripe][i] - nrCache[stripe0][i]*nrCache[stripe0][i]);
@@ -554,13 +559,27 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     }
 
     nng[stripe] /= sum;
+
+    if (save_weighs) {
+        double f = 1. / sum;
+        for (double& w: zweights) w *= f;
+    }
 }
 
-double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode) const
+double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode)
 {
     double err = perr;
-    double intr = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, 0., 2.*mesh->axis0[rsize-1], err);
-    return 2*M_PI * intr; //TODO consider m <> 0
+    rweights.resize(rsize);
+    size_t lastr = rsize-1;
+    double sum = 0;
+    for (size_t i = 0; i < lastr; ++i) {
+        rweights[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, mesh->axis0[i], mesh->axis0[i+1], err);
+        sum += rweights[i];
+    }
+    //TODO use exponential asymptotic approximation to compute weight in the last stripe
+    rweights[lastr] = 0.;
+    double f = 1./sum; for (double& w: rweights) w *= f;
+    return 2*M_PI * sum; //TODO consider m <> 0
 }
 
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
@@ -637,22 +656,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 #endif
     }
 
-    size_t stripe;
-    if (rstripe < 0) {
-        stripe = 0;
-        // Look for the innermost stripe with not constant refractive index
-        bool all_the_same = true;
-        while (all_the_same) {
-            dcomplex same_nr = nrCache[stripe].front();
-            dcomplex same_ng = ngCache[stripe].front();
-            for (auto nr = nrCache[stripe].begin(), ng = ngCache[stripe].begin(); nr != nrCache[stripe].end(); ++nr, ++ng)
-                if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
-            if (all_the_same) ++stripe;
-        }
-        writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
-    } else {
-        stripe = rstripe;
-    }
+    size_t stripe = getMainStripe();
 
     if (!modes[num].have_fields) {
         // Compute vertical part

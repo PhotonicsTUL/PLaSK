@@ -110,7 +110,7 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         self.solver.lam0 = 980.
 
     def testField(self):
-        axis0 = linspace(0.001, 39.999, 20000)
+        axis0 = linspace(0.001, 39.999, 100000)
         #axis0 = linspace(0.01, 3.99, 200)
         #axis1  = [ self.manager.geo.layers.bbox.lower.z-1e-6, 0.0025, self.manager.geo.layers.bbox.upper.z+-1e-6 ]
         axis1  = [ self.manager.geometry.layers.bbox.upper.z+-1e-6 ]

@@ -112,8 +112,8 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     /// Computed horizontal and vertical fields
     std::vector<Field,aligned_allocator<Field>> yfields;
 
-    /// Field confinement weights in stripes
-    std::vector<double,aligned_allocator<double>> weights;
+    /// Vertical field confinement weights
+    std::vector<double,aligned_allocator<double>> yweights;
 
     /// Computed effective epsilons for each stripe
     std::vector<dcomplex,aligned_allocator<dcomplex>> epsilons;

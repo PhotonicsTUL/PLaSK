@@ -369,7 +369,7 @@ void EffectiveIndex2DSolver::updateCache()
                     }
                     double g = gain[idx];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
-                                                w * g * 7.95774715459e-09 );
+                                                w * g * (0.25e-7/M_PI) );
                 }
             }
         }
@@ -411,7 +411,7 @@ void EffectiveIndex2DSolver::stageOne()
         for (size_t i = xbegin; i < xend; ++i) {
             epsilons[i] = vneff*vneff;
             for (size_t j = ybegin; j < yend; ++j) {
-                epsilons[i] += weights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
+                epsilons[i] += yweights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
             }
         }
 #ifndef NDEBUG
@@ -502,16 +502,16 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     // Compute fields
     detS1(vneff, nrCache[stripe], true);
 
-    weights.resize(yend);
+    yweights.resize(yend);
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
-        weights[ybegin] = abs2(yfields[ybegin].B) * 0.5 / ky;
+        yweights[ybegin] = abs2(yfields[ybegin].B) * 0.5 / ky;
     }
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
-        weights[yend-1] = abs2(yfields[yend-1].F) * 0.5 / ky;
+        yweights[yend-1] = abs2(yfields[yend-1].F) * 0.5 / ky;
     }
-    double sum = weights[ybegin] + weights[yend-1];
+    double sum = yweights[ybegin] + yweights[yend-1];
 
     for (size_t i = ybegin+1; i < yend-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
@@ -534,16 +534,16 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
                               yfields[i].F * conj(yfields[i].B) * w_fb +
                               yfields[i].B * conj(yfields[i].F) * w_bf +
                               yfields[i].B * conj(yfields[i].B) * w_bb;
-            weights[i] = -imag(weight);
+            yweights[i] = -imag(weight);
         } else
-            weights[i] = 0.;
-        sum += weights[i];
+            yweights[i] = 0.;
+        sum += yweights[i];
     }
 
     sum = 1. / sum;
     double fact = sqrt(sum);
     for (size_t i = ybegin; i < yend; ++i) {
-        weights[i] *= sum;
+        yweights[i] *= sum;
         yfields[i] *= fact;
     }
 // #ifndef NDEBUG

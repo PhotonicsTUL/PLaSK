@@ -278,7 +278,13 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outLightIntensity, "");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
-        RO_FIELD(modes, "List of the computed modes.");
+        RO_FIELD(modes,
+                 "List of the computed modes.\n\n"
+                 ".. rubric:: Item Attributes\n\n"
+                 ".. autosummary::\n\n"
+                 "   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
+                 "   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
+                 "   ~optical.effective.EffectiveIndex2D.Mode.power\n");
         solver.attr("outIntensity") = solver.attr("outLightIntensity");
 
         py::scope scope = solver;
@@ -287,7 +293,7 @@ BOOST_PYTHON_MODULE(effective)
 
         py::class_<EffectiveIndex2DSolver::Mode>("Mode", "Detailed information about the mode.", py::no_init)
             .def_readonly("neff", &EffectiveIndex2DSolver::Mode::neff, "Mode effective index.")
-            .add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, "Mode wavelength [nm].")
+            .add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, "Mode symmetry ('positive', 'negative', or None).")
             .def_readwrite("power", &EffectiveIndex2DSolver::Mode::power, "Total power emitted into the mode [mW].")
         ;
 
@@ -366,7 +372,15 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outLightIntensity, "");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
-        RO_FIELD(modes, "List of the computed modes.");
+        RO_FIELD(modes,
+                 "List of the computed modes.\n\n"
+                 ".. rubric:: Item Attributes\n\n"
+                 ".. autosummary::\n\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.m\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.lam\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.loss\n"
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n");
         solver.add_property("vat", &EffectiveFrequencyCylSolver_getStripeR, &EffectiveFrequencyCylSolver_setStripeR,
                             "Radial position of at which the vertical part of the field is calculated.\n\n"
                             "Should be a float number or ``None`` to compute effective frequencies for all\n"
@@ -377,12 +391,12 @@ BOOST_PYTHON_MODULE(effective)
 
         register_vector_of<EffectiveFrequencyCylSolver::Mode>("Modes");
 
-        py::class_<EffectiveFrequencyCylSolver::Mode>("Mode", "Detailed information about the mode", py::no_init)
-            .def_readonly("m", &EffectiveFrequencyCylSolver::Mode::m, "LP_mn mode parameter describing angular dependence")
-            .add_property("lam", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm]")
-            .add_property("wavelength", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm]")
-            .add_property("loss", &EffectiveFrequencyCylSolver_Mode_ModalLoss, "Mode loss [1/cm]")
-            .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode")
+        py::class_<EffectiveFrequencyCylSolver::Mode>("Mode", "Detailed information about the mode.", py::no_init)
+            .def_readonly("m", &EffectiveFrequencyCylSolver::Mode::m, "LP_mn mode parameter describing angular dependence.")
+            .add_property("lam", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
+            .add_property("wavelength", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm].")
+            .add_property("loss", &EffectiveFrequencyCylSolver_Mode_ModalLoss, "Mode loss [1/cm].")
+            .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode.")
         ;
 
         py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction for cylindrical structure.")

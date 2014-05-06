@@ -121,6 +121,12 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Computed vertical fields
     std::vector<FieldZ> zfields;
 
+    /// Vertical field confinement weights
+    std::vector<double,aligned_allocator<double>> zweights;
+
+    /// Computed lateral field integral for each stripe
+    std::vector<double,aligned_allocator<double>> rweights;
+
     /// Computed effective frequencies for each stripe
     std::vector<dcomplex,aligned_allocator<dcomplex>> veffs;
 
@@ -390,20 +396,40 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
                    const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, std::vector<FieldZ>* saveto=nullptr);
 
     /// Compute stripe averaged n ng
-    void computeStripeNNg(size_t stripe);
+    void computeStripeNNg(size_t stripe, bool save_weighs=false);
 
     /** Integrate horizontal field
      * \param mode mode to integrate
      */
-    double integrateBessel(const Mode& mode) const;
+    double integrateBessel(const Mode& mode);
 
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const plask::dcomplex& lam, Mode& mode, bool save=false);
 
+    /// Obtain main stripe
+    size_t getMainStripe() {
+        if (rstripe < 0) {
+            size_t stripe = 0;
+            // Look for the innermost stripe with not constant refractive index
+            bool all_the_same = true;
+            while (all_the_same) {
+                dcomplex same_nr = nrCache[stripe].front();
+                dcomplex same_ng = ngCache[stripe].front();
+                for (auto nr = nrCache[stripe].begin(), ng = ngCache[stripe].begin(); nr != nrCache[stripe].end(); ++nr, ++ng)
+                    if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
+                if (all_the_same) ++stripe;
+            }
+            writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
+            return stripe;
+        } else {
+            return rstripe;
+        }
+    }
+
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode(const Mode& mode) {
         for (size_t i = 0; i != modes.size(); ++i)
-            if (modes[i] == mode) return i;
+        if (modes[i] == mode) return i;
         modes.push_back(mode);
         outWavelength.fireChanged();
         outLoss.fireChanged();

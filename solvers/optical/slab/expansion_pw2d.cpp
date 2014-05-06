@@ -178,7 +178,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
                 auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                     double g = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) g += gain[v];
-                    double ni = lambda * g/axis1.size() * 7.95774715459e-09;
+                    double ni = lambda * g/axis1.size() * (0.25e-7/M_PI);
                     nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);
                 }
             }
