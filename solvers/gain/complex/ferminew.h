@@ -165,10 +165,10 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
     QW::warstwa *mpLay;
     QW::struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
-    int buildStructure();
-    int buildEc();
-    int buildEvhh();
-    int buildEvlh();
+    int buildStructure(double T, const ActiveRegionInfo& region);
+    int buildEc(double T, const ActiveRegionInfo& region);
+    int buildEvhh(double T, const ActiveRegionInfo& region);
+    int buildEvlh(double T, const ActiveRegionInfo& region);
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;
@@ -229,7 +229,7 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
 
-    double getGainTEST(); // LUKASZ for test only
+    double getGainTEST(double T, const ActiveRegionInfo &region); // LUKASZ for test only
 
     /**
      * Reg gain spectrum object for future use;

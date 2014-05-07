@@ -9,7 +9,7 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     roughness = 0.05; // [-]
-    matrixelem = 10.; // [m0*eV]
+    matrixelem = 0.; // [m0*eV]
     //cond_waveguide_depth = 0.26; // [eV]
     //vale_waveguide_depth = 0.13; // [eV]
     differenceQuotient = 0.01;  // [%]
@@ -262,7 +262,7 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
 template <typename GeometryType>
 QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region)
 {
-    QW::gain gainModule;
+    //QW::gain gainModule;
 
     if (isnan(n) || n < 0) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
 
@@ -278,17 +278,64 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
 
         qstrain = (this->materialSubstrate->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
         bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
-        qstrain *= 1.;
-        bstrain *= 1.;
         writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
         writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
+    }   
+
+    //////////////////
+
+    buildStructure(T, region);
+
+    double tCladEg = 4.; // cladding Eg TODO (eV)
+    double tQWDso = 0.150; // QW Dso TODO (eV)
+    double tQWTotH = 100.; // total thickness of QWs (nm)
+    double tQWnR = 3.6; // QW nR
+    double tT = 300.; // temperature in the active region (K)
+    double inN = 4e18; // 'initial' carrier concentration (1/cm3)
+    //double tLam = 1300.; // wavelength (nm)
+
+    std::vector<QW::struktura *> tHoles;
+    tHoles.clear();
+    if (!mEvhh)
+        tHoles.push_back(&(*mpStrEvhh));
+    if (!mEvlh)
+        tHoles.push_back(&(*mpStrEvlh));
+    if ((!mEc)&&((!mEvhh)||(!mEvlh)))
+    {
+        QW::obszar_aktywny aktyw(&(*mpStrEc), tHoles, tCladEg, tQWDso, roughness); // roughness = 0.05 for example
+        aktyw.zrob_macierze_przejsc();
+        QW::gain gainModule(&aktyw, inN*(tQWTotH*1e-7), tT, tQWnR);
+        return gainModule;
+/*
+        //std::cout << "Calculating quasi Fermi levels and carrier concentrations..\n";
+        double tFe = wzmoc.policz_qFlc();
+        double tFp = wzmoc.policz_qFlv();
+        //std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, tT);
+        //for(int i = 0; i <= (int) tN.size() - 1; i++)
+            //std::cout << i << "\t" << struktura::koncentracja_na_cm_3(tN[i]) << "\n";
+
+        double tGehh = wzmoc.wzmocnienie_od_pary_pasm(nm_to_eV(tLam), 0, 0);
+        double tGelh = wzmoc.wzmocnienie_od_pary_pasm(nm_to_eV(tLam), 0, 1);
+        double tG = tGehh+tGelh;
+        //std::cout << "gain at " << iLam1 << " nm: " << tG << " 1/cm\n";
+
+        return tG;*/
     }
+    else if (mEc)
+        throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
+    else //if ((mEvhh)&&(mEvlh))
+        throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of active-region materials");
+
+    //int tGainRes = 1000.;
+    //return tGainRes;
+
+    //////////////////////
 
     //writelog(LOG_RESULT, "latt const for QW: %1%", region.materialQW->lattC(T,'a'));
     //writelog(LOG_RESULT, "latt const for subs: %1%", materialSubstrate->lattC(T,'a'));
     //writelog(LOG_RESULT, "latt const for barr: %1%", region.materialBarrier->lattC(T,'a'));
 
-    Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
+    /*Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
     double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
 
     #pragma omp critical // necessary as the material may be defined in Python
@@ -316,22 +363,6 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
     if (bEc<bEvhh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for heavy holes = %2% eV", bEc, bEvhh);
     if (bEc<bEvlh) throw ComputationError(this->getId(), "Barrier CB = %1% eV is below VB for light holes = %2% eV", bEc, bEvlh);
 
-    /*gainModule.Set_electron_mass_in_plain(qme.c00);
-    gainModule.Set_electron_mass_transverse(qme.c11);
-    gainModule.Set_heavy_hole_mass_in_plain(qmhh.c00);
-    gainModule.Set_heavy_hole_mass_transverse(qmhh.c11);
-    gainModule.Set_light_hole_mass_in_plain(qmlh.c00);
-    gainModule.Set_light_hole_mass_transverse(qmlh.c11);
-    gainModule.Set_electron_mass_in_barrier(bme.c00);
-    gainModule.Set_heavy_hole_mass_in_barrier(bmhh.c00);
-    gainModule.Set_light_hole_mass_in_barrier(bmlh.c00);
-    gainModule.Set_well_width(region.qwlen);
-    gainModule.Set_waveguide_width(region.totallen);
-    gainModule.Set_lifetime(lifetime);
-
-    gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
-    gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);*/ // LUKASZ
-
     qEg = qEc-qEvhh;
     cdepth = bEc - qEc;
     vhhdepth = qEvhh-bEvhh;
@@ -356,12 +387,12 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             bname = region.materialBarrier->name();
         }
         throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%", qname, bname);
-    }
+    }*/
 
     //gainModule.Set_conduction_depth(cdepth); // LUKASZ
 
-    if (if_strain == true)
-    {
+    //if (if_strain == true)
+    //{
         // compute levels
         /*if (extern_levels)
             gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
@@ -397,7 +428,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
                 }
             }
         }*/ // LUKASZ
-        if ( (qstrain==0.) && (bstrain==0.) )
+        /*if ( (qstrain==0.) && (bstrain==0.) )
         {
             qEg = qEc-qEvhh;
             vdepth = vhhdepth;
@@ -411,8 +442,8 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         {
             qEg = qEc-qEvlh;
             vdepth = vlhdepth;
-        }
-    }
+        }*/
+    //}
 
     //gainModule.Set_bandgap(qEg); // LUKASZ
     //gainModule.Set_valence_depth(vdepth); // LUKASZ
@@ -431,15 +462,15 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwtotallen));
     }*/ // LUKASZ
 
-    return gainModule;
+    //return gainModule;
 } // LUKASZ
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildStructure() // LUKASZ
+int FerminewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegionInfo& region) // LUKASZ
 {
-    mEc = buildEc();
-    mEvhh = buildEvhh();
-    mEvlh = buildEvlh();
+    mEc = buildEc(T, region);
+    mEvhh = buildEvhh(T, region);
+    mEvlh = buildEvlh(T, region);
 
     if (!mEc)
         mpStrEc = new QW::struktura(mpEc, QW::struktura::el);
@@ -459,21 +490,40 @@ int FerminewGainSolver<GeometryType>::buildStructure() // LUKASZ
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildEc() // LUKASZ
+int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& region) // LUKASZ
 {
     mpEc.clear();
 
-    int tN = 5; // number of all layers int the active region (QW, barr, external) TODO
+    int tN = region.size(); // number of all layers int the active region (QW, barr, external)
 
-    double tCladMe = 0.050; // TODO
-    double tCladEc0 = 2.0; // TODO
-    double tBarrEc = 1.5; // TODO
-    double tQWEc = 1.0; // TODO
-    double tQWBarrMe = 0.040; // TODO
-    double tQWBarrEc = 1.25; // TODO
-    double tQWBarrH = 100.; // TODO
+    double eClad1 = 0.; // TODO
+    double eClad2 = 0.; // TODO
 
-    double tDEc = tCladEc0; // Ec0 for cladding
+    bool tfStructOK = true;
+
+    double tDEc = region.getLayerMaterial(0)->CB(T,eClad1); // Ec0 for cladding
+
+    double tX = 0.;
+    mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, region.getLayerMaterial(0)->Me(T,eClad1).c00, region.getLayerMaterial(0)->Me(T,eClad1).c11, tX, (region.getLayerMaterial(0)->CB(T,eClad1)-tDEc)); // left cladding
+    mpEc.push_back(mpLay);
+    for (int i=1; i<tN-1; ++i)
+    {
+        double e = 0.; // (-) TODO
+        double tH = region.getLayerBox(i).height(); // (um) czy na pewno h powinno byc w um i czy w ten sposob uzyskuje dobra wartosc? // TODO
+        mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)-tDEc)); // wells and barriers
+        mpEc.push_back(mpLay); tX += tH;
+        if (region.getLayerMaterial(i)->CB(T,e) >= tDEc)
+            tfStructOK = false;
+    }
+    mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Me(T,eClad2).c00, region.getLayerMaterial(tN-1)->Me(T,eClad2).c11, tX, (region.getLayerMaterial(tN-1)->CB(T,eClad2)-tDEc)); // right cladding
+    mpEc.push_back(mpLay); // add delete somewhere! TODO
+
+    if (tfStructOK)
+        return 0; // band structure OK
+    else
+        return -1;
+
+    /*double tDEc = tCladEc0; // Ec0 for cladding
 
     double tX = 0.;
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, tCladMe, tCladMe, tX, (tCladEc0-tDEc)); // left cladding
@@ -489,25 +539,44 @@ int FerminewGainSolver<GeometryType>::buildEc() // LUKASZ
     if (((tCladEc0-tDEc) >= (tBarrEc-tDEc)) && ((tBarrEc-tDEc) >= (tQWEc-tDEc)))
         return 0; // band structure OK
     else
-        return -1;
+        return -1;*/
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildEvhh() // LUKASZ
+int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo& region) // LUKASZ
 {
     mpEvhh.clear();
 
-    int tN = 5; // number of all layers int the active region (QW, barr, external) TODO
+    int tN = region.size(); // number of all layers int the active region (QW, barr, external)
 
-    double tCladMhh = 0.200; // TODO
-    double tCladEv0 = -2.0; // TODO
-    double tBarrEvhh = -1.5; // TODO
-    double tQWEvhh = -1.0; // TODO
-    double tQWBarrMhh = 0.150; // TODO
-    double tQWBarrEvhh = -1.25; // TODO
-    double tQWBarrH = 100.; // TODO
+    double eClad1 = 0.; // TODO
+    double eClad2 = 0.; // TODO
 
-    double tDEvhh = tCladEv0; // Ev0 for cladding
+    bool tfStructOK = true;
+
+    double tDEvhh = region.getLayerMaterial(0)->VB(T,eClad1,'G','H'); // Ev0 for cladding
+
+        double tX = 0.;
+        mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, region.getLayerMaterial(0)->Mhh(T,eClad1).c00, region.getLayerMaterial(0)->Mhh(T,eClad1).c11, tX, (-region.getLayerMaterial(0)->VB(T,eClad1,'G','H')+tDEvhh)); // left cladding
+        mpEvhh.push_back(mpLay);
+        for (int i=1; i<tN-1; ++i)
+        {
+            double e = 0.; // (-) TODO
+            double tH = region.getLayerBox(i).height(); // (um) czy na pewno h powinno byc w um i czy w ten sposob uzyskuje dobra wartosc? // TODO
+            mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh)); // wells and barriers
+            mpEvhh.push_back(mpLay); tX += tH;
+            if (region.getLayerMaterial(i)->VB(T,e,'G','H') <= tDEvhh)
+                tfStructOK = false;
+        }
+        mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Mhh(T,eClad2).c00, region.getLayerMaterial(tN-1)->Mhh(T,eClad2).c11, tX, (-region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','H')+tDEvhh));
+        mpEvhh.push_back(mpLay); // add delete somewhere! TODO
+
+        if (tfStructOK)
+            return 0; // band structure OK
+        else
+            return -1;
+
+    /*double tDEvhh = tCladEv0; // Ev0 for cladding
 
     double tX = 0.;
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, tCladMhh, tCladMhh, tX, (-tCladEv0+tDEvhh)); // left cladding
@@ -523,25 +592,44 @@ int FerminewGainSolver<GeometryType>::buildEvhh() // LUKASZ
     if (((-tCladEv0+tDEvhh) >= (-tBarrEvhh+tDEvhh)) && ((-tBarrEvhh+tDEvhh) >= (-tQWEvhh+tDEvhh)))
         return 0; // band structure OK
     else
-        return -1;
+        return -1;*/
 }
 
 template <typename GeometryType>
-int FerminewGainSolver<GeometryType>::buildEvlh() // LUKASZ
+int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo& region) // LUKASZ
 {
     mpEvlh.clear();
 
-    int tN = 5; // number of all layers int the active region (QW, barr, external) TODO
+    int tN = region.size(); // number of all layers int the active region (QW, barr, external)
 
-    double tCladMlh = 0.200; // TODO
-    double tCladEv0 = -2.0; // TODO
-    double tBarrEvlh = -1.5; // TODO
-    double tQWEvlh = -1.0; // TODO
-    double tQWBarrMlh = 0.150; // TODO
-    double tQWBarrEvlh = -1.25; // TODO
-    double tQWBarrH = 100.; // TODO
+    double eClad1 = 0.; // TODO
+    double eClad2 = 0.; // TODO
 
-    double tDEvlh = tCladEv0; // Ev0 for cladding
+    bool tfStructOK = true;
+
+    double tDEvlh = region.getLayerMaterial(0)->VB(T,eClad1,'G','L'); // Ev0 for cladding
+
+        double tX = 0.;
+        mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, region.getLayerMaterial(0)->Mlh(T,eClad1).c00, region.getLayerMaterial(0)->Mlh(T,eClad1).c11, tX, (-region.getLayerMaterial(0)->VB(T,eClad1,'G','L')+tDEvlh)); // left cladding
+        mpEvlh.push_back(mpLay);
+        for (int i=1; i<tN-1; ++i)
+        {
+            double e = 0.; // (-) TODO
+            double tH = region.getLayerBox(i).height(); // (um) czy na pewno h powinno byc w um i czy w ten sposob uzyskuje dobra wartosc? // TODO
+            mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh)); // wells and barriers
+            mpEvlh.push_back(mpLay); tX += tH;
+            if (region.getLayerMaterial(i)->VB(T,e,'G','L') <= tDEvlh)
+                tfStructOK = false;
+        }
+        mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Mlh(T,eClad2).c00, region.getLayerMaterial(tN-1)->Mlh(T,eClad2).c11, tX, (-region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','L')+tDEvlh));
+        mpEvlh.push_back(mpLay); // add delete somewhere! TODO
+
+        if (tfStructOK)
+            return 0; // band structure OK
+        else
+            return -1;
+
+    /*double tDEvlh = tCladEv0; // Ev0 for cladding
 
     double tX = 0.;
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, tCladMlh, tCladMlh, tX, (-tCladEv0+tDEvlh)); // left cladding
@@ -557,13 +645,13 @@ int FerminewGainSolver<GeometryType>::buildEvlh() // LUKASZ
     if (((-tCladEv0+tDEvlh) >= (-tBarrEvlh+tDEvlh)) && ((-tBarrEvlh+tDEvlh) >= (-tQWEvlh+tDEvlh)))
         return 0; // band structure OK
     else
-        return -1;
+        return -1;*/
 }
 
 template <typename GeometryType>
-double FerminewGainSolver<GeometryType>::getGainTEST() // LUKASZ
+double FerminewGainSolver<GeometryType>::getGainTEST(double T, const ActiveRegionInfo& region) // LUKASZ
 {
-    buildStructure();
+    buildStructure(T, region);
 
     double tCladEg = 4.; // cladding Eg TODO (eV)
     double tQWDso = 0.150; // QW Dso TODO (eV)
@@ -586,11 +674,11 @@ double FerminewGainSolver<GeometryType>::getGainTEST() // LUKASZ
         QW::gain wzmoc(&aktyw, inN*(tQWTotH*1e-7), tT, tQWnR);
 
         //std::cout << "Calculating quasi Fermi levels and carrier concentrations..\n";
-        double tFe = wzmoc.policz_qFlc();
-        double tFp = wzmoc.policz_qFlv();
-        std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, tT);
-        //for(int i = 0; i <= (int) tN.size() - 1; i++)
-            //std::cout << i << "\t" << struktura::koncentracja_na_cm_3(tN[i]) << "\n";
+        /*double tFe = */wzmoc.policz_qFlc();
+        /*double tFp = */wzmoc.policz_qFlv();
+        /*std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, tT);
+        for(int i = 0; i <= (int) tN.size() - 1; i++)
+            std::cout << i << "\t" << struktura::koncentracja_na_cm_3(tN[i]) << "\n";*/
 
         double tGehh = wzmoc.wzmocnienie_od_pary_pasm(nm_to_eV(tLam), 0, 0);
         double tGelh = wzmoc.wzmocnienie_od_pary_pasm(nm_to_eV(tLam), 0, 1);
@@ -714,7 +802,16 @@ const DataVector<double> FerminewGainSolver<GeometryType>::getGain(const MeshD<2
         size_t i = points[j].first;
         const ActiveRegionInfo& region = regions[points[j].second];
         QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
-        //gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen); // LUKASZ
+
+        //std::cout << "Calculating quasi Fermi levels and carrier concentrations..\n";
+        /*double tFe = */gainModule.policz_qFlc();
+        /*double tFp = */gainModule.policz_qFlv();
+        /*std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, tT);
+        for(int i = 0; i <= (int) tN.size() - 1; i++)
+            std::cout << i << "\t" << struktura::koncentracja_na_cm_3(tN[i]) << "\n";*/
+        double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);
+        double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1);
+        gainOnMesh[i] = tGehh+tGelh;
     }
 
     if (this->mesh) {
