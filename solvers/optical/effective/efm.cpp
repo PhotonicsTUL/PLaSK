@@ -407,7 +407,7 @@ void EffectiveFrequencyCylSolver::stageOne()
             for (size_t i = 0; i < rsize; ++i)
                 if (i != rstripe) computeStripeNNg(i);
         }
-        assert(zweights.size() == zsize);
+        assert(zintegrals.size() == zsize);
 
 #       ifndef NDEBUG
             std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
@@ -502,7 +502,7 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
 }
 
 
-void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_weighs)
+void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_integrals)
 {
     size_t stripe0 = (rstripe < 0)? stripe : rstripe;
 
@@ -519,7 +519,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_weig
 
     double sum = 0.;
 
-    if (save_weighs) zweights.resize(zsize);
+    if (save_integrals) zintegrals.resize(zsize);
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
@@ -540,13 +540,13 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_weig
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            weight = - imag(zfield[i].F * conj(zfield[i].F) * w_ff +
-                            zfield[i].F * conj(zfield[i].B) * w_fb +
-                            zfield[i].B * conj(zfield[i].F) * w_bf +
-                            zfield[i].B * conj(zfield[i].B) * w_bb);
+            weight = -imag(zfield[i].F * conj(zfield[i].F) * w_ff +
+                           zfield[i].F * conj(zfield[i].B) * w_fb +
+                           zfield[i].B * conj(zfield[i].F) * w_bf +
+                           zfield[i].B * conj(zfield[i].B) * w_bb);
         }
         sum += weight;
-        if (save_weighs) zweights[i] = weight;
+        if (save_integrals) zintegrals[i] = weight;
         nng[stripe] += weight * nrCache[stripe][i] * ngCache[stripe][i];
         if (stripe != stripe0) {
             veffs[stripe] += weight * (nrCache[stripe][i]*nrCache[stripe][i] - nrCache[stripe0][i]*nrCache[stripe0][i]);
@@ -559,27 +559,23 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_weig
     }
 
     nng[stripe] /= sum;
-
-    if (save_weighs) {
-        double f = 1. / sum;
-        for (double& w: zweights) w *= f;
-    }
 }
 
-double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode)
+double EffectiveFrequencyCylSolver::integrateBessel(Mode& mode)
 {
     double err = perr;
-    rweights.resize(rsize);
+    mode.rintegrals.resize(rsize);
     size_t lastr = rsize-1;
     double sum = 0;
     for (size_t i = 0; i < lastr; ++i) {
-        rweights[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, mesh->axis0[i], mesh->axis0[i+1], err);
-        sum += rweights[i];
+        mode.rintegrals[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, mesh->axis0[i], mesh->axis0[i+1], err);
+        sum += mode.rintegrals[i];
     }
     //TODO use exponential asymptotic approximation to compute weight in the last stripe
-    rweights[lastr] = 0.;
-    double f = 1./sum; for (double& w: rweights) w *= f;
-    return 2*M_PI * sum; //TODO consider m <> 0
+    mode.rintegrals[lastr] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, mesh->axis0[lastr], 2.0*mesh->axis0[lastr], err);
+    sum += mode.rintegrals[lastr];
+    double f = 2e12*M_PI / sum; for (double& w: mode.rintegrals) w *= f;
+    return 2.*M_PI * sum; //TODO consider m <> 0
 }
 
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
@@ -637,7 +633,45 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 }
 
 
+double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
+{
+    double result = 0.;
 
+    for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
+        for (size_t ir = 0; ir < rsize; ++ir) {
+            double d = mesh->axis1[iz]-mesh->axis1[iz-1];
+            double absp = imag(nrCache[ir][iz] * nrCache[ir][iz]);
+            result += absp * d * mode.power * mode.rintegrals[ir] * zintegrals[iz];
+        }
+    }
+    double power = 1e-3 * mode.power; // 1e-3 mW->W
+    result *= 0.5 * power * real(k0) * phys::c * phys::epsilon0;
+    return result;
+}
+
+
+double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
+{
+    if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
+
+    if (!modes[num].have_fields) {
+        size_t stripe = getMainStripe();
+        // Compute vertical part
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
+        // Compute horizontal part
+        detS(modes[num].lam, modes[num], true);
+        #ifndef NDEBUG
+        {
+            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
+                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
+            writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
+        }
+        #endif
+        modes[num].have_fields = true;
+    }
+
+    return getTotalAbsorption(modes[num]);
+}
 
 plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
 {
@@ -645,22 +679,20 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 
     if (modes.size() <= num || k0 != old_k0) throw NoValue(LightIntensity::NAME);
 
-    if (!modes[num].have_fields) {
-        detS(modes[num].lam, modes[num], true);
-#ifndef NDEBUG
-        {
-            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
-                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
-            writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
-        }
-#endif
-    }
-
     size_t stripe = getMainStripe();
 
     if (!modes[num].have_fields) {
         // Compute vertical part
         detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
+        // Compute horizontal part
+        detS(modes[num].lam, modes[num], true);
+        #ifndef NDEBUG
+        {
+            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
+                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
+            writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
+        }
+        #endif
         modes[num].have_fields = true;
     }
 
