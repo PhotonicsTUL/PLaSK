@@ -26,7 +26,7 @@ static py::object FerminewGainSpectrum__call__(GainSpectrum<GeometryT>& self, py
    return UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
 }
 
-template <typename GeometryT>
+/*template <typename GeometryT>
 static py::object FerminewGain_determineLevels(FerminewGainSolver<GeometryT>& self, double T, double n)
 {
     py::list result;
@@ -40,7 +40,7 @@ static py::object FerminewGain_determineLevels(FerminewGainSolver<GeometryT>& se
         result.append(info);
     }
     return result;
-}
+}*/
 
 template <typename GeometryT>
 static py::object FerminewGain_setLevels(py::tuple args, py::dict kwargs)
@@ -108,8 +108,8 @@ BOOST_PYTHON_MODULE(complex)
     plask_import_array();
 
     {CLASS(FerminewGainSolver<Geometry2DCartesian>, "Ferminew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
-        solver.def("determine_levels", &FerminewGain_determineLevels<Geometry2DCartesian>,
-                   "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
+        //solver.def("determine_levels", &FerminewGain_determineLevels<Geometry2DCartesian>,
+        //           "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FerminewGain_setLevels<Geometry2DCartesian>),
                    "set_levels(**kwargs)\n\n"
                    "Determine quasi-Fermi levels and carriers levels inside QW.\n"
@@ -136,8 +136,8 @@ BOOST_PYTHON_MODULE(complex)
         ;*/ // LUKASZ
     }
     {CLASS(FerminewGainSolver<Geometry2DCylindrical>, "FerminewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
-        solver.def("determine_levels", &FerminewGain_determineLevels<Geometry2DCylindrical>,
-                   "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
+        //solver.def("determine_levels", &FerminewGain_determineLevels<Geometry2DCylindrical>,
+        //          "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FerminewGain_setLevels<Geometry2DCylindrical>),
                    "set_levels(**kwargs)\n\n"
                    "Determine quasi-Fermi levels and carriers levels inside QW.\n"

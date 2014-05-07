@@ -121,9 +121,6 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     ///< List of active regions
     std::vector<ActiveRegionInfo> regions;
 
-    ///< Optional externally set energy levels
-    //boost::optional<QW::ExternalLevels> extern_levels; // LUKASZ
-
     /// Receiver for temperature.
     ReceiverFor<Temperature,GeometryType> inTemperature;
 
@@ -143,24 +140,22 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     virtual std::string getClassName() const;
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
-
+/*
     /// Function computing energy levels
     std::deque<std::tuple<std::vector<double>,std::vector<double>,std::vector<double>,double,double>>
     determineLevels(double T, double n);
-
+*/
   protected:
 
     friend struct GainSpectrum<GeometryType>;
     friend class QW::gain;
 
-    double cond_waveguide_depth;    ///< waveguide conduction band depth [eV]
-    double vale_waveguide_depth;    ///< waveguide valence band depth [eV]
     double roughness;               ///< roughness [-?]
     double matrixelem;              ///< optical matrix element [m0*eV]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
 
     // LUKASZ
-    double gainTEST; // for test only
+    //double gainTEST; // for test only
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
     QW::warstwa *mpLay;
@@ -180,11 +175,6 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
-        /*if (extern_levels) { // LUKASZ
-            gmodule.przygobl_n(*extern_levels, gmodule.przel_dlug_z_angstr(region.qwtotallen));
-        } else {
-            gmodule.przygobl_n(gmodule.przel_dlug_z_angstr(region.qwtotallen));
-        }*/
     }
 
     double nm_to_eV(double wavelength) {
@@ -229,7 +219,7 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
 
-    double getGainTEST(double T, const ActiveRegionInfo &region); // LUKASZ for test only
+    //double getGainTEST(double T, const ActiveRegionInfo &region); // LUKASZ for test only
 
     /**
      * Reg gain spectrum object for future use;
