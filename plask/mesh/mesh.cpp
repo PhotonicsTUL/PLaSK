@@ -2,8 +2,8 @@
 
 namespace plask {
 
-std::map<std::string, RegisterMeshReader::ReadingFunction*>& RegisterMeshReader::getReaders() {
-    static std::map<std::string, RegisterMeshReader::ReadingFunction*> result;
+std::map<std::string, RegisterMeshReader::ReadingFunction>& RegisterMeshReader::getReaders() {
+    static std::map<std::string, RegisterMeshReader::ReadingFunction> result;
     return result;
 }
 
@@ -18,16 +18,16 @@ RegisterMeshReader::ReadingFunction RegisterMeshReader::getReader(const std::str
 }
 
 
-std::map<std::string, RegisterMeshGeneratorReader::ReadingFunction*>& RegisterMeshGeneratorReader::getReaders() {
-    static std::map<std::string, RegisterMeshGeneratorReader::ReadingFunction*> result;
+std::map<std::string, RegisterMeshGeneratorReader::ReadingFunction>& RegisterMeshGeneratorReader::getReaders() {
+    static std::map<std::string, RegisterMeshGeneratorReader::ReadingFunction> result;
     return result;
 }
 
-RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_name, RegisterMeshGeneratorReader::ReadingFunction* fun) {
+RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_name, RegisterMeshGeneratorReader::ReadingFunction fun) {
     getReaders()[tag_name] = fun;
 }
 
-RegisterMeshGeneratorReader::ReadingFunction* RegisterMeshGeneratorReader::getReader(const std::string& name) {
+RegisterMeshGeneratorReader::ReadingFunction RegisterMeshGeneratorReader::getReader(const std::string& name) {
     auto reader = getReaders().find(name);
     if (reader == getReaders().end()) throw Exception("No registered reader for mesh generator of type '%1%'", name);
     return reader->second;
