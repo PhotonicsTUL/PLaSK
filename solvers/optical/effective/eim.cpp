@@ -558,9 +558,9 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
 
     size_t start;
 
-    double sum = abs2(mode.xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
+    double sum = mode.xweights[xend-1] = abs2(mode.xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
     if (mode.symmetry == SYMMETRY_NONE) {
-        sum += abs2(mode.xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
+        sum += mode.xweights[0] = abs2(mode.xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
         start = xbegin+1;
     } else {
         start = xbegin;
@@ -582,11 +582,12 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            sum -= imag(mode.xfields[i].F * conj(mode.xfields[i].F) * w_ff +
-                        mode.xfields[i].F * conj(mode.xfields[i].B) * w_fb +
-                        mode.xfields[i].B * conj(mode.xfields[i].F) * w_bf +
-                        mode.xfields[i].B * conj(mode.xfields[i].B) * w_bb
-                       );
+            mode.xweights[i] = - imag(mode.xfields[i].F * conj(mode.xfields[i].F) * w_ff +
+                                      mode.xfields[i].F * conj(mode.xfields[i].B) * w_fb +
+                                      mode.xfields[i].B * conj(mode.xfields[i].F) * w_bf +
+                                      mode.xfields[i].B * conj(mode.xfields[i].B) * w_bb
+                                     );
+            sum += mode.xweights[i];
         }
     }
     if (mode.symmetry != SYMMETRY_NONE) sum *= 2.;
@@ -603,14 +604,38 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
         R1 = abs((n-n1) / (n+n1));
         R2 = abs((n-n2) / (n+n2));
     }
-    if (emission == FRONT) sum *= R1;
-    else sum *= R2;
+    if (emission == FRONT) sum *= (1. - R1);
+    else sum *= (1. - R2);
 
-    dcomplex f = sqrt(1e12 / sum);  // 1e12 because intensity in W/m² and integral computed in µm
+    double ff = 1e12 / sum; // 1e12 because intensity in W/m² and integral computed in µm
+    double f = sqrt(ff);
 
-    for (size_t i = xbegin; i < xend; ++i) {
-        mode.xfields[i] *= f;
+    for (auto& val: mode.xfields) val *= f;
+    for (auto& val: mode.xweights) val *= ff;
+}
+
+double EffectiveIndex2DSolver::getTotalAbsorption(const Mode& mode)
+{
+    double result = 0.;
+
+    for (size_t ix = 0; ix < xend; ++ix) {
+        for (size_t iy = ybegin; iy < yend; ++iy) {
+            double absp = - 2. * real(nrCache[ix][iy]) * imag(nrCache[ix][iy]);
+            result += absp * mode.xweights[ix] * yweights[iy]; // [dV] = µm³
+        }
     }
+    result *= 1e-9 * real(k0) * mode.power; // 1e-9: µm³ / nm -> m², ½ is already hidden in mode.power
+    return result;
+}
+
+
+double EffectiveIndex2DSolver::getTotalAbsorption(size_t num)
+{
+    if (modes.size() <= num) throw NoValue("absorption");
+
+    if (!modes[num].have_fields) detS(modes[num].neff, modes[num], true);
+
+    return getTotalAbsorption(modes[num]);
 }
 
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver::Mode& mode, bool save)

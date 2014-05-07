@@ -58,16 +58,16 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         EffectiveFrequencyCylSolver* solver;///< Solver this mode belongs to
         int m;                              ///< Number of the LP_mn mode describing angular dependence
         bool have_fields;                   ///< Did we compute fields for current state?
-        std::vector<FieldR> rfields;        ///< Computed horizontal fields
+        std::vector<FieldR,aligned_allocator<FieldR>> rfields; ///< Computed horizontal fields
+        std::vector<double,aligned_allocator<double>> rweights; /// Computed normalized lateral field integral for each stripe
         dcomplex lam;                       ///< Stored wavelength
         double power;                       ///< Mode power [mW]
 
-        /// Computed normalized lateral field integral for each stripe
-        std::vector<double,aligned_allocator<double>> rintegrals;
+        Mode(EffectiveFrequencyCylSolver* solver):
+            solver(solver), m(0), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1.) {}
 
-        Mode(EffectiveFrequencyCylSolver* solver): solver(solver), m(0), have_fields(false), rfields(solver->rsize), power(1.) {}
-
-        Mode(EffectiveFrequencyCylSolver* solver, int m): solver(solver), m(m), have_fields(false), rfields(solver->rsize), power(1.) {}
+        Mode(EffectiveFrequencyCylSolver* solver, int m):
+            solver(solver), m(m), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1.) {}
 
         bool operator==(const Mode& other) const {
             return m == other.m && is_zero(lam - other.lam);

@@ -519,7 +519,10 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_inte
 
     double sum = 0.;
 
-    if (save_integrals) zintegrals.resize(zsize);
+    if (save_integrals) {
+        #pragma omp critical
+        zintegrals.resize(zsize);
+    }
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
         double d = mesh->axis1[i]-mesh->axis1[i-1];
@@ -546,7 +549,10 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_inte
                            zfield[i].B * conj(zfield[i].B) * w_bb);
         }
         sum += weight;
-        if (save_integrals) zintegrals[i] = weight;
+        if (save_integrals) {
+            #pragma omp critical
+            zintegrals[i] = weight;
+        }
         nng[stripe] += weight * nrCache[stripe][i] * ngCache[stripe][i];
         if (stripe != stripe0) {
             veffs[stripe] += weight * (nrCache[stripe][i]*nrCache[stripe][i] - nrCache[stripe0][i]*nrCache[stripe0][i]);
@@ -563,19 +569,18 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_inte
 
 double EffectiveFrequencyCylSolver::integrateBessel(Mode& mode)
 {
-    double err = perr;
-    mode.rintegrals.resize(rsize);
-    size_t lastr = rsize-1;
     double sum = 0;
-    for (size_t i = 0; i < lastr; ++i) {
-        mode.rintegrals[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, mesh->axis0[i], mesh->axis0[i+1], err);
-        sum += mode.rintegrals[i];
+    for (size_t i = 0; i != rsize; ++i) {
+        double start = mesh->axis0[i];
+        double end = (i != rsize-1)? mesh->axis0[i+1] : 3.0 * mesh->axis0[i];
+        double err = perr;
+        mode.rweights[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
+        //TODO use exponential asymptotic approximation to compute weight in the last stripe
+        sum += mode.rweights[i];
     }
-    //TODO use exponential asymptotic approximation to compute weight in the last stripe
-    mode.rintegrals[lastr] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, mesh->axis0[lastr], 2.0*mesh->axis0[lastr], err);
-    sum += mode.rintegrals[lastr];
-    double f = 2e12*M_PI / sum; for (double& w: mode.rintegrals) w *= f;
-    return 2.*M_PI * sum; //TODO consider m <> 0
+    //TODO consider m <> 0
+    double f = 1e12 / sum; for (double& w: mode.rweights) w *= f;
+    return 2.*M_PI * sum;
 }
 
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
@@ -623,7 +628,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
     }
 
     if (save) {
-        dcomplex f = sqrt(1e12 / integrateBessel(mode));
+        dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
         for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
     }
 
@@ -637,15 +642,26 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
 {
     double result = 0.;
 
-    for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
-        for (size_t ir = 0; ir < rsize; ++ir) {
-            double d = mesh->axis1[iz]-mesh->axis1[iz-1];
-            double absp = imag(nrCache[ir][iz] * nrCache[ir][iz]);
-            result += absp * d * mode.power * mode.rintegrals[ir] * zintegrals[iz];
+    for (size_t ir = 0; ir < rsize; ++ir) {
+        for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
+            double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+            result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
+            // double err = 1e-6, erz = 1e-6;
+            // double rstart = mesh->axis0[ir];
+            // double rend = (ir != rsize-1)? mesh->axis0[ir+1] : 3.0 * mesh->axis0[ir];
+            // result += absp * 2.*M_PI *
+            //     patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, rstart,  rend, err) *
+            //     patterson<double>([&](double z){
+            //         size_t stripe = getMainStripe();
+            //         dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
+            //         if (real(kz) < 0.) kz = -kz;
+            //         z -= mesh->axis1[iz];
+            //         dcomplex phasz = exp(- I * kz * z);
+            //         return abs2(zfields[iz].F * phasz + zfields[iz].B / phasz);
+            //     }, mesh->axis1[iz-1], mesh->axis1[iz], erz);
         }
     }
-    double power = 1e-3 * mode.power; // 1e-3 mW->W
-    result *= 0.5 * power * real(k0) * phys::c * phys::epsilon0;
+    result *= 2e-9 * M_PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
     return result;
 }
 
