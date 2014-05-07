@@ -89,4 +89,31 @@ shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &
    return make_shared<RectangularMesh<3>>(make_shared<RectilinearAxis>(*to_copy.axis0), make_shared<RectilinearAxis>(*to_copy.axis1), make_shared<RectilinearAxis>(*to_copy.axis2), to_copy.getIterationOrder());
 }
 
+static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
+    shared_ptr<RectangularAxis> axis[3];
+    XMLReader::CheckTagDuplication dub_check;
+    for (int i = 0; i < 3; ++i) {
+        reader.requireTag();
+        std::string node = reader.getNodeName();
+        if (node != "axis0" && node != "axis1" && node != "axis3") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1> or <axis2>");
+        dub_check(std::string("<mesh>"), node);
+        boost::optional<std::string> type = reader.getAttribute("type");
+        if (type) {
+            if (*type == "regular") axis[node[4]-'0'] = readRegularMesh1D(reader);
+            else if (*type == "rectilinear") axis[node[4]-'0'] = readRectilinearMesh1D(reader);
+            else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"rectilinear\"");
+        } else {
+            if (reader.hasAttribute("start")) axis[node[4]-'0'] = readRegularMesh1D(reader);
+            else axis[node[4]-'0'] = readRectilinearMesh1D(reader);
+        }
+    }
+    return make_shared<RectangularMesh<3>>(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]));
+}
+
+static RegisterMeshReader rectangular3d_reader("rectangular3d", readRectangularMesh3D);
+
+// deprecated:
+static RegisterMeshReader regularmesh3d_reader("regular3d", readRectangularMesh3D);
+static RegisterMeshReader rectilinear3d_reader("rectilinear3d", readRectangularMesh3D);
+
 } // namespace plask

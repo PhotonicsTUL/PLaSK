@@ -7,11 +7,11 @@ std::map<std::string, RegisterMeshReader::ReadingFunction*>& RegisterMeshReader:
     return result;
 }
 
-RegisterMeshReader::RegisterMeshReader(const std::string& tag_name, RegisterMeshReader::ReadingFunction* fun) {
+RegisterMeshReader::RegisterMeshReader(const std::string& tag_name, ReadingFunction fun) {
     getReaders()[tag_name] = fun;
 }
 
-RegisterMeshReader::ReadingFunction* RegisterMeshReader::getReader(const std::string& name) {
+RegisterMeshReader::ReadingFunction RegisterMeshReader::getReader(const std::string& name) {
     auto reader = getReaders().find(name);
     if (reader == getReaders().end()) throw Exception("No registered reader for mesh of type '%1%'", name);
     return reader->second;

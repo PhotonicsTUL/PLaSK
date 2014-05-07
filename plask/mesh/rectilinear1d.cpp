@@ -89,4 +89,28 @@ shared_ptr<RectangularAxis> RectilinearAxis::clone() const {
     return make_shared<RectilinearAxis>(*this);
 }
 
+shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader) {
+    auto result = make_shared<RectilinearMesh1D>();
+    if (reader.hasAttribute("start")) {
+         double start = reader.requireAttribute<double>("start");
+         double stop = reader.requireAttribute<double>("stop");
+         size_t count = reader.requireAttribute<size_t>("num");
+         result->addPointsLinear(start, stop, count);
+         reader.requireTagEnd();
+    } else {
+         std::string data = reader.requireTextInCurrentTag();
+         for (auto point: boost::tokenizer<>(data)) {
+             try {
+                 double val = boost::lexical_cast<double>(point);
+                 result->addPoint(val);
+             } catch (boost::bad_lexical_cast) {
+                 throw XMLException(reader, format("Value '%1%' cannot be converted to float", point));
+             }
+         }
+    }
+    return result;
+}
+
+static RegisterMeshReader rectilinearmesh1d_reader("rectilinear", readRectilinearMesh1D);
+
 }   // namespace plask

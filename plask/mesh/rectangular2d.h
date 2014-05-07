@@ -206,14 +206,6 @@ class RectangularMesh<2>: public MeshD<2> {
     RectangularAxis* minor_axis; ///< minor (changing fastest) axis
     RectangularAxis* major_axis; ///< major (changing slowest) axis
 
-    shared_ptr<RectangularMesh<2>> midpoints_cache; ///< cache for midpoints mesh
-
-  protected:
-
-    virtual void onChange(const Event& evt) {
-        midpoints_cache.reset();
-    }
-
   public:
 
     /**

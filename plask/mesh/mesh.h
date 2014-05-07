@@ -463,10 +463,10 @@ class MeshGeneratorD: public MeshGenerator
  * Each mesh can create one global instance of this class to its reader.
  */
 struct RegisterMeshReader {
-    typedef shared_ptr<Mesh> ReadingFunction(XMLReader&);
-    RegisterMeshReader(const std::string& tag_name, ReadingFunction* fun);
+    typedef std::function<shared_ptr<Mesh>(XMLReader&)> ReadingFunction;
+    RegisterMeshReader(const std::string& tag_name, ReadingFunction fun);
     static std::map<std::string, ReadingFunction*>& getReaders();
-    static ReadingFunction* getReader(const std::string& name);
+    static ReadingFunction getReader(const std::string& name);
 };
 
 struct Manager;

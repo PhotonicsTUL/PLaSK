@@ -34,14 +34,6 @@ class RectangularMesh<3>: public MeshD<3> {
     RectangularAxis* medium_axis;
     RectangularAxis* major_axis;
 
-    shared_ptr<RectangularMesh<3>> midpoints_cache; ///< cache for midpoints mesh
-
-  protected:
-
-    virtual void onChange(const Event& evt) {
-        midpoints_cache.reset();
-    }
-
   public:
 
     /**

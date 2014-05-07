@@ -60,49 +60,35 @@ void RectangularMesh<2>::writeXML(XMLElement& object) const {
 // Particular instantations
 template class RectangularMesh<2>;
 
+static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
+    shared_ptr<RectangularAxis> axis[2];
+    XMLReader::CheckTagDuplication dub_check;
+    for (int i = 0; i < 2; ++i) {
+        reader.requireTag();
+        std::string node = reader.getNodeName();
+        if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
+        dub_check(std::string("<mesh>"), node);
+        boost::optional<std::string> type = reader.getAttribute("type");
+        if (type) {
+            if (*type == "regular") axis[node[4]-'0'] = readRegularMesh1D(reader);
+            else if (*type == "rectilinear") axis[node[4]-'0'] = readRectilinearMesh1D(reader);
+            else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"rectilinear\"");
+        } else {
+            if (reader.hasAttribute("start")) axis[node[4]-'0'] = readRegularMesh1D(reader);
+            else axis[node[4]-'0'] = readRectilinearMesh1D(reader);
+        }
+    }
+    return make_shared<RectangularMesh<2>>(std::move(axis[0]), std::move(axis[1]));
+}
+
+static RegisterMeshReader rectangular2d_reader("rectangular2d", readRectangularMesh2D);
+
+// deprecated:
+static RegisterMeshReader regularmesh2d_reader("regular2d", readRectangularMesh2D);
+static RegisterMeshReader rectilinear2d_reader("rectilinear2d", readRectangularMesh2D);
+
 
 /*
-
-template<>
-shared_ptr<RegularMesh2D> RegularMesh2D::getMidpointsMesh() {
-    if (this->midpoints_cache) return this->midpoints_cache;
-
-    this->midpoints_cache = make_shared<RegularMesh2D>(
-        RegularAxis(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
-        RegularAxis(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1)
-    );
-    return this->midpoints_cache;
-}
-
-template<>
-shared_ptr<RegularMesh3D> RegularMesh3D::getMidpointsMesh() {
-    if (this->midpoints_cache) return this->midpoints_cache;
-
-    this->midpoints_cache = make_shared<RegularMesh3D>(
-        RegularAxis(this->axis0.first() + 0.5*this->axis0.step(), this->axis0.last() - 0.5*this->axis0.step(), this->axis0.size()-1),
-        RegularAxis(this->axis1.first() + 0.5*this->axis1.step(), this->axis1.last() - 0.5*this->axis1.step(), this->axis1.size()-1),
-        RegularAxis(this->axis2.first() + 0.5*this->axis2.step(), this->axis2.last() - 0.5*this->axis2.step(), this->axis2.size()-1)
-    );
-    return this->midpoints_cache;
-}
-
-
-template <>
-void RegularMesh2D::writeXML(XMLElement& object) const {
-    object.attr("type", "regular2d");
-    object.addTag("axis0").attr("start", axis0.first()).attr("stop", axis0.last()).attr("num", axis0.size());
-    object.addTag("axis1").attr("start", axis1.first()).attr("stop", axis1.last()).attr("num", axis1.size());
-}
-
-template <>
-void RegularMesh3D::writeXML(XMLElement& object) const {
-    object.attr("type", "regular3d");
-    object.addTag("axis0").attr("start", axis0.first()).attr("stop", axis0.last()).attr("num", axis0.size());
-    object.addTag("axis1").attr("start", axis1.first()).attr("stop", axis1.last()).attr("num", axis1.size());
-    object.addTag("axis2").attr("start", axis2.first()).attr("stop", axis2.last()).attr("num", axis2.size());
-}
-
-
 static shared_ptr<Mesh> readRegularMesh2D(XMLReader& reader)
 {
     std::map<std::string,std::tuple<double,double,size_t>> axes;
@@ -112,7 +98,7 @@ static shared_ptr<Mesh> readRegularMesh2D(XMLReader& reader)
         std::string node = reader.getNodeName();
 
         if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
-        if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), "tag <" + node + ">");
+        if (axes.find(node) != axes.end()) throw XMLDuplicatedElementException(std::string("<mesh>"), node);
 
         double start = reader.requireAttribute<double>("start");
         double stop = reader.requireAttribute<double>("stop");

@@ -218,7 +218,7 @@ shared_ptr<RectilinearAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_
 template <> shared_ptr<MeshD<1>>
 RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
-    shared_ptr<RectilinearAxis> mesh;
+    shared_ptr<RectilinearAxis> mesh = make_shared<RectilinearAxis>();
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
         if (box.isValid()) {
