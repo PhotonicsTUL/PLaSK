@@ -427,7 +427,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     }
 
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    DataVector<const double> getLightMagnitude(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
     DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
@@ -437,7 +437,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
 
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
+    bool getLightMagnitude_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
                                      const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                      const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky);
 

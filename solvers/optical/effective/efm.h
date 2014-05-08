@@ -473,7 +473,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     }
 
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    DataVector<const double> getLightMagnitude(int num, const MeshD<2>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
     DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
@@ -483,7 +483,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
 
   private:
     template <typename MeshT>
-    bool getLightIntenisty_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);
+    bool getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);
 };
 
 

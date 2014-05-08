@@ -199,8 +199,19 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
     def testAbsorptionIntegral(self):
         self.profile[self.manager.geometry['active']] = 1181.6834
         m = self.solver.find_mode(980.)
-        self.solver.modes[m].power = 1.0
+        self.solver.modes[m].power = 2.0
         box = self.solver.geometry.item.bbox
         ints = self.solver.outLightMagnitude(m, mesh.Rectilinear2D([0.], [box.lower.z, box.upper.z]))
         total_power = self.solver.modes[m].power * (1. + 3.53 * ints[0] / ints[1])
-        self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 3 )
+        self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 2 )
+
+    def testAbsorbedHeat(self):
+        self.profile[self.manager.geometry['active']] = 1181.6834
+        m = self.solver.find_mode(980.)
+        self.solver.modes[m].power = 2.0
+        box = self.solver.geometry.get_object_bboxes(self.manager.geometry['active'])[0]
+        msh = mesh.Rectilinear2D(linspace(0., 10., 1000.), [0.5 * (box.lower.z + box.upper.z)])
+        heat = self.solver.outHeat(msh).array[:,0]
+        # 1e-15: µm³->m³ W->mW
+        integral = 2e-15 * pi * sum(heat * msh.axis0) * (box.upper.z - box.lower.z) * (msh.axis0[1] - msh.axis0[0])
+        self.assertAlmostEqual( integral, self.solver.get_total_absorption(m), 2 )

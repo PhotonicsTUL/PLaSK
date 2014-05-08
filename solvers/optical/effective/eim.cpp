@@ -17,7 +17,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     vneff(0.),
     outdist(0.1),
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
-    outLightMagnitude(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
+    outLightMagnitude(this, &EffectiveIndex2DSolver::getLightMagnitude, &EffectiveIndex2DSolver::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2DSolver::getRefractiveIndex),
     outHeat(this, &EffectiveIndex2DSolver::getHeat),
     k0(2e3*M_PI/980) {
@@ -704,7 +704,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
 }
 
 
-plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
+plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -735,8 +735,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(num, dst_mesh, results, kx, ky) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(num, dst_mesh, results, kx, ky)) {
+    if (!getLightMagnitude_Efficient<RectilinearMesh2D>(num, dst_mesh, results, kx, ky) &&
+        !getLightMagnitude_Efficient<RegularMesh2D>(num, dst_mesh, results, kx, ky)) {
 
         #pragma omp parallel for
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
@@ -772,7 +772,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 }
 
 template <typename MeshT>
-bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
+bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky)
 {

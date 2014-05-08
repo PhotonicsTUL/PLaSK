@@ -18,7 +18,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     vlam(0.),
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
-    outLightMagnitude(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes),
+    outLightMagnitude(this, &EffectiveFrequencyCylSolver::getLightMagnitude,  &EffectiveFrequencyCylSolver::nmodes),
     outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex),
     outHeat(this, &EffectiveFrequencyCylSolver::getHeat) {
     inTemperature = 300.;
@@ -689,7 +689,7 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
     return getTotalAbsorption(modes[num]);
 }
 
-plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
+plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -714,8 +714,8 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient<RectilinearMesh2D>(num, stripe, dst_mesh, results) &&
-        !getLightIntenisty_Efficient<RegularMesh2D>(num, stripe, dst_mesh, results)) {
+    if (!getLightMagnitude_Efficient<RectilinearMesh2D>(num, stripe, dst_mesh, results) &&
+        !getLightMagnitude_Efficient<RegularMesh2D>(num, stripe, dst_mesh, results)) {
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
@@ -757,7 +757,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 }
 
 template <typename MeshT>
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
+bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
 {
     if (dynamic_cast<const MeshT*>(&dst_mesh)) {
 
@@ -860,8 +860,7 @@ DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& ds
     DataVector<double> result(dst_mesh.size(), 0.);
 
     for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
-        // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
-        result += 2e-12*M_PI / real(modes[m].lam) * modes[m].power * getLightIntenisty(m, dst_mesh, method);
+        result += 2e9*M_PI / real(modes[m].lam) * getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m
     }
     auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     for (size_t j = 0; j != result.size(); ++j) {
