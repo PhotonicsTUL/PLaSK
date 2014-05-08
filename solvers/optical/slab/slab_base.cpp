@@ -7,7 +7,7 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
     interface(1),
     outdist(0.1),
     smooth(0.),
-    outLightIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
+    outLightMagnitude(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
     outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
     outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
 {

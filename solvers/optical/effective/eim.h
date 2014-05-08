@@ -157,7 +157,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     typename ProviderFor<EffectiveIndex>::Delegate outNeff;
 
     /// Provider of optical field
-    typename ProviderFor<LightIntensity, Geometry2DCartesian>::Delegate outLightIntensity;
+    typename ProviderFor<LightMagnitude, Geometry2DCartesian>::Delegate outLightMagnitude;
 
     /// Provider for refractive index
     typename ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
@@ -376,7 +376,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
     void computeWeights(size_t stripe);
 
     /**
-     * Normalize horizontal fields, so multiplying LightIntensity by power gives proper LightIntensity in (V/m)²
+     * Normalize horizontal fields, so multiplying LightMagnitude by power gives proper LightMagnitude in (V/m)²
      * \param kx computed horizontal propagation constants
      */
     void normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
@@ -408,7 +408,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
             if (modes[i] == mode) return i;
         modes.push_back(mode);
         outNeff.fireChanged();
-        outLightIntensity.fireChanged();
+        outLightMagnitude.fireChanged();
         return modes.size()-1;
     }
 

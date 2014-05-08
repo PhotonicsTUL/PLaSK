@@ -22,7 +22,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
         plask::ReceiverFor<plask::GainOverCarriersConcentration, Geometry2DType> inGainOverCarriersConcentration;
         plask::ReceiverFor<plask::Wavelength> inWavelength;
-        plask::ReceiverFor<plask::LightIntensity, Geometry2DType> inLightIntensity;
+        plask::ReceiverFor<plask::LightMagnitude, Geometry2DType> inLightMagnitude;
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 

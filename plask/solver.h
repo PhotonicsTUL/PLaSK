@@ -128,7 +128,7 @@ Hence, we declare the following \link providers providers, receivers\endlink and
 
     plask::ProviderFor<plask::EffectiveIndex>::WithValue outNeff;
 
-    plask::ProviderFor<plask::LightIntensity, plask::Geometry2DCartesian>::Delegate outLightIntensity;
+    plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::Delegate outLightMagnitude;
 
     plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnField;
 \endcode
@@ -141,7 +141,7 @@ solver.
 
 When declaring providers, one needs to specify how the provided value can be obtained. In our case \c outNeff (again, the names of every
 provider in all solvers should begin with \a out prefix) will hold its value internally i.e. you will be able to assign a value to it as simply
-as <tt>outNeff = 3.5;</tt>. On the other hand, \c outLightIntensity is a delegate provider i.e. you will need to write a method which computes
+as <tt>outNeff = 3.5;</tt>. On the other hand, \c outLightMagnitude is a delegate provider i.e. you will need to write a method which computes
 the light intensity on demand (we will later show you how).
 
 As your solver inherits plask::SolverWithMesh, there is already a shared pointer to the \c geometry and \c mesh available. However, it might be
@@ -167,7 +167,7 @@ In addition, you should write getClassName method, which returns the category an
 
     FiniteDifferencesSolver(const std::string name& name=""):
         plask::SolverWithMesh<plask::Geometry2DCartesian,plask::RectilinearMesh2D>(name),
-        outLightIntensity(this, &FiniteDifferencesSolver::getIntensity) // attach the method returning the light intensity to delegate provider
+        outLightMagnitude(this, &FiniteDifferencesSolver::getIntensity) // attach the method returning the light intensity to delegate provider
     {
         inTemperature = 300.;                                      // set default value for input temperature
     }
@@ -176,7 +176,7 @@ In addition, you should write getClassName method, which returns the category an
 
 \endcode
 
-In the above illustration, we initialize the \c outLightIntensity provider with the pointer to the solver itself and the address of the method
+In the above illustration, we initialize the \c outLightMagnitude provider with the pointer to the solver itself and the address of the method
 computing the light intensity (we write this method \ref solver_delegate_provider_method "later"). Also, we set the default value of the
 temperature to 300&nbsp;K in the whole structure. As there is not default value for inWavelength, the user will have to provide it
 (either manually or from some wavelength provider) or the exception will be raised when we try to retrieve the wavelength value in our
@@ -240,7 +240,7 @@ of your providers, to notify the connected receivers about the change. Here is t
 
           outNeff = new_computed_effective_index;
           outNeff.fireChanged();            // inform others we computed new effective index
-          outLightIntensity.fireChanged();       // we will also be providing new light intensity
+          outLightMagnitude.fireChanged();       // we will also be providing new light intensity
       }
 \endcode
 
@@ -248,7 +248,7 @@ Assume that in the above sample computation method, we did not compute the light
 Of course the choice when to compute what depends strongly on your particular solver and you should focus on efficiency (i.e. compute only
 what is necessary) when making decisions on this matter.
 
-\anchor solver_delegate_provider_method The last thing to do is to write the method called by the delegate provider \c outLightIntensity when
+\anchor solver_delegate_provider_method The last thing to do is to write the method called by the delegate provider \c outLightMagnitude when
 someone wants to get the optical field intensity distribution. The arguments and return value of this method depend on the provider type.
 For interpolated fields they will look like in the following example:
 
@@ -256,7 +256,7 @@ For interpolated fields they will look like in the following example:
   protected:
 
     DataVector<const double> getIntensity(const plask::MeshD<2>& destination_mesh, plask::InterpolationMethod interpolation_method=INTERPOLATION_DEFAULT) {
-        if (!outNeff.hasValue()) throw NoValue(LightIntensity::NAME); // this is one possible indication that the solver is in invalidated state
+        if (!outNeff.hasValue()) throw NoValue(LightMagnitude::NAME); // this is one possible indication that the solver is in invalidated state
 
         if (computed_light_intensity.size() == 0)    // we need to compute the light intensity
         {
@@ -361,7 +361,7 @@ BOOST_PYTHON_MODULE(fd)
 
      PROVIDER(outNeff, "Effective index of the last computed mode");
 
-     PROVIDER(outLightIntensity, "Light intensity of the last computed mode");
+     PROVIDER(outLightMagnitude, "Light intensity of the last computed mode");
 
      BOUNDARY_CONDITIONS(boundary, boundaryConditionsOnField, "Boundary conditions of the first kind (constant field)");
 

@@ -21,7 +21,7 @@ constexpr const char* Gain::NAME;                           constexpr const char
 constexpr const char* GainOverCarriersConcentration::NAME;  constexpr const char* GainOverCarriersConcentration::UNIT;
 
 constexpr const char* RefractiveIndex::NAME;                constexpr const char* RefractiveIndex::UNIT;
-constexpr const char* LightIntensity::NAME;                 constexpr const char* LightIntensity::UNIT;
+constexpr const char* LightMagnitude::NAME;                 constexpr const char* LightMagnitude::UNIT;
 constexpr const char* OpticalElectricField::NAME;           constexpr const char* OpticalElectricField::UNIT;
 constexpr const char* OpticalMagneticField::NAME;           constexpr const char* OpticalMagneticField::UNIT;
 constexpr const char* Wavelength::NAME;                     constexpr const char* Wavelength::UNIT;

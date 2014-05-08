@@ -306,7 +306,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //             if (modes[i] == mode) return i;
 //         modes.push_back(mode);
 //         outNeff.fireChanged();
-//         outLightIntensity.fireChanged();
+//         outLightMagnitude.fireChanged();
 //         return modes.size()-1;
 //     }
 
@@ -341,7 +341,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //         typename ProviderFor<OpticalMagneticField,Geometry3DCartesian>::Delegate outMagneticField;
 //
 //         /// Provider of the optical field intensity
-//         typename ProviderFor<LightIntensity,Geometry3DCartesian>::Delegate outLightIntensity;
+//         typename ProviderFor<LightMagnitude,Geometry3DCartesian>::Delegate outLightMagnitude;
 //
 //         /// Return one as the number of the modes
 //         static size_t size() { return 1; }
@@ -359,7 +359,7 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //             outMagneticField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
 //                 parent->setWavelength(wavelength);
 //                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
-//             outLightIntensity([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+//             outLightMagnitude([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
 //                 parent->setWavelength(wavelength);
 //                 return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
 //         {}

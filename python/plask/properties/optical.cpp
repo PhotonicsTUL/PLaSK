@@ -12,9 +12,9 @@ namespace plask { namespace python {
  */
 void register_standard_properties_optical()
 {
-    registerProperty<LightIntensity>();
-    RegisterScaledProvider<ScaledFieldProvider<LightIntensity,LightIntensity,Geometry2DCartesian>>("ScaledLightIntensity");
-    //TODO RegisterCombinedProvider<LightIntensitySumProvider<Geometry2DCartesian>>("SumOfLightIntensity");
+    registerProperty<LightMagnitude>();
+    RegisterScaledProvider<ScaledFieldProvider<LightMagnitude,LightMagnitude,Geometry2DCartesian>>("ScaledLightMagnitude");
+    //TODO RegisterCombinedProvider<LightMagnitudeSumProvider<Geometry2DCartesian>>("SumOfLightMagnitude");
 
     registerProperty<OpticalElectricField>();
     registerProperty<OpticalMagneticField>();

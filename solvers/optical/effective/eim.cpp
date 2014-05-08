@@ -17,7 +17,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     vneff(0.),
     outdist(0.1),
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
-    outLightIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
+    outLightMagnitude(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2DSolver::getRefractiveIndex),
     outHeat(this, &EffectiveIndex2DSolver::getHeat),
     k0(2e3*M_PI/980) {
@@ -313,7 +313,7 @@ void EffectiveIndex2DSolver::onInvalidate()
     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
     modes.clear();
     outNeff.fireChanged();
-    outLightIntensity.fireChanged();
+    outLightMagnitude.fireChanged();
 }
 
 /********* Here are the computations *********/
@@ -708,7 +708,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (outNeff.size() <= num) throw NoValue(LightIntensity::NAME);
+    if (outNeff.size() <= num) throw NoValue(LightMagnitude::NAME);
 
     dcomplex neff = modes[num].neff;
 

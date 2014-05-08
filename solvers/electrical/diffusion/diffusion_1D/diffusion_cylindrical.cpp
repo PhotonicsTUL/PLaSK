@@ -254,8 +254,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                 if (overthreshold_computation)
                 {
                     // Compute E and F components for overthreshold computations
-                    if (inWavelength.size() != inLightIntensity.size())
-                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightIntensity differ");
+                    if (inWavelength.size() != inLightMagnitude.size())
+                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightMagnitude differ");
 
                     // Sum all modes
                     PM = DataVector<double>(mesh2.size(), 0.);
@@ -272,8 +272,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         mesh_Li.axis0 = current_mesh();
                         mesh_Li.axis1 = plask::RectilinearAxis(getZQWCoordinates());
 
-//                        auto Li = inLightIntensity(n, mesh2, interpolation_method);
-                        auto initial_Li = inLightIntensity(n, mesh_Li, interpolation_method);
+//                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
+                        auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);
                         auto Li = averageLi(initial_Li, mesh_Li);
 
                         write_debug("Li[0]: %1% W/cm2", Li[0]*1.0e-4);

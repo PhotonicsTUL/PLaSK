@@ -30,8 +30,8 @@ class EffectiveIndex2D_Test(unittest.TestCase):
     def testExceptions(self):
         with self.assertRaisesRegexp(ValueError, r"^Effective index \[0\] cannot be provided now$"):
             self.solver.outNeff(0)
-        with self.assertRaisesRegexp(ValueError, r"^Light intensity \[0\] cannot be provided now$"):
-            self.solver.outLightIntensity(0, mesh.Rectilinear2D([1,2],[3,4]))
+        with self.assertRaisesRegexp(ValueError, r"^Optical field magnitude \[0\] cannot be provided now$"):
+            self.solver.outLightMagnitude(0, mesh.Rectilinear2D([1,2],[3,4]))
 
     def testComputations(self):
         self.solver.wavelength = 1000.
@@ -84,7 +84,7 @@ class EffectiveIndex2DLaser_LaserTest(unittest.TestCase):
     #    self.profile[self.rect2] = 81.649513489
     #    m = self.solver.find_mode(1.15)
     #    self.solver.modes[m].power = 0.7
-    #    self.assertAlmostEqual(self.solver.get_total_absorption(m), -1.0, 3)
+    #    self.assertAlmostEqual( self.solver.get_total_absorption(m), -1.0, 3 )
 
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):
@@ -95,19 +95,26 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         self.manager.load('''
           <plask loglevel="debug">
             <materials>
-            <material name="GaAs" base="semiconductor">
-              <nr>3.53</nr>
-            </material>
-            <material name="AlGaAs" base="semiconductor">
-              <nr>3.08</nr>
-            </material>
-            <material name="AlAs" base="semiconductor">
-              <nr>2.95</nr>
-            </material>
-            <material name="InGaAs" base="semiconductor">
-              <nr>3.53</nr>
-              <absp>1000</absp>
-            </material>
+              <material name="GaAs" base="semiconductor">
+                <nr>3.53</nr>
+                <absp>0.</absp>
+              </material>
+              <material name="AlGaAs" base="semiconductor">
+                <nr>3.08</nr>
+                <absp>0.</absp>
+              </material>
+              <material name="AlAs" base="semiconductor">
+                <nr>2.95</nr>
+                <absp>0.</absp>
+              </material>
+              <material name="AlxOy" base="semiconductor">
+                <nr>1.53</nr>
+                <absp>0.</absp>
+              </material>
+              <material name="InGaAs" base="semiconductor">
+                <nr>3.53</nr>
+                <absp>0.</absp>
+              </material>
             </materials>
             <geometry>
               <cylindrical axes="rz" name="vcsel" outer="extend" bottom="GaAs">
@@ -124,7 +131,7 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
                 <block name="x" dr="10" dz="0.00000" material="AlGaAs"/>
                 <block dr="10" dz="0.13649" material="GaAs"/>
                 <shelf name="QW">
-                  <block name="active" dr="4" dz="0.00500" material="InGaAs"/><block dr="6" dz="0.00500" material="InGaAs"/>
+                  <block name="active" role="gain" dr="4" dz="0.00500" material="InGaAs"/><block dr="6" dz="0.00500" material="InGaAs"/>
                 </shelf>
                 <zero/>
                 <block dr="10" dz="0.13649" material="GaAs"/>
@@ -144,6 +151,8 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
           </plask>''')
         self.solver = self.manager.solver.efm
         self.solver.lam0 = 980.
+        self.profile = StepProfile(self.solver.geometry)
+        self.solver.inGain = self.profile.outGain
 
     def testField(self):
         axis0 = linspace(0.001, 39.999, 100000)
@@ -154,9 +163,9 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         msh = mesh.Rectilinear2D(axis0, axis1)
         self.solver.find_mode(980., 0)
         self.solver.modes[0].power = 2000.
-        field = self.solver.outLightIntensity(0,msh).array[:,-1]
+        field = self.solver.outLightMagnitude(0,msh).array[:,-1]
         integral = 2e-12 * pi * sum(field * msh.axis0) * dr
-        self.assertAlmostEqual(integral, 2., 4)
+        self.assertAlmostEqual( integral, 2., 4 )
 
     def testRefractiveIndex(self):
         self.solver.set_simple_mesh()
@@ -164,6 +173,34 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(980., 300.) for point in msh]
         self.assertEqual(
-            ["%.8g%+.8gj" % (nr[0].real,nr[0].imag) for nr in self.solver.outRefractiveIndex(msh, 0.)],
-            ["%.8g%+.8gj" % (r.real,r.imag) for r in refr]
+            ["%.8g" % nr[0].real for nr in self.solver.outRefractiveIndex(msh, 0.)],
+            ["%.8g" % r.real for r in refr]
         )
+
+    def testComputations(self):
+        m = self.solver.find_mode(980.)
+        self.assertEqual( m, 0 )
+        self.assertEqual( len(self.solver.modes), 1 )
+        self.assertAlmostEqual( self.solver.modes[m].lam, 979.702, 3 )
+
+    def testThreshold(self):
+        try:
+            from scipy.optimize import brentq
+        except ImportError:
+            pass
+        else:
+            def fun(g):
+                self.profile[self.manager.geometry['active']] = g
+                m = self.solver.find_mode(980.)
+                return self.solver.modes[m].loss
+            threshold = brentq(fun, 0., 2000., xtol=1e-6)
+            #self.assertAlmostEqual( threshold, 1181.7, 1 )
+
+    def testAbsorptionIntegral(self):
+        self.profile[self.manager.geometry['active']] = 1181.6834
+        m = self.solver.find_mode(980.)
+        self.solver.modes[m].power = 1.0
+        box = self.solver.geometry.item.bbox
+        ints = self.solver.outLightMagnitude(m, mesh.Rectilinear2D([0.], [box.lower.z, box.upper.z]))
+        total_power = self.solver.modes[m].power * (1. + 3.53 * ints[0] / ints[1])
+        self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 3 )

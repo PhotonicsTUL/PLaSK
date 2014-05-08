@@ -18,7 +18,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     vlam(0.),
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
-    outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes),
+    outLightMagnitude(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes),
     outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex),
     outHeat(this, &EffectiveFrequencyCylSolver::getHeat) {
     inTemperature = 300.;
@@ -251,7 +251,7 @@ void EffectiveFrequencyCylSolver::onInvalidate()
     modes.clear();
     outWavelength.fireChanged();
     outLoss.fireChanged();
-    outLightIntensity.fireChanged();
+    outLightMagnitude.fireChanged();
 }
 
 /********* Here are the computations *********/
@@ -693,7 +693,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (modes.size() <= num || k0 != old_k0) throw NoValue(LightIntensity::NAME);
+    if (modes.size() <= num || k0 != old_k0) throw NoValue(LightMagnitude::NAME);
 
     size_t stripe = getMainStripe();
 
@@ -830,7 +830,8 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t
 }
 
 
-DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod) {
+DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod)
+{
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex ok0 = k0;
     if (!isnan(lam) && lam != 0.) k0 = 2e3*M_PI / lam;
@@ -839,18 +840,38 @@ DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIn
     k0 = ok0;
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
-    for (size_t i = 0; i != dst_mesh.size(); ++i) {
-        auto point = target_mesh[i];
-        size_t r = std::lower_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
-        size_t z = std::lower_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
-        if (r != 0) --r;
-        result[i] = Tensor3<dcomplex>(nrCache[r][z]);
+    for (size_t j = 0; j != dst_mesh.size(); ++j) {
+        auto point = target_mesh[j];
+        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir;
+        size_t iz = this->mesh->axis1.findIndex(point.c1);
+        result[j] = Tensor3<dcomplex>(nrCache[ir][iz]);
     }
     return result;
 }
 
 
-DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method) {
+DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method)
+{
+    // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
+    // in case of fast varying light intensity and too sparse mesh.
+
+    writelog(LOG_DETAIL, "Getting heat absorbed from %1% modes", modes.size());
+
+    DataVector<double> result(dst_mesh.size(), 0.);
+
+    for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
+        // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
+        result += 2e-12*M_PI / real(modes[m].lam) * modes[m].power * getLightIntenisty(m, dst_mesh, method);
+    }
+    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    for (size_t j = 0; j != result.size(); ++j) {
+        auto point = mat_mesh[j];
+        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir;
+        size_t iz = this->mesh->axis1.findIndex(point.c1);
+        double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+        result[j] *= absp;
+    }
+    return result;
 }
 
 

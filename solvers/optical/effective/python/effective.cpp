@@ -190,6 +190,13 @@ void EffectiveFrequencyCylSolver_setStripeR(EffectiveFrequencyCylSolver& self, p
     else self.setStripeR(py::extract<double>(r));
 }
 
+//TODO remove after 1.06.2014
+py::object outLightIntensity_get(const py::object& self) {
+    writelog(LOG_WARNING, "'outLightIntensity' is depreciated. Use 'outLightMagnitude' instead!");
+    return self.attr("outLightMagnitude");
+}
+
+
 /**
  * Initialization of your solver to Python
  *
@@ -282,7 +289,7 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
         PROVIDER(outNeff, "");
-        PROVIDER(outLightIntensity, "");
+        PROVIDER(outLightMagnitude, "");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
@@ -292,7 +299,9 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.power\n");
-        solver.attr("outIntensity") = solver.attr("outLightIntensity");
+
+        //TODO remove after 1.06.2014
+        solver.add_property("outLightIntensity", &outLightIntensity_get, "DEPRECIATED");
 
         py::scope scope = solver;
 
@@ -383,7 +392,7 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "");
         PROVIDER(outWavelength, "");
         PROVIDER(outLoss, "");
-        PROVIDER(outLightIntensity, "");
+        PROVIDER(outLightMagnitude, "");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
@@ -399,7 +408,9 @@ BOOST_PYTHON_MODULE(effective)
                             "Radial position of at which the vertical part of the field is calculated.\n\n"
                             "Should be a float number or ``None`` to compute effective frequencies for all\n"
                             "the stripes.\n");
-        solver.attr("outIntensity") = solver.attr("outLightIntensity");
+
+        //TODO remove after 1.06.2014
+        solver.add_property("outLightIntensity", &outLightIntensity_get, "DEPRECIATED");
 
         py::scope scope = solver;
 

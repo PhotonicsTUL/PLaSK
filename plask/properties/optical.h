@@ -22,8 +22,8 @@ struct RefractiveIndex: FieldProperty<Tensor3<dcomplex>,double> {
  *
  * Additional integer parameter is mode number.
  */
-struct LightIntensity: public MultiFieldProperty<double> {
-    static constexpr const char* NAME = "light intensity";
+struct LightMagnitude: public MultiFieldProperty<double> {
+    static constexpr const char* NAME = "optical field magnitude";
     static constexpr const char* UNIT = "W/m²";
 };
 
@@ -31,13 +31,13 @@ struct LightIntensity: public MultiFieldProperty<double> {
  * Provider which scales intensity profile to get light intensity
  */
 template <typename SpaceT>
-struct LightIntensityProvider: public ScaledFieldProvider<LightIntensity, LightIntensity, SpaceT> {};
+struct LightMagnitudeProvider: public ScaledFieldProvider<LightMagnitude, LightMagnitude, SpaceT> {};
 
 /**
  * Provider which sums light intensities from one or more sources.
  */
 template <typename SpaceT>
-struct LightIntensitySumProvider: public FieldSumProvider<LightIntensity, SpaceT> {};
+struct LightMagnitudeSumProvider: public FieldSumProvider<LightMagnitude, SpaceT> {};
 
 
 /**
