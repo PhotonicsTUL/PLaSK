@@ -335,10 +335,10 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //     struct Reflected {
 //
 //         /// Provider of the optical electric field
-//         typename ProviderFor<OpticalElectricField,Geometry3DCartesian>::Delegate outElectricField;
+//         typename ProviderFor<LightE,Geometry3DCartesian>::Delegate outElectricField;
 //
 //         /// Provider of the optical magnetic field
-//         typename ProviderFor<OpticalMagneticField,Geometry3DCartesian>::Delegate outMagneticField;
+//         typename ProviderFor<LightH,Geometry3DCartesian>::Delegate outMagneticField;
 //
 //         /// Provider of the optical field intensity
 //         typename ProviderFor<LightMagnitude,Geometry3DCartesian>::Delegate outLightMagnitude;

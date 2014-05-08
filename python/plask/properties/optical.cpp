@@ -16,8 +16,8 @@ void register_standard_properties_optical()
     RegisterScaledProvider<ScaledFieldProvider<LightMagnitude,LightMagnitude,Geometry2DCartesian>>("ScaledLightMagnitude");
     //TODO RegisterCombinedProvider<LightMagnitudeSumProvider<Geometry2DCartesian>>("SumOfLightMagnitude");
 
-    registerProperty<OpticalElectricField>();
-    registerProperty<OpticalMagneticField>();
+    registerProperty<LightE>();
+    registerProperty<LightH>();
 
     registerProperty<Wavelength>();
     registerProperty<ModalLoss>();

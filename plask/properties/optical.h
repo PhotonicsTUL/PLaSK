@@ -45,7 +45,7 @@ struct LightMagnitudeSumProvider: public FieldSumProvider<LightMagnitude, SpaceT
  *
  * Additional integer parameter is mode number.
  */
-struct OpticalElectricField: public MultiFieldProperty<Vec<3,dcomplex>> {
+struct LightE: public MultiFieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "electric field";
     static constexpr const char* UNIT = "V/m";
 };
@@ -56,7 +56,7 @@ struct OpticalElectricField: public MultiFieldProperty<Vec<3,dcomplex>> {
  *
  * Additional integer parameter is mode number.
  */
-struct OpticalMagneticField: public MultiFieldProperty<Vec<3,dcomplex>> {
+struct LightH: public MultiFieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "magnetic field";
     static constexpr const char* UNIT = "A/m";
 };

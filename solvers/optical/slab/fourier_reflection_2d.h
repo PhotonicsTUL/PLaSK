@@ -351,10 +351,10 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     struct Reflected {
 
         /// Provider of the optical electric field
-        typename ProviderFor<OpticalElectricField,Geometry2DCartesian>::Delegate outElectricField;
+        typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outElectricField;
 
         /// Provider of the optical magnetic field
-        typename ProviderFor<OpticalMagneticField,Geometry2DCartesian>::Delegate outMagneticField;
+        typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outMagneticField;
 
         /// Provider of the optical field intensity
         typename ProviderFor<LightMagnitude,Geometry2DCartesian>::Delegate outLightMagnitude;

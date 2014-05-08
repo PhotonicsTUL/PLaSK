@@ -853,16 +853,35 @@ DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(c
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        size_t x = std::lower_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
-        size_t y = std::lower_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
-        if (x < xbegin) x = xbegin;
-        result[i] = Tensor3<dcomplex>(nrCache[x][y]);
+        size_t ix = this->mesh->axis0.findIndex(point.c0); if (ix < xbegin) ix = xbegin;
+        size_t iy = this->mesh->axis1.findIndex(point.c1);
+        result[i] = Tensor3<dcomplex>(nrCache[ix][iy]);
     }
     return result;
 }
 
 
-plask::DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mesh, plask::InterpolationMethod method) {
+DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mesh, plask::InterpolationMethod method)
+{
+    // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
+    // in case of fast varying light intensity and too sparse mesh.
+
+    writelog(LOG_DETAIL, "Getting heat absorbed from %1% modes", modes.size());
+
+    DataVector<double> result(dst_mesh.size(), 0.);
+
+    for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
+        result += 1e6 * real(k0) * getLightMagnitude(m, dst_mesh, method); // 1e6: 1/µm -> 1/m
+    }
+    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    for (size_t j = 0; j != result.size(); ++j) {
+        auto point = mat_mesh[j];
+        size_t ix = this->mesh->axis0.findIndex(point.c0); if (ix < xbegin) ix = xbegin;
+        size_t iy = this->mesh->axis1.findIndex(point.c1);
+        double absp = - 2. * real(nrCache[ix][iy]) * imag(nrCache[ix][iy]);
+        result[j] *= absp;
+    }
+    return result;
 }
 
 

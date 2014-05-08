@@ -194,15 +194,15 @@ class EffectiveFrequencyCyl_Test(unittest.TestCase):
                 m = self.solver.find_mode(980.)
                 return self.solver.modes[m].loss
             threshold = brentq(fun, 0., 2000., xtol=1e-6)
-            #self.assertAlmostEqual( threshold, 1181.7, 1 )
+            self.assertAlmostEqual( threshold, 1181.7, 1 )
 
     def testAbsorptionIntegral(self):
         self.profile[self.manager.geometry['active']] = 1181.6834
         m = self.solver.find_mode(980.)
         self.solver.modes[m].power = 2.0
         box = self.solver.geometry.item.bbox
-        ints = self.solver.outLightMagnitude(m, mesh.Rectilinear2D([0.], [box.lower.z, box.upper.z]))
-        total_power = self.solver.modes[m].power * (1. + 3.53 * ints[0] / ints[1])
+        field = self.solver.outLightMagnitude(m, mesh.Rectilinear2D([0.], [box.lower.z, box.upper.z]))
+        total_power = self.solver.modes[m].power * (1. + 3.53 * field[0] / field[1])
         self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 2 )
 
     def testAbsorbedHeat(self):
