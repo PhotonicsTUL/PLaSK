@@ -42,13 +42,49 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def testMesh(self):
         mesh = self.solver.mesh
-
     def testRefractiveIndex(self):
         self.solver.set_simple_mesh()
         msh = self.solver.mesh.get_midpoints()
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
         self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh, 0.)], refr )
+
+
+class EffectiveIndex2DLaser_LaserTest(unittest.TestCase):
+
+    def setUp(self):
+        rect1 = geometry.Rectangle(0.75, 0.24, Glass())
+        self.rect2 = geometry.Rectangle(0.75, 0.02, Glass())
+        self.rect2.role = 'gain'
+        stack = geometry.Stack2D()
+        stack.prepend(rect1)
+        stack.prepend(self.rect2)
+        stack.prepend(rect1)
+        space = geometry.Cartesian2D(stack, left="mirror", length=1000)
+        self.solver = EffectiveIndex2D("eim")
+        self.solver.geometry = space
+        self.solver.mirrors = 0.7, 1.0
+        self.profile = StepProfile(space)
+        self.solver.inGain = self.profile.outGain
+
+    def testThreshold(self):
+        try:
+            from scipy.optimize import brentq
+        except ImportError:
+            pass
+        else:
+            def fun(g):
+                self.profile[self.rect2] = g
+                m = self.solver.find_mode(1.15)
+                return self.solver.modes[m].neff.imag
+            gain = brentq(fun, 0., 100.)
+            self.assertAlmostEqual(gain, 81.6495, 3)
+
+    #def testAbsorptionIntegral(self):
+    #    self.profile[self.rect2] = 81.649513489
+    #    m = self.solver.find_mode(1.15)
+    #    self.solver.modes[m].power = 0.7
+    #    self.assertAlmostEqual(self.solver.get_total_absorption(m), -1.0, 3)
 
 
 class EffectiveFrequencyCyl_Test(unittest.TestCase):

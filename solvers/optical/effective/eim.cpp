@@ -13,6 +13,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     recompute_neffs(true),
     stripex(0.),
     polarization(TE),
+    emission(FRONT),
     vneff(0.),
     outdist(0.1),
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
@@ -604,8 +605,16 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
         R1 = abs((n-n1) / (n+n1));
         R2 = abs((n-n2) / (n+n2));
     }
-    if (emission == FRONT) sum *= (1. - R1);
-    else sum *= (1. - R2);
+
+    if (emission == FRONT) {
+        if (R1 == 1.)
+            this->writelog(LOG_WARNING, "Mirror refletion on emission side equal to 1. Field will be infinite.");
+        sum *= (1. - R1);
+    } else {
+        if (R2 == 1.)
+            this->writelog(LOG_WARNING, "Mirror refletion on emission side equal to 1. Field will be infinite.");
+        sum *= (1. - R2);
+    }
 
     double ff = 1e12 / sum; // 1e12 because intensity in W/m² and integral computed in µm
     double f = sqrt(ff);
@@ -624,6 +633,7 @@ double EffectiveIndex2DSolver::getTotalAbsorption(const Mode& mode)
             result += absp * mode.xweights[ix] * yweights[iy]; // [dV] = µm³
         }
     }
+    if (mode.symmetry != SYMMETRY_NONE) result *= 2.;
     result *= 1e-9 * real(k0) * mode.power; // 1e-9: µm³ / nm -> m², ½ is already hidden in mode.power
     return result;
 }

@@ -248,6 +248,13 @@ BOOST_PYTHON_MODULE(effective)
                "    neff (complex): Mode effective index.\n"
                "    symmetry ('+' or '-'): Symmetry of the mode to search.\n",
                "neff", arg("symmetry")=py::object());
+        solver.def("get_total_absorption", (double (EffectiveIndex2DSolver::*)(size_t))&EffectiveIndex2DSolver::getTotalAbsorption,
+               "Get total energy absorbed by from a mode in unit time.\n\n"
+               "Args:\n"
+               "    num (int): number of the mode.\n\n"
+               "Returns:\n"
+               "    Total absorbed energy\n",
+               py::arg("num"));
         RW_PROPERTY(vat, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominant mode).");
         RW_FIELD(vneff, "Effective index in the vertical direction.");
         solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
