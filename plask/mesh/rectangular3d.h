@@ -30,9 +30,16 @@ class RectangularMesh<3>: public MeshD<3> {
     index012_ft* index0_f;
     index012_ft* index1_f;
     index012_ft* index2_f;
-    RectangularAxis* minor_axis;
-    RectangularAxis* medium_axis;
-    RectangularAxis* major_axis;
+    const shared_ptr<RectangularAxis>* minor_axis;
+    const shared_ptr<RectangularAxis>* medium_axis;
+    const shared_ptr<RectangularAxis>* major_axis;
+
+    void onAxisChanged(Event& e);
+
+    void setChangeSignal(const shared_ptr<RectangularAxis>& axis) { if (axis) axis->changedConnectMethod(this, &RectangularMesh<3>::onAxisChanged); }
+    void unsetChangeSignal(const shared_ptr<RectangularAxis>& axis) { if (axis) axis->changedDisconnectMethod(this, &RectangularMesh<3>::onAxisChanged); }
+
+    void setAxis(const shared_ptr<RectangularAxis>& axis, shared_ptr<RectangularAxis> new_val);
 
   public:
 
@@ -253,18 +260,6 @@ class RectangularMesh<3>: public MeshD<3> {
      */
     enum IterationOrder { ORDER_012, ORDER_021, ORDER_102, ORDER_120, ORDER_201, ORDER_210 };
 
-    /// Copy constructor
-    RectangularMesh(const RectangularMesh<3>& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {    //->clone()
-        //TODO  axis0->owner = this; axis1->owner = this; axis2->owner = this;
-        setIterationOrder(src.getIterationOrder());
-    }
-
-    /// Move constructor
-    RectangularMesh(RectangularMesh<3>&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), axis2(std::move(src.axis2)), elements(this) {
-        //TODO  axis0->owner = this; axis1->owner = this; axis2->owner = this;
-        setIterationOrder(src.getIterationOrder());
-    }
-
     /**
      * Choose iteration order.
      * @param order iteration order to use
@@ -287,6 +282,9 @@ class RectangularMesh<3>: public MeshD<3> {
     explicit RectangularMesh(IterationOrder iterationOrder = ORDER_210)
         : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), axis2(make_shared<RectilinearAxis>()), elements(this) {
         setIterationOrder(iterationOrder);
+        setChangeSignal(this->axis0);
+        setChangeSignal(this->axis1);
+        setChangeSignal(this->axis2);
     }
 
     /**
@@ -303,9 +301,21 @@ class RectangularMesh<3>: public MeshD<3> {
         axis2(std::move(mesh2)),
         elements(this)
     {
-        //TODO  axis0->owner = this; axis1->owner = this; axis2->owner = this;
         setIterationOrder(iterationOrder);
+        setChangeSignal(this->axis0);
+        setChangeSignal(this->axis1);
+        setChangeSignal(this->axis2);
     }
+
+    /// Copy constructor
+    RectangularMesh(const RectangularMesh<3>& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {    //->clone()
+        setIterationOrder(src.getIterationOrder());
+        setChangeSignal(this->axis0);
+        setChangeSignal(this->axis1);
+        setChangeSignal(this->axis2);
+    }
+
+    ~RectangularMesh();
 
     /**
      * Get first coordinate of points in this mesh.
@@ -417,24 +427,15 @@ class RectangularMesh<3>: public MeshD<3> {
 
     const shared_ptr<RectangularAxis> getAxis0() const { return axis0; }
 
-    void setAxis0(shared_ptr<RectangularAxis> a0) {
-        const_cast<shared_ptr<RectangularAxis>&>(axis0) = a0;
-        //TODO other pointers
-    }
+    void setAxis0(shared_ptr<RectangularAxis> a0) { setAxis(this->axis0, a0);  }
 
     const shared_ptr<RectangularAxis> getAxis1() const { return axis1; }
 
-    void setAxis1(shared_ptr<RectangularAxis> a1) {
-        const_cast<shared_ptr<RectangularAxis>&>(axis1) = a1;
-        //TODO other pointers
-    }
+    void setAxis1(shared_ptr<RectangularAxis> a1) { setAxis(this->axis1, a1); }
 
     const shared_ptr<RectangularAxis> getAxis2() const { return axis2; }
 
-    void setAxis2(shared_ptr<RectangularAxis> a2) {
-        const_cast<shared_ptr<RectangularAxis>&>(axis2) = a2;
-        //TODO other pointers
-    }
+    void setAxis2(shared_ptr<RectangularAxis> a2) { setAxis(this->axis2, a2); }
 
     /**
      * Get numbered axis
@@ -459,32 +460,17 @@ class RectangularMesh<3>: public MeshD<3> {
     }
 
     /// \return major (changing slowest) axis
-    inline RectangularAxis& majorAxis() {
-        return *major_axis;
-    }
-
-    /// \return major (changing slowest) axis
-    inline const RectangularAxis& majorAxis() const {
+    inline const shared_ptr<RectangularAxis> majorAxis() const {
         return *major_axis;
     }
 
     /// \return middle (between major and minor) axis
-    inline const RectangularAxis& mediumAxis() const {
-        return *medium_axis;
-    }
-
-    /// \return middle (between major and minor) axis
-    inline RectangularAxis& mediumAxis() {
+    inline const shared_ptr<RectangularAxis> mediumAxis() const {
         return *medium_axis;
     }
 
     /// \return minor (changing fastes) axis
-    inline const RectangularAxis& minorAxis() const {
-        return *minor_axis;
-    }
-
-    /// \return minor (changing fastes) axis
-    inline RectangularAxis& minorAxis() {
+    inline const shared_ptr<RectangularAxis> minorAxis() const {
         return *minor_axis;
     }
 
@@ -493,8 +479,8 @@ class RectangularMesh<3>: public MeshD<3> {
       * @param to_compare mesh to compare
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
-    bool operator==(const RectangularMesh<3>& to_compare) {
-        return axis0 == to_compare.axis0 && axis1 == to_compare.axis1 && axis2 == to_compare.axis2;
+    bool operator==(const RectangularMesh<3>& to_compare) const {
+        return *axis0 == *to_compare.axis0 && *axis1 == *to_compare.axis1 && *axis2 == *to_compare.axis2;
     }
 
     /**
@@ -557,7 +543,7 @@ class RectangularMesh<3>: public MeshD<3> {
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return mesh_index / minorAxis().size() / mediumAxis().size();
+        return mesh_index / (*minor_axis)->size() / (*medium_axis)->size();
     }
 
     /**
@@ -566,7 +552,7 @@ class RectangularMesh<3>: public MeshD<3> {
      * @return index of middle axis, from 0 to mediumAxis.size()-1
      */
     inline std::size_t middleIndex(std::size_t mesh_index) const {
-        return (mesh_index / minorAxis().size()) % mediumAxis().size();
+        return (mesh_index / (*minor_axis)->size()) % (*medium_axis)->size();
     }
 
     /**
@@ -575,7 +561,7 @@ class RectangularMesh<3>: public MeshD<3> {
      * @return index of minor axis, from 0 to minorAxis.size()-1
      */
     inline std::size_t minorIndex(std::size_t mesh_index) const {
-        return mesh_index % minorAxis().size();
+        return mesh_index % (*minor_axis)->size();
     }
 
     /**
@@ -672,9 +658,9 @@ class RectangularMesh<3>: public MeshD<3> {
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        const std::size_t minor_size_minus_1 = minor_axis->size()-1;
-        const std::size_t elements_per_level = minor_size_minus_1 * (medium_axis->size()-1);
-        return element_index + (element_index / elements_per_level) * (medium_axis->size() + minor_size_minus_1)
+        const std::size_t minor_size_minus_1 = (*minor_axis)->size()-1;
+        const std::size_t elements_per_level = minor_size_minus_1 * ((*medium_axis)->size()-1);
+        return element_index + (element_index / elements_per_level) * ((*medium_axis)->size() + minor_size_minus_1)
                             + (element_index % elements_per_level) / minor_size_minus_1;
     }
 
@@ -684,9 +670,9 @@ class RectangularMesh<3>: public MeshD<3> {
      * @return index of element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        const std::size_t verticles_per_level = minor_axis->size() * medium_axis->size();
-        return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * (medium_axis->size() + minor_axis->size() - 1)
-                - (mesh_index_of_el_bottom_left % verticles_per_level) / minor_axis->size();
+        const std::size_t verticles_per_level = (*minor_axis)->size() * (*medium_axis)->size();
+        return mesh_index_of_el_bottom_left - (mesh_index_of_el_bottom_left / verticles_per_level) * ((*medium_axis)->size() + (*minor_axis)->size() - 1)
+                - (mesh_index_of_el_bottom_left % verticles_per_level) / (*minor_axis)->size();
     }
 
     /**

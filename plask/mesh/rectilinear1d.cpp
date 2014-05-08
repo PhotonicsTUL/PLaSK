@@ -11,15 +11,15 @@ void RectilinearAxis::sortPointsAndRemoveNonUnique()
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
 }
 
-RectilinearAxis::RectilinearAxis(std::initializer_list<PointType> points): points(points), owner(nullptr) {
+RectilinearAxis::RectilinearAxis(std::initializer_list<PointType> points): points(points) {
     sortPointsAndRemoveNonUnique();
 }
 
-RectilinearAxis::RectilinearAxis(const std::vector<PointType>& points): points(points), owner(nullptr) {
+RectilinearAxis::RectilinearAxis(const std::vector<PointType>& points): points(points) {
     sortPointsAndRemoveNonUnique();
 }
 
-RectilinearAxis::RectilinearAxis(std::vector<PointType>&& points): points(std::move(points)), owner(nullptr) {
+RectilinearAxis::RectilinearAxis(std::vector<PointType>&& points): points(std::move(points)) {
     sortPointsAndRemoveNonUnique();
 }
 
@@ -52,13 +52,13 @@ bool RectilinearAxis::addPoint(double new_node_cord) {
     if (where == points.end()) {
         if (points.size() == 0 || new_node_cord - points.back() > MIN_DISTANCE) {
             points.push_back(new_node_cord);
-            if (owner) owner->fireResized();
+            fireResized();
             return true;
         }
     } else {
         if (*where - new_node_cord > MIN_DISTANCE && (where == points.begin() || new_node_cord - *(where-1) > MIN_DISTANCE)) {
             points.insert(where, new_node_cord);
-            if (owner) owner->fireResized();
+            fireResized();
             return true;
         }
     }
@@ -71,18 +71,18 @@ void RectilinearAxis::addPointsLinear(double first, double last, std::size_t poi
     double len = last - first;
     auto get_el = [&](std::size_t i) { return first + i * len / points_count; };
     addOrderedPoints(makeFunctorIndexedIterator(get_el, 0), makeFunctorIndexedIterator(get_el, points_count+1), points_count+1);
-    if (owner) owner->fireResized();
+    fireResized();
 }
 
 void RectilinearAxis::removePoint(std::size_t index) {
     points.erase(points.begin() + index);
-    if (owner) owner->fireResized();
+    fireResized();
 }
 
 
 void RectilinearAxis::clear() {
     points.clear();
-    if (owner) owner->fireResized();
+    fireResized();
 }
 
 shared_ptr<RectangularAxis> RectilinearAxis::clone() const {

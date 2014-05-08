@@ -412,7 +412,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
     unsigned loop = 0;
 
-    MatrixT A(size, this->mesh->minorAxis().size());
+    MatrixT A(size, this->mesh->minorAxis()->size());
 
     double err = 0.;
     toterr = 0.;

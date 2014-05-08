@@ -51,9 +51,9 @@ def save_field(field, file, path='', mode='a'):
     mst = type(msh)
     if mst in (plask.mesh.Rectilinear1D, plask.mesh.Regular1D):
         axes = (msh,)
-    if mst in (plask.mesh.Rectilinear2D, plask.mesh.Regular2D):
+    if mst in (plask.mesh.Rectangular2D):
         axes = msh.axis1, msh.axis0
-    elif mst in (plask.mesh.Rectilinear3D, plask.mesh.Regular3D):
+    elif mst in (plask.mesh.Rectangular3D):
         axes = msh.axis2, msh.axis1, msh.axis0
     else:
         raise TypeError("unsupported mesh type for provided data")

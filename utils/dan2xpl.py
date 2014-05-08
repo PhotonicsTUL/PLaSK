@@ -421,7 +421,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('actlevel = 0.5 * (actbox.lower[1] + actbox.upper[1])')
             else:
                 out('actlevel = %g' % actlevel)
-            out('actgrid = mesh.Rectilinear2D(plotgrid.axis0, [actlevel])')
+            out('actgrid = mesh.Rectangular2D(plotgrid.axis0, mesh.Rectilinear([actlevel]))')
             out('plotgrid.axis1.insert(actlevel)')
         out('')
 
@@ -480,7 +480,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('    plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
                 out('    xlabel(u"%s [\\xb5m]")' % axes[0])
                 out('    ylabel("current density [kA/cm$^2$]")')
-                out('    simplemesh = mesh.Rectilinear2D.SimpleGenerator()(GEO.main.item)')
+                out('    simplemesh = mesh.Rectangular2D.SimpleGenerator()(GEO.main.item)')
                 out('    for x in simplemesh.axis0:')
                 out('        axvline(x, ls=":", color="k")')
                 out('    xlim(0., simplemesh.axis0[-2])')

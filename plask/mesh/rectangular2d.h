@@ -190,8 +190,6 @@ inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager,
  * - axis1 (alternative names: up(), ee_y(), z())
  * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
-//TODO !!! zmiana axis0, axis1, powinny aktualizować inne wskaźniki (także 3D)
-//TODO !!! podłączenie sygnału o zmianach, zmiana osi 1D powinna powodować powiadominie o zmianach przez ten mesh
 template<>
 class RectangularMesh<2>: public MeshD<2> {
 
@@ -203,8 +201,15 @@ class RectangularMesh<2>: public MeshD<2> {
     index01_ft* index0_f;
     index01_ft* index1_f;
 
-    RectangularAxis* minor_axis; ///< minor (changing fastest) axis
-    RectangularAxis* major_axis; ///< major (changing slowest) axis
+    const shared_ptr<RectangularAxis>* minor_axis; ///< minor (changing fastest) axis
+    const shared_ptr<RectangularAxis>* major_axis; ///< major (changing slowest) axis
+
+    void onAxisChanged(Event& e);
+
+    void setChangeSignal(const shared_ptr<RectangularAxis>& axis) { if (axis) axis->changedConnectMethod(this, &RectangularMesh<2>::onAxisChanged); }
+    void unsetChangeSignal(const shared_ptr<RectangularAxis>& axis) { if (axis) axis->changedDisconnectMethod(this, &RectangularMesh<2>::onAxisChanged); }
+
+    void setAxis(const shared_ptr<RectangularAxis>& axis, shared_ptr<RectangularAxis> new_val);
 
   public:
 
@@ -403,6 +408,8 @@ class RectangularMesh<2>: public MeshD<2> {
     explicit RectangularMesh(IterationOrder iterationOrder = ORDER_NORMAL)
         : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), elements(this) {
         setIterationOrder(iterationOrder);
+        setChangeSignal(this->axis0);
+        setChangeSignal(this->axis1);
     }
 
     /**
@@ -414,35 +421,27 @@ class RectangularMesh<2>: public MeshD<2> {
      */
     RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder = ORDER_NORMAL)
         : axis0(std::move(axis0)), axis1(std::move(axis1)), elements(this) {
-        //TODO  axis0->owner = this; axis1->owner = this;
         setIterationOrder(iterationOrder);
+        setChangeSignal(this->axis0);
+        setChangeSignal(this->axis1);
     }
 
     /// Copy constructor
     RectangularMesh(const RectangularMesh<2>& src): axis0(src.axis0), axis1(src.axis1), elements(this) {    //clone()??
-        //TODO  axis0->owner = this; axis1->owner = this;
         setIterationOrder(src.getIterationOrder());
+        setChangeSignal(this->axis0);
+        setChangeSignal(this->axis1);
     }
 
-    /// Move constructor
-    RectangularMesh(RectangularMesh<2>&& src): axis0(std::move(src.axis0)), axis1(std::move(src.axis1)), elements(this) {
-        //TODO  axis0->owner = this; axis1->owner = this;
-        setIterationOrder(src.getIterationOrder());
-    }
+    ~RectangularMesh();
 
     const shared_ptr<RectangularAxis> getAxis0() const { return axis0; }
 
-    void setAxis0(shared_ptr<RectangularAxis> a0) {
-        const_cast<shared_ptr<RectangularAxis>&>(axis0) = a0;
-        //TODO other pointers
-    }
+    void setAxis0(shared_ptr<RectangularAxis> a0) { setAxis(this->axis0, a0); }
 
     const shared_ptr<RectangularAxis> getAxis1() const { return axis1; }
 
-    void setAxis1(shared_ptr<RectangularAxis> a1) {
-        const_cast<shared_ptr<RectangularAxis>&>(axis1) = a1;
-        //TODO other pointers
-    }
+    void setAxis1(shared_ptr<RectangularAxis> a1) { setAxis(this->axis1, a1); }
 
 
 
@@ -558,22 +557,12 @@ class RectangularMesh<2>: public MeshD<2> {
     }
 
     /// \return major (changing slowest) axis
-    inline const RectangularAxis& majorAxis() const {
-        return *major_axis;
-    }
-
-    /// \return major (changing slowest) axis
-    inline RectangularAxis& majorAxis() {
+    inline const shared_ptr<RectangularAxis> majorAxis() const {
         return *major_axis;
     }
 
     /// \return minor (changing fastest) axis
-    inline const RectangularAxis& minorAxis() const {
-        return *minor_axis;
-    }
-
-    /// \return minor (changing fastest) axis
-    inline RectangularAxis& minorAxis() {
+    inline const shared_ptr<RectangularAxis> minorAxis() const {
         return *minor_axis;
     }
 
@@ -582,8 +571,8 @@ class RectangularMesh<2>: public MeshD<2> {
       * @param to_compare mesh to compare
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
-    bool operator==(const RectangularMesh<2>& to_compare) {
-        return axis0 == to_compare.axis0 && axis1 == to_compare.axis1;
+    bool operator==(const RectangularMesh<2>& to_compare) const {
+        return *axis0 == *to_compare.axis0 && *axis1 == *to_compare.axis1;
     }
 
     /**
@@ -647,7 +636,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return mesh_index / minorAxis().size();
+        return mesh_index / (*minor_axis)->size();
     }
 
     /**
@@ -656,7 +645,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @return index of minor axis, from 0 to minorAxis.size()-1
      */
     inline std::size_t minorIndex(std::size_t mesh_index) const {
-        return mesh_index % minorAxis().size();
+        return mesh_index % (*minor_axis)->size();
     }
 
     /**
@@ -770,7 +759,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @return index of element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / minor_axis->size();
+        return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / (*minor_axis)->size();
     }
 
     /**
@@ -779,7 +768,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        return element_index + (element_index / (minor_axis->size()-1));
+        return element_index + (element_index / ((*minor_axis)->size()-1));
     }
 
     /**

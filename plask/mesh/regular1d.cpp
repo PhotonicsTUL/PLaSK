@@ -11,6 +11,12 @@ bool RegularAxis::isIncreasing() const
     return step() >= 0;
 }
 
+shared_ptr<RectangularMesh<1> > RegularAxis::getMidpointsMesh() const
+{
+    if (this->points_count == 0) return make_shared<RegularMesh1D>(*this);
+    return make_shared<RegularMesh1D>(this->first() + this->step() * 0.5, this->last() - this->step() * 0.5, this->points_count - 1);
+}
+
 shared_ptr<RegularMesh1D> readRegularMesh1D(XMLReader& reader) {
     double start = reader.requireAttribute<double>("start");
     double stop = reader.requireAttribute<double>("stop");

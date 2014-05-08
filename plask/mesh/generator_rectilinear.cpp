@@ -75,7 +75,7 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<2> > RectilinearMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, min_ply, max_points, extend_to_zero);
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0->size(), mesh->axis1->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::SimpleGenerator: Generating new mesh (%1%x%2%)", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
 
@@ -117,7 +117,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<3> > RectilinearMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry, min_ply, max_points);
-    writelog(LOG_DETAIL, "mesh.Rectilinear3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular3D::SimpleGenerator: Generating new mesh (%1%x%2%x%3%)", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
     return mesh;
 }
 
@@ -250,7 +250,7 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
 
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear2D::DivideGenerator: Generating new mesh (%1%x%2%)",
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::DivideGenerator: Generating new mesh (%1%x%2%)",
              axis0->size(), axis1->size());
     return mesh;
 }
@@ -279,7 +279,7 @@ RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::Geome
 
     mesh->setOptimalIterationOrder();
 
-    writelog(LOG_DETAIL, "mesh.Rectilinear3D::DivideGenerator: Generating new mesh (%1%x%2%x%3%)",
+    writelog(LOG_DETAIL, "mesh.Rectangular3D::DivideGenerator: Generating new mesh (%1%x%2%x%3%)",
              axis0->size(), axis1->size(), axis2->size());
     return mesh;
 }
@@ -366,6 +366,15 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
     return result;
 }
 
+static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader("rectilinear.simple", readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
+
+static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader("rectilinear.divide", readRectilinearMeshDivideGenerator<1>);
+static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearMeshDivideGenerator<2>);
+static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectilinearMeshDivideGenerator<3>);
+
+// deprecated:
 static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);

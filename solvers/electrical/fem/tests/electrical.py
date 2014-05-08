@@ -31,7 +31,7 @@ class Shockley2D_Test(unittest.TestCase):
         space = geometry.Cartesian2D(stack, length=1000.)
         self.solver = Shockley2D("electrical2d")
         self.solver.geometry = space
-        generator = mesh.Rectilinear2D.DivideGenerator()
+        generator = mesh.Rectangular2D.DivideGenerator()
         generator.prediv = 2,1
         self.solver.mesh = generator
         self.solver.beta = 10.
@@ -69,7 +69,7 @@ class ShockleyCyl_Test(unittest.TestCase):
         space = geometry.Cylindrical2D(stack)
         self.solver = ShockleyCyl("electricalcyl")
         self.solver.geometry = space
-        generator = mesh.Rectilinear2D.DivideGenerator()
+        generator = mesh.Rectangular2D.DivideGenerator()
         generator.prediv = 4,1
         self.solver.mesh = generator
         self.solver.beta = 10.

@@ -19,7 +19,7 @@ std::size_t RectangularMesh<1>::findNearestIndex(double to_find) const {
 }
 
 shared_ptr<RectangularMesh<1> > RectangularMesh<1>::getMidpointsMesh() const {
-    return make_shared<MidpointsMesh>(*this);
+    return make_shared<MidpointsMesh>(*this)->clone();  //TODO clone() to generate rectangular mesh
 }
 
 

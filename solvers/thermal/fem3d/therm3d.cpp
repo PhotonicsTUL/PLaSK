@@ -310,7 +310,7 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
     int loop = 0;
     size_t size = mesh->size();
 
-    MatrixT A(size, mesh->mediumAxis().size()*mesh->minorAxis().size(), mesh->minorAxis().size());
+    MatrixT A(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 
     double err = 0.;
     toterr = 0.;

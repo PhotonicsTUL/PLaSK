@@ -30,20 +30,38 @@ void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
         index_f = transposed_index;
         index0_f = transposed_index0;
         index1_f = transposed_index1;
-        minor_axis = axis1.get();
-        major_axis = axis0.get();
+        minor_axis = &axis1;
+        major_axis = &axis0;
     } else {
         index_f = normal_index;
         index0_f = normal_index0;
         index1_f = normal_index1;
-        minor_axis = axis0.get();
-        major_axis = axis1.get();
+        minor_axis = &axis0;
+        major_axis = &axis1;
     }
     this->fireChanged();
 }
 
 typename RectangularMesh<2>::IterationOrder RectangularMesh<2>::getIterationOrder() const {
     return (index_f == &transposed_index)? ORDER_TRANSPOSED : ORDER_NORMAL;
+}
+
+void RectangularMesh<2>::setAxis(const shared_ptr<RectangularAxis> &axis, shared_ptr<RectangularAxis> new_val) {
+    if (axis == new_val) return;
+    unsetChangeSignal(axis);
+    const_cast<shared_ptr<RectangularAxis>&>(axis) = new_val;
+    setChangeSignal(axis);
+    fireResized();
+}
+
+void RectangularMesh<2>::onAxisChanged(Mesh::Event &e) {
+    assert(!e.isDelete());
+    this->fireChanged(e.flags());
+}
+
+RectangularMesh<2>::~RectangularMesh() {
+    unsetChangeSignal(axis0);
+    unsetChangeSignal(axis1);
 }
 
 shared_ptr<RectangularMesh<2> > RectangularMesh<2>::getMidpointsMesh() {
@@ -78,6 +96,7 @@ static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
             else axis[node[4]-'0'] = readRectilinearMesh1D(reader);
         }
     }
+    reader.requireTagEnd();
     return make_shared<RectangularMesh<2>>(std::move(axis[0]), std::move(axis[1]));
 }
 

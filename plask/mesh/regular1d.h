@@ -36,16 +36,13 @@ class RegularAxis: public RectangularAxis {
     /// @return iterator referring to the past-the-end point in this mesh
     native_const_iterator end() const { return native_const_iterator(this, points_count); }
 
-    /// Pointer to mesh holding this axis
-    Mesh* owner;
-
     /// Construct uninitialized mesh.
     RegularAxis():
-        lo(0.), _step(0.), points_count(0), owner(nullptr) {}
+        lo(0.), _step(0.), points_count(0) {}
 
     /// Copy constructor. It does not copy owner
     RegularAxis(const RegularAxis& src):
-        lo(src.lo), _step(src._step), points_count(src.points_count), owner(nullptr) {}
+        lo(src.lo), _step(src._step), points_count(src.points_count) {}
 
     /**
      * Construct mesh with given paramters.
@@ -55,16 +52,13 @@ class RegularAxis: public RectangularAxis {
      */
     RegularAxis(double first, double last, std::size_t points_count):
         lo(first), _step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
-        points_count(points_count), owner(nullptr) {}
+        points_count(points_count) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
     RegularAxis& operator=(const RegularAxis& src) {
         bool resized = points_count != src.points_count;
         lo = src.lo; _step = src._step; points_count = src.points_count;
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -79,10 +73,7 @@ class RegularAxis: public RectangularAxis {
         _step = (last - first) / ((points_count>1)?(points_count-1):1.);
         bool resized = this->points_count != points_count;
         this->points_count = points_count;
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
     }
 
     /**
@@ -129,8 +120,9 @@ class RegularAxis: public RectangularAxis {
      * Remove all points from mesh.
      */
     void clear() {
+        if (empty()) return;
         points_count = 0;
-        if (owner) owner->fireResized();
+        fireResized();
     }
 
     /**
@@ -177,6 +169,8 @@ class RegularAxis: public RectangularAxis {
     void writeXML(XMLElement& object) const override;
 
     bool isIncreasing() const override;
+
+    shared_ptr<RectangularMesh<1>> getMidpointsMesh() const override;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

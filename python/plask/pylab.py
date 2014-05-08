@@ -168,7 +168,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     if type(comp) == str:
         comp = plask.config.axes.index(comp)
 
-    if type(field.mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+    if type(field.mesh) in (plask.mesh.Rectangular2D):
         ax = 0, 1
         xaxis = field.mesh.axis0
         yaxis = field.mesh.axis1
@@ -178,7 +178,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
             else:
                 data = data[:,:,comp]
         data = data.transpose()
-    elif type(field.mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+    elif type(field.mesh) in (plask.mesh.Rectangular3D):
         ax = _get_2d_axes(plane)
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:
@@ -220,11 +220,11 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
 
     m = field.mesh
 
-    if type(m) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+    if type(m) in (plask.mesh.Rectangular2D):
         ix, iy = 0, 1
         xaxis, yaxis = m.axis0, m.axis1
         data = field.array.transpose((1,0,2))
-    elif type(m) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+    elif type(m) in (plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
         if ix < iy:
@@ -325,7 +325,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
     axes = matplotlib.pylab.gca()
     lines = []
 
-    if type(mesh) in (plask.mesh.Regular2D, plask.mesh.Rectilinear2D):
+    if type(mesh) in (plask.mesh.Rectangular2D):
         ix, iy = 0, 1
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
         for x in mesh.axis0:
@@ -334,7 +334,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
         for y in mesh.axis1:
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
 
-    elif type(mesh) in (plask.mesh.Regular3D, plask.mesh.Rectilinear3D):
+    elif type(mesh) in (plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
         axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i in (ix,iy))
 

@@ -40,9 +40,6 @@ public:
     /// Random access iterator type which allow iterate over all points in this mesh, in ascending order.
     typedef std::vector<double>::const_iterator native_const_iterator;
 
-    /// Pointer to mesh holding this axis
-    Mesh* owner;    //TODO to remove
-
     /// @return iterator referring to the first point in this mesh
     native_const_iterator begin() const { return points.begin(); }
 
@@ -86,17 +83,17 @@ public:
     std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
 
     /// Construct an empty mesh.
-    RectilinearAxis(): owner(nullptr) {}
+    RectilinearAxis() {}
 
     /// Copy constructor. It does not copy the owner.
-    RectilinearAxis(const RectilinearAxis& src): points(src.points), owner(nullptr) {}
+    RectilinearAxis(const RectilinearAxis& src): points(src.points) {}
     
     /// Move constructor. It does not move the owner.
-    RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)), owner(nullptr) {}
+    RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)) {}
     
     /// Copy constructor from any RectangularAxis
-    RectilinearAxis(const RectangularAxis& src): points(src.size()), owner(nullptr) {
-        if (src.isIncreasing() < 0.0)
+    RectilinearAxis(const RectangularAxis& src): points(src.size()) {
+        if (src.isIncreasing())
             std::copy(src.begin(), src.end(), points.begin());
         else
             std::reverse_copy(src.begin(), src.end(), points.begin());           
@@ -127,10 +124,7 @@ public:
     RectilinearAxis& operator=(const RectilinearAxis& src) {
         bool resized = size() != src.size();
         points = src.points;
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -138,10 +132,7 @@ public:
     RectilinearAxis& operator=(RectilinearAxis&& src) {
         bool resized = size() != src.size();
         std::swap(points, src.points);
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -152,10 +143,7 @@ public:
         points.reserve(src.size());
         for (auto i: src)  points.push_back(i);
         std::sort(points.begin(), points.end());    //TODO is this required?
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -268,7 +256,7 @@ inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, st
     // Remove points too close to each other
     auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
-    if (owner) owner->fireResized();
+    fireResized();
 };
 
 typedef RectilinearAxis RectilinearMesh1D;

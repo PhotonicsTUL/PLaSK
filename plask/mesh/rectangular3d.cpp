@@ -32,7 +32,7 @@ void RectangularMesh<3>::setIterationOrder(IterationOrder iterationOrder) {
         case ORDER_##o1##o2##o3: \
             index_f = index_##o1##o2##o3; index0_f = index0_##o1##o2##o3; \
             index1_f = index1_##o1##o2##o3; index2_f = index2_##o1##o2##o3; \
-            major_axis = axis##o1.get(); medium_axis = axis##o2.get(); minor_axis = axis##o3.get(); \
+            major_axis = &axis##o1; medium_axis = &axis##o2; minor_axis = &axis##o3; \
             break;
     switch (iterationOrder) {
         RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(0,1,2)
@@ -43,7 +43,7 @@ void RectangularMesh<3>::setIterationOrder(IterationOrder iterationOrder) {
         RECTANGULAR_MESH_3D_CASE_ITERATION_ORDER(2,1,0)
         default:
             index_f = index_210; index0_f = index0_210;  index1_f = index1_210; index2_f = index2_210;
-            major_axis = axis2.get(); medium_axis = axis1.get(); minor_axis = axis0.get();
+            major_axis = &axis2; medium_axis = &axis1; minor_axis = &axis0;
     }
     this->fireChanged();
 }
@@ -73,6 +73,25 @@ void RectangularMesh<3>::setOptimalIterationOrder() {
 
 shared_ptr<RectangularMesh<3> > RectangularMesh<3>::getMidpointsMesh() {
     return make_shared<RectangularMesh<3>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), axis2->getMidpointsMesh(), getIterationOrder());
+}
+
+void RectangularMesh<3>::setAxis(const shared_ptr<RectangularAxis> &axis, shared_ptr<RectangularAxis> new_val) {
+    if (axis == new_val) return;
+    unsetChangeSignal(axis);
+    const_cast<shared_ptr<RectangularAxis>&>(axis) = new_val;
+    setChangeSignal(axis);
+    fireResized();
+}
+
+void RectangularMesh<3>::onAxisChanged(Mesh::Event &e) {
+    assert(!e.isDelete());
+    this->fireChanged(e.flags());
+}
+
+RectangularMesh<3>::~RectangularMesh() {
+    unsetChangeSignal(axis0);
+    unsetChangeSignal(axis1);
+    unsetChangeSignal(axis2);
 }
 
 void RectangularMesh<3>::writeXML(XMLElement& object) const {
@@ -107,6 +126,7 @@ static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
             else axis[node[4]-'0'] = readRectilinearMesh1D(reader);
         }
     }
+    reader.requireTagEnd();
     return make_shared<RectangularMesh<3>>(std::move(axis[0]), std::move(axis[1]), std::move(axis[2]));
 }
 

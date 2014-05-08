@@ -438,7 +438,7 @@ double FiniteElementMethodThermal2DSolver<Geometry2DType>::doCompute(int loops)
     this->writelog(LOG_INFO, "Running thermal calculations");
 
     int loop = 0;
-    MatrixT A(size, this->mesh->minorAxis().size());
+    MatrixT A(size, this->mesh->minorAxis()->size());
 
     double err = 0.;
     toterr = 0.;
