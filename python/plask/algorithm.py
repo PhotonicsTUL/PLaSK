@@ -102,9 +102,7 @@ class ThermoElectric(object):
         current density distribution along the junction is plotted.
     '''
 
-    def __init__(self, thermal, electrical, tfreq=6, connect=True):
-        electrical.inTemperature = thermal.outTemperature
-        thermal.inHeat = electrical.outHeat
+    def __init__(self, thermal, electrical, tfreq=6, connect=False):
         self.thermal = thermal
         self.electrical = electrical
         self.tfreq = tfreq
@@ -404,7 +402,7 @@ class ThresholdSearch(ThermoElectric):
 
     def __init__(self, thermal, electrical, diffusion, gain, optical,
                  ivolt, vmin, vmax, approx_mode, loss='auto', tfreq=6,
-                 vtol=1e-6, invalidate=False, quick=False, connect=True):
+                 vtol=1e-6, invalidate=False, quick=False, connect=False):
         ThermoElectric.__init__(self, thermal, electrical, tfreq, connect)
         if diffusion is not None:
             self.diffusion = diffusion

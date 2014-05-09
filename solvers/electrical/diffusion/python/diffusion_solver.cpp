@@ -100,7 +100,7 @@ BOOST_PYTHON_MODULE(diffusion)
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
 
         //TODO remove after 1.06.2014
-        solver.add_property("outLightIntensity", &inLightIntensity_get, &inLightIntensity_set, "DEPRECIATED");
+        solver.add_property("inLightIntensity", &inLightIntensity_get, &inLightIntensity_set, "DEPRECIATED");
 
         py::scope scope = solver;
 

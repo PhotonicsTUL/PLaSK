@@ -253,7 +253,10 @@ void PythonManager::loadConnects(XMLReader& reader)
 
         for (auto item: boost::tokenizer<boost::char_separator<char>>(reader.requireAttribute("out"), boost::char_separator<char>("+"))) {
 
-            auto out = splitString2(outkey, '.');
+            std::string key = item;
+            boost::algorithm::trim(key);
+
+            auto out = splitString2(key, '.');
             py::object solverout, prov;
 
             auto out_solver = solvers.find(out.first);

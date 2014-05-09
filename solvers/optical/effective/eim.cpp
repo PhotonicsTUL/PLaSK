@@ -874,6 +874,8 @@ DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mes
 
     DataVector<double> result(dst_mesh.size(), 0.);
 
+    if (modes.size() == 0) return result;
+
     for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
         result += 1e6 * real(k0) * getLightMagnitude(m, dst_mesh, method); // 1e6: 1/µm -> 1/m
     }

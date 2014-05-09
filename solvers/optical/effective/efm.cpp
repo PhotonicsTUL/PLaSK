@@ -842,8 +842,8 @@ DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIn
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t j = 0; j != dst_mesh.size(); ++j) {
         auto point = target_mesh[j];
-        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir;
-        size_t iz = this->mesh->axis1.findIndex(point.c1);
+        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+        size_t iz = this->mesh->axis1.findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
         result[j] = Tensor3<dcomplex>(nrCache[ir][iz]);
     }
     return result;
@@ -859,14 +859,16 @@ DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& ds
 
     DataVector<double> result(dst_mesh.size(), 0.);
 
+    if (modes.size() == 0) return result;
+
     for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
         result += 2e9*M_PI / real(modes[m].lam) * getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m
     }
     auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     for (size_t j = 0; j != result.size(); ++j) {
         auto point = mat_mesh[j];
-        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir;
-        size_t iz = this->mesh->axis1.findIndex(point.c1);
+        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+        size_t iz = this->mesh->axis1.findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
         double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
         result[j] *= absp;
     }

@@ -19,6 +19,17 @@ namespace plask { namespace solvers { namespace thermal {
 }}}
 
 
+//TODO remove after 1.06.2014
+py::object inHeatDensity_get(py::object self) {
+    writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
+    return self.attr("inHeat");
+}
+//TODO remove after 1.06.2014
+void inHeatDensity_set(py::object self, py::object value) {
+    writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
+    self.attr("inHeat") = value;
+}
+
 
 /**
  * Initialization of your solver class to Python
@@ -51,7 +62,6 @@ BOOST_PYTHON_MODULE(fem)
         METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, "Maximum estimated error");
         RECEIVER(inHeat, "");
-        solver.setattr("inHeatDensity", solver.attr("inHeat"));
         PROVIDER(outTemperature, "");
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
@@ -65,6 +75,9 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
+
+        //TODO remove after 1.06.2014
+        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "DEPRECIATED");
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
@@ -86,6 +99,9 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
+
+        //TODO remove after 1.06.2014
+        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "DEPRECIATED");
     }
 
 //     // Add methods to create classes using depreciate names

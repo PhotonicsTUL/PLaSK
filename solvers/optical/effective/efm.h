@@ -80,15 +80,19 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
             size_t ir = solver->mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
             dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir] - solver->freqv(lam)));
             if (real(x) < 0.) x = -x;
-            zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
-            if (ierr != 0)
-                throw ComputationError(solver->getId(), "Could not compute J(%1%, %2%)", m, str(x));
+            if (ir == solver->rsize-1) {
+                Jr = Ji = 0.;
+            } else {
+                zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
+                if (ierr != 0)
+                    throw ComputationError(solver->getId(), "Could not compute J(%1%, %2%) @ r = %3%um", m, str(x), r);
+            }
             if (ir == 0) {
                 Hr = Hi = 0.;
             } else {
                 zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
                 if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute H(%1%, %2%)", m, str(x));
+                    throw ComputationError(solver->getId(), "Could not compute H(%1%, %2%) @ r = %3%um", m, str(x), r);
             }
             return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
         }
