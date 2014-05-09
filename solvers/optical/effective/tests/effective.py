@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.effective import EffectiveIndex2D, EffectiveFrequencyCyl
+from optical import effective
 
 @material.simple
 class Glass(material.Material):
@@ -16,10 +16,10 @@ class Glass(material.Material):
 class Cladding(material.Material):
     def Nr(self, wl, T=300., n=0.): return 1.28
 
-class EffectiveIndex2D_Test(unittest.TestCase):
+class EffectiveIndex(unittest.TestCase):
 
     def setUp(self):
-        self.solver = EffectiveIndex2D("eim")
+        self.solver = effective.EffectiveIndex2D("eim")
         rect = geometry.Rectangle(0.75, 0.5, Glass())
         space = geometry.Cartesian2D(rect, left="mirror")
         self.solver.geometry = space
@@ -42,6 +42,7 @@ class EffectiveIndex2D_Test(unittest.TestCase):
 
     def testMesh(self):
         mesh = self.solver.mesh
+
     def testRefractiveIndex(self):
         self.solver.set_simple_mesh()
         msh = self.solver.mesh.get_midpoints()
@@ -50,9 +51,10 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh, 0.)], refr )
 
 
-class EffectiveIndex2DLaser_LaserTest(unittest.TestCase):
+class EffectiveIndexLaser(unittest.TestCase):
 
     def setUp(self):
+        plask.config.axes = 'xy'
         rect1 = geometry.Rectangle(0.75, 0.24, Glass())
         self.rect2 = geometry.Rectangle(0.75, 0.02, Glass())
         self.rect2.role = 'gain'
@@ -61,7 +63,7 @@ class EffectiveIndex2DLaser_LaserTest(unittest.TestCase):
         stack.prepend(self.rect2)
         stack.prepend(rect1)
         space = geometry.Cartesian2D(stack, left="mirror", length=1000)
-        self.solver = EffectiveIndex2D("eim")
+        self.solver = effective.EffectiveIndex2D("eim")
         self.solver.geometry = space
         self.solver.mirrors = 0.7, 1.0
         self.profile = StepProfile(space)
@@ -80,14 +82,25 @@ class EffectiveIndex2DLaser_LaserTest(unittest.TestCase):
             gain = brentq(fun, 0., 100.)
             self.assertAlmostEqual(gain, 81.6495, 3)
 
-    #def testAbsorptionIntegral(self):
-    #    self.profile[self.rect2] = 81.649513489
-    #    m = self.solver.find_mode(1.15)
-    #    self.solver.modes[m].power = 0.7
-    #    self.assertAlmostEqual( self.solver.get_total_absorption(m), -1.0, 3 )
+    def testAbsorptionIntegral(self):
+       self.profile[self.rect2] = 81.649513489
+       m = self.solver.find_mode(1.15)
+       self.solver.modes[m].power = 0.7
+       self.assertAlmostEqual( self.solver.get_total_absorption(m), -1.0, 3 )
+
+    def testAbsorbedHeat(self):
+        self.profile[self.rect2] = 81.649513489
+        m = self.solver.find_mode(1.15)
+        self.solver.modes[m].power = 0.7
+        box = self.solver.geometry.item.bbox
+        msh = mesh.Rectilinear2D(linspace(box.lower.x, box.upper.x, 1000), linspace(box.lower.y, box.upper.y, 1000))
+        heat = self.solver.outHeat(msh)
+        # 1e-15: µm³->m³ W->mW
+        integral = 2e-15 * sum(heat) * (msh.axis0[1] - msh.axis0[0]) * (msh.axis1[1] - msh.axis1[0]) * self.solver.geometry.extrusion.length
+        self.assertAlmostEqual( integral, self.solver.get_total_absorption(m), 2 )
 
 
-class EffectiveFrequencyCyl_Test(unittest.TestCase):
+class EffectiveFrequency(unittest.TestCase):
 
     def setUp(self):
         plask.config.axes = 'rz'

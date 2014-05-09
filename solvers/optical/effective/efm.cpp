@@ -719,7 +719,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(i
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
-        double power = 1e-3 * modes[num].power; // 1e-3 mW->W
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel for schedule(static,1024)
         for (size_t id = 0; id < dst_mesh.size(); ++id) {
@@ -768,6 +768,8 @@ bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
+
         #pragma omp parallel
         {
             #pragma omp for nowait
@@ -796,8 +798,6 @@ bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t
                     dcomplex phasz = exp(- I * kz * z);
                     valz[idz] = zfields[iz].F * phasz + zfields[iz].B / phasz;
                 }
-
-                double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
                 if (rect_mesh.getIterationOrder() == MeshT::ORDER_NORMAL) {
                     #pragma omp for
@@ -855,7 +855,7 @@ DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& ds
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
-    writelog(LOG_DETAIL, "Getting heat absorbed from %1% modes", modes.size());
+    writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
 
     DataVector<double> result(dst_mesh.size(), 0.);
 

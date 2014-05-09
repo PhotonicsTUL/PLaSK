@@ -738,6 +738,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
     if (!getLightMagnitude_Efficient<RectilinearMesh2D>(num, dst_mesh, results, kx, ky) &&
         !getLightMagnitude_Efficient<RegularMesh2D>(num, dst_mesh, results, kx, ky)) {
 
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
+
         #pragma omp parallel for
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
             auto point = dst_mesh[idx];
@@ -764,7 +766,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
             dcomplex phasy = exp(- I * ky[iy] * y);
             val *= yfields[iy].F * phasy + yfields[iy].B / phasy;
 
-            results[idx] = abs2(val);
+            results[idx] = power * abs2(val);
         }
     }
 
@@ -782,6 +784,8 @@ bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask
 
         std::vector<dcomplex,aligned_allocator<dcomplex>> valx(rect_mesh.tran().size());
         std::vector<dcomplex,aligned_allocator<dcomplex>> valy(rect_mesh.vert().size());
+
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel
         {
@@ -820,7 +824,7 @@ bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask
                     double* data = results.data() + i1 * rect_mesh.axis0.size();
                     for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
                         dcomplex f = valx[i0] * valy[i1];
-                        data[i0] = abs2(f);
+                        data[i0] = power * abs2(f);
                     }
                 }
             } else {
@@ -829,7 +833,7 @@ bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask
                     double* data = results.data() + i0 * rect_mesh.axis1.size();
                     for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
                         dcomplex f = valx[i0] * valy[i1];
-                        data[i1] = abs2(f);
+                        data[i1] = power * abs2(f);
                     }
                 }
             }
@@ -866,7 +870,7 @@ DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mes
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
-    writelog(LOG_DETAIL, "Getting heat absorbed from %1% modes", modes.size());
+    writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
 
     DataVector<double> result(dst_mesh.size(), 0.);
 
