@@ -71,7 +71,7 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectil
         double power;                   ///< Mode power [mW]
 
         Mode(EffectiveIndex2DSolver* solver, Symmetry sym):
-            solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
+            solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(0.) {
             setSymmetry(sym);
         }
 
