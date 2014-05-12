@@ -20,6 +20,13 @@ struct RectangularMesh<1>: public MeshD<1> {
 
     //virtual void clear() = 0;
 
+    /**
+     * Find index where @p to_find point could be inserted.
+     * @param to_find point to find
+     * @return First index where to_find could be inserted.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
+     *         Can be equal to size() if to_find is higher than all points in mesh.
+     */
     virtual std::size_t findIndex(double to_find) const;
 
     /**
