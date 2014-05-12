@@ -30,7 +30,9 @@ struct RectangularMesh<1>: public MeshD<1> {
     virtual std::size_t findNearestIndex(double to_find) const;
 
     /**
-     * Return a mesh that enables iterating over middle points of the ranges
+     * Return a mesh that enables iterating over middle points of the ranges.
+     *
+     * Throw exception if this mesh has lass than two points.
      * \return new rectilinear mesh with points in the middles of original ranges
      */
     virtual shared_ptr<RectangularMesh<1>> getMidpointsMesh() const;
@@ -39,6 +41,10 @@ struct RectangularMesh<1>: public MeshD<1> {
      * @return @c true only if points are in increasing order, @c false if points are in decreasing order
      */
     virtual bool isIncreasing() const = 0;
+
+protected:
+    /// Throw exception if this mesh has less than two point.
+    void beforeCalcMidpointMesh() const;
 };
 
 typedef RectangularMesh<1> RectangularAxis;

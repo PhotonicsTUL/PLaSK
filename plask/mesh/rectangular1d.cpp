@@ -83,10 +83,16 @@ std::size_t RectangularMesh<1>::findNearestIndex(double to_find) const {
 }
 
 shared_ptr<RectangularMesh<1> > RectangularMesh<1>::getMidpointsMesh() const {
+    beforeCalcMidpointMesh();
     /*const std::size_t s = this->size();
     if (s == 0) return this->clone();
     auto result = make_shared<RectilinearAxis>();*/
     return make_shared<MidpointsMesh>(*this)->clone();
+}
+
+void RectangularMesh<1>::beforeCalcMidpointMesh() const {
+    if (this->size() < 2)
+        throw BadMesh("getMidpointsMesh", "at least two points are required");
 }
 
 }   // namespace plask

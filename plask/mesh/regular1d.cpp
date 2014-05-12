@@ -13,11 +13,12 @@ bool RegularAxis::isIncreasing() const
 
 shared_ptr<RectangularMesh<1> > RegularAxis::getMidpointsMesh() const
 {
+    beforeCalcMidpointMesh();
     auto result = make_shared<RegularMesh1D>(*this);
-    if (this->points_count > 0) {
+    //if (this->points_count > 0) { //beforeCalcMidpointMesh() throws exception if this is not true
         --result->points_count;
         result->lo += _step * 0.5;
-    }
+    //}
     return result;
     //return make_shared<RegularMesh1D>(this->first() + this->step() * 0.5, this->last() - this->step() * 0.5, this->points_count - 1);
 }
