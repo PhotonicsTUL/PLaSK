@@ -45,7 +45,6 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
             max_iterations = 20;
             minor_concentration = 5.0e+15;
             inTemperature = 300.;
-            inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
         }
 
         virtual ~FiniteElementMethodDiffusion2DSolver<Geometry2DType>()
@@ -84,7 +83,6 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 
         double wavelength;
         // double factor;
-        double inv_hc;
 
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [cm];
         int iterations;

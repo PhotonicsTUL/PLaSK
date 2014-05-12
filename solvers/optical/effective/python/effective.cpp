@@ -261,7 +261,7 @@ BOOST_PYTHON_MODULE(effective)
                "    num (int): number of the mode.\n\n"
                "Returns:\n"
                "    Total absorbed energy\n",
-               py::arg("num"));
+               py::arg("num")=0);
         RW_PROPERTY(vat, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominant mode).");
         RW_FIELD(vneff, "Effective index in the vertical direction.");
         solver.add_property("mirrors", EffectiveIndex2DSolver_getMirrors, EffectiveIndex2DSolver_setMirrors,
@@ -382,12 +382,19 @@ BOOST_PYTHON_MODULE(effective)
                    "    m (integer): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n",
                    (py::arg("lam"), "loss", py::arg("m")=0));
         solver.def("get_total_absorption", (double (EffectiveFrequencyCylSolver::*)(size_t))&EffectiveFrequencyCylSolver::getTotalAbsorption,
-               "Get total energy absorbed by from a mode in unit time.\n\n"
+               "Get total energy absorbed from a mode in unit time.\n\n"
                "Args:\n"
                "    num (int): number of the mode.\n\n"
                "Returns:\n"
                "    Total absorbed energy\n",
-               py::arg("num"));
+               py::arg("num")=0);
+        solver.def("get_gain_integral", (double (EffectiveFrequencyCylSolver::*)(size_t))&EffectiveFrequencyCylSolver::getGainIntegral,
+               "Get total energy generated in the gain region to a mode in unit time.\n\n"
+               "Args:\n"
+               "    num (int): number of the mode.\n\n"
+               "Returns:\n"
+               "    Total absorbed energy\n",
+               py::arg("num")=0);
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
         PROVIDER(outWavelength, "");

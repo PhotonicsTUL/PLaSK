@@ -373,6 +373,12 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      */
     double getTotalAbsorption(size_t num);
 
+    /**
+     * Return total amount of energy absorbed by the matter in a unit time.
+     * \param num mode number
+     */
+    double getGainIntegral(size_t num);
+
   protected:
 
     /// Do we need to compute gain
@@ -421,6 +427,12 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      * \param mode mode to analyze
      */
     double getTotalAbsorption(const Mode& mode);
+
+    /**
+     * Return total amount of energy generated in the gain region in a unit time.
+     * \param mode mode to analyze
+     */
+    double getGainIntegral(const Mode& mode);
 
     /// Obtain main stripe
     size_t getMainStripe() {

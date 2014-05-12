@@ -665,29 +665,54 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
     return result;
 }
 
-
 double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
     if (!modes[num].have_fields) {
         size_t stripe = getMainStripe();
-        // Compute vertical part
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
-        // Compute horizontal part
-        detS(modes[num].lam, modes[num], true);
-        #ifndef NDEBUG
-        {
-            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
-                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
-            writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
-        }
-        #endif
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
+        detS(modes[num].lam, modes[num], true); // compute horizontal part
         modes[num].have_fields = true;
     }
 
     return getTotalAbsorption(modes[num]);
 }
+
+
+double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
+{
+    double result = 0.;
+
+    auto midmesh = mesh->getMidpointsMesh();
+
+    for (size_t ir = 0; ir < rsize; ++ir) {
+        for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
+            auto roles = geometry->getRolesAt(midmesh->at(ir, iz-1));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+                result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
+            }
+        }
+    }
+    result *= 2e-9 * M_PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
+    return -result;
+}
+
+double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
+{
+    if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
+
+    if (!modes[num].have_fields) {
+        size_t stripe = getMainStripe();
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
+        detS(modes[num].lam, modes[num], true); // compute horizontal part
+        modes[num].have_fields = true;
+    }
+
+    return getGainIntegral(modes[num]);
+}
+
 
 plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
 {

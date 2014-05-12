@@ -8,6 +8,8 @@ F77SUB dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, d
 
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
+const double inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
+
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd())
@@ -287,8 +289,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         write_debug("g[0]: %1% cm(-1)", g[0]);
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
                         write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
-                        auto factor = inv_hc * wavelength;
-                        // write_debug("Git2a!");
+                        auto factor = inv_hc * wavelength; // inverse one photon energy
                         for (size_t i = 0; i != mesh2.size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
@@ -877,7 +878,7 @@ template<typename Geometry2DType> plask::DataVector<const double> FiniteElementM
             int k = mesh_Li.index(i,j);
             current_Li += initLi[k];
         }
-        Li[i] = current_Li/(detected_QW.size()+1.0);
+        Li[i] = current_Li/(detected_QW.size());
     }
     return Li;
 }

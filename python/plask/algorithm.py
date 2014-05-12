@@ -485,6 +485,7 @@ class ThresholdSearch(ThermoElectric):
             nm = self.optical.find_mode(self.optstart)
             val = self.optical.modes[nm].__getattribute__(self.loss)
             if self.loss != 'loss': val = val.imag
+            plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g}{}".format(volt, val, '' if self.loss == 'neff' else ' / cm'))
             return val
 
         result = scipy.optimize.brentq(func, self.vmin, self.vmax, xtol=self.vtol)
