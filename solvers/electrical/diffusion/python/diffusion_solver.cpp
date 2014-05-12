@@ -22,7 +22,7 @@ py::object inLightIntensity_get(py::object self) {
 //TODO remove after 1.06.2014
 void inLightIntensity_set(py::object self, py::object value) {
     writelog(LOG_WARNING, "'inLightIntensity' is depreciated. Use 'inLightMagnitude' instead!");
-    self.attr("inLightMagnitude") = value;
+    self.attr("__setattr__")("inLightMagnitude", value);
 }
 
 

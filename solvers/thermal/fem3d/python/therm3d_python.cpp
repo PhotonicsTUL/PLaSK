@@ -27,7 +27,7 @@ py::object inHeatDensity_get(py::object self) {
 //TODO remove after 1.06.2014
 void inHeatDensity_set(py::object self, py::object value) {
     writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
-    self.attr("inHeat") = value;
+    self.attr("__setattr__")("inHeat", value);
 }
 
 
