@@ -179,8 +179,8 @@ static shared_ptr<MeshT> RectangularMesh1D__init__axis(const AxesT& axis) {
 
 static void RectangularMesh2D__setOrdering(RectangularMesh<2>& self, std::string order) {
     if (order == "best" || order == "optimal") self.setOptimalIterationOrder();
-    else if (order == "10") self.setIterationOrder(RectangularMesh<2>::ORDER_NORMAL);
-    else if (order == "01") self.setIterationOrder(RectangularMesh<2>::ORDER_TRANSPOSED);
+    else if (order == "10") self.setIterationOrder(RectangularMesh<2>::ORDER_10);
+    else if (order == "01") self.setIterationOrder(RectangularMesh<2>::ORDER_01);
     else {
         throw ValueError("order must be '01', '10' or 'best'");
     }
@@ -222,7 +222,7 @@ static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self
 }
 
 static std::string RectangularMesh2D__getOrdering(RectangularMesh<2>& self) {
-    return (self.getIterationOrder() == RectangularMesh<2>::ORDER_NORMAL) ? "10" : "01";
+    return (self.getIterationOrder() == RectangularMesh<2>::ORDER_10) ? "10" : "01";
 }
 
 void RectangularMesh3D__setOrdering(RectangularMesh<3>& self, std::string order) {

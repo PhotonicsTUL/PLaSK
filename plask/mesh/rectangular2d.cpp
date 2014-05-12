@@ -26,7 +26,7 @@ static std::size_t transposed_index1(const RectangularMesh<2>* mesh, std::size_t
 }
 
 void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
-    if (iterationOrder == ORDER_TRANSPOSED) {
+    if (iterationOrder == ORDER_01) {
         index_f = transposed_index;
         index0_f = transposed_index0;
         index1_f = transposed_index1;
@@ -43,7 +43,7 @@ void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
 }
 
 typename RectangularMesh<2>::IterationOrder RectangularMesh<2>::getIterationOrder() const {
-    return (index_f == &transposed_index)? ORDER_TRANSPOSED : ORDER_NORMAL;
+    return (index_f == &transposed_index)? ORDER_01 : ORDER_10;
 }
 
 void RectangularMesh<2>::setAxis(const shared_ptr<RectangularAxis> &axis, shared_ptr<RectangularAxis> new_val) {

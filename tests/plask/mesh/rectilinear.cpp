@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(dim2boundary) {
     plask::RectangularMesh<2>::Boundary right_boundary = plask::RectangularMesh<2>::getRightBoundary();
     auto axis0 = plask::make_shared<plask::RectilinearAxis>();
     auto axis1 = plask::make_shared<plask::RectilinearAxis>();
-    plask::RectangularMesh<2> mesh(axis0, axis1);
+    plask::RectangularMesh<2> mesh(axis0, axis1, plask::RectangularMesh<2>::ORDER_10);
     axis0->addPointsLinear(1.0, 3.0, 3);   //1.0, 2.0, 3.0
     axis1->addPointsLinear(5.0, 6.0, 2);   //5.0, 6.0
     auto right_boundary_on_mesh = right_boundary(mesh, plask::shared_ptr<plask::Geometry2DCartesian>());
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(middle2) {
 BOOST_AUTO_TEST_CASE(boundary) {
     auto axis0 = plask::make_shared<plask::RectilinearAxis>();
     auto axis1 = plask::make_shared<plask::RectilinearAxis>();
-    plask::RectangularMesh<2> mesh(axis0, axis1);
+    plask::RectangularMesh<2> mesh(axis0, axis1, plask::RectangularMesh<2>::ORDER_10);
     axis0->addPointsLinear(0.0, 4.0, 3);
     axis1->addPointsLinear(2.0, 6.0, 3);
     auto leftB = plask::RectangularMesh<2>::getLeftBoundary();

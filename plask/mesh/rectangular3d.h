@@ -279,7 +279,7 @@ class RectangularMesh<3>: public MeshD<3> {
      */
     void setOptimalIterationOrder();
 
-    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_210)
+    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_012)
         : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), axis2(make_shared<RectilinearAxis>()), elements(this) {
         setIterationOrder(iterationOrder);
         setChangeSignal(this->axis0);
@@ -295,7 +295,7 @@ class RectangularMesh<3>: public MeshD<3> {
      * @param mesh2 mesh for the third coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(shared_ptr<RectangularAxis> mesh0, shared_ptr<RectangularAxis> mesh1, shared_ptr<RectangularAxis> mesh2, IterationOrder iterationOrder = ORDER_210) :
+    RectangularMesh(shared_ptr<RectangularAxis> mesh0, shared_ptr<RectangularAxis> mesh1, shared_ptr<RectangularAxis> mesh2, IterationOrder iterationOrder = ORDER_012) :
         axis0(std::move(mesh0)),
         axis1(std::move(mesh1)),
         axis2(std::move(mesh2)),

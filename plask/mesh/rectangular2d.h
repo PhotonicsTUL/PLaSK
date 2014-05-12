@@ -376,13 +376,13 @@ class RectangularMesh<2>: public MeshD<2> {
 
     /**
      * Iteration orders:
-     * - normal iteration order (ORDER_NORMAL) is:
+     * - 10 iteration order is:
      * (axis0[0], axis1[0]), (axis0[1], axis1[0]), ..., (axis0[axis0->size-1], axis1[0]), (axis0[0], axis1[1]), ..., (axis0[axis0->size()-1], axis1[axis1->size()-1])
-     * - transposed iteration order (ORDER_TRANSPOSED) is:
+     * - 01 iteration order is:
      * (axis0[0], axis1[0]), (axis0[0], axis1[1]), ..., (axis0[0], y[axis1->size-1]), (axis0[1], axis1[0]), ..., (axis0[axis0->size()-1], axis1[axis1->size()-1])
      * @see setIterationOrder, getIterationOrder, setOptimalIterationOrder
      */
-    enum IterationOrder { ORDER_NORMAL, ORDER_TRANSPOSED };
+    enum IterationOrder { ORDER_10, ORDER_01 };
 
     /**
      * Choose iteration order.
@@ -402,10 +402,10 @@ class RectangularMesh<2>: public MeshD<2> {
      * Set iteration order to the shortest axis changes fastest.
      */
     void setOptimalIterationOrder() {
-        setIterationOrder(axis0->size() > axis1->size() ? ORDER_TRANSPOSED : ORDER_NORMAL);
+        setIterationOrder(axis0->size() > axis1->size() ? ORDER_01 : ORDER_10);
     }
 
-    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_NORMAL)
+    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_01)
         : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), elements(this) {
         setIterationOrder(iterationOrder);
         setChangeSignal(this->axis0);
@@ -419,7 +419,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @param mesh1 mesh for the second coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder = ORDER_NORMAL)
+    RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder = ORDER_01)
         : axis0(std::move(axis0)), axis1(std::move(axis1)), elements(this) {
         setIterationOrder(iterationOrder);
         setChangeSignal(this->axis0);
@@ -453,7 +453,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * @param iterationOrder iteration order
      */
     /*template <typename Mesh0CtorArg, typename Mesh1CtorArg>
-    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = ORDER_NORMAL):
+    RectangularMesh(Mesh0CtorArg&& mesh0, Mesh1CtorArg&& mesh1, IterationOrder iterationOrder = ORDER_10):
         axis0(std::forward<Mesh0CtorArg>(mesh0)), axis1(std::forward<Mesh1CtorArg>(mesh1)) elements(this) {
         axis0->owner = this; axis1->owner = this;
         setIterationOrder(iterationOrder); }*/

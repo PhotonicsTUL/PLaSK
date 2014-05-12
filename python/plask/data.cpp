@@ -42,7 +42,7 @@ namespace detail {
     inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
-        if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_NORMAL) {
+        if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             strides[0] = sizeof(T);
             strides[1] = mesh.axis0->size() * sizeof(T);
         } else {
@@ -204,7 +204,7 @@ namespace detail {
         auto mesh_strides = detail::mesh_strides<T>(mesh, nd);
         for (size_t i = 0; i != nd; ++i)
             if (mesh_strides[i] != PyArray_STRIDES(arr)[i])
-                throw ValueError("Stride %1% for the array do not correspond to the current mesh ordering", i);
+                throw ValueError("Stride %1% for the array do not correspond to the current mesh ordering (stride: mesh: %2%, array: %3%)", i, mesh_strides[i], PyArray_STRIDES(arr)[i]);
 
         return mesh.size();
     }

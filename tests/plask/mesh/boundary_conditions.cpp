@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
     plask::RectangularMesh<2>::Boundary bottom_b = plask::RectangularMesh<2>::getBottomOfBoundary(manager.getGeometryObject("bottom"));
     auto axis0 = plask::make_shared<plask::RectilinearAxis>();
     auto axis1 = plask::make_shared<plask::RectilinearAxis>();
-    plask::RectangularMesh<2> mesh(axis0, axis1);
+    plask::RectangularMesh<2> mesh(axis0, axis1, plask::RectangularMesh<2>::ORDER_10);
     axis0->addPointsLinear(1.0, 5.0, 5);   // 1.0, 2.0, 3.0, 4.0, 5.0
     axis1->addPointsLinear(0.0, 4.0, 5);   // 0.0, 1.0, 2.0, 3.0, 4.0
     plask::RectangularMesh<2>::Boundary::WithMesh wm = bottom_b.get(mesh, manager.getGeometry<plask::GeometryD<2> >("space"));

@@ -784,7 +784,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask
                 valy[idy] = yfields[iy].F * phasy + yfields[iy].B / phasy;
             }
 
-            if (rect_mesh.getIterationOrder() == RectangularMesh<2>::ORDER_NORMAL) {
+            if (rect_mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
                 #pragma omp for
                 for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
                     double* data = results.data() + i1 * rect_mesh.axis0->size();

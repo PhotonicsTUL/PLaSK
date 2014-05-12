@@ -33,12 +33,13 @@ class ReceiverTest(unittest.TestCase):
 
 
     def testExternalData(self):
-        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]]).transpose((1,0,2))
+        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
         self.assertEqual( sys.getrefcount(v), 2 )
         data = plask.Data(v, self.mesh2)
         self.assertEqual( data.dtype, type(plask.vec(0.,0.)) )
         self.solver.inVectors = data
-        self.assertEqual( self.solver.show_vectors(), "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n" )
+        self.assertEqual( self.solver.show_vectors(), "[1, 5]: [1, 10]\n[1, 15]: [2, 20]\n[3, 5]: [3, 30]\n[3, 15]: [4, 40]\n" )
+                                           #TODO was: "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n"
         self.assertEqual( sys.getrefcount(v), 3 )
         del data
         self.assertEqual( sys.getrefcount(v), 3 )
@@ -88,7 +89,7 @@ class PythonProviderTest(unittest.TestCase):
 class DataTest(unittest.TestCase):
 
     def testOperations(self):
-        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]]).transpose((1,0,2))
+        v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
         data = plask.Data(v, plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3)).get_midpoints())
         self.assertEqual( data + data, 2 * data )
 

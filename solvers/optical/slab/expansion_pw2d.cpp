@@ -138,7 +138,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
 
-    RectangularMesh<2> mesh(make_shared<RegularAxis>(xmesh), make_shared<RectilinearAxis>(axis1), RectangularMesh<2>::ORDER_TRANSPOSED);
+    RectangularMesh<2> mesh(make_shared<RegularAxis>(xmesh), make_shared<RectilinearAxis>(axis1), RectangularMesh<2>::ORDER_01);
 
     double lambda = real(SOLVER->getWavelength());
 
