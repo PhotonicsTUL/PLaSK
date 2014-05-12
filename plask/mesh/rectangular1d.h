@@ -18,8 +18,6 @@ struct RectangularMesh<1>: public MeshD<1> {
      */
     virtual shared_ptr<RectangularMesh<1>> clone() const;
 
-    //virtual void clear() = 0;
-
     /**
      * Find index where @p to_find point could be inserted.
      * @param to_find point to find
@@ -39,7 +37,7 @@ struct RectangularMesh<1>: public MeshD<1> {
     /**
      * Return a mesh that enables iterating over middle points of the ranges.
      *
-     * Throw exception if this mesh has lass than two points.
+     * Throw exception if this mesh has less than two points.
      * \return new rectilinear mesh with points in the middles of original ranges
      */
     virtual shared_ptr<RectangularMesh<1>> getMidpointsMesh() const;
