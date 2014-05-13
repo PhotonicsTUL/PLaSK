@@ -23,9 +23,9 @@ class PlaskTestResult(unittest.TextTestResult):
 
         msg_lines = []
         for filename, lineno, function, text in tb_lines[:-1]:
-            msg_lines.append('%s(%d)\n: in "%s": %s\n' % (filename, lineno, function, text))
+            msg_lines.append('%s:%d\n: in "%s": %s\n' % (filename, lineno, function, text))
         filename, lineno, function, text = tb_lines[-1]
-        msg_lines.append('%s(%d): %s in "%s": %s\n>   %s\n' % (filename, lineno, exctype.__name__, function, value, text))
+        msg_lines.append('%s:%d: %s in "%s": %s\n>   %s\n' % (filename, lineno, exctype.__name__, function, value, text))
 
         if self.buffer:
             output = sys.stdout.getvalue()
@@ -45,13 +45,16 @@ class PlaskTestResult(unittest.TextTestResult):
 
 if __name__ == '__main__':
     exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'), globals(), locals())
-    tests = []
-    for m in dict(globals()).values():
-        try:
-            if issubclass(m, unittest.TestCase):
-                tests.append(m)
-        except TypeError:
-            pass
+    tests = sys.argv[2:]
+    if not tests:
+        for m in dict(globals()).values():
+            try:
+                if issubclass(m, unittest.TestCase):
+                    tests.append(m)
+            except TypeError:
+                pass
+    else:
+        tests = [globals()[m] for m in tests]
 
     errors = 0
 

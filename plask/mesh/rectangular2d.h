@@ -186,8 +186,8 @@ inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager,
  * Rectilinear mesh in 2D space.
  *
  * Includes two 1D rectilinear meshes:
- * - axis0 (alternative names: tran, ee_x(), r())
- * - axis1 (alternative names: up(), ee_y(), z())
+ * - axis0 (alternative names: tran(), ee_x(), rad_r())
+ * - axis1 (alternative names: up(), ee_y(), rad_z())
  * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
 template<>
@@ -462,13 +462,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    RectangularAxis& tran() { return *axis0; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return axis0
-     */
-    const RectangularAxis& tran() const { return *axis0; }
+    const shared_ptr<RectangularAxis>& tran() const { return axis0; }
 
     void setTran(shared_ptr<RectangularAxis> a0) { setAxis0(a0); }
 
@@ -476,13 +470,7 @@ class RectangularMesh<2>: public MeshD<2> {
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    RectangularAxis& vert() { return *axis1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return axis1
-     */
-    const RectangularAxis& vert() const { return *axis1; }
+    const shared_ptr<RectangularAxis>& vert() const { return axis1; }
 
     void setVert(shared_ptr<RectangularAxis> a1) { setAxis1(a1); }
 
@@ -490,70 +478,35 @@ class RectangularMesh<2>: public MeshD<2> {
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    RectangularAxis& ee_x() { return *axis0; }
+    const shared_ptr<RectangularAxis>& ee_x() const { return axis0; }
+
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return axis1
+     */
+    const shared_ptr<RectangularAxis>& ee_y() const { return axis1; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const RectangularAxis& ee_x() const { return *axis0; }
+    const shared_ptr<RectangularAxis>& rad_r() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    RectangularAxis& ee_y() { return *axis1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return axis1
-     */
-    const RectangularAxis& ee_y() const { return *axis1; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return axis0
-     */
-    RectangularAxis& rad_r() { return *axis0; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return axis0
-     */
-    const RectangularAxis& rad_r() const { return *axis0; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return axis1
-     */
-    RectangularAxis& rad_z() { return *axis1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return axis1
-     */
-    const RectangularAxis& rad_z() const { return *axis1; }
+    const shared_ptr<RectangularAxis>& rad_z() const { return axis1; }
 
     /**
      * Get numbered axis
      * @param n number of axis
      * @return n-th axis (cn)
      */
-    RectangularAxis& axis(size_t n) {
-        if (n == 0) return *axis0;
+    const shared_ptr<RectangularAxis>& axis(size_t n) const {
+        if (n == 0) return axis0;
         else if (n != 1) throw Exception("Bad axis number");
-        return *axis1;
-    }
-
-    /**
-     * Get numbered axis
-     * @param n number of axis
-     * @return n-th axis (cn)
-     */
-    const RectangularAxis& axis(size_t n) const {
-        if (n == 0) return *axis0;
-        else if (n != 1) throw Exception("Bad axis number");
-        return *axis1;
+        return axis1;
     }
 
     /// \return major (changing slowest) axis

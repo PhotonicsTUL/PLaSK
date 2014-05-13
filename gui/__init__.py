@@ -2,53 +2,93 @@
 # -*- coding: utf-8 -*-
 
 # use new v2 API, Python types instead of Qt
-import sip
-for n in ["QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"]: sip.setapi(n, 2)
-
 import sys
 import os
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import SIGNAL
+import ctypes
+import subprocess
+import pkgutil
 
-from .resources import APP_ICON
+from .qt import QtGui, QtCore
+
+from . import _resources
+
 from .XPLDocument import XPLDocument
 from .utils.gui import exception_to_msg
 from .model.info import InfoTreeModel, Info
+from .launch import launch_plask
+
+from .utils.config import CONFIG
+
+try:
+    import plask
+except ImportError:
+    pass
+
+try:
+    winsparkle = ctypes.CDLL('WinSparkle.dll')
+except OSError:
+    winsparkle = None
+
+WINDOWS = set()
 
 class MainWindow(QtGui.QMainWindow):
 
-    def __init__(self):
+    # def __new__(cls, filename=None):
+    #
+
+    def __init__(self, filename=None):
         super(MainWindow, self).__init__()
-        self.document = XPLDocument(self)
         self.current_tab_index = -1
-        self.filename = None
-        self.init_UI()
+        self.filename = filename
+        self.document = XPLDocument(self)
+        if filename is not None:
+            try:
+                self.document.load_from_file(filename)
+            except IOError:
+                pass # TODO: add errors handling in the __new__ method
+        self.init_ui()
+        self.model_is_new()
+
+    def make_window_title(self):
+        if self.filename:
+            self.setWindowTitle("{}[*] - PLaSK".format(self.filename))
+        else:
+            self.setWindowTitle("[*] PLaSK")
 
     def model_is_new(self):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m.title())
         self.current_tab_index = 0
-        self.current_section_enter()
+        new_index = 2
+        self.tabs.setCurrentIndex(new_index)
+        self.tab_change(new_index)
 
     def set_model(self, model):
         self.document = model
         self.model_is_new()
 
     def new(self):
-        reply = QtGui.QMessageBox.question(self, "Save", "Save current project?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|QtGui.QMessageBox.Cancel)
-        if reply == QtGui.QMessageBox.Cancel or (reply == QtGui.QMessageBox.Yes and not self.save()):
-            return
-        self.filename = None
-        self.set_model(XPLDocument(self))
+        new_window = MainWindow()
+        new_window.resize(self.size())
+        WINDOWS.add(new_window)
 
     def open(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "XPL (*.xpl)");
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "PLaSK structure data (*.xpl)")
         if not filename: return;
-        self.document.load_from_file(filename)
+        if type(filename) == tuple:
+            filename = filename[0]
+        if self.filename is None and not self.isWindowModified():
+            self.filename = filename
+            self.document.load_from_file(filename)
+            self.make_window_title()
+        else:
+            new_window = MainWindow(filename)
+            new_window.resize(self.size())
+            WINDOWS.add(new_window)
 
     def save(self):
-        if self.filename != None:
+        if self.filename is not None:
             if not self.before_save(): return False
             self.document.save_to_file(self.filename)
             return True
@@ -58,9 +98,12 @@ class MainWindow(QtGui.QMainWindow):
     def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.before_save(): return False
-        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", "", "XPL (*.xpl)");
+        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.filename or "",
+                                                     "PLaSK structure data  (*.xpl)")
+        if type(filename) is tuple: filename = filename[0]
         if not filename: return False
         self.filename = filename
+        self.make_window_title()
         self.document.save_to_file(filename)
         return True
 
@@ -70,24 +113,25 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 self.document.controller_by_index(self.current_tab_index).save_data_in_model()
             except Exception as e:
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText("Edited content of the current section is invalid.")
-                msgBox.setDetailedText(str(e))
-                msgBox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
-                msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-                msgBox.setIcon(QtGui.QMessageBox.Warning)
-                #msgBox.setDefaultButton(QtGui.QMessageBox.Yes);
-                return msgBox.exec_() == QtGui.QMessageBox.Yes
+                msgbox = QtGui.QMessageBox()
+                msgbox.setText("Edited content of the current section is invalid.")
+                msgbox.setDetailedText(str(e))
+                msgbox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
+                msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                msgbox.setIcon(QtGui.QMessageBox.Warning)
+                #msgbox.setDefaultButton(QtGui.QMessageBox.Yes);
+                return msgbox.exec_() == QtGui.QMessageBox.Yes
         errors = self.document.get_info(Info.ERROR)
         if errors:
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Document contains some non-critical errors. It is possible to save it but probably not to run.")
-            msgBox.setDetailedText('\n'.join(map(str, errors)))
-            msgBox.setInformativeText("Do you want to save anyway?")
-            msgBox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-            msgBox.setIcon(QtGui.QMessageBox.Warning)
-            msgBox.setDefaultButton(QtGui.QMessageBox.Yes)
-            return msgBox.exec_() == QtGui.QMessageBox.Yes
+            msgbox = QtGui.QMessageBox()
+            msgbox.setText("Document contains some non-critical errors. "
+                           "It is possible to save it but probably not to run.")
+            msgbox.setDetailedText('\n'.join(map(str, errors)))
+            msgbox.setInformativeText("Do you want to save anyway?")
+            msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            msgbox.setIcon(QtGui.QMessageBox.Warning)
+            msgbox.setDefaultButton(QtGui.QMessageBox.Yes)
+            return msgbox.exec_() == QtGui.QMessageBox.Yes
         return True
 
     def current_section_exit(self):
@@ -118,10 +162,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def set_actions(self, toolbar_name, *actions):
         try:
-            toolbar = self.extra_toolbars[toolbar_name]
+            toolbar = self.toolbars[toolbar_name]
         except KeyError:
             toolbar = self.addToolBar(toolbar_name)
-            self.extra_toolbars[toolbar_name] = toolbar
+            self.toolbars[toolbar_name] = toolbar
         toolbar.clear()
         for a in actions:
             if not a:
@@ -136,71 +180,104 @@ class MainWindow(QtGui.QMainWindow):
     def set_editor_select_actions(self, *actions):
         self.set_actions('Section editor', *actions)
 
-    def init_UI(self):
-
+    def init_ui(self):
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
-        icon_pixmap = QtGui.QPixmap()
-        icon_pixmap.loadFromData(QtCore.QByteArray.fromBase64(APP_ICON))
-        icon = QtGui.QIcon()
-        icon.addPixmap(icon_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon = QtGui.QIcon(':/plask.png')
         self.setWindowIcon(icon)
 
         #self.statusBar()
 
-        newAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-new'), '&New', self)
-        newAction.setShortcut(QtGui.QKeySequence.New)
-        newAction.setStatusTip('New XPL file')
-        newAction.triggered.connect(self.new)
+        new_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-new', QtGui.QIcon(':/document-new.png')),
+                                   '&New', self)
+        new_action.setShortcut(QtGui.QKeySequence.New)
+        new_action.setStatusTip('New XPL file')
+        new_action.triggered.connect(self.new)
 
-        openAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'), '&Open...', self)
-        openAction.setShortcut(QtGui.QKeySequence.Open)
-        openAction.setStatusTip('Open XPL file')
-        openAction.triggered.connect(self.open)
+        open_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open', QtGui.QIcon(':/document-open.png')),
+                                    '&Open...', self)
+        open_action.setShortcut(QtGui.QKeySequence.Open)
+        open_action.setStatusTip('Open XPL file')
+        open_action.triggered.connect(self.open)
 
-        saveAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-save'), '&Save', self)
-        saveAction.setShortcut(QtGui.QKeySequence.Save)
-        saveAction.setStatusTip('Save XPL file')
-        saveAction.triggered.connect(self.save)
+        save_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save', QtGui.QIcon(':/document-save.png')),
+                                    '&Save', self)
+        save_action.setShortcut(QtGui.QKeySequence.Save)
+        save_action.setStatusTip('Save XPL file')
+        save_action.triggered.connect(self.save)
 
-        saveAsAction = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as'), 'Save &As...', self)
-        saveAsAction.setShortcut(QtGui.QKeySequence.SaveAs)
-        saveAsAction.setStatusTip('Save XPL file, ask for name of file')
-        saveAsAction.triggered.connect(self.save_as)
+        saveas_action = QtGui.QAction(QtGui.QIcon.fromTheme('document-save-as', QtGui.QIcon(':/document-save-as.png')),
+                                      'Save &As...', self)
+        saveas_action.setShortcut(QtGui.QKeySequence.SaveAs)
+        saveas_action.setStatusTip('Save XPL file, ask for name of file')
+        saveas_action.triggered.connect(self.save_as)
 
-        exitAction = QtGui.QAction(QtGui.QIcon.fromTheme('exit'), 'E&xit', self)
-        exitAction.setShortcut(QtGui.QKeySequence.Quit)
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(self.close)
+        launch_action = QtGui.QAction(QtGui.QIcon.fromTheme('media-playback-start',
+                                                            QtGui.QIcon(':/media-playback-start.png')),
+                                      '&Launch...', self)
+        launch_action.setShortcut('F5')
+        launch_action.setStatusTip('Launch current file in PLaSK')
+        launch_action.triggered.connect(lambda: launch_plask(self))
 
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(newAction)
-        fileMenu.addAction(openAction)
-        fileMenu.addSeparator()
-        fileMenu.addAction(saveAction)
-        fileMenu.addAction(saveAsAction)
-        fileMenu.addSeparator()
-        fileMenu.addAction(exitAction)
+        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit', QtGui.QIcon(':/exit.png')), 'E&xit', self)
+        exit_action.setShortcut(QtGui.QKeySequence.Quit)
+        exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(self.close)
 
-        #viewMenu = menubar.addMenu('&View')
+        self.menubar = self.menuBar()
+        self.file_menu = self.menubar.addMenu('&File')
+        self.file_menu.addAction(new_action)
+        self.file_menu.addAction(open_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(save_action)
+        self.file_menu.addAction(saveas_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(launch_action)
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(exit_action)
 
-        #editMenu = menubar.addMenu('&Edit')
-        #editMenu.addAction(showSourceAction)
+        #view_menu = menubar.addMenu('&View')
+
+        #edit_menu = menubar.addMenu('&Edit')
+        #edit_menu.addAction(showSourceAction)
+
+        global winsparkle
+        if winsparkle:
+            tools_menu = self.menubar.addMenu('&Tools')
+            if winsparkle:
+                tools_menu.addSeparator()
+                try:
+                    actionWinSparkleAutoupdate = QtGui.QAction(self)
+                    actionWinSparkleAutoupdate.setText(self.tr("Automatic Updates"))
+                    actionWinSparkleAutoupdate.setCheckable(True)
+                    actionWinSparkleAutoupdate.setChecked(winsparkle.win_sparkle_get_automatic_check_for_updates())
+                    actionWinSparkleAutoupdate.triggered.connect(
+                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(
+                            int(actionWinSparkleAutoupdate.isChecked())))
+                    tools_menu.addAction(actionWinSparkleAutoupdate)
+                except AttributeError:
+                    pass
+                actionWinSparkle = QtGui.QAction(self)
+                actionWinSparkle.setText("Check for Updates Now...")
+                actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
+                tools_menu.addAction(actionWinSparkle)
 
         toolbar = self.addToolBar('File')
-        toolbar.addAction(newAction)
-        toolbar.addAction(openAction)
-        toolbar.addAction(saveAction)
-        toolbar.addAction(saveAsAction)
-        #toolbar.addAction(exitAction)
+        toolbar.addAction(new_action)
+        toolbar.addAction(open_action)
+        toolbar.addAction(save_action)
+        toolbar.addAction(saveas_action)
+        toolbar.addSeparator()
+        toolbar.addAction(launch_action)
+        #toolbar.addAction(exit_action)
         #toolbar.addSeparator()
         #toolbar.addAction(showSourceAction)
-        self.extra_toolbars = {}
+        self.toolbars = {}
+        self.toolbars['File'] = toolbar
 
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
 
-        self.tabs.connect(self.tabs, SIGNAL("currentChanged(int)"), self.tab_change)
+        self.tabs.connect(self.tabs, QtCore.SIGNAL("currentChanged(int)"), self.tab_change)
         self.setCentralWidget(self.tabs)
 
         self.info_dock = QtGui.QDockWidget("Warnings", self)
@@ -219,21 +296,65 @@ class MainWindow(QtGui.QMainWindow):
 
         #viewMenu.addAction(self.info_dock.toggleViewAction());
 
-        self.setGeometry(100, 100, 1200, 750)
-        self.setWindowTitle('Main window')
-
-        try:
-            self.document.load_from_file(os.path.join(os.path.dirname(__file__), 'test.xpl'))
-        except IOError:
-            pass
+        geometry = CONFIG['session/geometry']
+        if geometry is None:
+            desktop = QtGui.QDesktopWidget()
+            screen = desktop.availableGeometry(desktop.primaryScreen())
+            self.setFixedSize(screen.width()*0.8, screen.height()*0.9)
         else:
-            self.filename = 'test.xpl'
-        self.model_is_new()
+            self.setGeometry(geometry)
+
+        self.make_window_title()
 
         self.show()
 
+    def closeEvent(self, event):
+        if self.isWindowModified():
+            confirm = QtGui.QMessageBox.question(self, "Unsaved FIle",
+                                                 "File is not saved. Do you want to save it before closing the window?",
+                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
+            if confirm == QtGui.QMessageBox.Cancel or (confirm == QtGui.QMessageBox.Yes and not self.save()):
+                event.ignore()
+                return
+
+        geometry = self.geometry()
+        CONFIG['session/geometry'] = geometry
+        CONFIG.sync()
+
 
 def main():
-    app = QtGui.QApplication(sys.argv)
-    ex = MainWindow()
-    sys.exit(app.exec_())
+    global APPLICATION
+    if winsparkle:
+        si = subprocess.STARTUPINFO()
+        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = subprocess.SW_HIDE
+        try:
+            ver = plask.version
+        except NameError:
+            proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+            version, err = proc.communicate()
+            prog, ver = version.strip().split()
+        wp = ctypes.c_wchar_p
+        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
+        winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
+        winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
+        winsparkle.win_sparkle_init()
+
+    APPLICATION = QtGui.QApplication(sys.argv)
+    APPLICATION.setApplicationName("PLaSK")
+
+    plugins_dir = os.path.join(__path__[0], 'plugins')
+    for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):
+        mod = loader.find_module(modname).load_module(modname)
+
+    if len(sys.argv) > 1:
+        WINDOWS.add(MainWindow(sys.argv[1]))
+    else:
+        WINDOWS.add(MainWindow())
+
+    exit_code = APPLICATION.exec_()
+
+    if winsparkle:
+        winsparkle.win_sparkle_cleanup()
+
+    sys.exit(exit_code)

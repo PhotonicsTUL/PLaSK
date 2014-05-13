@@ -30,9 +30,6 @@ namespace py = boost::python;
 #endif
 
 //******************************************************************************
-py::dict globals;
-
-//******************************************************************************
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
@@ -54,13 +51,19 @@ static py::object initPlask(int argc, const char* argv[])
     // Add search paths
     py::object sys = py::import("sys");
     py::list path = py::list(sys.attr("path"));
-    path.insert(0, "." );
     std::string plask_path = plask::prefixPath();
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
-    path.insert(1, plask_path);
+    path.insert(0, plask_path);
+    std::string solvers_path = plask_path;
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
-    path.insert(1, plask_path);
+    solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
+    path.insert(0, plask_path);
+    path.insert(1, solvers_path);
+    if (argc > 0)
+        path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
+    else
+        path.insert(0, "");
     sys.attr("path") = path;
 
     py::object _plask = py::import("_plask");
@@ -78,9 +81,6 @@ static py::object initPlask(int argc, const char* argv[])
 
     // mainTS = PyEval_SaveThread();
     //PyEval_ReleaseLock();
-
-    globals = py::dict(py::import("__main__").attr("__dict__"));
-    _plask.attr("__globals") = globals;
 
     return _plask;
 }

@@ -1,11 +1,11 @@
-from PyQt4 import QtCore, QtGui
+from ..qt import QtCore, QtGui
 
 from .base import SectionModel
 from . import info
 
 class TableModelEditMethods(object):
 
-    def insert(self, index = None, value = None):
+    def insert(self, index=None, value=None):
         if self.is_read_only(): return
         if not value:
             value = self.create_default_entry()
@@ -39,9 +39,9 @@ class TableModelEditMethods(object):
 
 class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods):
 
-    def __init__(self, name, parent=None, info_cb = None, *args):
+    def __init__(self, name, parent=None, info_cb=None, *args):
         SectionModel.__init__(self, name, info_cb)
-        QtCore.QAbstractListModel.__init__(self, parent, *args)
+        QtCore.QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.entries = []
         self.__row_to_errors__ = None
@@ -52,7 +52,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
             Allow to fast access to Info which has rows attributes and for search by row.
             :return: dict: row number -> Info
         """
-        if self.__row_to_errors__ == None:
+        if self.__row_to_errors__ is None:
             self.__row_to_errors__ = {}
             for msg in self.info:
                 for r in getattr(msg, 'rows', []):
@@ -63,12 +63,12 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
         self.__row_to_errors__ = None   # this need to be refreshed
         super(TableModel, self).markInfoInvalid()
 
-    # QAbstractListModel implementation
-    def rowCount(self, parent = QtCore.QModelIndex()):
+    # QAbstractTableModel implementation
+    def rowCount(self, parent=QtCore.QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
@@ -95,7 +95,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
 
         return flags
 
-    def setData(self, index, value, role = QtCore.Qt.EditRole):
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
         self.fire_changed()
         self.dataChanged.emit(index, index)

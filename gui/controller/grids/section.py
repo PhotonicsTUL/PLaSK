@@ -1,6 +1,5 @@
-from PyQt4 import QtGui
-from PyQt4.QtGui import QSplitter
-from PyQt4.Qt import QItemSelectionModel
+from ...qt import QtGui
+from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from ..base import Controller
 from ...utils.gui import table_last_col_fill, exception_to_msg
@@ -9,7 +8,8 @@ from ...model.grids.section import GridsModel
 
 class GridsController(Controller):
 
-    def __init__(self, document, model = GridsModel()):
+    def __init__(self, document, model=None):
+        if model is None: model = GridsModel()
         Controller.__init__(self, document, model)
 
         self.current_index = None
@@ -31,7 +31,8 @@ class GridsController(Controller):
 
         self.splitter.setSizes([10000,26000])
 
-        self.grids_table.selectionModel().selectionChanged.connect(self.grid_selected) #currentChanged ??
+        selection_model = self.grids_table.selectionModel()
+        selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
 
     def set_current_index(self, new_index):
         """
@@ -40,26 +41,26 @@ class GridsController(Controller):
             :return: False only when controller should restore old selection
         """
         if self.current_index == new_index: return True
-        if self.current_controller != None:
+        if self.current_controller is not None:
             if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
-                              self.document.mainWindow, 'Error while trying to store data from current grid editor'):
+                              self.document.window, 'Error while trying to store data from current grid editor'):
                 return False
         self.current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
             self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
-        if self.current_index == None:
+        if self.current_index is None:
             self.current_controller = None
         else:
-            self.current_controller = self.model.entries[new_index].get_controller()
+            self.current_controller = self.model.entries[new_index].get_controller(self.document)
             self.parent_for_editor_widget.addWidget(self.current_controller.get_editor())
             self.current_controller.on_edit_enter()
         return True
 
-    def grid_selected(self, newSelection, oldSelection):
-        if newSelection.indexes() == oldSelection.indexes(): return
-        indexes = newSelection.indexes()
-        if not self.set_current_index(new_index = indexes[0].row() if indexes else None):
-            self.grids_table.selectionModel().select(oldSelection, QItemSelectionModel.ClearAndSelect)
+    def grid_selected(self, new_selection, old_selection):
+        if new_selection.indexes() == old_selection.indexes(): return
+        indexes = new_selection.indexes()
+        if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
+            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
 
     def get_editor(self):
         return self.splitter
@@ -67,11 +68,11 @@ class GridsController(Controller):
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
     #    if not self.model.isReadOnly():
-    #        self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
+    #        self.document.window.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
     #def onEditExit(self):
-    #    self.document.mainWindow.setSectionActions()
+    #    self.document.window.setSectionActions()
 
     def get_table_edit_actions(self):
-        return self.tableActions.get(self.document.mainWindow)
+        return self.tableActions.get(self.document.window)

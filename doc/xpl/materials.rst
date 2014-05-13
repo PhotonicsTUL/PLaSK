@@ -18,11 +18,9 @@ This section contains specification of custom materials that can be used togethe
 
    .. xml:contents::
 
-      The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``dc`` or ``cc`` that will contain the user specified doping amounts: dopant or carriers concentration, respectively (at most one of ``cc`` or ``dc`` is defined, never both).
+      The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``dc`` or ``cc`` that will contain the user specified doping amounts: dopant or carriers concentration, respectively (at most one of ``cc`` or ``dc`` is defined, never both). If the expression does not use any variables, it is evaluated only once when XPL file is being loaded.
 
       Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
-
-      Each of the material property tags can have an optional attribute ``const`` that can take a Boolean value (*yes* or *no*). If it is present and set to *yes* then PLaSK assumes that the parameter value is constant and will be able to provide its value more efficiently. However, in such a case, no variables can be used in the property definition.
 
       .. rubric:: Example:
 

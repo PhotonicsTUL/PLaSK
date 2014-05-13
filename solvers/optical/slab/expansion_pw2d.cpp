@@ -71,7 +71,7 @@ void ExpansionPW2D::init()
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
                      N, matrixSize(), symmetric?" symmetric":"", separated?" separated":"");
 
-    matFFT = FFT::Forward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -170,7 +170,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
             auto material = geometry->getMaterial(vec(xmesh[j],maty));
             double T = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) T += temperature[v]; T /= axis1.size();
             Tensor3<dcomplex> nr = material->NR(lambda, T);
-            if (nr.c10 != 0. || nr.c01 != 0.) {
+            if (nr.c01 != 0.) {
                 if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
@@ -178,8 +178,8 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
                 auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                     double g = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) g += gain[v];
-                    double ni = lambda * g/axis1.size() * 7.95774715459e-09;
-                    nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.); nr.c10.imag(0.);
+                    double ni = lambda * g/axis1.size() * (0.25e-7/M_PI);
+                    nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);
                 }
             }
             nr.sqr_inplace();
@@ -197,7 +197,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
                 }
             }
 
-            coeffs[l][i] += Tensor3<dcomplex>(nr.c00, 1./nr.c11, nr.c22, nr.c01, nr.c10);
+            coeffs[l][i] += Tensor3<dcomplex>(nr.c00, nr.c00/(nr.c00*nr.c11-nr.c01*nr.c01), nr.c22, nr.c01);
         }
         coeffs[l][i] *= factor;
         coeffs[l][i].c11 = 1. / coeffs[l][i].c11; // We were averaging inverses of c11 (xx)
@@ -209,8 +209,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         diagonals[l] = true;
         for (size_t i = 1; i != nN; ++i) {
             Tensor3<dcomplex> diff = coeffs[l][i] - coeffs[l][0];
-            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) &&
-                  is_zero(diff.c01) && is_zero(diff.c10))) {
+            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
                 diagonals[l] = false;
                 break;
             }
@@ -261,7 +260,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, Recti
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(5, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
+        FFT::Backward1D(4, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
         if (symmetric) {
             double dx = 0.5 * (right-left) / nN;

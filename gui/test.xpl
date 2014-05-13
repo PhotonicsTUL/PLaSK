@@ -1,7 +1,7 @@
 <plask>
 
 <defines>
-  <define name="v" value="1"/>
+  <define name="v" value="4"/>
 </defines>
 
 <materials>
@@ -11,7 +11,7 @@
     <Me>123</Me>
   </material>
   <material name="y" base="semiconductor">
-    <A>6</A>
+    <A>4</A>
   </material>
 </materials>
 
@@ -33,7 +33,23 @@
 
 <grids>
   <generator type="rectilinear2d" method="divide" name="default">
-    <postdiv by="2"/>
+    <postdiv by0="4" by1="2"/>
+    <refinements>
+      <!--
+      <axis0 object="TJ" at="2.50"/>
+      <axis0 object="TJ" at="2.90"/>
+      <axis0 object="TJ" at="2.99"/>
+      <axis0 object="laser" at="4.00"/>
+      <axis1 object="top-InP" at="0.1508"/>
+      <axis1 object="bot-InP" at="0.0200"/>
+      -->
+    </refinements>
+  </generator>
+  <mesh type="regular1d" name="diffusion">
+    <axis start="0" stop="10" num="2000"/>
+  </mesh>
+  <generator type="rectilinear2d" method="divide" name="optical">
+    <prediv by0="10" by1="1"/>
   </generator>
 </grids>
 
@@ -97,4 +113,5 @@ ylabel("current density [kA/cm$^2$]")
 
 show()
 ]]></script>
+
 </plask>

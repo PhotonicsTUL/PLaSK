@@ -19,6 +19,18 @@ namespace plask { namespace solvers { namespace thermal3d {
 }}}
 
 
+//TODO remove after 1.06.2014
+py::object inHeatDensity_get(py::object self) {
+    writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
+    return self.attr("inHeat");
+}
+//TODO remove after 1.06.2014
+void inHeatDensity_set(py::object self, py::object value) {
+    writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
+    self.attr("__setattr__")("inHeat", value);
+}
+
+
 BOOST_PYTHON_MODULE(fem3d)
 {
     py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
@@ -57,6 +69,9 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+
+        //TODO remove after 1.06.2014
+        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "DEPRECIATED");
     }
 
 }

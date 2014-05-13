@@ -123,7 +123,7 @@ struct ExpansionPW2D: public Expansion {
     dcomplex epszx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c01; }
 
     /// Get \f$ \varepsilon_{xz} \f$
-    dcomplex epsxz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c10; }
+    dcomplex epsxz(size_t l, int i) { return conj(coeffs[l][(i>=0)?i:i+nN].c01); }
 
     /// Get \f$ \mu_{xx} \f$
     dcomplex muzz(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }

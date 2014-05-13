@@ -6,7 +6,7 @@ namespace plask { namespace solvers { namespace thermal3d {
 
 FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
-    algorithm(ALGORITHM_ITERATIVE),
+    algorithm(ALGORITHM_CHOLESKY),
     loopno(0),
     inittemp(300.),
     maxerr(0.05),

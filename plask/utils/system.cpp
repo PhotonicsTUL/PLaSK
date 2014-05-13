@@ -47,8 +47,9 @@ std::string prefixPath() {
     if (!prefixPath.empty()) return prefixPath;
     if (const char* envPath = getenv("PLASK_PREFIX_PATH")) {
         return prefixPath = envPath;
-    } else
+    } else {
         return prefixPath = dirUp(exePath());
+    }
 }
 
 std::string plaskLibPath() {

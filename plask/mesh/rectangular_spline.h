@@ -53,7 +53,6 @@ namespace detail {
             Hyman<T>::filter(data.c11, a.c11, b.c11);
             Hyman<T>::filter(data.c22, a.c22, b.c22);
             Hyman<T>::filter(data.c01, a.c01, b.c01);
-            Hyman<T>::filter(data.c10, a.c10, b.c10);
         }
     };
 }

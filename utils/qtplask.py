@@ -12,7 +12,7 @@ sys.argv[0] = os.path.abspath(sys.argv[0])
 
 from PySide import QtCore, QtGui
 
-APP_ICON = '''
+APP_ICON = B'''
 iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABmJLR0QAAAAAAAD5Q7t/AAAACXBI
 WXMAADddAAA3XQEZgEZdAAAAB3RJTUUH3QMDEwoeKeG4rwAAE3lJREFUeNrlm2uQZVd1mL+9z/u+
 7+3u2++e98jSDBKjx9hYNgIsCilGJZUisJwUlfygiJWglOMUduKQAj/KqYqNX1ESDJRMOQURRsDE
@@ -105,7 +105,7 @@ XtPg0Wh0ybuFfxdE3/ep1+t/pz4X07b/UJKg4zivXVpME9u2f6j/VJ7n32f89xqslCIIgjd/Dniz
 yU/85en/BUFo1JV1G1EMAAAAAElFTkSuQmCC
 '''
 
-STOP_ICON = '''
+STOP_ICON = B'''
 iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABF1BMVEX///+AAACoAACtAACHAACK
 AACRAACYAACcAACqAACAAACoAACvBAScAACHDg6OAABuAABtAABqAACiAACWKyt/HhaCJBvSeHXD
 SknJYF2dHxy/NCrFRz+kHxOkHxWkIRqkIx6lHhKmHhCrJBevJxuzMSazKx++Sj/DSkDITEPKVkyA
@@ -250,8 +250,8 @@ class MainWindow(QtGui.QMainWindow):
                     self.actionWinSparkleAutoupdate.setCheckable(True)
                     self.actionWinSparkleAutoupdate.setChecked(winsparkle.win_sparkle_get_automatic_check_for_updates())
                     self.actionWinSparkleAutoupdate.triggered.connect(
-                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(int(self.actionWinSparkleAutoupdate.isChecked()))
-                    )
+                        lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(
+                            int(self.actionWinSparkleAutoupdate.isChecked())))
                     self.menuTools.addAction(self.actionWinSparkleAutoupdate)
                 except AttributeError:
                     pass
@@ -271,7 +271,6 @@ class MainWindow(QtGui.QMainWindow):
         self.stopicon = QtGui.QIcon()
         self.stopicon.addPixmap(stop_pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
-
     def dragEnterEvent(self, event):
         data = event.mimeData()
         urls = data.urls()
@@ -289,13 +288,12 @@ class MainWindow(QtGui.QMainWindow):
                 filepath = filepath[1:]
             self.start_plask(filepath)
 
-
     def __init__(self):
         #self.outputs = []
         self.messages = []
         self.threads = []
 
-        config = QtCore.QSettings("PLaSK", "qtplask")
+        config = QtCore.QSettings("plask", "qtplask")
 
         try:
             self.last_dir = os.environ['HOME']
@@ -325,7 +323,6 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.timeout.connect(self.update_outputs)
         self.timer.start(250)
 
-
     def find_tool(self, name):
         fname = os.path.join(os.path.dirname(sys.argv[0]), name)
         if os.path.exists(fname+'.py'):
@@ -335,13 +332,11 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return None
 
-
     def runConvert(self, tool, filter):
         fname, _ = QtGui.QFileDialog.getOpenFileName(self, self.tr("Choose file to convert"), self.last_dir, self.tr(filter))
         if not fname: return
         self.last_dir = os.path.dirname(fname)
         self.start_plask(tool, fname)
-
 
     def runFile(self):
         '''Load and run XPL script in an external program'''
@@ -349,7 +344,6 @@ class MainWindow(QtGui.QMainWindow):
         if not fname: return
         self.last_dir = os.path.dirname(fname)
         self.start_plask(fname)
-
 
     def start_plask(self, fname, *args):
         #self.outputs.append([])
@@ -370,17 +364,14 @@ class MainWindow(QtGui.QMainWindow):
         button.clicked.connect(thread.kill_process)
         thread.start()
 
-
     def set_finished(self, idx):
         self.tabBar.setTabButton(idx, QtGui.QTabBar.RightSide, None)
         self.tabBar.setTabText(idx, self.tabBar.tabText(idx) + " (%s)" % strftime('%X'))
-
 
     def switch_tab(self):
         self.messagesView.clear()
         self.printed_lines = 0
         self.update_outputs()
-
 
     def update_outputs(self):
         n = self.tabBar.currentIndex()
@@ -403,9 +394,8 @@ class MainWindow(QtGui.QMainWindow):
             self.printed_lines = total_lines
             if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)
 
-
     def quitting(self):
-        config = QtCore.QSettings("PLaSK", "qtplask")
+        config = QtCore.QSettings("plask", "qtplask")
         config.setValue("recentdir", self.last_dir)
         config.setValue("window/size", self.size())
         config.setValue("window/pos", self.pos())
@@ -476,10 +466,11 @@ if __name__ == "__main__":
         si = subprocess.STARTUPINFO()
         si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
         si.wShowWindow = subprocess.SW_HIDE
-        proc = subprocess.Popen(['plask', '-version'], startupinfo=si, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
         version, err = proc.communicate()
+        prog, ver = version.strip().split()
         wp = ctypes.c_wchar_p
-        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(version.strip()))
+        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
         winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
         winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
         winsparkle.win_sparkle_init()

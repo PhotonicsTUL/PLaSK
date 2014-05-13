@@ -1,0 +1,13 @@
+[Desktop Entry]
+Comment=
+Exec=plaskgui
+GenericName=Photonic Laser Simulation Kit
+Icon=plask
+MimeType=application/x-plask
+Name=PLaSK GUI
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+Categories=Science;Physics;Python;Qt;

@@ -13,10 +13,11 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     recompute_neffs(true),
     stripex(0.),
     polarization(TE),
+    emission(FRONT),
     vneff(0.),
     outdist(0.1),
     outNeff(this, &EffectiveIndex2DSolver::getEffectiveIndex, &EffectiveIndex2DSolver::nmodes),
-    outLightIntensity(this, &EffectiveIndex2DSolver::getLightIntenisty, &EffectiveIndex2DSolver::nmodes),
+    outLightMagnitude(this, &EffectiveIndex2DSolver::getLightMagnitude, &EffectiveIndex2DSolver::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2DSolver::getRefractiveIndex),
     outHeat(this, &EffectiveIndex2DSolver::getHeat),
     k0(2e3*M_PI/980) {
@@ -115,7 +116,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::searchVNeffs(dcomplex neff1, dcomp
 {
     updateCache();
 
-    size_t stripe = mesh->tran().findIndex(stripex);
+    size_t stripe = mesh->tran()->findIndex(stripex);
     if (stripe < xbegin) stripe = xbegin;
     else if (stripe >= xend) stripe = xend-1;
 
@@ -312,7 +313,7 @@ void EffectiveIndex2DSolver::onInvalidate()
     if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
     modes.clear();
     outNeff.fireChanged();
-    outLightIntensity.fireChanged();
+    outLightMagnitude.fireChanged();
 }
 
 /********* Here are the computations *********/
@@ -376,7 +377,7 @@ void EffectiveIndex2DSolver::updateCache()
                     }
                     double g = gain[idx];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
-                                                w * g * 7.95774715459e-09 );
+                                                w * g * (0.25e-7/M_PI) );
                 }
             }
         }
@@ -392,7 +393,7 @@ void EffectiveIndex2DSolver::stageOne()
     if (recompute_neffs) {
 
         // Compute effective index of the main stripe
-        size_t stripe = mesh->tran().findIndex(stripex);
+        size_t stripe = mesh->tran()->findIndex(stripex);
         if (stripe < xbegin) stripe = xbegin;
         else if (stripe >= xend) stripe = xend-1;
         writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe-xbegin, (polarization==TE)?"TE":"TM");
@@ -418,7 +419,7 @@ void EffectiveIndex2DSolver::stageOne()
         for (size_t i = xbegin; i < xend; ++i) {
             epsilons[i] = vneff*vneff;
             for (size_t j = ybegin; j < yend; ++j) {
-                epsilons[i] += weights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
+                epsilons[i] += yweights[j] * (nrCache[i][j]*nrCache[i][j] - nrCache[stripe][j]*nrCache[stripe][j]);
             }
         }
 #ifndef NDEBUG
@@ -509,16 +510,16 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     // Compute fields
     detS1(vneff, nrCache[stripe], true);
 
-    weights.resize(yend);
+    yweights.resize(yend);
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][ybegin]*nrCache[stripe][ybegin] - vneff*vneff)));
-        weights[ybegin] = abs2(yfields[ybegin].B) * 0.5 / ky;
+        yweights[ybegin] = abs2(yfields[ybegin].B) * 0.5 / ky;
     }
     {
         double ky = abs(imag(k0 * sqrt(nrCache[stripe][yend-1]*nrCache[stripe][yend-1] - vneff*vneff)));
-        weights[yend-1] = abs2(yfields[yend-1].F) * 0.5 / ky;
+        yweights[yend-1] = abs2(yfields[yend-1].F) * 0.5 / ky;
     }
-    double sum = weights[ybegin] + weights[yend-1];
+    double sum = yweights[ybegin] + yweights[yend-1];
 
     for (size_t i = ybegin+1; i < yend-1; ++i) {
         double d = mesh->axis1->at(i)-mesh->axis1->at(i-1);
@@ -541,16 +542,16 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
                               yfields[i].F * conj(yfields[i].B) * w_fb +
                               yfields[i].B * conj(yfields[i].F) * w_bf +
                               yfields[i].B * conj(yfields[i].B) * w_bb;
-            weights[i] = -imag(weight);
+            yweights[i] = -imag(weight);
         } else
-            weights[i] = 0.;
-        sum += weights[i];
+            yweights[i] = 0.;
+        sum += yweights[i];
     }
 
     sum = 1. / sum;
     double fact = sqrt(sum);
     for (size_t i = ybegin; i < yend; ++i) {
-        weights[i] *= sum;
+        yweights[i] *= sum;
         yfields[i] *= fact;
     }
 // #ifndef NDEBUG
@@ -565,9 +566,9 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
 
     size_t start;
 
-    double sum = abs2(mode.xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
+    double sum = mode.xweights[xend-1] = abs2(mode.xfields[xend-1].F) * 0.5 / abs(imag(kx[xend-1]));
     if (mode.symmetry == SYMMETRY_NONE) {
-        sum += abs2(mode.xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
+        sum += mode.xweights[0] = abs2(mode.xfields[xbegin].B) * 0.5 / abs(imag(kx[xbegin]));
         start = xbegin+1;
     } else {
         start = xbegin;
@@ -589,11 +590,12 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            sum -= imag(mode.xfields[i].F * conj(mode.xfields[i].F) * w_ff +
-                        mode.xfields[i].F * conj(mode.xfields[i].B) * w_fb +
-                        mode.xfields[i].B * conj(mode.xfields[i].F) * w_bf +
-                        mode.xfields[i].B * conj(mode.xfields[i].B) * w_bb
-                       );
+            mode.xweights[i] = - imag(mode.xfields[i].F * conj(mode.xfields[i].F) * w_ff +
+                                      mode.xfields[i].F * conj(mode.xfields[i].B) * w_fb +
+                                      mode.xfields[i].B * conj(mode.xfields[i].F) * w_bf +
+                                      mode.xfields[i].B * conj(mode.xfields[i].B) * w_bb
+                                     );
+            sum += mode.xweights[i];
         }
     }
     if (mode.symmetry != SYMMETRY_NONE) sum *= 2.;
@@ -610,14 +612,47 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
         R1 = abs((n-n1) / (n+n1));
         R2 = abs((n-n2) / (n+n2));
     }
-    if (emission == FRONT) sum *= R1;
-    else sum *= R2;
 
-    dcomplex f = sqrt(1e12 / sum);  // 1e12 because intensity in W/m² and integral computed in µm
-
-    for (size_t i = xbegin; i < xend; ++i) {
-        mode.xfields[i] *= f;
+    if (emission == FRONT) {
+        if (R1 == 1.)
+            this->writelog(LOG_WARNING, "Mirror refletion on emission side equal to 1. Field will be infinite.");
+        sum *= (1. - R1);
+    } else {
+        if (R2 == 1.)
+            this->writelog(LOG_WARNING, "Mirror refletion on emission side equal to 1. Field will be infinite.");
+        sum *= (1. - R2);
     }
+
+    double ff = 1e12 / sum; // 1e12 because intensity in W/m² and integral computed in µm
+    double f = sqrt(ff);
+
+    for (auto& val: mode.xfields) val *= f;
+    for (auto& val: mode.xweights) val *= ff;
+}
+
+double EffectiveIndex2DSolver::getTotalAbsorption(const Mode& mode)
+{
+    double result = 0.;
+
+    for (size_t ix = 0; ix < xend; ++ix) {
+        for (size_t iy = ybegin; iy < yend; ++iy) {
+            double absp = - 2. * real(nrCache[ix][iy]) * imag(nrCache[ix][iy]);
+            result += absp * mode.xweights[ix] * yweights[iy]; // [dV] = µm³
+        }
+    }
+    if (mode.symmetry != SYMMETRY_NONE) result *= 2.;
+    result *= 1e-9 * real(k0) * mode.power; // 1e-9: µm³ / nm -> m², ½ is already hidden in mode.power
+    return result;
+}
+
+
+double EffectiveIndex2DSolver::getTotalAbsorption(size_t num)
+{
+    if (modes.size() <= num) throw NoValue("absorption");
+
+    if (!modes[num].have_fields) detS(modes[num].neff, modes[num], true);
+
+    return getTotalAbsorption(modes[num]);
 }
 
 dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver::Mode& mode, bool save)
@@ -676,11 +711,11 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
 }
 
 
-plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
+plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (outNeff.size() <= num) throw NoValue(LightIntensity::NAME);
+    if (outNeff.size() <= num) throw NoValue(LightMagnitude::NAME);
 
     dcomplex neff = modes[num].neff;
 
@@ -695,7 +730,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
-    size_t stripe = mesh->tran().findIndex(stripex);
+    size_t stripe = mesh->tran()->findIndex(stripex);
     if (stripe < xbegin) stripe = xbegin;
     else if (stripe >= xend) stripe = xend-1;
 
@@ -707,7 +742,8 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient(num, dst_mesh, results, kx, ky)) {
+    if (!getLightMagnitude_Efficient(num, dst_mesh, results, kx, ky)) {
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel for
         for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
@@ -719,30 +755,30 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightIntenisty(int nu
             if (x < 0. && modes[num].symmetry != SYMMETRY_NONE) {
                 x = -x; if (modes[num].symmetry == SYMMETRY_NEGATIVE) negate = true;
             }
-            size_t ix = mesh->tran().findIndex(x);
+            size_t ix = mesh->tran()->findIndex(x);
             if (ix >= xend) ix = xend-1;
             if (ix < xbegin) ix = xbegin;
-            if (ix != 0) x -= mesh->tran()[ix-1];
-            else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()[0];
+            if (ix != 0) x -= mesh->tran()->at(ix-1);
+            else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()->at(0);
             dcomplex phasx = exp(- I * kx[ix] * x);
             dcomplex val = modes[num].xfields[ix].F * phasx + modes[num].xfields[ix].B / phasx;
             if (negate) val = - val;
 
-            size_t iy = mesh->vert().findIndex(y);
+            size_t iy = mesh->vert()->findIndex(y);
             if (iy >= yend) iy = yend-1;
             if (iy < ybegin) iy = ybegin;
-            y -= mesh->vert()[max(int(iy)-1, 0)];
+            y -= mesh->vert()->at(max(int(iy)-1, 0));
             dcomplex phasy = exp(- I * ky[iy] * y);
             val *= yfields[iy].F * phasy + yfields[iy].B / phasy;
 
-            results[idx] = abs2(val);
+            results[idx] = power * abs2(val);
         }
     }
 
     return results;
 }
 
-bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
+bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky)
 {
@@ -750,23 +786,25 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask
 
         const RectangularMesh<2>& rect_mesh = *rect_mesh_ptr;
 
-        std::vector<dcomplex,aligned_allocator<dcomplex>> valx(rect_mesh.tran().size());
-        std::vector<dcomplex,aligned_allocator<dcomplex>> valy(rect_mesh.vert().size());
+        std::vector<dcomplex,aligned_allocator<dcomplex>> valx(rect_mesh.tran()->size());
+        std::vector<dcomplex,aligned_allocator<dcomplex>> valy(rect_mesh.vert()->size());
+
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
-                double x = rect_mesh.tran()[idx];
+            for (size_t idx = 0; idx < rect_mesh.tran()->size(); ++idx) {
+                double x = rect_mesh.tran()->at(idx);
                 bool negate = false;
                 if (x < 0. && modes[num].symmetry != SYMMETRY_NONE) {
                     x = -x; if (modes[num].symmetry == SYMMETRY_NEGATIVE) negate = true;
                 }
-                size_t ix = mesh->tran().findIndex(x);
+                size_t ix = mesh->tran()->findIndex(x);
                 if (ix >= xend) ix = xend-1;
                 if (ix < xbegin) ix = xbegin;
-                if (ix != 0) x -= mesh->tran()[ix-1];
-                else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()[0];
+                if (ix != 0) x -= mesh->tran()->at(ix-1);
+                else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()->at(0);
                 dcomplex phasx = exp(- I * kx[ix] * x);
                 dcomplex val = modes[num].xfields[ix].F * phasx + modes[num].xfields[ix].B / phasx;
                 if (negate) val = - val;
@@ -774,12 +812,12 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask
             }
 
             #pragma omp for
-            for (size_t idy = 0; idy < rect_mesh.vert().size(); ++idy) {
-                double y = rect_mesh.vert()[idy];
-                size_t iy = mesh->vert().findIndex(y);
+            for (size_t idy = 0; idy < rect_mesh.vert()->size(); ++idy) {
+                double y = rect_mesh.vert()->at(idy);
+                size_t iy = mesh->vert()->findIndex(y);
                 if (iy >= yend) iy = yend-1;
                 if (iy < ybegin) iy = ybegin;
-                y -= mesh->vert()[max(int(iy)-1, 0)];
+                y -= mesh->vert()->at(max(int(iy)-1, 0));
                 dcomplex phasy = exp(- I * ky[iy] * y);
                 valy[idy] = yfields[iy].F * phasy + yfields[iy].B / phasy;
             }
@@ -790,7 +828,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask
                     double* data = results.data() + i1 * rect_mesh.axis0->size();
                     for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
                         dcomplex f = valx[i0] * valy[i1];
-                        data[i0] = abs2(f);
+                        data[i0] = power * abs2(f);
                     }
                 }
             } else {
@@ -799,7 +837,7 @@ bool EffectiveIndex2DSolver::getLightIntenisty_Efficient(size_t num, const plask
                     double* data = results.data() + i0 * rect_mesh.axis1->size();
                     for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
                         dcomplex f = valx[i0] * valy[i1];
-                        data[i1] = abs2(f);
+                        data[i1] = power * abs2(f);
                     }
                 }
             }
@@ -823,16 +861,37 @@ DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(c
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        size_t x = std::lower_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
-        size_t y = std::lower_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
-        if (x < xbegin) x = xbegin;
-        result[i] = Tensor3<dcomplex>(nrCache[x][y]);
+        size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < xbegin) ix = xbegin;
+        size_t iy = this->mesh->axis1->findIndex(point.c1);
+        result[i] = Tensor3<dcomplex>(nrCache[ix][iy]);
     }
     return result;
 }
 
 
-plask::DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mesh, plask::InterpolationMethod method) {
+DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mesh, plask::InterpolationMethod method)
+{
+    // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
+    // in case of fast varying light intensity and too sparse mesh.
+
+    writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
+
+    DataVector<double> result(dst_mesh.size(), 0.);
+
+    if (modes.size() == 0) return result;
+
+    for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
+        result += 1e6 * real(k0) * getLightMagnitude(m, dst_mesh, method); // 1e6: 1/µm -> 1/m
+    }
+    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    for (size_t j = 0; j != result.size(); ++j) {
+        auto point = mat_mesh[j];
+        size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < xbegin) ix = xbegin;
+        size_t iy = this->mesh->axis1->findIndex(point.c1);
+        double absp = - 2. * real(nrCache[ix][iy]) * imag(nrCache[ix][iy]);
+        result[j] *= absp;
+    }
+    return result;
 }
 
 

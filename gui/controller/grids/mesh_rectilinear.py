@@ -1,5 +1,5 @@
 from ..base import Controller
-from PyQt4 import QtGui
+from ...qt import QtGui
 
 class AxisEdit(object):
 
@@ -25,7 +25,7 @@ class AxisEdit(object):
 class RectilinearMeshConroller(Controller):
 
     def __init__(self, model):
-        super(RectilinearMeshConroller, self).__init__(model = model)
+        super(RectilinearMeshConroller, self).__init__(model=model)
 
         self.form = QtGui.QWidget()
         form_layout = QtGui.QFormLayout()

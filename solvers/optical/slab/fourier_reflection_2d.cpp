@@ -270,7 +270,7 @@ double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarizatio
 
 const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
-    if (modes.size() <= num) throw NoValue(OpticalElectricField::NAME);
+    if (modes.size() <= num) throw NoValue(LightE::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -283,7 +283,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getE(size_t num, co
 
 const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
-    if (modes.size() <= num) throw NoValue(OpticalMagneticField::NAME);
+    if (modes.size() <= num) throw NoValue(LightH::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -296,7 +296,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getH(size_t num, co
 
 const DataVector<const double> FourierReflection2D::getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method)
 {
-    if (modes.size() <= num) throw NoValue(LightIntensity::NAME);
+    if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;

@@ -15,6 +15,7 @@ namespace py = boost::python;
 #include <plask/python_globals.h>
 #include <plask/python_manager.h>
 #include <plask/utils/string.h>
+#include <plask/utils/system.h>
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
@@ -74,15 +75,22 @@ static py::object initPlask(int argc, const char* argv[])
     // Initialize Python
     Py_Initialize();
 
+
     // Add search paths
     py::object sys = py::import("sys");
     py::list path = py::list(sys.attr("path"));
-    path.insert(0, "." );
     std::string plask_path = plask::prefixPath();
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
+    std::string solvers_path = plask_path;
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
-    path.insert(1, plask_path);
+    solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
+    path.insert(0, plask_path);
+    path.insert(1, solvers_path);
+    if (argc > 0)
+        path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
+    else
+        path.insert(0, "");
     sys.attr("path") = path;
 
     py::object _plask = py::import("_plask");
@@ -153,8 +161,8 @@ void endPlask() {
 //******************************************************************************
 int main(int argc, const char *argv[])
 {
-    if (argc > 1 && std::string(argv[1]) == "-version") {
-        printf(PLASK_VERSION "\n");
+    if (argc > 1 && std::string(argv[1]) == "-V") {
+        printf("PLaSK " PLASK_VERSION "\n");
         return 0;
     }
 

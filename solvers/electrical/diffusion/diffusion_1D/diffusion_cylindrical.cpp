@@ -8,6 +8,8 @@ F77SUB dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, d
 
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
+const double inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
+
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd())
@@ -255,8 +257,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                 if (overthreshold_computation)
                 {
                     // Compute E and F components for overthreshold computations
-                    if (inWavelength.size() != inLightIntensity.size())
-                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightIntensity differ");
+                    if (inWavelength.size() != inLightMagnitude.size())
+                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightMagnitude differ");
 
                     // Sum all modes
                     PM = DataVector<double>(mesh2.size(), 0.);
@@ -273,8 +275,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         mesh_Li.setAxis0(current_mesh_ptr());
                         mesh_Li.setAxis1(make_shared<plask::RectilinearAxis>(getZQWCoordinates()));
 
-//                        auto Li = inLightIntensity(n, mesh2, interpolation_method);
-                        auto initial_Li = inLightIntensity(n, mesh_Li, interpolation_method);
+//                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
+                        auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);
                         auto Li = averageLi(initial_Li, mesh_Li);
 
                         write_debug("Li[0]: %1% W/cm2", Li[0]*1.0e-4);
@@ -288,8 +290,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         write_debug("g[0]: %1% cm(-1)", g[0]);
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
                         write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
-                        auto factor = inv_hc * wavelength;
-                        // write_debug("Git2a!");
+                        auto factor = inv_hc * wavelength; // inverse one photon energy
                         for (size_t i = 0; i != mesh2.size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
@@ -883,7 +884,7 @@ template<typename Geometry2DType> plask::DataVector<const double> FiniteElementM
             int k = mesh_Li.index(i,j);
             current_Li += initLi[k];
         }
-        Li[i] = current_Li/(detected_QW.size()+1.0);
+        Li[i] = current_Li/(detected_QW.size());
     }
     return Li;
 }

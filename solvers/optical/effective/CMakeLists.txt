@@ -38,9 +38,9 @@ set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
 #set(SOLVER_COMPILE_FLAGS ${CMAKE_GSL_CXX_FLAGS})
 
 # Fix a bug with alignment for Eigen matrices
-if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
-    set(SOLVER_COMPILE_FLAGS -mincoming-stack-boundary=2)
-endif()
+#if(WIN32 AND CMAKE_COMPILER_IS_GNUCXX)
+#    set(SOLVER_COMPILE_FLAGS -mincoming-stack-boundary=2)
+#endif()
 
 # If you want, you can manually specify your sources. Just uncomment and edit
 # the following lines. If you don't do it, your solver directory will be scanned

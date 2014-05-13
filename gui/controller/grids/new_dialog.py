@@ -1,5 +1,5 @@
-from PyQt4 import QtGui
-from PyQt4.Qt import QLabel, QStringListModel
+from ...qt import QtGui
+from ...qt.QtGui import QLabel, QStringListModel
 from ...model.grids.grid import Grid
 from ...model.grids.types import construct_grid , meshes_types, generators_types,\
     generator_methods, xml_name
@@ -85,4 +85,3 @@ def construct_grid_using_dialog(grids_model):
     dial = NewGridDialog()
     if dial.exec_() == QtGui.QDialog.Accepted:
         return dial.get_grid(grids_model)
-    return None

@@ -295,7 +295,7 @@ inline void read_children(GeometryReader& reader, ChildParamF child_param_read, 
  * Template of base class for containers which have aligners, one per child.
  *
  * It define proper remove methods and some, protected, helpers.
- * @tparam ParentType container type to inharit from
+ * @tparam ParentType container type to inherit from
  * @tparam ChildAlignerType aligner type
  */
 template <typename ParentType, typename ChildAlignerType>

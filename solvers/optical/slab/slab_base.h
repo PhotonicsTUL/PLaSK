@@ -71,13 +71,13 @@ struct SlabSolver: public SolverOver<GeometryT> {
     ReceiverFor<Gain, GeometryT> inGain;
 
     /// Provider of the optical field intensity
-    typename ProviderFor<LightIntensity, GeometryT>::Delegate outLightIntensity;
+    typename ProviderFor<LightMagnitude, GeometryT>::Delegate outLightMagnitude;
 
     /// Provider of the optical electric field
-    typename ProviderFor<OpticalElectricField, GeometryT>::Delegate outElectricField;
+    typename ProviderFor<LightE, GeometryT>::Delegate outElectricField;
 
     /// Provider of the optical magnetic field
-    typename ProviderFor<OpticalMagneticField, GeometryT>::Delegate outMagneticField;
+    typename ProviderFor<LightH, GeometryT>::Delegate outMagneticField;
 
     SlabSolver(const std::string& name="");
 

@@ -55,16 +55,24 @@ static void setCondJunc(Cls* self, py::object value) {
     }
 }
 
+
+//TODO remove after 1.06.2014
+py::object outHeatDensity_get(const py::object& self) {
+    writelog(LOG_WARNING, "'outHeatDensity' is depreciated. Use 'outHeat' instead!");
+    return self.attr("outHeat");
+}
+
+
 template <typename GeometryT>
 inline static void register_electrical_solver(const char* name, const char* geoname)
 {
     typedef FiniteElementMethodElectrical2DSolver<GeometryT>  __Class__;
     ExportSolver<FiniteElementMethodElectrical2DSolver<GeometryT>> solver(name, format(
-        
+
         "%1%(name=\"\")\n\n"
-        
+
         "Finite element thermal solver for 2D %2% geometry."
-        
+
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, "Run electrical calculations", py::arg("loops")=0);
     METHOD(get_total_current, getTotalCurrent, "Get total current flowing through active region [mA]", py::arg("nact")=0);
@@ -74,7 +82,6 @@ inline static void register_electrical_solver(const char* name, const char* geon
     PROVIDER(outPotential, "");
     PROVIDER(outCurrentDensity, "");
     PROVIDER(outHeat, "");
-    solver.setattr("outHeatDensity", solver.attr("outHeat"));
     PROVIDER(outConductivity, "");
     BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
     RW_FIELD(maxerr, "Limit for the potential updates");
@@ -105,6 +112,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
            "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
            "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
     );
+    solver.add_property("outHeatDensity", outHeatDensity_get, "DEPRECIATED"); // TODO remove after 1.06.2014
 }
 
 /**
@@ -127,7 +135,7 @@ BOOST_PYTHON_MODULE(fem)
     ;
 
     register_electrical_solver<Geometry2DCartesian>("Shockley2D", "Cartesian");
-    
+
     register_electrical_solver<Geometry2DCylindrical>("ShockleyCyl", "cylindrical");
 }
 

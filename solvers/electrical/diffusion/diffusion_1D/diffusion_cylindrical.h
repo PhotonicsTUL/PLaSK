@@ -22,7 +22,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
         plask::ReceiverFor<plask::GainOverCarriersConcentration, Geometry2DType> inGainOverCarriersConcentration;
         plask::ReceiverFor<plask::Wavelength> inWavelength;
-        plask::ReceiverFor<plask::LightIntensity, Geometry2DType> inLightIntensity;
+        plask::ReceiverFor<plask::LightMagnitude, Geometry2DType> inLightMagnitude;
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
@@ -45,7 +45,6 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
             max_iterations = 20;
             minor_concentration = 5.0e+15;
             inTemperature = 300.;
-            inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
         }
 
         virtual ~FiniteElementMethodDiffusion2DSolver<Geometry2DType>()
@@ -89,7 +88,6 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 
         double wavelength;
         // double factor;
-        double inv_hc;
 
         double global_QW_width;                   // sumaryczna grubosc studni kwantowych [cm];
         int iterations;

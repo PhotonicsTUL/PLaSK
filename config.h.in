@@ -28,5 +28,10 @@
 // OpenMP
 #cmakedefine OPENMP_FOUND
 
+// Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)
+#ifndef NDEBUG
+#cmakedefine PRINT_STACKTRACE_ON_EXCEPTION
+#endif
+
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

@@ -1,5 +1,5 @@
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QSplitter
+from ..qt import QtCore, QtGui
+from ..qt.QtGui import QSplitter
 
 from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp
 from ..utils.gui import HTMLDelegate, table_last_col_fill
@@ -14,15 +14,16 @@ except ImportError:
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
 
-    def __init__(self, definesModel, parent):
-        DefinesCompletionDelegate.__init__(self, definesModel, parent)
+    def __init__(self, defines_model, parent):
+        DefinesCompletionDelegate.__init__(self, defines_model, parent)
 
     def createEditor(self, parent, option, index):
 
-        earlier_names = ['semiconductor', 'metal', 'oxide', 'dielectric', 'liquid_crystal']
+        earlier_names = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
 
         try:
-            earlier_names.extend(mat for mat in plask.material.db if mat not in earlier_names)
+            earlier_names.extend(sorted((mat for mat in plask.material.db if mat not in earlier_names),
+                                        key=lambda x: x.lower()))
         except NameError:
             pass
 
@@ -34,10 +35,10 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(earlier_names)
-        combo.insertSeparator(5)
+        combo.insertSeparator(4)
         combo.insertSeparator(len(earlier_names)-index.row()+1)
         combo.setEditText(index.data())
-        combo.setCompleter(self.getDefinesCompleter(parent))
+        combo.setCompleter(self.get_defines_completer(parent))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
         return combo
@@ -45,20 +46,22 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
-    def __init__(self, definesModel, parent):
-        DefinesCompletionDelegate.__init__(self, definesModel, parent)
+    def __init__(self, defines_model, parent):
+        DefinesCompletionDelegate.__init__(self, defines_model, parent)
 
     def createEditor(self, parent, option, index):
         opts = index.model().options_to_choose(index)
 
-        if opts == None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
+        if opts is None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
 
         combo = QtGui.QComboBox(parent)
         combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(opts)
         combo.setEditText(index.data())
-        combo.setAutoCompletionCaseSensitivity(True)
+        completer = combo.completer()
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
+        combo.setCompleter(completer)
         combo.highlighted.connect(lambda i:
             QtGui.QToolTip.showText(QtGui.QCursor.pos(), materialHTMLHelp(combo.itemText(i)))
         )
@@ -70,8 +73,9 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
 class MaterialsController(Controller):
 
-    def __init__(self, document, model=MaterialsModel()):
-        Controller.__init__(self, document, model)
+    def __init__(self, document, selection_model=None):
+        if selection_model is None: selection_model = MaterialsModel()
+        Controller.__init__(self, document, selection_model)
 
         self.splitter = QSplitter()
 
@@ -82,12 +86,12 @@ class MaterialsController(Controller):
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
         self.splitter.addWidget(table_with_manipulators(self.materials_table, self.splitter, title="Materials"))
 
-        self.property_model = MaterialPropertyModel(model)
+        self.property_model = MaterialPropertyModel(selection_model)
         self.properties_table = QtGui.QTableView()
         self.properties_table.setModel(self.property_model)
         self.properties_delegate = MaterialPropertiesDelegate(self.document.defines.model, self.properties_table)
-        self.unit_delegate = HTMLDelegate()
-        self.help_delegate = HTMLDelegate()
+        self.unit_delegate = HTMLDelegate(self.properties_table)
+        self.help_delegate = HTMLDelegate(self.properties_table)
         self.properties_table.setItemDelegateForColumn(0, self.properties_delegate)
         self.properties_table.setItemDelegateForColumn(1, self.properties_delegate)
         self.properties_table.setItemDelegateForColumn(2, self.unit_delegate)
@@ -102,7 +106,8 @@ class MaterialsController(Controller):
 
         self.materials_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.materials_table.selectionModel().selectionChanged.connect(self.material_selected) #currentChanged ??
+        selection_model = self.materials_table.selectionModel()
+        selection_model.selectionChanged.connect(self.material_selected) #currentChanged ??
 
         self.properties_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
@@ -120,13 +125,13 @@ class MaterialsController(Controller):
         return self.splitter
 
     #def onEditEnter(self):
-    #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
+    #    self.saveDataInModel()  # this should do nothing, but is called in case of subclass use it
     #    if not self.model.isReadOnly():
-    #        self.document.mainWindow.setSectionActions(*self.get_table_edit_actions())
+    #        self.document.window.setSectionActions(*self.get_table_edit_actions())
 
     # when editor is turn off, model should be update
     #def onEditExit(self):
-    #    self.document.mainWindow.setSectionActions()
+    #    self.document.window.setSectionActions()
 
     def get_table_edit_actions(self):
-        return self.tableActions.get(self.document.mainWindow)
+        return self.tableActions.get(self.document.window)

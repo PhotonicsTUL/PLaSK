@@ -13,12 +13,11 @@ namespace plask {
  * Rectilinear mesh in 3D space.
  *
  * Includes three 1d rectilinear meshes:
- * - c0 (alternative names: lon(), ee_z(), r())
- * - c1 (alternative names: tran, ee_x(), phi())
- * - c2 (alternative names: vert(), ee_y(), z())
- * Represent all points (x, y, z) such that x is in c0, y is in c1, z is in c2.
+ * - axis0 (alternative names: lon(), ee_z(), rad_r())
+ * - axis1 (alternative names: tran(), ee_x(), rad_phi())
+ * - axis2 (alternative names: vert(), ee_y(), rad_z())
+ * Represent all points (x, y, z) such that x is in axis0, y is in axis1, z is in axis2.
  */
-//TODO methods which call fireResize() when points are adding, etc.
 template<>
 class RectangularMesh<3>: public MeshD<3> {
 
@@ -319,111 +318,57 @@ class RectangularMesh<3>: public MeshD<3> {
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    RectangularAxis& lon() { return *axis0; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return c0
-     */
-    const RectangularAxis& lon() const { return *axis0; }
+    const shared_ptr<RectangularAxis>& lon() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    RectangularAxis& tran() { return *axis1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return c1
-     */
-    const RectangularAxis& tran() const { return *axis1; }
+    const shared_ptr<RectangularAxis>& tran() const { return axis1; }
 
     /**
      * Get third coordinate of points in this mesh.
-     * @return c2
+     * @return axis2
      */
-    RectangularAxis& vert() { return *axis2; }
+    const shared_ptr<RectangularAxis>& vert() const { return axis2; }
+
+    /**
+     * Get first coordinate of points in this mesh.
+     * @return axis0
+     */
+    const shared_ptr<RectangularAxis>& ee_z() const { return axis0; }
+
+    /**
+     * Get second coordinate of points in this mesh.
+     * @return axis1
+     */
+    const shared_ptr<RectangularAxis>& ee_x() const { return axis1; }
 
     /**
      * Get third coordinate of points in this mesh.
-     * @return c2
+     * @return axis2
      */
-    const RectangularAxis& vert() const { return *axis2; }
+    const shared_ptr<RectangularAxis>& ee_y() const { return axis2; }
 
     /**
      * Get first coordinate of points in this mesh.
-     * @return c0
+     * @return axis0
      */
-    RectangularAxis& ee_z() { return *axis0; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return c0
-     */
-    const RectangularAxis& ee_z() const { return *axis0; }
+    const shared_ptr<RectangularAxis>& rad_r() const { return axis0; }
 
     /**
      * Get second coordinate of points in this mesh.
-     * @return c1
+     * @return axis1
      */
-    RectangularAxis& ee_x() { return *axis1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return c1
-     */
-    const RectangularAxis& ee_x() const { return *axis1; }
-
-    /**
-     * Get third coordinate of points in this mesh.
-     * @return c2
-     */
-    RectangularAxis& ee_y() { return *axis1; }
-
-    /**
-     * Get third coordinate of points in this mesh.
-     * @return c2
-     */
-    const RectangularAxis& ee_y() const { return *axis1; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return c0
-     */
-    RectangularAxis& rad_r() { return *axis0; }
-
-    /**
-     * Get first coordinate of points in this mesh.
-     * @return c0
-     */
-    const RectangularAxis& rad_r() const { return *axis0; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return c1
-     */
-    RectangularAxis& rad_phi() { return *axis1; }
-
-    /**
-     * Get second coordinate of points in this mesh.
-     * @return c1
-     */
-    const RectangularAxis& rad_phi() const { return *axis1; }
+    const shared_ptr<RectangularAxis>& rad_phi() const { return axis1; }
 
     /**
      * Get thirs coordinate of points in this mesh.
-     * @return c1
+     * @return axis2
      */
-    RectangularAxis& rad_z() { return *axis1; }
-
-    /**
-     * Get thirs coordinate of points in this mesh.
-     * @return c1
-     */
-    const RectangularAxis& rad_z() const { return *axis1; }
+    const shared_ptr<RectangularAxis>& rad_z() const { return axis2; }
 
     const shared_ptr<RectangularAxis> getAxis0() const { return axis0; }
 
@@ -441,22 +386,11 @@ class RectangularMesh<3>: public MeshD<3> {
      * Get numbered axis
      * \param n number of axis
      */
-    RectangularAxis& axis(size_t n) {
-        if (n == 0) return *axis0;
-        else if (n == 1) return *axis1;
+    const shared_ptr<RectangularAxis>& axis(size_t n) const {
+        if (n == 0) return axis0;
+        else if (n == 1) return axis1;
         else if (n != 2) throw Exception("Bad axis number");
-        return *axis2;
-    }
-
-    /**
-     * Get numbered axis
-     * \param n number of axis
-     */
-    const RectangularAxis& axis(size_t n) const {
-        if (n == 0) return *axis0;
-        else if (n == 1) return *axis1;
-        else if (n != 2) throw Exception("Bad axis number");
-        return *axis2;
+        return axis2;
     }
 
     /// \return major (changing slowest) axis

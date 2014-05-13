@@ -76,7 +76,7 @@ struct MaterialsDB {
     };
 
     /**
-     * Object of this class (inharited from it) construct material instance.
+     * Object of this class (inherited from it) construct material instance.
      * It produces materials of one type but with variouse composition and ammount of dopant.
      */
     struct MaterialConstructor {

@@ -595,29 +595,32 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
 }
 
 
-template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex)
+template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!potentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
-        result += currents[element.getIndex()].c1 * element.getSize0();
+        if (!onlyactive || isActive(element.getMidpoint()))
+            result += currents[element.getIndex()].c1 * element.getSize0();
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
     return result * geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA;
 }
 
 
-template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex)
+template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!potentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         auto element = mesh->elements(i, vindex);
-        double rin = element.getLower0(), rout = element.getUpper0();
-        result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+        if (!onlyactive || isActive(element.getMidpoint())) {
+            double rin = element.getLower0(), rout = element.getUpper0();
+            result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+        }
     }
     return result * M_PI * 0.01; // kA/cm² µm² -->  mA
 }
@@ -629,7 +632,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(si
     if (nact >= actlo.size()) throw BadInput(this->getId(), "Wrong active region number");
     // Find the average of the active region
     size_t level = (actlo[nact] + acthi[nact]) / 2;
-    return integrateCurrent(level);
+    return integrateCurrent(level, true);
 }
 
 

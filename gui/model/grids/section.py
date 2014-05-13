@@ -1,5 +1,5 @@
 from lxml import etree as ElementTree
-from PyQt4 import QtCore
+from ...qt import QtCore
 
 from ...controller.grids.new_dialog import construct_grid_using_dialog
 from ..table import TableModel
@@ -7,7 +7,7 @@ from .types import construct_grid
 
 class GridsModel(TableModel):
 
-    def __init__(self, parent=None, info_cb = None, *args):
+    def __init__(self, parent=None, info_cb=None, *args):
         super(GridsModel, self).__init__('grids', parent, info_cb, *args)
 
     def set_XML_element(self, element):
@@ -25,7 +25,7 @@ class GridsModel(TableModel):
         for e in self.entries: res.append(e.get_XML_element())
         return res
 
-    def columnCount(self, parent = QtCore.QModelIndex()):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):

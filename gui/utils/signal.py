@@ -10,24 +10,23 @@ License: MIT
 
 """
 
-from __future__ import print_function
 import inspect
-from weakref import WeakSet, WeakKeyDictionary
+from weakref import WeakKeyDictionary
 
 class Signal(object):
     def __init__(self):
-        self._functions = WeakSet()
+        self._functions = set()
         self._methods = WeakKeyDictionary()
 
-    def __call__(self, *args, **kargs):
+    def __call__(self, *args, **kwargs):
         # Call handler functions
         for func in self._functions:
-            func(*args, **kargs)
+            func(*args, **kwargs)
 
         # Call handler methods
         for obj, funcs in self._methods.items():
             for func in funcs:
-                func(obj, *args, **kargs)
+                func(obj, *args, **kwargs)
 
     def connect(self, slot):
         if inspect.ismethod(slot):
@@ -58,4 +57,3 @@ class Signal(object):
     def clear(self):
         self._functions.clear()
         self._methods.clear()
-        

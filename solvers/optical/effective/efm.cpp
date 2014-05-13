@@ -18,7 +18,7 @@ EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name
     vlam(0.),
     outWavelength(this, &EffectiveFrequencyCylSolver::getWavelength, &EffectiveFrequencyCylSolver::nmodes),
     outLoss(this, &EffectiveFrequencyCylSolver::getModalLoss,  &EffectiveFrequencyCylSolver::nmodes),
-    outLightIntensity(this, &EffectiveFrequencyCylSolver::getLightIntenisty,  &EffectiveFrequencyCylSolver::nmodes),
+    outLightMagnitude(this, &EffectiveFrequencyCylSolver::getLightMagnitude,  &EffectiveFrequencyCylSolver::nmodes),
     outRefractiveIndex(this, &EffectiveFrequencyCylSolver::getRefractiveIndex),
     outHeat(this, &EffectiveFrequencyCylSolver::getHeat) {
     inTemperature = 300.;
@@ -96,7 +96,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
             }
         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");
     }
 }
 
@@ -251,7 +251,7 @@ void EffectiveFrequencyCylSolver::onInvalidate()
     modes.clear();
     outWavelength.fireChanged();
     outLoss.fireChanged();
-    outLightIntensity.fireChanged();
+    outLightMagnitude.fireChanged();
 }
 
 /********* Here are the computations *********/
@@ -331,8 +331,8 @@ void EffectiveFrequencyCylSolver::updateCache()
                     double gs = gain_slope[idx];
                     double nr = real(material->Nr(lam, T));
                     double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
-                    nrCache[ir][iz] = dcomplex(nr, 7.95774715459e-09 * lam * g);
-                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - 7.95774715459e-09 * lam*lam * gs);
+                    nrCache[ir][iz] = dcomplex(nr, (0.25e-7/M_PI) * lam * g);
+                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - (0.25e-7/M_PI) * lam*lam * gs);
                 }
             }
             if (zbegin != 0) {
@@ -351,6 +351,7 @@ void EffectiveFrequencyCylSolver::stageOne()
 
     if (!have_veffs) {
         if (rstripe < 0) {
+            size_t main_stripe = getMainStripe();
             // Compute effective frequencies for all stripes
             std::exception_ptr error; // needed to handle exceptions from OMP loop
             #pragma omp parallel for
@@ -378,7 +379,7 @@ void EffectiveFrequencyCylSolver::stageOne()
                         RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
                         dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
                         veffs[i] = freqv(rootdigger(start-DLAM, start+DLAM));
-                        computeStripeNNg(i);
+                        computeStripeNNg(i, i==main_stripe);
                     }
                 } catch (...) {
                     #pragma omp critical
@@ -408,10 +409,11 @@ void EffectiveFrequencyCylSolver::stageOne()
             dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
             veffs[rstripe] = freqv(rootdigger(start-DLAM, start+DLAM));
             // Compute veffs and neffs for other stripes
-            computeStripeNNg(rstripe);
+            computeStripeNNg(rstripe, true);
             for (size_t i = 0; i < rsize; ++i)
                 if (i != rstripe) computeStripeNNg(i);
         }
+        assert(zintegrals.size() == zsize);
 
 #       ifndef NDEBUG
             std::stringstream strv; for (size_t i = 0; i < veffs.size(); ++i) strv << ", " << str(veffs[i]);
@@ -506,7 +508,7 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
 }
 
 
-void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
+void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_integrals)
 {
     size_t stripe0 = (rstripe < 0)? stripe : rstripe;
 
@@ -522,6 +524,11 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     detS1(veff, nrCache[stripe0], ngCache[stripe0], &zfield);
 
     double sum = 0.;
+
+    if (save_integrals) {
+        #pragma omp critical
+        zintegrals.resize(zsize);
+    }
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
         double d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
@@ -542,12 +549,16 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
                 w_bf = - (exp(+I*d*kk) - 1.) / kk;
             } else
                 w_ff = w_bb = dcomplex(0., -d);
-            weight -= imag(zfield[i].F * conj(zfield[i].F) * w_ff +
+            weight = -imag(zfield[i].F * conj(zfield[i].F) * w_ff +
                            zfield[i].F * conj(zfield[i].B) * w_fb +
                            zfield[i].B * conj(zfield[i].F) * w_bf +
                            zfield[i].B * conj(zfield[i].B) * w_bb);
         }
         sum += weight;
+        if (save_integrals) {
+            #pragma omp critical
+            zintegrals[i] = weight;
+        }
         nng[stripe] += weight * nrCache[stripe][i] * ngCache[stripe][i];
         if (stripe != stripe0) {
             veffs[stripe] += weight * (nrCache[stripe][i]*nrCache[stripe][i] - nrCache[stripe0][i]*nrCache[stripe0][i]);
@@ -562,11 +573,20 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe)
     nng[stripe] /= sum;
 }
 
-double EffectiveFrequencyCylSolver::integrateBessel(const Mode& mode) const
+double EffectiveFrequencyCylSolver::integrateBessel(Mode& mode)
 {
-    double err = perr;
-    double intr = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, 0., 2.*mesh->axis0->at(rsize-1), err);
-    return 2*M_PI * intr; //TODO consider m <> 0
+    double sum = 0;
+    for (size_t i = 0; i != rsize; ++i) {
+        double start = mesh->axis0->at(i);
+        double end = (i != rsize-1)? mesh->axis0->at(i+1) : 3.0 * mesh->axis0->at(mesh->axis0->size()-1);
+        double err = perr;
+        mode.rweights[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
+        //TODO use exponential asymptotic approximation to compute weight in the last stripe
+        sum += mode.rweights[i];
+    }
+    //TODO consider m <> 0
+    double f = 1e12 / sum; for (double& w: mode.rweights) w *= f;
+    return 2.*M_PI * sum;
 }
 
 dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCylSolver::Mode& mode, bool save)
@@ -614,7 +634,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
     }
 
     if (save) {
-        dcomplex f = sqrt(1e12 / integrateBessel(mode));
+        dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
         for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
     }
 
@@ -624,55 +644,111 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 }
 
 
+double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
+{
+    double result = 0.;
+
+    for (size_t ir = 0; ir < rsize; ++ir) {
+        for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
+            double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+            result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
+            // double err = 1e-6, erz = 1e-6;
+            // double rstart = mesh->axis0[ir];
+            // double rend = (ir != rsize-1)? mesh->axis0[ir+1] : 3.0 * mesh->axis0[ir];
+            // result += absp * 2.*M_PI *
+            //     patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, rstart,  rend, err) *
+            //     patterson<double>([&](double z){
+            //         size_t stripe = getMainStripe();
+            //         dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
+            //         if (real(kz) < 0.) kz = -kz;
+            //         z -= mesh->axis1[iz];
+            //         dcomplex phasz = exp(- I * kz * z);
+            //         return abs2(zfields[iz].F * phasz + zfields[iz].B / phasz);
+            //     }, mesh->axis1[iz-1], mesh->axis1[iz], erz);
+        }
+    }
+    result *= 2e-9 * M_PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
+    return result;
+}
+
+double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
+{
+    if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
+
+    if (!modes[num].have_fields) {
+        size_t stripe = getMainStripe();
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
+        detS(modes[num].lam, modes[num], true); // compute horizontal part
+        modes[num].have_fields = true;
+    }
+
+    return getTotalAbsorption(modes[num]);
+}
 
 
-plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
+double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
+{
+    double result = 0.;
+
+    auto midmesh = mesh->getMidpointsMesh();
+
+    for (size_t ir = 0; ir < rsize; ++ir) {
+        for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
+            auto roles = geometry->getRolesAt(midmesh->at(ir, iz-1));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+                result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
+            }
+        }
+    }
+    result *= 2e-9 * M_PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
+    return -result;
+}
+
+double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
+{
+    if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
+
+    if (!modes[num].have_fields) {
+        size_t stripe = getMainStripe();
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
+        detS(modes[num].lam, modes[num], true); // compute horizontal part
+        modes[num].have_fields = true;
+    }
+
+    return getGainIntegral(modes[num]);
+}
+
+
+plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
-    if (modes.size() <= num || k0 != old_k0) throw NoValue(LightIntensity::NAME);
+    if (modes.size() <= num || k0 != old_k0) throw NoValue(LightMagnitude::NAME);
+
+    size_t stripe = getMainStripe();
 
     if (!modes[num].have_fields) {
+        // Compute vertical part
+        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
+        // Compute horizontal part
         detS(modes[num].lam, modes[num], true);
-#ifndef NDEBUG
+        #ifndef NDEBUG
         {
             std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
                 nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
             writelog(LOG_DEBUG, "horizontal fields = [%1%) ]", nrs.str().substr(2));
         }
-#endif
-    }
-
-    size_t stripe;
-    if (rstripe < 0) {
-        stripe = 0;
-        // Look for the innermost stripe with not constant refractive index
-        bool all_the_same = true;
-        while (all_the_same) {
-            dcomplex same_nr = nrCache[stripe].front();
-            dcomplex same_ng = ngCache[stripe].front();
-            for (auto nr = nrCache[stripe].begin(), ng = ngCache[stripe].begin(); nr != nrCache[stripe].end(); ++nr, ++ng)
-                if (*nr != same_nr || *ng != same_ng) { all_the_same = false; break; }
-            if (all_the_same) ++stripe;
-        }
-        writelog(LOG_DETAIL, "Vertical field distribution taken from stripe %1%", stripe);
-    } else {
-        stripe = rstripe;
-    }
-
-    if (!modes[num].have_fields) {
-        // Compute vertical part
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
+        #endif
         modes[num].have_fields = true;
     }
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightIntenisty_Efficient(num, stripe, dst_mesh, results)) {
-
+    if (!getLightMagnitude_Efficient(num, stripe, dst_mesh, results)) {
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
-        double power = 1e-3 * modes[num].power; // 1e-3 mW->W
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel for schedule(static,1024)
         for (size_t id = 0; id < dst_mesh.size(); ++id) {
@@ -709,7 +785,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightIntenisty(i
     return results;
 }
 
-bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
+bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
 {
     if (auto rect_mesh_ptr = dynamic_cast<const RectangularMesh<2>*>(&dst_mesh)) {
 
@@ -719,6 +795,8 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t
         std::vector<dcomplex> valz(rect_mesh.axis1->size());
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
+
+        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel
         {
@@ -748,8 +826,6 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t
                     dcomplex phasz = exp(- I * kz * z);
                     valz[idz] = zfields[iz].F * phasz + zfields[iz].B / phasz;
                 }
-
-                double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
                 if (rect_mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
                     #pragma omp for
@@ -782,7 +858,8 @@ bool EffectiveFrequencyCylSolver::getLightIntenisty_Efficient(size_t num, size_t
 }
 
 
-DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod) {
+DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod)
+{
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex ok0 = k0;
     if (!isnan(lam) && lam != 0.) k0 = 2e3*M_PI / lam;
@@ -791,18 +868,39 @@ DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIn
     k0 = ok0;
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
-    for (size_t i = 0; i != dst_mesh.size(); ++i) {
-        auto point = target_mesh[i];
-        size_t r = std::lower_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
-        size_t z = std::lower_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
-        if (r != 0) --r;
-        result[i] = Tensor3<dcomplex>(nrCache[r][z]);
+    for (size_t j = 0; j != dst_mesh.size(); ++j) {
+        auto point = target_mesh[j];
+        size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+        size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
+        result[j] = Tensor3<dcomplex>(nrCache[ir][iz]);
     }
     return result;
 }
 
 
-DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method) {
+DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method)
+{
+    // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
+    // in case of fast varying light intensity and too sparse mesh.
+
+    writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
+
+    DataVector<double> result(dst_mesh.size(), 0.);
+
+    if (modes.size() == 0) return result;
+
+    for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
+        result += 2e9*M_PI / real(modes[m].lam) * getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m
+    }
+    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
+    for (size_t j = 0; j != result.size(); ++j) {
+        auto point = mat_mesh[j];
+        size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+        size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
+        double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+        result[j] *= absp;
+    }
+    return result;
 }
 
 

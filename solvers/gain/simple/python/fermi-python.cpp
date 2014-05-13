@@ -18,7 +18,7 @@ static GainSpectrum<GeometryT> FermiGetGainSpectrum2(FermiGainSolver<GeometryT>*
 
 template <typename GeometryT>
 static py::object FermiGainSpectrum__call__(GainSpectrum<GeometryT>& self, py::object wavelengths) {
-   return UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
+   return PARALLEL_UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
 }
 
 template <typename GeometryT>

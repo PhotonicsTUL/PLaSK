@@ -27,6 +27,5 @@ profile[GEO.gain_region] = threshold_gain
 mode_number = efm.find_mode(980.)
 mode_wavelength = efm.outWavelength(mode_number)
 print_log(LOG_INFO,
-        "Threshold material gain is %s/cm with resonant wavelength %snm" %
-        (threshold_gain, mode_wavelength)
-        )
+          "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+          .format(threshold_gain, mode_wavelength))

@@ -42,7 +42,7 @@ Electrical solvers
          Configuration of the effective model of p-n junction.
 
          :attr js: Reverse bias current density. (float [A/m\ :sup:`2`])
-         :attr Shockley: Junction coefficient.
+         :attr beta: Junction coefficient.
          :attr pnjcond: Initial vertical conductivity of the junction. (float [S/m])
          :attr heat: Method of determination of the heat generated in the junction. (``joules`` or ``wavelength``)
          :attr wavelength: Emitted wavelength if ``heat`` is set to ``wavelength``.

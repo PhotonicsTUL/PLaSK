@@ -289,7 +289,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
             if (modes[i] == mode) return i;
         modes.push_back(mode);
         outNeff.fireChanged();
-        outLightIntensity.fireChanged();
+        outLightMagnitude.fireChanged();
         return modes.size()-1;
     }
 
@@ -351,13 +351,13 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     struct Reflected {
 
         /// Provider of the optical electric field
-        typename ProviderFor<OpticalElectricField,Geometry2DCartesian>::Delegate outElectricField;
+        typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outElectricField;
 
         /// Provider of the optical magnetic field
-        typename ProviderFor<OpticalMagneticField,Geometry2DCartesian>::Delegate outMagneticField;
+        typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outMagneticField;
 
         /// Provider of the optical field intensity
-        typename ProviderFor<LightIntensity,Geometry2DCartesian>::Delegate outLightIntensity;
+        typename ProviderFor<LightMagnitude,Geometry2DCartesian>::Delegate outLightMagnitude;
 
         /// Return one as the number of the modes
         static size_t size() { return 1; }
@@ -375,7 +375,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
             outMagneticField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
-            outLightIntensity([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+            outLightMagnitude([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
         {}

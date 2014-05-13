@@ -29,7 +29,7 @@ import os as _os
 
 _any = any # this buit-in is overriden by numpy
 
-_os.environ["PLASK_PREFIX_PATH"] = _os.sep + _os.path.join(*__file__.split(_os.sep)[:-5])
+_os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
 
 from ._plask import *
 from ._plask import _print_exception
@@ -40,12 +40,9 @@ except ImportError:
     pass
 
 banner = '''\
-PLaSK %s --- Photonic Laser Simulation Kit
-%s
-''' % (version, copyright)
-
-_sys.path.insert(2, _os.path.join(lib_path, "solvers"))
-
+PLaSK {0} --- Photonic Laser Simulation Kit
+{1}
+'''.format(version, copyright)
 
 ## ## plask.material ## ##
 
@@ -55,7 +52,7 @@ def update_factories():
     '''For each material in default database make factory in ``plask.material``.'''
     def factory(name):
         func = lambda **kwargs: material.db.get(name, **kwargs)
-        func.__doc__ = "Create %s material." % name
+        func.__doc__ = u"Create {} material.".format(name)
         return func
     for mat in material.db:
         if mat == 'air': continue
@@ -196,7 +193,7 @@ def _showwarning(message, category, filename, lineno, file=None, line=None):
     try: lineno += __globals['__manager__'].script_first_line
     except NameError: pass
     except KeyError: pass
-    print_log(LOG_WARNING, "%s, line %s: %s: %s" % (filename, lineno, category.__name__, message))
+    print_log(LOG_WARNING, "{0}, line {1}: {2}: {3}".format(filename, lineno, category.__name__, message))
 
 import warnings
 warnings.showwarning = _showwarning
@@ -303,12 +300,8 @@ class StepProfile(object):
     def __call__(self, mesh, *args):
         result = ones(len(mesh), self.dtype) * self._default
         for xobj,val in self.steps.items():
-            try:
-                obj, pth = xobj
-            except TypeError:
-                obj_iter = (self._geometry.object_contains(xobj, p) for p in mesh)
-            else:
-                obj_iter = (self._geometry.object_contains(obj, pth, p) for p in mesh)
+            obj, pth = xobj if type(xobj) is tuple else (xobj, None)
+            obj_iter = (self._geometry.object_contains(obj, pth, p) for p in mesh)
             result[fromiter(obj_iter, bool, len(mesh))] = val
         return result
 
@@ -347,7 +340,9 @@ try:
     from .pylab import *
 except ImportError:
     from numpy import *
-    print_log(LOG_WARNING, "plask.pylab could not be imported. You will not be able to make professionally-looking plots. Install matplotlib to resolve this issue.")
+    print_log(LOG_WARNING, "plask.pylab could not be imported."
+                           " You will not be able to make professionally-looking plots."
+                           " Install matplotlib to resolve this issue.")
     has_pylab = False
 else:
     has_pylab = True
@@ -355,7 +350,9 @@ else:
 try:
     from .hdf5 import *
 except ImportError:
-    print_log(LOG_WARNING, "plask.hdf5 could not be imported. Your will not be able to save fields to HDF5 files. Install h5py to resolve this issue.")
+    print_log(LOG_WARNING, "plask.hdf5 could not be imported."
+                           " Your will not be able to save fields to HDF5 files."
+                           " Install h5py to resolve this issue.")
     has_hdf5 = False
 else:
     has_hdf5 = True

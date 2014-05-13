@@ -11,10 +11,11 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    Two-dimensional Cartesian geometry.
 
+   :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr length: Longitudinal dimension of the geometry (float [µm]).: Default value is: *+\infty*.
    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
@@ -29,12 +30,11 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    Two-dimensional cylindrical geometry.
 
-   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).wszystkie możliwości
+   :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr inner: Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr length: Longitudinal dimension of the geometry (float [µm]).: Default value is: *+\infty*.
    :attr outer: Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
    .. xml:contents::
@@ -49,12 +49,12 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    Three-dimensional Cartesian geometry.
 
+   :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr back: Specification of the back border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr front: Specification of the front border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
-   :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
 

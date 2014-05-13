@@ -515,7 +515,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
-    this->writelog(LOG_INFO, "Calculating gain");
+    this->writelog(LOG_DETAIL, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
     RectangularMesh<2> mesh2;    //RectilinearMesh2D
@@ -561,7 +561,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
-    this->writelog(LOG_INFO, "Calculating gain over carriers concentration first derivative");
+    this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
     RectangularMesh<2> mesh2;

@@ -7,7 +7,7 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
     interface(1),
     outdist(0.1),
     smooth(0.),
-    outLightIntensity(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
+    outLightMagnitude(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
     outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
     outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
 {
@@ -24,7 +24,7 @@ template <typename GeometryT>
 void SlabSolver<GeometryT>::prepareLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
-    vbounds = RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
+    vbounds = *RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
 
@@ -32,7 +32,7 @@ template <>
 void SlabSolver<Geometry3D>::prepareLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
-    vbounds = RectilinearMesh3DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
+    vbounds = *RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
 
@@ -119,15 +119,15 @@ void SlabSolver<Geometry3D>::setupLayers()
 
     // Add layers below bottom boundary and above top one
     //static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[0] - outdist);
-    static_cast<RectilinearAxis&>(points->vert()).addPoint(vbounds[0] - outdist);
-    static_cast<RectilinearAxis&>(points->vert()).addPoint(vbounds[vbounds.size()-1] + outdist);
+    static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lverts.clear();
     lgained.clear();
     stack.clear();
-    stack.reserve(points->vert().size());
+    stack.reserve(points->vert()->size());
 
-    for (auto v: points->vert()) {
+    for (auto v: *points->vert()) {
         bool gain = false;
 
         std::vector<LayerItem> layer(points->axis0->size() * points->axis1->size());

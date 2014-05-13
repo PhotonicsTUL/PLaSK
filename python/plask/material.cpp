@@ -8,6 +8,7 @@
 #include <plask/utils/string.h>
 #include <plask/exceptions.h>
 #include <plask/material/db.h>
+#include <plask/material/info.h>
 
 #include "../util/raw_constructor.h"
 
@@ -65,23 +66,23 @@ namespace detail {
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             py::object src = py::object(py::handle<>(py::borrowed(obj)));
             void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor3<dcomplex>>*)data)->storage.bytes;
-            dcomplex vals[5];
-            int idx[5] = { 0, 1, 2, 3, 4 };
+            dcomplex vals[4];
+            int idx[4] = { 0, 1, 2, 3 };
             auto seq = py::object(py::handle<>(py::borrowed(obj)));
-            if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = idx[4] = -1; }
-            else if (py::len(seq) == 3) { idx[3] = idx[4] = -1; }
-            else if (py::len(seq) != 5)
-                throw TypeError("sequence of exactly 2, 3, or 5 complex required");
-            for (int i = 0; i < 5; ++i) {
+            if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = -1; }
+            else if (py::len(seq) == 3) { idx[3] = -1; }
+            else if (py::len(seq) != 4)
+                throw TypeError("sequence of exactly 2, 3, or 4 complex required");
+            for (int i = 0; i < 4; ++i) {
                 if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
                 else vals[i] = 0.;
             }
-            new(storage) Tensor3<dcomplex>(vals[0], vals[1], vals[2], vals[3], vals[4]);
+            new(storage) Tensor3<dcomplex>(vals[0], vals[1], vals[2], vals[3]);
             data->convertible = storage;
         }
 
         static PyObject* convert(const Tensor3<dcomplex>& src)  {
-            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01, src.c10);
+            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01);
             return boost::python::incref(tuple.ptr());
         }
     };
@@ -340,13 +341,13 @@ class PythonMaterial : public Material
     virtual Tensor3<dcomplex> NR(double wl, double T, double n) const override {
         if (cache->NR) return *cache->NR;
         if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
-        if (cache->NR || overriden("Nr")) {
+        if (cache->Nr || overriden("Nr")) {
             dcomplex nr = cache->Nr? *cache->Nr : py::call_method<dcomplex>(self, "Nr", wl, T, n);
-            return Tensor3<dcomplex>(nr, nr, nr, 0., 0.);
+            return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
         if (cache->nr || cache->absp || overriden("nr") || overriden("absp")) {
             dcomplex nr (call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
-            return Tensor3<dcomplex>(nr, nr, nr, 0., 0.);
+            return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
         return base->NR(wl, T, n);
     }
@@ -640,7 +641,88 @@ std::string Material__repr__(const Material& self) {
     return format("plask.materials.Material('%1%')", Material__str__(self));
 }
 
-// Exception translators
+namespace detail {
+    inline bool getRanges(const MaterialInfo::PropertyInfo&, py::dict&) { return false; }
+
+    template <typename... Args>
+    inline bool getRanges(const MaterialInfo::PropertyInfo& info, py::dict& ranges, MaterialInfo::ARGUMENT_NAME arg, Args... args) {
+        auto range = info.getArgumentRange(arg);
+        if (!isnan(range.first) ||   !isnan(range.second)) {
+            ranges[MaterialInfo::ARGUMENT_NAME_STRING[unsigned(arg)]] = py::make_tuple(range.first, range.second);
+            getRanges(info, ranges, args...);
+            return true;
+        }
+        return getRanges(info, ranges, args...);
+    }
+
+    template <typename... Args>
+    void getPropertyInfo(py::dict& result, const MaterialInfo& minfo, MaterialInfo::PROPERTY_NAME prop, Args... args) {
+        if (boost::optional<plask::MaterialInfo::PropertyInfo> info = minfo.getPropertyInfo(prop)) {
+            py::dict data;
+            if (info->getSource() != "") data["source"] = info->getSource();
+            if (info->getComment() != "") data["comment"] = info->getComment();
+            py::list links;
+            for (const auto& link: info->getLinks()) {
+                if (link.comment == "")
+                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[unsigned(link.property)]));
+                else
+                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[unsigned(link.property)], link.comment));
+            }
+            if (links) data["seealso"] = links;
+            py::dict ranges;
+            if (getRanges(*info, ranges, MaterialInfo::doping, args...)) data["ranges"] = ranges;
+            result[MaterialInfo::PROPERTY_NAME_STRING[unsigned(prop)]] = data;
+        }
+    }
+
+}
+
+py::dict getMaterialInfo(const std::string& name) {
+    boost::optional<MaterialInfo> minfo = MaterialInfo::DB::getDefault().get(name);
+    py::dict result;
+    if (!minfo) return result;
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::kind);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::lattC, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Eg, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::CB, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::VB, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Dso, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Mso, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Me, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Mhh, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Mlh, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Mh, MaterialInfo::T, MaterialInfo::e);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::ac, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::av, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::b, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::d, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::c11, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::c12, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::c44, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::eps, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::chi, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nc, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nv, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Ni, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nf, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::EactD, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::EactA, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::mob, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::cond, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::condtype);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::A, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::B, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::C, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::D, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::thermk, MaterialInfo::T, MaterialInfo::h);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::dens, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::cp, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::nr, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::absp, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Nr, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::NR, MaterialInfo::wl, MaterialInfo::T, MaterialInfo::n);
+    return result;
+}
 
 void initMaterials() {
 
@@ -654,22 +736,43 @@ void initMaterials() {
 
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
         "Material database class\n\n"
-        "    The material database. Many semiconductor materials used in photonics are defined here.\n"
-        "    We have made a significant effort to ensure their physical properties to be the most precise\n"
-        "    as the current state of the art. However, you can derive an abstract class plask.Material\n"
-        "    to create your own materials.\n" //TODO maybe more extensive description
+        "Many semiconductor materials used in photonics are defined here. We have made\n"
+        "a significant effort to ensure their physical properties to be the most precise\n"
+        "as the current state of the art. However, you can derive an abstract class\n"
+        ":class:`plask.Material` to create your own materials.\n"
         ); materialsDB
-        .def("get_default", &MaterialsDB::getDefault, "Get default database", py::return_value_policy<py::reference_existing_object>())
+        .def("get_default", &MaterialsDB::getDefault, "Get default database.", py::return_value_policy<py::reference_existing_object>())
         .staticmethod("get_default")
-        .def("load", &MaterialsDB::loadToDefault, "Load materials from library lib to default database", py::arg("lib"))
+        .def("load", &MaterialsDB::loadToDefault,
+             "Load materials from library ``lib`` to default database.\n\n"
+             "This method can be used to extend the database with custom materials provided\n"
+             "in a binary library.\n\n"
+             "Args:\n"
+             "    lib (str): Library name to load.\n",
+             py::arg("lib"))
         .staticmethod("load") // TODO make it non-static
-        .def("load_all", &MaterialsDB::loadAllToDefault, "Load all materials from specified directory to default database", py::arg("directory")=plaskMaterialsPath())
+        .def("load_all", &MaterialsDB::loadAllToDefault,
+             "Load all materials from specified directory to default database.\n\n"
+             "This method can be used to extend the database with custom materials provided\n"
+             "in binary libraries.\n\n"
+             "Args:\n"
+             "    dir (str): Directory name to load materials from.\n",
+             py::arg("dir")=plaskMaterialsPath())
         .staticmethod("load_all") // TODO make it non-static
-        .def("get", py::raw_function(&MaterialsDB_get), "Get material of given name and doping")
+        .def("get", py::raw_function(&MaterialsDB_get),
+             "Get material of given name and doping."
+             )
         .def("__getitem__", (shared_ptr<Material>(MaterialsDB::*)(const std::string&)const)&MaterialsDB::get)
-        .add_property("all", &MaterialsDB_list, "List of all materials in database")
+        .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
+        .def("info", &getMaterialInfo, py::arg("name"),
+             "Get information dictionary on built-in material.\n\n"
+             "Args:\n"
+             "    name (str): material name without doping amount and composition.\n"
+             "                (e.g. 'GaAs:Si', 'AlGaAs')."
+            )
+        .staticmethod("info")
     ;
 
     // Common material interface
@@ -759,6 +862,8 @@ void initMaterials() {
 
     py::def("_register_material_complex", &registerComplexMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
             "Register new complex material class to the database");
+
+    // Material info
 }
 
 }} // namespace plask::python

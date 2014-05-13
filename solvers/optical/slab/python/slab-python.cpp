@@ -99,7 +99,7 @@ inline void export_base(Class solver) {
     solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
     solver.add_receiver("inTemperature", &Solver::inTemperature, "");
     solver.add_receiver("inGain", &Solver::inGain, "");
-    solver.add_provider("outLightIntensity", &Solver::outLightIntensity, "");
+    solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outElectricField", &Solver::outElectricField, "");
     solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
     solver.def_readwrite("root", &Solver::root,
@@ -388,17 +388,17 @@ BOOST_PYTHON_MODULE(slab)
             "This class contains providers for the optical field for a reflected field"
             "under the normal incidence.\n"
             , py::no_init)
-            .def_readonly("outElectricField", reinterpret_cast<ProviderFor<OpticalElectricField,Geometry2DCartesian> FourierReflection2D::Reflected::*>
+            .def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE,Geometry2DCartesian> FourierReflection2D::Reflected::*>
                                               (&FourierReflection2D::Reflected::outElectricField),
-                format(docstring_attr_provider<FIELD_PROPERTY>(), "OpticalElectricField", "2D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightE", "2D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
             )
-            .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<OpticalMagneticField,Geometry2DCartesian> FourierReflection2D::Reflected::*>
+            .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH,Geometry2DCartesian> FourierReflection2D::Reflected::*>
                                               (&FourierReflection2D::Reflected::outMagneticField),
-                format(docstring_attr_provider<FIELD_PROPERTY>(), "OpticalMagneticField", "2D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightH", "2D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
             )
-            .def_readonly("outLightIntensity", reinterpret_cast<ProviderFor<LightIntensity,Geometry2DCartesian> FourierReflection2D::Reflected::*>
-                                              (&FourierReflection2D::Reflected::outLightIntensity),
-                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightIntensity", "2D", "light intensity", "W/m²", "", "", "", "outLightIntensity").c_str()
+            .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> FourierReflection2D::Reflected::*>
+                                              (&FourierReflection2D::Reflected::outLightMagnitude),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightMagnitude", "2D", "light intensity", "W/m²", "", "", "", "outLightMagnitude").c_str()
             )
         ;
     }

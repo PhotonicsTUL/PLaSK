@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtGui
+from ..qt import QtCore, QtGui
 import weakref
 
 from ..utils.signal import Signal
@@ -13,7 +13,7 @@ class Info(object):
     def __str__(self):
         return self.text
 
-    def __init__(self, text, level = None, **kwargs):
+    def __init__(self, text, level=None, **kwargs):
         object.__init__(self)
         self.text = text
         self.level = int(level)
@@ -23,7 +23,7 @@ class Info(object):
     def add_connection(self, attr_name, value):
         getattr(self, attr_name, []).append(value)
 
-    def has_connection(self, attr_name, value, ans_if_non_attr = True):
+    def has_connection(self, attr_name, value, ans_if_non_attr=True):
         """
             Check if self has attribute with given name which includes given value.
             For example: self.has_connection('rows', 5)
@@ -39,10 +39,10 @@ class Info(object):
         return ans_if_non_attr
 
 def infoLevelIcon(level):
-    if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder')
-    if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information')
-    if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning')
-    if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error')
+    if level == Info.GROUP: return QtGui.QIcon.fromTheme('folder', QtGui.QIcon(':/folder.png'))
+    if level == Info.INFO: return QtGui.QIcon.fromTheme('dialog-information', QtGui.QIcon(':/dialog-information.png'))
+    if level == Info.WARNING: return QtGui.QIcon.fromTheme('dialog-warning', QtGui.QIcon(':/dialog-warning.png'))
+    if level == Info.ERROR: return QtGui.QIcon.fromTheme('dialog-error', QtGui.QIcon(':/dialog-error.png'))
     return None
 
 #TODO support for groups using tree model QAbstractItemModel
@@ -53,7 +53,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
         if hasattr(self, 'model'):
             m = self.model()
             if m: m.infoChanged -= self.infoChanged
-        if model == None:
+        if model is None:
             if hasattr(self, 'model'): del self.model
             self.entries = []
         else:
@@ -73,16 +73,16 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
 
     def setModel(self, model):
         self.__setModel__(model)
-        if model != None: self.infoChanged(model)
+        if model is not None: self.infoChanged(model)
 
-    def rowCount(self, parent = QtCore.QModelIndex()):
+    def rowCount(self, parent=QtCore.QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
-    #def columnCount(self, parent = QtCore.QModelIndex()):
+    #def columnCount(self, parent=QtCore.QModelIndex()):
     #    return 1
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole:
             return self.entries[index.row()].text
@@ -98,7 +98,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
 
 class InfoSource(object):
 
-    def __init__(self, info_cb = None):
+    def __init__(self, info_cb=None):
         """
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
@@ -125,13 +125,13 @@ class InfoSource(object):
         """
         return []
 
-    def get_info(self, level = None):
+    def get_info(self, level=None):
         """
             Get array of Info objects on given level connected with this object.
         """
-        if self.__info__ == None:
+        if self.__info__ is None:
             self.__info__ = self.create_info()
-        if level != None:
+        if level is not None:
             return filter(lambda m: m.level == level, self.__info__)
         else:
             return self.__info__

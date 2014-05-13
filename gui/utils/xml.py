@@ -1,13 +1,14 @@
 from lxml import etree as ElementTree
 
 # default, used XML parser
-XML_parser = ElementTree.XMLParser(remove_blank_text = True, remove_comments = False, strip_cdata = False)
+XML_parser = ElementTree.XMLParser(remove_blank_text=True, remove_comments=False, strip_cdata=False)
+
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""
     text = element.text.lstrip('\n') if element.text else ''
     for c in element:
-        text += ElementTree.tostring(c, pretty_print = True)
+        text += ElementTree.tostring(c, pretty_print=True)
     return text
 
 
@@ -25,7 +26,7 @@ class AttributeReader(object):
         self.attrib = element.attrib
         self.read = set()
         
-    def get(self, key, default = None):
+    def get(self, key, default=None):
         self.read.add(key)
         return self.attrib.get(key, default)
     
@@ -42,11 +43,15 @@ class AttributeReader(object):
     def require_all_read(self):
         """Raise ValueError if not all attributes have been read from XML tag."""
         not_read = set(self.attrib.keys) - self.read
-        if not_read: raise ValueError("XML tag <%s> has unexpected attributes: %s", (self.element.tag, ", ".join(not_read)))
+        if not_read:
+            raise ValueError("XML tag <%s> has unexpected attributes: %s", (self.element.tag, ", ".join(not_read)))
 
     def __enter__(self):
         return self
         
     def __exit__(self, exc_type, exc_value, traceback):
-        """It raise ValueError if any other exception haven't been raised and not all attributes have been read from XML tag."""
-        if exc_type == None and exc_value == None and traceback == None: self.require_all_read()
+        """
+            It raise ValueError if any other exception haven't been raised
+            and not all attributes have been read from XML tag.
+        """
+        if exc_type is None and exc_value is None and traceback is None: self.require_all_read()

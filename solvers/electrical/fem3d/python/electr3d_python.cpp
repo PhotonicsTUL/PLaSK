@@ -54,6 +54,13 @@ static void setCondJunc(FiniteElementMethodElectrical3DSolver* self, py::object 
     }
 }
 
+//TODO remove after 1.06.2014
+py::object outHeatDensity_get(const py::object& self) {
+    writelog(LOG_WARNING, "'outHeatDensity' is depreciated. Use 'outHeat' instead!");
+    return self.attr("outHeat");
+}
+
+
 BOOST_PYTHON_MODULE(fem3d)
 {
     py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
@@ -76,7 +83,6 @@ BOOST_PYTHON_MODULE(fem3d)
         PROVIDER(outPotential, "");
         PROVIDER(outCurrentDensity, "");
         PROVIDER(outHeat, "");
-        solver.setattr("outHeatDensity", solver.attr("outHeat"));
         PROVIDER(outConductivity, "");
         BOUNDARY_CONDITIONS(voltage_boundary, "Boundary conditions of the first kind (constant potential)");
         RW_FIELD(maxerr, "Limit for the potential updates");
@@ -107,6 +113,7 @@ BOOST_PYTHON_MODULE(fem3d)
             "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
             "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
         );
+        solver.add_property("outHeatDensity", outHeatDensity_get, "DEPRECIATED"); // TODO remove after 1.06.2014
     }
 
 }

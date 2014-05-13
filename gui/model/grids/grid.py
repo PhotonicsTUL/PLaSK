@@ -9,18 +9,18 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
     """Base class for models of grids (meshes or generators)"""
 
     @staticmethod
-    def contruct_empty_XML_element(name, type, method = None):
-        if method != None:
-            return ElementTree.Element("generator", { "name": name, "type": type, "method": method })
+    def contruct_empty_XML_element(name, type, method=None):
+        if method is not None:
+            return ElementTree.Element("generator", {"name": name, "type": type, "method": method})
         else:
-            return ElementTree.Element("mesh", { "name": name, "type": type })
+            return ElementTree.Element("mesh", {"name": name, "type": type})
 
-    def __init__(self, grids_model, name = None, type = None, method = None):
+    def __init__(self, grids_model, name=None, type=None, method=None):
         object.__init__(self)
         self.model = grids_model
-        if name != None: self.name = name
-        if type != None: self.type = type
-        if method != None: self.__method__ = method
+        if name is not None: self.name = name
+        if type is not None: self.type = type
+        if method is not None: self.__method__ = method
 
     def get_XML_element(self):
         return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
@@ -31,19 +31,25 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
 
     @property
     def is_generator(self):
-        return self.method != None
+        return self.method is not None
 
     @property
     def is_mesh(self):
-        return self.method == None
+        return self.method is None
 
     def set_text(self, text):
         if self.is_generator:
-            tab = ['<generator name=', quoteattr(self.name), ' type=', quoteattr(self.type), ' method=', quoteattr(self.method), '>', text.encode('utf-8'), '</generator>' ]
+            tab = ['<generator name=', quoteattr(self.name).encode('utf-8'), ' type=',
+                   quoteattr(self.type).encode('utf-8'), ' method=', quoteattr(self.method).encode('utf-8'), '>',
+                   text.encode('utf-8'), '</generator>']
         else:
-            tab = ['<mesh name=', quoteattr(self.name), ' type=', quoteattr(self.type), '>', text.encode('utf-8'), '</mesh>' ]
+            tab = ['<mesh name=', quoteattr(self.name).encode('utf-8'), ' type=',
+                   quoteattr(self.type).encode('utf-8'), '>', text.encode('utf-8'), '</mesh>']
         #print ''.join(tab)
-        self.set_XML_element(ElementTree.fromstringlist(tab, parser = XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(ElementTree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
+
+    def get_text(self):
+        return print_interior(self.get_XML_element())
 
     @property
     def type_and_kind_str(self):
@@ -56,9 +62,9 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
     def is_read_only(self):
         return self.model.is_read_only()
 
-    def get_controller(self):
+    def get_controller(self, document):
         from ...controller.source import SourceEditController
-        return SourceEditController(model = self)
+        return SourceEditController(document=document, model=self)
 
 #class Generator(Grid):
 #    """Base class for models of generators"""
@@ -71,12 +77,12 @@ class GridTreeBased(Grid):
 
     @staticmethod
     def from_XML(grids_model, element):
-        return GridTreeBased(grids_model, element = element)
+        return GridTreeBased(grids_model, element=element)
 
-    def __init__(self, grids_model, name = None, type = None, method = None, element = None):
+    def __init__(self, grids_model, name=None, type=None, method=None, element=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
         super(GridTreeBased, self).__init__(grids_model)
-        if element == None:
+        if element is None:
             self.element = Grid.contruct_empty_XML_element(name, type, method)
         else:
             self.element = element

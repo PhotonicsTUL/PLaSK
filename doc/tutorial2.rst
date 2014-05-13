@@ -201,7 +201,7 @@ Having written the script, we may run it from the system shell (Command Prompt i
 
     plask tutorial2.py tutorial2.xpl
 
-In this case the string ``tutorial2.xpl`` is the program argument that is read with ``sys.argv[1]`` and which, as you remember, specifies the name of the XPL file to read. When run, the program will compute the resonant wavelength of the fundamental mode of the VCSEL, together with the losses for that mode, and print them to the screen. The modal losses will have a positive value, which means that the mode is still below threshold. We will see below, how to find the proper threshold gain value. By now, you may try to extend this script with the plot of the light intensity, which can be obtained using the ``efm.outLightIntensity`` provider. Consider this as a homework exercise, keeping in mind, that the first argument for this provider has to be the solution number (``mode_number`` in our case) and the second one, the target mesh (see :ref:`the first tutorial <sec-Thermo-electrical-modeling-of-simple-ee-laser>` for details).
+In this case the string ``tutorial2.xpl`` is the program argument that is read with ``sys.argv[1]`` and which, as you remember, specifies the name of the XPL file to read. When run, the program will compute the resonant wavelength of the fundamental mode of the VCSEL, together with the losses for that mode, and print them to the screen. The modal losses will have a positive value, which means that the mode is still below threshold. We will see below, how to find the proper threshold gain value. By now, you may try to extend this script with the plot of the light intensity, which can be obtained using the ``efm.outLightMagnitude`` provider. Consider this as a homework exercise, keeping in mind, that the first argument for this provider has to be the solution number (``mode_number`` in our case) and the second one, the target mesh (see :ref:`the first tutorial <sec-Thermo-electrical-modeling-of-simple-ee-laser>` for details).
 
 Searching for the threshold gain using Scipy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -273,9 +273,8 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
       mode_number = efm.find_mode(980.)
       mode_wavelength = efm.outWavelength(mode_number)
       print_log(LOG_INFO,
-               "Threshold material gain is %s /cm with resonant wavelength %s nm" %
-               (threshold_gain, mode_wavelength)
-               )
+                "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+                .format(threshold_gain, mode_wavelength))
 
 .. rubric:: Footnotes
 .. [#module-sys] In Python modules are some external libraries that extend its functionality. The ``sys`` module give access to many system function and objects.

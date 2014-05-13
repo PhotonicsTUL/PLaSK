@@ -191,7 +191,7 @@ DataVector<const Tensor3<dcomplex>> FourierReflection3D::getRefractiveIndexProfi
 //
 const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
 {
-//     if (modes.size() <= num) throw NoValue(OpticalElectricField::NAME);
+//     if (modes.size() <= num) throw NoValue(LightE::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
 //         klong = modes[num].klong;
@@ -204,7 +204,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, co
 
 const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
 {
-//     if (modes.size() <= num) throw NoValue(OpticalMagneticField::NAME);
+//     if (modes.size() <= num) throw NoValue(LightH::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
 //         klong = modes[num].klong;
@@ -217,7 +217,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, co
 
 const DataVector<const double> FourierReflection3D::getIntensity(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
 {
-//     if (modes.size() <= num) throw NoValue(LightIntensity::NAME);
+//     if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
 //         klong = modes[num].klong;

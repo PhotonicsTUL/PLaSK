@@ -44,7 +44,7 @@ std::string getPythonExceptionMessage() {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 //__declspec(dllexport)
 #endif
-AxisNames current_axes = AxisNames::axisNamesRegister.get("xyz");
+AxisNames current_axes = AxisNames::axisNamesRegister.get("zxy");
 
 static LoggingConfig getLoggingConfig(const Config&) {
     return LoggingConfig();
@@ -206,26 +206,29 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
         while (traceback) {
             int lineno = traceback->tb_lineno;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            if (scriptname != nullptr && filename == scriptname) lineno += startline;
+            int flineno = (scriptname != nullptr && filename == scriptname)? startline + lineno : lineno;
+            std::string scriptline = (lineno != flineno)? format(" (%1% in script)", lineno) : "";
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%%3%, function '%4%' calling:", filename, flineno, scriptline, funcname);
             else {
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%, function '%3%' calling:", filename, lineno, funcname);
+                    plask::writelog(plask::LOG_ERROR_DETAIL, "%1%, line %2%%3%, function '%4%' calling:", filename, flineno, scriptline, funcname);
                     std::string form = message;
                     std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
-                        int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                        int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                        int flineno = startline + lineno;
+                        std::string scriptline = (lineno != flineno)? format(" (%1% in script)", lineno) : "";
+                        plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%%3%: %4%: %5%", file, flineno, scriptline, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
                         plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
                     }
                 } else
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%, function '%3%': %4%: %5%", filename, lineno, funcname, error_name, message);
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%%3%, function '%4%': %5%: %6%", filename, flineno, scriptline, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
@@ -235,8 +238,10 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
-                    int lineno = startline + boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%: %3%: %4%", file, lineno, error_name, msg);
+                    int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                    int flineno = startline + lineno;
+                    std::string scriptline = (lineno != flineno)? format(" (%1% in script)", lineno) : "";
+                    plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%, line %2%%3%: %4%: %5%", file, flineno, scriptline, error_name, msg);
                 } catch (boost::bad_lexical_cast) {
                     plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: %2%", error_name, message);
                 }
@@ -303,7 +308,7 @@ BOOST_PYTHON_MODULE(_plask)
                       "    mysolver:category.type")
         .add_property("initialized", &plask::Solver::isInitialized,
                       "True if the solver has been initialized. (read only)\n\n"
-                      "Solvers usually get initialized at the beginnig of the computations.\n"
+                      "Solvers usually get initialized at the beginning of the computations.\n"
                       "You can clean the initialization state and free the memory by calling\n"
                       "the :meth:`invalidate` method.")
         .def("invalidate", &plask::Solver::invalidate,
@@ -355,6 +360,7 @@ BOOST_PYTHON_MODULE(_plask)
     plask::python::xml_globals = py::dict(numpy.attr("__dict__")).copy();
     plask::python::xml_globals.update(scope.attr("__dict__"));
     plask::python::xml_globals["plask"] = scope;
+    py::incref(plask::python::xml_globals.ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();
