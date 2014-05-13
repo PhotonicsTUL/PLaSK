@@ -133,7 +133,11 @@ static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
 static RegisterMeshReader rectangular3d_reader("rectangular3d", readRectangularMesh3D);
 
 // deprecated:
-static RegisterMeshReader regularmesh3d_reader("regular3d", readRectangularMesh3D);
-static RegisterMeshReader rectilinear3d_reader("rectilinear3d", readRectangularMesh3D);
+static shared_ptr<Mesh> readRectangularMesh3D_deprecated(XMLReader& reader) {
+        writelog(LOG_WARNING, "Mesh type \"%1%\" is deprecated (will not work in future versions of PLaSK), use \"rectangular3d\" instead.", reader.requireAttribute("type"));
+        return readRectangularMesh3D(reader);
+}
+static RegisterMeshReader regularmesh3d_reader("regular3d", readRectangularMesh3D_deprecated);
+static RegisterMeshReader rectilinear3d_reader("rectilinear3d", readRectangularMesh3D_deprecated);
 
 } // namespace plask
