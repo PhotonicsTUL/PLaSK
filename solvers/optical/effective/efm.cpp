@@ -96,7 +96,7 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
                     throw BadInput(this->getId(), "Neither mesh nor mesh generator '%1%' found", *name);
             }
         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe_root>, or <outer>");
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");
     }
 }
 

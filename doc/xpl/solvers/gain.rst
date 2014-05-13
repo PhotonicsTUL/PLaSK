@@ -33,7 +33,7 @@ Gain solvers
 
          Custom energy levels in quantum wells. If this tag is used all levels must be set.
 
-         :attr required le: Comma-separated list of electron levels. (list of floats)
+         :attr required el: Comma-separated list of electron levels. (list of floats)
          :attr required hh: Comma-separated list of heavy hole levels. (list of floats)
          :attr required lh: Comma-separated list of light hole levels. (list of floats)
 

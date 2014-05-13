@@ -263,7 +263,9 @@ struct GainSpectrum {
      * \return gain
      */
     double getGain(double wavelength) {
+        #pragma omp critical
         if (isnan(T)) T = solver->inTemperature(OnePointMesh<2>(point))[0];
+        #pragma omp critical
         if (isnan(n)) n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
         return solver->getGainModule(wavelength, T, n, *region)
             .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
