@@ -106,6 +106,7 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
                         if (!error) try {
                             *((T*)dst) = f(*((T*)src));
                         } catch (...) {
+                            #pragma omp critical
                             error = std::current_exception();
                         }
                     }
