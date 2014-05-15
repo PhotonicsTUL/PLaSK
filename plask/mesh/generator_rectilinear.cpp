@@ -366,11 +366,11 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
     return result;
 }
 
-static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader("rectilinear.simple", readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("rectilinear.simple",   readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
 
-static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader("rectilinear.divide", readRectilinearMeshDivideGenerator<1>);
+static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("rectilinear.divide",   readRectilinearMeshDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearMeshDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectilinearMeshDivideGenerator<3>);
 

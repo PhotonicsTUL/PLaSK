@@ -138,6 +138,24 @@ geometry.Stack3D = Stack3D
 del Stack3D
 
 
+mesh.Rectilinear2D = mesh.Rectangular2D
+mesh.Rectilinear3D = mesh.Rectangular3D
+
+def Regular2D(axis0, axis1, order='01'):
+    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
+    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
+    return mesh.Rectilinear3D(axis0, axis1, order)
+mesh.Regular2D = Regular2D
+del Regular2D
+
+def Regular3D(axis0, axis1, axis2, order='012'):
+    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
+    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
+    if isinstance(axis2, tuple): axis2 = Regular(*axis2)
+    return mesh.Rectilinear3D(axis0, axis1, axis2, order)
+mesh.Regular3D = Regular3D
+del Regular3D
+
 ## ## plask.manager ## ##
 
 def loadxpl(source, vars={}, sections=None, destination=None):
