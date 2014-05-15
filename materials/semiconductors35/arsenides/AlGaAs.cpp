@@ -83,7 +83,7 @@ MI_PROPERTY(AlGaAs, VB,
             MISource("linear interpolation: AlAs, GaAs")
             )
 double AlGaAs::VB(double T, double e, char point, char hole) const {
-    double tVB( Al*mAlAs.VB(T,e,point,hole) + Ga*mGaAs.VB(T,e,point,hole) );
+    double tVB( Al*mAlAs.VB(T,0.,point,hole) + Ga*mGaAs.VB(T,0.,point,hole) );
     if (!e) return tVB;
     else
     {

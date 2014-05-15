@@ -83,7 +83,7 @@ MI_PROPERTY(AlInAs, VB,
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::VB(double T, double e, char point, char hole) const {
-    double tVB( Al*mAlAs.VB(T,e,point,hole) + In*mInAs.VB(T,e,point,hole) );
+    double tVB( Al*mAlAs.VB(T,0.,point,hole) + In*mInAs.VB(T,0.,point,hole) );
     if (!e) return tVB;
     else
     {

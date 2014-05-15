@@ -83,7 +83,7 @@ MI_PROPERTY(GaInP, VB,
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*mGaP.VB(T,e,point,hole) + In*mInP.VB(T,e,point,hole) );
+    double tVB( Ga*mGaP.VB(T,0.,point,hole) + In*mInP.VB(T,0.,point,hole) );
     if (!e) return tVB;
     else
     {

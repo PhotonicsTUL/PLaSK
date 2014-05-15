@@ -103,8 +103,8 @@ MI_PROPERTY(AlGaAsSb, VB,
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*As*mGaAs.VB(T,e,point,hole) + Ga*Sb*mGaSb.VB(T,e,point,hole)
-                + Al*As*mAlAs.VB(T,e,point,hole) + Al*Sb*mAlSb.VB(T,e,point,hole)
+    double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*Sb*mGaSb.VB(T,0.,point,hole)
+                + Al*As*mAlAs.VB(T,0.,point,hole) + Al*Sb*mAlSb.VB(T,0.,point,hole)
                 - Al*As*Sb*(-1.71) - Ga*As*Sb*(-1.06) );
     if (!e) return tVB;
     else

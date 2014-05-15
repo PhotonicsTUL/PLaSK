@@ -83,7 +83,7 @@ MI_PROPERTY(GaAsP, VB,
             MISource("nonlinear interpolation: GaAs, GaP")
             )
 double GaAsP::VB(double T, double e, char point, char hole) const {
-    double tVB( As*mGaAs.VB(T,e,point,hole) + P*mGaP.VB(T,e,point,hole) - As*P*(-1.06) );
+    double tVB( As*mGaAs.VB(T,0.,point,hole) + P*mGaP.VB(T,0.,point,hole) - As*P*(-1.06) );
     if (!e) return tVB;
     else
     {

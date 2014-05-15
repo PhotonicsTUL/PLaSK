@@ -103,8 +103,8 @@ MI_PROPERTY(GaInAsP, VB,
             MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*As*mGaAs.VB(T,e,point,hole) + Ga*P*mGaP.VB(T,e,point,hole)
-                + In*As*mInAs.VB(T,e,point,hole) + In*P*mInP.VB(T,e,point,hole)
+    double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*P*mGaP.VB(T,0.,point,hole)
+                + In*As*mInAs.VB(T,0.,point,hole) + In*P*mInP.VB(T,0.,point,hole)
                 - Ga*In*As*(-0.38) /*- Ga*In*P*(0.) - Ga*As*P*(0.) - In*As*P*(0.)*/ );
     if (!e) return tVB;
     else

@@ -99,8 +99,8 @@ MI_PROPERTY(GaInNAs, VB,
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*As*mGaAs.VB(T,e,point,hole) + Ga*N*mGaN.VB(T,e,point,hole)
-                + In*As*mInAs.VB(T,e,point,hole) + In*N*mInN.VB(T,e,point,hole)
+    double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*N*mGaN.VB(T,0.,point,hole)
+                + In*As*mInAs.VB(T,0.,point,hole) + In*N*mInN.VB(T,0.,point,hole)
                 - Ga*In*As*(-0.38) /*- Ga*In*N*(0.) - Ga*As*N*(0.) - In*As*N*(0.)*/ );
     if (!e) return tVB;
     else

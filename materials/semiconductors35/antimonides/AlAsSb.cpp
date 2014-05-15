@@ -83,7 +83,7 @@ MI_PROPERTY(AlAsSb, VB,
             MISource("nonlinear interpolation: AlAs, AlSb")
             )
 double AlAsSb::VB(double T, double e, char point, char hole) const {
-    double tVB( As*mAlAs.VB(T,e,point,hole) + Sb*mAlSb.VB(T,e,point,hole) - As*Sb*(-1.71) );
+    double tVB( As*mAlAs.VB(T,0.,point,hole) + Sb*mAlSb.VB(T,0.,point,hole) - As*Sb*(-1.71) );
     if (!e) return tVB;
     else
     {

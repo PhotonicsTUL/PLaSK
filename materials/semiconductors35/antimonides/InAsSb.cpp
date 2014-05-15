@@ -83,7 +83,7 @@ MI_PROPERTY(InAsSb, VB,
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::VB(double T, double e, char point, char hole) const {
-    double tVB( As*mInAs.VB(T,e,point,hole) + Sb*mInSb.VB(T,e,point,hole) );
+    double tVB( As*mInAs.VB(T,0.,point,hole) + Sb*mInSb.VB(T,0.,point,hole) );
     if (!e) return tVB;
     else
     {
