@@ -261,7 +261,7 @@ inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, st
 
 typedef RectilinearAxis RectilinearMesh1D;
 
-shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader);
+shared_ptr<RectilinearMesh1D> readRectilinearMeshAxis(XMLReader& reader);
 
 }   // namespace plask
 

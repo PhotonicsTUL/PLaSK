@@ -102,7 +102,7 @@ static void RectilinearAxis_extend(RectilinearAxis& self, py::object sequence) {
 }
 
 
-namespace detail {
+/*namespace detail {
     struct RegularAxisFromTupleOrFloat
     {
         RegularAxisFromTupleOrFloat() {
@@ -136,7 +136,7 @@ namespace detail {
             }
         }
     };
-}
+}*/
 
 template <typename RegularT>
 shared_ptr<RegularT> Regular__init__one_param(double val) {
@@ -193,8 +193,20 @@ static shared_ptr<MeshT> RectangularMesh2D__init__empty(std::string order) {
     return mesh;
 }
 
-static shared_ptr<RectangularMesh<2>> RectangularMesh2D__init__axes(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, std::string order) {
-    auto mesh = make_shared<RectangularMesh<2>>(axis0, axis1);
+shared_ptr<RectangularAxis> extract_axis(const py::object& axis) {
+    py::extract<shared_ptr<RectangularAxis>> convert(axis);
+    if (convert.check())
+        return convert;
+    else if (PySequence_Check(axis.ptr())) {
+        py::stl_input_iterator<double> begin(axis), end;
+        return make_shared<RectilinearAxis>(std::vector<double>(begin, end));
+    } else {
+        throw TypeError("Wrong type of axis, it must derive from Rectangular1D or be a sequence.");
+    }
+}
+
+static shared_ptr<RectangularMesh<2>> RectangularMesh2D__init__axes(py::object axis0, py::object axis1, std::string order) {
+    auto mesh = make_shared<RectangularMesh<2>>(extract_axis(axis0), extract_axis(axis1));
     RectangularMesh2D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -257,8 +269,8 @@ shared_ptr<MeshT> RectangularMesh3D__init__empty(std::string order) {
     return mesh;
 }
 
-shared_ptr<RectangularMesh<3>> RectangularMesh3D__init__axes(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, shared_ptr<RectangularAxis> axis2, std::string order) {
-    auto mesh = make_shared<RectangularMesh<3>>(axis0, axis1, axis2);
+shared_ptr<RectangularMesh<3>> RectangularMesh3D__init__axes(py::object axis0, py::object axis1, py::object axis2, std::string order) {
+    auto mesh = make_shared<RectangularMesh<3>>(extract_axis(axis0), extract_axis(axis1), extract_axis(axis2));
     RectangularMesh3D__setOrdering(*mesh, order);
     return mesh;
 }
@@ -699,7 +711,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
         .def("__iter__", py::range(&RegularAxis::begin, &RegularAxis::end))
     ;
-    detail::RegularAxisFromTupleOrFloat();
+    //detail::RegularAxisFromTupleOrFloat();
     py::implicitly_convertible<RegularAxis, RectilinearAxis>();
 
 

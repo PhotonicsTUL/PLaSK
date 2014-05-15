@@ -195,7 +195,7 @@ auto RegularAxis::interpolateLinear(const RandomAccessContainer& data, double po
 
 typedef RegularAxis RegularMesh1D;
 
-shared_ptr<RegularMesh1D> readRegularMesh1D(XMLReader& reader);
+shared_ptr<RegularMesh1D> readRegularMeshAxis(XMLReader& reader);
 
 }   // namespace plask
 

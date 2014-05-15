@@ -11,6 +11,17 @@ import numpy
 import h5py
 import plask
 
+def save_rectangular1d(dest_group, mesh):
+    mst = type(mesh)
+    dest_group.attrs['type'] = mst.__name__
+    if mst is plask.mesh.Regular1D:
+        axis = dest_group.create_dataset('data', (1,), dtype=numpy.dtype([('start', float), ('stop', float), ('num', int)]))
+        axis[0] = ax.start, ax.stop, len(mesh)
+        return axis
+    else:
+        return dest_group.create_dataset('data', data=numpy.array(mesh))
+
+
 def save_field(field, file, path='', mode='a'):
     """
     Save field to HDF5 file.
@@ -50,14 +61,13 @@ def save_field(field, file, path='', mode='a'):
     """
     msh = field.mesh
     mst = type(msh)
-    if mst in (plask.mesh.Rectilinear1D, plask.mesh.Regular1D):
-        axes = (msh,)
-    if mst in (plask.mesh.Rectangular2D):
+    if mst is plask.mesh.Rectangular2D:
         axes = msh.axis1, msh.axis0
-    elif mst in (plask.mesh.Rectangular3D):
+    elif mst is plask.mesh.Rectangular3D:
         axes = msh.axis2, msh.axis1, msh.axis0
     else:
-        raise TypeError("unsupported mesh type for provided data")
+        if mst in (plask.mesh.Rectilinear, plask.mesh.Regular):
+            raise TypeError("unsupported mesh type for provided data")
 
     if type(file) == str:
         file = h5py.File(file, mode)
@@ -72,24 +82,30 @@ def save_field(field, file, path='', mode='a'):
 
     data = dest.create_dataset('data', data=field.array)
 
-    n = len(axes)
-    mesh = dest.create_group('mesh')
-    mesh.attrs['type'] = mst.__name__
-    mesh.attrs['ordering'] = msh.ordering
-    if mst in (plask.mesh.Rectilinear1D, plask.mesh.Rectilinear2D, plask.mesh.Rectilinear3D):
-        for i,ax in enumerate(axes):
-            axis = mesh.create_dataset('axis{:d}'.format(n-1-i), data=numpy.array(ax))
+    mesh_group = dest.create_group('mesh')
+    if mst in (plask.mesh.Rectilinear, plask.mesh.Regular):
+        axis_dataset = save_rectangular1d(mesh_group, msh)
+        if type(msh) is plask.mesh.Rectilinear1D:
             try:
-                data.dims[i].label = plask.current_axes[3-n+i]
-                data.dims.create_scale(axis)
-                data.dims[i].attach_scale(axis)
+                data.dims[0].label = plask.current_axes[2]
+                data.dims.create_scale(axis_dataset)
+                data.dims[0].attach_scale(axis_dataset)
             except AttributeError:
                 pass
-    elif mst in (plask.mesh.Regular1D, plask.mesh.Regular2D, plask.mesh.Regular2D):
-        dt = numpy.dtype([('start', float), ('stop', float), ('num', int)])
+    elif mst in (plask.mesh.Rectangular2D, plask.mesh.Rectangular3D):
+        n = len(axes)
+        mesh_group.attrs['type'] = mst.__name__
+        #mesh_group.attrs['ordering'] = msh.ordering
         for i,ax in enumerate(axes):
-            axis = mesh.create_dataset('axis{:d}'.format(n-1-i), (1,), dtype=dt)
-            axis[0] = ax.start, ax.stop, len(ax)
+            axis_group = mesh_group.create_group('axis{:d}'.format(n-1-i))
+            axis_dataset = save_rectangular1d(axis_group, ax)
+            if type(ax) is plask.mesh.Rectilinear1D:
+                try:
+                    data.dims[i].label = plask.current_axes[3-n+i]
+                    data.dims.create_scale(axis_dataset)
+                    data.dims[i].attach_scale(axis_dataset)
+                except AttributeError:
+                    pass
 
     if close:
         file.close()
@@ -133,7 +149,11 @@ def load_field(file, path=''):
         close = False
 
     mesh = file[path+'/mesh']
-    mst = plask.mesh.__dict__[mesh.attrs['type']]
+    type_str = mesh.attrs['type']
+    #if type_str in ('Regular2D', 'Regular3D'):
+
+
+    mst = plask.mesh.__dict__[type_str]
     if mst in (plask.mesh.Regular2D, plask.mesh.Regular3D):
         kwargs = dict([ (k, (v[0][0],v[0][1],int(v[0][2]))) for k,v in mesh.items() ])
     else:

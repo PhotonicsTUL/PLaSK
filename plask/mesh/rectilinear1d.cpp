@@ -1,6 +1,7 @@
 #include "rectilinear1d.h"
 
 #include "../utils/stl.h"
+#include "../log/log.h"
 
 namespace plask {
 
@@ -89,7 +90,7 @@ shared_ptr<RectangularAxis> RectilinearAxis::clone() const {
     return make_shared<RectilinearAxis>(*this);
 }
 
-shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader) {
+shared_ptr<RectilinearMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
     auto result = make_shared<RectilinearMesh1D>();
     if (reader.hasAttribute("start")) {
          double start = reader.requireAttribute<double>("start");
@@ -111,6 +112,25 @@ shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader) {
     return result;
 }
 
-static RegisterMeshReader rectilinearmesh1d_reader("rectilinear", readRectilinearMesh1D);
+shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader) {
+    reader.requireTag("axis");
+    auto result = readRectilinearMeshAxis(reader);
+    reader.requireTagEnd();
+    return result;
+}
+
+static RegisterMeshReader rectilinearmesh_reader("rectilinear", readRectilinearMesh1D);
+
+
+// deprecated:
+
+shared_ptr<RectilinearMesh1D> readRectilinearMesh1D_deprecated(XMLReader& reader) {
+    writelog(LOG_WARNING, "Mesh type \"%1%\" is deprecated (will not work in future versions of PLaSK), use \"rectilinear\" instead.", reader.requireAttribute("type"));
+    return readRectilinearMesh1D(reader);
+}
+RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D_deprecated);
+
+
+
 
 }   // namespace plask

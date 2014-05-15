@@ -92,12 +92,12 @@ static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
         dub_check(std::string("<mesh>"), node);
         boost::optional<std::string> type = reader.getAttribute("type");
         if (type) {
-            if (*type == "regular") axis[node[4]-'0'] = readRegularMesh1D(reader);
-            else if (*type == "rectilinear") axis[node[4]-'0'] = readRectilinearMesh1D(reader);
+            if (*type == "regular") axis[node[4]-'0'] = readRegularMeshAxis(reader);
+            else if (*type == "rectilinear") axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
             else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"rectilinear\"");
         } else {
-            if (reader.hasAttribute("start")) axis[node[4]-'0'] = readRegularMesh1D(reader);
-            else axis[node[4]-'0'] = readRectilinearMesh1D(reader);
+            if (reader.hasAttribute("start")) axis[node[4]-'0'] = readRegularMeshAxis(reader);
+            else axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
         }
     }
     reader.requireTagEnd();
