@@ -9,7 +9,7 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     lifetime = 0.1; // [ps]
-    matrixelem = 10.0;
+    matrixelem = 0.0;
     cond_waveguide_depth = 0.26; // [eV]
     vale_waveguide_depth = 0.13; // [eV]
     differenceQuotient = 0.01;  // [%]
@@ -280,8 +280,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
         qstrain *= 1.;
         bstrain *= 1.;
-        writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
-        writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
+        //writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
+        //writelog(LOG_RESULT, "Strain in B: %1%", bstrain);
     }
 
     //writelog(LOG_RESULT, "latt const for QW: %1%", region.materialQW->lattC(T,'a'));
@@ -368,55 +368,70 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         else
         {
             gainModule.przygoblE();
-            if (vhhdepth > 0.)
+            /*for (int i=0; i<gainModule.Get_number_of_electron_levels(); ++i) // TEST
+                writelog(LOG_RESULT, "el_lev: %1%", gainModule.Get_electron_level_depth(i));*/ // TEST
+
+            gainModule.Set_valence_depth(vhhdepth);
+            gainModule.przygoblHH();
+            /*for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i) // TEST
+                writelog(LOG_RESULT, "hh_lev: %1%", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
+            if (bstrain<0.)
             {
-                gainModule.Set_valence_depth(vhhdepth);
-                gainModule.przygoblHH();
-                if (bstrain<0.)
-                {
-                    std::vector<double> tLevHH;
-                    tLevHH.clear();
-                    double tDelEv = bEvhh-bEvlh;
-                    for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i)
-                        tLevHH.push_back(gainModule.Get_heavy_hole_level_from_bottom(i)+tDelEv);
-                    gainModule.przygoblHHc(tLevHH);
-                }
+                std::vector<double> tLevHH;
+                tLevHH.clear();
+                double tDelEv = bEvhh-bEvlh;
+                for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i)
+                    tLevHH.push_back(gainModule.Get_heavy_hole_level_depth(i)+tDelEv);
+                gainModule.przygoblHHc(tLevHH);
+                /*for (int i=0; i<gainModule.Get_number_of_heavy_hole_levels(); ++i) // TEST
+                    writelog(LOG_RESULT, "hh_lev_corr: %1%", gainModule.Get_heavy_hole_level_depth(i));*/ // TEST
             }
-            if (vlhdepth > 0.)
+
+            gainModule.Set_valence_depth(vlhdepth);
+            gainModule.przygoblLH();
+            /*for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i) // TEST
+                    writelog(LOG_RESULT, "lh_lev: %1%", gainModule.Get_light_hole_level_depth(i));*/ // TEST
+            if (bstrain>0.)
             {
-                gainModule.Set_valence_depth(vlhdepth);
-                gainModule.przygoblLH();
-                if (bstrain>0.)
-                {
-                    std::vector<double> tLevLH;
-                    tLevLH.clear();
-                    double tDelEv = bEvhh-bEvlh;
-                    for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i)
-                        tLevLH.push_back(gainModule.Get_light_hole_level_from_bottom(i)-tDelEv);
-                    gainModule.przygoblLHc(tLevLH);
-                }
+                std::vector<double> tLevLH;
+                tLevLH.clear();
+                double tDelEv = bEvhh-bEvlh;
+                for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i)
+                    tLevLH.push_back(gainModule.Get_light_hole_level_depth(i)-tDelEv);
+                gainModule.przygoblLHc(tLevLH);
+                /*for (int i=0; i<gainModule.Get_number_of_light_hole_levels(); ++i) // TEST
+                        writelog(LOG_RESULT, "lh_lev_corr: %1%", gainModule.Get_light_hole_level_depth(i));*/ // TEST
+
             }
         }
-        if ( (qstrain==0.) && (bstrain==0.) )
-        {
+
+        if (qstrain<=0.)
             qEg = qEc-qEvhh;
-            vdepth = vhhdepth;
-        }
-        else if ( (qstrain<0.) && (bstrain==0.) )
-        {
-            qEg = qEc-qEvhh;
-            vdepth = vhhdepth;
-        }
-        else if ( (qstrain>0.) && (bstrain==0.) )
-        {
+        else
             qEg = qEc-qEvlh;
+
+        if ( (qstrain==0.) && (bstrain==0.) )
+            vdepth = vhhdepth;
+        else if ( (qstrain<0.) && (bstrain==0.) )
+            vdepth = vhhdepth;
+        else if ( (qstrain>0.) && (bstrain==0.) )
             vdepth = vlhdepth;
-        }
+        else if ( (qstrain==0.) && (bstrain<0.) )
+            vdepth = vlhdepth;
+        else if ( (qstrain<0.) && (bstrain<0.) )
+            vdepth = qEvhh-bEvlh;
+        else if ( (qstrain>0.) && (bstrain<0.) )
+            vdepth = vlhdepth;
+        else if ( (qstrain==0.) && (bstrain>0.) )
+            vdepth = vhhdepth;
+        else if ( (qstrain<0.) && (bstrain>0.) )
+            vdepth = vhhdepth;
+        else if ( (qstrain>0.) && (bstrain>0.) )
+            vdepth = qEvlh-bEvhh;
     }
 
     gainModule.Set_bandgap(qEg);
     gainModule.Set_valence_depth(vdepth);
-    gainModule.Set_momentum_matrix_element(matrixelem);
 
     if (if_strain == true)
     {
@@ -430,7 +445,6 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         else
             gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwtotallen));
     }
-
     return gainModule;
 }
 

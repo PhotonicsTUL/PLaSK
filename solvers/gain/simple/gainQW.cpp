@@ -1475,12 +1475,9 @@ void gain::przygoblQFL(double iTotalWellH) // LUKASZ
   {
     throw CriticalException("Error in gain module");
   }
-
   double sszer=przel_dlug_z_angstr(iTotalWellH);
-	
   Efc=qFlc_n(sszer);
   Efv=qFlv_n(sszer);
-
   //std::cout << "Quasi Fermi level for electrons = " << Efc << "\n";
   //std::cout << "Quasi Fermi level for holes = " << Efv << "\n";
   ustawione='t';
