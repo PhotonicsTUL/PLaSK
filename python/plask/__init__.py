@@ -22,8 +22,6 @@ Modules
    algorithm
 '''
 
-copyright = "(c) 2013 Lodz University of Technology, Institute of Physics, Photonics Group"
-
 import sys as _sys
 import os as _os
 
@@ -38,11 +36,6 @@ try:
     from ._plask import __globals
 except ImportError:
     pass
-
-banner = '''\
-PLaSK {0} --- Photonic Laser Simulation Kit
-{1}
-'''.format(version, copyright)
 
 ## ## plask.material ## ##
 

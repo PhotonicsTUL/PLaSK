@@ -34,6 +34,7 @@ def _h5_open(filename, group):
         filename = sys.argv[0]
         if filename.endswith('.py'): filename = filename[:-3]
         elif filename.endswith('.xpl'): filename = filename[:-4]
+        elif filename == '': filename = 'console'
         filename += _suffix + '.h5'
     if type(filename) is h5py.File:
         h5file = filename

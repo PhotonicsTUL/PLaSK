@@ -2,7 +2,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-
 #include "python_globals.h"
 #include "python_numpy.h"
 #include <frameobject.h> // for Python traceback
@@ -196,7 +195,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
 
 
     std::string message = py::extract<std::string>(py::str(value));
-    boost::replace_all(message, "\n", " ");
+    boost::replace_all(message, "\n", "\n                ");
 
     std::string error_name = type->tp_name;
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
@@ -367,4 +366,7 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Properties
     register_standard_properties();
+
+    plask::writelog(plask::LOG_INFO, PLASK_BANNER);
+    plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
 }
