@@ -364,7 +364,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     {
         // compute levels
         if (extern_levels)
-            gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
+            gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwlen));// earlier: qwtotallen
         else
         {
             gainModule.przygoblE();
@@ -435,15 +435,15 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (if_strain == true)
     {
-         gainModule.przygoblQFL(region.qwtotallen);
+         gainModule.przygoblQFL(region.qwlen); // earlier: qwtotallen
     }
     else
     {
         // compute levels
         if (extern_levels)
-            gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));
+            gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
         else
-            gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwtotallen));
+            gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
     }
     return gainModule;
 }
@@ -558,7 +558,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
         size_t i = points[j].first;
         const ActiveRegionInfo& region = regions[points[j].second];
         QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
-        gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
+        gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), region.qwlen); // earlier: qwtotallen
     }
 
     if (this->mesh) {
@@ -604,9 +604,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
         size_t i = points[j].first;
         const ActiveRegionInfo& region = regions[points[j].second];
         double gainOnMesh1 = getGainModule(wavelength, TOnMesh[i], (1.-0.5*differenceQuotient) * nOnMesh[i], region)
-            .Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
+            .Get_gain_at_n(nm_to_eV(wavelength), region.qwlen); // earlier: qwtotallen
         double gainOnMesh2 = getGainModule(wavelength, TOnMesh[i], (1.+0.5*differenceQuotient) * nOnMesh[i], region)
-            .Get_gain_at_n(nm_to_eV(wavelength), region.qwtotallen);
+            .Get_gain_at_n(nm_to_eV(wavelength), region.qwlen); // earlier: qwtotallen
         dGdn[i] = (gainOnMesh2 - gainOnMesh1) / (differenceQuotient*nOnMesh[i]);
     }
 
