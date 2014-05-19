@@ -16,7 +16,7 @@ static constexpr int MH = 2; // Hankel function type (1 or 2)
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D> {
+struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>> {
 
     struct FieldZ {
         dcomplex F, B;
@@ -77,7 +77,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         dcomplex rField(double r) const {
             double Jr, Ji, Hr, Hi;
             long nz, ierr;
-            size_t ir = solver->mesh->axis0.findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
+            size_t ir = solver->mesh->axis0->findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
             dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir] - solver->freqv(lam)));
             if (real(x) < 0.) x = -x;
             if (ir == solver->rsize-1) {
@@ -164,7 +164,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Set stripe for computations
     void setStripe(int stripe) {
         if (!mesh) setSimpleMesh();
-        if (stripe < 0 || stripe >= mesh->axis0.size())
+        if (stripe < 0 || stripe >= mesh->axis0->size())
             throw BadInput(getId(), "Wrong stripe number specified");
         rstripe = stripe;
         invalidate();
@@ -173,7 +173,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     /// Get position of the main stripe
     double getStripeR() const {
         if (rstripe == -1 || !mesh) return NAN;
-        return mesh->axis0[rstripe];
+        return mesh->axis0->at(rstripe);
     }
 
     /**
@@ -183,7 +183,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     void setStripeR(double r=0.) {
         if (!mesh) setSimpleMesh();
         if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
-        rstripe = std::lower_bound(mesh->axis0.begin()+1, mesh->axis0.end(), r) - mesh->axis0.begin() - 1;
+        rstripe = std::lower_bound(mesh->axis0->begin()+1, mesh->axis0->end(), r) - mesh->axis0->begin() - 1;
         invalidate();
     }
 
@@ -274,11 +274,11 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(const RectilinearAxis& meshx) {
+    void setHorizontalMesh(shared_ptr<RectangularAxis> meshx) {
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
-        auto meshxy = make_shared<RectilinearMesh2D>(*RectilinearMesh2DSimpleGenerator()(geometry->getChild()));
-        meshxy->tran() = meshx;
+        auto meshxy = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
+        meshxy->setTran(meshx);
         setMesh(meshxy);
     }
 
@@ -498,7 +498,6 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     DataVector<const double> getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
   private:
-    template <typename MeshT>
     bool getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);
 };
 

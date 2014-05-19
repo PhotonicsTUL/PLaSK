@@ -179,6 +179,8 @@ void Manager::loadGrids(XMLReader &reader)
             if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
+            if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "mesh")
+                throw Exception("Internal error in %1% mesh reader, after return reader not point to end of mesh tag.", type);
             meshes[name] = mesh;
         } else if (reader.getNodeName() == "generator") {
             std::string type = reader.requireAttribute("type");
@@ -189,6 +191,8 @@ void Manager::loadGrids(XMLReader &reader)
             if (meshes.find(name) != meshes.end() || generators.find(name) != generators.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
+            if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "generator")
+                throw Exception("Internal error in %1% (method: %2%) mesh generator reader, after return reader not point to end of generator tag.", type, method);
             generators[name] = generator;
         } else
             throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");

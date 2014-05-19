@@ -189,7 +189,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
 
-    RectilinearMesh3D mesh(long_mesh, tran_mesh, axis2, RectilinearMesh3D::ORDER_012);
+    RectangularMesh<3> mesh(make_shared<RegularAxis>(long_mesh), make_shared<RegularAxis>(tran_mesh), make_shared<RectilinearAxis>(axis2), RectangularMesh<3>::ORDER_012);
     double matv = axis2[0]; // at each point along any vertical axis material is the same
 
     double lambda = real(SOLVER->getWavelength());
@@ -328,7 +328,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const RectilinearAxis lmesh, const RectilinearAxis tmesh, InterpolationMethod interp)
+DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, RectilinearAxis lmesh, RectilinearAxis tmesh, InterpolationMethod interp)
 {
     DataVector<Tensor3<dcomplex>> result;
 //     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
@@ -365,23 +365,23 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, con
                         0, nl
                        )
             .execute(reinterpret_cast<dcomplex*>(params.data()));
-        RegularAxis lcmesh, tcmesh;
+        shared_ptr<RegularAxis> lcmesh = make_shared<RegularAxis>(), tcmesh = make_shared<RegularAxis>();
         if (symmetric_long) {
             double dx = 0.5 * (front-back) / nNl;
-            lcmesh.reset(back+dx, front-dx, nNl);
+            lcmesh->reset(back+dx, front-dx, nNl);
         } else {
-            lcmesh.reset(back, front, nNl+1);
+            lcmesh->reset(back, front, nNl+1);
             for (size_t l = 0, last = nl*nNt; l != nNl; ++l) params[last+l] = params[l];
         }
         if (symmetric_tran) {
             double dx = 0.5 * (right-left) / nNt;
-            tcmesh.reset(left+dx, right-dx, nNt);
+            tcmesh->reset(left+dx, right-dx, nNt);
         } else {
-            tcmesh.reset(left, right, nNt+1);
+            tcmesh->reset(left, right, nNt+1);
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
         }
-        RegularMesh3D src_mesh(lcmesh, tcmesh, RegularAxis(0,0,1));
-        RectilinearMesh3D dst_mesh(lmesh, tmesh, RectilinearAxis({0}));
+        RectangularMesh<3> src_mesh(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1));
+        RectangularMesh<3> dst_mesh(make_shared<RectilinearAxis>(std::move(lmesh)), make_shared<RectilinearAxis>(std::move(tmesh)), shared_ptr<RectilinearAxis>(new RectilinearAxis{0}));
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
         result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
 //     }

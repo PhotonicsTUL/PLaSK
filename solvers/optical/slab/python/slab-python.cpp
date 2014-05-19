@@ -218,7 +218,7 @@ void FourierReflection2D_setMirrors(FourierReflection2D& self, py::object value)
 
 
 DataVectorWrap<const Tensor3<dcomplex>,2> FourierReflection2D_getRefractiveIndexProfile(FourierReflection2D& self,
-                const shared_ptr<RectilinearMesh2D>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
+                const shared_ptr<RectangularMesh<2>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
     return DataVectorWrap<const Tensor3<dcomplex>,2>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
 }
 
@@ -286,7 +286,7 @@ shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(Four
 
 
 DataVectorWrap<const Tensor3<dcomplex>,3> FourierReflection3D_getRefractiveIndexProfile(FourierReflection3D& self,
-                const shared_ptr<RectilinearMesh3D>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
+                const shared_ptr<RectangularMesh<3>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
     return DataVectorWrap<const Tensor3<dcomplex>,3>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
 }
 

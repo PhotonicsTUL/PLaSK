@@ -8,8 +8,7 @@
 
 #include <plask/utils/stl.h>
 #include <plask/provider/providerfor.h>
-#include <plask/mesh/rectilinear.h>
-#include <plask/mesh/regular.h>
+#include <plask/mesh/rectangular.h>
 
 namespace plask { namespace python {
 
@@ -638,8 +637,7 @@ namespace detail {
         template <typename DataT>
         static void call(ReceiverT& self, const shared_ptr<Mesh>& mesh, const DataT& data) {
 
-            if (RegisterT::template setValueForMesh< RectilinearMesh2D >(self, mesh, data)) return;
-            if (RegisterT::template setValueForMesh< RegularMesh2D >(self, mesh, data)) return;
+            if (RegisterT::template setValueForMesh< RectangularMesh<2> >(self, mesh, data)) return;
 
             throw TypeError("Data on wrong mesh type for this operation");
         }
@@ -652,8 +650,7 @@ namespace detail {
         template <typename DataT>
         static void call(ReceiverT& self, const shared_ptr<Mesh>& mesh, const DataT& data) {
 
-            if (RegisterT::template setValueForMesh< RectilinearMesh3D >(self, mesh, data)) return;
-            if (RegisterT::template setValueForMesh< RegularMesh3D >(self, mesh, data)) return;
+            if (RegisterT::template setValueForMesh< RectangularMesh<3> >(self, mesh, data)) return;
 
             throw TypeError("Data on wrong mesh type for this operation");
         }

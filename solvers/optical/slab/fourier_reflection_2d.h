@@ -138,7 +138,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
     /**
      * Get refractive index after expansion
      */
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectilinearMesh2D& dst_mesh,
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectangularMesh<2>& dst_mesh,
                                             InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
     /**

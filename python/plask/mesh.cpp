@@ -10,6 +10,24 @@ namespace plask { namespace python {
 
 void register_mesh_rectangular();
 
+template <typename T>
+static bool __nonempty__(const T& self) { return !self.empty(); }
+
+/// Generic declaration of base class of xD mesh generator
+template <int mesh_dim>
+py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
+ExportMeshGenerator(const char* name) {
+   // py::scope scope = parent;
+    //std::string name = py::extract<std::string>(parent.attr("__name__"));
+    std::string nameD = boost::lexical_cast<std::string>(mesh_dim) + "D";
+    py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
+    pyclass(name, ("Base class for all " + nameD +  " mesh generators.").c_str(), py::no_init);
+    pyclass.def("__call__", &MeshGeneratorD<mesh_dim>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
+    pyclass.def("generate", &MeshGeneratorD<mesh_dim>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
+    pyclass.def("clear_cache", &MeshGeneratorD<mesh_dim>::clearCache, "Clear cache of generated meshes");
+    return pyclass;
+}
+
 void register_mesh()
 {
     py_enum<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");
@@ -27,6 +45,7 @@ void register_mesh()
 
     py::class_<Mesh, shared_ptr<Mesh>, boost::noncopyable>("Mesh", "Base class for all meshes", py::no_init)
         .def("__len__", &Mesh::size)
+        .def("__nonzero__", &__nonempty__<Mesh>, "Return True if the mesh is empty")
     ;
 
     py::class_<MeshD<1>, shared_ptr<MeshD<1>>, py::bases<Mesh>, boost::noncopyable> mesh1d("Mesh1D",
@@ -51,9 +70,14 @@ void register_mesh()
         "Base class for all mesh generators", py::no_init)
     ;
 
+    ExportMeshGenerator<1>("Generator1D");
+    ExportMeshGenerator<2>("Generator2D");
+    ExportMeshGenerator<3>("Generator3D");
+
     register_mesh_rectangular();
 
     register_vector_of<RectilinearAxis>("Rectilinear1D");
+
 }
 
 }} // namespace plask::python

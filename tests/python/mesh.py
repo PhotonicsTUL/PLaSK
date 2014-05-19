@@ -13,8 +13,8 @@ import plasktest
 class RectilinearMeshes(unittest.TestCase):
 
     def setUp(self):
-        self.mesh2 = plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
-        self.mesh3 = plask.mesh.Rectilinear3D([1,2,3], [10,20], [100,200])
+        self.mesh2 = plask.mesh.Rectangular2D([1,3,2,1], array([10,20], float))
+        self.mesh3 = plask.mesh.Rectangular3D([1,2,3], [10,20], [100,200])
 
     def testOrdering2D(self):
         m = self.mesh2
@@ -69,13 +69,13 @@ class RectilinearMeshes(unittest.TestCase):
             self.assertEqual( m.minor_index(i),  m.index2(i) )
             self.assertEqual( m.middle_index(i), m.index1(i) )
             self.assertEqual( m.major_index(i),  m.index0(i) )
-        plask.mesh.Rectilinear2D([1,3,2,1], array([10,20], float))
+        plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1,3,2,1]), plask.mesh.Rectilinear(array([10,20], float)))
 
 
     def testBoundary(self):
         self.mesh2.ordering = "10"
         geo = plask.geometry.Cartesian2D(plask.geometry.Rectangle(0,0,None))
-        b = plask.mesh.Rectilinear2D.Left()(self.mesh2, geo)
+        b = plask.mesh.Rectangular2D.Left()(self.mesh2, geo)
         self.assertIn(0, b)
         self.assertNotIn(1, b)
         self.assertIn(3, b)
@@ -91,8 +91,8 @@ class RectilinearMeshes(unittest.TestCase):
         rect = plask.geometry.Rectangle(2, 16, None)
         stack.append(rect)
 
-        generator1 = plask.mesh.Rectilinear2D.SimpleGenerator()
-        generator2 = plask.mesh.Rectilinear2D.DivideGenerator()
+        generator1 = plask.mesh.Rectangular2D.SimpleGenerator()
+        generator2 = plask.mesh.Rectangular2D.DivideGenerator()
         generator2.prediv = 2,2
         generator2.add_refinement("y", rect, 8.)
 
@@ -106,7 +106,7 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
         self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
 
-        generator3 = plask.mesh.Rectilinear2D.DivideGenerator()
+        generator3 = plask.mesh.Rectangular2D.DivideGenerator()
         stack = plask.geometry.Stack2D()
         stack.append(plask.geometry.Rectangle(1000., 5., None))
         stack.append(plask.geometry.Rectangle(1000., 10., None))
@@ -115,7 +115,7 @@ class RectilinearMeshes(unittest.TestCase):
         mesh3 = generator3(stack)
         self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
 
-        generator1d = plask.mesh.Rectilinear1D.DivideGenerator()
+        generator1d = plask.mesh.Rectilinear.DivideGenerator()
         generator1d.postdiv = 2
         shelf = geometry.Shelf2D()
         shelf.append(geometry.Rectangle(1., 1., None))
@@ -157,7 +157,7 @@ class RectilinearMeshes(unittest.TestCase):
         stack = plask.geometry.Stack2D()
         rect = plask.geometry.Rectangle(2, 2, None)
         stack.append(rect)
-        generator = plask.mesh.Rectilinear2D.DivideGenerator()
+        generator = plask.mesh.Rectangular2D.DivideGenerator()
 
         solver = plasktest.SpaceTest()
 
@@ -188,13 +188,13 @@ class RectilinearMeshes(unittest.TestCase):
         test = plasktest.MeshTest()
 
         self.assertFalse(test.rectilinear2d_changed)
-        test.rectilinear2d.axis0 = linspace(0., 10., 11)
+        test.rectilinear2d.axis0 = plask.mesh.Rectilinear(linspace(0., 10., 11))
         self.assertTrue(test.rectilinear2d_changed)
         test.rectilinear2d.axis0.insert(12)
         self.assertTrue(test.rectilinear2d_changed)
         test.rectilinear2d.axis0.extend(linspace(12., 15., 4))
         self.assertTrue(test.rectilinear2d_changed)
-        test.rectilinear2d.axis1 = linspace(0., 10., 11)
+        test.rectilinear2d.axis1 = plask.mesh.Rectilinear(linspace(0., 10., 11))
         self.assertTrue(test.rectilinear2d_changed)
         test.rectilinear2d.axis1.insert(12)
         self.assertTrue(test.rectilinear2d_changed)
@@ -202,15 +202,15 @@ class RectilinearMeshes(unittest.TestCase):
         self.assertTrue(test.rectilinear2d_changed)
 
         self.assertFalse(test.rectilinear3d_changed)
-        test.rectilinear3d.axis0 = linspace(0., 10., 11)
+        test.rectilinear3d.axis0 = plask.mesh.Regular(0., 10., 11)
         self.assertTrue(test.rectilinear3d_changed)
-        test.rectilinear3d.axis1 = linspace(0., 10., 11)
+        test.rectilinear3d.axis1 = plask.mesh.Regular(0., 10., 11)
         self.assertTrue(test.rectilinear3d_changed)
-        test.rectilinear3d.axis2 = linspace(0., 10., 11)
+        test.rectilinear3d.axis2 = plask.mesh.Regular(0., 10., 11)
         self.assertTrue(test.rectilinear3d_changed)
 
         self.assertFalse(test.regular2d_changed)
-        test.regular2d.axis0 = (0., 10., 11)
+        test.regular2d.axis0 = plask.mesh.Regular(0., 10., 11)
         self.assertTrue(test.regular2d_changed)
         test.regular2d.axis0.start = 2.
         self.assertTrue(test.regular2d_changed)

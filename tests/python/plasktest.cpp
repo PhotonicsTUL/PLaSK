@@ -93,8 +93,8 @@ bool compareMaterials(plask::shared_ptr<plask::Material>  m1, plask::shared_ptr<
 
 //// Boundary conditions /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-py::list testBoundary(const plask::RectilinearMesh2D& mesh, const plask::shared_ptr<const plask::GeometryD<2>>& geometry,
-                      const typename plask::RectilinearMesh2D::Boundary& boundary) {
+py::list testBoundary(const plask::RectangularMesh<2>& mesh, const plask::shared_ptr<const plask::GeometryD<2>>& geometry,
+                      const typename plask::RectangularMesh<2>::Boundary& boundary) {
     py::list result;
     for(auto i: boundary(mesh, geometry)) {
         result.append(i);
@@ -105,14 +105,14 @@ py::list testBoundary(const plask::RectilinearMesh2D& mesh, const plask::shared_
 
 //// Solver with space /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectilinearMesh2D> {
+struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::RectangularMesh<2>> {
     bool mesh_changed;
     SpaceTest() : mesh_changed(false) {}
     virtual std::string getClassName() const { return "SpaceTest"; }
     void initialize() {
         initCalculation();
     }
-    virtual void onMeshChange(const typename plask::RectilinearMesh2D::Event& evt) {
+    virtual void onMeshChange(const typename plask::RectangularMesh<2>::Event&) {
         mesh_changed = true;
     }
     bool getMeshChanged() {
@@ -137,12 +137,12 @@ struct SimpleSolver : plask::Solver {
 
     plask::ReceiverFor<plask::LightMagnitude, plask::Geometry2DCartesian> inIntensity;
 
-    plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RegularMesh2D>> outLightMagnitude;
+    plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RectangularMesh<2>>> outLightMagnitude;
 
     plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
 
     std::string showVectors() {
-        plask::RegularMesh2D mesh(plask::RegularAxis(1., 3., 2), plask::RegularAxis(5., 15., 2));
+        plask::RectangularMesh<2> mesh(plask::make_shared<plask::RegularAxis>(1., 3., 2), plask::make_shared<plask::RegularAxis>(5., 15., 2));
         auto data = inVectors(mesh);
         std::stringstream str;
         for (size_t i = 0; i != 4; i++) {
@@ -152,7 +152,7 @@ struct SimpleSolver : plask::Solver {
     }
 
     SimpleSolver() :
-        outLightMagnitude( plask::make_shared<plask::RegularMesh2D>(plask::RegularAxis(0., 4., 3), plask::RegularAxis(0., 20., 3)) )
+        outLightMagnitude( plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(0., 4., 3), plask::make_shared<plask::RegularAxis>(0., 20., 3)) )
     {
         plask::DataVector<double> data(9);
         data[0] = 100.; data[1] = 100.; data[2] = 100.;
@@ -183,10 +183,10 @@ struct InOutSolver : plask::Solver {
 
 struct MeshTest {
 
-    plask::shared_ptr<plask::RectilinearMesh2D> rectilinear2d;
-    plask::shared_ptr<plask::RectilinearMesh3D> rectilinear3d;
-    plask::shared_ptr<plask::RegularMesh2D> regular2d;
-    plask::shared_ptr<plask::RegularMesh3D> regular3d;
+    plask::shared_ptr<plask::RectangularMesh<2>> rectilinear2d;
+    plask::shared_ptr<plask::RectangularMesh<3>> rectilinear3d;
+    plask::shared_ptr<plask::RectangularMesh<2>> regular2d;
+    plask::shared_ptr<plask::RectangularMesh<3>> regular3d;
 
     bool changed_rectilinear2d, changed_rectilinear3d, changed_regular2d, changed_regular3d;
 
@@ -203,9 +203,12 @@ struct MeshTest {
     bool regular3d_changed() { bool r = changed_regular3d; changed_regular3d = false; return r; }
 
     MeshTest():
-        rectilinear2d(plask::make_shared<plask::RectilinearMesh2D>()), rectilinear3d(plask::make_shared<plask::RectilinearMesh3D>()),
-        regular2d(plask::make_shared<plask::RegularMesh2D>()), regular3d(plask::make_shared<plask::RegularMesh3D>()),
-        changed_rectilinear2d(false), changed_rectilinear3d(false), changed_regular2d(false), changed_regular3d(false) {
+        rectilinear2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>())),
+        rectilinear3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>())),
+        regular2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>())),
+        regular3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>())),
+        changed_rectilinear2d(false), changed_rectilinear3d(false),
+        changed_regular2d(false), changed_regular3d(false) {
         rectilinear2d->changedConnectMethod(this, &MeshTest::change_rectilinear2d);
         rectilinear3d->changedConnectMethod(this, &MeshTest::change_rectilinear3d);
         regular2d->changedConnectMethod(this, &MeshTest::change_regular2d);

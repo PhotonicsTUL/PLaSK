@@ -78,12 +78,12 @@ namespace detail {
         }
     };
 
-    template <typename T>
+    /*template <typename T>
     struct Vec1_to_Python {
         static PyObject* convert(Vec<1,T> const& v) {
             return boost::python::incref(boost::python::object(T(v)).ptr());
         }
-    };
+    };*/
 
 }
 
@@ -472,7 +472,7 @@ void register_vectors()
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
-    py::to_python_converter<Vec<1,double>, detail::Vec1_to_Python<double>>();
+    //py::to_python_converter<Vec<1,double>, detail::Vec1_to_Python<double>>();
 
     register_vector_class<2,double>("vec");
     register_vector_class<2,dcomplex>("vec");

@@ -31,7 +31,7 @@ class Averaging_Test(unittest.TestCase):
         self.solver.refine = 16, 16
 
     def testTran(self):
-        msh_tran = mesh.Rectilinear3D([0.25], linspace(0, 1, 46), [0.1])
+        msh_tran = mesh.Rectangular3D(mesh.Rectilinear([0.25]), mesh.Regular(0, 1, 46), mesh.Rectilinear([0.1]))
         prof_tran = self.solver.get_refractive_index_profile(msh_tran, 'nearest')
         self.assertAlmostEqual(prof_tran.array[0,0,0,0], sqrt(2.5), 5)
         self.assertAlmostEqual(prof_tran.array[0,0,0,1], sqrt(1.6), 5)
@@ -57,7 +57,7 @@ class Averaging_Test(unittest.TestCase):
         # ylabel(u'$n_r$')
 
     def testLong(self):
-        msh_long = mesh.Rectilinear3D(linspace(0, 1, 46), [0.25], [0.1])
+        msh_long = mesh.Rectangular3D(mesh.Regular(0, 1, 46), mesh.Rectilinear([0.25]), mesh.Rectilinear([0.1]))
         prof_long = self.solver.get_refractive_index_profile(msh_long, 'nearest')
         self.assertAlmostEqual(prof_long.array[0,0,0,0], sqrt(1.6), 5)
         self.assertAlmostEqual(prof_long.array[0,0,0,1], sqrt(2.5), 5)

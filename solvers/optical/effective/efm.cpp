@@ -8,7 +8,7 @@ namespace plask { namespace solvers { namespace effective {
 #define DLAM 1e-3
 
 EffectiveFrequencyCylSolver::EffectiveFrequencyCylSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DCylindrical, RectilinearMesh2D>(name),
+    SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     rstripe(-1),
@@ -79,16 +79,16 @@ void EffectiveFrequencyCylSolver::loadConfiguration(XMLReader& reader, Manager& 
             else reader.requireTagEnd();
             auto found = manager.meshes.find(*name);
             if (found != manager.meshes.end()) {
-                auto mesh1 = dynamic_pointer_cast<RectilinearMesh1D>(found->second);
-                auto mesh2 = dynamic_pointer_cast<RectilinearMesh2D>(found->second);
-                if (mesh1) this->setHorizontalMesh(mesh1->axis);
+                auto mesh1 = dynamic_pointer_cast<RectangularAxis>(found->second);
+                auto mesh2 = dynamic_pointer_cast<RectangularMesh<2>>(found->second);
+                if (mesh1) this->setHorizontalMesh(mesh1);
                 else if (mesh2) this->setMesh(mesh2);
                 else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
             } else {
                 auto found = manager.generators.find(*name);
                 if (found != manager.generators.end()) {
-                    auto generator1 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh1D>>(found->second);
-                    auto generator2 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh2D>>(found->second);
+                    auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
+                    auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
@@ -218,18 +218,18 @@ void EffectiveFrequencyCylSolver::onInitialize()
     if (!mesh) setSimpleMesh();
 
     // Assign space for refractive indices cache and stripe effective indices
-    rsize = mesh->axis0.size();
-    zsize = mesh->axis1.size() + 1;
+    rsize = mesh->axis0->size();
+    zsize = mesh->axis1->size() + 1;
     zbegin = 0;
 
     if (geometry->isExtended(Geometry::DIRECTION_VERT, false) &&
-        abs(mesh->axis1[0] - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
+        abs(mesh->axis1->at(0) - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
         zbegin = 1;
     if (geometry->isExtended(Geometry::DIRECTION_TRAN, true) &&
-        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
+        abs(mesh->axis0->at(mesh->axis0->size()-1) - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
         --rsize;
     if (geometry->isExtended(Geometry::DIRECTION_VERT, true) &&
-        abs(mesh->axis1[mesh->axis1.size()-1] - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
+        abs(mesh->axis1->at(mesh->axis1->size()-1) - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
         --zsize;
 
     nrCache.assign(rsize, std::vector<dcomplex,aligned_allocator<dcomplex>>(zsize));
@@ -264,10 +264,10 @@ void EffectiveFrequencyCylSolver::updateCache()
         // we need to update something
 
         // Some additional checks
-        for (auto x: mesh->axis0) {
+        for (auto x: *mesh->axis0) {
             if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
         }
-        if (abs(mesh->axis0[0]) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
+        if (abs(mesh->axis0->at(0)) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
         modes.clear();
@@ -282,14 +282,20 @@ void EffectiveFrequencyCylSolver::updateCache()
         double lam1 = lam - h, lam2 = lam + h;
         double i2h = 0.5 / h;
 
-        RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
-        if (rsize == mesh->axis0.size())
-            midmesh.axis0.addPoint(mesh->axis0[mesh->axis0.size()-1] + outdist);
+        shared_ptr<RectilinearAxis> axis0, axis1;
+        {
+            shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
+            axis0 = make_shared<RectilinearAxis>(*midmesh->axis0);
+            axis1 = make_shared<RectilinearAxis>(*midmesh->axis1);
+        }
+        if (rsize == axis0->size())
+            axis0->addPoint(axis0->at(axis0->size()-1) + outdist);
         if (zbegin == 0)
-            midmesh.axis1.addPoint(mesh->axis1[0] - outdist);
-        if (zsize == mesh->axis1.size()+1)
-            midmesh.axis1.addPoint(mesh->axis1[mesh->axis1.size()-1] + outdist);
+            axis1->addPoint(axis1->at(0) - outdist);
+        if (zsize == mesh->axis1->size()+1)
+            axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
 
+        RectangularMesh<2> midmesh(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
         DataVector<double> gain;
@@ -446,7 +452,7 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
 
     dcomplex phas = 1.;
     if (zbegin != 0)
-        phas = exp(I * kz[zbegin] * (mesh->axis1[zbegin]-mesh->axis1[zbegin-1]));
+        phas = exp(I * kz[zbegin] * (mesh->axis1->at(zbegin)-mesh->axis1->at(zbegin-1)));
 
     for (size_t i = zbegin+1; i < zsize; ++i) {
         // Compute shift inside one layer
@@ -464,8 +470,8 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
         s3  = (p*s3-m) * chi;
         s4 *= chi;
         // Compute phase shift for the next step
-        if (i != mesh->axis1.size())
-            phas = exp(I * kz[i] * (mesh->axis1[i]-mesh->axis1[i-1]));
+        if (i != mesh->axis1->size())
+            phas = exp(I * kz[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
 
         // Compute fields
         if (saveto) {
@@ -525,7 +531,7 @@ void EffectiveFrequencyCylSolver::computeStripeNNg(size_t stripe, bool save_inte
     }
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
-        double d = mesh->axis1[i]-mesh->axis1[i-1];
+        double d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
         double weight = 0.;
         dcomplex kz = k0 * sqrt(nrCache[stripe0][i]*nrCache[stripe0][i] - veff * nrCache[stripe0][i]*ngCache[stripe0][i]);
         if (real(kz) < 0.) kz = -kz;
@@ -571,8 +577,8 @@ double EffectiveFrequencyCylSolver::integrateBessel(Mode& mode)
 {
     double sum = 0;
     for (size_t i = 0; i != rsize; ++i) {
-        double start = mesh->axis0[i];
-        double end = (i != rsize-1)? mesh->axis0[i+1] : 3.0 * mesh->axis0[mesh->axis0.size()-1];
+        double start = mesh->axis0->at(i);
+        double end = (i != rsize-1)? mesh->axis0->at(i+1) : 3.0 * mesh->axis0->at(mesh->axis0->size()-1);
         double err = perr;
         mode.rweights[i] = patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
         //TODO use exponential asymptotic approximation to compute weight in the last stripe
@@ -592,7 +598,7 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 
     for (size_t i = rsize-1; i > 0; --i) {
 
-        double r = mesh->axis0[i];
+        double r = mesh->axis0->at(i);
 
         dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
         if (real(x1) < 0.) x1 = -x1;
@@ -739,9 +745,7 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(i
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightMagnitude_Efficient<RectilinearMesh2D>(num, stripe, dst_mesh, results) &&
-        !getLightMagnitude_Efficient<RegularMesh2D>(num, stripe, dst_mesh, results)) {
-
+    if (!getLightMagnitude_Efficient(num, stripe, dst_mesh, results)) {
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
         const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
@@ -763,12 +767,12 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(i
                 error = std::current_exception();
             }
 
-            size_t iz = mesh->axis1.findIndex(z);
+            size_t iz = mesh->axis1->findIndex(z);
             if (iz >= zsize) iz = zsize-1;
             else if (iz < zbegin) iz = zbegin;
             dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
             if (real(kz) < 0.) kz = -kz;
-            z -= mesh->axis1[max(int(iz)-1, 0)];
+            z -= mesh->axis1->at(max(int(iz)-1, 0));
             dcomplex phasz = exp(- I * kz * z);
             val *= zfields[iz].F * phasz + zfields[iz].B / phasz;
 
@@ -781,15 +785,14 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(i
     return results;
 }
 
-template <typename MeshT>
 bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
 {
-    if (dynamic_cast<const MeshT*>(&dst_mesh)) {
+    if (auto rect_mesh_ptr = dynamic_cast<const RectangularMesh<2>*>(&dst_mesh)) {
 
-        const MeshT& rect_mesh = dynamic_cast<const MeshT&>(dst_mesh);
+        const RectangularMesh<2>& rect_mesh = *rect_mesh_ptr;
 
-        std::vector<dcomplex> valr(rect_mesh.axis0.size());
-        std::vector<dcomplex> valz(rect_mesh.axis1.size());
+        std::vector<dcomplex> valr(rect_mesh.axis0->size());
+        std::vector<dcomplex> valz(rect_mesh.axis1->size());
 
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
@@ -798,9 +801,9 @@ bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (size_t idr = 0; idr < rect_mesh.tran().size(); ++idr) {
+            for (size_t idr = 0; idr < rect_mesh.axis0->size(); ++idr) {
                 if (error) continue;
-                double r = rect_mesh.axis0[idr];
+                double r = rect_mesh.axis0->at(idr);
                 if (r < 0.) r = -r;
                 try {
                     valr[idr] = modes[num].rField(r);
@@ -812,32 +815,32 @@ bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t
 
             if (!error) {
                 #pragma omp for
-                for (size_t idz = 0; idz < rect_mesh.vert().size(); ++idz) {
-                    double z = rect_mesh.axis1[idz];
-                    size_t iz = mesh->axis1.findIndex(z);
+                for (size_t idz = 0; idz < rect_mesh.axis1->size(); ++idz) {
+                    double z = rect_mesh.axis1->at(idz);
+                    size_t iz = mesh->axis1->findIndex(z);
                     if (iz >= zsize) iz = zsize-1;
                     else if (iz < zbegin) iz = zbegin;
                     dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
                     if (real(kz) < 0.) kz = -kz;
-                    z -= mesh->axis1[max(int(iz)-1, 0)];
+                    z -= mesh->axis1->at(max(int(iz)-1, 0));
                     dcomplex phasz = exp(- I * kz * z);
                     valz[idz] = zfields[iz].F * phasz + zfields[iz].B / phasz;
                 }
 
-                if (rect_mesh.getIterationOrder() == MeshT::ORDER_NORMAL) {
+                if (rect_mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
                     #pragma omp for
-                    for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                        double* data = results.data() + i1 * rect_mesh.axis0.size();
-                        for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                    for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
+                        double* data = results.data() + i1 * rect_mesh.axis0->size();
+                        for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
                             dcomplex f = valr[i0] * valz[i1];
                             data[i0] = power * abs2(f);
                         }
                     }
                 } else {
                     #pragma omp for
-                    for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                        double* data = results.data() + i0 * rect_mesh.axis1.size();
-                        for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                    for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
+                        double* data = results.data() + i0 * rect_mesh.axis1->size();
+                        for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
                             dcomplex f = valr[i0] * valz[i1];
                             data[i1] = power * abs2(f);
                         }
@@ -867,8 +870,8 @@ DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIn
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t j = 0; j != dst_mesh.size(); ++j) {
         auto point = target_mesh[j];
-        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
-        size_t iz = this->mesh->axis1.findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
+        size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+        size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
         result[j] = Tensor3<dcomplex>(nrCache[ir][iz]);
     }
     return result;
@@ -892,8 +895,8 @@ DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& ds
     auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     for (size_t j = 0; j != result.size(); ++j) {
         auto point = mat_mesh[j];
-        size_t ir = this->mesh->axis0.findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
-        size_t iz = this->mesh->axis1.findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
+        size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+        size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
         double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
         result[j] *= absp;
     }

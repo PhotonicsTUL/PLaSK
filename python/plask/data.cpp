@@ -3,8 +3,7 @@
 #include "python_numpy.h"
 
 #include <plask/mesh/mesh.h>
-#include <plask/mesh/rectilinear.h>
-#include <plask/mesh/regular.h>
+#include <plask/mesh/rectangular.h>
 #include <plask/data.h>
 #include <plask/vec.h>
 
@@ -36,21 +35,18 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
 
 
-    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh2D& mesh) { return { mesh.axis0.size(), mesh.axis1.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RectilinearMesh3D& mesh) { return { mesh.axis0.size(), mesh.axis1.size(), mesh.axis2.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RegularMesh2D& mesh) { return { mesh.axis0.size(), mesh.axis1.size() }; }
-    inline static std::vector<npy_intp> mesh_dims(const RegularMesh3D& mesh) { return { mesh.axis0.size(), mesh.axis1.size(), mesh.axis2.size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) { return { mesh.axis0->size(), mesh.axis1->size() }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) { return { mesh.axis0->size(), mesh.axis1->size(), mesh.axis2->size() }; }
 
-
-    template <typename T, typename Mesh1D>
-    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2,Mesh1D>& mesh, size_t nd) {
+    template <typename T>
+    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
         std::vector<npy_intp> strides(nd);
         strides.back() = sizeof(T) / type_dim<T>();
-        if (mesh.getIterationOrder() == RectangularMesh<2,Mesh1D>::ORDER_NORMAL) {
+        if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             strides[0] = sizeof(T);
-            strides[1] = mesh.axis0.size() * sizeof(T);
+            strides[1] = mesh.axis0->size() * sizeof(T);
         } else {
-            strides[0] = mesh.axis1.size() * sizeof(T);
+            strides[0] = mesh.axis1->size() * sizeof(T);
             strides[1] = sizeof(T);
         }
         return strides;
@@ -58,15 +54,15 @@ namespace detail {
 
     #define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(MeshT, first, second, third) \
         case MeshT::ORDER_##first##second##third: \
-            strides[first] = mesh.axis##second.size() * mesh.axis##third.size() * sizeof(T); \
-            strides[second] = mesh.axis##third.size() * sizeof(T); \
+            strides[first] = mesh.axis##second->size() * mesh.axis##third->size() * sizeof(T); \
+            strides[second] = mesh.axis##third->size() * sizeof(T); \
             strides[third] = sizeof(T); \
             break;
 
-    template <typename T, typename Mesh1D>
-    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3,Mesh1D>& mesh, size_t nd) {
+    template <typename T>
+    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3>& mesh, size_t nd) {
         std::vector<npy_intp> strides(nd, sizeof(T)/type_dim<T>());
-        typedef RectangularMesh<3,Mesh1D> Mesh3D;
+        typedef RectangularMesh<3> Mesh3D;
         switch (mesh.getIterationOrder()) {
             ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0,1,2)
             ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0,2,1)
@@ -174,13 +170,11 @@ static py::object DataVectorWrap_Array(py::object oself) {
 
     if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
 
-    PyObject* arr = DataVectorWrap_ArrayImpl<T, RectilinearMesh2D>(self);
-    if (!arr) arr = DataVectorWrap_ArrayImpl<T, RectilinearMesh3D>(self);
-    if (!arr) arr = DataVectorWrap_ArrayImpl<T, RegularMesh2D>(self);
-    if (!arr) arr = DataVectorWrap_ArrayImpl<T, RegularMesh3D>(self);
+    PyObject* arr = DataVectorWrap_ArrayImpl<T, RectangularMesh<2>>(self);
+    if (!arr) arr = DataVectorWrap_ArrayImpl<T, RectangularMesh<3>>(self);
 
     if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for %1%)",
-                                        (dim == 2)? "mesh.RegularMesh2D or mesh.RectilinearMesh2D" : "mesh.RegularMesh3D or mesh.RectilinearMesh3D");
+                                        (dim == 2)? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
 
     py::incref(oself.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr()); // Make sure the data vector stays alive as long as the array
@@ -210,7 +204,7 @@ namespace detail {
         auto mesh_strides = detail::mesh_strides<T>(mesh, nd);
         for (size_t i = 0; i != nd; ++i)
             if (mesh_strides[i] != PyArray_STRIDES(arr)[i])
-                throw ValueError("Stride %1% for the array do not correspond to the current mesh ordering", i);
+                throw ValueError("Stride %1% for the array do not correspond to the current mesh ordering (stride: mesh: %2%, array: %3%)", i, mesh_strides[i], PyArray_STRIDES(arr)[i]);
 
         return mesh.size();
     }
@@ -226,13 +220,11 @@ namespace detail {
 
         size_t size;
 
-        auto regular = dynamic_pointer_cast<RectangularMesh<dim,RegularAxis>>(mesh);
-        auto rectilinear = dynamic_pointer_cast<RectangularMesh<dim,RectilinearAxis>>(mesh);
+        auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
 
         if (PyArray_NDIM(arr) != 1) {
 
-            if (regular) size = checkMeshAndArray<T, RectangularMesh<dim,RegularAxis>>(arr, *regular);
-            else if (rectilinear) size = checkMeshAndArray<T, RectangularMesh<dim,RectilinearAxis>>(arr, *rectilinear);
+            if (rectangular) size = checkMeshAndArray<T, RectangularMesh<dim>>(arr, *rectangular);
             else throw TypeError("For this mesh type only one-dimensional array is allowed");
 
         } else
@@ -381,7 +373,7 @@ void register_data_vector() {
             "The vector components are stored in this dimention.\n\n"
 
             "Example:\n"
-            "    >>> msh = plask.mesh.Rectilinear2D([1, 2], [10, 20])\n"
+            "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]), plask.mesh.Rectilinear([10, 20]))\n"
             "    >>> dat = Data(array([[[1., 0.], [2., 0.]], [[3., 1.], [4., 1.]]]), msh)\n"
             "    >>> dat.array[:,:,0]\n"
             "    array([[1., 2.],\n"
@@ -459,7 +451,7 @@ void register_data_vectors() {
             "Examples:\n"
             "    To create the data from the flat sequential array:\n\n"
 
-            "    >>> msh = plask.mesh.Rectilinear2D([1, 2, 3], [10, 20])\n"
+            "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2, 3]), plask.mesh.Rectilinear([10, 20]))\n"
             "    >>> Data(array([1., 2., 3., 4., 5., 6.]), msh)\n"
             "    <plask.Data at 0x4698938>\n\n"
 

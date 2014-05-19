@@ -69,9 +69,9 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     determineQwWidth();
 
     // reset mesh to original value
-    current_mesh() = this->mesh->axis;
+    current_mesh() = *this->mesh;
     z = getZQWCoordinate();
-    mesh2.axis1 = plask::RegularAxis(z, z, 1);
+    *mesh2.axis1 = plask::RegularAxis(z, z, 1);
     if (current_mesh().size() % 2 == 0) current_mesh().reset(current_mesh().first(), current_mesh().last(), current_mesh().size()+1);
 
     n_present.reset(current_mesh().size(), 0.0);
@@ -105,6 +105,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     int mesh_changes = 0;
     bool convergence = true;
 
+    auto& current_mesh = this->current_mesh();
     do
     {
         if(!convergence)
@@ -112,15 +113,15 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
                 throw ComputationError(this->getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
-            size_t new_size = 2.0 * current_mesh().size() - 1;
+            size_t new_size = 2.0 * current_mesh.size() - 1;
             writelog(LOG_DETAIL, "Refining mesh (new size: %1%)", new_size);
-            current_mesh().reset(current_mesh().first(), current_mesh().last(), new_size);
+            current_mesh.reset(current_mesh.first(), current_mesh.last(), new_size);
             T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
 
             auto old_n = n_present;
             size_t nm = old_n.size()-1;
-            n_present.reset(current_mesh().size(), 0.0);
+            n_present.reset(current_mesh.size(), 0.0);
             // n in new points is average of the surrounding ones
             for (size_t i = 0; i != nm; ++i) {
                 n_present[2*i] = old_n[i];
@@ -269,10 +270,10 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         wavelength = real(inWavelength(n));
                         write_debug("wavelength: %1% nm", wavelength);
 
-                        plask::RectilinearMesh2D mesh_Li;         ///< Computational Light intensity mesh
+                        plask::RectangularMesh<2> mesh_Li;         ///< Computational Light intensity mesh
 
-                        mesh_Li.axis0 = current_mesh();
-                        mesh_Li.axis1 = plask::RectilinearAxis(getZQWCoordinates());
+                        mesh_Li.setAxis0(current_mesh_ptr());
+                        mesh_Li.setAxis1(make_shared<plask::RectilinearAxis>(getZQWCoordinates()));
 
 //                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
                         auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);
@@ -410,10 +411,11 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double j1 = 0.0;
         double j2 = 0.0;
 
-        for (int i = 0; i < current_mesh().size() - 1; i++) // loop over all elements
+        auto& current_mesh = this->current_mesh();
+        for (int i = 0; i < current_mesh.size() - 1; i++) // loop over all elements
         {
-            r1 = current_mesh()[i]*1e-4;
-            r2 = current_mesh()[i+1]*1e-4;
+            r1 = current_mesh[i]*1e-4;
+            r2 = current_mesh[i+1]*1e-4;
 
             j1 = abs(j_on_the_mesh[i][1]*1e+3);
             j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
@@ -444,10 +446,11 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
         double p3e = 0.0;
 
-        for (int i = 0; i < (current_mesh().size() - 1)/2; i++) // loop over all elements
+        auto& current_mesh = this->current_mesh();
+        for (int i = 0; i < (current_mesh.size() - 1)/2; i++) // loop over all elements
         {
-            r1 = current_mesh()[2*i]*1e-4;
-            r3 = current_mesh()[2*i + 2]*1e-4;
+            r1 = current_mesh[2*i]*1e-4;
+            r3 = current_mesh[2*i + 2]*1e-4;
 
             K = this->K(2*i + 1);
             F = this->F(2*i + 1);
@@ -505,10 +508,11 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double j1 = 0.0;
         double j2 = 0.0;
 
-        for (int i = 0; i < current_mesh().size() - 1; i++) // loop over all elements
+        auto& current_mesh = this->current_mesh();
+        for (int i = 0; i < current_mesh.size() - 1; i++) // loop over all elements
         {
-            r1 = current_mesh()[i]*1e-4;
-            r2 = current_mesh()[i+1]*1e-4;
+            r1 = current_mesh[i]*1e-4;
+            r2 = current_mesh[i+1]*1e-4;
 
             j1 = abs(j_on_the_mesh[i][1]*1e+3);
             j2 = abs(j_on_the_mesh[i+1][1]*1e+3);
@@ -541,10 +545,11 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double k13e = 0.0, k23e = 0.0, k33e = 0.0;  // local stiffness matrix elements
         double p3e = 0.0;
 
-        for (int i = 0; i < (current_mesh().size() - 1)/2; i++) // loop over all elements
+        auto& current_mesh = this->current_mesh();
+        for (int i = 0; i < (current_mesh.size() - 1)/2; i++) // loop over all elements
         {
-            r1 = current_mesh()[2*i]*1e-4;
-            r3 = current_mesh()[2*i + 2]*1e-4;
+            r1 = current_mesh[2*i]*1e-4;
+            r3 = current_mesh[2*i + 2]*1e-4;
 
             K = this->K(2*i + 1);
             F = this->F(2*i + 1);
@@ -657,12 +662,13 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     double n_second_deriv = 0.0;     // second derivative with respect to r
     double dr = 0.0;
 
+    auto& current_mesh = this->current_mesh();
     if (fem_method != FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
-        dr = (current_mesh().last() - current_mesh().first())*1e-4/(double)current_mesh().size();
+        dr = (current_mesh.last() - current_mesh.first())*1e-4/(double)current_mesh.size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
 
-        if ( (i > 0) && (i <  current_mesh().size() - 1) )     // middle of the range
+        if ( (i > 0) && (i <  current_mesh.size() - 1) )     // middle of the range
         {
             n_right = n_present[i+1];
             n_left = n_present[i-1];
@@ -671,7 +677,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(current_mesh()[i]*1e-4);
 
             if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(current_mesh()[i]*1e-4) * (n_right - n_left) / (2*dr);
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(current_mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
         }
         else if (i == 0)     // punkt r = 0
         {
@@ -690,16 +696,16 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(current_mesh()[i]*1e-4);
 
             if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
-                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(current_mesh()[i]*1e-4) * (n_right - n_left) / (2*dr);
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(current_mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
         }
     }
     else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
-        dr = (current_mesh()[i+1] - current_mesh()[i-1])*1e-4;
+        dr = (current_mesh[i+1] - current_mesh[i-1])*1e-4;
         n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/(dr*dr));
 
         if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
-            n_second_deriv += (1.0/(current_mesh()[i]*1e-4)) * (1.0/dr) * (n_present[i+1] - n_present[i-1]); // adding cylindrical component of laplace operator
+            n_second_deriv += (1.0/(current_mesh[i]*1e-4)) * (1.0/dr) * (n_present[i+1] - n_present[i-1]); // adding cylindrical component of laplace operator
     }
 
     return n_second_deriv;
@@ -746,8 +752,8 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::detectQuantumWells()
 {
-    shared_ptr<RectilinearMesh2D> grid = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild());
-    shared_ptr<RectilinearMesh2D> points = grid->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> grid = RectilinearMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
+    shared_ptr<RectangularMesh<2>> points = grid->getMidpointsMesh();
 
     std::vector<Box2D> results;
 
@@ -755,11 +761,11 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     double left = 0., right = 0.;
     bool foundQW = false;
     bool had_active = false, after_active = false;
-    for (int r = 0; r < points->axis1.size(); ++r)
+    for (int r = 0; r < points->axis1->size(); ++r)
     {
         bool inQW = false;
         bool active_row = false;
-        for (int c = 0; c < points->axis0.size(); ++c)
+        for (int c = 0; c < points->axis0->size(); ++c)
         {
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
@@ -771,7 +777,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             {
                 if (foundQW)
                 {
-                    if (left != grid->axis0[c])
+                    if (left != grid->axis0->at(c))
                         throw Exception("%1%: Left edge of quantum wells not vertically aligned.", this->getId());
                     if (*this->geometry->getMaterial(point) != *QW_material)
                         throw Exception("%1%: Quantum wells of multiple materials not supported.", this->getId());
@@ -780,15 +786,15 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
                 {
                     QW_material = this->geometry->getMaterial(point);
                 }
-                left = grid->axis0[c];
+                left = grid->axis0->at(c);
                 inQW = true;
             }
             if (!QW && inQW)        // QW end
             {
-                if (foundQW && right != grid->axis0[c])
+                if (foundQW && right != grid->axis0->at(c))
                     throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
-                right = grid->axis0[c];
-                results.push_back(Box2D(left, grid->axis1[r], right, grid->axis1[r+1]));
+                right = grid->axis0->at(c);
+                results.push_back(Box2D(left, grid->axis1->at(r), right, grid->axis1->at(r+1)));
                 foundQW = true;
                 inQW = false;
             }
@@ -799,10 +805,10 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
         }
         if (inQW)
         { // handle situation when QW spans to the end of the structure
-            if (foundQW && right != grid->axis0[points->axis0.size()])
+            if (foundQW && right != grid->axis0->at(points->axis0->size()))
                 throw Exception("%1%: Right edge of quantum wells not vertically aligned.", this->getId());
-            right = grid->axis0[points->axis0.size()];
-            results.push_back(Box2D(left, grid->axis1[r], right, grid->axis1[r+1]));
+            right = grid->axis0->at(points->axis0->size());
+            results.push_back(Box2D(left, grid->axis1->at(r), right, grid->axis1->at(r+1)));
             foundQW = true;
             inQW = false;
         }
@@ -865,7 +871,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width *= 1e-4;
 }
 
-template<typename Geometry2DType> plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::DataVector<const double> initLi, plask::RectilinearMesh2D mesh_Li)
+template<typename Geometry2DType> plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::DataVector<const double> initLi, plask::RectangularMesh<2> mesh_Li)
 {
     plask::DataVector<double> Li(current_mesh().size());
 

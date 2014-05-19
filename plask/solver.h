@@ -415,7 +415,7 @@ import plask.optical.fd
 
 solver = plask.optical.fd.FiniteDifferencesCartesian2D()
 solver.geometry = plask.geometry.Geometry2DCartesian(plask.geometry.Rectangle(2, 1, "GaN"))
-solver.mesh = plask.mesh.RectilinearMesh2D(numpy.linspace(0,2), numpy.linspace(0,1))
+solver.mesh = plask.mesh.Rectangular2D(Regular(0,2,100), Regular(0,1,100))
 solver.inTemperature = 280
 solver.compute()
 print(solver.outNeff())
@@ -594,7 +594,7 @@ class Solver {
 extern "C" typedef Solver* solver_construct_f(const std::string& name);
 
 
-template <typename, typename> class SolverWithMesh;
+template <typename, typename> struct SolverWithMesh;
 
 /**
  * Base class for all solvers operating on specified space
@@ -672,9 +672,14 @@ class SolverOver: public Solver {
  * Base class for all solvers operating on specified olding an external mesh
  */
 template <typename SpaceT, typename MeshT>
-class SolverWithMesh: public SolverOver<SpaceT> {
+struct SolverWithMesh: public SolverOver<SpaceT> {
 
-    shared_ptr<MeshGeneratorOf<MeshT>> mesh_generator;
+    /// Type of the mesh for this solver
+    typedef MeshT MeshType;
+
+private:
+
+    shared_ptr<MeshGeneratorD<MeshT::DIM>> mesh_generator;
 
     void disconnectMesh() {
         if (this->mesh)
@@ -689,7 +694,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
 
     void regenerateMesh() {
         if (this->mesh_generator && this->geometry) {
-            auto mesh = (*mesh_generator)(this->geometry->getChild());
+            auto mesh = mesh_generator->template get<MeshType>(this->geometry->getChild());
             if (mesh == this->mesh) return;
             disconnectMesh();
             this->mesh = mesh;
@@ -703,7 +708,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * This method is called when the mesh generator is changed.
      * @param evt information about mesh changes
      */
-    void onGeneratorChange(const typename MeshGeneratorOf<MeshT>::Event& evt) {
+    void onGeneratorChange(const typename MeshGenerator::Event&) {
         regenerateMesh();
     }
 
@@ -713,9 +718,6 @@ class SolverWithMesh: public SolverOver<SpaceT> {
     shared_ptr<MeshT> mesh;
 
   public:
-
-    /// Type of the mesh for this solver
-    typedef MeshT MeshType;
 
     SolverWithMesh(const std::string& name="") : SolverOver<SpaceT>(name) {}
 
@@ -782,7 +784,7 @@ class SolverWithMesh: public SolverOver<SpaceT> {
      * Set new mesh got from generator
      * \param generator mesh generator
      */
-    void setMesh(const shared_ptr<MeshGeneratorOf<MeshT>>& generator) {
+    void setMesh(shared_ptr<MeshGeneratorD<MeshT::DIM>> generator) {
         clearGenerator();
         this->writelog(LOG_INFO, "Attaching mesh generator to solver");
         mesh_generator = generator;
@@ -843,7 +845,7 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
         else {
             auto found = manager.generators.find(*name);
             if (found != manager.generators.end()) {
-                auto generator = dynamic_pointer_cast<MeshGeneratorOf<MeshT>>(found->second);
+                auto generator = dynamic_pointer_cast<MeshGeneratorD<MeshT::DIM>>(found->second);
                 if (!generator) throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
                 this->setMesh(generator);
             } else

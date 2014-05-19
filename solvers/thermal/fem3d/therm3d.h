@@ -38,7 +38,7 @@ enum Algorithm {
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, RectilinearMesh3D> {
+struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
 
@@ -63,17 +63,17 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
      **/
     template <typename MatrixT>
     void setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,Radiation>& bradiation
                   );
 
     /**
      * Apply boundary conditions of the first kind
      */
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature);
 
     /// Update stored temperatures and calculate corrections
     double saveTemperatures(DataVector<double>& T);
@@ -111,10 +111,10 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
     size_t logfreq;   ///< Frequency of iteration progress reporting
 
     // Boundary conditions
-    BoundaryConditions<RectilinearMesh3D,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
-    BoundaryConditions<RectilinearMesh3D,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
-    BoundaryConditions<RectilinearMesh3D,Convection> convection_boundary;   ///< Boundary condition of convection
-    BoundaryConditions<RectilinearMesh3D,Radiation> radiation_boundary;     ///< Boundary condition of radiation
+    BoundaryConditions<RectangularMesh<3>,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<3>,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
+    BoundaryConditions<RectangularMesh<3>,Convection> convection_boundary;   ///< Boundary condition of convection
+    BoundaryConditions<RectangularMesh<3>,Radiation> radiation_boundary;     ///< Boundary condition of radiation
 
     typename ProviderFor<Temperature,Geometry3D>::Delegate outTemperature;
 

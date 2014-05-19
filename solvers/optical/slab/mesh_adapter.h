@@ -82,13 +82,13 @@ struct LevelMeshAdapterGeneric: public LevelMeshAdapter<dim>
 };
 
 
-template <int dim, typename AxisT> struct LevelMeshAdapterRectangular;
+template <int dim> struct LevelMeshAdapterRectangular;
 
 /// More efficient Rectangular2D implementation of the level adapter
-template <typename AxisT>
-struct LevelMeshAdapterRectangular<2,AxisT>: public LevelMeshAdapter<2>
+template<>
+struct LevelMeshAdapterRectangular<2>: public LevelMeshAdapter<2>
 {
-    typedef RectangularMesh<2,AxisT> RectangularT;
+    typedef RectangularMesh<2> RectangularT;
 
   protected:
     /// Original mesh
@@ -104,28 +104,28 @@ struct LevelMeshAdapterRectangular<2,AxisT>: public LevelMeshAdapter<2>
         size_t idx;
         Generator(const RectangularT* src): src(src), idx(0) {}
         virtual std::unique_ptr<LevelMeshAdapter<2>> yield() override {
-            if (idx == src->axis1.size()) return std::unique_ptr<LevelMeshAdapter<2>>();
-            return std::unique_ptr<LevelMeshAdapter<2>>(new LevelMeshAdapterRectangular<2,AxisT>(src, idx++));
+            if (idx == src->axis1->size()) return std::unique_ptr<LevelMeshAdapter<2>>();
+            return std::unique_ptr<LevelMeshAdapter<2>>(new LevelMeshAdapterRectangular<2>(src, idx++));
         }
     };
 
     /// Create mesh adapter
     LevelMeshAdapterRectangular(const RectangularT* src, size_t vert): src(src), vert(vert) {}
 
-    virtual std::size_t size() const override { return src->axis0.size(); }
+    virtual std::size_t size() const override { return src->axis0->size(); }
 
     virtual plask::Vec<2> at(std::size_t i) const override { return src->at(i, vert); }
 
     virtual size_t index(size_t i) const override { return src->index(i, vert); }
 
-    virtual double vpos() const override { return src->axis1[vert]; }
+    virtual double vpos() const override { return src->axis1->at(vert); }
 };
 
 /// More efficient Rectangular3D implementation of the level adapter
-template <typename AxisT>
-struct LevelMeshAdapterRectangular<3,AxisT>: public LevelMeshAdapter<3>
+template<>
+struct LevelMeshAdapterRectangular<3>: public LevelMeshAdapter<3>
 {
-    typedef RectangularMesh<3,AxisT> RectangularT;
+    typedef RectangularMesh<3> RectangularT;
 
   protected:
     /// Original mesh
@@ -141,21 +141,21 @@ struct LevelMeshAdapterRectangular<3,AxisT>: public LevelMeshAdapter<3>
         size_t idx;
         Generator(const RectangularT* src): src(src), idx(0) {}
         virtual std::unique_ptr<LevelMeshAdapter<3>> yield() override {
-            if (idx == src->axis2.size()) return std::unique_ptr<LevelMeshAdapter<3>>();
-            return std::unique_ptr<LevelMeshAdapter<3>>(new LevelMeshAdapterRectangular<3,AxisT>(src, idx++));
+            if (idx == src->axis2->size()) return std::unique_ptr<LevelMeshAdapter<3>>();
+            return std::unique_ptr<LevelMeshAdapter<3>>(new LevelMeshAdapterRectangular<3>(src, idx++));
         }
     };
 
     /// Create mesh adapter
     LevelMeshAdapterRectangular(const RectangularT* src, size_t vert): src(src), vert(vert) {}
 
-    virtual std::size_t size() const override { return src->axis0.size() * src->axis1.size(); }
+    virtual std::size_t size() const override { return src->axis0->size() * src->axis1->size(); }
 
-    virtual plask::Vec<3> at(std::size_t i) const override { return src->at(i % src->axis0.size(), i / src->axis0.size(), vert); }
+    virtual plask::Vec<3> at(std::size_t i) const override { return src->at(i % src->axis0->size(), i / src->axis0->size(), vert); }
 
-    virtual size_t index(size_t i) const override { return src->index(i % src->axis0.size(), i / src->axis0.size(), vert); }
+    virtual size_t index(size_t i) const override { return src->index(i % src->axis0->size(), i / src->axis0->size(), vert); }
 
-    virtual double vpos() const override { return src->axis2[vert]; }
+    virtual double vpos() const override { return src->axis2->at(vert); }
 };
 
 
@@ -163,13 +163,9 @@ template <int dim>
 std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> LevelsGenerator(const MeshD<dim>& src)
 {
     typedef std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> ReturnT;
-    typedef RectangularMesh<dim,RectilinearAxis> RectilinearMesh;
-    typedef RectangularMesh<dim,RegularAxis> RegularMesh;
 
-    if (auto mesh = dynamic_cast<const RegularMesh*>(&src))
-        return ReturnT(new typename LevelMeshAdapterRectangular<dim,RegularAxis>::Generator(mesh));
-    if (auto mesh = dynamic_cast<const RectilinearMesh*>(&src))
-        return ReturnT(new typename LevelMeshAdapterRectangular<dim,RectilinearAxis>::Generator(mesh));
+    if (auto mesh = dynamic_cast<const RectangularMesh<dim>*>(&src))
+        return ReturnT(new typename LevelMeshAdapterRectangular<dim>::Generator(mesh));
     return ReturnT(new typename LevelMeshAdapterGeneric<dim>::Generator(&src));
 }
 

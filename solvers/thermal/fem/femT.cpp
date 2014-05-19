@@ -4,7 +4,7 @@ namespace plask { namespace solvers { namespace thermal {
 
 template<typename Geometry2DType>
 FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2DSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DType, RectilinearMesh2D>(name),
+    SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
     loopno(0),
     outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes),
@@ -99,7 +99,7 @@ enum BoundarySide { LEFT, RIGHT, TOP, BOTTOM };
     * \param Kmn_function function returning stiffness matrix off-diagonal component
     */
 template <typename ConditionT>
-static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,ConditionT>& boundary_conditions,
+static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>,ConditionT>& boundary_conditions,
                           size_t i1, size_t i2, size_t i3, size_t i4, double width, double height,
                           double& F1, double& F2, double& F3, double& F4,
                           double& K11, double& K22, double& K33, double& K44,
@@ -138,10 +138,10 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh2D,Con
 
 template<> template<typename MatrixT>
 void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Radiation>& bradiation
                   )
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
@@ -267,10 +267,10 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
 
 template<> template<typename MatrixT>
 void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectilinearMesh2D,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Radiation>& bradiation
                   )
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
@@ -438,7 +438,7 @@ double FiniteElementMethodThermal2DSolver<Geometry2DType>::doCompute(int loops)
     this->writelog(LOG_INFO, "Running thermal calculations");
 
     int loop = 0;
-    MatrixT A(size, this->mesh->minorAxis().size());
+    MatrixT A(size, this->mesh->minorAxis()->size());
 
     double err = 0.;
     toterr = 0.;
@@ -625,9 +625,9 @@ DataVector<const Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DT
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        size_t x = std::upper_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
-        size_t y = std::upper_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
-        if (x == 0 || y == 0 || x == this->mesh->axis0.size() || y == this->mesh->axis1.size())
+        size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
+        size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
+        if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
             result[i] = Tensor2<double>(NAN);
         else {
             size_t idx = element_mesh->index(x-1, y-1);

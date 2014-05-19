@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
 template<typename Geometry2DType>
-class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometry2DType,plask::RegularMesh1D>
+class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometry2DType, plask::RegularMesh1D>
 {
     public:
         enum FemMethod {
@@ -60,16 +60,21 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         void compute_threshold();
         void compute_overthreshold();
 
-        plask::RegularAxis& current_mesh()
+        plask::shared_ptr<plask::RectangularAxis> current_mesh_ptr()
         {
             return mesh2.axis0;
+        }
+
+        plask::RegularAxis& current_mesh()
+        {
+            return *static_cast<plask::RegularAxis*>(mesh2.axis0.get());
         }
 
         double burning_integral(void);  // całka strat nadprogu
 
     protected:
 
-        plask::RegularMesh2D mesh2;         ///< Computational mesh
+        plask::RectangularMesh<2> mesh2;         ///< Computational mesh
 
         static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi
 
@@ -143,7 +148,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         double getZQWCoordinate();
         std::vector<double> getZQWCoordinates();
 
-        plask::DataVector<const double> averageLi(plask::DataVector<const double>, plask::RectilinearMesh2D mesh_Li);
+        plask::DataVector<const double> averageLi(plask::DataVector<const double>, plask::RectangularMesh<2> mesh_Li);
 
         virtual void onInitialize();
         virtual void onInvalidate();

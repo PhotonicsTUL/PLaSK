@@ -24,7 +24,7 @@ template <typename GeometryT>
 void SlabSolver<GeometryT>::prepareLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
-    vbounds = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild())->vert();
+    vbounds = *RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
 
@@ -32,7 +32,7 @@ template <>
 void SlabSolver<Geometry3D>::prepareLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
-    vbounds = RectilinearMesh3DSimpleGenerator()(this->geometry->getChild())->vert();
+    vbounds = *RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->vert();
     //TODO consider geometry objects non-uniform in vertical direction (step approximation)
 }
 
@@ -43,7 +43,7 @@ void SlabSolver<GeometryT>::setupLayers()
 
     if (vbounds.empty()) prepareLayers();
 
-    auto points = RectilinearMesh2DSimpleGenerator()(this->geometry->getChild())->getMidpointsMesh();
+    auto points = make_rectilinear_mesh(RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->getMidpointsMesh());
 
     struct LayerItem {
         shared_ptr<Material> material;
@@ -55,20 +55,20 @@ void SlabSolver<GeometryT>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    points->axis1.addPoint(vbounds[0] - outdist);
-    points->axis1.addPoint(vbounds[vbounds.size()-1] + outdist);
+    static_pointer_cast<RectilinearAxis>(points->axis1)->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<RectilinearAxis>(points->axis1)->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lverts.clear();
     lgained.clear();
     stack.clear();
-    stack.reserve(points->axis1.size());
+    stack.reserve(points->axis1->size());
 
-    for (auto v: points->axis1) {
+    for (auto v: *points->axis1) {
         bool gain = false;
 
-        std::vector<LayerItem> layer(points->axis0.size());
-        for (size_t i = 0; i != points->axis0.size(); ++i) {
-            Vec<2> p(points->axis0[i], v);
+        std::vector<LayerItem> layer(points->axis0->size());
+        for (size_t i = 0; i != points->axis0->size(); ++i) {
+            Vec<2> p(points->axis0->at(i), v);
             layer[i].material = this->geometry->getMaterial(p);
             for (const std::string& role: this->geometry->getRolesAt(p)) {
                 if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
@@ -107,7 +107,7 @@ void SlabSolver<Geometry3D>::setupLayers()
 {
     if (vbounds.empty()) prepareLayers();
 
-    auto points = RectilinearMesh3DSimpleGenerator()(this->geometry->getChild())->getMidpointsMesh();
+    auto points = make_rectilinear_mesh( RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->getMidpointsMesh() );
 
     struct LayerItem {
         shared_ptr<Material> material;
@@ -118,22 +118,23 @@ void SlabSolver<Geometry3D>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    points->vert().addPoint(vbounds[0] - outdist);
-    points->vert().addPoint(vbounds[vbounds.size()-1] + outdist);
+    //static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lverts.clear();
     lgained.clear();
     stack.clear();
-    stack.reserve(points->vert().size());
+    stack.reserve(points->vert()->size());
 
-    for (auto v: points->vert()) {
+    for (auto v: *points->vert()) {
         bool gain = false;
 
-        std::vector<LayerItem> layer(points->axis0.size() * points->axis1.size());
-        for (size_t i = 0; i != points->axis1.size(); ++i) {
-            size_t offs = i * points->axis0.size();
-            for (size_t j = 0; j != points->axis0.size(); ++j) {
-                Vec<3> p(points->axis0[i], points->axis1[j], v);
+        std::vector<LayerItem> layer(points->axis0->size() * points->axis1->size());
+        for (size_t i = 0; i != points->axis1->size(); ++i) {
+            size_t offs = i * points->axis0->size();
+            for (size_t j = 0; j != points->axis0->size(); ++j) {
+                Vec<3> p(points->axis0->at(i), points->axis1->at(j), v);
                 size_t n = offs + j;
                 layer[n].material = this->geometry->getMaterial(p);
                 for (const std::string& role: this->geometry->getRolesAt(p)) {

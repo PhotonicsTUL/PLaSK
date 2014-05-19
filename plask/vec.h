@@ -6,14 +6,6 @@
 
 namespace plask {
 
-/// Vec<1,T> is just wrapper over T
-template <typename T>
-struct Vec<1,T> {
-    T val;
-    Vec<1,T> (const T& val): val(val) {}
-    operator T() const { return val; }
-};
-
 /** @relates Vec
  * Calculate square of vector magnitude.
  * @param v a vector

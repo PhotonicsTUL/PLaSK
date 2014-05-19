@@ -77,6 +77,8 @@ cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 
 option(USE_OMP "Use OpenMP" ON)
 
+option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX)
     option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
 endif(CMAKE_COMPILER_IS_GNUCXX)

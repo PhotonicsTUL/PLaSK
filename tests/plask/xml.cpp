@@ -4,8 +4,7 @@
 #include <plask/utils/xml/writer.h>
 #include <plask/utils/xml/reader.h>
 
-#include <plask/mesh/rectilinear.h>
-#include <plask/mesh/regular.h>
+#include <plask/mesh/rectangular.h>
 
 #define HEADER "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 
@@ -116,28 +115,32 @@ BOOST_AUTO_TEST_CASE(mesh) {
     writer.writeHeader();
     auto grids = writer.addTag("grids");
 
-    auto mesh2 = plask::RegularMesh2D(plask::RegularAxis(1,5,3), plask::RegularAxis(10, 40, 4));
+    auto mesh2 = plask::RectangularMesh<2>(plask::make_shared<plask::RegularAxis>(1,5,3), plask::make_shared<plask::RegularAxis>(10, 40, 4));
     mesh2.writeXML(writer.addTag("mesh").attr("name", "reg"));
 
-    auto mesh3 = plask::RectilinearMesh3D({1,2,3}, {20,50}, {10});
+    auto mesh3 = plask::RectangularMesh<3>(
+                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{1, 2, 3}),
+                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{20, 50}),
+                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{10})
+         );
     mesh3.writeXML(writer.addTag("mesh").attr("name", "rec"));
 
     grids.end();
 
     BOOST_CHECK_EQUAL(ss.str(), HEADER
         "<grids>\n"
-        "  <mesh name=\"reg\" type=\"regular2d\">\n"
-        "    <axis0 start=\"1\" stop=\"5\" num=\"3\"/>\n"
-        "    <axis1 start=\"10\" stop=\"40\" num=\"4\"/>\n"
+        "  <mesh name=\"reg\" type=\"rectangular2d\">\n"
+        "    <axis0 type=\"regular\" start=\"1\" stop=\"5\" num=\"3\"/>\n"
+        "    <axis1 type=\"regular\" start=\"10\" stop=\"40\" num=\"4\"/>\n"
         "  </mesh>\n"
-        "  <mesh name=\"rec\" type=\"rectilinear3d\">\n"
-        "    <axis0>\n"
+        "  <mesh name=\"rec\" type=\"rectangular3d\">\n"
+        "    <axis0 type=\"rectilinear\">\n"
         "      1 2 3 \n"
         "    </axis0>\n"
-        "    <axis1>\n"
+        "    <axis1 type=\"rectilinear\">\n"
         "      20 50 \n"
         "    </axis1>\n"
-        "    <axis2>\n"
+        "    <axis2 type=\"rectilinear\">\n"
         "      10 \n"
         "    </axis2>\n"
         "  </mesh>\n"

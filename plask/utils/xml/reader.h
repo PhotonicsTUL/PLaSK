@@ -258,6 +258,47 @@ class XMLReader {
 
     };
 
+    /**
+     * Util class that allow to check of duplication of tags. Example usage:
+     * <code>
+     * XMLReader::CheckTagDuplication dub_check;
+     * dub_checke(reader);
+     * reader.require_next();
+     * dub_checke(reader);  //throw if tag has the same name as previouse one
+     * </code>
+     */
+    class CheckTagDuplication {
+
+        std::set<std::string> namesAlreadySeen;
+
+    public:
+
+        /**
+         * Throw exception if tag with name @p name has been already seen and so is not allowed again.
+         * @param scope scope, where tag duplication is not allowed (used in formatting of error message)
+         * @param name name of tag
+         */
+        void operator()(const std::string& scope, std::string name) {
+            if (namesAlreadySeen.find(name) != namesAlreadySeen.end()) throw XMLDuplicatedElementException(scope, "tag <" + name + ">");
+            namesAlreadySeen.insert(std::move(name));
+        }
+
+        /**
+         * Throw exception if tag with name @p name has been already seen and so is not allowed again.
+         * @param scope scope, where tag duplication is not allowed (used in formatting of error message)
+         * @param name name of tag
+         */
+        void operator()(const XMLReader& scope, std::string name) {
+            if (namesAlreadySeen.find(name) != namesAlreadySeen.end()) throw XMLDuplicatedElementException(scope, "tag <" + name + ">");
+            namesAlreadySeen.insert(std::move(name));
+        }
+
+        void operator()(const XMLReader& reader) {
+            this->operator ()(reader, reader.getNodeName());
+        }
+
+    };
+
     /// Filter can change attribute or content value before parse.
     typedef std::function<std::string(const std::string&)> Filter;
 

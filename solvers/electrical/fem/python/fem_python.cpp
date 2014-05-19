@@ -7,16 +7,17 @@ using namespace plask::python;
 using namespace plask::solvers::electrical;
 
 template <typename Cls>
-static DataVectorWrap<const double,2> getCondJunc(const Cls* self) {
+static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
-        RectilinearAxis line1;
+        shared_ptr<RectilinearAxis> line1 = make_shared<RectilinearAxis>();
         for (size_t n = 0; n < self->getActNo(); ++n)
-            line1.addPoint(self->getMesh()->axis1[(self->getActLo(n)+self->getActHi(n))/2]);
-        auto mesh = make_shared<RectilinearMesh2D>(midmesh->axis0, line1);
+            line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
+        auto mesh = make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     } else {
-        auto mesh = make_shared<RectilinearMesh2D>(RectilinearAxis({NAN}), RectilinearAxis({NAN}));
+        auto mesh = make_shared<RectangularMesh<2>>(make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}),
+                                                    make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}));
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     }
 }
@@ -31,18 +32,12 @@ static void setCondJunc(Cls* self, py::object value) {
         PyErr_Clear();
     }
     if (!self->getMesh()) throw NoMeshException(self->getId());
-    size_t len = self->getMesh()->axis0.size()-1;
+    size_t len = self->getMesh()->axis0->size()-1;
     try {
         const DataVectorWrap<const double,2>& val = py::extract<DataVectorWrap<const double,2>&>(value);
         {
-            auto mesh = dynamic_pointer_cast<RectilinearMesh2D>(val.mesh);
-            if (mesh && mesh->axis1.size() == self->getActNo() && val.size() == len) {
-                self->setCondJunc(val);
-                return;
-            }
-        }{
-            auto mesh = dynamic_pointer_cast<RegularMesh2D>(val.mesh);
-            if (mesh && mesh->axis1.size() == self->getActNo() && val.size() == len) {
+            auto mesh = dynamic_pointer_cast<RectangularMesh<2>>(val.mesh);
+            if (mesh && mesh->axis1->size() == self->getActNo() && val.size() == len) {
                 self->setCondJunc(val);
                 return;
             }

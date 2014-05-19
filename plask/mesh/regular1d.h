@@ -11,13 +11,14 @@ This file defines regular mesh for 1d space.
 #include "../utils/interpolation.h"
 #include "../utils/stl.h"
 
+#include "rectangular1d.h"
 
 namespace plask {
 
 /**
  * Regular mesh in 1d space.
  */
-class RegularAxis {
+class RegularAxis: public RectangularAxis {
 
     double lo, _step;
     std::size_t points_count;
@@ -27,25 +28,21 @@ class RegularAxis {
     /// Type of points in this mesh.
     typedef double PointType;
 
-    typedef IndexedIterator<const RegularAxis, PointType> iterator;
-    typedef IndexedIterator<const RegularAxis, PointType> const_iterator;
+    typedef IndexedIterator<const RegularAxis, PointType> native_const_iterator;
 
     /// @return iterator referring to the first point in this mesh
-    const_iterator begin() const { return const_iterator(this, 0); }
+    native_const_iterator begin() const { return native_const_iterator(this, 0); }
 
     /// @return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return const_iterator(this, points_count); }
-
-    /// Pointer to mesh holding this axis
-    Mesh* owner;
+    native_const_iterator end() const { return native_const_iterator(this, points_count); }
 
     /// Construct uninitialized mesh.
     RegularAxis():
-        lo(0.), _step(0.), points_count(0), owner(nullptr) {}
+        lo(0.), _step(0.), points_count(0) {}
 
     /// Copy constructor. It does not copy owner
     RegularAxis(const RegularAxis& src):
-        lo(src.lo), _step(src._step), points_count(src.points_count), owner(nullptr) {}
+        lo(src.lo), _step(src._step), points_count(src.points_count) {}
 
     /**
      * Construct mesh with given paramters.
@@ -55,16 +52,13 @@ class RegularAxis {
      */
     RegularAxis(double first, double last, std::size_t points_count):
         lo(first), _step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
-        points_count(points_count), owner(nullptr) {}
+        points_count(points_count) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
     RegularAxis& operator=(const RegularAxis& src) {
         bool resized = points_count != src.points_count;
         lo = src.lo; _step = src._step; points_count = src.points_count;
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -79,10 +73,7 @@ class RegularAxis {
         _step = (last - first) / ((points_count>1)?(points_count-1):1.);
         bool resized = this->points_count != points_count;
         this->points_count = points_count;
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
     }
 
     /**
@@ -101,7 +92,7 @@ class RegularAxis {
     double step() const { return _step; }
 
     /// @return number of points in the mesh
-    std::size_t size() const { return points_count; }
+    virtual std::size_t size() const override { return points_count; }
 
     /**
      * Compare meshes
@@ -111,22 +102,6 @@ class RegularAxis {
      */
     bool operator==(const RegularAxis& to_compare) const {
         return this->lo == to_compare.lo && this->_step == to_compare._step && this->points_count == to_compare.points_count;
-    }
-
-    /**
-     * Print mesh to stream
-     * @param out stream to print
-     * @param self mesh to print
-     * @return out
-     */
-    friend inline std::ostream& operator<<(std::ostream& out, const RegularAxis& self) {
-        out << "[";
-        for (std::size_t i = 0; i < self.points_count; ++i) {
-            if (i != 0) out << ", ";
-            out << self[i];
-        }
-        out << "]";
-        return out;
     }
 
     /// @return true only if there are no points in mesh
@@ -139,12 +114,15 @@ class RegularAxis {
      */
     const double operator[](std::size_t index) const { return lo + index * _step; }
 
+    virtual double at(std::size_t index) const override { return lo + index * _step; }
+
     /**
      * Remove all points from mesh.
      */
     void clear() {
+        if (empty()) return;
         points_count = 0;
-        if (owner) owner->fireResized();
+        fireResized();
     }
 
     /**
@@ -166,7 +144,7 @@ class RegularAxis {
      *         Can be equal to end() if to_find is higher than all points in mesh
      *         (in such case returned iterator can't be dereferenced).
      */
-    const_iterator find(double to_find) const {
+    native_const_iterator find(double to_find) const {
         return begin() + findIndex(to_find);
     }
 
@@ -175,7 +153,7 @@ class RegularAxis {
      * @param to_find
      * @return position pos for which abs(*pos-to_find) is minimal
      */
-    const_iterator findNearest(double to_find) const {
+    native_const_iterator findNearest(double to_find) const {
         return find_nearest_using_lower_bound(begin(), end(), to_find, find(to_find));
     }
 
@@ -185,6 +163,14 @@ class RegularAxis {
      * @return index i for which abs((*this)[i]-to_find) is minimal
      */
     std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
+
+    virtual shared_ptr<RectangularMesh<1>> clone() const override { return make_shared<RegularAxis>(*this); }
+
+    void writeXML(XMLElement& object) const override;
+
+    bool isIncreasing() const override;
+
+    shared_ptr<RectangularMesh<1>> getMidpointsMesh() const override;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.
@@ -206,6 +192,10 @@ auto RegularAxis::interpolateLinear(const RandomAccessContainer& data, double po
     // here: points[index-1] < point < points[index]
     return interpolation::linear(this->operator[](index-1), data[index-1], this->operator[](index), data[index], point);
 }
+
+typedef RegularAxis RegularMesh1D;
+
+shared_ptr<RegularMesh1D> readRegularMeshAxis(XMLReader& reader);
 
 }   // namespace plask
 

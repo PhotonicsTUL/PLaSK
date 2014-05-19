@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace fermi {
 
 template <typename GeometryType>
-FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverWithMesh<GeometryType,RectilinearMesh1D>(name),
+FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverWithMesh<GeometryType, RectangularMesh<1>>(name),
     outGain(this, &FermiGainSolver<GeometryType>::getGain),
     outGainOverCarriersConcentration(this, &FermiGainSolver<GeometryType>::getdGdn)// getDelegated will be called whether provider value is requested
 {
@@ -116,19 +116,19 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 {
     regions.clear();
 
-    shared_ptr<RectilinearMesh2D> mesh = makeGeometryGrid(this->geometry->getChild());
-    shared_ptr<RectilinearMesh2D> points = mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
+    shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
-    size_t ileft = 0, iright = points->axis0.size();
+    size_t ileft = 0, iright = points->axis0->size();
     bool in_active = false;
 
-    for (size_t r = 0; r < points->axis1.size(); ++r)
+    for (size_t r = 0; r < points->axis1->size(); ++r)
     {
         bool had_active = false; // indicates if we had active region in this layer
         shared_ptr<Material> layer_material;
         bool layer_QW = false;
 
-        for (size_t c = 0; c < points->axis0.size(); ++c)
+        for (size_t c = 0; c < points->axis0->size(); ++c)
         { // In the (possible) active region
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
@@ -194,8 +194,8 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                                 if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
                                     throw Exception("%1%: Material below quantum well not uniform.", this->getId());
                             auto& region = regions.back();
-                            double w = mesh->axis0[iright] - mesh->axis0[ileft];
-                            double h = mesh->axis1[r] - mesh->axis1[r-1];
+                            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+                            double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                             region.origin += Vec<2>(0., -h);
                             region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
                         }
@@ -212,8 +212,8 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
         ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
         if (region)
         {
-            double h = mesh->axis1[r+1] - mesh->axis1[r];
-            double w = mesh->axis0[iright] - mesh->axis0[ileft];
+            double h = mesh->axis1->at(r+1) - mesh->axis1->at(r);
+            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
             if (in_active)
             {
                 size_t n = region->layers->getChildrenCount();
@@ -242,7 +242,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
                     region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
                 }
                 ileft = 0;
-                iright = points->axis0.size();
+                iright = points->axis0->size();
             }
         }
     }
@@ -532,11 +532,11 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
     this->writelog(LOG_DETAIL, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
-    RectilinearMesh2D mesh2;
+    RectangularMesh<2> mesh2;    //RectilinearMesh2D
     if (this->mesh) {
-        RectilinearAxis verts;
-        for (auto p: dst_mesh) verts.addPoint(p.vert());
-        mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
+        auto verts = make_shared<RectilinearAxis>();
+        for (auto p: dst_mesh) verts->addPoint(p.vert());
+        mesh2.setAxis0(this->mesh); mesh2.setAxis1(verts);
     }
     const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 
@@ -578,11 +578,11 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
-    RectilinearMesh2D mesh2;
-    if (this->mesh) {
-        RectilinearAxis verts;
-        for (auto p: dst_mesh) verts.addPoint(p.vert());
-        mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
+    RectangularMesh<2> mesh2;
+    if (this->mesh) {        
+        auto verts = make_shared<RectilinearAxis>();
+        for (auto p: dst_mesh) verts->addPoint(p.vert());
+        mesh2.setAxis0(this->mesh); mesh2.setAxis1(verts);
     }
     const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
 

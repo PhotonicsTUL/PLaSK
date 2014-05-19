@@ -15,12 +15,14 @@ This file contains rectilinear mesh for 1d space.
 #include "../utils/interpolation.h"
 #include "regular1d.h"
 
+#include "rectangular1d.h"
+
 namespace plask {
 
 /**
  * Rectilinear mesh in 1D space.
  */
-class RectilinearAxis {
+class RectilinearAxis: public RectangularAxis {
 
     /// Points coordinates in ascending order.
     std::vector<double> points;
@@ -36,16 +38,13 @@ public:
     typedef double PointType;
 
     /// Random access iterator type which allow iterate over all points in this mesh, in ascending order.
-    typedef std::vector<double>::const_iterator const_iterator;
-
-    /// Pointer to mesh holding this axis
-    Mesh* owner;
+    typedef std::vector<double>::const_iterator native_const_iterator;
 
     /// @return iterator referring to the first point in this mesh
-    const_iterator begin() const { return points.begin(); }
+    native_const_iterator begin() const { return points.begin(); }
 
     /// @return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return points.end(); }
+    native_const_iterator end() const { return points.end(); }
 
     /// @return vector of points (reference to internal vector)
     const std::vector<double>& getPointsVector() const { return points; }
@@ -58,7 +57,7 @@ public:
      *         Can be equal to end() if to_find is higher than all points in mesh
      *         (in such case returned iterator can't be dereferenced).
      */
-    const_iterator find(double to_find) const;
+    native_const_iterator find(double to_find) const;
 
     /**
      * Find index where @p to_find point could be inserted.
@@ -74,7 +73,7 @@ public:
      * @param to_find
      * @return position pos for which abs(*pos-to_find) is minimal
      */
-    const_iterator findNearest(double to_find) const;
+    native_const_iterator findNearest(double to_find) const;
 
     /**
      * Find index nearest to @p to_find.
@@ -84,20 +83,20 @@ public:
     std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
 
     /// Construct an empty mesh.
-    RectilinearAxis(): owner(nullptr) {}
+    RectilinearAxis() {}
 
     /// Copy constructor. It does not copy the owner.
-    RectilinearAxis(const RectilinearAxis& src): points(src.points), owner(nullptr) {}
+    RectilinearAxis(const RectilinearAxis& src): points(src.points) {}
     
     /// Move constructor. It does not move the owner.
-    RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)), owner(nullptr) {}
+    RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)) {}
     
-    /// Copy constructor from RegularAxis
-    RectilinearAxis(const RegularAxis& src): points(src.size()), owner(nullptr) {
-        if (src.step() < 0.0)
-            std::reverse_copy(src.begin(), src.end(), points.begin());
-        else
+    /// Copy constructor from any RectangularAxis
+    RectilinearAxis(const RectangularAxis& src): points(src.size()) {
+        if (src.isIncreasing())
             std::copy(src.begin(), src.end(), points.begin());
+        else
+            std::reverse_copy(src.begin(), src.end(), points.begin());           
     }
 
     /**
@@ -125,10 +124,7 @@ public:
     RectilinearAxis& operator=(const RectilinearAxis& src) {
         bool resized = size() != src.size();
         points = src.points;
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -136,25 +132,18 @@ public:
     RectilinearAxis& operator=(RectilinearAxis&& src) {
         bool resized = size() != src.size();
         std::swap(points, src.points);
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearAxis& operator=(const RegularAxis& src) {
+    RectilinearAxis& operator=(const RectangularAxis& src) {
         bool resized = size() != src.size();
         points.clear();
         points.reserve(src.size());
-        for (auto i: src)
-            points.push_back(i);
-        std::sort(points.begin(), points.end());
-        if (owner) {
-            if (resized) owner->fireResized();
-            else owner->fireChanged();
-        }
+        for (auto i: src)  points.push_back(i);
+        std::sort(points.begin(), points.end());    //TODO is this required?
+        if (resized) fireResized(); else fireChanged();
         return *this;
     }
 
@@ -167,26 +156,15 @@ public:
      */
     bool operator==(const RectilinearAxis& to_compare) const;
 
-    /**
-     * Print mesh to stream
-     * @param out stream to print
-     * @param mesh mesh to print
-     * @return out
-     */
-    friend inline std::ostream& operator<<(std::ostream& out, const RectilinearAxis& mesh) {
-        out << "[";
-        for (auto p: mesh.points) {
-            out << p << ((p != mesh.points.back())? ", " : "");
-        }
-        out << "]";
-        return out;
-    }
+    void writeXML(XMLElement& object) const override;
 
     /// @return number of points in mesh
-    std::size_t size() const { return points.size(); }
+    virtual std::size_t size() const override { return points.size(); }
 
-    /// @return true only if there are no points in mesh
-    bool empty() const { return points.empty(); }
+    virtual double at(std::size_t index) const override { return points[index]; }
+
+    // @return true only if there are no points in mesh
+    //bool empty() const { return points.empty(); }
 
     /**
      * Add (1d) point to this mesh.
@@ -237,12 +215,16 @@ public:
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    const double& operator[](std::size_t index) const { return points[index]; }
+    //const double& operator[](std::size_t index) const { return points[index]; }
 
     /**
      * Remove all points from mesh.
      */
     void clear();
+
+    shared_ptr<RectangularAxis> clone() const override;
+
+    bool isIncreasing() const override { return true; }
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
@@ -274,8 +256,12 @@ inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, st
     // Remove points too close to each other
     auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
-    if (owner) owner->fireResized();
+    fireResized();
 };
+
+typedef RectilinearAxis RectilinearMesh1D;
+
+shared_ptr<RectilinearMesh1D> readRectilinearMeshAxis(XMLReader& reader);
 
 }   // namespace plask
 

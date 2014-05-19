@@ -8,7 +8,7 @@ using plask::dcomplex;
 namespace plask { namespace solvers { namespace effective {
 
 EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DCartesian, RectilinearMesh2D>(name),
+    SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>>(name),
     log_value(dataLog<dcomplex, dcomplex>("Neff", "Neff", "det")),
     recompute_neffs(true),
     stripex(0.),
@@ -90,16 +90,16 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
             else reader.requireTagEnd();
             auto found = manager.meshes.find(*name);
             if (found != manager.meshes.end()) {
-                auto mesh1 = dynamic_pointer_cast<RectilinearMesh1D>(found->second);
-                auto mesh2 = dynamic_pointer_cast<RectilinearMesh2D>(found->second);
-                if (mesh1) this->setHorizontalMesh(mesh1->axis);
+                auto mesh1 = dynamic_pointer_cast<RectangularAxis>(found->second);
+                auto mesh2 = dynamic_pointer_cast<RectangularMesh<2>>(found->second);
+                if (mesh1) this->setHorizontalMesh(mesh1);
                 else if (mesh2) this->setMesh(mesh2);
                 else throw BadInput(this->getId(), "Mesh '%1%' of wrong type", *name);
             } else {
                 auto found = manager.generators.find(*name);
                 if (found != manager.generators.end()) {
-                    auto generator1 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh1D>>(found->second);
-                    auto generator2 = dynamic_pointer_cast<MeshGeneratorOf<RectilinearMesh2D>>(found->second);
+                    auto generator1 = dynamic_pointer_cast<MeshGeneratorD<1>>(found->second);
+                    auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(make_shared<RectilinearMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
                     else throw BadInput(this->getId(), "Mesh generator '%1%' of wrong type", *name);
@@ -116,7 +116,7 @@ std::vector<dcomplex> EffectiveIndex2DSolver::searchVNeffs(dcomplex neff1, dcomp
 {
     updateCache();
 
-    size_t stripe = mesh->tran().findIndex(stripex);
+    size_t stripe = mesh->tran()->findIndex(stripex);
     if (stripe < xbegin) stripe = xbegin;
     else if (stripe >= xend) stripe = xend-1;
 
@@ -281,20 +281,20 @@ void EffectiveIndex2DSolver::onInitialize()
 
     xbegin = 0;
     ybegin = 0;
-    xend = mesh->axis0.size() + 1;
-    yend = mesh->axis1.size() + 1;
+    xend = mesh->axis0->size() + 1;
+    yend = mesh->axis1->size() + 1;
 
     if (geometry->isExtended(Geometry::DIRECTION_TRAN, false) &&
-        abs(mesh->axis0[0] - geometry->getChild()->getBoundingBox().lower.c0) < SMALL)
+        abs(mesh->axis0->at(0) - geometry->getChild()->getBoundingBox().lower.c0) < SMALL)
         xbegin = 1;
     if (geometry->isExtended(Geometry::DIRECTION_VERT, false) &&
-        abs(mesh->axis1[0] - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
+        abs(mesh->axis1->at(0) - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
         ybegin = 1;
     if (geometry->isExtended(Geometry::DIRECTION_TRAN, true) &&
-        abs(mesh->axis0[mesh->axis0.size()-1] - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
+        abs(mesh->axis0->at(mesh->axis0->size()-1) - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
         --xend;
     if (geometry->isExtended(Geometry::DIRECTION_VERT, true) &&
-        abs(mesh->axis1[mesh->axis1.size()-1] - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
+        abs(mesh->axis1->at(mesh->axis1->size()-1) - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
         --yend;
 
     // Assign space for refractive indices cache and stripe effective indices
@@ -328,8 +328,8 @@ void EffectiveIndex2DSolver::updateCache()
 
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
             if (fresh) // Make sure we have only positive points
-                for (auto x: mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
-            if (mesh->axis0[0] == 0.) xbegin = 1;
+                for (auto x: *mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
+            if (mesh->axis0->at(0) == 0.) xbegin = 1;
         }
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
@@ -337,19 +337,26 @@ void EffectiveIndex2DSolver::updateCache()
 
         double w = real(2e3*M_PI / k0);
 
-        RectilinearMesh2D midmesh = *mesh->getMidpointsMesh();
-        if (xbegin == 0) {
-            if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) midmesh.axis0.addPoint(0.5 * mesh->axis0[0]);
-            else midmesh.axis0.addPoint(mesh->axis0[0] - outdist);
+        shared_ptr<RectilinearAxis> axis0, axis1;
+        {
+            shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
+            axis0 = make_shared<RectilinearAxis>(*midmesh->axis0);
+            axis1 = make_shared<RectilinearAxis>(*midmesh->axis1);
         }
-        if (xend == mesh->axis0.size()+1)
-            midmesh.axis0.addPoint(mesh->axis0[mesh->axis0.size()-1] + outdist);
+
+        if (xbegin == 0) {
+            if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) axis0->addPoint(0.5 * mesh->axis0->at(0));
+            else axis0->addPoint(mesh->axis0->at(0) - outdist);
+        }
+        if (xend == mesh->axis0->size()+1)
+            axis0->addPoint(mesh->axis0->at(mesh->axis0->size()-1) + outdist);
         if (ybegin == 0)
-            midmesh.axis1.addPoint(mesh->axis1[0] - outdist);
-        if (yend == mesh->axis1.size()+1)
-            midmesh.axis1.addPoint(mesh->axis1[mesh->axis1.size()-1] + outdist);
+            axis1->addPoint(mesh->axis1->at(0) - outdist);
+        if (yend == mesh->axis1->size()+1)
+            axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
+        RectangularMesh<2> midmesh(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
         DataVector<const double> gain;
@@ -386,7 +393,7 @@ void EffectiveIndex2DSolver::stageOne()
     if (recompute_neffs) {
 
         // Compute effective index of the main stripe
-        size_t stripe = mesh->tran().findIndex(stripex);
+        size_t stripe = mesh->tran()->findIndex(stripex);
         if (stripe < xbegin) stripe = xbegin;
         else if (stripe >= xend) stripe = xend-1;
         writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe-xbegin, (polarization==TE)?"TE":"TM");
@@ -452,7 +459,7 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
 
     dcomplex phas = 1.;
     if (ybegin != 0)
-        phas = exp(I * ky[ybegin] * (mesh->axis1[ybegin]-mesh->axis1[ybegin-1]));
+        phas = exp(I * ky[ybegin] * (mesh->axis1->at(ybegin)-mesh->axis1->at(ybegin-1)));
 
     for (size_t i = ybegin+1; i < yend; ++i) {
         // Compute shift inside one layer
@@ -471,8 +478,8 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         s3  = (p*s3-m) * chi;
         s4 *= chi;
         // Compute phase shift for the next step
-        if (i != mesh->axis1.size())
-            phas = exp(I * ky[i] * (mesh->axis1[i]-mesh->axis1[i-1]));
+        if (i != mesh->axis1->size())
+            phas = exp(I * ky[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
 
         // Compute fields
         if (save) {
@@ -515,7 +522,7 @@ void EffectiveIndex2DSolver::computeWeights(size_t stripe)
     double sum = yweights[ybegin] + yweights[yend-1];
 
     for (size_t i = ybegin+1; i < yend-1; ++i) {
-        double d = mesh->axis1[i]-mesh->axis1[i-1];
+        double d = mesh->axis1->at(i)-mesh->axis1->at(i-1);
         dcomplex ky = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff); if (imag(ky) > 0.) ky = -ky;
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
@@ -568,7 +575,7 @@ void EffectiveIndex2DSolver::normalizeFields(Mode& mode, const std::vector<dcomp
     }
 
     for (size_t i = start; i < xend-1; ++i) {
-        double d = mesh->axis0[i] - ((i == 0)? 0. : mesh->axis0[i-1]);
+        double d = mesh->axis0->at(i) - ((i == 0)? 0. : mesh->axis0->at(i-1));
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
             if (abs(imag(kx[i])) > SMALL) {
@@ -665,8 +672,8 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
     Matrix T = Matrix::eye();
     for (size_t i = xbegin; i < xend-1; ++i) {
         double d;
-        if (i != xbegin) d = mesh->axis0[i] - mesh->axis0[i-1];
-        else if (mode.symmetry != SYMMETRY_NONE) d = mesh->axis0[i];     // we have symmetry, so beginning of the transfer matrix is at the axis
+        if (i != xbegin) d = mesh->axis0->at(i) - mesh->axis0->at(i-1);
+        else if (mode.symmetry != SYMMETRY_NONE) d = mesh->axis0->at(i);     // we have symmetry, so beginning of the transfer matrix is at the axis
         else d = 0.;
         dcomplex phas = exp(- I * kx[i] * d);
         // Transfer through boundary
@@ -723,7 +730,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
         if (imag(kx[i]) > 0.) kx[i] = -kx[i];
     }
 
-    size_t stripe = mesh->tran().findIndex(stripex);
+    size_t stripe = mesh->tran()->findIndex(stripex);
     if (stripe < xbegin) stripe = xbegin;
     else if (stripe >= xend) stripe = xend-1;
 
@@ -735,9 +742,7 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
 
     DataVector<double> results(dst_mesh.size());
 
-    if (!getLightMagnitude_Efficient<RectilinearMesh2D>(num, dst_mesh, results, kx, ky) &&
-        !getLightMagnitude_Efficient<RegularMesh2D>(num, dst_mesh, results, kx, ky)) {
-
+    if (!getLightMagnitude_Efficient(num, dst_mesh, results, kx, ky)) {
         const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel for
@@ -750,19 +755,19 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
             if (x < 0. && modes[num].symmetry != SYMMETRY_NONE) {
                 x = -x; if (modes[num].symmetry == SYMMETRY_NEGATIVE) negate = true;
             }
-            size_t ix = mesh->tran().findIndex(x);
+            size_t ix = mesh->tran()->findIndex(x);
             if (ix >= xend) ix = xend-1;
             if (ix < xbegin) ix = xbegin;
-            if (ix != 0) x -= mesh->tran()[ix-1];
-            else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()[0];
+            if (ix != 0) x -= mesh->tran()->at(ix-1);
+            else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()->at(0);
             dcomplex phasx = exp(- I * kx[ix] * x);
             dcomplex val = modes[num].xfields[ix].F * phasx + modes[num].xfields[ix].B / phasx;
             if (negate) val = - val;
 
-            size_t iy = mesh->vert().findIndex(y);
+            size_t iy = mesh->vert()->findIndex(y);
             if (iy >= yend) iy = yend-1;
             if (iy < ybegin) iy = ybegin;
-            y -= mesh->vert()[max(int(iy)-1, 0)];
+            y -= mesh->vert()->at(max(int(iy)-1, 0));
             dcomplex phasy = exp(- I * ky[iy] * y);
             val *= yfields[iy].F * phasy + yfields[iy].B / phasy;
 
@@ -773,34 +778,33 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
     return results;
 }
 
-template <typename MeshT>
 bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& results,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
                                                          const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky)
 {
-    if (dynamic_cast<const MeshT*>(&dst_mesh)) {
+    if (const RectangularMesh<2>* rect_mesh_ptr = dynamic_cast<const RectangularMesh<2>*>(&dst_mesh)) {
 
-        const MeshT& rect_mesh = dynamic_cast<const MeshT&>(dst_mesh);
+        const RectangularMesh<2>& rect_mesh = *rect_mesh_ptr;
 
-        std::vector<dcomplex,aligned_allocator<dcomplex>> valx(rect_mesh.tran().size());
-        std::vector<dcomplex,aligned_allocator<dcomplex>> valy(rect_mesh.vert().size());
+        std::vector<dcomplex,aligned_allocator<dcomplex>> valx(rect_mesh.tran()->size());
+        std::vector<dcomplex,aligned_allocator<dcomplex>> valy(rect_mesh.vert()->size());
 
         const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (size_t idx = 0; idx < rect_mesh.tran().size(); ++idx) {
-                double x = rect_mesh.tran()[idx];
+            for (size_t idx = 0; idx < rect_mesh.tran()->size(); ++idx) {
+                double x = rect_mesh.tran()->at(idx);
                 bool negate = false;
                 if (x < 0. && modes[num].symmetry != SYMMETRY_NONE) {
                     x = -x; if (modes[num].symmetry == SYMMETRY_NEGATIVE) negate = true;
                 }
-                size_t ix = mesh->tran().findIndex(x);
+                size_t ix = mesh->tran()->findIndex(x);
                 if (ix >= xend) ix = xend-1;
                 if (ix < xbegin) ix = xbegin;
-                if (ix != 0) x -= mesh->tran()[ix-1];
-                else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()[0];
+                if (ix != 0) x -= mesh->tran()->at(ix-1);
+                else if (modes[num].symmetry == SYMMETRY_NONE) x -= mesh->tran()->at(0);
                 dcomplex phasx = exp(- I * kx[ix] * x);
                 dcomplex val = modes[num].xfields[ix].F * phasx + modes[num].xfields[ix].B / phasx;
                 if (negate) val = - val;
@@ -808,30 +812,30 @@ bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask
             }
 
             #pragma omp for
-            for (size_t idy = 0; idy < rect_mesh.vert().size(); ++idy) {
-                double y = rect_mesh.vert()[idy];
-                size_t iy = mesh->vert().findIndex(y);
+            for (size_t idy = 0; idy < rect_mesh.vert()->size(); ++idy) {
+                double y = rect_mesh.vert()->at(idy);
+                size_t iy = mesh->vert()->findIndex(y);
                 if (iy >= yend) iy = yend-1;
                 if (iy < ybegin) iy = ybegin;
-                y -= mesh->vert()[max(int(iy)-1, 0)];
+                y -= mesh->vert()->at(max(int(iy)-1, 0));
                 dcomplex phasy = exp(- I * ky[iy] * y);
                 valy[idy] = yfields[iy].F * phasy + yfields[iy].B / phasy;
             }
 
-            if (rect_mesh.getIterationOrder() == MeshT::ORDER_NORMAL) {
+            if (rect_mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
                 #pragma omp for
-                for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
-                    double* data = results.data() + i1 * rect_mesh.axis0.size();
-                    for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
+                for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
+                    double* data = results.data() + i1 * rect_mesh.axis0->size();
+                    for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
                         dcomplex f = valx[i0] * valy[i1];
                         data[i0] = power * abs2(f);
                     }
                 }
             } else {
                 #pragma omp for
-                for (size_t i0 = 0; i0 < rect_mesh.axis0.size(); ++i0) {
-                    double* data = results.data() + i0 * rect_mesh.axis1.size();
-                    for (size_t i1 = 0; i1 < rect_mesh.axis1.size(); ++i1) {
+                for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
+                    double* data = results.data() + i0 * rect_mesh.axis1->size();
+                    for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
                         dcomplex f = valx[i0] * valy[i1];
                         data[i1] = power * abs2(f);
                     }
@@ -857,8 +861,8 @@ DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(c
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        size_t ix = this->mesh->axis0.findIndex(point.c0); if (ix < xbegin) ix = xbegin;
-        size_t iy = this->mesh->axis1.findIndex(point.c1);
+        size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < xbegin) ix = xbegin;
+        size_t iy = this->mesh->axis1->findIndex(point.c1);
         result[i] = Tensor3<dcomplex>(nrCache[ix][iy]);
     }
     return result;
@@ -882,8 +886,8 @@ DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mes
     auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     for (size_t j = 0; j != result.size(); ++j) {
         auto point = mat_mesh[j];
-        size_t ix = this->mesh->axis0.findIndex(point.c0); if (ix < xbegin) ix = xbegin;
-        size_t iy = this->mesh->axis1.findIndex(point.c1);
+        size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < xbegin) ix = xbegin;
+        size_t iy = this->mesh->axis1->findIndex(point.c1);
         double absp = - 2. * real(nrCache[ix][iy]) * imag(nrCache[ix][iy]);
         result[j] *= absp;
     }

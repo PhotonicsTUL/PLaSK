@@ -5,7 +5,7 @@
 namespace plask { namespace solvers { namespace thermal3d {
 
 FiniteElementMethodThermal3DSolver::FiniteElementMethodThermal3DSolver(const std::string& name) :
-    SolverWithMesh<Geometry3D, RectilinearMesh3D>(name),
+    SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
     algorithm(ALGORITHM_CHOLESKY),
     loopno(0),
     inittemp(300.),
@@ -97,7 +97,7 @@ void FiniteElementMethodThermal3DSolver::setAlgorithm(Algorithm alg) {
     * \param K_function function returning stiffness matrix component
     */
 template <typename ConditionT>
-static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh3D,ConditionT>& boundary_conditions,
+static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>,ConditionT>& boundary_conditions,
                           const size_t (&idx)[8], double dx, double dy, double dz, double (&F)[8], double (&K)[8][8],
                           const std::function<double(double,ConditionT,size_t)>& F_function,
                           const std::function<double(double,ConditionT,ConditionT,size_t,size_t,bool)>& K_function
@@ -128,10 +128,10 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectilinearMesh3D,Con
 
 template <typename MatrixT>
 void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectilinearMesh3D,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>,Radiation>& bradiation
                   )
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size=%1%, bands=%2%{%3%})", A.size, A.kd+1, A.ld+1);
@@ -243,7 +243,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 
 template <typename MatrixT>
 void FiniteElementMethodThermal3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
-                                                 const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
+                                                 const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {
@@ -265,7 +265,7 @@ void FiniteElementMethodThermal3DSolver::applyBC(MatrixT& A, DataVector<double>&
 
 template <>
 void FiniteElementMethodThermal3DSolver::applyBC<SparseBandMatrix>(SparseBandMatrix& A, DataVector<double>& B,
-                                                                   const BoundaryConditionsWithMesh<RectilinearMesh3D,double>& btemperature) {
+                                                                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {
@@ -310,7 +310,7 @@ double FiniteElementMethodThermal3DSolver::doCompute(int loops)
     int loop = 0;
     size_t size = mesh->size();
 
-    MatrixT A(size, mesh->mediumAxis().size()*mesh->minorAxis().size(), mesh->minorAxis().size());
+    MatrixT A(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 
     double err = 0.;
     toterr = 0.;
@@ -508,10 +508,10 @@ DataVector<const Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermal
     auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
     for (size_t i = 0; i != dst_mesh.size(); ++i) {
         auto point = target_mesh[i];
-        size_t x = std::upper_bound(this->mesh->axis0.begin(), this->mesh->axis0.end(), point[0]) - this->mesh->axis0.begin();
-        size_t y = std::upper_bound(this->mesh->axis1.begin(), this->mesh->axis1.end(), point[1]) - this->mesh->axis1.begin();
-        size_t z = std::upper_bound(this->mesh->axis2.begin(), this->mesh->axis2.end(), point[2]) - this->mesh->axis2.begin();
-        if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0.size() || y == this->mesh->axis1.size() || z == this->mesh->axis2.size())
+        size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
+        size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
+        size_t z = std::upper_bound(this->mesh->axis2->begin(), this->mesh->axis2->end(), point[2]) - this->mesh->axis2->begin();
+        if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size() || z == this->mesh->axis2->size())
             result[i] = Tensor2<double>(NAN);
         else {
             size_t idx = element_mesh->index(x-1, y-1, z-1);
