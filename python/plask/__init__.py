@@ -138,23 +138,40 @@ geometry.Stack3D = Stack3D
 del Stack3D
 
 
-mesh.Rectilinear2D = mesh.Rectangular2D
-mesh.Rectilinear3D = mesh.Rectangular3D
+## ## Deprecated meshes constructors ## ##
+
+def Rectilinear2D(*args, **kwargs):
+    """Deprecated, use mesh.Rectilinear2D instead."""
+    print_log(LOG_WARNING, "mesh.Rectilinear2D is deprecated, use mesh.Rectilinear2D instead.")
+    return mesh.Rectilinear2D(*args, **kwargs)
+mesh.Rectilinear2D = Rectilinear2D
+del Rectilinear2D
+
+def Rectilinear3D(*args, **kwargs):
+    """Deprecated, use mesh.Rectilinear3D instead."""
+    print_log(LOG_WARNING, "mesh.Rectilinear3D is deprecated, use mesh.Rectilinear3D instead.")
+    return mesh.Rectilinear3D(*args, **kwargs)
+mesh.Rectilinear3D = Rectilinear3D
+del Rectilinear3D
 
 def Regular2D(axis0, axis1, order='01'):
+    """Deprecated, use mesh.Rectilinear2D(Regular(axis0), Regular(axis1), order) instead."""
+    print_log(LOG_WARNING, "mesh.Regular2D is deprecated, use mesh.Rectilinear2D(Regular(axis0), Regular(axis1), order) instead.")
     if isinstance(axis0, tuple): axis0 = Regular(*axis0)
     if isinstance(axis1, tuple): axis1 = Regular(*axis1)
-    return mesh.Rectilinear3D(axis0, axis1, order)
+    return mesh.Rectilinear2D(axis0, axis1, order)
 mesh.Regular2D = Regular2D
 del Regular2D
 
 def Regular3D(axis0, axis1, axis2, order='012'):
+    """Deprecated, use mesh.Rectilinear3D(Regular(axis0), Regular(axis1), , Regular(axis2), order) instead."""
     if isinstance(axis0, tuple): axis0 = Regular(*axis0)
     if isinstance(axis1, tuple): axis1 = Regular(*axis1)
     if isinstance(axis2, tuple): axis2 = Regular(*axis2)
     return mesh.Rectilinear3D(axis0, axis1, axis2, order)
 mesh.Regular3D = Regular3D
 del Regular3D
+
 
 ## ## plask.manager ## ##
 
