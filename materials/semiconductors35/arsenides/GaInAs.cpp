@@ -83,7 +83,7 @@ MI_PROPERTY(GaInAs, VB,
             MISource("nonlinear interpolation: GaAs, InAs")
             )
 double GaInAs::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*mGaAs.VB(T,e,point,hole) + In*mInAs.VB(T,e,point,hole) - Ga*In*(-0.38) );
+    double tVB( Ga*mGaAs.VB(T,0.,point,hole) + In*mInAs.VB(T,0.,point,hole) - Ga*In*(-0.38) );
     if (!e) return tVB;
     else
     {

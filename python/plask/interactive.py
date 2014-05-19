@@ -36,7 +36,7 @@ DAMAGE.
 
 import plask
 
-BANNER = plask.banner + '''\
+BANNER = '''\
 
 You are entering interactive mode of PLaSK.
 Package 'plask' is already imported'''

@@ -53,8 +53,8 @@ bool forcedLoglevel = false;
 
         const char* head(LogLevel level) {
             switch (level) {
-                case LOG_ERROR:         color(BRIGHT_RED); return "ERROR         ";
                 case LOG_CRITICAL_ERROR:color(BRIGHT_RED); return "CRITICAL ERROR";
+                case LOG_ERROR:         color(BRIGHT_RED); return "ERROR         ";
                 case LOG_WARNING:       color(BROWN); return "WARNING       ";
                 case LOG_INFO:          color(BRIGHT_CYAN); return "INFO          ";
                 case LOG_RESULT:        color(GREEN); return "RESULT        ";

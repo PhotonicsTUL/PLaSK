@@ -103,8 +103,8 @@ MI_PROPERTY(GaInAsSb, VB,
             MISource("linear interpolation: GaSb, InSb")
             )
 double GaInAsSb::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*As*mGaAs.VB(T,e,point,hole) + Ga*Sb*mGaSb.VB(T,e,point,hole)
-                + In*As*mInAs.VB(T,e,point,hole) + In*Sb*mInSb.VB(T,e,point,hole)
+    double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*Sb*mGaSb.VB(T,0.,point,hole)
+                + In*As*mInAs.VB(T,0.,point,hole) + In*Sb*mInSb.VB(T,0.,point,hole)
                 - Ga*In*As*(-0.38) - Ga*As*Sb*(-1.06) );
     if (!e) return tVB;
     else

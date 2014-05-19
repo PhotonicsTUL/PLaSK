@@ -166,9 +166,9 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
         if (extern_levels) {
-            gmodule.przygobl_n(*extern_levels, gmodule.przel_dlug_z_angstr(region.qwtotallen));
+            gmodule.przygobl_n(*extern_levels, gmodule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
         } else {
-            gmodule.przygobl_n(gmodule.przel_dlug_z_angstr(region.qwtotallen));
+            gmodule.przygobl_n(gmodule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
         }
     }
 
@@ -267,8 +267,8 @@ struct GainSpectrum {
         if (isnan(T)) T = solver->inTemperature(OnePointMesh<2>(point))[0];
         #pragma omp critical
         if (isnan(n)) n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
-        return solver->getGainModule(wavelength, T, n, *region)
-            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
+        return solver->getGainModule(wavelength, T, n, *region) // returns gain for single QW layer!
+            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwlen); // earlier: qwtotallen
     }
 };
 

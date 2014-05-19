@@ -6,7 +6,7 @@ cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
 project(plask)
 
 set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
-set(VERSION_MINOR 1)            # MINOR version (bump up by one on visible feature change)
+set(VERSION_MINOR 2)            # MINOR version (bump up by one on visible feature change)
 # set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
 
 # ---------- Common options --------------------------------------------
@@ -587,8 +587,8 @@ endif()
 # Settings for DEB generator
 if(UNIX)
     set(CPACK_GENERATOR "DEB")
-    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_PREFIX}/usr/lib/plask")
-    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_PREFIX}/usr/lib/plask -type f -name \"*.pyc\" -delete")
+    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask")
+    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete")
 
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
                     OUTPUT_VARIABLE boostver)

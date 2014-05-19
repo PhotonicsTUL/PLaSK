@@ -83,7 +83,7 @@ MI_PROPERTY(GaInSb, VB,
             MISource("linear interpolation: GaSb, InSb")
             )
 double GaInSb::VB(double T, double e, char point, char hole) const {
-    double tVB( Ga*mGaSb.VB(T,e,point,hole) + In*mInSb.VB(T,e,point,hole) );
+    double tVB( Ga*mGaSb.VB(T,0.,point,hole) + In*mInSb.VB(T,0.,point,hole) );
     if (e) {
         double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
         double DEsh = -2.*b(T)*(1.+2.*c12(T)/c11(T))*e;
