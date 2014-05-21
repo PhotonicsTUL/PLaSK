@@ -33,8 +33,6 @@ class Averaging_Test(unittest.TestCase):
     def testTran(self):
         msh_tran = mesh.Rectangular3D(mesh.Ordered([0.25]), mesh.Regular(0, 1, 46), mesh.Ordered([0.1]))
         prof_tran = self.solver.get_refractive_index_profile(msh_tran, 'nearest')
-        print msh_tran.ordering
-        print prof_tran.array.shape
         self.assertAlmostEqual(prof_tran.array[0,0,0,0], sqrt(2.5), 5)
         self.assertAlmostEqual(prof_tran.array[0,0,0,1], sqrt(1.6), 5)
         self.assertAlmostEqual(prof_tran.array[0,0,0,2], sqrt(2.5), 5)

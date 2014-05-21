@@ -229,11 +229,11 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
 
     m = field.mesh
 
-    if type(m) in (plask.mesh.Rectangular2D):
+    if isinstance(m, plask.mesh.Rectangular2D):
         ix, iy = 0, 1
         xaxis, yaxis = m.axis0, m.axis1
         data = field.array.transpose((1,0,2))
-    elif type(m) in (plask.mesh.Rectangular3D):
+    elif isinstance(m, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
         if ix < iy:
@@ -258,14 +258,15 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
 
     m = field.mesh
 
-    if type(m) not in (plask.mesh.Regular2D, plask.mesh.Regular3D):
-        raise TypeError("plot_stream can be only used for data obtained for regular mesh")
-
-    if type(m) == plask.mesh.Regular2D:
+    if isinstance(m, plask.mesh.Rectangular2D):
+        if type(m.axis0) != plask.mesh.Regular or type(m.axis1) != plask.mesh.Regular:
+            raise TypeError("plot_stream can be only used for data obtained for rectangular mesh with regular axes")
         xaxis, yaxis = m.axis0, m.axis1
         ix, iy = -2, -1
         data = field.array.transpose((1,0,2))
-    elif type(m) == plask.mesh.Regular3D:
+    elif isinstance(m, plask.mesh.Rectangular3D):
+        if type(m.axis0) != plask.mesh.Regular or type(m.axis1) != plask.mesh.Regular or type(m.axis2) != plask.mesh.Regular:
+            raise TypeError("plot_stream can be only used for data obtained for rectangular mesh with regular axes")
         ix, iy = _get_2d_axes(plane)
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
         if ix < iy:
@@ -273,7 +274,7 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
         else:
             data = field.array.reshape((len(yaxis), len(xaxis), field.array.shape[-1]))[:,:,[ix,iy]]
     else:
-        raise NotImplementedError("mesh type not supported")
+        raise TypeError("plot_stream can be only used for data obtained for rectangular mesh with regular axes")
 
     if 'linewidth' in kwargs: scale = None
 
@@ -334,7 +335,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
     axes = matplotlib.pylab.gca()
     lines = []
 
-    if type(mesh) in (plask.mesh.Rectangular2D):
+    if isinstance(mesh, plask.mesh.Rectangular2D):
         ix, iy = 0, 1
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
         for x in mesh.axis0:
@@ -343,7 +344,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
         for y in mesh.axis1:
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
 
-    elif type(mesh) in (plask.mesh.Rectangular3D):
+    elif isinstance(mesh, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
         axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i in (ix,iy))
 

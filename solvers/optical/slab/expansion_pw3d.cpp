@@ -189,7 +189,10 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
 
-    RectangularMesh<3> mesh(make_shared<RegularAxis>(long_mesh), make_shared<RegularAxis>(tran_mesh), make_shared<RectilinearAxis>(axis2), RectangularMesh<3>::ORDER_012);
+    RectangularMesh<3> mesh(make_shared<RegularAxis>(long_mesh),
+                            make_shared<RegularAxis>(tran_mesh),
+                            make_shared<RectilinearAxis>(axis2),
+                            RectangularMesh<3>::ORDER_102);
     double matv = axis2[0]; // at each point along any vertical axis material is the same
 
     double lambda = real(SOLVER->getWavelength());
@@ -269,7 +272,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 // Nothing to average
                 eps = cell[cell.size() / 2];
             } else {
-                // eps = Tensor3<dcomplex>(norm.c0, norm.c1, 0.); //TODO just for testing
+                // eps = Tensor3<dcomplex>(norm.c0/a, norm.c1/a, 0.); //TODO just for testing
 
                 // Compute avg(eps) and avg(eps**(-1))
                 Tensor3<dcomplex> ieps(0.);
@@ -380,8 +383,10 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Rec
             tcmesh->reset(left, right, nNt+1);
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
         }
-        RectangularMesh<3> src_mesh(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1));
-        RectangularMesh<3> dst_mesh(make_shared<RectilinearAxis>(std::move(lmesh)), make_shared<RectilinearAxis>(std::move(tmesh)), shared_ptr<RectilinearAxis>(new RectilinearAxis{0}));
+        RectangularMesh<3> src_mesh(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1), RectangularMesh<3>::ORDER_210);
+        RectangularMesh<3> dst_mesh(make_shared<RectilinearAxis>(std::move(lmesh)),
+                                    make_shared<RectilinearAxis>(std::move(tmesh)),
+                                    shared_ptr<RectilinearAxis>(new RectilinearAxis{0}));
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
         result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
 //     }
