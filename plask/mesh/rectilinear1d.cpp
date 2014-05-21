@@ -119,16 +119,16 @@ shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader) {
     return result;
 }
 
-static RegisterMeshReader rectilinearmesh_reader("rectilinear", readRectilinearMesh1D);
+static RegisterMeshReader rectilinearmesh_reader("ordered", readRectilinearMesh1D);
 
 
-// deprecated:
+// obsolete:
 
-shared_ptr<RectilinearMesh1D> readRectilinearMesh1D_deprecated(XMLReader& reader) {
-    writelog(LOG_WARNING, "Mesh type \"%1%\" is deprecated (will not work in future versions of PLaSK), use \"rectilinear\" instead.", reader.requireAttribute("type"));
+shared_ptr<RectilinearMesh1D> readRectilinearMesh1D_obsolete(XMLReader& reader) {
+    writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete (will not work in future versions of PLaSK), use \"ordered\" instead.", reader.requireAttribute("type"));
     return readRectilinearMesh1D(reader);
 }
-RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D_deprecated);
+RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D_obsolete);
 
 
 

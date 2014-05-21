@@ -31,7 +31,7 @@ class EffectiveIndex(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, r"^Effective index \[0\] cannot be provided now$"):
             self.solver.outNeff(0)
         with self.assertRaisesRegexp(ValueError, r"^Optical field magnitude \[0\] cannot be provided now$"):
-            self.solver.outLightMagnitude(0, mesh.Rectangular2D(mesh.Rectilinear([1,2]), mesh.Rectilinear([3,4])))
+            self.solver.outLightMagnitude(0, mesh.Rectangular2D([1,2], [3,4]))
 
     def testComputations(self):
         self.solver.wavelength = 1000.
@@ -171,7 +171,7 @@ class EffectiveFrequency(unittest.TestCase):
         axis0 = plask.mesh.Regular(0.001, 39.999, 100000)
         #axis0 = linspace(0.01, 3.99, 200)
         #axis1  = [ self.manager.geo.layers.bbox.lower.z-1e-6, 0.0025, self.manager.geo.layers.bbox.upper.z+-1e-6 ]
-        axis1  = plask.mesh.Rectilinear([ self.manager.geometry.layers.bbox.upper.z+-1e-6 ])
+        axis1  = plask.mesh.Ordered([self.manager.geometry.layers.bbox.upper.z+-1e-6])
         dr = axis0[1]-axis0[0]
         msh = mesh.Rectangular2D(axis0, axis1)
         self.solver.find_mode(980., 0)
@@ -214,7 +214,7 @@ class EffectiveFrequency(unittest.TestCase):
         m = self.solver.find_mode(980.)
         self.solver.modes[m].power = 2.0
         box = self.solver.geometry.item.bbox
-        field = self.solver.outLightMagnitude(m, mesh.Rectangular2D(mesh.Rectilinear([0.]), mesh.Rectilinear([box.lower.z, box.upper.z])))
+        field = self.solver.outLightMagnitude(m, mesh.Rectangular2D(mesh.Ordered([0.]), mesh.Ordered([box.lower.z, box.upper.z])))
         total_power = self.solver.modes[m].power * (1. + 3.53 * field[0] / field[1])
         self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 2 )
 
@@ -223,7 +223,7 @@ class EffectiveFrequency(unittest.TestCase):
         m = self.solver.find_mode(980.)
         self.solver.modes[m].power = 2.0
         box = self.solver.geometry.get_object_bboxes(self.manager.geometry['active'])[0]
-        msh = mesh.Rectangular2D(mesh.Regular(0., 10., 1000), mesh.Rectilinear([0.5 * (box.lower.z + box.upper.z)]))
+        msh = mesh.Rectangular2D(mesh.Regular(0., 10., 1000), [0.5 * (box.lower.z + box.upper.z)])
         heat = self.solver.outHeat(msh).array[:,0]
         # 1e-15: µm³->m³ W->mW
         integral = 2e-15 * pi * sum(heat * msh.axis0) * (box.upper.z - box.lower.z) * (msh.axis0[1] - msh.axis0[0])

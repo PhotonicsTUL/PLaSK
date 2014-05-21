@@ -646,25 +646,20 @@ void register_divide_generator() {
 }
 
 
-
-
-
 void register_mesh_rectangular()
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
 
     py::class_<RectangularMesh<1>, shared_ptr<RectangularMesh<1>>, py::bases<MeshD<1>>, boost::noncopyable>
-            ("Rectangular1D",
-             "Base class for all 1D rectangular meshes (used as axes by 2D and 3D rectangular meshes)",
+            ("Axis", "Base class for all 1D meshes (used as axes by 2D and 3D rectangular meshes).",
              py::no_init)
-
     ;
 
-    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("Rectilinear",
+    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("Ordered",
         "One-dimesnional rectilinear mesh, used also as rectangular mesh axis\n\n"
-        "Rectilinear()\n    create empty mesh\n\n"
-        "Rectilinear(points)\n    create mesh filled with points provides in sequence type"
+        "Ordered()\n    create empty mesh\n\n"
+        "Ordered(points)\n    create mesh filled with points provides in sequence type"
         );
     rectilinear1d.def("__init__", py::make_constructor(&__init__empty<RectilinearAxis>))
         .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearAxis>, py::default_call_policies(), (py::arg("points"))))

@@ -58,7 +58,7 @@ static void setCondJunc(Cls* self, py::object value) {
 
 //TODO remove after 1.06.2014
 py::object outHeatDensity_get(const py::object& self) {
-    writelog(LOG_WARNING, "'outHeatDensity' is depreciated. Use 'outHeat' instead!");
+    writelog(LOG_WARNING, "'outHeatDensity' is obsolete. Use 'outHeat' instead!");
     return self.attr("outHeat");
 }
 
@@ -112,7 +112,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
            "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
            "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
     );
-    solver.add_property("outHeatDensity", outHeatDensity_get, "DEPRECIATED"); // TODO remove after 1.06.2014
+    solver.add_property("outHeatDensity", outHeatDensity_get, "OBSOLETE"); // TODO remove after 1.06.2014
 }
 
 /**

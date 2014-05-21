@@ -192,7 +192,7 @@ void EffectiveFrequencyCylSolver_setStripeR(EffectiveFrequencyCylSolver& self, p
 
 //TODO remove after 1.06.2014
 py::object outLightIntensity_get(const py::object& self) {
-    writelog(LOG_WARNING, "'outLightIntensity' is depreciated. Use 'outLightMagnitude' instead!");
+    writelog(LOG_WARNING, "'outLightIntensity' is obsolete. Use 'outLightMagnitude' instead!");
     return self.attr("outLightMagnitude");
 }
 
@@ -301,7 +301,7 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveIndex2D.Mode.power\n");
 
         //TODO remove after 1.06.2014
-        solver.add_property("outLightIntensity", &outLightIntensity_get, "DEPRECIATED");
+        solver.add_property("outLightIntensity", &outLightIntensity_get, "OBSOLETE");
 
         py::scope scope = solver;
 
@@ -417,7 +417,7 @@ BOOST_PYTHON_MODULE(effective)
                             "the stripes.\n");
 
         //TODO remove after 1.06.2014
-        solver.add_property("outLightIntensity", &outLightIntensity_get, "DEPRECIATED");
+        solver.add_property("outLightIntensity", &outLightIntensity_get, "OBSOLETE");
 
         py::scope scope = solver;
 

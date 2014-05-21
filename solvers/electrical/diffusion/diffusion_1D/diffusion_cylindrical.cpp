@@ -30,7 +30,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
         }
         else if (param == "mesh" && (reader.hasAttribute("start") || reader.hasAttribute("stop") || reader.hasAttribute("num")))
         {
-            this->writelog(LOG_WARNING, "Setting mesh directly in the solver is depreciated. Please use 'ref' attribute to refer to the mesh defined in the <grids> section");
+            this->writelog(LOG_WARNING, "Setting mesh directly in the solver is obsolete. Please use 'ref' attribute to refer to the mesh defined in the <grids> section");
             double r_min = reader.requireAttribute<double>("start");
             double r_max = reader.requireAttribute<double>("stop");
             size_t no_points = reader.requireAttribute<size_t>("num");

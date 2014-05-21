@@ -21,12 +21,12 @@ namespace plask { namespace solvers { namespace thermal {
 
 //TODO remove after 1.06.2014
 py::object inHeatDensity_get(py::object self) {
-    writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
+    writelog(LOG_WARNING, "'inHeatDensity' is obsolete. Use 'inHeat' instead!");
     return self.attr("inHeat");
 }
 //TODO remove after 1.06.2014
 void inHeatDensity_set(py::object self, py::object value) {
-    writelog(LOG_WARNING, "'inHeatDensity' is depreciated. Use 'inHeat' instead!");
+    writelog(LOG_WARNING, "'inHeatDensity' is obsolete. Use 'inHeat' instead!");
     self.attr("__setattr__")("inHeat", value);
 }
 
@@ -77,7 +77,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
 
         //TODO remove after 1.06.2014
-        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "DEPRECIATED");
+        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "OBSOLETE");
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
@@ -101,7 +101,7 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
 
         //TODO remove after 1.06.2014
-        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "DEPRECIATED");
+        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "OBSOLETE");
     }
 
 //     // Add methods to create classes using depreciate names

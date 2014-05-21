@@ -10,7 +10,7 @@ import plasktest
 
 
 
-class RectilinearMeshes(unittest.TestCase):
+class OrderedMeshes(unittest.TestCase):
 
     def setUp(self):
         self.mesh2 = plask.mesh.Rectangular2D([1,3,2,1], array([10,20], float))
@@ -69,7 +69,7 @@ class RectilinearMeshes(unittest.TestCase):
             self.assertEqual( m.minor_index(i),  m.index2(i) )
             self.assertEqual( m.middle_index(i), m.index1(i) )
             self.assertEqual( m.major_index(i),  m.index0(i) )
-        plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1,3,2,1]), plask.mesh.Rectilinear(array([10,20], float)))
+        plask.mesh.Rectangular2D(plask.mesh.Ordered([1,3,2,1]), plask.mesh.Ordered(array([10,20], float)))
 
 
     def testBoundary(self):
@@ -115,7 +115,7 @@ class RectilinearMeshes(unittest.TestCase):
         mesh3 = generator3(stack)
         self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
 
-        generator1d = plask.mesh.Rectilinear.DivideGenerator()
+        generator1d = plask.mesh.Ordered.DivideGenerator()
         generator1d.postdiv = 2
         shelf = geometry.Shelf2D()
         shelf.append(geometry.Rectangle(1., 1., None))
@@ -188,13 +188,13 @@ class RectilinearMeshes(unittest.TestCase):
         test = plasktest.MeshTest()
 
         self.assertFalse(test.rectilinear2d_changed)
-        test.rectilinear2d.axis0 = plask.mesh.Rectilinear(linspace(0., 10., 11))
+        test.rectilinear2d.axis0 = plask.mesh.Ordered(linspace(0., 10., 11))
         self.assertTrue(test.rectilinear2d_changed)
         test.rectilinear2d.axis0.insert(12)
         self.assertTrue(test.rectilinear2d_changed)
         test.rectilinear2d.axis0.extend(linspace(12., 15., 4))
         self.assertTrue(test.rectilinear2d_changed)
-        test.rectilinear2d.axis1 = plask.mesh.Rectilinear(linspace(0., 10., 11))
+        test.rectilinear2d.axis1 = plask.mesh.Ordered(linspace(0., 10., 11))
         self.assertTrue(test.rectilinear2d_changed)
         test.rectilinear2d.axis1.insert(12)
         self.assertTrue(test.rectilinear2d_changed)

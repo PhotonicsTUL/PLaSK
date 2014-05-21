@@ -3,7 +3,7 @@
 
 #include "python_globals.h"
 
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_OBSOLETE_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #include "python_ptr.h"

@@ -33,13 +33,13 @@ In this section one can define computational meshes for use by solvers. It can b
 Possible <mesh> contents for different types
 --------------------------------------------
 
-.. xml:tag:: <mesh type="rectilinear1d"> [rectilinear1d]
+.. xml:tag:: <mesh type="rectangular1d"> [rectangular1d]
 
    One-dimensional rectangular mesh with regular intervals.
 
    .. xml:contents::
 
-      .. xml:tag:: <axis> [in rectilinear1d mesh]
+      .. xml:tag:: <axis> [in rectangular1d mesh]
 
          Specification of the horizontal axis.
 
@@ -53,17 +53,17 @@ Possible <mesh> contents for different types
 
             Comma-separated list of the mesh points along this axis.
 
-.. xml:tag:: <mesh type="rectilinear2d"> [rectilinear2d]
+.. xml:tag:: <mesh type="rectangular2d"> [rectangular2d]
 
-   Two-dimensional rectangular mesh with regular intervals.
+   Two-dimensional rectangular mesh with.
 
    .. xml:contents::
 
-      .. xml:tag:: <axis0> [in rectilinear2d mesh]
+      .. xml:tag:: <axis0> [in rectangular2d mesh]
 
          Specification of the horizontal axis.
 
-         If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+         If any of the following attributes are specified, the points along this axis are distributed equally in a regular meshes. In such a case the contents must be empty.
 
          :attr start: Position of the first point on the axis. (float [µm])
          :attr stop: Position of the last point on the axis. (float [µm])
@@ -73,23 +73,23 @@ Possible <mesh> contents for different types
 
             Comma-separated list of the mesh points along this axis.
 
-      .. xml:tag:: <axis1> [in rectilinear2d mesh]
+      .. xml:tag:: <axis1> [in rectangular2d mesh]
 
          Specification of the vertical axis.
 
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear2d mesh]`.
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular2d mesh]`.
 
-.. xml:tag:: <mesh type="rectilinear3d"> [rectilinear3d]
+.. xml:tag:: <mesh type="rectangular3d"> [rectangular3d]
 
-   Three-dimensional rectangular mesh with regular intervals.
+   Three-dimensional rectangular mesh.
 
    .. xml:contents::
 
-      .. xml:tag:: <axis0> [in rectilinear3d mesh]
+      .. xml:tag:: <axis0> [in rectangular3d mesh]
 
          Specification of the longitudinal axis.
 
-         If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+         If any of the following attributes are specified, the points along this axis are distributed equally in a regular meshes. In such a case the contents must be empty.
 
          :attr start: Position of the first point on the axis. (float [µm])
          :attr stop: Position of the last point on the axis. (float [µm])
@@ -99,17 +99,17 @@ Possible <mesh> contents for different types
 
             Comma-separated list of the mesh points along this axis.
 
-      .. xml:tag:: <axis1> [in rectilinear3d mesh]
+      .. xml:tag:: <axis1> [in rectangular3d mesh]
 
          Specification of the transversal axis.
 
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
 
-      .. xml:tag:: <axis2> [in rectilinear3d mesh]
+      .. xml:tag:: <axis2> [in rectangular3d mesh]
 
          Specification of the vertical axis.
 
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectilinear3d mesh]`.
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
 
 .. xml:tag:: <mesh type="regular1d"> [regular1d]
 
@@ -125,85 +125,39 @@ Possible <mesh> contents for different types
          :attr required stop: Position of the last point on the axis. (float [µm])
          :attr required num: Number of the equally distributed points along the axis. (integer)
 
-.. xml:tag:: <mesh type="regular2d"> [regular2d]
-
-   Two-dimensional rectangular mesh with regular intervals.
-
-   .. xml:contents::
-
-      .. xml:tag:: <axis0> [in regular2d mesh]
-
-         Specification of the horizontal axis.
-
-         :attr required start: Position of the first point on the axis. (float [µm])
-         :attr required stop: Position of the last point on the axis. (float [µm])
-         :attr required num: Number of the equally distributed points along the axis. (integer)
-
-      .. xml:tag:: <axis1> [in regular2d mesh]
-
-         Specification of the vertical axis.
-
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in regular2d mesh]`.
-
-.. xml:tag:: <mesh type="regular3d">
-
-   Three-dimensional rectangular mesh with regular intervals.
-
-   .. xml:contents::
-
-      .. xml:tag:: <axis0> [in regular3d mesh]
-
-         Specification of the longitudinal axis.
-
-         :attr required start: Position of the first point on the axis. (float [µm])
-         :attr required stop: Position of the last point on the axis. (float [µm])
-         :attr required num: Number of the equally distributed points along the axis. (integer)
-
-      .. xml:tag:: <axis1> [in regular3d mesh]
-
-         Specification of the transversal axis.
-
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in regular3d mesh]`.
-
-      .. xml:tag:: <axis2> [in regular3d mesh]
-
-         Specification of the vertical axis.
-
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in regular3d mesh]`.
-
 
 Possible <generator> contents for different types and methods
 -------------------------------------------------------------
 
-.. xml:tag:: <generator type="rectilinear1d" method="divide"> [rectilinear1d, divide]
+.. xml:tag:: <generator type="rectangular1d" method="divide"> [rectangular1d, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 
    .. xml:contents::
 
-      .. xml:tag:: <no-gradual/> [in rectilinear1d, divide generator]
+      .. xml:tag:: <no-gradual/> [in rectangular1d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-      .. xml:tag:: <prediv/> [in rectilinear1d, divide generator]
+      .. xml:tag:: <prediv/> [in rectangular1d, divide generator]
 
          Set number of the initial divisions of each geometry object.
 
          :attr by: Number of parts each object is divided into along horizontal axis.
 
-      .. xml:tag:: <postdiv/> [in rectilinear1d, divide generator]
+      .. xml:tag:: <postdiv/> [in rectangular1d, divide generator]
 
          Set number of the final divisions of each geometry object.
 
          :attr by: Number of parts each object is divided into along horizontal axis.
 
-      .. xml:tag:: <refinements> [in rectilinear1d, divide generator]
+      .. xml:tag:: <refinements> [in rectangular1d, divide generator]
 
          Specify list of additional refinements of the generated mesh.
 
          .. xml:contents::
 
-            .. xml:tag:: <axis0/> [in rectilinear1d, divide generator]
+            .. xml:tag:: <axis0/> [in rectangular1d, divide generator]
 
                Add refinement to the horizontal axis.
 
@@ -223,21 +177,21 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectilinear1d" method="simple"> [rectilinear1d, simple]
+.. xml:tag:: <generator type="rectangular1d" method="simple"> [rectangular1d, simple]
 
-   Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
 
-.. xml:tag:: <generator type="rectilinear2d" method="divide"> [rectilinear1d, divide]
+.. xml:tag:: <generator type="rectangular2d" method="divide"> [rectangular1d, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 
    .. xml:contents::
 
-      .. xml:tag:: <no-gradual/> [in rectilinear2d, divide generator]
+      .. xml:tag:: <no-gradual/> [in rectangular2d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-      .. xml:tag:: <prediv/> [in rectilinear2d, divide generator]
+      .. xml:tag:: <prediv/> [in rectangular2d, divide generator]
 
          Set number of the initial divisions of each geometry object.
 
@@ -245,19 +199,19 @@ Possible <generator> contents for different types and methods
          :attr by1: Number of parts each object is divided into along vertical axis.
          :attr by: Set values of ``by0`` and ``by1`` both at once. It this attribute is specified, no other ones are allowed.
 
-      .. xml:tag:: <postdiv/> [in rectilinear2d, divide generator]
+      .. xml:tag:: <postdiv/> [in rectangular2d, divide generator]
 
          Set number of the final divisions of each geometry object.
 
-         It has same attributes as :xml:tag:`<prediv/> [in rectilinear2d, divide generator]`.
+         It has same attributes as :xml:tag:`<prediv/> [in rectangular2d, divide generator]`.
 
-      .. xml:tag:: <refinements> [in rectilinear2d, divide generator]
+      .. xml:tag:: <refinements> [in rectangular2d, divide generator]
 
          Specify list of additional refinements of the generated mesh.
 
          .. xml:contents::
 
-            .. xml:tag:: <axis0/> [in rectilinear2d, divide generator]
+            .. xml:tag:: <axis0/> [in rectangular2d, divide generator]
 
                Add refinement to the horizontal axis.
 
@@ -269,11 +223,11 @@ Possible <generator> contents for different types and methods
 
                Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
 
-            .. xml:tag:: <axis1/> [in rectilinear2d, divide generator]
+            .. xml:tag:: <axis1/> [in rectangular2d, divide generator]
 
                Add refinement to the vertical axis.
 
-               It has same attributes as :xml:tag:`<axis0/> [in rectilinear2d, divide generator]`.
+               It has same attributes as :xml:tag:`<axis0/> [in rectangular2d, divide generator]`.
 
       .. xml:tag:: <warnings/>
 
@@ -283,21 +237,21 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectilinear2d" method="simple"> [rectilinear2d, simple]
+.. xml:tag:: <generator type="rectangular2d" method="simple"> [rectangular2d, simple]
 
-   Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
 
-.. xml:tag:: <generator type="rectilinear3d" method="divide"> [rectilinear3d, divide]
+.. xml:tag:: <generator type="rectangular3d" method="divide"> [rectangular3d, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 
    .. xml:contents::
 
-      .. xml:tag:: <no-gradual/> [in rectilinear3d, divide generator]
+      .. xml:tag:: <no-gradual/> [in rectangular3d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-      .. xml:tag:: <prediv/> [in rectilinear3d, divide generator]
+      .. xml:tag:: <prediv/> [in rectangular3d, divide generator]
 
          Set number of the initial divisions of each geometry object.
 
@@ -306,19 +260,19 @@ Possible <generator> contents for different types and methods
          :attr by2: Number of parts each object is divided into along vertical axis.
          :attr by: Set values of ``by0``, ``by1`` and ``by2`` at once. It this attribute is specified, no other ones are allowed.
 
-      .. xml:tag:: <postdiv/> [in rectilinear3d, divide generator]
+      .. xml:tag:: <postdiv/> [in rectangular3d, divide generator]
 
          Set number of the final divisions of each geometry object.
 
-         It has same attributes as :xml:tag:`<prediv/> [in rectilinear3d, divide generator]`.
+         It has same attributes as :xml:tag:`<prediv/> [in rectangular3d, divide generator]`.
 
-      .. xml:tag:: <refinements> [in rectilinear3d, divide generator]
+      .. xml:tag:: <refinements> [in rectangular3d, divide generator]
 
          Specify list of additional refinements of the generated mesh.
 
          .. xml:contents::
 
-            .. xml:tag:: <axis0/> [in rectilinear3d, divide generator]
+            .. xml:tag:: <axis0/> [in rectangular3d, divide generator]
 
                Add refinement to the longitudinal axis.
 
@@ -330,17 +284,17 @@ Possible <generator> contents for different types and methods
 
                Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
 
-            .. xml:tag:: <axis1/> [in rectilinear3d, divide generator]
+            .. xml:tag:: <axis1/> [in rectangular3d, divide generator]
 
                Add refinement to the transverse axis.
 
-               It has same attributes as :xml:tag:`<axis0/> [in rectilinear3d, divide generator]`.
+               It has same attributes as :xml:tag:`<axis0/> [in rectangular3d, divide generator]`.
 
-            .. xml:tag:: <axis2/> [in rectilinear3d, divide generator]
+            .. xml:tag:: <axis2/> [in rectangular3d, divide generator]
 
                Add refinement to the vertical axis.
 
-               It has same attributes as :xml:tag:`<axis0/> [in rectilinear3d, divide generator]`.
+               It has same attributes as :xml:tag:`<axis0/> [in rectangular3d, divide generator]`.
 
       .. xml:tag:: <warnings/>
 
@@ -350,6 +304,6 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectilinear3d" method="simple"> [rectilinear3d, simple]
+.. xml:tag:: <generator type="rectangular3d" method="simple"> [rectangular3d, simple]
 
-   Simple generator creating the rectangular rectilinear mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.

@@ -374,7 +374,7 @@ static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("recti
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearMeshDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectilinearMeshDivideGenerator<3>);
 
-// deprecated:
+// obsolete:
 static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);

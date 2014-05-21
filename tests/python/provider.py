@@ -107,12 +107,12 @@ class ProfileTest(unittest.TestCase):
         profile[hot] = 1e7
         receiver = plask.flow.HeatReceiverCyl()
         receiver.connect(profile.outHeat)
-        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]), mesh.Rectilinear([5, 11])))), [0., 1e7] )
+        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Ordered([10]), mesh.Ordered([5, 11])))), [0., 1e7] )
         self.assertFalse( receiver.changed )
         profile[hot] = 2e7
         receiver.changed
         self.assertTrue( receiver.changed )
-        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]),  mesh.Rectilinear([5, 11])))), [0., 2e7] )
+        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Ordered([10]),  mesh.Ordered([5, 11])))), [0., 2e7] )
 
     def testAdding(self):
         warm = plask.geometry.Rectangle(20, 2, 'GaAs')
@@ -136,4 +136,4 @@ class ProfileTest(unittest.TestCase):
         receiver = plask.flow.HeatReceiverCyl()
         receiver.connect(profile1.outHeat + profile2.outHeat)
 
-        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Rectilinear([10]), mesh.Rectilinear([1, 3, 5])))), [1e7, 2e7, 1e7] )
+        self.assertEqual( list(receiver(mesh.Rectangular2D(mesh.Ordered([10]), mesh.Ordered([1, 3, 5])))), [1e7, 2e7, 1e7] )

@@ -43,10 +43,10 @@ shared_ptr<RegularMesh1D> readRegularMesh1D(XMLReader& reader) {
 RegisterMeshReader regularmesh_reader("regular", readRegularMesh1D);
 
 
-shared_ptr<RegularMesh1D> readRegularMesh1D_deprecated(XMLReader& reader) {
-    writelog(LOG_WARNING, "Mesh type \"%1%\" is deprecated (will not work in future versions of PLaSK), use \"regular\" instead.", reader.requireAttribute("type"));
+shared_ptr<RegularMesh1D> readRegularMesh1D_obsolete(XMLReader& reader) {
+    writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete (will not work in future versions of PLaSK), use \"regular\" instead.", reader.requireAttribute("type"));
     return readRegularMesh1D(reader);
 }
-RegisterMeshReader regularmesh1d_reader("regular1d", readRegularMesh1D_deprecated);
+RegisterMeshReader regularmesh1d_reader("regular1d", readRegularMesh1D_obsolete);
 
 }
