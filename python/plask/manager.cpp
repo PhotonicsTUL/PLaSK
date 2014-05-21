@@ -426,7 +426,8 @@ static py::object dict__getattr__(const std::map<std::string,T>& self, const std
     std::replace(key.begin(), key.end(), '_', '-');
     auto found = self.find(key);
     if (found == self.end()) {
-        throw AttributeError("No " + item_name<T>() + " with id '%1%'", attr);
+        PyErr_SetString(PyExc_AttributeError, format("No " + item_name<T>() + " with id '%1%'", attr).c_str());
+        boost::python::throw_error_already_set();
     }
     return py::object(found->second);
 }

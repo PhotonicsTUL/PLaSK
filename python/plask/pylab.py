@@ -177,7 +177,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     if type(comp) == str:
         comp = plask.config.axes.index(comp)
 
-    if type(field.mesh) in (plask.mesh.Rectangular2D):
+    if isinstance(field.mesh, plask.mesh.Rectangular2D):
         ax = 0, 1
         xaxis = field.mesh.axis0
         yaxis = field.mesh.axis1
@@ -187,7 +187,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
             else:
                 data = data[:,:,comp]
         data = data.transpose()
-    elif type(field.mesh) in (plask.mesh.Rectangular3D):
+    elif isinstance(field.mesh, plask.mesh.Rectangular3D):
         ax = _get_2d_axes(plane)
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:

@@ -25,7 +25,7 @@ struct Exception: public std::runtime_error {
     Exception(const std::string& msg): std::runtime_error(msg) {
 #ifdef PRINT_STACKTRACE_ON_EXCEPTION
         std::cerr << "Exception throwed: " << msg << std::endl;
-        backward::StackTrace st; st.load_here(64);
+        backward::StackTrace st; st.load_here(128);
         backward::Printer p; p.print(st);
 #endif
     }

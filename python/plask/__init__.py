@@ -387,17 +387,19 @@ def RegularAxis(*args, **kwargs):
 mesh.RegularAxis = RegularAxis
 del RegularAxis
 
-def Rectilinear2D(*args, **kwargs):
+class Rectilinear2D(mesh.Rectangular2D):
     """Obsolete, use mesh.Rectilinear2D instead."""
-    print_log(LOG_WARNING, "mesh.Rectilinear2D is obsolete, use mesh.Rectangular2D instead")
-    return mesh.Rectangular2D(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        print_log(LOG_WARNING, "mesh.Rectilinear2D is obsolete, use mesh.Rectangular2D instead")
+        mesh.Rectangular2D.__init__(self, *args, **kwargs)
 mesh.Rectilinear2D = Rectilinear2D
 del Rectilinear2D
 
-def Rectilinear3D(*args, **kwargs):
-    """Obsolete, use mesh.Rectangular3D instead."""
-    print_log(LOG_WARNING, "mesh.Rectilinear3D is obsolete, use mesh.Rectangular3D instead")
-    return mesh.Rectangular3D(*args, **kwargs)
+class Rectilinear3D(mesh.Rectangular3D):
+    """Obsolete, use mesh.Rectilinear3D instead."""
+    def __init__(self, *args, **kwargs):
+        print_log(LOG_WARNING, "mesh.Rectilinear3D is obsolete, use mesh.Rectangular3D instead")
+        mesh.Rectangular3D.__init__(self, *args, **kwargs)
 mesh.Rectilinear3D = Rectilinear3D
 del Rectilinear3D
 

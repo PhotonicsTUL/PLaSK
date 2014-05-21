@@ -69,9 +69,9 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     determineQwWidth();
 
     // reset mesh to original value
-    current_mesh() = *this->mesh;
     z = getZQWCoordinate();
-    *mesh2.axis1 = plask::RegularAxis(z, z, 1);
+    mesh2.setAxis0(this->mesh);
+    mesh2.setAxis1(make_shared<plask::RegularAxis>(z, z, 1));
     if (current_mesh().size() % 2 == 0) current_mesh().reset(current_mesh().first(), current_mesh().last(), current_mesh().size()+1);
 
     n_present.reset(current_mesh().size(), 0.0);
@@ -875,11 +875,11 @@ template<typename Geometry2DType> plask::DataVector<const double> FiniteElementM
 {
     plask::DataVector<double> Li(current_mesh().size());
 
-    for (int i=0; i<current_mesh().size(); i++)
+    for (int i = 0; i < current_mesh().size(); ++i)
     {
         double current_Li = 0.0;
 
-        for (int j=0; j<detected_QW.size(); j++)
+        for (int j = 0; j < detected_QW.size(); ++j)
         {
             int k = mesh_Li.index(i,j);
             current_Li += initLi[k];
