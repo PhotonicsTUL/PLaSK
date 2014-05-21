@@ -131,44 +131,6 @@ geometry.Stack3D = Stack3D
 del Stack3D
 
 
-## ## Obsolete meshes constructors ## ##
-
-def Rectilinear2D(*args, **kwargs):
-    """Obsolete, use mesh.Rectilinear2D instead."""
-    print_log(LOG_WARNING, "mesh.Rectilinear2D is obsolete, use mesh.Rectangular2D instead")
-    return mesh.Rectangular2D(*args, **kwargs)
-mesh.Rectilinear2D = Rectilinear2D
-del Rectilinear2D
-
-def Rectilinear3D(*args, **kwargs):
-    """Obsolete, use mesh.Rectangular3D instead."""
-    print_log(LOG_WARNING, "mesh.Rectilinear3D is obsolete, use mesh.Rectangular3D instead")
-    return mesh.Rectangular3D(*args, **kwargs)
-mesh.Rectilinear3D = Rectilinear3D
-del Rectilinear3D
-
-def Regular2D(axis0, axis1, order='01'):
-    """Obsolete, use mesh.Rectangular2D(Regular(axis0), Regular(axis1), order) instead."""
-    print_log(LOG_WARNING, "mesh.Regular2D is obsolete, "
-                           "use mesh.Rectangular2D(Regular(axis0), Regular(axis1), order) instead")
-    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
-    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
-    return mesh.Rectangular2D(axis0, axis1, order)
-mesh.Regular2D = Regular2D
-del Regular2D
-
-def Regular3D(axis0, axis1, axis2, order='012'):
-    """Obsolete, use mesh.Rectangular3D(Regular(axis0), Regular(axis1), Regular(axis2), order) instead."""
-    print_log(LOG_WARNING, "mesh.Regular3D is obsolete, "
-                           "use mesh.Rectangular3D(Regular(axis0), Regular(axis1), Regular(axis2), order) instead")
-    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
-    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
-    if isinstance(axis2, tuple): axis2 = Regular(*axis2)
-    return mesh.Rectangular3D(axis0, axis1, axis2, order)
-mesh.Regular3D = Regular3D
-del Regular3D
-
-
 ## ## plask.manager ## ##
 
 def loadxpl(source, vars={}, sections=None, destination=None):
@@ -393,5 +355,72 @@ else:
 import plask.phys
 
 import plask.algorithm
+
+
+## ## Obsolete meshes constructors ## ##
+
+def Rectilinear1D(*args, **kwargs):
+    """Obsolete, use mesh.Ordered instead."""
+    print_log(LOG_WARNING, "mesh.Rectilinear1D is obsolete, use mesh.Ordered instead")
+    return mesh.Ordered(*args, **kwargs)
+mesh.Rectilinear1D = Rectilinear1D
+del Rectilinear1D
+
+def Regular1D(*args, **kwargs):
+    """Obsolete, use mesh.Regular instead."""
+    print_log(LOG_WARNING, "mesh.Regular1D is obsolete, use mesh.Regular instead")
+    return mesh.Regular(*args, **kwargs)
+mesh.Regular1D = Regular1D
+del Regular1D
+
+def RectilinearAxis(*args, **kwargs):
+    """Obsolete, use mesh.Ordered instead."""
+    print_log(LOG_WARNING, "mesh.RectilinearAxis is obsolete, use mesh.Ordered instead")
+    return mesh.Ordered(*args, **kwargs)
+mesh.RectilinearAxis = RectilinearAxis
+del RectilinearAxis
+
+def RegularAxis(*args, **kwargs):
+    """Obsolete, use mesh.Regular instead."""
+    print_log(LOG_WARNING, "mesh.RegularAxis is obsolete, use mesh.Regular instead")
+    return mesh.Regular(*args, **kwargs)
+mesh.RegularAxis = RegularAxis
+del RegularAxis
+
+def Rectilinear2D(*args, **kwargs):
+    """Obsolete, use mesh.Rectilinear2D instead."""
+    print_log(LOG_WARNING, "mesh.Rectilinear2D is obsolete, use mesh.Rectangular2D instead")
+    return mesh.Rectangular2D(*args, **kwargs)
+mesh.Rectilinear2D = Rectilinear2D
+del Rectilinear2D
+
+def Rectilinear3D(*args, **kwargs):
+    """Obsolete, use mesh.Rectangular3D instead."""
+    print_log(LOG_WARNING, "mesh.Rectilinear3D is obsolete, use mesh.Rectangular3D instead")
+    return mesh.Rectangular3D(*args, **kwargs)
+mesh.Rectilinear3D = Rectilinear3D
+del Rectilinear3D
+
+def Regular2D(axis0, axis1, order='01'):
+    """Obsolete, use mesh.Rectangular2D(Regular(axis0), Regular(axis1), order) instead."""
+    print_log(LOG_WARNING, "mesh.Regular2D is obsolete, "
+                           "use mesh.Rectangular2D(Regular(axis0), Regular(axis1), order) instead")
+    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
+    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
+    return mesh.Rectangular2D(axis0, axis1, order)
+mesh.Regular2D = Regular2D
+del Regular2D
+
+def Regular3D(axis0, axis1, axis2, order='012'):
+    """Obsolete, use mesh.Rectangular3D(Regular(axis0), Regular(axis1), Regular(axis2), order) instead."""
+    print_log(LOG_WARNING, "mesh.Regular3D is obsolete, "
+                           "use mesh.Rectangular3D(Regular(axis0), Regular(axis1), Regular(axis2), order) instead")
+    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
+    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
+    if isinstance(axis2, tuple): axis2 = Regular(*axis2)
+    return mesh.Rectangular3D(axis0, axis1, axis2, order)
+mesh.Regular3D = Regular3D
+del Regular3D
+
 
 ## ##  ## ##
