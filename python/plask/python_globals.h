@@ -175,13 +175,16 @@ static std::string str__vector_of(const std::vector<T>& self) {
 }
 
 template <typename T>
-static inline py::class_< std::vector<T>, shared_ptr<std::vector<T>> > register_vector_of(const std::string& name) {
+static inline py::class_<std::vector<T>, shared_ptr<std::vector<T>>> register_vector_of(const std::string& name) {
     VectorFromSequence<T>();
-    return py::class_< std::vector<T>, shared_ptr<std::vector<T>> >((name+"_list").c_str(), py::no_init)
+    py::class_<std::vector<T>, shared_ptr<std::vector<T>>> cls((name+"_list").c_str(), py::no_init); cls
         .def(py::vector_indexing_suite<std::vector<T>>())
         .def("__repr__", &str__vector_of<T>)
         .def("__str__", &str__vector_of<T>)
     ;
+    py::scope scope;
+    py::delattr(scope, py::str(name+"_list"));
+    return cls;
 }
 
 
