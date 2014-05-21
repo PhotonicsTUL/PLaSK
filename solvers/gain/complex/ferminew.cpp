@@ -248,13 +248,8 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
 template <typename GeometryType>
 QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region)
 {
-    //QW::gain gainModule;
-
     if (isnan(n) || n < 0) throw ComputationError(this->getId(), "Wrong carrier concentration (%1%/cm3)", n);
     if (isnan(T) || T < 0) throw ComputationError(this->getId(), "Wrong temperature (%1%K)", T);
-
-    //double qstrain = 0.; // strain in well
-    //double bstrain = 0.; // strain in barrier
 
     if (if_strain)
     {
@@ -266,11 +261,6 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             double tH = region.getLayerBox(i).height(); // (um) czy na pewno h powinno byc w um i czy w ten sposob uzyskuje dobra wartosc? // TODO
             writelog(LOG_RESULT, "Layer %1% - strain: %2%, thickness: %3%", i, e, tH);
         }
-
-        /*qstrain = (this->materialSubstrate->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
-        bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
-        writelog(LOG_RESULT, "Strain in QW: %1%", qstrain);
-        writelog(LOG_RESULT, "Strain in B: %1%", bstrain);*/
     }   
 
     buildStructure(T, region);
@@ -279,7 +269,6 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
     double tQWDso = region.materialQW->Dso(T); // QW Dso (eV)
     double tQWTotH = region.qwtotallen*0.1; // total thickness of QWs (nm)
     double tQWnR = region.materialQW->nr(wavelength,T); // QW nR
-    //double tT = 300.; // temperature in the active region (K)
     //double inN = 4e18; // 'initial' carrier concentration (1/cm3)
     //double tLam = 1300.; // wavelength (nm)
 

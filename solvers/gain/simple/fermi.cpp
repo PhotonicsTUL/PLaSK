@@ -332,6 +332,9 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
 
+    //writelog(LOG_RESULT, "qwlen: %1%", region.qwlen); // TEST
+    //writelog(LOG_RESULT, "totallen: %1%", region.totallen); // TEST
+
     qEg = qEc-qEvhh;
     cdepth = bEc - qEc;
     vhhdepth = qEvhh-bEvhh;
@@ -364,7 +367,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     {
         // compute levels
         if (extern_levels)
-            gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwlen));// earlier: qwtotallen
+            gainModule.przygoblALL(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen));// earlier: qwtotallen
         else
         {
             gainModule.przygoblE();
@@ -436,15 +439,19 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     if (if_strain == true)
     {
          gainModule.przygoblQFL(region.qwlen); // earlier: qwtotallen
+         //gainModule.przygoblQFL(region.qwtotallen); old line - nice way to change quasi-Fermi levels when another well is added - do not follow this way in old-gain model;-)
     }
     else
     {
         // compute levels
         if (extern_levels)
-            gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
+            gainModule.przygobl_n(*extern_levels, gainModule.przel_dlug_z_angstr(region.qwtotallen)); // earlier: qwtotallen
         else
             gainModule.przygobl_n(gainModule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
     }
+
+    //writelog(LOG_RESULT, "matrix element: %1%", gainModule.Get_momentum_matrix_element()); // TEST;
+
     return gainModule;
 }
 
@@ -558,7 +565,9 @@ const DataVector<double> FermiGainSolver<GeometryType>::getGain(const MeshD<2>& 
         size_t i = points[j].first;
         const ActiveRegionInfo& region = regions[points[j].second];
         QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
-        gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), region.qwlen); // earlier: qwtotallen
+        double len = region.qwlen;
+        if (extern_levels) len = region.qwtotallen;
+        gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), len); // earlier: qwtotallen
     }
 
     if (this->mesh) {
@@ -603,10 +612,12 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const MeshD<2>& 
     {
         size_t i = points[j].first;
         const ActiveRegionInfo& region = regions[points[j].second];
+        double len = region.qwlen;
+        if (extern_levels) len = region.qwtotallen;
         double gainOnMesh1 = getGainModule(wavelength, TOnMesh[i], (1.-0.5*differenceQuotient) * nOnMesh[i], region)
-            .Get_gain_at_n(nm_to_eV(wavelength), region.qwlen); // earlier: qwtotallen
+            .Get_gain_at_n(nm_to_eV(wavelength), len); // earlier: qwtotallen
         double gainOnMesh2 = getGainModule(wavelength, TOnMesh[i], (1.+0.5*differenceQuotient) * nOnMesh[i], region)
-            .Get_gain_at_n(nm_to_eV(wavelength), region.qwlen); // earlier: qwtotallen
+            .Get_gain_at_n(nm_to_eV(wavelength), len); // earlier: qwtotallen
         dGdn[i] = (gainOnMesh2 - gainOnMesh1) / (differenceQuotient*nOnMesh[i]);
     }
 

@@ -166,7 +166,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
         if (extern_levels) {
-            gmodule.przygobl_n(*extern_levels, gmodule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
+            gmodule.przygobl_n(*extern_levels, gmodule.przel_dlug_z_angstr(region.qwtotallen)); // earlier: qwtotallen
         } else {
             gmodule.przygobl_n(gmodule.przel_dlug_z_angstr(region.qwlen)); // earlier: qwtotallen
         }
