@@ -178,6 +178,19 @@ if(DETECT_FORTRAN_NAME_MANGLING)
     endif()
 endif(DETECT_FORTRAN_NAME_MANGLING)
 
+## ---------- libraries for better stack printing ------------------------------
+if(PRINT_STACKTRACE_ON_EXCEPTION)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    find_package(DW)
+    if(DW_FOUND)
+        set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
+        include_directories(${DW_INCLUDE_DIRS})
+    else()  #TODO: try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
+        set(PRINT_STACKTRACE_LIBRARY "")
+    endif()
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+endif(PRINT_STACKTRACE_ON_EXCEPTION)
+
 
 # ----------===== Build and Install =====--------------------------------------------
 
@@ -206,7 +219,7 @@ add_subdirectory(extlib/fftpacx)
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})
 #add_library(libplask SHARED ${plask_src})
-target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES}) # ${Boost_THREAD_LIBRARY}
+target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core

@@ -9,11 +9,6 @@ This file contains definitions of most exceptions classes which are used in PLaS
 #include "utils/format.h"
 #include "utils/string.h"
 
-#include <plask/config.h>
-#ifdef PRINT_STACKTRACE_ON_EXCEPTION
-#include <backward.hpp>
-#endif
-
 namespace plask {
 
 /**
@@ -22,13 +17,7 @@ namespace plask {
 struct Exception: public std::runtime_error {
 
     /// @param msg error message
-    Exception(const std::string& msg): std::runtime_error(msg) {
-#ifdef PRINT_STACKTRACE_ON_EXCEPTION
-        std::cerr << "Exception throwed: " << msg << std::endl;
-        backward::StackTrace st; st.load_here(128);
-        backward::Printer p; p.print(st);
-#endif
-    }
+    Exception(const std::string& msg);
 
     /**
      * Format error message using boost::format.
