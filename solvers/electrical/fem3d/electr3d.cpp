@@ -447,7 +447,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
         ++loopno;
         ++loop;
 
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g %%",
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));

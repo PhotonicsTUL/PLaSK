@@ -71,6 +71,7 @@ option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build Python interface as external module." OFF "BUILD_PYTHON" OFF)
+cmake_dependent_option(BUILD_GUI "Build and install GUI." ON "BUILD_PYTHON" OFF)
 
 option(BUILD_TESTING "Build unit tests." ON)
 cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
@@ -299,38 +300,40 @@ if(BUILD_PYTHON)
     install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
 
     # GUI
-    if(WIN32)
-        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/qtplask.ico\"\n")
-        add_executable(plaskgui python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc)
-    else()
-        add_executable(plaskgui python/exe_gui.cpp)
-    endif()
-    target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
-    if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
-        set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flags} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
-    endif()
-    if(WIN32)
-        set_target_properties(plaskgui PROPERTIES LINK_FLAGS "-mwindows ${EXE_FLAGS}")
-    elseif(DEFINED EXE_FLAGS)
-        set_target_properties(plaskgui PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
-    endif()
+    if(BUILD_GUI)
+        if(WIN32)
+            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/qtplask.ico\"\n")
+            add_executable(plaskgui python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc)
+        else()
+            add_executable(plaskgui python/exe_gui.cpp)
+        endif()
+        target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
+        if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
+            set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flags} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
+        endif()
+        if(WIN32)
+            set_target_properties(plaskgui PROPERTIES LINK_FLAGS "-mwindows ${EXE_FLAGS}")
+        elseif(DEFINED EXE_FLAGS)
+            set_target_properties(plaskgui PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
+        endif()
 
-    #TODO compile pyc files
-    install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
-            PATTERN .* EXCLUDE
-            PATTERN *.xpl EXCLUDE
-            PATTERN *.qrc EXCLUDE
-            PATTERN *.pyc EXCLUDE
-            PATTERN gui/qt.py* EXCLUDE
-            PATTERN gui/_resources.py* EXCLUDE
-    )
-    install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
-    install(FILES gui/_resources.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME _resources.py)
-    install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
+        #TODO compile pyc files
+        install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
+                PATTERN .* EXCLUDE
+                PATTERN *.xpl EXCLUDE
+                PATTERN *.qrc EXCLUDE
+                PATTERN *.pyc EXCLUDE
+                PATTERN gui/qt.py* EXCLUDE
+                PATTERN gui/_resources.py* EXCLUDE
+        )
+        install(FILES gui/qt.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME qt.py)
+        install(FILES gui/_resources.pyside.py DESTINATION lib/plask/gui COMPONENT GUI RENAME _resources.py)
+        install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
 
-    if(UNIX)
-        install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT GUI)
-        install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
+        if(UNIX)
+            install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT GUI)
+            install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
+        endif()
     endif()
 
 endif(BUILD_PYTHON)
@@ -587,8 +590,8 @@ endif()
 # Settings for DEB generator
 if(UNIX)
     set(CPACK_GENERATOR "DEB")
-    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask")
-    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete")
+    file(WRITE ${CMAKE_BINARY_DIR}/postinst "#!/bin/sh\nset -e\n${PYTHON_EXECUTABLE} -m compileall ${CMAKE_INSTALL_PREFIX}/lib/plask\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/prerm "#!/bin/sh\nset -e\nfind ${CMAKE_INSTALL_PREFIX}/lib/plask -type f -name \"*.pyc\" -delete\nexit 0\n")
 
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v/100000,v/100%1000,v/10%10]))"
                     OUTPUT_VARIABLE boostver)

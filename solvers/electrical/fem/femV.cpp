@@ -460,7 +460,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
         ++loopno;
         ++loop;
 
-        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g %%",
+        this->writelog(LOG_RESULT, "Loop %d(%d): max(j%s) = %g kA/cm2, error = %g%%",
                        loop, loopno, noactive?"":"@junc", mcur, err);
 
     } while (err > maxerr && (loops == 0 || loop < loops));
@@ -709,7 +709,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnerg
                             / (e.getUpper0() - e.getLower0()); // [grad(dV)] = V/m
         double dvy = 0.5e6 * (- potentials[ll] - potentials[lu] + potentials[ul] + potentials[uu])
                             / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
-        double w = this->geometry->getMaterial(e.getMidpoint())->eps(T[e.getIndex()]) * (dvx*dvx + dvy*dvy); 
+        double w = this->geometry->getMaterial(e.getMidpoint())->eps(T[e.getIndex()]) * (dvx*dvx + dvy*dvy);
         double width = e.getUpper0() - e.getLower0();
         double height = e.getUpper1() - e.getLower1();
         W += width * height * w;
@@ -732,7 +732,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEne
                             / (e.getUpper0() - e.getLower0()); // [grad(dV)] = V/m
         double dvy = 0.5e6 * (- potentials[ll] - potentials[lu] + potentials[ul] + potentials[uu])
                             / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
-        double w = this->geometry->getMaterial(midpoint)->eps(T[e.getIndex()]) * (dvx*dvx + dvy*dvy); 
+        double w = this->geometry->getMaterial(midpoint)->eps(T[e.getIndex()]) * (dvx*dvx + dvy*dvy);
         double width = e.getUpper0() - e.getLower0();
         double height = e.getUpper1() - e.getLower1();
         W += width * height * midpoint.rad_r() * w;
@@ -744,13 +744,13 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEne
 
 template<typename Geometry2DType>
 double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCapacitance() {
-    
+
     if (this->voltage_boundary.size() != 2) {
         throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
     }
-    
+
     double U = voltage_boundary[0].value - voltage_boundary[1].value;
-    
+
     return 2e12 * getTotalEnergy() / (U*U); // 1e12 F -> pF
 }
 

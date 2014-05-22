@@ -735,6 +735,8 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::burning_integral()
 {
+    if (PM.size() == 0)
+        throw Exception("%1%: You must run over-threshold computations first before getting burring integral.", this->getId());
     double int_val = 0.0;
     for (int i = 0; i < (current_mesh().size() - 1)/2; i++)
     {

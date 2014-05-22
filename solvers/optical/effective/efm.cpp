@@ -613,15 +613,19 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
         long nz, ierr;
 
         zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", mode.m, str(x1));
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %6% nm",
+            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
         zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", mode.m, str(x1));
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %6% nm",
+            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
         for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
 
         zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)", mode.m, str(x2));
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute J(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %6% nm",
+            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
         zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)", mode.m, str(x2));
+        if (ierr != 0) throw ComputationError(getId(), "Could not compute H(%1%, %2%)\n @ r = %3% um, lam = %4% nm, vlam = %6% nm",
+            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
         for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
 
         MatrixR A(       J1[0],                   H1[0],

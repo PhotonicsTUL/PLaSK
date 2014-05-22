@@ -125,7 +125,7 @@ static RegisterMeshReader rectilinearmesh_reader("ordered", readRectilinearMesh1
 // obsolete:
 
 shared_ptr<RectilinearMesh1D> readRectilinearMesh1D_obsolete(XMLReader& reader) {
-    writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete (will not work in future versions of PLaSK), use \"ordered\" instead.", reader.requireAttribute("type"));
+    writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete, use \"ordered\" instead.", reader.requireAttribute("type"));
     return readRectilinearMesh1D(reader);
 }
 RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D_obsolete);
