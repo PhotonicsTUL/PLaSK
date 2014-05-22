@@ -31,6 +31,10 @@
 // Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)
 #ifndef NDEBUG
 #cmakedefine PRINT_STACKTRACE_ON_EXCEPTION
+#ifdef PRINT_STACKTRACE_ON_EXCEPTION
+#cmakedefine BACKWARD_HAS_DW 1
+#cmakedefine BACKWARD_HAS_BFD 1
+#endif
 #endif
 
 #endif // PLASK__CONFIG_H
