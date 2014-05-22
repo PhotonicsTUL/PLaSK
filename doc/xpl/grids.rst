@@ -33,26 +33,6 @@ In this section one can define computational meshes for use by solvers. It can b
 Possible <mesh> contents for different types
 --------------------------------------------
 
-.. xml:tag:: <mesh type="rectangular1d"> [rectangular1d]
-
-   One-dimensional rectangular mesh with regular intervals.
-
-   .. xml:contents::
-
-      .. xml:tag:: <axis> [in rectangular1d mesh]
-
-         Specification of the horizontal axis.
-
-         If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
-
-         :attr start: Position of the first point on the axis. (float [µm])
-         :attr stop: Position of the last point on the axis. (float [µm])
-         :attr num: Number of the equally distributed points along the axis. (integer)
-
-         .. xml:contents::
-
-            Comma-separated list of the mesh points along this axis.
-
 .. xml:tag:: <mesh type="rectangular2d"> [rectangular2d]
 
    Two-dimensional rectangular mesh with.
@@ -125,39 +105,59 @@ Possible <mesh> contents for different types
          :attr required stop: Position of the last point on the axis. (float [µm])
          :attr required num: Number of the equally distributed points along the axis. (integer)
 
+.. xml:tag:: <mesh type="ordered"> [ordered]
+
+   One-dimensional rectangular mesh with regular intervals.
+
+   .. xml:contents::
+
+      .. xml:tag:: <axis> [in ordered mesh]
+
+         Specification of the horizontal axis.
+
+         If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
+
+         :attr start: Position of the first point on the axis. (float [µm])
+         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr num: Number of the equally distributed points along the axis. (integer)
+
+         .. xml:contents::
+
+            Comma-separated list of the mesh points along this axis.
+
 
 Possible <generator> contents for different types and methods
 -------------------------------------------------------------
 
-.. xml:tag:: <generator type="rectangular1d" method="divide"> [rectangular1d, divide]
+.. xml:tag:: <generator type="ordered" method="divide"> [ordered, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 
    .. xml:contents::
 
-      .. xml:tag:: <no-gradual/> [in rectangular1d, divide generator]
+      .. xml:tag:: <no-gradual/> [in ordered, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-      .. xml:tag:: <prediv/> [in rectangular1d, divide generator]
+      .. xml:tag:: <prediv/> [in ordered, divide generator]
 
          Set number of the initial divisions of each geometry object.
 
          :attr by: Number of parts each object is divided into along horizontal axis.
 
-      .. xml:tag:: <postdiv/> [in rectangular1d, divide generator]
+      .. xml:tag:: <postdiv/> [in ordered, divide generator]
 
          Set number of the final divisions of each geometry object.
 
          :attr by: Number of parts each object is divided into along horizontal axis.
 
-      .. xml:tag:: <refinements> [in rectangular1d, divide generator]
+      .. xml:tag:: <refinements> [in ordered, divide generator]
 
          Specify list of additional refinements of the generated mesh.
 
          .. xml:contents::
 
-            .. xml:tag:: <axis0/> [in rectangular1d, divide generator]
+            .. xml:tag:: <axis0/> [in ordered, divide generator]
 
                Add refinement to the horizontal axis.
 
@@ -177,11 +177,11 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectangular1d" method="simple"> [rectangular1d, simple]
+.. xml:tag:: <generator type="ordered" method="simple"> [ordered, simple]
 
    Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
 
-.. xml:tag:: <generator type="rectangular2d" method="divide"> [rectangular1d, divide]
+.. xml:tag:: <generator type="rectangular2d" method="divide"> [ordered, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 

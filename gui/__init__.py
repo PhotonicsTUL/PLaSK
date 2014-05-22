@@ -40,13 +40,13 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self.current_tab_index = -1
         self.filename = filename
+        self.init_ui()
         self.document = XPLDocument(self)
         if filename is not None:
             try:
                 self.document.load_from_file(filename)
             except IOError:
                 pass # TODO: add errors handling in the __new__ method
-        self.init_ui()
         self.model_is_new()
 
     def make_window_title(self):
@@ -284,7 +284,7 @@ class MainWindow(QtGui.QMainWindow):
         self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
         self.info_dock.setTitleBarWidget(QtGui.QWidget())
         self.info_model = InfoTreeModel(None)
-        #self.info_table = QtGui.QTableView(self.info_dock)
+        #self.info_table = QtGui.QTableView(self.plot_dock)
         self.info_table = QtGui.QListView(self.info_dock)
         self.info_table.setModel(self.info_model)
         #self.info_table.horizontalHeader().hide()
@@ -294,7 +294,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
 
-        #viewMenu.addAction(self.info_dock.toggleViewAction());
+        #viewMenu.addAction(self.plot_dock.toggleViewAction());
 
         geometry = CONFIG['session/geometry']
         if geometry is None:

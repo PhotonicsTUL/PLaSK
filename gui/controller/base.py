@@ -28,6 +28,7 @@ class Controller(object):
         """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
         self.model.changed.disconnect(self._document_changed)
         self.save_data_in_model()
+        self.document.window.set_section_actions()
 
     def _document_changed(self, model):
         """Slot called by model 'changed' signals whgen user edits it"""

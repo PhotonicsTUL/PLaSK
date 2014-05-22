@@ -106,15 +106,9 @@ class TableController(Controller):
         return self.table
 
     def on_edit_enter(self):
-        self.save_data_in_model()  # This should do nothing, but is called in case of subclass using it
+        super(TableController, self).on_edit_enter()
         if not self.model.is_read_only():
             self.document.window.set_section_actions(*self.get_table_edit_actions())
-        self.model.changed.connect(self._document_changed)
-
-    # When editor is turned off, model should be updated
-    def on_edit_exit(self):
-        self.model.changed.disconnect(self._document_changed)
-        self.document.window.set_section_actions()
 
     def get_table_edit_actions(self):
         return self.table_actions.get(self.document.window)

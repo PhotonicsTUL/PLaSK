@@ -295,7 +295,7 @@ static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const M
 }
 
 template <int dim>
-static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& reader, const Manager& manager)
+static shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, const Manager& manager)
 {
     auto result = make_shared<RectilinearMeshDivideGenerator<dim>>();
 
@@ -366,22 +366,50 @@ static shared_ptr<MeshGenerator> readRectilinearMeshDivideGenerator(XMLReader& r
     return result;
 }
 
-static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("rectilinear.simple",   readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
+
+static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
 
-static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("rectilinear.divide",   readRectilinearMeshDivideGenerator<1>);
-static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearMeshDivideGenerator<2>);
-static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectilinearMeshDivideGenerator<3>);
+static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("ordered.divide",   readRectilinearDivideGenerator<1>);
+static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectilinearDivideGenerator<2>);
+static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectilinearDivideGenerator<3>);
 
-// obsolete:
-static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
 
-static RegisterMeshGeneratorReader rectilinearmesh1d_dividinggenerator_reader("rectilinear1d.divide", readRectilinearMeshDivideGenerator<1>);
-static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear2d.divide", readRectilinearMeshDivideGenerator<2>);
-static RegisterMeshGeneratorReader rectilinearmesh3d_dividinggenerator_reader("rectilinear3d.divide", readRectilinearMeshDivideGenerator<3>);
+// OBSOLETE
+
+template <int dim>
+static shared_ptr<MeshGenerator> readRectilinearDivideGenerator_obsolete(XMLReader& reader, const Manager& manager)
+{
+    if (reader.requireAttribute("type") == "rectilinear1d")
+        writelog(LOG_WARNING, "Type 'rectilinear1d' is obsolete, use 'ordered' instead");
+    else if (reader.requireAttribute("type") == "rectilinear2d")
+        writelog(LOG_WARNING, "Type 'rectilinear2d' is obsolete, use 'rectangular2d' instead");
+    else if (reader.requireAttribute("type") == "rectilinear3d")
+        writelog(LOG_WARNING, "Type 'rectilinear3d' is obsolete, use 'rectangular3d' instead");
+    return readRectilinearDivideGenerator<dim>(reader, manager);
+}
+
+template <typename GeneratorT>
+static shared_ptr<MeshGenerator> readTrivialGenerator_obsolete(XMLReader& reader, const Manager&)
+{
+    if (reader.requireAttribute("type") == "rectilinear1d")
+        writelog(LOG_WARNING, "Type 'rectilinear1d' is obsolete, use 'ordered' instead");
+    else if (reader.requireAttribute("type") == "rectilinear2d")
+        writelog(LOG_WARNING, "Type 'rectilinear2d' is obsolete, use 'rectangular2d' instead");
+    else if (reader.requireAttribute("type") == "rectilinear3d")
+        writelog(LOG_WARNING, "Type 'rectilinear3d' is obsolete, use 'rectangular3d' instead");
+    reader.requireTagEnd();
+    return make_shared<GeneratorT>();
+}
+
+static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator_obsolete<RectilinearMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator_obsolete<RectilinearMesh2DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator_obsolete<RectilinearMesh3DSimpleGenerator>);
+
+static RegisterMeshGeneratorReader rectilinearmesh1d_dividinggenerator_reader("rectilinear1d.divide", readRectilinearDivideGenerator_obsolete<1>);
+static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear2d.divide", readRectilinearDivideGenerator_obsolete<2>);
+static RegisterMeshGeneratorReader rectilinearmesh3d_dividinggenerator_reader("rectilinear3d.divide", readRectilinearDivideGenerator_obsolete<3>);
 
 
 } // namespace plask
