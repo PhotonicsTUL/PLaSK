@@ -33,81 +33,9 @@ In this section one can define computational meshes for use by solvers. It can b
 Possible <mesh> contents for different types
 --------------------------------------------
 
-.. xml:tag:: <mesh type="rectangular2d"> [rectangular2d]
-
-   Two-dimensional rectangular mesh with.
-
-   .. xml:contents::
-
-      .. xml:tag:: <axis0> [in rectangular2d mesh]
-
-         Specification of the horizontal axis.
-
-         If any of the following attributes are specified, the points along this axis are distributed equally in a regular meshes. In such a case the contents must be empty.
-
-         :attr start: Position of the first point on the axis. (float [µm])
-         :attr stop: Position of the last point on the axis. (float [µm])
-         :attr num: Number of the equally distributed points along the axis. (integer)
-
-         .. xml:contents::
-
-            Comma-separated list of the mesh points along this axis.
-
-      .. xml:tag:: <axis1> [in rectangular2d mesh]
-
-         Specification of the vertical axis.
-
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular2d mesh]`.
-
-.. xml:tag:: <mesh type="rectangular3d"> [rectangular3d]
-
-   Three-dimensional rectangular mesh.
-
-   .. xml:contents::
-
-      .. xml:tag:: <axis0> [in rectangular3d mesh]
-
-         Specification of the longitudinal axis.
-
-         If any of the following attributes are specified, the points along this axis are distributed equally in a regular meshes. In such a case the contents must be empty.
-
-         :attr start: Position of the first point on the axis. (float [µm])
-         :attr stop: Position of the last point on the axis. (float [µm])
-         :attr num: Number of the equally distributed points along the axis. (integer)
-
-         .. xml:contents::
-
-            Comma-separated list of the mesh points along this axis.
-
-      .. xml:tag:: <axis1> [in rectangular3d mesh]
-
-         Specification of the transversal axis.
-
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
-
-      .. xml:tag:: <axis2> [in rectangular3d mesh]
-
-         Specification of the vertical axis.
-
-         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
-
-.. xml:tag:: <mesh type="regular1d"> [regular1d]
-
-   One-dimensional rectangular mesh with regular intervals.
-
-   .. xml:contents::
-
-      .. xml:tag:: <axis> [in regular1d mesh]
-
-         Specification of the horizontal axis.
-
-         :attr required start: Position of the first point on the axis. (float [µm])
-         :attr required stop: Position of the last point on the axis. (float [µm])
-         :attr required num: Number of the equally distributed points along the axis. (integer)
-
 .. xml:tag:: <mesh type="ordered"> [ordered]
 
-   One-dimensional rectangular mesh with regular intervals.
+   One-dimensional rectangular mesh.
 
    .. xml:contents::
 
@@ -124,6 +52,105 @@ Possible <mesh> contents for different types
          .. xml:contents::
 
             Comma-separated list of the mesh points along this axis.
+
+.. xml:tag:: <mesh type="rectilinear1d"> [rectilinear1d]
+
+   Deprecated alias to :xml:tag:`<mesh> [ordered]`.
+
+
+
+.. xml:tag:: <mesh type="regular"> [regular]
+
+   One-dimensional rectangular mesh with regular intervals.
+
+   .. xml:contents::
+
+      .. xml:tag:: <axis> [in regular mesh]
+
+         Specification of the horizontal axis.
+
+         :attr required start: Position of the first point on the axis. (float [µm])
+         :attr required stop: Position of the last point on the axis. (float [µm])
+         :attr required num: Number of the equally distributed points along the axis. (integer)
+
+.. xml:tag:: <mesh type="regular1d"> [regular1d]
+
+   Deprecated alias to :xml:tag:`<mesh> [regular]`.
+
+
+
+.. xml:tag:: <mesh type="rectangular2d"> [rectangular2d]
+
+   Two-dimensional rectangular mesh.
+
+   .. xml:contents::
+
+      .. xml:tag:: <axis0> [in rectangular2d mesh]
+
+         Specification of the horizontal axis.
+
+         :attr type: Type of axis: ``rectilinear`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``rectilinear``).
+         :attr start: Position of the first point on the axis. (float [µm])
+         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr num: Number of the equally distributed points along the axis. (integer)
+
+         .. xml:contents::
+
+            Comma-separated list of the mesh points along this axis. Allowed and required only for ``rectangular`` axis.
+
+      .. xml:tag:: <axis1> [in rectangular2d mesh]
+
+         Specification of the vertical axis.
+
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular2d mesh]`.
+
+.. xml:tag:: <mesh type="rectilinear2d"> [rectilinear2d]
+
+   Deprecated alias to :xml:tag:`<mesh> [rectangular2d]`.
+
+.. xml:tag:: <mesh type="regular2d"> [regular2d]
+
+   Deprecated alias to :xml:tag:`<mesh> [rectangular2d]`.
+
+
+.. xml:tag:: <mesh type="rectangular3d"> [rectangular3d]
+
+   Three-dimensional rectangular mesh.
+
+   .. xml:contents::
+
+      .. xml:tag:: <axis0> [in rectangular3d mesh]
+
+         Specification of the longitudinal axis.
+
+         :attr type: Type of axis: ``rectilinear`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``rectilinear``).
+         :attr start: Position of the first point on the axis. (float [µm])
+         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr num: Number of the equally distributed points along the axis. (integer)
+
+         .. xml:contents::
+
+            Comma-separated list of the mesh points along this axis. Allowed and required only for ``rectangular`` axis.
+
+      .. xml:tag:: <axis1> [in rectangular3d mesh]
+
+         Specification of the transversal axis.
+
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
+
+      .. xml:tag:: <axis2> [in rectangular3d mesh]
+
+         Specification of the vertical axis.
+
+         Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
+
+.. xml:tag:: <mesh type="rectilinear3d"> [rectilinear3d]
+
+   Deprecated alias to :xml:tag:`<mesh> [rectangular3d]`.
+
+.. xml:tag:: <mesh type="regular3d"> [regular3d]
+
+   Deprecated alias to :xml:tag:`<mesh> [rectangular3d]`.
 
 
 Possible <generator> contents for different types and methods
@@ -177,11 +204,21 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
+.. xml:tag:: <generator type="rectilinear1d" method="divide"> [rectilinear1d, divide]
+
+   Deprecated alias to :xml:tag:`<generator> [ordered, divide]`.
+
+
 .. xml:tag:: <generator type="ordered" method="simple"> [ordered, simple]
 
-   Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
 
-.. xml:tag:: <generator type="rectangular2d" method="divide"> [ordered, divide]
+.. xml:tag:: <generator type="rectilinear1d" method="simple"> [rectilinear1d, simple]
+
+   Deprecated alias to :xml:tag:`<generator> [ordered, simple]`.
+
+
+.. xml:tag:: <generator type="rectangular2d" method="divide"> [rectangular2d, divide]
 
    Generator that divides each geometry object along both axes into a specified number of elements, ensuring that two adjacent do not differ in size more than twice.
 
@@ -237,9 +274,20 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
+.. xml:tag:: <generator type="rectilinear2d" method="simple"> [rectilinear2d, divide]
+
+   Deprecated alias to :xml:tag:`<generator> [rectangular2d, divide]`.
+
+
 .. xml:tag:: <generator type="rectangular2d" method="simple"> [rectangular2d, simple]
 
-   Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
+
+.. xml:tag:: <generator type="rectilinear2d" method="simple"> [rectilinear2d, simple]
+
+   Deprecated alias to :xml:tag:`<generator> [rectangular2d, simple]`.
+
+
 
 .. xml:tag:: <generator type="rectangular3d" method="divide"> [rectangular3d, divide]
 
@@ -304,6 +352,15 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
+.. xml:tag:: <generator type="rectilinear3d" method="divide"> [rectilinear3d, divide]
+
+   Deprecated alias to :xml:tag:`<generator> [rectangular3d, divide]`.
+
+
 .. xml:tag:: <generator type="rectangular3d" method="simple"> [rectangular3d, simple]
 
-   Simple generator creating the rectangular rectangular mesh lines at the edges of bounding box of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
+
+.. xml:tag:: <generator type="rectilinear3d" method="simple"> [rectilinear3d, simple]
+
+   Deprecated alias to :xml:tag:`<generator> [rectangular3d, simple]`.
