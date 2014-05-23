@@ -36,7 +36,7 @@ MATERIALS_PROPERTES = OrderedDict((
              [(u'T', u'temperature [K]'),
               (u'e', u'lateral strain [-]'),
               (u'point', u'point in the Brillouin zone [-]')])),
-    ('cond', (u'Electrical conductivity <i>σ</i> in-plane (lateral) and cross-plane (vertical) direction', u'S/m',
+    ('cond', (u'Electrical conductivity <i>σ</i> lateral and vertical directions', u'S/m',
               [(u'T', u'temperature [K]')])),
     ('condtype', (u'Electrical conductivity type. '
                   u'In semiconductors this indicates what type of carriers <i>Nf</i> refers to.', u'-', [])),
@@ -61,20 +61,20 @@ MATERIALS_PROPERTES = OrderedDict((
     ('lattC', (u'Lattice constant', u'Å',
                [(u'T', u'temperature [K]'),
                 (u'x', u'lattice parameter [-]')])),
-    ('Me', (u'Electron effective mass <i>M<sub>e</sub></i> in in-plane (lateral) '
-            u'and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>',
+    ('Me', (u'Electron effective mass <i>M<sub>e</sub></i> in lateral '
+            u'and verical directions', u'<i>m</i><sub>0</sub>',
             [(u'T', u'temperature [K]'),
              (u'e', u'lateral strain [-]'),
              (u'point', u'point in the irreducible Brillouin zone [-]')])),
-    ('Mh', (u'Hole effective mass <i>M<sub>h</sub></i> in in-plane (lateral) '
-            u'and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>',
+    ('Mh', (u'Hole effective mass <i>M<sub>h</sub></i> in lateral '
+            u'and verical directions', u'<i>m</i><sub>0</sub>',
             [(u'T', u'temperature [K]'),
              (u'e', u'lateral strain [-]')])),
-    ('Mhh', (u'Heavy hole effective mass <i>M<sub>hh</sub></i> in in-plane (lateral) '
-             u'and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>',
+    ('Mhh', (u'Heavy hole effective mass <i>M<sub>hh</sub></i> in lateral '
+             u'and verical directions', u'<i>m</i><sub>0</sub>',
              [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
-    ('Mlh', (u'Light hole effective mass <i>M<sub>lh</sub></i> in in-plane (lateral) '
-             u'and cross-plane (vertical) direction', u'<i>m</i><sub>0</sub>',
+    ('Mlh', (u'Light hole effective mass <i>M<sub>lh</sub></i> in lateral '
+             u'and verical directions', u'<i>m</i><sub>0</sub>',
              [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
     ('Mso', (u'Split-off mass <i>M</i><sub>so</sub>', u'<i>m</i><sub>0</sub>',
              [(u'T', u'temperature [K]'),
@@ -102,7 +102,7 @@ MATERIALS_PROPERTES = OrderedDict((
     ('Nv', (u'Effective density of states in the valance band <i>N<sub>v</sub></i>', u'cm<sup>-3</sup>',
             [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]'),
              (u'point', u'point in the Brillouin zone [-]')])),
-    ('thermk', (u'Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction <i>k</i>', u'W/(m K)',
+    ('thermk', (u'Thermal conductivity in lateral and vertical directions <i>k</i>', u'W/(m K)',
                 [(u'T', u'temperature [K]'),
                  (u'h', u'layer thickness [µm]')])),
     ('VB', (u'Valance band level offset <i>VB</i>', u'eV',

@@ -13,6 +13,16 @@ void register_mesh_rectangular();
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
+template <int dim>
+static shared_ptr<MeshD<dim>> MeshGenerator_generate(MeshGeneratorD<dim>& self, shared_ptr<GeometryD<(dim==1)?2:dim>> geometry) {
+    return self.generate(geometry->getChild());
+}
+
+template <int dim>
+static shared_ptr<MeshD<dim>> MeshGenerator__call__(MeshGeneratorD<dim>& self, shared_ptr<GeometryD<(dim==1)?2:dim>> geometry) {
+    return self(geometry->getChild());
+}
+
 /// Generic declaration of base class of xD mesh generator
 template <int mesh_dim>
 py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
@@ -22,8 +32,20 @@ ExportMeshGenerator(const char* name) {
     std::string nameD = boost::lexical_cast<std::string>(mesh_dim) + "D";
     py::class_<MeshGeneratorD<mesh_dim>, shared_ptr<MeshGeneratorD<mesh_dim>>, py::bases<MeshGenerator>, boost::noncopyable>
     pyclass(name, ("Base class for all " + nameD +  " mesh generators.").c_str(), py::no_init);
-    pyclass.def("__call__", &MeshGeneratorD<mesh_dim>::operator(), "Generate mesh for given geometry or load it from the cache", py::arg("geometry"));
-    pyclass.def("generate", &MeshGeneratorD<mesh_dim>::generate, "Generate mesh for given geometry omitting the cache", py::arg("geometry"));
+    pyclass.def("__call__", &MeshGenerator__call__<mesh_dim>, py::arg("geometry"));
+    pyclass.def("__call__", &MeshGeneratorD<mesh_dim>::operator(),
+                "Generate mesh for given geometry object or load it from the cache.\n\n"
+                "Args:\n"
+                "    geometry: Geometry to generate mesh at.\n"
+                "    object: Geometry object to generate mesh at.\n",
+                py::arg("object"));
+    pyclass.def("generate", &MeshGenerator_generate<mesh_dim>, py::arg("geometry"));
+    pyclass.def("generate", &MeshGeneratorD<mesh_dim>::generate,
+                "Generate mesh for given geometry object omitting the cache.\n\n"
+                "Args:\n"
+                "    geometry: Geometry to generate mesh at.\n"
+                "    object: Geometry object to generate mesh at.\n",
+                py::arg("object"));
     pyclass.def("clear_cache", &MeshGeneratorD<mesh_dim>::clearCache, "Clear cache of generated meshes");
     return pyclass;
 }

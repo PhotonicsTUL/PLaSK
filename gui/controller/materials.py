@@ -1,3 +1,5 @@
+import re
+
 from ..qt import QtCore, QtGui
 from ..qt.QtGui import QSplitter
 
@@ -19,6 +21,8 @@ try:
     import plask
 except ImportError:
     plask = None
+else:
+    import plask.material
 
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
@@ -156,71 +160,170 @@ class MaterialsController(Controller):
         # self.document.window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, plot_window)
         plot_window = QtGui.QMainWindow(self.document.window)
         plot_window.setWindowTitle("Parameter Plot")
-        plot_window.setCentralWidget(MaterialPlot())
+        plot_window.setCentralWidget(MaterialPlot(self.model))
         plot_window.show()
 
+
+i_re = re.compile("<i>(.*?)</i>")
+sub_re = re.compile("<sub>(.*?)</sub>")
+sup_re = re.compile("<sup>(.*?)</sup>")
+def _html_to_tex(s):
+    '''Poor man's HTML to MathText conversion'''
+    s = s.replace(" ", "\/")
+    s = i_re.sub(r"\mathit{\g<1>}", s)
+    s = sub_re.sub(r"_{\g<1>}", s)
+    s = sup_re.sub(r"^{\g<1>}", s)
+    return r"$\sf " + s + "$"
 
 
 class MaterialPlot(QtGui.QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, model, parent=None):
         super(MaterialPlot, self).__init__(parent)
         #self.setContentsMargins(0, 0, 0, 0)
 
-        material_list = []
+        self.model = model
+
+        material_list = [e.name for e in model.entries]
+        sep = len(material_list)
         material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
         if plask:
             material_list.extend(sorted((mat for mat in plask.material.db
                                          if mat not in material_list and mat not in material_blacklist),
                                         key=lambda x: x.lower()))
-        # material_list.extend(e.name for e in index.model().entries[0:index.row()])
 
-        self.toolbar = QtGui.QToolBar()
         self.material = QtGui.QComboBox()
         self.material.setEditable(True)
         self.material.setInsertPolicy(QtGui.QComboBox.NoInsert)
         self.material.addItems(material_list)
+        self.material.insertSeparator(sep)
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
         self.param.currentIndexChanged.connect(self.update_vars)
-        self.toolbar.addWidget(QtGui.QLabel("Material: "))
-        self.toolbar.addWidget(self.material)
-        self.toolbar.addWidget(QtGui.QLabel("  Parameter: "))
-        self.toolbar.addWidget(self.param)
-        self.toolbar.addWidget(QtGui.QLabel(" "))
-        self.toolbar.addSeparator()
-        self.vars = None
+        toolbar1 = QtGui.QToolBar()
+        toolbar1.addWidget(QtGui.QLabel("Material: "))
+        toolbar1.addWidget(self.material)
+        toolbar1.addWidget(QtGui.QLabel("  Parameter: "))
+        toolbar1.addWidget(self.param)
+        toolbar1.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        self.toolbar2 = QtGui.QToolBar()
+        self.arguments = {}
         self.update_vars()
 
+        plot = QtGui.QPushButton()
+        plot.setText("Plot")
+        plot.pressed.connect(self.update_plot)
+
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(toolbar1)
+        hbox.addWidget(self.toolbar2)
+        hbox.addWidget(plot)
+
         self.figure = Figure()
-        self.axes = self.figure.add_subplot(111)
-        self.figure.set_tight_layout(1)
-        self.axes.hold(False)   # we want the axes cleared every time plot() is called
-        canvas = FigureCanvas(self.figure)
-        canvas.setParent(self)
-        canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-        canvas.updateGeometry()
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setParent(self)
+        self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.canvas.updateGeometry()
+
+        self.error = QtGui.QTextEdit()
+        self.error.setVisible(False)
+        self.error.setReadOnly(True)
+        self.error.setContentsMargins(0,0,0,0)
+        self.error.setFrameStyle(0)
+        pal = self.error.palette();
+        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#FFFFCC"))
+        self.error.setPalette(pal)
 
         vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(self.toolbar)
-        vbox.addWidget(canvas)
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.error)
+        vbox.addWidget(self.canvas)
 
         self.setLayout(vbox)
 
     def update_vars(self):
-        if self.vars is not None:
-            self.toolbar.removeAction(self.vars)
-        vars = QtGui.QWidget()
-        layout = QtGui.QHBoxLayout(vars)
-        layout.setContentsMargins(0, 0, 0, 0)
-        vars.setLayout(layout)
+        self.toolbar2.clear()
         first = True
+        old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
+        self.arguments = {}
         for v in MATERIALS_PROPERTES[self.param.currentText()][2]:
             select = QtGui.QRadioButton()
+            select.toggled.connect(lambda: self.update_arg())
+            self.toolbar2.addWidget(select)
+            select.setText("{}:".format(v[0]))
+            select.descr = v[1]
+            val1 = QtGui.QLineEdit()
+            self.toolbar2.addWidget(val1)
+            sep = self.toolbar2.addWidget(QtGui.QLabel("-"))
+            val2 = QtGui.QLineEdit()
+            if select.text() in old:
+                val1.setText(old[select.text()][0])
+                val2.setText(old[select.text()][1])
+            act2 = self.toolbar2.addWidget(val2)
+            self.arguments[select] = val1, val2, (sep, act2)
             if first:
                 select.setChecked(True)
                 first = False
-            layout.addWidget(select)
-            layout.addWidget(QtGui.QLabel("{}:".format(v[0])))
-            layout.addWidget(QtGui.QLineEdit())
-        self.vars = self.toolbar.addWidget(vars)
+            else:
+                sep.setVisible(False)
+                act2.setVisible(False)
+
+    def update_arg(self):
+        button = self.sender()
+        checked = button.isChecked()
+        for act in self.arguments[button][2]:
+            act.setVisible(checked)
+        if checked:
+            self.arg_button = button
+
+    def _parse_other_args(self, button):
+        for i in self.arguments.items():
+            val = i[1][0].text()
+            if i[0] is not button and val:
+                try: val = float(val)
+                except ValueError: pass
+                yield str(i[0].text())[:-1], val
+
+    def update_plot(self):
+        self.figure.clear()
+        axes = self.figure.add_subplot(111)
+        param = str(self.param.currentText())
+        try:
+            try:
+                arg1, arg2 = (float(v.text()) for v in self.arguments[self.arg_button][:2])
+            except ValueError:
+                raise ValueError("Wrong ranges '{}' - '{}'"
+                                 .format(*(v.text() for v in self.arguments[self.arg_button][:2])))
+            other_args = dict(self._parse_other_args(self.arg_button))
+            args = plask.linspace(arg1, arg2, 1000)
+            argn = str(self.arg_button.text())[:-1]
+            matn = str(self.material.currentText())
+            while True:
+                material = [e for e in self.model.entries if e.name == matn]
+                if material:
+                    material = material[0]
+                    mprop = [p for p in material.properties if p[0] == param]
+                    if mprop:
+                        expr = mprop[0][1]
+                        code = compile(expr, '', 'eval')
+                        vals = [eval(code, dict(((argn, a),), **other_args)) for a in args]
+                        break
+                    else:
+                        matn = material.base
+                        material = None
+                else:
+                    break
+            if not material:
+                material = plask.material.db.get(matn)
+                vals = [material.__getattribute__(param)(**dict(((argn, a),), **other_args)) for a in args]
+            axes.plot(args, vals)
+        except Exception as err:
+            self.error.setText(str(err))
+            self.error.show()
+        else:
+            self.error.hide()
+        axes.set_xlabel(_html_to_tex(self.arg_button.descr))
+        axes.set_ylabel(_html_to_tex(MATERIALS_PROPERTES[param][0])
+                        + ' [' + _html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
+        self.figure.set_tight_layout(5)
+        self.canvas.draw()

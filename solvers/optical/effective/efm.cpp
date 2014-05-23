@@ -679,6 +679,8 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
+    updateCache();
+
     if (!modes[num].have_fields) {
         size_t stripe = getMainStripe();
         detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
@@ -712,6 +714,8 @@ double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
 double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
+
+    updateCache();
 
     if (!modes[num].have_fields) {
         size_t stripe = getMainStripe();
@@ -892,6 +896,8 @@ DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& ds
     DataVector<double> result(dst_mesh.size(), 0.);
 
     if (modes.size() == 0) return result;
+
+    updateCache();
 
     for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
         result += 2e9*M_PI / real(modes[m].lam) * getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m

@@ -102,7 +102,8 @@ class OrderedMeshes(unittest.TestCase):
         self.assertEqual( list(mesh1.axis0), [0., 2.] )
         self.assertEqual( list(mesh1.axis1), [0., 2., 18., 34.] )
 
-        mesh2 = generator2(stack)
+        geom = plask.geometry.Cartesian2D(stack)
+        mesh2 = generator2(geom)
         self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
         self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
 
