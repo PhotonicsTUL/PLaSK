@@ -14,6 +14,7 @@ try:
 except ImportError:
     matplotlib = None
 else:
+    import numpy
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
@@ -167,6 +168,8 @@ class MaterialsController(Controller):
 i_re = re.compile("<i>(.*?)</i>")
 sub_re = re.compile("<sub>(.*?)</sub>")
 sup_re = re.compile("<sup>(.*?)</sup>")
+
+
 def _html_to_tex(s):
     '''Poor man's HTML to MathText conversion'''
     s = s.replace(" ", "\/")
@@ -184,19 +187,10 @@ class MaterialPlot(QtGui.QWidget):
 
         self.model = model
 
-        material_list = [e.name for e in model.entries]
-        sep = len(material_list)
-        material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
-        if plask:
-            material_list.extend(sorted((mat for mat in plask.material.db
-                                         if mat not in material_list and mat not in material_blacklist),
-                                        key=lambda x: x.lower()))
-
         self.material = QtGui.QComboBox()
         self.material.setEditable(True)
         self.material.setInsertPolicy(QtGui.QComboBox.NoInsert)
-        self.material.addItems(material_list)
-        self.material.insertSeparator(sep)
+        self.material.setMinimumWidth(180)
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
         self.param.currentIndexChanged.connect(self.update_vars)
@@ -210,9 +204,13 @@ class MaterialPlot(QtGui.QWidget):
         self.arguments = {}
         self.update_vars()
 
+        self.model.changed.connect(self.update_materials)
+        self.update_materials()
+
         plot = QtGui.QPushButton()
-        plot.setText("Plot")
+        plot.setText("&Plot")
         plot.pressed.connect(self.update_plot)
+        plot.setDefault(True)
 
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(toolbar1)
@@ -233,6 +231,7 @@ class MaterialPlot(QtGui.QWidget):
         pal = self.error.palette();
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#FFFFCC"))
         self.error.setPalette(pal)
+        self.error.acceptRichText()
 
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
@@ -240,6 +239,21 @@ class MaterialPlot(QtGui.QWidget):
         vbox.addWidget(self.canvas)
 
         self.setLayout(vbox)
+
+    def update_materials(self, *args):
+        text = self.material.currentText()
+        material_list = [e.name for e in self.model.entries]
+        sep = len(material_list)
+        material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
+        if plask:
+            material_list.extend(sorted((mat for mat in plask.material.db
+                                         if mat not in material_list and mat not in material_blacklist),
+                                        key=lambda x: x.lower()))
+        self.material.clear()
+        self.material.addItems(material_list)
+        self.material.insertSeparator(sep)
+        if args:
+            self.material.setEditText(text)
 
     def update_vars(self):
         self.toolbar2.clear()
@@ -288,6 +302,14 @@ class MaterialPlot(QtGui.QWidget):
         self.figure.clear()
         axes = self.figure.add_subplot(111)
         param = str(self.param.currentText())
+        import warnings
+        old_showwarning = warnings.showwarning
+        warns = []
+        def showwarning(message, category, filename, lineno, file=None, line=None):
+            message = unicode(message)
+            if message not in warns:
+                warns.append(message)
+        warnings.showwarning = showwarning
         try:
             try:
                 arg1, arg2 = (float(v.text()) for v in self.arguments[self.arg_button][:2])
@@ -306,7 +328,7 @@ class MaterialPlot(QtGui.QWidget):
                     if mprop:
                         expr = mprop[0][1]
                         code = compile(expr, '', 'eval')
-                        vals = [eval(code, dict(((argn, a),), **other_args)) for a in args]
+                        vals = [eval(code, numpy.__dict__, dict(((argn, a),), **other_args)) for a in args]
                         break
                     else:
                         matn = material.base
@@ -318,12 +340,18 @@ class MaterialPlot(QtGui.QWidget):
                 vals = [material.__getattribute__(param)(**dict(((argn, a),), **other_args)) for a in args]
             axes.plot(args, vals)
         except Exception as err:
-            self.error.setText(str(err))
+            self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
         else:
+            self.error.clear()
             self.error.hide()
-        axes.set_xlabel(_html_to_tex(self.arg_button.descr))
+            axes.set_xlabel(_html_to_tex(self.arg_button.descr))
         axes.set_ylabel(_html_to_tex(MATERIALS_PROPERTES[param][0])
                         + ' [' + _html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
         self.figure.set_tight_layout(5)
         self.canvas.draw()
+        warnings.showwarning = old_showwarning
+        if warns:
+            # if self.error.text(): self.error.append("\n")
+            self.error.append("\n".join(warns))
+            self.error.show()

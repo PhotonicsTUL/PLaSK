@@ -14,12 +14,12 @@ template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
 
 template <int dim>
-static shared_ptr<MeshD<dim>> MeshGenerator_generate(MeshGeneratorD<dim>& self, shared_ptr<GeometryD<(dim==1)?2:dim>> geometry) {
+static shared_ptr<MeshD<dim>> MeshGenerator_generate(MeshGeneratorD<dim>& self, shared_ptr<const GeometryD<(dim==1)?2:dim>> geometry) {
     return self.generate(geometry->getChild());
 }
 
 template <int dim>
-static shared_ptr<MeshD<dim>> MeshGenerator__call__(MeshGeneratorD<dim>& self, shared_ptr<GeometryD<(dim==1)?2:dim>> geometry) {
+static shared_ptr<MeshD<dim>> MeshGenerator__call__(MeshGeneratorD<dim>& self, shared_ptr<const GeometryD<(dim==1)?2:dim>> geometry) {
     return self(geometry->getChild());
 }
 

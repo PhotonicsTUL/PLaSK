@@ -6,7 +6,7 @@
 
 <materials>
   <material name="x" base="semiconductor">
-    <A>2</A>
+    <A>sqrt(T)</A>
     <ac>3</ac>
     <Me>123</Me>
   </material>
