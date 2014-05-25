@@ -1,6 +1,6 @@
 import re
 
-from ..qt import QtCore, QtGui
+from ..qt import QtCore, QtGui, qt
 from ..qt.QtGui import QSplitter
 
 from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp, MATERIALS_PROPERTES
@@ -15,6 +15,7 @@ except ImportError:
     matplotlib = None
 else:
     import numpy
+    matplotlib.rc('backend', qt4=qt)
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
@@ -262,7 +263,7 @@ class MaterialPlot(QtGui.QWidget):
         self.arguments = {}
         for v in MATERIALS_PROPERTES[self.param.currentText()][2]:
             select = QtGui.QRadioButton()
-            select.toggled.connect(lambda: self.update_arg())
+            select.toggled.connect(self.update_arg)
             self.toolbar2.addWidget(select)
             select.setText("{}:".format(v[0]))
             select.descr = v[1]
