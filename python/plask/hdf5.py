@@ -91,7 +91,7 @@ def save_field(field, file, path='', mode='a'):
     data = dest.create_dataset('data', data=field.array)
 
     mesh_group = dest.create_group('mesh')
-    if mst in (plask.mesh.Rectilinear, plask.mesh.Regular):
+    if mst in (plask.mesh.Ordered, plask.mesh.Regular):
         axis_dataset = save_rectangular1d(mesh_group, msh)
         if type(msh) is plask.mesh.Rectilinear:
             try:
