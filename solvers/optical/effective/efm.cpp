@@ -651,10 +651,12 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 double EffectiveFrequencyCylSolver::getTotalAbsorption(const Mode& mode)
 {
     double result = 0.;
+    dcomplex lam0 = 2e3*M_PI / k0;
 
     for (size_t ir = 0; ir < rsize; ++ir) {
         for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
-            double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+            dcomplex n = nrCache[ir][iz] + ngCache[ir][iz] * (1. - mode.lam/lam0);
+            double absp = - 2. * real(n) * imag(n);
             result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
             // double err = 1e-6, erz = 1e-6;
             // double rstart = mesh->axis0[ir];
@@ -679,8 +681,6 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
-    updateCache();
-
     if (!modes[num].have_fields) {
         size_t stripe = getMainStripe();
         detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
@@ -695,6 +695,7 @@ double EffectiveFrequencyCylSolver::getTotalAbsorption(size_t num)
 double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
 {
     double result = 0.;
+    dcomplex lam0 = 2e3*M_PI / k0;
 
     auto midmesh = mesh->getMidpointsMesh();
 
@@ -702,7 +703,8 @@ double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
         for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
             auto roles = geometry->getRolesAt(midmesh->at(ir, iz-1));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
+                dcomplex n = nrCache[ir][iz] + ngCache[ir][iz] * (1. - mode.lam/lam0);
+                double absp = - 2. * real(n) * imag(n);
                 result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
             }
         }
@@ -714,8 +716,6 @@ double EffectiveFrequencyCylSolver::getGainIntegral(const Mode& mode)
 double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
-
-    updateCache();
 
     if (!modes[num].have_fields) {
         size_t stripe = getMainStripe();
@@ -869,18 +869,16 @@ bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t
 DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
-    dcomplex ok0 = k0;
-    if (!isnan(lam) && lam != 0.) k0 = 2e3*M_PI / lam;
-    try { updateCache(); }
-    catch(...) { k0 = ok0; throw; }
-    k0 = ok0;
+    dcomplex lam0 = 2e3*M_PI / k0;
+    if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
+    updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
     for (size_t j = 0; j != dst_mesh.size(); ++j) {
         auto point = target_mesh[j];
         size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
         size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
-        result[j] = Tensor3<dcomplex>(nrCache[ir][iz]);
+        result[j] = Tensor3<dcomplex>(nrCache[ir][iz] + ngCache[ir][iz] * (1. - lam/lam0));
     }
     return result;
 }
@@ -892,23 +890,21 @@ DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& ds
     // in case of fast varying light intensity and too sparse mesh.
 
     writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
-
     DataVector<double> result(dst_mesh.size(), 0.);
-
     if (modes.size() == 0) return result;
-
-    updateCache();
+    dcomplex lam0 = 2e3*M_PI / k0;
+    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
 
     for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
-        result += 2e9*M_PI / real(modes[m].lam) * getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m
-    }
-    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
-    for (size_t j = 0; j != result.size(); ++j) {
-        auto point = mat_mesh[j];
-        size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
-        size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
-        double absp = - 2. * real(nrCache[ir][iz]) * imag(nrCache[ir][iz]);
-        result[j] *= absp;
+        auto EE = getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m
+        for (size_t j = 0; j != result.size(); ++j) {
+            auto point = mat_mesh[j];
+            size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
+            size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
+            dcomplex n = nrCache[ir][iz] + ngCache[ir][iz] * (1. - modes[m].lam/lam0);
+            double absp = - 2. * real(n) * imag(n);
+            result[j] += 2e9*M_PI / real(modes[m].lam) * absp * EE[j];
+        }
     }
     return result;
 }

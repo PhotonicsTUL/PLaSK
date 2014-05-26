@@ -326,7 +326,7 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
      */
     dcomplex getVertDeterminant(dcomplex vlambda) {
         updateCache();
-        if (rstripe < 0) throw BadInput(getId(), "This works only for the weigted approach");
+        if (rstripe < 0) throw BadInput(getId(), "This works only for the weighted approach");
         if (vlam == 0. && isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
         dcomplex v = freqv(vlambda);
         return this->detS1(v, nrCache[rstripe], ngCache[rstripe]);

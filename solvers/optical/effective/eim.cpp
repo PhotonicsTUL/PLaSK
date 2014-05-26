@@ -853,7 +853,8 @@ bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask
 DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod) {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex ok0 = k0;
-    if (!isnan(lam) && lam != 0.) k0 = 2e3*M_PI / lam;
+    if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
+    if (!isnan(lam)) k0 = 2e3*M_PI / lam;
     try { updateCache(); }
     catch(...) { k0 = ok0; throw; }
     k0 = ok0;
