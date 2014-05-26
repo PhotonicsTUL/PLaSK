@@ -93,7 +93,7 @@ def save_field(field, file, path='', mode='a'):
     mesh_group = dest.create_group('mesh')
     if mst in (plask.mesh.Ordered, plask.mesh.Regular):
         axis_dataset = save_rectangular1d(mesh_group, msh)
-        if type(msh) is plask.mesh.Rectilinear:
+        if type(msh) is plask.mesh.Ordered:
             try:
                 data.dims[0].label = plask.current_axes[2]
                 data.dims.create_scale(axis_dataset)
@@ -107,7 +107,7 @@ def save_field(field, file, path='', mode='a'):
         for i,ax in enumerate(axes):
             axis_group = mesh_group.create_group('axis{:d}'.format(n-1-i))
             axis_dataset = save_rectangular1d(axis_group, ax)
-            if type(ax) is plask.mesh.Rectilinear:
+            if type(ax) is plask.mesh.Ordered:
                 try:
                     data.dims[i].label = plask.current_axes[3-n+i]
                     data.dims.create_scale(axis_dataset)
