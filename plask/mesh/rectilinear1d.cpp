@@ -29,7 +29,7 @@ bool RectilinearAxis::operator==(const plask::RectilinearAxis& to_compare) const
 }
 
 void RectilinearAxis::writeXML(XMLElement &object) const {
-    object.attr("type", "rectilinear");
+    object.attr("type", "ordered");
     object.indent();
     for (auto x: this->points) {
         object.writeText(x);

@@ -278,13 +278,11 @@ class RectangularMesh<3>: public MeshD<3> {
      */
     void setOptimalIterationOrder();
 
-    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_012)
-        : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), axis2(make_shared<RectilinearAxis>()), elements(this) {
-        setIterationOrder(iterationOrder);
-        setChangeSignal(this->axis0);
-        setChangeSignal(this->axis1);
-        setChangeSignal(this->axis2);
-    }
+    /**
+     * Construct mesh which has all axes of type RectilinearAxis and all are empty.
+     * @param iterationOrder iteration order
+     */
+    explicit RectangularMesh(IterationOrder iterationOrder = ORDER_012);
 
     /**
      * Construct mesh with is based on given 1D meshes
@@ -294,25 +292,10 @@ class RectangularMesh<3>: public MeshD<3> {
      * @param mesh2 mesh for the third coordinate
      * @param iterationOrder iteration order
      */
-    RectangularMesh(shared_ptr<RectangularAxis> mesh0, shared_ptr<RectangularAxis> mesh1, shared_ptr<RectangularAxis> mesh2, IterationOrder iterationOrder = ORDER_012) :
-        axis0(std::move(mesh0)),
-        axis1(std::move(mesh1)),
-        axis2(std::move(mesh2)),
-        elements(this)
-    {
-        setIterationOrder(iterationOrder);
-        setChangeSignal(this->axis0);
-        setChangeSignal(this->axis1);
-        setChangeSignal(this->axis2);
-    }
+    RectangularMesh(shared_ptr<RectangularAxis> mesh0, shared_ptr<RectangularAxis> mesh1, shared_ptr<RectangularAxis> mesh2, IterationOrder iterationOrder = ORDER_012);
 
     /// Copy constructor
-    RectangularMesh(const RectangularMesh<3>& src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {    //->clone()
-        setIterationOrder(src.getIterationOrder());
-        setChangeSignal(this->axis0);
-        setChangeSignal(this->axis1);
-        setChangeSignal(this->axis2);
-    }
+    RectangularMesh(const RectangularMesh<3>& src);
 
     ~RectangularMesh();
 
