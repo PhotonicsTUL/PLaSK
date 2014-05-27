@@ -170,8 +170,8 @@ struct Mesh: public Printable {
      *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
      */
     template <typename ClassT, typename methodT>
-    void changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
-        changed.connect(boost::bind(method, obj, _1), at);
+    boost::signals2::connection changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
+        return changed.connect(boost::bind(method, obj, _1), at);
     }
 
     template <typename ClassT, typename methodT>

@@ -682,8 +682,9 @@ private:
     shared_ptr<MeshGeneratorD<MeshT::DIM>> mesh_generator;
 
     void disconnectMesh() {
-        if (this->mesh)
-            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+        /*if (this->mesh)
+            this->mesh->changedDisconnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);*/
+        mesh_signal_connection.disconnect();
     }
 
     void clearGenerator() {
@@ -699,7 +700,7 @@ private:
             disconnectMesh();
             this->mesh = mesh;
             if (this->mesh)
-                this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+                mesh_signal_connection = this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
             onMeshChange(typename MeshT::Event(*mesh, 0));
         }
     }
@@ -716,6 +717,9 @@ private:
 
     /// Mesh over which the calculations are performed
     shared_ptr<MeshT> mesh;
+
+    /// Connection of mesh to onMeshChange method, see http://www.boost.org/doc/libs/1_55_0/doc/html/signals2/tutorial.html#idp204830936
+    boost::signals2::connection mesh_signal_connection;
 
   public:
 
@@ -776,7 +780,7 @@ private:
         disconnectMesh();
         this->mesh = mesh;
         if (this->mesh)
-            this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
+            mesh_signal_connection = this->mesh->changedConnectMethod(this, &SolverWithMesh<SpaceT, MeshT>::onMeshChange);
         onMeshChange(typename MeshT::Event(*mesh, 0));
     }
 
