@@ -113,13 +113,13 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
                 throw ComputationError(this->getId(), "Maximum number of mesh refinements (%1%) reached", max_mesh_changes);
-            size_t new_size = 2.0 * current_mesh.size() - 1;
+            size_t new_size = 2 * current_mesh.size() - 1;
             writelog(LOG_DETAIL, "Refining mesh (new size: %1%)", new_size);
-            current_mesh.reset(current_mesh.first(), current_mesh.last(), new_size);
+            current_mesh.reset(current_mesh.first(), current_mesh.last(), new_size);    //this calls invalidate
             T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
 
-            auto old_n = n_present;
+            plask::DataVector<double> old_n = n_present;
             size_t nm = old_n.size()-1;
             n_present.reset(current_mesh.size(), 0.0);
             // n in new points is average of the surrounding ones

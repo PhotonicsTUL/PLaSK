@@ -6,6 +6,14 @@ BOOST_AUTO_TEST_SUITE(data) // MUST be the same as the file name
     BOOST_AUTO_TEST_CASE(const_datavector) {
 
         plask::DataVector<int> v = {1, 2, 3, 4};
+
+        {
+            plask::DataVector<int> v_copy = v;
+            BOOST_CHECK_EQUAL(v.size(), 4);
+            BOOST_CHECK_EQUAL(v_copy.size(), 4);
+            BOOST_CHECK_EQUAL(v, v_copy);
+        }
+
         plask::DataVector<double> vd;
         plask::DataVector<const int> cv(v);
         plask::DataVector<int> v2;

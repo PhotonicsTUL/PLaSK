@@ -610,7 +610,7 @@ bool operator>= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a
 template<class T>
 std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {
     out << '[';
-    return printRange(out, to_print.begin(), to_print.end()) << ']';
+    return print_seq(out, to_print.begin(), to_print.end()) << ']';
 }
 
 /** \relates DataVector
