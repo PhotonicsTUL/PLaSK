@@ -16,6 +16,7 @@ namespace py = boost::python;
 #include <plask/python_manager.h>
 #include <plask/utils/string.h>
 #include <plask/utils/system.h>
+#include <plask/config.h>
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
@@ -315,7 +316,8 @@ int main(int argc, const char *argv[])
 
         unsigned scriptline = 0;
 
-        try {
+        try
+        {
             std::string filename = argv[1];
             boost::optional<bool> xml_input;
 
@@ -407,29 +409,37 @@ int main(int argc, const char *argv[])
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
             }
-
-        } catch (std::invalid_argument& err) {
+        }   // try
+//when PRINT_STACKTRACE_ON_EXCEPTION is defined, we will not catch most exceptions to handle it by terminate handler and print a call stack
+#ifndef PRINT_STACKTRACE_ON_EXCEPTION
+        catch (std::invalid_argument& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             endPlask();
             return -1;
-        } catch (plask::XMLException& err) {
+        }
+        catch (plask::XMLException& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: XMLError: %2%", argv[1], err.what());
             endPlask();
             return 2;
-        } catch (plask::Exception& err) {
-            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
-            endPlask();
-            return 3;
-        } catch (py::error_already_set) {
-            int exitcode = handlePythonException(scriptline, argv[1]);
-            endPlask();
-            return exitcode;
-        } catch (std::runtime_error& err) {
+        }
+        catch (plask::Exception& err) {
             plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
             endPlask();
             return 3;
         }
-
+#endif
+        catch (py::error_already_set) {
+            int exitcode = handlePythonException(scriptline, argv[1]);
+            endPlask();
+            return exitcode;
+        }
+#ifndef PRINT_STACKTRACE_ON_EXCEPTION
+        catch (std::runtime_error& err) {
+            plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+            endPlask();
+            return 3;
+        }
+#endif
     } else if (console_count) { // start the interactive console
 
         if (!defs.empty()) {
@@ -440,14 +450,15 @@ int main(int argc, const char *argv[])
         py::object sys = py::import("sys");
         sys.attr("executable") = plask::exePathAndName();
 
-        try {
+        try
+        {
             py::object interactive = py::import("plask.interactive");
             interactive.attr("_import_all_") = import_plask;
             py::list sys_argv;
             if (argc == 1) sys_argv.append("");
             for (int i = 1; i < argc; i++) sys_argv.append(argv[i]);
             interactive.attr("interact")(py::object(), sys_argv);
-        } catch (py::error_already_set) { // This should not happen
+        }  catch (py::error_already_set) { // This should not happen
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;
@@ -455,6 +466,7 @@ int main(int argc, const char *argv[])
             return 0;
         }
     }
+
 
     // Close the Python interpreter and exit
     endPlask();
