@@ -283,6 +283,21 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         QW::obszar_aktywny aktyw(&(*mpStrEc), tHoles, tCladEg, tQWDso, roughness); // roughness = 0.05 for example // TODO
         aktyw.zrob_macierze_przejsc();
         QW::gain gainModule(&aktyw, n*(tQWTotH*1e-7), T, tQWnR); // TODO
+        writelog(LOG_INFO, "nPow %1%", n*(tQWTotH*1e-7));
+        writelog(LOG_INFO, "T %1%", T);
+        writelog(LOG_INFO, "tQWnR %1%", tQWnR);
+
+        writelog(LOG_INFO, "Calculating quasi Fermi levels and carrier concentrations..");
+        double tFe = gainModule.policz_qFlc();
+        double tFp = gainModule.policz_qFlv();
+        /*std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
+        for(int i = 0; i <= (int) tN.size() - 1; i++)
+            writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wyonsi %2%", i, struktura::koncentracja_na_cm_3(tN[i]));
+        double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);
+        double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1);
+        gainOnMesh[i] = tGehh+tGelh;
+        writelog(LOG_RESULT, "gainOnMesh %1%", gainOnMesh[i]);*/
+
         return gainModule;
     }
     else if (mEc)
@@ -294,6 +309,8 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegionInfo& region) // LUKASZ
 {
+    writelog(LOG_INFO, "Building structure");
+
     mEc = buildEc(T, region);
     mEvhh = buildEvhh(T, region);
     mEvlh = buildEvlh(T, region);
@@ -311,6 +328,8 @@ int FerminewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegio
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& region) // LUKASZ
 {
+    writelog(LOG_INFO, "Building Ec");
+
     mpEc.clear();
 
     int tN = region.size(); // number of all layers int the active region (QW, barr, external)
@@ -364,6 +383,8 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo& region) // LUKASZ
 {
+    writelog(LOG_INFO, "Building Evhh");
+
     mpEvhh.clear();
 
     int tN = region.size(); // number of all layers int the active region (QW, barr, external)
@@ -417,6 +438,8 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo& region) // LUKASZ
 {
+    writelog(LOG_INFO, "Building Evlh");
+
     mpEvlh.clear();
 
     int tN = region.size(); // number of all layers int the active region (QW, barr, external)
@@ -470,6 +493,8 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
 template <typename GeometryType>
 const DataVector<double> FerminewGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
+    this->writelog(LOG_INFO, "OK5");
+
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
     this->writelog(LOG_INFO, "Calculating gain");

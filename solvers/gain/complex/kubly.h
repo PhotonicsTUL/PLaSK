@@ -141,7 +141,7 @@ public:
     double wart;
 };
 /*******************************************************************/
-class struktura{ // struktura poziomów itp
+class struktura{ // struktura poziomow itp
 
     friend class gain;
     friend class obszar_aktywny;
@@ -200,7 +200,7 @@ public:
     void funkcje_do_pliku(std::ofstream & plik, double krok);
     void struktura_do_pliku(std::ofstream & plik); // do rysowania studni
     void przesun_energie(double);
-    //  double dE_po_dl(size_t nr, chrop ch); //pochodna nr-tego poziomu po szeroko¶ci studni
+    //  double dE_po_dl(size_t nr, chrop ch); //pochodna nr-tego poziomu po szerokosci studni
 
     void profil(double Ek, double rozdz);
     std::vector<std::vector<double> > rysowanie_funkcji(double E, double x0, double xk, double krok);
