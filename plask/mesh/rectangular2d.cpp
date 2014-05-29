@@ -59,21 +59,21 @@ void RectangularMesh<2>::onAxisChanged(Mesh::Event &e) {
     this->fireChanged(e.flags());
 }
 
-plask::RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
+RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
     : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);
 }
 
-plask::RectangularMesh<2>::RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder)
+RectangularMesh<2>::RectangularMesh(shared_ptr<RectangularAxis> axis0, shared_ptr<RectangularAxis> axis1, IterationOrder iterationOrder)
     : axis0(std::move(axis0)), axis1(std::move(axis1)), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);
 }
 
-plask::RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src): axis0(src.axis0), axis1(src.axis1), elements(this) {    //clone()??
+RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src): axis0(src.axis0), axis1(src.axis1), elements(this) {    //clone()??
     setIterationOrder(src.getIterationOrder());
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);

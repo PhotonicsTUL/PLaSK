@@ -11,3 +11,5 @@ if (BFD_FOUND)
 else (BFD_FOUND)
     message(STATUS "Could NOT find libbfd")
 endif(BFD_FOUND)
+
+mark_as_advanced(BFD_LIBRARY BFD_FOUND)
