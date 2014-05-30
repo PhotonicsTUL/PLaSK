@@ -258,6 +258,7 @@ class gain
     double przel_gest_na_cm2(double gest_w_wew);
     double gdzie_qFlc(double E);
     double gdzie_qFlv(double E);
+
     double kodE(double E, double mc, double mv);
     double rored(double, double mc, double mv);
     double rored_posz(double E, double E0, double mc, double mv, double sigma);
@@ -272,6 +273,7 @@ public:
 
     double nosniki_w_v(double Fl);
     double policz_qFlv();
+    double getT();
     double Get_gain_at_n(double, double); // LUKASZ remember to delete this
     double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
     double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v);

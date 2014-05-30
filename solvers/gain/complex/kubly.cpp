@@ -1608,7 +1608,7 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
   for(int i = 0; i <= liczba_war - 1; i++)
     {
       el_mac.push_back(element(i));
-      /*if (mInfo)*/ std::cerr<<"\nel_mac["<<i<<"] = "<<el_mac[i]<<"\n"; // LUKASZ
+      writelog(LOG_DETAIL, "M for layer %1%: %2%", i+1, el_mac[i]); // LUKASZ
     }
   zrob_macierze_przejsc();
 }
@@ -1902,6 +1902,11 @@ double gain::policz_qFlv()
   //  std::clog<<"Sieczne Fermi\n";
   qFlv = - sieczne(fun, Fp, Fk);
   return - sieczne(fun, Fp, Fk); // minus, bo energie sa odwrocone, bo F-D opisuje obsadzenia elektronowe
+}
+/*****************************************************************************/
+double gain::getT()
+{
+  return T;
 }
 /*****************************************************************************/
 double gain::gdzie_qFlc(double E)

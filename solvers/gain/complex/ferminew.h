@@ -86,7 +86,8 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
                 auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
                 auto material = block->singleMaterial();
                 if (!material) throw plask::Exception("FerminewGainSolver requires solid layers.");
-                if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW")) {
+                if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("QW"))
+                {
                     if (!materialQW)
                         materialQW = material;
                     else if (*material != *materialQW)
@@ -96,10 +97,12 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
                     if (lastbarrier) ++qwn;
                     else solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
                     lastbarrier = false;
-                } else {
+                }
+                else if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier"))
+                {
                     if (!materialBarrier)
                         materialBarrier = material;
-                    else if (!is_zero(material->Me(300).c00 - materialBarrier->Me(300).c00) ||
+                    /*else if (!is_zero(material->Me(300).c00 - materialBarrier->Me(300).c00) ||
                              !is_zero(material->Me(300).c11 - materialBarrier->Me(300).c11) ||
                              !is_zero(material->Mhh(300).c00 - materialBarrier->Mhh(300).c00) ||
                              !is_zero(material->Mhh(300).c11 - materialBarrier->Mhh(300).c11) ||
@@ -107,9 +110,9 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
                              !is_zero(material->Mlh(300).c11 - materialBarrier->Mlh(300).c11) ||
                              !is_zero(material->CB(300) - materialBarrier->CB(300)) ||
                              !is_zero(material->VB(300) - materialBarrier->VB(300)))
-                        throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());
+                        throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());*/
                     lastbarrier = true;
-                }
+                } // TODO something must be added here because of spacers placed next to external barriers
             }
             qwtotallen *= 1e4; // µm -> Å
             qwlen = qwtotallen / qwn;
@@ -140,11 +143,7 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     virtual std::string getClassName() const;
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
-/*
-    /// Function computing energy levels
-    std::deque<std::tuple<std::vector<double>,std::vector<double>,std::vector<double>,double,double>>
-    determineLevels(double T, double n);
-*/
+
   protected:
 
     friend struct GainSpectrum<GeometryType>;
@@ -154,8 +153,6 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     double matrixelem;              ///< optical matrix element [m0*eV]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
 
-    // LUKASZ
-    //double gainTEST; // for test only
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
     QW::warstwa *mpLay;
@@ -164,6 +161,7 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
     int buildEc(double T, const ActiveRegionInfo& region);
     int buildEvhh(double T, const ActiveRegionInfo& region);
     int buildEvlh(double T, const ActiveRegionInfo& region);
+    double przelicz_nQW_na_npow(QW::obszar_aktywny &iAktyw, double iN, double iQWTotH, double iT, double iQWnR);
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;
@@ -218,8 +216,6 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
 
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
-
-    //double getGainTEST(double T, const ActiveRegionInfo &region); // LUKASZ for test only
 
     /**
      * Reg gain spectrum object for future use;
