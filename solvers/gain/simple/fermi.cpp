@@ -62,21 +62,16 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
             }
             boost::char_separator<char> sep(", ");
             boost::tokenizer<boost::char_separator<char>> elt(els, sep), hht(hhs, sep), lht(lhs, sep);
-            double *el = nullptr, *hh = nullptr, *lh = nullptr;
-            try {
-                el = new double[std::distance(elt.begin(), elt.end())+1];
-                hh = new double[std::distance(hht.begin(), hht.end())+1];
-                lh = new double[std::distance(lht.begin(), lht.end())+1];
-                double* e = el; for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
-                double* h = hh; for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
-                double* l = lh; for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
-            } catch(...) {
-                delete[] el; delete[] hh; delete[] lh;
-            }
+            std::unique_ptr<double[]> el(new double[std::distance(elt.begin(), elt.end())+1]);
+            std::unique_ptr<double[]> hh(new double[std::distance(hht.begin(), hht.end())+1]);
+            std::unique_ptr<double[]> lh(new double[std::distance(lht.begin(), lht.end())+1]);
+            double* e = el.get(); for (const auto& i: elt) *(e++) = - boost::lexical_cast<double>(i); *e = 1.;
+            double* h = hh.get(); for (const auto& i: hht) *(h++) = - boost::lexical_cast<double>(i); *h = 1.;
+            double* l = lh.get(); for (const auto& i: lht) *(l++) = - boost::lexical_cast<double>(i); *l = 1.;
             if (extern_levels) {
                 delete[] extern_levels->el; delete[] extern_levels->hh; delete[] extern_levels->lh;
             }
-            extern_levels.reset(QW::ExternalLevels(el, hh, lh));
+            extern_levels.reset(QW::ExternalLevels(el.release(), hh.release(), lh.release()));
         } else
             this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <levels>, or <config>");
     }

@@ -1840,9 +1840,9 @@ gain::gain() // LUKASZ
 
 }
 /*****************************************************************************/
-gain::gain(obszar_aktywny * obsz, double konc_pow, double temp, double wsp_zal)
+gain::gain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double temp, double wsp_zal)
+    : pasma(obsz)
 {
-  pasma = obsz;
   nosniki_c = przel_gest_z_cm2(konc_pow);
   nosniki_v = nosniki_c;
   T = temp;
@@ -1907,6 +1907,13 @@ double gain::policz_qFlv()
 double gain::getT()
 {
   return T;
+}
+/*****************************************************************************/
+double gain::Get_gain_at_n(double E, double hQW)
+{
+    double tGehh = wzmocnienie_od_pary_pasm(E, 0, 0);
+    double tGelh = wzmocnienie_od_pary_pasm(E, 0, 1);
+    return (tGehh+tGelh);
 }
 /*****************************************************************************/
 double gain::gdzie_qFlc(double E)

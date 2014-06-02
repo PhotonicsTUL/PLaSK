@@ -86,11 +86,11 @@ BOOST_PYTHON_MODULE(complex)
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
-        /*py::class_<GainSpectrum<Geometry2DCartesian>,shared_ptr<GainSpectrum<Geometry2DCartesian>>>("Spectrum",
+        py::class_<GainSpectrum<Geometry2DCartesian>, plask::shared_ptr<GainSpectrum<Geometry2DCartesian>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FerminewGainSpectrum__call__<Geometry2DCartesian>)
-        ;*/
+        ;
     }
     {CLASS(FerminewGainSolver<Geometry2DCylindrical>, "FerminewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
@@ -106,11 +106,11 @@ BOOST_PYTHON_MODULE(complex)
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
-        /*py::class_<GainSpectrum<Geometry2DCylindrical>,shared_ptr<GainSpectrum<Geometry2DCylindrical>>>("Spectrum",
+        py::class_<GainSpectrum<Geometry2DCylindrical>, plask::shared_ptr<GainSpectrum<Geometry2DCylindrical>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FerminewGainSpectrum__call__<Geometry2DCylindrical>)
-        ;*/ // LUKASZ
+        ; // LUKASZ
     }
 
 }

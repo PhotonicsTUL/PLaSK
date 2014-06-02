@@ -124,7 +124,7 @@ BOOST_PYTHON_MODULE(simple)
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
-        py::class_<GainSpectrum<Geometry2DCartesian>,shared_ptr<GainSpectrum<Geometry2DCartesian>>>("Spectrum",
+        py::class_<GainSpectrum<Geometry2DCartesian>,plask::shared_ptr<GainSpectrum<Geometry2DCartesian>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FermiGainSpectrum__call__<Geometry2DCartesian>)
@@ -152,7 +152,7 @@ BOOST_PYTHON_MODULE(simple)
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
-        py::class_<GainSpectrum<Geometry2DCylindrical>,shared_ptr<GainSpectrum<Geometry2DCylindrical>>>("Spectrum",
+        py::class_<GainSpectrum<Geometry2DCylindrical>,plask::shared_ptr<GainSpectrum<Geometry2DCylindrical>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FermiGainSpectrum__call__<Geometry2DCylindrical>)

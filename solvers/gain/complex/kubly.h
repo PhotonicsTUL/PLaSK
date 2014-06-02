@@ -244,7 +244,7 @@ private:
 /*******************************************************************/
 class gain
 {
-    obszar_aktywny * pasma;
+    plask::shared_ptr<obszar_aktywny> pasma;
     double nosniki_c, nosniki_v; // gestosc powierzchniowa
     double T;
     double n_r;
@@ -266,7 +266,7 @@ class gain
     double fv(double E);
 public:
     gain(); // LUKASZ remember to delete this
-    gain(obszar_aktywny * obsz, double konc_pow, double T, double wsp_zal);
+    gain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double T, double wsp_zal);
 
     double nosniki_w_c(double Fl);
     double policz_qFlc();
@@ -274,7 +274,7 @@ public:
     double nosniki_w_v(double Fl);
     double policz_qFlv();
     double getT();
-    double Get_gain_at_n(double, double); // LUKASZ remember to delete this
+    double Get_gain_at_n(double E, double hQW); // LUKASZ remember to delete this
     double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
     double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v);
     double spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
