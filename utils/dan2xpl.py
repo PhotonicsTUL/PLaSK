@@ -473,18 +473,6 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('plot_geometry(GEO.main, color="w")')
             out('gcf().canvas.set_window_title("Electric potential")')
             if actlevel is not False:
-<<<<<<< .roboczy
-                out('\n    figure()')
-                out('    plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
-                out('    xlabel(u"%s [\\xb5m]")' % axes[0])
-                out('    ylabel("current density [kA/cm$^2$]")')
-                out('    simplemesh = mesh.Rectangular2D.SimpleGenerator()(GEO.main.item)')
-                out('    for x in simplemesh.axis0:')
-                out('        axvline(x, ls=":", color="k")')
-                out('    xlim(0., simplemesh.axis0[-2])')
-                out('    gcf().canvas.set_window_title("Current density in the active region")')
-        out('\n    show()')
-=======
                 out('\nfigure()')
                 out('plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
                 out('xlabel(u"%s [\\xb5m]")' % axes[0])
@@ -494,7 +482,6 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('    axvline(x, ls=":", color="k")')
                 out('xlim(0., simplemesh.axis0[-2])')
                 out('gcf().canvas.set_window_title("Current density in the active region")')
->>>>>>> .merge-prawo.w2206
 
     out('\nshow()')
 

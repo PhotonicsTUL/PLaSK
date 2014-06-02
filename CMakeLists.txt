@@ -16,7 +16,7 @@ if(MINGW)
 else()
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 endif()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-unused-local-typedefs")
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     set(WIN64 YES) # CMake cannot automatically detect that we compile for WIN64
@@ -536,7 +536,7 @@ if(WIN32)
         endif()
         add_custom_command(OUTPUT ${script_pyc}
                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
-                           COMMAND ${PYTHON_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\', quiet=True\\)"
+                           COMMAND ${PYTHON_EXECUTABLE} -c "import compileall; compileall.compile_file('${UTILS_BINARY_DIR}/${script}.py', '', quiet=True)"
                            DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
         add_executable(${script} toolset/run_python.cpp ${script_rc})
         set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS ${script_pyc})

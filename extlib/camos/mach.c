@@ -4,6 +4,10 @@
 #include <limits.h>
 #include <math.h>
 
+#ifndef DBL_EPSILON
+#   define DBL_EPSILON 2.2204460492503131e-16
+#endif
+
 /* C source for I1MACH  */
 /* Note that some values may need changing. */
 long i1mach(long *i)
