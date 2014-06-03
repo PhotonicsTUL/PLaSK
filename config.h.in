@@ -41,10 +41,10 @@
 
 //
 // The following block is the standard way of creating macros which make exporting
-// from a DLL simpler. All files within this DLL are compiled with the PLASK_EXPORTS
+// from a DLL simpler. All files within this DLL are compiled with the PLASK_EXPORTS (/PLASK_SOLVERS_EXPORTS)
 // symbol defined on the command line. this symbol should not be defined on any project
 // that uses this DLL. This way any other project whose source files include this file see
-// PLASK_API functions as being imported from a DLL, wheras this DLL sees symbols
+// PLASK_API (/PLASK_SOLVER_API) functions as being imported from a DLL, wheras this DLL sees symbols
 // defined with this macro as being exported.
 //
 #if defined(_WIN32)
@@ -53,10 +53,20 @@
     #else
         #define PLASK_API __declspec(dllimport)
     #endif
+
+    #if defined(PLASK_SOLVERS_EXPORTS)
+        #define PLASK_SOLVER_API __declspec(dllexport)
+    #else
+        #define PLASK_SOLVER_API __declspec(dllimport)
+    #endif
 #endif
 
 #if !defined(PLASK_API)
     #define PLASK_API
+#endif
+
+#if !defined(PLASK_SOLVER_API)
+    #define PLASK_SOLVER_API
 #endif
 
 
