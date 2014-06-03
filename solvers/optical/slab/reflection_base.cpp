@@ -1,4 +1,4 @@
-#include <mutex>
+#include <boost/thread/mutex.hpp>
 
 #include "reflection_base.h"
 #include "fortran.h"
@@ -76,7 +76,7 @@ dcomplex ReflectionSolver<GeometryT>::determinant()
     fields_determined = DETERMINED_NOTHING;
 
     initDiagonalization();
-    
+
     // Obtain admittance
     getFinalMatrix();
 
@@ -178,8 +178,8 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
     std::exception_ptr error;
 
     #ifdef OPENMP_FOUND
-        std::vector<std::mutex> layer_locks(diagonalizer->lcount);
-        for (std::mutex& mutex: layer_locks) mutex.lock();
+        std::vector<boost::mutex> layer_locks(diagonalizer->lcount);
+        for (boost::mutex& mutex: layer_locks) mutex.lock();
     #endif
 
     #pragma omp parallel
