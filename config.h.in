@@ -47,8 +47,8 @@
 // Net_API functions as being imported from a DLL, wheras this DLL sees symbols
 // defined with this macro as being exported.
 //
-#if defined(_WIN32) && defined(PLASK_EXPORTS)
-    #if defined(Net_EXPORTS)
+#if defined(_WIN32)
+    #if defined(PLASK_EXPORTS)
         #define PLASK_API __declspec(dllexport)
     #else
         #define PLASK_API __declspec(dllimport)
