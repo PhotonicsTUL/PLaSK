@@ -4,6 +4,8 @@
 #include <plask/plask.hpp>
 #include "broyden.h"
 
+#undef interface
+
 namespace plask { namespace solvers { namespace slab {
 
 /// Information about lateral PMLs

@@ -44,7 +44,7 @@ namespace plask { namespace python {
 
     shared_ptr<Logger> makePythonLogger();
 
-    extern AxisNames current_axes;
+    extern PLASK_PYTHON_API AxisNames current_axes;
 }}
 
 //******************************************************************************
