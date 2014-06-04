@@ -2,16 +2,13 @@
 #include <cstdlib>
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-
-#define PLASK_SYSTEM_WINDOWS
-#include <windows.h>
-
+#   define PLASK_SYSTEM_WINDOWS
+#   include <windows.h>
+#   define BOOST_USE_WINDOWS_H
 #else
-
-#include <string>
-#include <limits.h>
-#include <unistd.h>
-
+#   include <string>
+#   include <limits.h>
+#   include <unistd.h>
 #endif
 
 namespace plask {

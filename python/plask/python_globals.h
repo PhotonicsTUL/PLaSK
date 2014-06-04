@@ -7,6 +7,7 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define _WIN32_WINNT 0x502
 #   include <windows.h>
+#   define BOOST_USE_WINDOWS_H
 #endif
 
 // ----------------------------------------------------------------------------------------------------------------------

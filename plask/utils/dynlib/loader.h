@@ -2,11 +2,12 @@
 #define PLASK__UTILS_DYNLIB_LOADER_H
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#define PLASK__UTILS_PLUGIN_WINAPI
-#include <windows.h>
+#   define PLASK__UTILS_PLUGIN_WINAPI
+#   include <windows.h>
+#   define BOOST_USE_WINDOWS_H
 #else
-#define PLASK__UTILS_PLUGIN_DLOPEN
-#include <dlfcn.h>
+#   define PLASK__UTILS_PLUGIN_DLOPEN
+#   include <dlfcn.h>
 #endif
 
 #include <string>

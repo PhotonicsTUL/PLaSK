@@ -113,6 +113,8 @@ void endPlask() {
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <windows.h>
+#define BOOST_USE_WINDOWS_H
+
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
 {
     int argc = 1;

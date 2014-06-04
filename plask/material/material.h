@@ -737,6 +737,8 @@ struct MixedMaterial: public Material {
      */
     MixedMaterial& add(const shared_ptr<Material>& material, double weight);
 
+    virtual ~MixedMaterial() {}
+
     //Material methods implementation:
     virtual std::string name() const override;
 

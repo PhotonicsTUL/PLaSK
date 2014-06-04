@@ -120,6 +120,8 @@ struct MaterialsDB {
          */
         MixedCompositionFactory(shared_ptr<const MaterialConstructor> constructor): constructor(constructor) {}
 
+        virtual ~MixedCompositionFactory() {}
+
         /**
          * Construct material.
          * @param m1_weight weight of first composition or doping amount
