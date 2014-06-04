@@ -230,17 +230,10 @@ struct Config
     std::string __repr__() const;
 };
 
-extern AxisNames current_axes;
+extern PLASK_PYTHON_API AxisNames current_axes;
 
 inline AxisNames* getCurrentAxes() {
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-    //TODO add mangled names for all compiler versions
-    AxisNames* result = (AxisNames*) GetProcAddress(GetModuleHandle(NULL), "_ZN5plask6python12current_axesE");
-    if (!result) throw CriticalException("current_axes cannot be accessed");
-    return result;
-#else
     return &current_axes;
-#endif
 }
 
 // ----------------------------------------------------------------------------------------------------------------------

@@ -49,6 +49,11 @@ find_package(PLaSK)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 
 
+# Uncomment and edit the line below if you need to link some external libraries
+# to Python wrapper.
+#set(SOLVER_PYTHON_LINK_LIBRARIES libplask_python)
+
+
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using CMake command add_test for binaries
 # and macro add_python_test(name file.py) for Python scripts. You should name

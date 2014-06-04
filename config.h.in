@@ -55,9 +55,15 @@
     #endif
 
     #if defined(PLASK_SOLVERS_EXPORTS)
-        #define PLASK_SOLVER_API __declspec(dllexport)
+        #define PLASK_SOLVER __declspec(dllexport)
     #else
-        #define PLASK_SOLVER_API __declspec(dllimport)
+        #define PLASK_SOLVER __declspec(dllimport)
+    #endif
+
+    #if defined(PLASK_PYTHON_EXPORTS)
+        #define PLASK_PYTHON_API __declspec(dllexport)
+    #else
+        #define PLASK_PYTHON_API __declspec(dllimport)
     #endif
 #endif
 
@@ -65,10 +71,13 @@
     #define PLASK_API
 #endif
 
-#if !defined(PLASK_SOLVER_API)
-    #define PLASK_SOLVER_API
+#if !defined(PLASK_SOLVER)
+    #define PLASK_SOLVER
 #endif
 
+#if !defined(PLASK_PYTHON_API)
+    #define PLASK_PYTHON_API
+#endif
 
 
 #endif // PLASK__CONFIG_H

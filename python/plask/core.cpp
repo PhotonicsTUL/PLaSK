@@ -40,10 +40,7 @@ std::string getPythonExceptionMessage() {
 }
 
 // Config
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-//__declspec(dllexport)
-#endif
-AxisNames current_axes = AxisNames::axisNamesRegister.get("zxy");
+PLASK_PYTHON_API AxisNames current_axes = AxisNames::axisNamesRegister.get("zxy");
 
 static LoggingConfig getLoggingConfig(const Config&) {
     return LoggingConfig();

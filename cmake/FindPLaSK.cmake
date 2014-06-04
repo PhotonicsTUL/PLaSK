@@ -58,7 +58,9 @@ macro(make_default)
         set_target_properties(${SOLVER_LIBRARY} PROPERTIES LINK_FLAGS ${SOLVER_LINK_FLAGS})
     endif()
     if (DEFINED SOLVER_COMPILE_FLAGS)
-        set_target_properties(${SOLVER_LIBRARY} PROPERTIES COMPILE_FLAGS ${SOLVER_COMPILE_FLAGS})
+        set_target_properties(${SOLVER_LIBRARY} PROPERTIES COMPILE_FLAGS "${SOLVER_COMPILE_FLAGS} -DPLASK_SOLVERS_EXPORTS")
+    else()
+        set_target_properties(${SOLVER_LIBRARY} PROPERTIES COMPILE_FLAGS -DPLASK_SOLVERS_EXPORTS)
     endif()
 
     if(WIN32)
@@ -85,7 +87,7 @@ macro(make_default)
         else()
             add_library(${SOLVER_PYTHON_MODULE} MODULE ${interface_src})
         endif()
-        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES})
+        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} ${SOLVER_PYTHON_LINK_LIBRARIES})
         set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}
