@@ -1,3 +1,6 @@
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#   define BOOST_USE_WINDOWS_H
+#endif
 #include <boost/thread/mutex.hpp>
 
 #include "reflection_base.h"
