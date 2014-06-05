@@ -1471,7 +1471,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<3>>& dst_mesh) {
         if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
-        return new LinearInterpolatedLazyDataImpl< DstT, RectangularMesh<3> >(src_mesh, src_vec, dst_mesh);
+        return new LinearInterpolatedLazyDataImpl< DstT, RectangularMesh<3>, SrcT >(src_mesh, src_vec, dst_mesh);
     }
 };
 
@@ -1479,7 +1479,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<3>>& dst_mesh) {
         if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
-        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh<3> >(src_mesh, src_vec, dst_mesh);
+        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh<3>, SrcT >(src_mesh, src_vec, dst_mesh);
     }
 };
 

@@ -254,13 +254,13 @@ struct InterpolatedLazyDataImpl: public LazyDataImpl<DstT> {
  *
  * So it can be used if SrcMeshType has such interpolateLinear method.
  */
-template <typename T, typename SrcMeshType>
-struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<T, SrcMeshType> {
+template <typename DstT, typename SrcMeshType, typename SrcT = DstT>
+struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, SrcMeshType, SrcT> {
 
-    LinearInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const T>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
-        InterpolatedLazyDataImpl<T, SrcMeshType>(src_mesh, src_vec, dst_mesh) {}
+    LinearInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const SrcT>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
+        InterpolatedLazyDataImpl<DstT, SrcMeshType>(src_mesh, src_vec, dst_mesh) {}
 
-    virtual T at(std::size_t index) const override {
+    virtual DstT at(std::size_t index) const override {
         return this->src_mesh->interpolateLinear(this->src_vec, this->dst_mesh->at(index));
     }
 
@@ -271,13 +271,13 @@ struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<T, SrcMes
  *
  * So it can be used if SrcMeshType has such interpolateLinear method.
  */
-template <typename T, typename SrcMeshType>
-struct NearestNeighborInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<T, SrcMeshType> {
+template <typename DstT, typename SrcMeshType, typename SrcT = DstT>
+struct NearestNeighborInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, SrcMeshType, SrcT> {
 
-    NearestNeighborInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const T>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
-        InterpolatedLazyDataImpl<T, SrcMeshType>(src_mesh, src_vec, dst_mesh) {}
+    NearestNeighborInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const SrcT>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
+        InterpolatedLazyDataImpl<DstT, SrcMeshType, DstT>(src_mesh, src_vec, dst_mesh) {}
 
-    virtual T at(std::size_t index) const override {
+    virtual SrcT at(std::size_t index) const override {
         return this->src_mesh->interpolateNearestNeighbor(this->src_vec, this->dst_mesh->at(index));
     }
 
