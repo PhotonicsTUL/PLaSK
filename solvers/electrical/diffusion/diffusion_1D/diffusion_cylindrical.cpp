@@ -70,8 +70,8 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     // reset mesh to original value
     z = getZQWCoordinate();
-    mesh2.setAxis0(this->mesh);
-    mesh2.setAxis1(make_shared<plask::RegularAxis>(z, z, 1));
+    mesh2->setAxis0(this->mesh);
+    mesh2->setAxis1(make_shared<plask::RegularAxis>(z, z, 1));
     if (current_mesh().size() % 2 == 0) current_mesh().reset(current_mesh().first(), current_mesh().last(), current_mesh().size()+1);
 
     n_present.reset(current_mesh().size(), 0.0);
@@ -265,23 +265,23 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     throw BadInput(this->getId(), "Number of modes in inWavelength and inLightMagnitude differ");
 
                     // Sum all modes
-                    PM = DataVector<double>(mesh2.size(), 0.);
-                    overthreshold_dgdn = DataVector<double>(mesh2.size(), 0.);
-                    // overthreshold_g = DataVector<double>(mesh2.size(), 0.);
+                    PM = DataVector<double>(mesh2->size(), 0.);
+                    overthreshold_dgdn = DataVector<double>(mesh2->size(), 0.);
+                    // overthreshold_g = DataVector<double>(mesh2->size(), 0.);
 
                     for (size_t n = 0; n != inWavelength.size(); ++n)
                     {
                         wavelength = real(inWavelength(n));
                         write_debug("wavelength: %1% nm", wavelength);
 
-                        plask::RectangularMesh<2> mesh_Li;         ///< Computational Light intensity mesh
+                        auto mesh_Li = make_shared<plask::RectangularMesh<2>>();         ///< Computational Light intensity mesh
 
-                        mesh_Li.setAxis0(current_mesh_ptr());
-                        mesh_Li.setAxis1(make_shared<plask::RectilinearAxis>(getZQWCoordinates()));
+                        mesh_Li->setAxis0(current_mesh_ptr());
+                        mesh_Li->setAxis1(make_shared<plask::RectilinearAxis>(getZQWCoordinates()));
 
 //                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
                         auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);
-                        auto Li = averageLi(initial_Li, mesh_Li);
+                        auto Li = averageLi(initial_Li, *mesh_Li);
 
                         write_debug("Li[0]: %1% W/cm2", Li[0]*1.0e-4);
                         int ile = 0;
@@ -295,7 +295,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         auto dgdn = inGainOverCarriersConcentration(mesh2, wavelength, interpolation_method);
                         write_debug("dgdn[0]: %1% cm(-4)", dgdn[0]);
                         auto factor = inv_hc * wavelength; // inverse one photon energy
-                        for (size_t i = 0; i != mesh2.size(); ++i)
+                        for (size_t i = 0; i != mesh2->size(); ++i)
                         {
                             double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
                             PM[i] += common * g[i];
@@ -591,16 +591,16 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
     }
 }
 
-template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(const plask::MeshD<2>& dest_mesh, plask::InterpolationMethod interpolation)
+template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, plask::InterpolationMethod interpolation)
 {
-    auto destination_mesh = WrappedMesh<2>(dest_mesh, this->geometry);
+    auto destination_mesh = make_shared<WrappedMesh<2>>(dest_mesh, this->geometry);
 
     if (!n_present.data()) throw NoValue("carriers concentration");
-    auto concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation));
+    DataVector<double> concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation)).claim();
     // Make sure we have concentration only in the quantum wells
     //TODO maybe more optimal approach would be reasonable?
     size_t i = 0;
-    for (auto point: destination_mesh)
+    for (auto point: *destination_mesh)
     {
         bool inqw = false;
         for (auto QW: detected_QW)
@@ -877,7 +877,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width *= 1e-4;
 }
 
-template<typename Geometry2DType> plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::DataVector<const double> initLi, plask::RectangularMesh<2> mesh_Li)
+template<typename Geometry2DType> plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::DataVector<const double> initLi, const plask::RectangularMesh<2>& mesh_Li)
 {
     plask::DataVector<double> Li(current_mesh().size());
 

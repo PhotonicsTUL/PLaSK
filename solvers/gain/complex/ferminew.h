@@ -204,7 +204,7 @@ struct FerminewGainSolver: public SolverWithMesh<GeometryType,RectilinearMesh1D>
      * \param interp interpolation method
      * \return gain distribution
      */
-    const DataVector<double> getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getGain(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
     //const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT); // LUKASZ
 
   public:
@@ -266,8 +266,8 @@ struct GainSpectrum {
      * \return gain
      */
     double getGain(double wavelength) {
-        if (isnan(T)) T = solver->inTemperature(OnePointMesh<2>(point))[0];
-        if (isnan(n)) n = solver->inCarriersConcentration(OnePointMesh<2>(point))[0];
+        if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+        if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
         return solver->getGainModule(wavelength, T, n, *region)
             .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
     }

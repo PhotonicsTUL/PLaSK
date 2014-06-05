@@ -89,7 +89,7 @@ struct Expansion {
      * \return field distribution at \c dst_mesh
      * \return field distribution at \c dst_mesh
      */
-    virtual DataVector<Vec<3,dcomplex>> getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H) = 0;
+    virtual DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H) = 0;
 };
 
 

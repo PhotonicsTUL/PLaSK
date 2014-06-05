@@ -189,7 +189,8 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
 
-    RectangularMesh<3> mesh(make_shared<RegularAxis>(long_mesh),
+    auto mesh = make_shared<RectangularMesh<3>>
+                           (make_shared<RegularAxis>(long_mesh),
                             make_shared<RegularAxis>(tran_mesh),
                             make_shared<RectilinearAxis>(axis2),
                             RectangularMesh<3>::ORDER_102);
@@ -226,7 +227,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
                     auto material = geometry->getMaterial(vec(long_mesh[l], tran_mesh[t], matv));
                     double T = 0.; // average temperature in all vertical points
-                    for (size_t v = mesh.index(l, t, 0), end = mesh.index(l, t, axis2.size()); v != end; ++v) T += temperature[v];
+                    for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2.size()); v != end; ++v) T += temperature[v];
                     T /= axis2.size();
                     #pragma omp critical
                     cell[j] = material->NR(lambda, T);
@@ -237,7 +238,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                         auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                             double g = 0.; // average gain in all vertical points
-                            for (size_t v = mesh.index(l, t, 0) * axis2.size(), end = mesh.index(l, t, axis2.size())+1; v != end; ++v) g += gain[v];
+                            for (size_t v = mesh->index(l, t, 0) * axis2.size(), end = mesh->index(l, t, axis2.size())+1; v != end; ++v) g += gain[v];
                             double ni = lambda * g/axis2.size() * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
@@ -383,12 +384,12 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Rec
             tcmesh->reset(left, right, nNt+1);
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
         }
-        RectangularMesh<3> src_mesh(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1), RectangularMesh<3>::ORDER_210);
-        RectangularMesh<3> dst_mesh(make_shared<RectilinearAxis>(std::move(lmesh)),
+        auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1), RectangularMesh<3>::ORDER_210);
+        auto dst_mesh = make_shared<RectangularMesh<3>>(make_shared<RectilinearAxis>(std::move(lmesh)),
                                     make_shared<RectilinearAxis>(std::move(tmesh)),
                                     shared_ptr<RectilinearAxis>(new RectilinearAxis{0}));
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
-        result = interpolate(src_mesh, params, WrappedMesh<3>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp);
+        result = interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
 //     }
     for (Tensor3<dcomplex>& eps: result) {
         eps.c22 = 1. / eps.c22;
@@ -527,7 +528,7 @@ void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex 
 //
 // // TODO fields must be carefully verified
 
-DataVector<Vec<3,dcomplex>> ExpansionPW3D::getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H)
+DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H)
 {
 //     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
 //

@@ -295,7 +295,7 @@ void EffectiveFrequencyCylSolver::updateCache()
         if (zsize == mesh->axis1->size()+1)
             axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
 
-        RectangularMesh<2> midmesh(axis0, axis1, mesh->getIterationOrder());
+        auto midmesh = make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
         DataVector<double> gain;
@@ -303,9 +303,9 @@ void EffectiveFrequencyCylSolver::updateCache()
 
         for (size_t ir = 0; ir != rsize; ++ir) {
             for (size_t iz = zbegin; iz < zsize; ++iz) {
-                size_t idx = midmesh.index(ir, iz-zbegin);
+                size_t idx = midmesh->index(ir, iz-zbegin);
                 double T = temp[idx];
-                auto point = midmesh[idx];
+                auto point = midmesh->at(idx);
                 auto material = geometry->getMaterial(point);
                 auto roles = geometry->getRolesAt(point);
                 // Nr = nr + i/(4π) λ g
@@ -728,7 +728,7 @@ double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
 }
 
 
-plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const MeshD<2>& dst_mesh, InterpolationMethod)
+plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const shared_ptr<const MeshD<2> > &dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -751,18 +751,18 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(i
         modes[num].have_fields = true;
     }
 
-    DataVector<double> results(dst_mesh.size());
+    DataVector<double> results(dst_mesh->size());
 
-    if (!getLightMagnitude_Efficient(num, stripe, dst_mesh, results)) {
+    if (!getLightMagnitude_Efficient(num, stripe, *dst_mesh, results)) {
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
         const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel for schedule(static,1024)
-        for (size_t id = 0; id < dst_mesh.size(); ++id) {
+        for (size_t id = 0; id < dst_mesh->size(); ++id) {
             if (error) continue;
 
-            auto point = dst_mesh[id];
+            auto point = dst_mesh->at(id);
             double r = point.c0;
             double z = point.c1;
             if (r < 0) r = -r;
@@ -866,15 +866,15 @@ bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t
 }
 
 
-DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod)
+DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const shared_ptr<const MeshD<2> > &dst_mesh, double lam, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex lam0 = 2e3*M_PI / k0;
     if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
     updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
-    DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
-    for (size_t j = 0; j != dst_mesh.size(); ++j) {
+    DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
+    for (size_t j = 0; j != dst_mesh->size(); ++j) {
         auto point = target_mesh[j];
         size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
         size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
@@ -884,13 +884,13 @@ DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIn
 }
 
 
-DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method)
+DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
 {
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
     writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
-    DataVector<double> result(dst_mesh.size(), 0.);
+    DataVector<double> result(dst_mesh->size(), 0.);
     if (modes.size() == 0) return result;
     dcomplex lam0 = 2e3*M_PI / k0;
     auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);

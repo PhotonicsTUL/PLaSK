@@ -433,7 +433,7 @@ struct DataVector {
     T& operator[](std::size_t n) { assert(n < size_); return data_[n]; }
 
     /// \return \c true if vector has any data
-    operator bool() const { return data_ != nullptr; };
+    operator bool() const { return data_ != nullptr; }
 
     /**
      * Make a deep copy of the data.
@@ -560,7 +560,7 @@ struct DataVector {
  * @return @c true only if a is equal to b (a[0]==b[0], a[1]==b[1], ...)
  */
 template<class T1, class T2> inline
-bool operator == ( DataVector<T1> const& a, DataVector<T2> const& b)
+bool operator== ( DataVector<T1> const& a, DataVector<T2> const& b)
 { return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin()); }
 
 /** \relates DataVector
@@ -569,7 +569,7 @@ bool operator == ( DataVector<T1> const& a, DataVector<T2> const& b)
  * @return @c true only if a is not equal to b
  */
 template<class T1, class T2> inline
-bool operator != ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a==b); }
+bool operator!= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a==b); }
 
 /** \relates DataVector
  * A lexical comparison of two data vectors.
@@ -606,6 +606,9 @@ bool operator>= ( DataVector<T1> const& a, DataVector<T2> const& b) { return !(a
 
 /** \relates DataVector
  * Print data vector to stream.
+ * @param out output, destination stream
+ * @param to_print vector to print
+ * @return @c out
  */
 template<class T>
 std::ostream& operator<<(std::ostream& out, DataVector<T> const& to_print) {

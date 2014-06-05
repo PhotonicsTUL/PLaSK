@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(polymorphic_receivers) {
 
 BOOST_AUTO_TEST_CASE(attach_datavector)
 {
-    auto mesh1 = plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(0., 4., 3), plask::make_shared<plask::RegularAxis>(0., 20., 3));
+    auto mesh1 = plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(0., 4., 3), plask::make_shared<plask::RegularAxis>(0., 20., 3), plask::RectangularMesh<2>::ORDER_10);
 
     auto mesh2 = mesh1->getMidpointsMesh();
 
@@ -106,13 +106,15 @@ BOOST_AUTO_TEST_CASE(attach_datavector)
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> receiver;
     receiver.setValue(data, mesh1);
 
-    BOOST_CHECK_EQUAL(receiver(*mesh1).data(), data.data());
+    BOOST_CHECK_EQUAL(receiver(mesh1), data);
 
-    auto result2 = receiver(*mesh2);
-    BOOST_CHECK_EQUAL(result2[0], 200.);
-    BOOST_CHECK_EQUAL(result2[1], 200.);
-    BOOST_CHECK_EQUAL(result2[2], 400.);
-    BOOST_CHECK_EQUAL(result2[3], 400.);
+    {
+        auto result2 = receiver(mesh2);
+        BOOST_CHECK_EQUAL(result2[0], 200.);
+        BOOST_CHECK_EQUAL(result2[1], 200.);
+        BOOST_CHECK_EQUAL(result2[2], 400.);
+        BOOST_CHECK_EQUAL(result2[3], 400.);
+    }
 
     BOOST_CHECK_EQUAL(data.unique(), false);
     mesh1->setIterationOrder(plask::RectangularMesh<2>::ORDER_01);

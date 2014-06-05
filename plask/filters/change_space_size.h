@@ -7,56 +7,61 @@
 namespace plask {
 
 /**
- * Mesh that includes set of points on line parallel to lon. axis.
+ * 3D mesh that wrap 2D mesh (sourceMesh).
+ * It translates all points of oryginal mesh and complement lon. parameter of each point by pointsCount values.
+ * Point with index I in sourceMesh is used to creates points I * pointsCount to I * (pointsCount + 1) - 1.
  */
-struct PointsOnLineMesh: public MeshD<3> {
+class CartesianMesh2DTo3DExtend: public MeshD<3> {
 
-    Vec<3, double> begin;
+    const shared_ptr<const MeshD<2>> sourceMesh;
 
-    double longSize;
+    Vec<3, double> translation;
 
-    std::size_t lastPointNr;
+    double stepSize;
 
-    PointsOnLineMesh() = default;
+    /// Number of points, must be > 1
+    std::size_t pointsCount;
 
-    PointsOnLineMesh(Vec<3, double> begin, double lonSize, std::size_t pointsCount)
-        : begin(begin), longSize(lonSize), lastPointNr(pointsCount-1) {}
+public:
+
+    CartesianMesh2DTo3DExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, double longBegin, double lonSize, std::size_t pointsCount)
+        : sourceMesh(sourceMesh), translation(translation), stepSize(lonSize / (pointsCount-1)), pointsCount(pointsCount) {
+        this->translation.lon() += longBegin;
+    }
 
     virtual Vec<3, double> at(std::size_t index) const override {
-        Vec<3, double> ans = begin;
-        ans.lon() += longSize * index / lastPointNr;
-        return ans;
+        return translation + vec(sourceMesh->at(index / pointsCount), stepSize * index);
     }
 
     virtual std::size_t size() const override {
-        return lastPointNr + 1;
+        return sourceMesh->size() * pointsCount;
     }
 
 };
 
 /**
- * 3D mesh that wrap 2D mesh. It translates all points of oryginal mesh and complement lon. parameter of each point.
+ * 3D mesh that wrap 2D mesh.
+ * It translates all points of oryginal mesh and complement lon. parameter of each point.
  */
-struct CartesianMesh2DTo3D: public MeshD<3> {
+class CartesianMesh2DTo3D: public MeshD<3> {
 
     Vec<3, double> translation;
 
-    const MeshD<2>& sourceMesh;
+    const shared_ptr<const MeshD<2>> sourceMesh;
 
-    CartesianMesh2DTo3D(Vec<3, double> translation, const MeshD<2>& sourceMesh, double lon)
+public:
+
+    CartesianMesh2DTo3D(const shared_ptr<const MeshD<2>>& sourceMesh, Vec<3, double> translation, double lon)
         : translation(translation), sourceMesh(sourceMesh) {
         this->translation.lon() += lon;
     }
 
-    CartesianMesh2DTo3D(Vec<3, double> translation, const MeshD<2>& sourceMesh)
-        : translation(translation), sourceMesh(sourceMesh) {}
-
     virtual Vec<3, double> at(std::size_t index) const override {
-        return vec3Dplus2D(translation, sourceMesh.at(index));
+        return vec3Dplus2D(translation, sourceMesh->at(index));
     }
 
     virtual std::size_t size() const override {
-        return sourceMesh.size();
+        return sourceMesh->size();
     }
 };
 
@@ -79,54 +84,26 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType ValueType;
 
-    //inLinePos in 0, inputObj->getLength()
-    Vec<3, double> getPointAt(const Vec<2, double>& p, double lon) const {
-        return vec3Dplus2D(this->inTranslation, p, lon);
-    }
-
-    //inLineRelPos in 0, 1
-    Vec<3, double> getPointAtRel(const Vec<2, double>& p, double inLineRelPos) const {
-        return getPointAt(p, this->outputObj->getLength() * inLineRelPos);
-    }
-
-    virtual boost::optional<ValueType> get(const Vec<2, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
-        if (pointsCount == 1)
-            return PropertyT::value3Dto2D(this->in(toMesh(getPointAtRel(p, 0.5)), std::forward<ExtraArgs>(extra_args)..., method)[0]);
-        const double d = this->outputObj->getLength() / pointsCount;
-        return PropertyT::value3Dto2D(average(this->in(
-                   PointsOnLineMesh(getPointAt(p, d*0.5), this->outputObj->getLength()-d, pointsCount),
-                   std::forward<ExtraArgs>(extra_args)...,
-                   method
-               )));
-    }
-
-    virtual DataVector<const ValueType> operator()(const MeshD<2>& requested_points, ExtraArgs... extra_args, InterpolationMethod method) const override {
-        if (pointsCount == 1)
-            return PropertyVec3Dto2D<PropertyT>(this->in(
-                 CartesianMesh2DTo3D(this->inTranslation, requested_points, this->outputObj->getLength() * 0.5),
-                 std::forward<ExtraArgs>(extra_args)...,
-                 method
-             ));
-        DataVector<ValueType> result(requested_points.size());
-        PointsOnLineMesh lineMesh;
-        const double d = this->outputObj->getLength() / this->pointsCount;
-        lineMesh.lastPointNr = this->pointsCount - 1;
-        lineMesh.longSize = this->outputObj->getLength() - d;
-        lineMesh.begin.lon() = this->outputObj->getLength() + d * 0.5;
-        NoLogging nolog;
-        for (std::size_t src_point_nr = 0; src_point_nr < result.size(); ++src_point_nr) {
-            const auto v = requested_points[src_point_nr];
-            lineMesh.begin.tran() = this->inTranslation.tran() + v.tran();
-            lineMesh.begin.vert() = this->inTranslation.vert() + v.vert();
-            result[src_point_nr] =
-                    PropertyT::value3Dto2D(average(this->in(
-                        lineMesh,
-                        std::forward<ExtraArgs>(extra_args)...,
-                        method
-                    )));
-            nolog.silence();
+    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        if (pointsCount > 1) {
+            const double total_len = this->outputObj->getLength();
+            const std::size_t point_count = this->pointsCount;
+            const double d = total_len / point_count;   // first step at d/2, last at total_len - d
+            auto data = this->in(
+                        make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
+                        std::forward<ExtraArgs>(extra_args)..., method);
+            return [=] (std::size_t index) {
+                index *= point_count;
+                auto sum = data[index];
+                for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
+                return PropertyT::value3Dto2D(sum / point_count);
+            };
+        } else {
+            auto data = this->in(
+                        make_shared<CartesianMesh2DTo3D>(dst_mesh, this->inTranslation, this->outputObj->getLength() * 0.5),
+                        std::forward<ExtraArgs>(extra_args)..., method);
+            return [=] (std::size_t index) { return PropertyT::value3Dto2D(data[index]); };
         }
-        return result;
     }
 };
 
@@ -144,6 +121,32 @@ struct DataFrom2Dto3DSourceImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "DataFrom2Dto3DSource can't be used with single value properties (it can be use only with fields properties)");
 };
 
+/**
+ * This class is a 2D mesh which wraps 3D mesh (@p sourceMesh), reduce each point of sourceMesh to 2D and translate it back by given vector (@p translation).
+ */
+//TODO better version for rectangular source (with size reduction by the size of removed axis)
+struct ReductionTo2DMesh: public MeshD<2> {
+
+    Vec<2, double> translation;
+
+    const shared_ptr<const MeshD<3>> sourceMesh;
+
+    ReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<2, double>& translation)
+        : translation(translation), sourceMesh(sourceMesh) {}
+
+    ReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<3, double>& translation)
+        : translation(vec<2>(translation)), sourceMesh(sourceMesh) {}
+
+    virtual Vec<2, double> at(std::size_t index) const override {
+        return vec<2>(sourceMesh->at(index)) - translation;
+    }
+
+    virtual std::size_t size() const override {
+        return sourceMesh->size();
+    }
+
+};
+
 /// Don't use this directly, use DataFrom2Dto3DSource instead.
 template <typename PropertyT, typename... ExtraArgs>
 struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >
@@ -154,12 +157,44 @@ struct DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
 
-    virtual boost::optional<ValueType> get(const Vec<3, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const {
-        const Region* r = this->findRegion(p);
-        if (r)
-            return PropertyT::value2Dto3D(this->in(toMesh(vec<2>(p - r->inTranslation)), std::forward<ExtraArgs>(extra_args)..., method)[0]);
-        else
-            return boost::optional<ValueType>();
+    /// Type of property value in input space
+    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType InputValueType;
+
+    struct LazySourceImpl {
+
+        std::vector<LazyData<InputValueType>> dataForRegion;
+
+        const DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >& source;
+
+        const shared_ptr<const MeshD<3>> dst_mesh;
+
+        /*std::tuple<ExtraArgs...> extra_args;
+
+        InterpolationMethod method;*/
+
+        LazySourceImpl(const DataFrom2Dto3DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraArgs...> >& source,
+                       const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method)
+            : dataForRegion(source.regions.size()), source(source), dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/
+        {
+            for (std::size_t region_index = 0; region_index < source.regions.size(); ++region_index)
+                dataForRegion[region_index].reset(source.in(make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
+        }
+
+        boost::optional<ValueType> operator()(std::size_t index) {
+            std::size_t region_index = source.findRegionIndex(dst_mesh->at(index));
+            if (region_index == source.regions.size())
+                return boost::optional<ValueType>();
+
+            /*if (dataForRegion[region_index].isNull())
+                dataForRegion[region_index].reset(source.in(make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
+
+            return PropertyT::value2Dto3D(dataForRegion[region_index][index]);
+        }
+
+    };
+
+    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+        return LazySourceImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 
 };

@@ -245,13 +245,13 @@ struct FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DTy
 
   protected:
 
-    DataVector<const double> getPotentials(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getPotentials(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const double> getHeatDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
+    DataVector<const double> getHeatDensities(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method);
 
-    DataVector<const Vec<2>> getCurrentDensities(const MeshD<2>& dst_mesh, InterpolationMethod method);
+    DataVector<const Vec<2>> getCurrentDensities(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method);
 
-    DataVector<const Tensor2<double>> getConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method);
+    DataVector<const Tensor2<double>> getConductivity(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method);
 };
 
 }} //namespaces

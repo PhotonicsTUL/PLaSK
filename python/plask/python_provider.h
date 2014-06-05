@@ -34,8 +34,10 @@ struct DataVectorWrap : public DataVector<T> {
     DataVectorWrap(DataVector<T>&& src) : DataVector<T>(std::forward<DataVector<T>>(src)) {}
 
     DataVectorWrap() = default;
-    DataVectorWrap(const DataVectorWrap<T,dim>& src):
-    DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed) {
+
+    DataVectorWrap(const DataVectorWrap<T,dim>& src)
+        : DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed)
+    {
         if (mesh) mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
     }
 
@@ -206,7 +208,7 @@ namespace detail {
         }
 
         static DataT __call__(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            return DataT(self(*mesh, params..., method), mesh);
+            return DataT(self(mesh, params..., method), mesh);
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
@@ -246,7 +248,7 @@ namespace detail {
                 } catch (py::error_already_set) { PyErr_Clear(); }
                 py::stl_input_iterator<DataT> begin(obj), end;
                 if (begin != end) {
-                    std::vector<typename ReceiverT::ProviderType::ProvidedType> datas;
+                    std::vector<DataVector<const typename ReceiverT::ValueType>> datas;
                     for (auto it = begin; it != end; ++it) {
                         if (it->mesh != begin->mesh) throw ValueError("All data in the sequence must have the same mesh");
                         datas.push_back(*it);
@@ -261,11 +263,11 @@ namespace detail {
         }
 
         static DataT __call__n(ReceiverT& self, size_t n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            return DataT(self(n, *mesh, params..., method), mesh);
+            return DataT(self(n, mesh, params..., method), mesh);
         }
 
         static DataT __call__0(ReceiverT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
-            return DataT(self(0, *mesh, params..., method), mesh);
+            return DataT(self(0, mesh, params..., method), mesh);
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
@@ -349,16 +351,16 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
 
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
-        [function](const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
+        [function](const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
             typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
-            py::object omesh(boost::ref(dst_mesh));
+            py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
             py::object result = function(omesh, params..., method);
             try {
-                return py::extract<ReturnedType>(result);
+                return py::extract<ReturnedType>(result)();
             } catch (py::error_already_set) {
                 PyErr_Clear();
-                return py::extract<ReturnedType>(Data(result.ptr(), omesh));
+                return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
             }
         }
     ) {}
@@ -370,17 +372,17 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
 
-    PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
-        [function](size_t n, const MeshD<ProviderT::SpaceType::DIM>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
+    PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate (
+        [function](size_t n, const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
             typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
-            py::object omesh(boost::ref(dst_mesh));
+            py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
             py::object result = function(n, omesh, params..., method);
             try {
-                return py::extract<ReturnedType>(result);
+                return py::extract<ReturnedType>(result)();
             } catch (py::error_already_set) {
                 PyErr_Clear();
-                return py::extract<ReturnedType>(Data(result.ptr(), omesh));
+                return py::extract<ReturnedType>(Data(result.ptr(), omesh))();
             }
         },
         [function]() -> size_t {
@@ -596,7 +598,7 @@ namespace detail {
 
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
-            return DataVectorWrap<const ValueT,DIMS>(self(*mesh, params..., method), mesh);
+            return DataVectorWrap<const ValueT,DIMS>(self(mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
@@ -615,11 +617,11 @@ namespace detail {
             if (n < 0) n = self.size() + n;
             if (n < 0 || n >= self.size())
                 throw NoValue(format("%1% [%2%]", self.name(), n).c_str());
-            return DataVectorWrap<const ValueT,DIMS>(self(n, *mesh, params..., method), mesh);
+            return DataVectorWrap<const ValueT,DIMS>(self(n, mesh, params..., method), mesh);
         }
         static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to %1% provider", self.name());
-            return DataVectorWrap<const ValueT,DIMS>(self(0, *mesh, params..., method), mesh);
+            return DataVectorWrap<const ValueT,DIMS>(self(0, mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__n, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);

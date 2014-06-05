@@ -398,7 +398,7 @@ struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, Spac
     }
 
 };
-//TODO redefine ProviderFor using template aliases (require gcc 4.7), and than fix ReceiverFor
+//TODO redefine ProviderFor using template aliases (require gcc 4.7), and then fix ReceiverFor
 //template <typename PropertyT, typename SpaceT = void>
 //using ProviderFor = ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
 
@@ -410,6 +410,7 @@ struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, Spac
  * @tparam PropertyT property tag class (describe physical property)
  * @tparam SpaceT type of space, required (and allowed) only for fields properties
  */
+//TODO setValue
 template <typename PropertyT, typename SpaceT = void>
 struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>> {
     ReceiverFor & operator=(const ReceiverFor&) = delete;
@@ -467,12 +468,12 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
      * \param data data with field values in mesh points
      * \param mesh mesh value
      */
-    template <typename MeshPtrT, PropertyType propertyType = PropertyTag::propertyType>
+    template <typename MeshT, PropertyType propertyType = PropertyTag::propertyType>
     typename std::enable_if<propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY>::type
-    setValue(typename ProviderFor<PropertyTag, SpaceType>::ProvidedType data, const MeshPtrT& mesh) {
+    setValue(DataVector<const ValueType> data, shared_ptr<MeshT> mesh) {
         if (data.size() != mesh->size())
             throw BadMesh("ReceiverFor::setValues()", "Mesh size (%2%) and data size (%1%) do not match", data.size(), mesh->size());
-        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data, mesh), true);
+        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data, mesh), true);
     }
 
     /**
@@ -480,14 +481,14 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
      * \param data data with field values in mesh points
      * \param mesh mesh value
      */
-    template <typename MeshPtrT, typename Iterator, PropertyType propertyType = PropertyTag::propertyType>
+    template <typename MeshT, typename Iterator, PropertyType propertyType = PropertyTag::propertyType>
     typename std::enable_if<propertyType == MULTI_FIELD_PROPERTY>::type
-    setValues(Iterator begin, Iterator end, const MeshPtrT& mesh) {
+    setValues(Iterator begin, Iterator end, shared_ptr<MeshT> mesh) {
         size_t i = 0;
         for (Iterator it = begin; it != end; ++it, ++i )
             if (*it.size() != mesh->size())
                 throw BadMesh("ReceiverFor::setValues()", "Mesh size (%2%) and data[%3%] size (%1%) do not match", it->size(), mesh->size(), i);
-        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(begin, end, mesh), true);
+        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(begin, end, mesh), true);
     }
 
     /**
@@ -495,13 +496,13 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
      * \param data data with field values in mesh points
      * \param mesh mesh value
      */
-    template <typename MeshPtrT, PropertyType propertyType = PropertyTag::propertyType>
+    template <typename MeshT, PropertyType propertyType = PropertyTag::propertyType>
     typename std::enable_if<propertyType == MULTI_FIELD_PROPERTY>::type
-    setValue(const std::vector<typename ProviderFor<PropertyTag, SpaceType>::ProvidedType>& data, const MeshPtrT& mesh) {
+    setValue(const std::vector<DataVector<const ValueType>>& data, shared_ptr<MeshT> mesh) {
         for (auto it = data.begin(); it != data.end(); ++it)
             if (it->size() != mesh->size())
                 throw BadMesh("ReceiverFor::setValues()", "Mesh size (%2%) and data[%3%] size (%1%) do not match", it->size(), mesh->size(), it-data.begin());
-        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshPtrT>(data.begin(), data.end(), mesh), true);
+        this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data.begin(), data.end(), mesh), true);
     }
 
     /**
@@ -586,7 +587,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * Get provided value.
          * @return provided value
          */
-        virtual ProvidedType operator()(_ExtraParams...) const { return value; }
+        virtual ProvidedType operator()(_ExtraParams...) const override { return value; }
     };
 
     /**
@@ -642,7 +643,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
          * @return provided value
          * @throw NoValue if value is empty boost::optional
          */
-        virtual ProvidedType operator()(_ExtraParams...) const {
+        virtual ProvidedType operator()(_ExtraParams...) const override {
             ensureHasValue();
             return *value;
         }
@@ -738,7 +739,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get number of values
          * \return number of values
          */
-        virtual size_t size() const {
+        virtual size_t size() const override {
             return values.size();
         }
 
@@ -746,7 +747,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get provided value.
          * @return provided value
          */
-        virtual ProvidedType operator()(size_t n, _ExtraParams...) const {
+        virtual ProvidedType operator()(size_t n, _ExtraParams...) const override {
             if (n > values.size()) return default_value;
             return values[n];
         }
@@ -765,7 +766,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         typedef ValueType ProvidedType;
 
         /// Provided value.
-        std::vector<ProvidedType> values;
+        std::vector<ProvidedType> values;   //TODO powinien trzymać DataVectory
 
         /// Reset value to be uninitialized.
         void invalidate() { values.clear(); }
@@ -825,7 +826,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get number of values
          * \return number of values
          */
-        virtual size_t size() const {
+        virtual size_t size() const override {
             return values.size();
         }
 
@@ -835,7 +836,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param n value index
          * \throw NoValue if value is empty boost::optional
          */
-        virtual ProvidedType operator()(size_t n, _ExtraParams...) const {
+        virtual ProvidedType operator()(size_t n, _ExtraParams...) const override {
             ensureIndex(n);
             return values[n];
         }
@@ -877,7 +878,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
 
-        virtual size_t size() const {
+        virtual size_t size() const override {
             return sizeGetter();
         }
 
@@ -910,24 +911,27 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     /**
      * Template for implementation of field provider class which holds vector of values and mesh inside.
      * operator() call plask::interpolate.
-     * @tparam MeshPtrType type of pointer (shared_ptr or unique_ptr) to mesh which is used for calculation and which describe places of data points
+     * @tparam MeshPtrType type of pointer (shared_ptr) to mesh which is used for calculation and which describe places of data points
      */
-    template <typename MeshPtrType>
+    template <typename MeshType>
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of mesh pointer
-        typedef MeshPtrType MeshPointerType;
+        typedef shared_ptr<MeshType> MeshPointerType;
 
         /// Type of provided value.
         typedef ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
 
+        /// Type that is used to store value.
+        typedef DataVector<const ValueType> HeldType;
+
         /// Provided value. Values in points described by this->mesh.
-        ProvidedType values;
+        HeldType values;
 
       protected:
 
         /// Mesh which describes in which points there are this->values.
-        MeshPtrType mesh_ptr;
+        MeshPointerType mesh_ptr;
 
         /// Default interpolation method
         InterpolationMethod default_interpolation;
@@ -950,10 +954,10 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
          * Set a new Mesh.
          * \param mesh_p pointer to the new mesh
          */
-        void setMesh(MeshPtrType mesh_p) {
-            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
+        void setMesh(MeshPointerType mesh_p) {
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshType>::onMeshChange);
             mesh_ptr = mesh_p;
-            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         /// Reset values to uninitialized state (nullptr data).
@@ -1001,22 +1005,22 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
          * @param mesh_ptr pointer to mesh which describes in which points there are this->values
          * @param default_interpolation default interpolation method for this provider
          */
-        explicit WithValue(ProvidedType values, const MeshPtrType& mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
+        explicit WithValue(HeldType values, MeshPointerType mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
             : values(values), mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         /**
          * @param mesh_ptr pointer to mesh which describes in which points there are this->values
          * @param default_interpolation type of interpolation to use as default
          */
-        explicit WithValue(MeshPtrType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
+        explicit WithValue(MeshPointerType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
             : mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         ~WithValue() {
-            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshType>::onMeshChange);
         }
 
         /**
@@ -1043,17 +1047,17 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
          * @param method method which should be use to do interpolation
          * @return values in points described by mesh @a dst_mesh
          */
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const {
+        virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
             ensureHasCorrectValue();
             if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
-            return interpolate(*mesh_ptr, values, dst_mesh, method);
+            return interpolate(mesh_ptr, values, dst_mesh, method);
         }
     };
 
     /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method)> Delegate;
+    typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> Delegate;
 
     /**
      * Return same value in all points.
@@ -1081,8 +1085,8 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
-            return ProvidedType(dst_mesh.size(), value);
+        virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
+            return ProvidedType(dst_mesh->size(), value);
         }
     };
 };
@@ -1111,22 +1115,25 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
      * operator() call plask::interpolate.
      * @tparam MeshPtrType type of pointer (shared_ptr or unique_ptr) to mesh which is used for calculation and which describe places of data points
      */
-    template <typename MeshPtrType>
+    template <typename MeshType>
     struct WithValue: public ProviderFor<PropertyT, SpaceT> {
 
         /// Type of mesh pointer
-        typedef MeshPtrType MeshPointerType;
+        typedef shared_ptr<MeshType> MeshPointerType;
 
         /// Type of provided value.
         typedef ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
 
+        /// Type that is used to store value.
+        typedef DataVector<const ValueType> HeldType;
+
         /// Provided values. Values in points described by this->mesh.
-        std::vector<ProvidedType> values;
+        std::vector<HeldType> values;
 
       protected:
 
         /// Mesh which describes in which points there are this->values.
-        MeshPtrType mesh_ptr;
+        MeshPointerType mesh_ptr;
 
         /// Default interpolation method
         InterpolationMethod default_interpolation;
@@ -1149,10 +1156,10 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * Set a new Mesh.
          * \param mesh_p pointer to the new mesh
          */
-        void setMesh(MeshPtrType mesh_p) {
-            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
+        void setMesh(MeshPointerType mesh_p) {
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshType>::onMeshChange);
             mesh_ptr = mesh_p;
-            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         /// Reset values to uninitialized state (nullptr data).
@@ -1170,7 +1177,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * Add new value
          * \param val new value
          */
-        void push_back(const ProvidedType& value) {
+        void push_back(const HeldType& value) {
             values.push_back(value);
         }
 
@@ -1235,9 +1242,9 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * @param mesh_ptr pointer to mesh which describes in which points there are this->values
          * @param default_interpolation default interpolation method for this provider
          */
-        explicit WithValue(ProvidedType values, const MeshPtrType& mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
+        explicit WithValue(HeldType values, MeshPointerType mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
             : values({values}), mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         /**
@@ -1245,9 +1252,9 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * @param mesh_ptr pointer to mesh which describes in which points there are this->values
          * @param default_interpolation default interpolation method for this provider
          */
-        explicit WithValue(const std::initializer_list<ProvidedType>& values, const MeshPtrType& mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
+        explicit WithValue(const std::initializer_list<HeldType>& values, MeshPointerType mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
             : values(values), mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         /**
@@ -1256,22 +1263,22 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * @param default_interpolation default interpolation method for this provider
          */
         template <typename Iterator>
-        explicit WithValue(const Iterator& begin, const Iterator& end, const MeshPtrType& mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
+        explicit WithValue(const Iterator& begin, const Iterator& end, MeshPointerType mesh_ptr = nullptr, InterpolationMethod default_interpolation = INTERPOLATION_LINEAR)
             : values(begin, end), mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         /**
          * @param mesh_ptr pointer to mesh which describes in which points there are this->values
          * @param default_interpolation type of interpolation to use as default
          */
-        explicit WithValue(MeshPtrType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
+        explicit WithValue(MeshPointerType mesh_ptr = nullptr, const InterpolationMethod& default_interpolation = INTERPOLATION_LINEAR)
             : mesh_ptr(mesh_ptr), default_interpolation(default_interpolation) {
-            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedConnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...>>::WithValue<MeshType>::onMeshChange);
         }
 
         ~WithValue() {
-            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshPtrType>::onMeshChange);
+            if (mesh_ptr) mesh_ptr->changedDisconnectMethod(this, &ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::WithValue<MeshType>::onMeshChange);
         }
 
         /**
@@ -1279,7 +1286,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param n value index
          * \return provided value in points described by this->mesh
          */
-        ProvidedType& operator()(size_t n) {
+        HeldType& operator()(size_t n) {
             ensureHasCorrectValue(n);
             return values[n];
         }
@@ -1289,7 +1296,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param n value index
          * \return provided value in points described by this->mesh
          */
-        const ProvidedType& operator()(size_t n) const {
+        const HeldType& operator()(size_t n) const {
             ensureHasCorrectValue(n);
             return values[n];
         }
@@ -1301,19 +1308,19 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param method method which should be use to do interpolation
          * \return values in points described by mesh \a dst_mesh
          */
-        virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const {
+        virtual ProvidedType operator()(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
             ensureHasCorrectValue(n);
             if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
-            return interpolate(*mesh_ptr, values[n], dst_mesh, method);
+            return interpolate(mesh_ptr, values[n], dst_mesh, method);
         }
     };
 
     /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
-    struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method)> {
+    struct Delegate: public PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> {
 
-        typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod method)> Base;
+        typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> Base;
 
         std::function<size_t()> sizeGetter;
 
@@ -1354,7 +1361,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         Delegate(ClassType* object, MemberType member, size_t (ClassType::*sizer)()): Base(object, member),
             sizeGetter([object, sizer]() { return (object->*sizer)(); }) {}
 
-        virtual size_t size() const {
+        virtual size_t size() const override {
             return sizeGetter();
         }
 
@@ -1386,11 +1393,11 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */
-        virtual ProvidedType operator()(size_t, const MeshD<SpaceT::DIM>& dst_mesh, _ExtraParams..., InterpolationMethod) const {
-            return ProvidedType(dst_mesh.size(), value);
+        virtual ProvidedType operator()(size_t, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod) const override {
+            return ProvidedType(dst_mesh->size(), value);
         }
 
-        virtual size_t size() const {
+        virtual size_t size() const override {
             return 1;
         }
     };

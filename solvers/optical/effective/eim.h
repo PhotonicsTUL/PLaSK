@@ -427,13 +427,13 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectan
     }
 
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightMagnitude(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    DataVector<const double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
-    DataVector<const double> getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
+    DataVector<const double> getHeat(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
   private:
 

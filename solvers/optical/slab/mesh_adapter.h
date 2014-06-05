@@ -18,7 +18,7 @@ template <int dim> struct LevelMeshAdapter: public MeshD<dim>
         /** Yield pointers to the consecutive levels
          * \return pointer to the new level object or \c nullptr at the end
          */
-        virtual std::unique_ptr<LevelMeshAdapter<dim>> yield() = 0;
+        virtual shared_ptr<LevelMeshAdapter<dim>> yield() = 0;
     };
 
     /**
@@ -42,7 +42,7 @@ struct LevelMeshAdapterGeneric: public LevelMeshAdapter<dim>
     std::vector<size_t> matching;
 
     /// Original mesh
-    const MeshD<dim>* src;
+    shared_ptr<const MeshD<dim>> src;
 
     /// Interesting level
     double vert;
@@ -50,23 +50,23 @@ struct LevelMeshAdapterGeneric: public LevelMeshAdapter<dim>
   public:
     /// Generator for the generic levels
     struct Generator: public LevelMeshAdapter<dim>::GeneratorBase {
-        const MeshD<dim>* src;
+        shared_ptr<const MeshD<dim>> src;
         std::set<double> levels;
         std::set<double>::iterator iter;
-        Generator(const MeshD<dim>* src): src(src) {
+        Generator(shared_ptr<const MeshD<dim>> src): src(src) {
             for (auto point: *src) {
                 levels.insert(point[dim-1]);
             }
             iter = levels.begin();
         }
-        virtual std::unique_ptr<LevelMeshAdapter<dim>> yield() override {
-            if (iter == levels.end()) return std::unique_ptr<LevelMeshAdapter<dim>>();
-            return std::unique_ptr<LevelMeshAdapter<dim>>(new LevelMeshAdapterGeneric<dim>(src, *(iter++)));
+        virtual shared_ptr<LevelMeshAdapter<dim>> yield() override {
+            if (iter == levels.end()) return shared_ptr<LevelMeshAdapter<dim>>();
+            return shared_ptr<LevelMeshAdapter<dim>>(new LevelMeshAdapterGeneric<dim>(src, *(iter++)));
         }
     };
 
     /// Create mesh adapter
-    LevelMeshAdapterGeneric(const MeshD<dim>* src, double level): src(src), vert(level) {
+    LevelMeshAdapterGeneric(shared_ptr<const MeshD<dim>> src, double level): src(src), vert(level) {
         for (auto it = src->begin(); it != src->end(); ++it) {
             if ((*it)[dim-1] == level) matching.push_back(it.index);
         }
@@ -92,7 +92,7 @@ struct LevelMeshAdapterRectangular<2>: public LevelMeshAdapter<2>
 
   protected:
     /// Original mesh
-    const RectangularT* src;
+    shared_ptr<const RectangularT> src;
 
     /// Interesting level
     size_t vert;
@@ -100,17 +100,17 @@ struct LevelMeshAdapterRectangular<2>: public LevelMeshAdapter<2>
   public:
     /// Generator for the generic levels
     struct Generator: public LevelMeshAdapter<2>::GeneratorBase {
-        const RectangularT* src;
+        shared_ptr<const RectangularT> src;
         size_t idx;
-        Generator(const RectangularT* src): src(src), idx(0) {}
-        virtual std::unique_ptr<LevelMeshAdapter<2>> yield() override {
-            if (idx == src->axis1->size()) return std::unique_ptr<LevelMeshAdapter<2>>();
-            return std::unique_ptr<LevelMeshAdapter<2>>(new LevelMeshAdapterRectangular<2>(src, idx++));
+        Generator(shared_ptr<const RectangularT> src): src(src), idx(0) {}
+        virtual shared_ptr<LevelMeshAdapter<2>> yield() override {
+            if (idx == src->axis1->size()) return shared_ptr<LevelMeshAdapter<2>>();
+            return shared_ptr<LevelMeshAdapter<2>>(new LevelMeshAdapterRectangular<2>(src, idx++));
         }
     };
 
     /// Create mesh adapter
-    LevelMeshAdapterRectangular(const RectangularT* src, size_t vert): src(src), vert(vert) {}
+    LevelMeshAdapterRectangular(shared_ptr<const RectangularT> src, size_t vert): src(src), vert(vert) {}
 
     virtual std::size_t size() const override { return src->axis0->size(); }
 
@@ -129,7 +129,7 @@ struct LevelMeshAdapterRectangular<3>: public LevelMeshAdapter<3>
 
   protected:
     /// Original mesh
-    const RectangularT* src;
+    shared_ptr<const RectangularT> src;
 
     /// Interesting level
     size_t vert;
@@ -137,17 +137,17 @@ struct LevelMeshAdapterRectangular<3>: public LevelMeshAdapter<3>
   public:
     /// Generator for the generic levels
     struct Generator: public LevelMeshAdapter<3>::GeneratorBase {
-        const RectangularT* src;
+        shared_ptr<const RectangularT> src;
         size_t idx;
-        Generator(const RectangularT* src): src(src), idx(0) {}
-        virtual std::unique_ptr<LevelMeshAdapter<3>> yield() override {
-            if (idx == src->axis2->size()) return std::unique_ptr<LevelMeshAdapter<3>>();
-            return std::unique_ptr<LevelMeshAdapter<3>>(new LevelMeshAdapterRectangular<3>(src, idx++));
+        Generator(shared_ptr<const RectangularT> src): src(src), idx(0) {}
+        virtual shared_ptr<LevelMeshAdapter<3>> yield() override {
+            if (idx == src->axis2->size()) return shared_ptr<LevelMeshAdapter<3>>();
+            return shared_ptr<LevelMeshAdapter<3>>(new LevelMeshAdapterRectangular<3>(src, idx++));
         }
     };
 
     /// Create mesh adapter
-    LevelMeshAdapterRectangular(const RectangularT* src, size_t vert): src(src), vert(vert) {}
+    LevelMeshAdapterRectangular(shared_ptr<const RectangularT> src, size_t vert): src(src), vert(vert) {}
 
     virtual std::size_t size() const override { return src->axis0->size() * src->axis1->size(); }
 
@@ -160,13 +160,13 @@ struct LevelMeshAdapterRectangular<3>: public LevelMeshAdapter<3>
 
 
 template <int dim>
-std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> LevelsGenerator(const MeshD<dim>& src)
+std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> LevelsGenerator(const shared_ptr<const MeshD<dim>>& src)
 {
     typedef std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> ReturnT;
 
-    if (auto mesh = dynamic_cast<const RectangularMesh<dim>*>(&src))
+    if (auto mesh = dynamic_pointer_cast<const RectangularMesh<dim>>(src))
         return ReturnT(new typename LevelMeshAdapterRectangular<dim>::Generator(mesh));
-    return ReturnT(new typename LevelMeshAdapterGeneric<dim>::Generator(&src));
+    return ReturnT(new typename LevelMeshAdapterGeneric<dim>::Generator(src));
 }
 
 

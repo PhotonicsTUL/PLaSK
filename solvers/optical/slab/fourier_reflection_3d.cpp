@@ -189,7 +189,7 @@ DataVector<const Tensor3<dcomplex>> FourierReflection3D::getRefractiveIndexProfi
 // }
 //
 //
-const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
+const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
 //     if (modes.size() <= num) throw NoValue(LightE::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
@@ -202,7 +202,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, co
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
+const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
 //     if (modes.size() <= num) throw NoValue(LightH::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
@@ -215,7 +215,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, co
 }
 
 
-const DataVector<const double> FourierReflection3D::getIntensity(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method)
+const DataVector<const double> FourierReflection3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
 {
 //     if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {

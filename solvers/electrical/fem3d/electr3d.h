@@ -261,13 +261,13 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
 
   protected:
 
-    DataVector<const double> getPotential(const MeshD<3>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const Vec<3>> getCurrentDensity(const MeshD<3>& dst_mesh, InterpolationMethod method);
+    DataVector<const Vec<3>> getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
 
-    DataVector<const double> getHeatDensity(const MeshD<3>& dst_mesh, InterpolationMethod method);
+    DataVector<const double> getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
 
-    DataVector<const Tensor2<double>> getConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method);
+    DataVector<const Tensor2<double>> getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
 };
 
 }}} //namespaces

@@ -38,7 +38,8 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
             plask::SolverWithMesh<Geometry2DType,plask::RegularMesh1D>(name),
             outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_SPLINE),
-            do_initial(false)
+            do_initial(false),
+            mesh2(new plask::RectangularMesh<2>())
         {
             relative_accuracy = 0.01;
             max_mesh_changes = 5;
@@ -62,19 +63,19 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 
         plask::shared_ptr<plask::RectangularAxis> current_mesh_ptr()
         {
-            return mesh2.axis0;
+            return mesh2->axis0;
         }
 
         plask::RegularAxis& current_mesh()
         {
-            return *static_cast<plask::RegularAxis*>(mesh2.axis0.get());
+            return *static_cast<plask::RegularAxis*>(mesh2->axis0.get());
         }
 
         double burning_integral(void);  // całka strat nadprogu
 
     protected:
 
-        plask::RectangularMesh<2> mesh2;         ///< Computational mesh
+        shared_ptr<plask::RectangularMesh<2>> mesh2;         ///< Computational mesh
 
         static constexpr double hk = plask::phys::h_J/M_PI;      // stala plancka/2pi
 
@@ -148,12 +149,12 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         double getZQWCoordinate();
         std::vector<double> getZQWCoordinates();
 
-        plask::DataVector<const double> averageLi(plask::DataVector<const double>, plask::RectangularMesh<2> mesh_Li);
+        plask::DataVector<const double> averageLi(plask::DataVector<const double>, const plask::RectangularMesh<2>& mesh_Li);
 
         virtual void onInitialize();
         virtual void onInvalidate();
 
-        const DataVector<double> getConcentration(const plask::MeshD<2>& dest_mesh, plask::InterpolationMethod interpolation=INTERPOLATION_DEFAULT ); // method providing concentration from inside to the provider (outConcentration)
+        const DataVector<double> getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, plask::InterpolationMethod interpolation=INTERPOLATION_DEFAULT ); // method providing concentration from inside to the provider (outConcentration)
 
 }; // class FiniteElementMethodDiffusion2DSolver
 

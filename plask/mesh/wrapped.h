@@ -24,7 +24,7 @@ struct WrappedMesh: public MeshD<dim> {
 
   protected:
 
-      const MeshD<dim>& original;                   ///< Original mesh
+      shared_ptr<const MeshD<dim>> original;                   ///< Original mesh
       shared_ptr<const GeometryD<dim>> geometry;    ///< Geometry of the mesh
 
       bool ignore_symmetry[dim];                    ///< If true, the structure symmetry is ignored
@@ -37,7 +37,7 @@ struct WrappedMesh: public MeshD<dim> {
      * \param geometry geometry in which the mesh is defined
      * \param ignore symmetry parameter specifying if the symmetry should be igroned
      */
-    WrappedMesh(const MeshD<dim>& original, const shared_ptr<const GeometryD<dim>>& geometry, const bool ignore_symmetry[dim]):
+    WrappedMesh(shared_ptr<const MeshD<dim>> original, const shared_ptr<const GeometryD<dim>>& geometry, const bool ignore_symmetry[dim]):
         original(original), geometry(geometry) {
         for (size_t i = 0; i != dim; ++i) this->ignore_symmetry[i] = ignore_symmetry[i];
     }
@@ -47,7 +47,7 @@ struct WrappedMesh: public MeshD<dim> {
      * \param original original mesh
      * \param geometry geometry in which the mesh is defined
      */
-    WrappedMesh(const MeshD<dim>& original, const shared_ptr<const GeometryD<dim>>& geometry);
+    WrappedMesh(shared_ptr<const MeshD<dim>> original, const shared_ptr<const GeometryD<dim>>& geometry);
 
     virtual ~WrappedMesh() {}
 

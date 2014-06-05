@@ -635,47 +635,47 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 }
 
 
-DataVector<const double> FiniteElementMethodElectrical3DSolver::getPotential(const MeshD<3>& dst_mesh, InterpolationMethod method) const {
+DataVector<const double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const {
     if (!potential) throw NoValue("Potential");
     this->writelog(LOG_DETAIL, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(*(mesh), potential, WrappedMesh<3>(dst_mesh, geometry), method);
+    return interpolate(mesh, potential, make_shared<const WrappedMesh<3>>(dst_mesh, geometry), method);
 }
 
 
-DataVector<const Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+DataVector<const Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Current density");
     this->writelog(LOG_DETAIL, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    auto dest_mesh = WrappedMesh<3>(dst_mesh, geometry);
-    auto result = interpolate(*(mesh->getMidpointsMesh()), current, dest_mesh, method);
+    auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
+    auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method);
     constexpr Vec<3> zero(0.,0.,0.);
     for (size_t i = 0; i < result.size(); ++i)
-        if (!geometry->getChildBoundingBox().contains(dest_mesh[i])) result[i] = zero;
+        if (!geometry->getChildBoundingBox().contains(dest_mesh->at(i))) result[i] = zero;
     return result;
 }
 
 
-DataVector<const double> FiniteElementMethodElectrical3DSolver::getHeatDensity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+DataVector<const double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Heat density");
     this->writelog(LOG_DETAIL, "Getting heat density");
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    auto dest_mesh = WrappedMesh<3>(dst_mesh, geometry);
-    auto result = interpolate(*(mesh->getMidpointsMesh()), heat, dest_mesh, method);
+    auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
+    DataVector<double> result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method).claim();
     for (size_t i = 0; i < result.size(); ++i)
-        if (!geometry->getChildBoundingBox().contains(dest_mesh[i])) result[i] = 0.;
+        if (!geometry->getChildBoundingBox().contains(dest_mesh->at(i))) result[i] = 0.;
     return result;
 }
 
 
-DataVector<const Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+DataVector<const Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     initCalculation();
     this->writelog(LOG_DETAIL, "Getting conductivities");
     loadConductivity();
     auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
-    DataVector<Tensor2<double>> result(dst_mesh.size());
-    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+    DataVector<Tensor2<double>> result(dst_mesh->size());
+    for (size_t i = 0; i != dst_mesh->size(); ++i) {
         auto point = target_mesh[i];
         size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
         size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();

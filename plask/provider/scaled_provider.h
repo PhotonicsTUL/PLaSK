@@ -62,9 +62,8 @@ struct ScaledProviderBase: public DstProviderT {
     /**
      * Set source provider
      * \param src source provider
-     * \param prv \c true only if \p src is private and should be deleted by destructor of this
      */
-    void set(std::unique_ptr<SrcProviderT>&& src, bool prv=false) {
+    void set(std::unique_ptr<SrcProviderT>&& src) {
         set(src->release(), true);
     }
 
@@ -114,7 +113,7 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, propertyType, SpaceT,
 
     typedef typename ProviderFor<DstPropertyT,SpaceT>::ProvidedType ProvidedType;
 
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
+    virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
         this->ensureHasProvider();
         return (*this->source)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
     }
@@ -128,7 +127,7 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, MULTI_FIELD_PROPERTY,
 
     typedef typename ProviderFor<DstPropertyT,SpaceT>::ProvidedType ProvidedType;
 
-    virtual ProvidedType operator()(size_t n, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
+    virtual ProvidedType operator()(size_t n, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const override {
         this->ensureHasProvider();
         return (*this->source)(n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
     }

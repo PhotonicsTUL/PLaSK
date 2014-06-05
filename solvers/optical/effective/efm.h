@@ -488,13 +488,13 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
     }
 
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightMagnitude(int num, const MeshD<2>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    DataVector<const double> getLightMagnitude(int num, const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2> >& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
-    DataVector<const double> getHeat(const MeshD<2>& dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
+    DataVector<const double> getHeat(const shared_ptr<const MeshD<2> > &dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
   private:
     bool getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);

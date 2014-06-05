@@ -394,7 +394,7 @@ public:
 
     /**
      * Get value from provider using its operator().
-     * If value can't be gotten (there is no provider or provider can't give value) empty optional is returned.
+     * If value can't be got (there is no provider or provider can't give value) empty optional is returned.
      * @return value from provider or empty optional if value couldn't be got
      */
     template<typename ...Args> auto
@@ -516,7 +516,8 @@ struct FieldProvider: public Provider {
     virtual const char* name() const { return NAME; }
 
     /// Type of value provided by this (returned by operator()).
-    typedef DataVector<const ValueT> ProvidedType;
+    typedef LazyData<ValueT> ProvidedType;
+    typedef SpaceT SpaceType;
 
     /**
      * @param dst_mesh set of requested points
@@ -524,7 +525,7 @@ struct FieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     /**
      * Call this->operator()(dst_mesh, DEFAULT).
@@ -532,19 +533,8 @@ struct FieldProvider: public Provider {
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args) const {
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(dst_mesh, extra_args..., INTERPOLATION_DEFAULT);
-    }
-
-    /**
-     * Call this->operator()(*dst_mesh, extra_args..., method).
-     * @param dst_mesh set of requested points, given in shared_ptr
-     * @param extra_args additional provider arguments
-     * @param method method which should be use to do interpolation
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
-        return this->operator()(*dst_mesh, extra_args..., method);
     }
 
     /**
@@ -553,24 +543,14 @@ struct FieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
+    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
         typedef std::tuple<ExtraArgs...> Tuple;
         return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
 
-    /**
-     * @param dst_mesh set of requested points, given in shared_ptr
-     * @param extra_args additional provider arguments, given in tuple
-     * @param method method which should be use to do interpolation
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    inline ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
-        return this->operator()(*dst_mesh, extra_args, method);
-    }
-
 private:
     template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
-    inline ProvidedType apply_tuple(const MeshD<SpaceT::DIM>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) {
+    inline ProvidedType apply_tuple(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
       return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 
@@ -587,7 +567,7 @@ struct MultiFieldProvider: public Provider {
     virtual const char* name() const { return NAME; }
 
     /// Type of value provided by this (returned by operator()).
-    typedef DataVector<const ValueT> ProvidedType;
+    typedef LazyData<ValueT> ProvidedType;
 
     /**
      * Get number of values
@@ -602,7 +582,7 @@ struct MultiFieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    virtual ProvidedType operator()(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     /**
      * Call this->operator()(dst_mesh, DEFAULT).
@@ -611,20 +591,8 @@ struct MultiFieldProvider: public Provider {
      * @param extra_args additional provider arguments
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args) const {
+    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args) const {
         return this->operator()(num, dst_mesh, extra_args..., INTERPOLATION_DEFAULT);
-    }
-
-    /**
-     * Call this->operator()(*dst_mesh, extra_args..., method).
-     * @param num number of the value
-     * @param dst_mesh set of requested points, given in shared_ptr
-     * @param extra_args additional provider arguments
-     * @param method method which should be use to do interpolation
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
-        return this->operator()(num, *dst_mesh, extra_args..., method);
     }
 
     /**
@@ -634,25 +602,14 @@ struct MultiFieldProvider: public Provider {
      * @param method method which should be use to do interpolation
      * @return values in points describe by mesh @a dst_mesh
      */
-    inline ProvidedType operator()(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
+    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...>&& extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
         typedef std::tuple<ExtraArgs...> Tuple;
         return apply_tuple(num, dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
 
-    /**
-     * @param num number of the value
-     * @param dst_mesh set of requested points, given in shared_ptr
-     * @param extra_args additional provider arguments, given in tuple
-     * @param method method which should be use to do interpolation
-     * @return values in points describe by mesh @a dst_mesh
-     */
-    inline ProvidedType operator()(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method = INTERPOLATION_DEFAULT) const {
-        return this->operator()(num, *dst_mesh, extra_args, method);
-    }
-
 private:
     template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
-    inline ProvidedType apply_tuple(size_t num, const MeshD<SpaceT::DIM>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) {
+    inline ProvidedType apply_tuple(size_t num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) {
       return this->operator()(num, dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 
@@ -740,7 +697,7 @@ struct PolymorphicDelegateProvider<_BaseClass, _Res(_ArgTypes...)>: public _Base
      * @param params parameters for functor held by valueGetter
      * @return value returned by functor held by valueGetter
      */
-    _Res operator()(_ArgTypes... params) const {
+    _Res operator()(_ArgTypes... params) const override {
         return valueGetter(std::forward<_ArgTypes>(params)...);
     }
 };

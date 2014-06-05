@@ -246,7 +246,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * \param method interpolation method
      */
     DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW2D::Component polarization, IncidentDirection incident,
-                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
+                                                   shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
         initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -259,7 +259,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * \param method interpolation method
      */
     DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW2D::Component polarization, IncidentDirection incident,
-                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
+                                                   shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
         initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -272,7 +272,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * \param method interpolation method
      */
     DataVector<double> getReflectedFieldIntensity(ExpansionPW2D::Component polarization, IncidentDirection incident,
-                                                  const MeshD<2>& dst_mesh, InterpolationMethod method) {
+                                                  shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
         initCalculation();
         return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -325,7 +325,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+    virtual const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     /**
      * Compute magnetic field
@@ -333,7 +333,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+    virtual const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     /**
      * Compute light intensity
@@ -341,7 +341,7 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    const DataVector<const double> getIntensity(size_t num, const MeshD<2>& dst_mesh, InterpolationMethod method);
+    virtual const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
   public:
 
@@ -369,13 +369,13 @@ struct FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
          * \param side incidence side
          */
         Reflected(FourierReflection2D* parent, double wavelength, ExpansionPW2D::Component polarization, FourierReflection2D::IncidentDirection side):
-            outElectricField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+            outElectricField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
-            outMagneticField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+            outMagneticField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
-            outLightMagnitude([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+            outLightMagnitude([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
         {}

@@ -57,8 +57,35 @@ namespace detail {
     };
 }
 
+template <typename T>
+struct SplineRect2DLazyDataImpl: public InterpolatedLazyDataImpl<T, RectangularMesh<2> > {
+
+    SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh, const DataVector<const T>& src_vec, const shared_ptr<const MeshD<2>>& dst_mesh)
+        : InterpolatedLazyDataImpl<T, RectangularMesh<2>>(src_mesh, src_vec, dst_mesh)
+    {
+    }
+
+    virtual T get(std::size_t index) const override {
+        //this->src_mesh, this->src_vec, this->dst_mesh are available
+        return T();
+    }
+
+};
+
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLINE> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<2>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<2>>& dst_mesh) {
+        //You can have few SplineRect2DLazyDataImpl variants and choose one here
+        return new SplineRect2DLazyDataImpl<DstT>(src_mesh, src_vec, dst_mesh);
+    }
+
+};
+
+
+
+#ifdef diable_this_fragment___old_interpolate_code
+template <typename Mesh1D, typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh<2,Mesh1D>, SrcT, DstT, INTERPOLATION_SPLINE> {
 
     static void interpolate(const RectangularMesh<2>& src_mesh, const DataVector<const SrcT>& src_vec,
                             const plask::MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
@@ -215,7 +242,7 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLI
     }
 
 };
-
+#endif
 
 } // namespace plask
 

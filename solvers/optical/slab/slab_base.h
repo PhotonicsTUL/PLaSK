@@ -189,7 +189,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
+    virtual const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
     /**
      * Compute magnetic field
@@ -197,7 +197,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
+    virtual const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
@@ -205,7 +205,7 @@ struct SlabSolver: public SolverOver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual const DataVector<const double> getIntensity(size_t num, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) = 0;
+    virtual const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<GeometryT::DIM>> dst_mesh, InterpolationMethod method) = 0;
 
 };
 

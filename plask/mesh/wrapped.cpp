@@ -3,22 +3,22 @@
 namespace plask {
 
 template <>
-WrappedMesh<2>::WrappedMesh(const MeshD<2>& original, const shared_ptr<const GeometryD<2>>& geometry):
+WrappedMesh<2>::WrappedMesh(shared_ptr<const MeshD<2>> original, const shared_ptr<const GeometryD<2>>& geometry):
         original(original), geometry(geometry), ignore_symmetry{false, false} {}
 
 template <>
-WrappedMesh<3>::WrappedMesh(const MeshD<3>& original, const shared_ptr<const GeometryD<3>>& geometry):
+WrappedMesh<3>::WrappedMesh(shared_ptr<const MeshD<3>> original, const shared_ptr<const GeometryD<3>>& geometry):
         original(original), geometry(geometry), ignore_symmetry{false, false, false} {}
 
 
 template <int dim>
 std::size_t WrappedMesh<dim>::size() const {
-    return original.size();
+    return original->size();
 }
 
 template <int dim>
 Vec<dim> WrappedMesh<dim>::at(std::size_t index) const {
-    Vec<dim> pos = original.at(index);
+    Vec<dim> pos = original->at(index);
     for (int i = 0; i < dim; ++i) {
         auto dir = Geometry::Direction(i+3-dim);
         if (geometry->isPeriodic(dir)) {
@@ -47,7 +47,7 @@ Vec<dim> WrappedMesh<dim>::at(std::size_t index) const {
 
 template <int dim>
 void WrappedMesh<dim>::writeXML(XMLElement& object) const {
-    original.writeXML(object);
+    original->writeXML(object);
 }
 
 template struct WrappedMesh<2>;

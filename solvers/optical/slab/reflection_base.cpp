@@ -662,9 +662,9 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
 
 
 template <typename GeometryT>
-DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldE(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldE(const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method)
 {
-    DataVector<Vec<3,dcomplex>> destination(dst_mesh.size());
+    DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = LevelsGenerator<GeometryT::DIM>(dst_mesh);
     diagonalizer->source()->initField(Expansion::FieldParams::E, k0, klong, ktran, method);
     while (auto level = levels->yield()) {
@@ -674,7 +674,7 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldE(const Mes
         cvector H = getFieldVectorH(z, n);
         if (n >= this->interface) for (auto& h: H) h = -h;
         size_t layer = this->stack[n];
-        auto dest = diagonalizer->source()->getField(layer, *level, E, H);
+        auto dest = diagonalizer->source()->getField(layer, level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
     diagonalizer->source()->cleanupField();
@@ -683,9 +683,9 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldE(const Mes
 
 
 template <typename GeometryT>
-DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldH(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldH(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method)
 {
-    DataVector<Vec<3,dcomplex>> destination(dst_mesh.size());
+    DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = LevelsGenerator<GeometryT::DIM>(dst_mesh);
     diagonalizer->source()->initField(Expansion::FieldParams::H, k0, klong, ktran, method);
     while (auto level = levels->yield()) {
@@ -695,7 +695,7 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldH(const Mes
         cvector H = getFieldVectorH(z, n);
         if (n >= this->interface) for (auto& h: H) h = -h;
         size_t layer = this->stack[n];
-        auto dest = diagonalizer->source()->getField(layer, *level, E, H);
+        auto dest = diagonalizer->source()->getField(layer, level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
     diagonalizer->source()->cleanupField();
@@ -704,7 +704,7 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldH(const Mes
 
 
 template <typename GeometryT>
-DataVector<double> ReflectionSolver<GeometryT>::computeFieldIntensity(double power, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method)
+DataVector<double> ReflectionSolver<GeometryT>::computeFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method)
 {
     auto E = computeFieldE(dst_mesh, method);
     DataVector<double> result(E.size());

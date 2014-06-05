@@ -356,16 +356,16 @@ void EffectiveIndex2DSolver::updateCache()
             axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + outdist);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
-        RectangularMesh<2> midmesh(axis0, axis1, mesh->getIterationOrder());
+        auto midmesh = make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
         DataVector<const double> gain;
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
             for (size_t iy = ybegin; iy < yend; ++iy) {
-                size_t idx = midmesh.index(ix-xbegin, iy-ybegin);
+                size_t idx = midmesh->index(ix-xbegin, iy-ybegin);
                 double T = temp[idx];
-                auto point = midmesh[idx];
+                auto point = midmesh->at(idx);
                 auto roles = geometry->getRolesAt(point);
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end())
                     nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
@@ -711,7 +711,7 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
 }
 
 
-plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int num, const plask::MeshD<2>& dst_mesh, plask::InterpolationMethod)
+plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -740,14 +740,14 @@ plask::DataVector<const double> EffectiveIndex2DSolver::getLightMagnitude(int nu
         if (imag(ky[i]) > 0.) ky[i] = -ky[i];
     }
 
-    DataVector<double> results(dst_mesh.size());
+    DataVector<double> results(dst_mesh->size());
 
-    if (!getLightMagnitude_Efficient(num, dst_mesh, results, kx, ky)) {
+    if (!getLightMagnitude_Efficient(num, *dst_mesh, results, kx, ky)) {
         const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
 
         #pragma omp parallel for
-        for (size_t idx = 0; idx < dst_mesh.size(); ++idx) {
-            auto point = dst_mesh[idx];
+        for (size_t idx = 0; idx < dst_mesh->size(); ++idx) {
+            auto point = dst_mesh->at(idx);
             double x = point.tran();
             double y = point.vert();
 
@@ -850,7 +850,7 @@ bool EffectiveIndex2DSolver::getLightMagnitude_Efficient(size_t num, const plask
 }
 
 
-DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(const MeshD<2>& dst_mesh, double lam, InterpolationMethod) {
+DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, double lam, InterpolationMethod) {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex ok0 = k0;
     if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
@@ -859,8 +859,8 @@ DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(c
     catch(...) { k0 = ok0; throw; }
     k0 = ok0;
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
-    DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
-    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+    DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
+    for (size_t i = 0; i != dst_mesh->size(); ++i) {
         auto point = target_mesh[i];
         size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < xbegin) ix = xbegin;
         size_t iy = this->mesh->axis1->findIndex(point.c1);
@@ -870,14 +870,14 @@ DataVector<const Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(c
 }
 
 
-DataVector<const double> EffectiveIndex2DSolver::getHeat(const MeshD<2>& dst_mesh, plask::InterpolationMethod method)
+DataVector<const double> EffectiveIndex2DSolver::getHeat(shared_ptr<const MeshD<2>> dst_mesh, plask::InterpolationMethod method)
 {
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
     writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
 
-    DataVector<double> result(dst_mesh.size(), 0.);
+    DataVector<double> result(dst_mesh->size(), 0.);
 
     if (modes.size() == 0) return result;
 

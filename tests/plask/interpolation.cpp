@@ -13,9 +13,9 @@ namespace plask {
 
     template <typename SrcT, typename DstT>    //for any data type
     struct InterpolationAlgorithm<DummyMesh, SrcT, DstT, plask::INTERPOLATION_LINEAR> {
-        static void interpolate(const DummyMesh& src_mesh, const DataVector<const SrcT>& src_vec,
-                                const plask::MeshD<DummyMesh::DIM>& dst_mesh, DataVector<DstT>& dst_vec) {
-            dst_vec[0] = src_vec[0] + 10;
+        static LazyData<DstT> interpolate(const shared_ptr<const DummyMesh>&, const DataVector<const SrcT>&,
+                                const shared_ptr<const plask::MeshD<DummyMesh::DIM>>& dst_mesh) {
+            return new ConstValueLazyDataImpl<DstT>(11, dst_mesh->size());
         }
     };
 }
@@ -24,7 +24,8 @@ namespace plask {
 BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
 
     BOOST_AUTO_TEST_CASE(interpolation_choice) {
-        plask::DummyMesh src_mesh, dst_mesh;
+        plask::shared_ptr<const plask::DummyMesh> src_mesh = plask::make_shared<plask::DummyMesh>(),
+                                                  dst_mesh = plask::make_shared<plask::DummyMesh>();
         plask::DataVector<int> src_data = {1, 2};
 
         // Check exceptions

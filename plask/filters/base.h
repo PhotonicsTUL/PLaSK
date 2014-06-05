@@ -15,12 +15,22 @@ struct DataSourceImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "space change filter data sources can't be use with single value properties (it can be use only with fields properties)");
 };
 
-template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
-class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...>>: public ProviderFor<PropertyT, OutputSpaceType> {
+//This class is simillar to field provider, but in each point it returns optional value
+template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
+class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
+//: public FieldProvider<boost::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
+{
 
     //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
 
 public:
+
+    typedef OutputSpaceT OutputSpaceType;
+
+    /**
+     * Signal called when source has been changed.
+     */
+    boost::signals2::signal<void()> changed;
 
     /*shared_ptr<OutputSpaceType> getDestinationSpace() const { return destinationSpace; }
 
@@ -36,22 +46,30 @@ public:
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
 
-    /**
+    /*
      * Check if this source can provide value for given point and eventualy return this value.
      * @param p point (in outer space coordinates)
      * @param extra_args
      * @param method interpolation method to use
      * @return value in point @p, set only if this can provide data in given point @p p
      */
-    virtual boost::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+   // virtual boost::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
    // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-    virtual DataVector<const ValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
-        DataVector<ValueType> result(dst_mesh.size());
-        for (std::size_t i = 0; i < result.size(); ++i)
-            result[i] = *get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
-        return result;
+    //virtual LazyData<boost::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    virtual std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+
+    inline std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
+        typedef std::tuple<ExtraArgs...> Tuple;
+        return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
+    }
+
+private:
+    template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
+    inline std::function<boost::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
+      return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 
 };
@@ -59,11 +77,24 @@ public:
 template <typename PropertyT, typename OutputSpaceType>
 using DataSource = DataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpaceType, typename PropertyT::ExtraParams>;
 
+// Hold reference to data source and destination mesh, base for LazyDataImpl returned by most DataSources
+/*template <typename DataSourceType>
+struct DataSourceDataImpl: public LazyDataImpl<boost::optional<typename DataSourceType::ValueType>> {
+
+    const DataSourceType& data_src;
+    const MeshD<DataSourceType::DIM>& dst_mesh;
+
+    DataSourceDataImpl(const DataSourceType& data_src, const MeshD<DataSourceType::DIM>& dst_mesh): data_src(data_src), dst_mesh(dst_mesh) {}
+
+    virtual std::size_t size() const override { return dst_mesh.size(); }
+
+};*/
+
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
 struct DataSourceWithReceiver: public DataSource<PropertyT, OutputSpaceType> {
 
 protected:
-    //in, out obj can't be hold by shared_ptr, due to memory leak (circle reference)
+    //in, out obj can't be hold by shared_ptr, due to memory leak (circular reference)
     const InputGeomObj* inputObj;
     const OutputGeomObj* outputObj;
     boost::optional<PathHints> path;
@@ -76,7 +107,7 @@ public:
     DataSourceWithReceiver() {
         in.providerValueChanged.connect(
             [&] (ReceiverBase&, ReceiverBase::ChangeReason reason) {
-                if (reason != ReceiverBase::ChangeReason::REASON_DELETE) this->fireChanged();
+                if (reason != ReceiverBase::ChangeReason::REASON_DELETE) this->changed();
             }
         );
     }
@@ -150,6 +181,12 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         return nullptr;
     }
 
+    const std::size_t findRegionIndex(const OutVec& p) const {
+        for (std::size_t i = 0; i < regions.size(); ++i)
+            if (regions[i].inGeomBB.contains(p)) return i;
+        return regions.size();
+    }
+
     /**
      * Find region that has @p p inside bouding-box and fulfill predicate @p pred.
      */
@@ -161,6 +198,13 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         return nullptr;
     }
 
+    template <typename Predicate>
+    const std::size_t findRegionIndex(const OutVec& p, Predicate pred) const {
+        for (std::size_t i = 0; i < regions.size(); ++i)
+            if (regions[i].inGeomBB.contains(p) && pred(regions[i])) return i;
+        return regions.size();
+    }
+
     virtual void calcConnectionParameters() {
         regions.clear();
         std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());
@@ -170,6 +214,25 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
     }
 
 };
+
+/*template <typename DataSourceType, typename... ExtraArgs>
+struct InnerLazySourceImpl {    //template for base class
+
+    std::vector<LazyData<typename DataSourceType::ValueType>> dataForRegion;
+
+    const DataSourceType& source;
+
+    const shared_ptr<const MeshD<DataSourceType::OutputSpaceType::DIM>> dst_mesh;
+
+    std::tuple<ExtraArgs...> extra_args;
+
+    InterpolationMethod method;
+
+    InnerLazySourceImpl(const DataSourceType& source, const shared_ptr<const MeshD<DataSourceType::OutputSpaceType::DIM>>& dst_mesh,
+                   ExtraArgs... extra_args, InterpolationMethod method)
+        : dataForRegion(source.regions.size()), source(source), dst_mesh(dst_mesh), extra_args(extra_args...), method(method)
+    {}
+};*/
 
 /// Data source in which input object is outer and contains output object.
 template <typename PropertyT, typename OutputSpaceType, typename InputSpaceType = OutputSpaceType, typename OutputGeomObj = OutputSpaceType, typename InputGeomObj = InputSpaceType>
@@ -204,12 +267,8 @@ public:
 
     ConstDataSourceImpl(const ValueType& value): value(value) {}
 
-    virtual boost::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const override {
-        return value;
-    }
-
-    virtual DataVector<const ValueType> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
-        return DataVector<ValueType>(dst_mesh.size(), value);
+    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>&, ExtraArgs..., InterpolationMethod) const override {
+        return [=](std::size_t) { return value; };
     }
 
 };

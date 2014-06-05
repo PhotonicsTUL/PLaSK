@@ -621,6 +621,7 @@ void register_divide_generator() {
                 "Get list of all the refinements defined for this generator for specified axis"
             )
         ;
+    py::implicitly_convertible<shared_ptr<RectilinearMeshDivideGenerator<dim>>, shared_ptr<const RectilinearMeshDivideGenerator<dim>>>();
 
         if (dim != 1) dividecls
             .add_property("prediv",
@@ -674,6 +675,7 @@ void register_mesh_rectangular()
         .def("__iter__", py::range(&RectilinearAxis::begin, &RectilinearAxis::end))
     ;
     detail::RectilinearAxis_from_Sequence();
+    py::implicitly_convertible<shared_ptr<RectilinearAxis>, shared_ptr<const RectilinearAxis>>();
 
     {
         py::scope scope = rectilinear1d;
@@ -683,6 +685,7 @@ void register_mesh_rectangular()
             "Generator of Rectilinear (1D) mesh with lines at transverse edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
+        py::implicitly_convertible<shared_ptr<RectilinearMesh1DSimpleGenerator>, shared_ptr<const RectilinearMesh1DSimpleGenerator>>();
 
         register_divide_generator<1>();
     }
@@ -708,7 +711,7 @@ void register_mesh_rectangular()
     ;
     //detail::RegularAxisFromTupleOrFloat();
     py::implicitly_convertible<RegularAxis, RectilinearAxis>();
-
+    py::implicitly_convertible<shared_ptr<RegularAxis>, shared_ptr<const RegularAxis>>();
 
 
     py::class_<RectangularMesh<2>, shared_ptr<RectangularMesh<2>>, py::bases<MeshD<2>>> rectangular2D("Rectangular2D",
@@ -765,6 +768,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
     ;
     ExportBoundary<RectangularMesh<2>> { rectangular2D };
+    py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMesh<2>>>();
 
     {
         py::scope scope = rectangular2D;
@@ -774,6 +778,7 @@ void register_mesh_rectangular()
             "Generator of Rectangular2D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
+        py::implicitly_convertible<shared_ptr<RectilinearMesh2DSimpleGenerator>, shared_ptr<const RectilinearMesh2DSimpleGenerator>>();
 
         register_divide_generator<2>();
     }
@@ -839,6 +844,7 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
     ;
     ExportBoundary<RectangularMesh<3>> { rectangular3D };
+    py::implicitly_convertible<shared_ptr<RectangularMesh<3>>, shared_ptr<const RectangularMesh<3>>>();
 
     {
         py::scope scope = rectangular3D;
@@ -848,6 +854,7 @@ void register_mesh_rectangular()
             "Generator of Rectangular3D mesh with lines at edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
+        py::implicitly_convertible<shared_ptr<RectilinearMesh3DSimpleGenerator>, shared_ptr<const RectilinearMesh3DSimpleGenerator>>();
 
         register_divide_generator<3>();
     }

@@ -241,14 +241,14 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> computeFieldE(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method);
 
     /**
      * Compute magnetic field at the given mesh.
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> computeFieldH(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method);
 
     /**
      * Compute light intensity.
@@ -256,14 +256,14 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> computeFieldIntensity(double power, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method);
+    DataVector<double> computeFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method);
 
     /**
      * Get electric field at the given mesh for resonant mode.
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getFieldE(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldE(dst_mesh, method);
     }
@@ -273,7 +273,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getFieldH(const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldH(dst_mesh, method);
     }
@@ -284,7 +284,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getFieldIntensity(double power, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+    DataVector<double> getFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldIntensity(power, dst_mesh, method);
     }
@@ -296,7 +296,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldE(dst_mesh, method);
     }
@@ -308,7 +308,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldH(dst_mesh, method);
     }
@@ -320,7 +320,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldIntensity(const cvector& incident, IncidentDirection side, const MeshD<GeometryT::DIM>& dst_mesh, InterpolationMethod method) {
+    DataVector<double> getReflectedFieldIntensity(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldIntensity(1., dst_mesh, method);
     }

@@ -321,11 +321,11 @@ struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
 //         return modes[n].klong / modes[n].k0;
 //     }
 
-    const DataVector<const Vec<3,dcomplex>> getE(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method) override;
+    const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
-    const DataVector<const Vec<3,dcomplex>> getH(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method) override;
+    const DataVector<const Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
-    const DataVector<const double> getIntensity(size_t num, const MeshD<3>& dst_mesh, InterpolationMethod method) override;
+    const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
 //   public:
 //

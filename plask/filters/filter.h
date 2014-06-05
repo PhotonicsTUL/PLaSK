@@ -9,7 +9,7 @@ namespace plask {
 
 struct FilterCommonBase: public Solver {
     template <typename... Args>
-    FilterCommonBase(Args... args): Solver(std::forward<Args>(args)...) {}
+    FilterCommonBase(Args&&... args): Solver(std::forward<Args>(args)...) {}
 };
 
 /// Don't use this directly, use FilterBase or Filter instead.
@@ -26,16 +26,53 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
     // vector of inner sources (inputs)
     // one output (provider)
 
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueT;
+    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
+    typedef std::function<boost::optional<ValueType>(std::size_t)> DataSourceF;
+
+    struct FilterLazyDataImpl: public LazyDataImpl<ValueType> {
+
+        DataSourceF outerSourceData;
+
+        std::vector<DataSourceF> innerSourcesData;
+
+        /*const FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >& filter;*/
+        shared_ptr<const MeshD<OutputSpaceType::DIM>> dst_mesh;
+        //std::tuple<ExtraArgs...> extra_args;
+        //InterpolationMethod method;
+
+        FilterLazyDataImpl(
+                const FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >& filter,
+                const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method
+                )
+            : innerSourcesData(filter.innerSources.size()), /*filter(filter),*/ dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/ {
+            for (std::size_t source_index = 0; source_index < filter.innerSources.size(); ++source_index)
+                innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            outerSourceData = filter.outerSource->operator()(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        }
+
+        virtual ValueType get(std::size_t point_index) const override {
+            for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
+                //if (!innerSourcesData[source_index])
+                //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
+                boost::optional<ValueType> v = innerSourcesData[source_index](point_index);
+                if (v) return *v;
+            }
+            //if (!outerSourceData) outerSourceData = filter.outerSource->operator()(dst_mesh, extra_args, method);
+            return *outerSourceData(point_index);
+        }
+
+        virtual std::size_t size() const override { return dst_mesh->size(); }
+
+    };
 
 protected:
     std::vector<DataSourceTPtr> innerSources;
 
     DataSourceTPtr outerSource;
 
-    /// Output space in which the results are privided.
+    /// Output space in which the results are provided.
     shared_ptr<OutputSpaceType> geometry;
 
     template <typename SourceType>
@@ -66,7 +103,7 @@ public:
      * @param geometry output geometry
      */
     FilterBaseImpl(shared_ptr<OutputSpaceType> geometry): FilterCommonBase("Filter"), geometry(geometry) {
-        this->out.valueGetter = [&] (const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> DataVector<const ValueT> {
+        this->out.valueGetter = [&] (const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs&&... extra_args, InterpolationMethod method) -> LazyData<ValueType> {
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         };
         setDefault(PropertyAtSpace<PropertyT, OutputSpaceType>::getDefaultValue());
@@ -87,8 +124,9 @@ public:
      * @param method
      * @return
      */
-    DataVector<const ValueT> get(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
-        if (innerSources.empty())   //special case, for fast getting data from outer source
+    LazyData<ValueType> get(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const {
+        return new FilterLazyDataImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        /*if (innerSources.empty())   //special case, for fast getting data from outer source
             return (*outerSource)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         DataVector<ValueT> result(dst_mesh.size());
         NoLogging nolog;
@@ -103,7 +141,7 @@ public:
             result[i] = *(innerVal ? innerVal : outerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method));
             if (silent) nolog.silence();
         }
-        return result;
+        return result;*/
     }
 
     /**
@@ -121,7 +159,7 @@ public:
      * Set outer provider to provide constant @p value.
      * @param value value which is used in all points where inner sources don't provide values.
      */
-    void setDefault(const ValueT& value) {
+    void setDefault(const ValueType& value) {
         disconnect(this->outerSource);
         this->outerSource.reset(new ConstDataSource<PropertyT, OutputSpaceType>(value));
         connect(*this->outerSource);
@@ -172,16 +210,17 @@ public:
 
 private:
 
-    void onSourceChange(Provider&, bool isDestr) {
-        if (!isDestr) out.fireChanged();
+    void onSourceChange(/*Provider&, bool isDestr*/) {
+        //if (!isDestr)
+        out.fireChanged();
     }
 
     void connect(DataSourceT& in) {
-        in.changed.connect(boost::bind(&FilterBaseImpl::onSourceChange, this, _1, _2));
+        in.changed.connect(boost::bind(&FilterBaseImpl::onSourceChange, this/*, _1, _2*/));
     }
 
     void disconnect(DataSourceT& in) {
-        in.changed.disconnect(boost::bind(&FilterBaseImpl::onSourceChange, this, _1, _2));
+        in.changed.disconnect(boost::bind(&FilterBaseImpl::onSourceChange, this/*, _1, _2*/));
     }
 
     void disconnect(DataSourceTPtr& in) {

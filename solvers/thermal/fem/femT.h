@@ -127,11 +127,11 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   protected:
 
-    DataVector<const double> getTemperatures(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getTemperatures(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const Vec<2> > getHeatFluxes(const MeshD<2>& dst_mesh, InterpolationMethod method);
+    DataVector<const Vec<2> > getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
 
-    DataVector<const Tensor2<double>> getThermalConductivity(const MeshD<2>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
 
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {

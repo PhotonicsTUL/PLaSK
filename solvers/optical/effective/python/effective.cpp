@@ -129,14 +129,13 @@ void EffectiveIndex2DSolver_setMirrors(EffectiveIndex2DSolver& self, py::object 
 }
 
 size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, py::object neff, py::object symmetry) {
-    try {
-        return self.findMode(py::extract<dcomplex>(neff), parseSymmetry(symmetry));
-    } catch (py::error_already_set) {
-        PyErr_Clear();
+    py::extract<dcomplex> neff_as_complex(neff);
+    if (neff_as_complex.check())
+        return self.findMode(neff_as_complex, parseSymmetry(symmetry));
+    else {
         if (py::len(neff) != 2) throw TypeError("'neff' must be either complex or sequence of two complex");
         return self.findMode(py::extract<dcomplex>(neff[0]), py::extract<dcomplex>(neff[1]), parseSymmetry(symmetry));
     }
-
 }
 
 std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& self, dcomplex neff1, dcomplex neff2, py::object symmetry, size_t resteps, size_t imsteps, dcomplex eps) {
@@ -144,14 +143,13 @@ std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& sel
 }
 
 size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, py::object lam, int m) {
-    try {
-        return self.findMode(py::extract<dcomplex>(lam), m);
-    } catch (py::error_already_set) {
-        PyErr_Clear();
+    py::extract<dcomplex> lam_as_complex(lam);
+    if (lam_as_complex.check())
+        return self.findMode(lam_as_complex, m);
+    else {
         if (py::len(lam) != 2) throw TypeError("'lam' must be either complex or sequence of two complex");
         return self.findMode(py::extract<dcomplex>(lam[0]), py::extract<dcomplex>(lam[1]), m);
     }
-
 }
 
 double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {

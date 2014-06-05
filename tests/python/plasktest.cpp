@@ -137,16 +137,16 @@ struct SimpleSolver : plask::Solver {
 
     plask::ReceiverFor<plask::LightMagnitude, plask::Geometry2DCartesian> inIntensity;
 
-    plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::shared_ptr<plask::RectangularMesh<2>>> outLightMagnitude;
+    plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::RectangularMesh<2>> outLightMagnitude;
 
     plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
 
     std::string showVectors() {
-        plask::RectangularMesh<2> mesh(plask::make_shared<plask::RegularAxis>(1., 3., 2), plask::make_shared<plask::RegularAxis>(5., 15., 2));
+        auto mesh = plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(1., 3., 2), plask::make_shared<plask::RegularAxis>(5., 15., 2));
         auto data = inVectors(mesh);
         std::stringstream str;
         for (size_t i = 0; i != 4; i++) {
-            str << mesh[i] << ": " << data[i] << "\n";
+            str << mesh->at(i) << ": " << data[i] << "\n";
         }
         return str.str();
     }

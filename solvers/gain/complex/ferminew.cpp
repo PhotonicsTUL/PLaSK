@@ -519,31 +519,31 @@ double FerminewGainSolver<GeometryType>::przelicz_nQW_na_npow(plask::shared_ptr<
 
 
 template <typename GeometryType>
-const DataVector<double> FerminewGainSolver<GeometryType>::getGain(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
     this->writelog(LOG_INFO, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
-    RectangularMesh<2> mesh2;    //RectilinearMesh2D
+    auto mesh2 = make_shared<RectangularMesh<2>>();    //RectilinearMesh2D
     if (this->mesh) {
         auto verts = make_shared<RectilinearAxis>();
-        for (auto p: dst_mesh) verts->addPoint(p.vert());
-        mesh2.setAxis0(this->mesh); mesh2.setAxis1(verts);
+        for (auto p: *dst_mesh) verts->addPoint(p.vert());
+        mesh2->setAxis0(this->mesh); mesh2->setAxis1(verts);
     }
-    const MeshD<2>& src_mesh = (this->mesh)? (const MeshD<2>&)mesh2 : dst_mesh;
+    const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
 
-    WrappedMesh<2> geo_mesh(src_mesh, this->geometry);
+    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
 
     DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
     DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
-    DataVector<double> gainOnMesh(geo_mesh.size(), 0.);
+    DataVector<double> gainOnMesh(geo_mesh->size(), 0.);
 
     std::vector<std::pair<size_t,size_t>> points;
-    for (size_t i = 0; i != geo_mesh.size(); i++)
+    for (size_t i = 0; i != geo_mesh->size(); i++)
         for (size_t r = 0; r != regions.size(); ++r)
-            if (regions[r].contains(geo_mesh[i]) && nOnMesh[i] > 0.)
+            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
 
     #pragma omp parallel for
@@ -621,8 +621,7 @@ const DataVector<double> FerminewGainSolver<GeometryType>::getGain(const MeshD<2
 
     if (this->mesh)
     {
-        WrappedMesh<2> geo_dst_mesh(dst_mesh, this->geometry);
-        return interpolate(mesh2, gainOnMesh, geo_dst_mesh, interp);
+        return interpolate(mesh2, gainOnMesh, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), interp);
     }
     else
     {

@@ -153,11 +153,11 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
 
   protected:
 
-    DataVector<const double> getTemperatures(const MeshD<3>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const double> getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const Vec<3>> getHeatFluxes(const MeshD<3>& dst_mesh, InterpolationMethod method);
+    DataVector<const Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 
-    DataVector<const Tensor2<double>> getThermalConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method) const;
+    DataVector<const Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
 };
 
 }} //namespaces

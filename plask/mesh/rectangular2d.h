@@ -1398,24 +1398,19 @@ auto interpolateLinear2D(
                                    point_axis0, point_axis1);
 }
 
-
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_LINEAR> {
-    static void interpolate(const RectangularMesh<2>& src_mesh, const DataVector<const SrcT>& src_vec, const MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
-        if (src_mesh.axis0->size() == 0 || src_mesh.axis1->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
-        #pragma omp parallel for
-        for (size_t i = 0; i < dst_mesh.size(); ++i)
-            dst_vec[i] = src_mesh.interpolateLinear(src_vec, dst_mesh[i]);
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<2>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<2>>& dst_mesh) {
+        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
+        return new LinearInterpolatedLazyDataImpl< DstT, RectangularMesh<2> >(src_mesh, src_vec, dst_mesh);
     }
 };
 
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static void interpolate(const RectangularMesh<2>& src_mesh, const DataVector<const SrcT>& src_vec, const MeshD<2>& dst_mesh, DataVector<DstT>& dst_vec) {
-        if (src_mesh.axis0->size() == 0 || src_mesh.axis1->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
-        #pragma omp parallel for
-        for (size_t i = 0; i < dst_mesh.size(); ++i)
-            dst_vec[i] = src_mesh.interpolateNearestNeighbor(src_vec, dst_mesh[i]);
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<2>>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<2>>& dst_mesh) {
+        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh<2> >(src_mesh, src_vec, dst_mesh);
     }
 };
 

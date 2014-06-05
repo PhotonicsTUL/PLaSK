@@ -135,20 +135,47 @@ template <typename, typename, typename> struct FieldSumProviderImpl;
 template <typename PropertyT, typename SpaceT, typename... ExtraArgs>
 struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>: public CombinedProviderBase<ProviderFor<PropertyT, SpaceT>> {
 
-    typedef typename ProviderFor<PropertyT,SpaceT>::ProvidedType ProvidedType;
+    typedef typename ProviderFor<PropertyT, SpaceT>::ProvidedType ProvidedType;
+    typedef typename ProviderFor<PropertyT, SpaceT>::ValueType ValueType;
 
-    virtual ProvidedType operator()(const MeshD<SpaceT::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const {
+    struct SumLazyDataImpl: public LazyDataImpl<ValueType> {
+
+        std::vector<LazyData<ValueType>> to_sum;
+
+        std::size_t _size;
+
+        SumLazyDataImpl(std::vector<LazyData<ValueType>>&& to_sum, std::size_t size)
+            : to_sum(std::move(to_sum)), _size(size) {}
+
+        ValueType get(std::size_t index) const override {
+            ValueType sum = to_sum[0][index];
+            for (std::size_t i = 1; i < to_sum.size(); ++i)
+                sum += to_sum[i][index];
+            return sum;
+        }
+
+        std::size_t size() const override {
+            return _size;
+        }
+
+    };
+
+    virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const override {
         this->ensureHasProviders();
+        std::vector<LazyData<ValueType>> providers;
         auto p = this->begin();
-        ProvidedType result = (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+        providers.push_back((*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method));
         ++p;
-        if (p == this->end()) return result;    // has one element
-        auto rwresult = result.claim();    // ensure has own memory
+        if (p == this->end()) return std::move(providers.front());    // has one element
+        std::size_t size = providers.front().size();
         do {
-            rwresult += (*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
+            std::size_t last_size = providers.back().size();
+            if (size != last_size)
+                throw DataError("Data sources sizes differ ([%1%] - [%2])", size, last_size);
+            providers.push_back((*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method));
             ++p;
         } while (p != this->end());
-        return rwresult;
+        return new SumLazyDataImpl(std::move(providers), size);
     }
 };
 

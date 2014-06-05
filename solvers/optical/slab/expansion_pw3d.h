@@ -92,7 +92,7 @@ struct ExpansionPW3D: public Expansion {
 //
 //     void cleanupField() override;
 //
-    DataVector<Vec<3,dcomplex>> getField(size_t l, const Mesh& dst_mesh, const cvector& E, const cvector& H) override;
+    DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh>& dst_mesh, const cvector& E, const cvector& H) override;
 
     /**
      * Get refractive index back from expansion

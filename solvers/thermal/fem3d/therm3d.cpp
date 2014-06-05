@@ -481,32 +481,32 @@ void FiniteElementMethodThermal3DSolver::saveHeatFluxes()
 }
 
 
-DataVector<const double> FiniteElementMethodThermal3DSolver::getTemperatures(const MeshD<3>& dst_mesh, InterpolationMethod method) const {
+DataVector<const double> FiniteElementMethodThermal3DSolver::getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DETAIL, "Getting temperatures");
-    if (!temperatures) return DataVector<const double>(dst_mesh.size(), inittemp); // in case the receiver is connected and no temperature calculated yet
+    if (!temperatures) return DataVector<const double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(*(this->mesh), temperatures, WrappedMesh<3>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh, temperatures, make_shared<const WrappedMesh<3>>(dst_mesh, this->geometry), method);
 }
 
 
-DataVector<const Vec<3> > FiniteElementMethodThermal3DSolver::getHeatFluxes(const MeshD<3>& dst_mesh, InterpolationMethod method) {
+DataVector<const Vec<3> > FiniteElementMethodThermal3DSolver::getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
     this->writelog(LOG_DETAIL, "Getting heat fluxes");
-    if (!temperatures) return DataVector<const Vec<3>>(dst_mesh.size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
+    if (!temperatures) return DataVector<const Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(*((this->mesh)->getMidpointsMesh()), fluxes, WrappedMesh<3>(dst_mesh, this->geometry), method);
+    return interpolate(this->mesh->getMidpointsMesh(), fluxes, make_shared<const WrappedMesh<3>>(dst_mesh, this->geometry), method);
 }
 
 
-DataVector<const Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const MeshD<3>& dst_mesh, InterpolationMethod method) const {
+DataVector<const Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DETAIL, "Getting thermal conductivities");
     auto element_mesh = this->mesh->getMidpointsMesh();
     DataVector<const double> temps;
-    if (temperatures) temps = interpolate(*(this->mesh), temperatures, *element_mesh, INTERPOLATION_LINEAR);
+    if (temperatures) temps = interpolate(this->mesh, temperatures, element_mesh, INTERPOLATION_LINEAR);
     else DataVector<const double>(element_mesh->size(), inittemp);
-    DataVector<Tensor2<double>> result(dst_mesh.size());
+    DataVector<Tensor2<double>> result(dst_mesh->size());
     auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
-    for (size_t i = 0; i != dst_mesh.size(); ++i) {
+    for (size_t i = 0; i != dst_mesh->size(); ++i) {
         auto point = target_mesh[i];
         size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
         size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
