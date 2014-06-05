@@ -412,12 +412,21 @@ BOOST_PYTHON_MODULE(slab)
         .def("__repr__", &PmlWrapper::__repr__)
     ;
 
+    py_enum<RootDigger::Method>("RootMethod", "Root finding method")
+        .value("MULLER", RootDigger::ROOT_MULLER)
+        .value("BROYDEN", RootDigger::ROOT_BROYDEN)
+    ;
+
     py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
+        .def_readwrite("method", &RootDigger::Params::method, "Root finding method ('muller' or 'broyden')")
         .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
         .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
         .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
-        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration.")
         .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
+        .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
+        .def_readwrite("lambda", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller method only).")
     ;
 
     {CLASS(FourierReflection3D, "FourierReflection3D",

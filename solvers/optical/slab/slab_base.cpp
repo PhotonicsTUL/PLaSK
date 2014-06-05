@@ -1,9 +1,12 @@
 #include "slab_base.h"
+#include "muller.h"
+#include "broyden.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
+    detlog("", "modal", "k0", "det"),
     interface(1),
     outdist(0.1),
     smooth(0.),
@@ -11,12 +14,16 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
     outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
     outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
 {
-    root.tolx = 1.0e-8;
-    root.tolf_min = 1.0e-10;
-    root.tolf_max = 1.0e-6;
-    root.maxstep = 0.1;
-    root.maxiter = 500;
     inTemperature = 300.; // temperature receiver has some sensible value
+}
+
+template <typename GeometryT>
+std::unique_ptr<RootDigger> SlabSolver<GeometryT>::getRootDigger(const RootDigger::function_type& func) {
+    typedef std::unique_ptr<RootDigger> Res;
+    if (root.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*this, func, detlog, root));
+    else if (root.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*this, func, detlog, root));
+    throw BadInput(this->getId(), "Wrong root finding method");
+    return Res();
 }
 
 

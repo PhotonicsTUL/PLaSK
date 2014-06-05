@@ -5,11 +5,11 @@ namespace plask { namespace solvers { namespace slab {
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootDigger::operator()(dcomplex point) const
+dcomplex RootBroyden::find(dcomplex start) const
 {
-    writelog(LOG_DETAIL, "Searching for the root with Broyden method starting from " + str(point));
+    writelog(LOG_DETAIL, "Searching for the root with Broyden method starting from " + str(start));
     log_value.resetCounter();
-    dcomplex x = Broyden(point);
+    dcomplex x = Broyden(start);
     writelog(LOG_RESULT, "Found root at " + str(x));
     return x;
 }
@@ -21,7 +21,7 @@ dcomplex RootDigger::operator()(dcomplex point) const
 
 //**************************************************************************
 // Return Jacobian of F(x)
-void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
+void RootBroyden::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
 {
     double xr0 = real(x), xi0 = imag(x);
     double hr = EPS*abs(xr0), hi = EPS*abs(xi0);
@@ -43,7 +43,7 @@ void RootDigger::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) const
 // functional f decreased sufficiently
 // g - (approximate) gradient of 1/2(F*F), stpmax - maximum allowed step
 // return true if performed step or false if could not find sufficient function decrease
-bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax) const
+bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, double stpmax) const
 {
     if (double absp=abs(p) > stpmax) p *= stpmax/absp; // Ensure step <= stpmax
 
@@ -62,7 +62,7 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
     bool first = true;
 
     while(true) {
-        if (lambda < par.lambda_min) {              // we have (possible) convergence of x
+        if (lambda < params.lambda_min) {              // we have (possible) convergence of x
             x = x0; // f = f0;
             return false;
         }
@@ -70,11 +70,11 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
         x = x0 + lambda*p;
         F = val_function(x);
         log_value.count(x, F);
-        
+
         f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
         if (std::isnan(f)) throw ComputationError(solver.getId(), "Computed value is NaN");
 
-        if (f < f0 + par.alpha*lambda*slope)    // sufficient function decrease
+        if (f < f0 + params.alpha*lambda*slope)    // sufficient function decrease
             return true;
 
         lambda1 = lambda;
@@ -110,13 +110,13 @@ bool RootDigger::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, doub
 //**************************************************************************
 // Search for the root of char_val using globally convergent Broyden method
 // starting from point x
-dcomplex RootDigger::Broyden(dcomplex x) const
+dcomplex RootBroyden::Broyden(dcomplex x) const
 {
     // Compute the initial guess of the function (and check for the root)
     dcomplex F = val_function(x);
     double absF = abs(F);
     log_value.count(x, F);
-    if (absF < par.tolf_min) return x;
+    if (absF < params.tolf_min) return x;
 
     bool restart = true;                    // do we have to recompute Jacobian?
     bool trueJacobian;                      // did we recently update Jacobian?
@@ -127,7 +127,7 @@ dcomplex RootDigger::Broyden(dcomplex x) const
     dcomplex oldx, oldF;
 
     // Main loop
-    for (int i = 0; i < par.maxiter; i++) {
+    for (int i = 0; i < params.maxiter; i++) {
         oldx = x; oldF = F;
 
         if (restart) {                      // compute Broyden matrix as a Jacobian
@@ -151,13 +151,13 @@ dcomplex RootDigger::Broyden(dcomplex x) const
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step
-        if (lnsearch(x, F, g, p, par.maxstep)) {   // found sufficient functional decrease
+        if (lnsearch(x, F, g, p, params.maxstep)) {   // found sufficient functional decrease
             dx = x - oldx;
             dF = F - oldF;
-            if ((abs(dx) < par.tolx && abs(F) < par.tolf_max) || abs(F) < par.tolf_min)
+            if ((abs(dx) < params.tolx && abs(F) < params.tolf_max) || abs(F) < params.tolf_min)
                 return x;                       // convergence!
         } else {
-            if (abs(F) < par.tolf_max)       // convergence!
+            if (abs(F) < params.tolf_max)       // convergence!
                 return x;
             else if (!trueJacobian) {           // first try reinitializing the Jacobian
                  writelog(LOG_DETAIL, "Reinitializing Jacobian");

@@ -50,8 +50,6 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
     Determined fields_determined;               ///< Are the diagonalized fields determined for all layers?
     std::vector<LayerFields> fields;            ///< Vector of fields computed for each layer
 
-    Data2DLog<dcomplex,dcomplex> detlog;        ///< Determinant logger
-
     bool emitting;                              ///< \c True if the structure is emitting vertically.
 
     bool recompute_coefficients;                ///< Force recomputation of material coefficients
@@ -169,7 +167,7 @@ struct ReflectionSolver: public SlabSolver<GeometryT> {
 
     ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
         interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
-        k0(NAN), klong(0.), ktran(0.), detlog("", "modal", "k0", "det"),
+        k0(NAN), klong(0.), ktran(0.),
         emitting(true), ipiv(nullptr) {
         this->inTemperature.changedConnectMethod(this, &ReflectionSolver::onInputChanged);
         this->inGain.changedConnectMethod(this, &ReflectionSolver::onInputChanged);

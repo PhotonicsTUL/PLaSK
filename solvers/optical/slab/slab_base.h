@@ -2,7 +2,7 @@
 #define PLASK__SOLVER_SLAB_SLABBASE_H
 
 #include <plask/plask.hpp>
-#include "broyden.h"
+#include "rootdigger.h"
 
 #undef interface
 
@@ -24,6 +24,9 @@ template <typename GeometryT>
 struct SlabSolver: public SolverOver<GeometryT> {
 
   protected:
+
+    /// Determinant logger
+    Data2DLog<dcomplex,dcomplex> detlog;
 
     /// Layer boundaries
     RectilinearAxis vbounds;
@@ -54,6 +57,9 @@ struct SlabSolver: public SolverOver<GeometryT> {
 
     /// Detect layer sets and set them up
     void setupLayers();
+
+    /// Create and return rootdigger of a desired type
+    std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
 
   public:
 

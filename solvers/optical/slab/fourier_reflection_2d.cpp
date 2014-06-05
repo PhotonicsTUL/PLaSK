@@ -133,9 +133,10 @@ size_t FourierReflection2D::findMode(dcomplex neff)
     if (klong == 0.) klong = 1e-12;
     initCalculation();
     detlog.axis_arg_name = "neff";
-    klong =  k0 *
-        RootDigger(*this, [this](const dcomplex& x) { this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0; return this->determinant(); },
-                   detlog, root)(neff);
+    auto root = getRootDigger(
+        [this](const dcomplex& x) { this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0; return this->determinant(); }
+    );
+    klong =  k0 * root->find(neff);
     return insertMode();
 }
 
