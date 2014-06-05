@@ -30,6 +30,9 @@ class Averaging_Test(unittest.TestCase):
         self.solver.size = 11, 11        # number of material coefficients in each direction 4*11+1 = 45
         self.solver.refine = 16, 16
 
+    # 2.5 = ( 1**2 + 2**2 ) / 2
+    # 1.6 = 2 / ( 1**(-2) + 2**(-2) )
+
     def testTran(self):
         msh_tran = mesh.Rectangular3D(mesh.Ordered([0.25]), mesh.Regular(0, 1, 46), mesh.Ordered([0.1]))
         prof_tran = self.solver.get_refractive_index_profile(msh_tran, 'nearest')
