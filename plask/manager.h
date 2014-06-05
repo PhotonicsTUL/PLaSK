@@ -219,7 +219,7 @@ private:
         ~SetAxisNames() { manager.axisNames = old; }
     };
 
-    Manager(): axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")) {
+    Manager(): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")) {
     }
 
     /**
