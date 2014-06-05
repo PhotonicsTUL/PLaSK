@@ -23,7 +23,7 @@ warstwa & warstwa::operator=(const warstwa & war)
   return *this;
 }
 *****************************************************************************/
-warstwa::warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/struktura::przelm), x_kon(x_k/struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), masa_r(m_r) // Położenia w A
+warstwa::warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/struktura::przelm), x_kon(x_k/struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), nast(NULL), masa_r(m_r) // Położenia w A
 {
   if(x_k <= x_p)
     {
@@ -70,18 +70,22 @@ void warstwa::przesun_igreki(double dE)
 double warstwa::ffala(double x, double E) const
 {
   double wartosc;
+  //  std::clog<<" E = "<<E<<"\n";
   if(pole !=0)
     {
+      //      std::clog<<"\n początek warstwy w "<<x_pocz<<" Airy";
       wartosc = Ai(x, E);
     }
   else
     {
       if(E >= y_pocz)
 	{
+	  //	  std::clog<<"\n początek warstwy w "<<x_pocz<<" tryg";
 	  wartosc = tryga(x, E);
 	}
       else
 	{
+	  //	  std::clog<<"\n początek warstwy w "<<x_pocz<<" exp";
 	  wartosc = expa(x, E);
 	}
     }
@@ -199,7 +203,7 @@ double warstwa::tryg_kwadr_pierwotna(double x, double E, double A, double B) con
 {
   if((y_kon != y_pocz) || (E <= y_pocz))
     {
-      std::cerr<<"Zła funkcja (trygb_prim)!\n";
+      std::cerr<<"Zla funkcja (tryg_kwadr_pierwotna)!\n";
       abort();
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
@@ -273,7 +277,34 @@ double warstwa::Ai(double x, double E) const
       std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  return 0; // Na razie nie ma
+  // równanie: -f''(x) + (b + ax)f(x) = 0
+  // a = 2m*pole/h^2
+  // b = 2m(U - E)/h^2
+  // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
+  double U = y_pocz - pole*x_pocz;
+  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+  double b_a23 = (U - E)/pole;
+  double arg = a13*(x + b_a23);
+  //  std::cerr<<"\narg_Ai = "<<arg;
+  return gsl_sf_airy_Ai(arg, GSL_PREC_DOUBLE);
+}
+/*****************************************************************************/
+double warstwa::Ai_skala(double x, double E) const
+{
+  if(y_kon == y_pocz)
+    {
+      std::cerr<<"Zła funkcja!\n";
+      abort();
+    }
+  // równanie: -f''(x) + (b + ax)f(x) = 0
+  // a = 2m*pole/h^2
+  // b = 2m(U - E)/h^2
+  // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
+  double U = y_pocz - pole*x_pocz;
+  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+  double b_a23 = (U - E)/pole;
+  double arg = a13*(x + b_a23);
+  return gsl_sf_airy_Ai_scaled(arg, GSL_PREC_DOUBLE); // Na razie nie ma
 }
 /*****************************************************************************/
 double warstwa::Ai_prim(double x, double E) const
@@ -283,7 +314,12 @@ double warstwa::Ai_prim(double x, double E) const
       std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  return 0; // Na razie nie ma
+  double U = y_pocz - pole*x_pocz;
+  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+  double b_a23 = (U - E)/pole;
+  double arg = a13*(x + b_a23);
+  //  std::cerr<<"\nx = "<<x<<" x_pocz = "<<x_pocz<<" pole = "<<pole<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" arg_Ai' = "<<arg<<" inaczej (w x_pocz)"<<(2*masa_p(E)*(y_pocz - E)/(a13*a13))<<" inaczej (w x_kon)"<<(2*masa_p(E)*(y_kon - E)/(a13*a13));
+  return a13*gsl_sf_airy_Ai_deriv(arg, GSL_PREC_DOUBLE); // Na razie nie ma
 }
 /*****************************************************************************/
 double warstwa::Bi(double x, double E) const
@@ -293,7 +329,16 @@ double warstwa::Bi(double x, double E) const
       std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  return 0; // Na razie nie ma
+  // równanie: -f''(x) + (b + ax)f(x) = 0
+  // a = 2m*pole/h^2
+  // b = 2m(U - E)/h^2
+  // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
+  double U = y_pocz - pole*x_pocz;
+  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+  double b_a23 = (U - E)/pole;
+  double arg = a13*(x + b_a23);
+  //  std::cerr<<"\narg_Bi = "<<arg;
+  return gsl_sf_airy_Bi(arg, GSL_PREC_DOUBLE); // Na razie nie ma
 }
 /*****************************************************************************/
 double warstwa::Bi_prim(double x, double E) const
@@ -303,7 +348,27 @@ double warstwa::Bi_prim(double x, double E) const
       std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  return 0; // Na razie nie ma
+  double U = y_pocz - pole*x_pocz;
+  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+  double b_a23 = (U - E)/pole;
+  double arg = a13*(x + b_a23);
+  //  std::cerr<<"\narg_Bi' = "<<arg;
+  return a13*gsl_sf_airy_Bi_deriv(arg, GSL_PREC_DOUBLE); // Na razie nie ma
+}
+/*****************************************************************************/
+double warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) const
+{
+  if(y_kon == y_pocz)
+    {
+      std::cerr<<"Zła funkcja!\n";
+      abort();
+    }
+  double U = y_pocz - pole*x_pocz;
+  double b_a23 = (U - E)/pole;
+  double a = 2*masa_p(E)*pole;
+  double f = funkcjafal(x, E, A, B);
+  double fp = funkcjafal_prim(x, E, A, B);
+  return (x + b_a23)*f*f - fp*fp/a;
 }
 /*****************************************************************************/
 double warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod bariery (- kp^2)
@@ -321,14 +386,224 @@ double warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod b
   return wartosc;
 }
 /*****************************************************************************/
+int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, double sasiad_z_prawej) const // wartości sąsiadów po to, żeby uniknąć kłopotów, kiedy zero wypada na łączeniu
+{
+  int tylezer = 0;
+  double wart_kon = (funkcjafal(x_kon, E, A, B) + sasiad_z_prawej)/2; // Uśrednienie dla uniknięcia kłopotów z zerami na łączeniu, gdzie malutka nieciągłość może generować zmiany znaków
+  double wart_pocz = (funkcjafal(x_pocz, E, A, B) + sasiad_z_lewej)/2;
+  double iloczyn = wart_pocz*wart_kon;
+  //std::cerr<<"\nwart na koncach: "<<funkcjafal(x_pocz, E, A, B)<<", "<<funkcjafal(x_kon, E, A, B);
+  //  std::cerr<<"\npo usrednieniu: "<<wart_pocz<<", "<<wart_kon;
+  if(pole !=0)
+    {
+      double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+      double U = y_pocz - pole*x_pocz;
+      double b_a23 = (U - E)/pole;
+      double arg1, arg2, argl, argp, x1, x2, xlew, xpra;
+      int nrza, nrprzed; // nrza do argp, nrprzed do argl
+      arg1 = a13*(x_pocz + b_a23);
+      arg2 = a13*(x_kon + b_a23);
+      argl = std::min(arg1, arg2);
+      argp = std::max(arg1, arg2);
+      nrza=1;
+      double z1 = -1.174; // oszacowanie pierwszego zera B1
+      double dz = -2.098; // oszacowanie odstępu między perwszymi dwoma zerami
+      //  nrprzed=1;
+      //      nrprzed = floor((argl-z1)/dz + 1); // oszacowanie z dołu numeru miejsca zerowego
+      nrprzed = floor((argp-z1)/dz + 1);
+      nrprzed = (nrprzed >= 1)?nrprzed:1;
+      int tymcz=0;
+      double ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+      std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
+      double brak; // oszacowanie z dołu braku
+      long licznik = 0;
+      //      while(ntezero>=argl)
+      while(ntezero>=argp)
+	{
+	  if(nrprzed>2)
+	    {
+	      dz = ntezero - gsl_sf_airy_zero_Bi(nrprzed-1);
+	      brak = (argp-ntezero)/dz;
+	      if(brak > 2.) //jeśli jeszcze daleko
+		{
+		  nrprzed = nrprzed + floor(brak);
+		}
+	      else nrprzed++;
+	    }
+	  else
+	    nrprzed++;
+	  ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+	  licznik++;
+	  std::cerr<<"\nnrprzed = "<<nrprzed<<" ntezero = "<<ntezero;
+	}
+      //  std::cerr<<"\tnrprzed kon "<<nrprzed<<" po "<<licznik<<" dodawaniach\n";
+      nrza=nrprzed;
+      nrprzed--;
+      //      while(gsl_sf_airy_zero_Bi(nrza)>=argp)
+      while(gsl_sf_airy_zero_Bi(nrza)>=argl)
+	{
+	  nrza++;
+	  std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<gsl_sf_airy_zero_Bi(nrza);
+	}
+      std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
+      /*
+      std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
+      x1 = b_a23 - gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = b_a23 - gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+      xlew = std::min(x1, x2);
+      xpra = std::max(x1, x2);
+      std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
+      tylko do testów tutaj  */
+
+      if(nrza-nrprzed>=2)
+	{
+	  tymcz=nrza-nrprzed-2;
+	  x1 = -b_a23 + gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+	  x2 = -b_a23 + gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+	  xlew = std::min(x1, x2);
+	  xpra = std::max(x1, x2);
+	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
+	  //      std::cerr<<"\n A "<<funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)<<" "<<funkcja_z_polem_do_oo(xl,E,funkcja,struk);
+	  if(wart_pocz*funkcjafal(xlew, E, A, B) < 0)
+	    //	  if(funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)*funkcja_z_polem_do_oo(xl,E,funkcja,struk)<0)
+	    tymcz++;
+	  if(wart_kon*funkcjafal(xpra, E, A, B) < 0)
+	    tymcz++;
+	}
+      else
+	{
+	  //      std::cerr<<"\n C "<<funkcja_z_polem_do_oo(struk.punkty[i+1],E,funkcja,struk)<<" "<<funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk);
+	  if(iloczyn < 0)
+	    tymcz=1;
+	}
+      tylezer = tymcz;
+      //      std::cerr<<"Jeszcze nie ma zer Airy'ego!\n";
+      //      abort();
+    }
+  else
+    {
+      if(E >= y_pocz)
+	{
+	  double k = sqrt(2*masa_p(E)*(E-y_pocz));
+	  tylezer = int( k*(x_kon - x_pocz)/M_PI );
+	  if(tylezer % 2 == 0)
+	    {
+	      if(iloczyn < 0)
+		{
+		  tylezer++;
+		}
+	    }
+	  else
+	    {
+	      if(iloczyn > 0)
+		{
+		  tylezer++;
+		}
+	    }
+	}
+      else
+	{
+	  if(iloczyn < 0)
+	    {
+	      tylezer++;
+	    }
+	}
+    }
+  //std::cerr<<"\nE = "<<E<<"\tiloczyn = "<<iloczyn<<"\t zer jest "<<tylezer;
+  return tylezer;
+}
+/*****************************************************************************/
 int warstwa::zera_ffal(double E, double A, double B) const
 {
   int tylezer = 0;
-  double iloczyn = funkcjafal(x_pocz, E, A, B)*funkcjafal(x_kon, E, A, B);
+  double wart_kon = funkcjafal(x_kon, E, A, B);
+  double iloczyn = funkcjafal(x_pocz, E, A, B)*wart_kon;
+  //std::cerr<<"\n wart na końcach: "<<funkcjafal(x_pocz, E, A, B)<<", "<<funkcjafal(x_kon, E, A, B);
   if(pole !=0)
     {
-      std::cerr<<"Jeszcze nie ma zer Airy'egi!\n";
-      abort();
+      double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
+      double U = y_pocz - pole*x_pocz;
+      double b_a23 = (U - E)/pole;
+      double arg1, arg2, argl, argp, x1, x2, xlew, xpra;
+      int nrza, nrprzed; // nrza do argp, nrprzed do argl
+      arg1 = a13*(x_pocz + b_a23);
+      arg2 = a13*(x_kon + b_a23);
+      argl = std::min(arg1, arg2);
+      argp = std::max(arg1, arg2);
+      nrza=1;
+      double z1 = -1.174; // oszacowanie pierwszego zera B1
+      double dz = -2.098; // oszacowanie odstępu między perwszymi dwoma zerami
+      //  nrprzed=1;
+      //      nrprzed = floor((argl-z1)/dz + 1); // oszacowanie z dołu numeru miejsca zerowego
+      nrprzed = floor((argp-z1)/dz + 1);
+      nrprzed = (nrprzed >= 1)?nrprzed:1;
+      int tymcz=0;
+      double ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+      std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
+      double brak; // oszacowanie z dołu braku
+      long licznik = 0;
+      //      while(ntezero>=argl)
+      while(ntezero>=argp)
+	{
+	  if(nrprzed>2)
+	    {
+	      dz = ntezero - gsl_sf_airy_zero_Bi(nrprzed-1);
+	      brak = (argp-ntezero)/dz;
+	      if(brak > 2.) //jeśli jeszcze daleko
+		{
+		  nrprzed = nrprzed + floor(brak);
+		}
+	      else nrprzed++;
+	    }
+	  else
+	    nrprzed++;
+	  ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+	  licznik++;
+	  std::cerr<<"\nnrprzed = "<<nrprzed<<" ntezero = "<<ntezero;
+	}
+      //  std::cerr<<"\tnrprzed kon "<<nrprzed<<" po "<<licznik<<" dodawaniach\n";
+      nrza=nrprzed;
+      nrprzed--;
+      //      while(gsl_sf_airy_zero_Bi(nrza)>=argp)
+      while(gsl_sf_airy_zero_Bi(nrza)>=argl)
+	{
+	  nrza++;
+	  std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<gsl_sf_airy_zero_Bi(nrza);
+	}
+      std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
+      /*
+      std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
+      x1 = b_a23 - gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = b_a23 - gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+      xlew = std::min(x1, x2);
+      xpra = std::max(x1, x2);
+      std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
+      tylko do testów tutaj  */
+
+      if(nrza-nrprzed>=2)
+	{
+	  tymcz=nrza-nrprzed-2;
+	  x1 = -b_a23 + gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+	  x2 = -b_a23 + gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+	  xlew = std::min(x1, x2);
+	  xpra = std::max(x1, x2);
+	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
+	  //      std::cerr<<"\n A "<<funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)<<" "<<funkcja_z_polem_do_oo(xl,E,funkcja,struk);
+	  if(funkcjafal(x_pocz, E, A, B)*funkcjafal(xlew, E, A, B) < 0)
+	    //	  if(funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk)*funkcja_z_polem_do_oo(xl,E,funkcja,struk)<0)
+	    tymcz++;
+	  if(wart_kon*funkcjafal(xpra, E, A, B) < 0)
+	    tymcz++;
+	}
+      else
+	{
+	  //      std::cerr<<"\n C "<<funkcja_z_polem_do_oo(struk.punkty[i+1],E,funkcja,struk)<<" "<<funkcja_z_polem_do_oo(struk.punkty[i],E,funkcja,struk);
+	  if(funkcjafal(x_pocz, E, A, B)*wart_kon < 0)
+	    tymcz=1;
+	}
+      tylezer = tymcz;
+      //      std::cerr<<"Jeszcze nie ma zer Airy'ego!\n";
+      //      abort();
     }
   else
     {
@@ -378,8 +653,10 @@ double warstwa::norma_kwadr(double E, double A, double B) const
   double wartosc;
   if(pole !=0)
     {
-      std::cerr<<"Jeszcze nie ma normay Airy'ego\n";
-      abort();
+      wartosc = 1.; // chwilowo
+      //      std::cerr<<"Jeszcze nie ma normay Airy'ego\n";
+      //      abort();
+      wartosc = airy_kwadr_pierwotna(x_kon, E, A, B) - airy_kwadr_pierwotna(x_pocz, E, A, B);
     }
   else
     {
@@ -504,7 +781,7 @@ double warstwa_skraj::norma_kwadr(double E, double C) const
 {
   if(E > y)
     {
-      std::cerr<<"Zła Energia)!\n";
+      std::cerr<<"Zla energia!\n";
       abort();
     }
   double kp = sqrt(2*masa_p*(y - E));
@@ -659,6 +936,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
 	  abort();
 	}
       kawalki.push_back(*tablica[i]);
+      tablica[i-1]->nast = tablica[i]; // ustawianie wskaznika na sasiadke
       czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
       if(czydol < dol)
 	{
@@ -706,17 +984,22 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   boost::regex wykoment("#.*");
   std::string nic("");
   boost::regex pust("\\s+");
+  boost::regex pole("pole");
   std::vector<double> parametry;
   double liczba;
   double x_pocz = 0, x_kon, y_pocz, y_kon, npar1, npar2, masa_p, masa_r;
   bool bylalewa = false, bylawew = false, bylaprawa = false;
   std::vector<warstwa*> tablica;
   warstwa * wskazwar;
+  std::getline(plik, wiersz);
+  bool jestpole = regex_search(wiersz, pole);
+  std::clog<<"\njestpole = "<<jestpole<<"\n";
+  int max_par = (jestpole)?7:6;
+  int min_par = (jestpole)?5:4; // maksymalna i minimalna liczba parametrów w wierszu
   while (!plik.eof()) 
     {
-      std::getline(plik, wiersz);
       bezkoment = regex_replace(wiersz, wykoment, nic);
-       boost::sregex_token_iterator it(bezkoment.begin(), bezkoment.end(), pust, -1);
+      boost::sregex_token_iterator it(bezkoment.begin(), bezkoment.end(), pust, -1);
       boost::sregex_token_iterator kon;
       if(it != kon) // niepusta zawartość
 	{
@@ -732,10 +1015,14 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
 		abort();
 	      }
 	      parametry.push_back(liczba);
+	      std::clog<<"\n";
 	    }
-	  if(bylalewa && ( (parametry.size() < 4 && parametry.size() != 1) || parametry.size() > 6) )
+	  if(bylalewa && ( ((int)parametry.size() < min_par && parametry.size() != 1) || (int)parametry.size() > max_par) )
 	    {
-	      std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrów, a są "<<parametry.size()<<"\n";
+	      if(jestpole)
+		std::cerr<<"\nwarstwa wymaga 1 lub od 5 do 7 parametrów, a są "<<parametry.size()<<"\n";
+	      else
+		std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrów, a są "<<parametry.size()<<"\n";
 	      abort();
 	    }
 	  if(bylalewa)
@@ -750,27 +1037,36 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
 		}
 	      else // wewnętrzna
 		{	     
-		  if( (parametry[0] <= 0.) || (parametry[2] <= 0.) || (parametry[3] <= 0.) )
+		  x_kon = x_pocz + parametry[0];
+		  y_pocz = -parametry[1];
+		  if (jestpole)
+		    {
+		      y_kon = -parametry[2];;
+		      masa_p = parametry[3];
+		      masa_r = parametry[4];
+		    }
+		  else
+		    {
+		      y_kon = y_pocz;
+		      masa_p = parametry[2];
+		      masa_r = parametry[3];
+		    }
+		  npar1 = 0.;
+		  npar2 = 0.;
+		  if( (parametry[0] <= 0.) || (masa_p <= 0.) || (masa_r <= 0.) )
 		    {
 		      std::cerr<<"\nAaaaaa!\n";
 		      abort();
 		    }
 		  bylalewa = true;
-		  x_kon = x_pocz + parametry[0];
-		  y_pocz = -parametry[1];
-		  y_kon = y_pocz;
-		  masa_p = parametry[2];
-		  masa_r = parametry[3];
-		  npar1 = 0.;
-		  npar2 = 0.;
-		  if(parametry.size() == 5)
+		  if((int)parametry.size() == min_par + 1)
 		    {
-		      npar1 = parametry[4];
+		      npar1 = parametry[min_par];
 		    }
-		  if(parametry.size() == 6)
+		  if((int)parametry.size() == min_par + 2)
 		    {
-		      npar1 = parametry[4];
-		      npar2 = parametry[5];
+		      npar1 = parametry[min_par];
+		      npar2 = parametry[min_par + 1];
 		    }
 		  wskazwar = new warstwa(masa_p, masa_r, x_pocz, y_pocz, x_kon, y_kon, npar1, npar2);
 		  std::clog<<"masa_p = "<<masa_p<<", masa_r = "<<masa_r<<", x_pocz = "<<x_pocz<<", y_pocz = "<<y_pocz<<", x_kon = "<<x_kon<<", y_kon = "<<y_kon<<", npar1 = "<<npar1<<", npar2 = "<<npar2<<"\n";;
@@ -790,6 +1086,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
 	{
 	  std::clog<<"\nWsystko było\n";
 	}
+      std::getline(plik, wiersz);
     }
 
   // poniżej zawartość konstruktora od tablicy
@@ -824,6 +1121,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
 	  abort();
 	}
       kawalki.push_back(*tablica[i]);
+      tablica[i-1]->nast = tablica[i]; // ustawianie wskaźnika na sąsiadkę
       czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
       if(czydol < dol)
 	{
@@ -1069,7 +1367,7 @@ std::vector<std::vector<double> > struktura::rysowanie_funkcji(double E, double 
     }
   return funkcja;
 }
-/*****************************************************************************/
+/*****************************************************************************
 int struktura::ilezer_ffal(double E)
 {
   int N = kawalki.size() + 2; //liczba warstw
@@ -1081,7 +1379,7 @@ int struktura::ilezer_ffal(double E)
   JAMA::SVD<double> rozklad(macierz);
   rozklad.getV(V);
   int sumazer = 0;
-  double A, B;
+  double A, B, As, Bs;
   //  bool juz = false, jeszcze = true; // czy już lub jeszcze warto sprawdzać (nie będzie zer w warstwie, w której poziom jest pod przerwą i tak samo jest we wszystkich od lub do skrajnej)
   int pierwsza = -1;
   do
@@ -1093,24 +1391,24 @@ int struktura::ilezer_ffal(double E)
     {
       ostatnia--;
     }while(ostatnia >= 0 && (kawalki[ostatnia].y_pocz > E && kawalki[ostatnia].y_kon > E) );
-  if (mInfo) std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia; // LUKASZ
-    /*
-    for(int i = 1; i <= N-2; i++)
-      {
-	A = V[2*i-1][V.dim2() - 1];
-	B = V[2*i][V.dim2() - 1];
-	sumazer += kawalki[i - 1].zera_ffal(E, A, B);
-      }
-    */ // tak było bez szykania peirwszej i ostatniej
-  for(int j = pierwsza; j <= ostatnia; j++)
+  std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia;
+
+  double sasiad; // wartosc ffal na lewym brzegu sasiada z prawej (ta, ktora powinna byc wspolna do obu)
+  for(int j = pierwsza; j <= ostatnia - 1; j++)
     {
       A = V[2*j+1][V.dim2() - 1];
       B = V[2*j+2][V.dim2() - 1];
-      sumazer += kawalki[j].zera_ffal(E, A, B);
+      As = V[2*(j+1)+1][V.dim2() - 1];
+      Bs = V[2*(j+1)+2][V.dim2() - 1];
+      sasiad = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, As, Bs); 
+      sumazer += kawalki[j].zera_ffal(E, A, B, sasiad);
     }
+  A = V[2*ostatnia+1][V.dim2() - 1];
+  B = V[2*ostatnia+2][V.dim2() - 1];
+  sumazer += kawalki[ostatnia].zera_ffal(E, A, B); // W ostatniej warstwie nie może byc zera na laczeniu, wiec nie ma problemu
   return sumazer;
 }
-/*****************************************************************************/
+*****************************************************************************/
 int struktura::ilezer_ffal(double E, A2D & V)
 {
   int N = kawalki.size() + 2; //liczba warstw
@@ -1121,7 +1419,7 @@ int struktura::ilezer_ffal(double E, A2D & V)
   JAMA::SVD<double> rozklad(macierz);
   rozklad.getV(V);
   int sumazer = 0;
-  double A, B;
+  double A, B, Al, Bl, Ap, Bp;
   /*
   for(int i = 1; i <= N-2; i++)
     {
@@ -1129,7 +1427,7 @@ int struktura::ilezer_ffal(double E, A2D & V)
       B = V[2*i][V.dim2() - 1];
       sumazer += kawalki[i - 1].zera_ffal(E, A, B);
     }
-  */ // tak było bez szykania peirwszej i ostatniej
+  */ // tak bylo bez szukania pierwszej i ostatniej
   int pierwsza = -1;
   do
     {
@@ -1140,14 +1438,47 @@ int struktura::ilezer_ffal(double E, A2D & V)
     {
       ostatnia--;
     }while(ostatnia >= 0 && (kawalki[ostatnia].y_pocz > E && kawalki[ostatnia].y_kon > E) );
-  if (mInfo) std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia; // LUKASZ
-  for(int j = pierwsza; j <= ostatnia; j++)
+  //std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia;
+  double sasiadl, sasiadp; // wartosc ffal na lewym brzegu sasiada z prawej (ta, która powinna byc wspolna do obu)
+  if(ostatnia == pierwsza) // tylko jedna podejrzana warstwa, nie trzeba sie sasiadami przejmowac
     {
+      A = V[2*pierwsza+1][V.dim2() - 1];
+      B = V[2*pierwsza+2][V.dim2() - 1];
+      sumazer += kawalki[pierwsza].zera_ffal(E, A, B);
+    }
+  else
+    {
+      int j = pierwsza;
       A = V[2*j+1][V.dim2() - 1];
       B = V[2*j+2][V.dim2() - 1];
-      sumazer += kawalki[j].zera_ffal(E, A, B);
+      Ap = V[2*(j+1)+1][V.dim2() - 1];
+      Bp = V[2*(j+1)+2][V.dim2() - 1];
+      sasiadp = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, Ap, Bp);
+      sasiadl = kawalki[j].funkcjafal(kawalki[j].x_pocz, E, A, B); // po lewej nie ma problemu, więc mozna podstawic wartosc z wlasnej warstwy
+      sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp);
+      for(int j = pierwsza + 1; j <= ostatnia - 1; j++)
+	{
+	  Al = V[2*(j-1)+1][V.dim2() - 1];
+	  Bl = V[2*(j-1)+2][V.dim2() - 1];
+	  A = V[2*j+1][V.dim2() - 1];
+	  B = V[2*j+2][V.dim2() - 1];
+	  Ap = V[2*(j+1)+1][V.dim2() - 1];
+	  Bp = V[2*(j+1)+2][V.dim2() - 1];
+	  sasiadl = kawalki[j-1].funkcjafal(kawalki[j-1].x_kon, E, Al, Bl); 
+	  sasiadp = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, Ap, Bp); 
+	  sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp);
+	}
+      j = ostatnia;
+      A = V[2*j+1][V.dim2() - 1];
+      B = V[2*j+2][V.dim2() - 1];
+      Al = V[2*(j-1)+1][V.dim2() - 1];
+      Bl = V[2*(j-1)+2][V.dim2() - 1];
+      sasiadp = kawalki[j].funkcjafal(kawalki[j].x_kon, E, A, B); // po prawej nie ma problemu, więc można podstawić wartość z własnej warstwy
+      sasiadl = kawalki[j-1].funkcjafal(kawalki[j-1].x_kon, E, Al, Bl); 
+      sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp); // W ostatniej warswie nie może być zera na łączeniu, więc nie ma problemu
     }
-return sumazer;
+  return sumazer;
+  //  return 0; //do testow tylko!
 }
 /*****************************************************************************/
 std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // Zagęszcza aż znajdzie inny znak, zakłada, że początkowe znaki są takie same
@@ -1700,6 +2031,34 @@ double obszar_aktywny::iloczyn_pierwotna_bezpola(double x, int nr_war, const str
   return wynik;
 }
 /*****************************************************************************/
+double obszar_aktywny::calka_iloczyn_zpolem(int nr_war, const struktura * struk1, const struktura * struk2, int i, int j) // numeryczne całkowanie
+{
+  std::clog<<"\nW całk numer. Warstwa "<<nr_war<<" poziom el "<<i<<" poziom j "<<j<<"\n";;
+  double krok = 1.; // na razie krok na sztywno przelm (ok 2.6) A
+  double Ec = struk1->rozwiazania[i].poziom;
+  double Ev = struk2->rozwiazania[j].poziom;
+  double Ac, Bc, Av, Bv;
+  double wynik = 0;
+  double x_pocz = struk1->kawalki[nr_war].x_pocz;
+  double x_kon = struk1->kawalki[nr_war].x_kon;
+  double szer = x_kon - x_pocz;
+  int podzial = ceill(szer/krok);
+  krok = szer/podzial; // wyrównanie kroku
+  Ac = struk1->rozwiazania[i].wspolczynniki[2*nr_war + 1];
+  Av = struk2->rozwiazania[j].wspolczynniki[2*nr_war + 1];
+  Bc = struk1->rozwiazania[i].wspolczynniki[2*nr_war + 2];
+  Bv = struk2->rozwiazania[j].wspolczynniki[2*nr_war + 2];
+  double x = x_pocz + krok/2;
+  for(int i = 0; i<= podzial - 1; i++)
+    {
+      std::clog<<"\nwynik = "<<wynik<<" ";
+      wynik += struk1->kawalki[nr_war].funkcjafal(x, Ec, Ac, Bc) * struk2->kawalki[nr_war].funkcjafal(x, Ev, Av, Bv);
+      x += krok;
+    }
+  wynik *= krok;
+  return wynik;
+}
+/*****************************************************************************/
 double obszar_aktywny::calka_ij(const struktura * elektron, const struktura * dziura, int i, int j, vector<double> & wektor_calk_kaw)
 {
   double Ec = elektron->rozwiazania[i].poziom;
@@ -1716,23 +2075,29 @@ double obszar_aktywny::calka_ij(const struktura * elektron, const struktura * dz
   double pierwk, pierwp, xp;
   for(int war = 0; war <= (int) elektron->kawalki.size() - 1; war++)
     {
-      xp =elektron->kawalki[war].x_pocz;
-      xk =elektron->kawalki[war].x_kon;
-
-      Ac = elektron->rozwiazania[i].wspolczynniki[2*war + 1];
-      Av = dziura->rozwiazania[j].wspolczynniki[2*war + 1];
-      Bc = elektron->rozwiazania[i].wspolczynniki[2*war + 2];
-      Bv = dziura->rozwiazania[j].wspolczynniki[2*war + 2];
-
-      pierwk = elektron->kawalki[war].funkcjafal(xk, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal_prim(xk, Ev, Av, Bv) - elektron->kawalki[war].funkcjafal_prim(xk, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal(xk, Ev, Av, Bv);
-      pierwp = elektron->kawalki[war].funkcjafal(xp, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal_prim(xp, Ev, Av, Bv) - elektron->kawalki[war].funkcjafal_prim(xp, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal(xp, Ev, Av, Bv);
-      if(i == j)
+      if( (elektron->kawalki[war].pole == 0) && (dziura->kawalki[war].pole == 0) ) //trzeba posprzatac, i wywolywać funkcje tutaj
 	{
-	  //	  std::clog<<"kawalek = "<<war<<" calka w kawalku = "<<((pierwk - pierwp)/(elektron->kawalki[war].k_kwadr(Ec) - dziura->kawalki[war].k_kwadr(Ev)))<<"\n";
+	  xp = elektron->kawalki[war].x_pocz;
+	  xk = elektron->kawalki[war].x_kon;
+	  
+	  Ac = elektron->rozwiazania[i].wspolczynniki[2*war + 1];
+	  Av = dziura->rozwiazania[j].wspolczynniki[2*war + 1];
+	  Bc = elektron->rozwiazania[i].wspolczynniki[2*war + 2];
+	  Bv = dziura->rozwiazania[j].wspolczynniki[2*war + 2];
+	  
+	  pierwk = elektron->kawalki[war].funkcjafal(xk, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal_prim(xk, Ev, Av, Bv) - elektron->kawalki[war].funkcjafal_prim(xk, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal(xk, Ev, Av, Bv);
+	  pierwp = elektron->kawalki[war].funkcjafal(xp, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal_prim(xp, Ev, Av, Bv) - elektron->kawalki[war].funkcjafal_prim(xp, Ec, Ac, Bc) * dziura->kawalki[war].funkcjafal(xp, Ev, Av, Bv);
+	  calk_kaw = (pierwk - pierwp)/(elektron->kawalki[war].k_kwadr(Ec) - dziura->kawalki[war].k_kwadr(Ev));
+	  wektor_calk_kaw.push_back(calk_kaw);
+	  calka += calk_kaw;
 	}
-      calk_kaw = (pierwk - pierwp)/(elektron->kawalki[war].k_kwadr(Ec) - dziura->kawalki[war].k_kwadr(Ev));
-      wektor_calk_kaw.push_back(calk_kaw);
-      calka += calk_kaw;
+      else // numerycznie na razie
+	{
+	  calk_kaw = calka_iloczyn_zpolem(war, elektron, dziura, i, j);
+	  wektor_calk_kaw.push_back(calk_kaw);
+	  calka += calk_kaw;
+	}
+      //std::clog<<"\ncalka kawalek = "<<calk_kaw<<"\n";
     }
   xp = elektron->prawa.iks;
   
@@ -1828,11 +2193,16 @@ double gain::rored(double, double mc, double mv)
   return 1/(m*2*struktura::pi*szer_do_wzmoc);
 }
 /*****************************************************************************/
-double gain::rored_posz(double E, double E0, double mc, double mv, double sigma) // gęstość do chopowatej studni o nominalnej różnicy energii poziomów E0. Wersja najprostsza -- jedno poszerzenie na wszystko
+double gain::erf_dorored(double E, double E0, double sigma)
+{
+  return 0.5*(1 + erf((E - E0)/(sqrt(2)*sigma)));
+}
+/*****************************************************************************/
+double gain::rored_posz(double E, double E0, double mc, double mv, double sigma) // gestosc do chopowatej studni o nominalnej roznicy energii poziomow E0. Wersja najprostsza -- jedno poszerzenie na wszystko
 {
   double m=(1/mc+1/mv);
   //  double sigma = posz_en
-  return 0.5*(1 + boost::math::erf((E - E0)/(sqrt(2.)*sigma)))/(m*2*struktura::pi*szer_do_wzmoc);
+  return erf_dorored(E, E0, sigma)/(m*2*struktura::pi*szer_do_wzmoc);
 }
 /*****************************************************************************/
 gain::gain() // LUKASZ
@@ -1843,6 +2213,7 @@ gain::gain() // LUKASZ
 gain::gain(plask::shared_ptr<obszar_aktywny> obsz, double konc_pow, double temp, double wsp_zal)
     : pasma(obsz)
 {
+  pasma = obsz;
   nosniki_c = przel_gest_z_cm2(konc_pow);
   nosniki_v = nosniki_c;
   T = temp;
@@ -2015,6 +2386,107 @@ double gain::sieczne(double (gain::*f)(double), double pocz, double kon)
   return x;
 }
 /*****************************************************************************/
+double gain::L(double x, double b)
+{
+  return 1/(M_PI*b)/(1 + x/b*x/b );
+}
+/*****************************************************************************/
+double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podział na kawałek o promieniu Rb wokół 0 i resztę
+{
+  //  double blad = 0.005;
+  // b energia do poszerzenia w lorentzu
+  struktura * el = pasma->pasmo_przew[0];
+  struktura * dziu = pasma->pasmo_wal[0];
+  double E0pop = pasma->Egcv[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom; // energia potencjalna + energia prostopadla
+  double E0min=E0pop;;
+  for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+    {
+      el = pasma->pasmo_przew[nr_c];
+      for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+	{
+	  dziu = pasma->pasmo_wal[nr_v];
+	  E0min = pasma->Egcv[nr_c] - pasma->Egcc[nr_v] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+	  E0min = (E0pop >= E0min)? E0min: E0pop;
+	}
+    }
+  double a = 2*(E0min - pasma->min_przerwa_energetyczna())*pasma->chrop;
+  // maksima (oszacowne z góry) kolejnych pochodnych erfc(x/a)
+  double em = 2.;
+  double epm = 1.13/a;
+  double eppm = 1./(a*a);
+  double epppm = 2.5/(a*a*a);
+  double eppppm = 5/(a*a*a*a);
+  // maxima  (oszacowne z góry) kolejnych pochodnych lorentza (x/b), pomnożeone przez b
+  double lm = 1/M_PI;
+  double lpm = 0.2/b;
+  double lppm = 0.7/(b*b);
+  double lpppm = 1.5/(b*b*b);
+  double lppppm = 24/M_PI/(b*b*b*b);
+  double czwpoch0b = (em*lppppm + 4*epm*lpppm + 6*eppm*lppm + 4*epppm*lpm + eppppm*lm); // szacowanie (grube) czwartej pochodnej dla |x| < 1, pomnożone przez b
+  double R = 3.; // w ilu b jest zmiana zagęszczenia
+  double jedenplusR2 = 1 + R*R; 
+  double lmR = 1/(M_PI*jedenplusR2); // oszacowania modułów kolejnych pochodnych przez wartość w R, bo dla R >=2 są malejące
+  double lpmR = 2*R/(M_PI*jedenplusR2*jedenplusR2)/b;
+  double lppmR = (6*R*R - 2)/(M_PI*jedenplusR2*jedenplusR2*jedenplusR2)/(b*b);
+  double lpppmR = 24*R*(R*R - 1)/(M_PI*jedenplusR2*jedenplusR2*jedenplusR2*jedenplusR2)/(b*b*b);
+  double lppppmR = (120*R*R*R*R - 240*R*R + 24)/(M_PI*jedenplusR2*jedenplusR2*jedenplusR2*jedenplusR2*jedenplusR2)/(b*b*b*b);
+  double czwpochRb = (em*lppppmR + 4*epm*lpppmR + 6*eppm*lppmR + 4*epppm*lpmR + eppppm*lmR);
+
+  int n0 = pow(2*R,5./4)*b*pow(czwpoch0b/(180*blad),0.25);
+  int nR = pow((32-R),5./4)*b*pow(czwpochRb/(180*blad),0.25);
+  if(n0%2) // ny powinny być parzyste
+    {
+      n0+=1;
+    }
+  else
+    {
+      n0 += 2;
+    }
+  if(nR%2) // ny powinny być parzyste
+    {
+      nR+=1;
+    }
+  else
+    {
+      nR += 2;
+    }
+  //  nR *= 2; // chwilowo, do testów
+  double szer = 2*R*b;
+  double h = szer/n0;
+  double x2j, x2jm1, x2jm2;
+  double calka1 = 0.;
+  for(int j = 1; j <= n0/2; j++) //w promieniu Rb
+    {
+      x2j = -R*b + 2*j*h;
+      x2jm1 = x2j - h;
+      x2jm2 = x2jm1 - h;
+      calka1 += L(x2jm2,b)*wzmocnienie_calk_bez_splotu(E-x2jm2) + 4*L(x2jm1,b)*wzmocnienie_calk_bez_splotu(E-x2jm1) + L(x2j,b)*wzmocnienie_calk_bez_splotu(E-x2j);
+    }
+  calka1 *= h/3;
+  // dla -32b < x  -Rb
+  szer = (32-R)*b;
+  h = szer/nR;
+  double calka2 = 0.;
+  for(int j = 1; j <= nR/2; j++) // ujemne pół
+    {
+      x2j = -32*b + 2*j*h;
+      x2jm1 = x2j - h;
+      x2jm2 = x2jm1 - h;
+      calka2 += L(x2jm2,b)*wzmocnienie_calk_bez_splotu(E-x2jm2) + 4*L(x2jm1,b)*wzmocnienie_calk_bez_splotu(E-x2jm1) + L(x2j,b)*wzmocnienie_calk_bez_splotu(E-x2j);
+    }
+  for(int j = 1; j <= nR/2; j++) // dodatnie pół
+    {
+      x2j = R*b + 2*j*h;
+      x2jm1 = x2j - h;
+      x2jm2 = x2jm1 - h;
+      calka2 += L(x2jm2,b)*wzmocnienie_calk_bez_splotu(E-x2jm2) + 4*L(x2jm1,b)*wzmocnienie_calk_bez_splotu(E-x2jm1) + L(x2j,b)*wzmocnienie_calk_bez_splotu(E-x2j);
+    }
+  calka2 *= h/3;
+  double calka = calka1 + calka2;
+  std::clog<<"\na = "<<a<<"\t4poch = "<<czwpoch0b<<"\tn0 = "<<n0<<"\tnR = "<<nR<<"\tcalka = "<<calka<<"\n";
+  return calka;
+}
+/*****************************************************************************/
 double gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
 {
   //  std::cerr<<"\npasmo walencyjna nr "<<nr_v<<"\n";
@@ -2099,93 +2571,56 @@ double gain::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size
   double mnoznik_pol;
   // koniec uśredniania masy
 
-  double srednie_k = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):0.;
+  //  double srednie_k = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):0.;
+  double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
+  
   double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
   double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
-  //  std::cerr<<"\n srednie_k = "<<srednie_k<<"\n";
-  //  if(E < E0)
-  //   {
-  //     wynik = 0;
-  //   }
-  //  else
-  //   {
-  //      std::cerr<<"lewa \n";
-      Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
-      //      std::cerr<<"lewa Eg = "<<Eg<<"\n";
-      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
-      //      std::cerr<<"\ncos2tet = "<<cos2tet<<"\n";
-      calki_kawalki =  (*(pasma->calki_przekrycia_kawalki[nr_c][nr_v]))[poz_c][poz_v]; 
-      //      std::cerr<<"lewa po calkikawalki\n";
-      przekr_w_war = calki_kawalki[0];
-      //      std::cerr<<"lewa przed wynikiem\n";
-      mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
-      wynik = sqrt(pasma->el_mac[0] * mnoznik_pol) * przekr_w_war;
-      //      std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[0]<<" wynik = "<<wynik;
-      for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
-	{
-	  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
-	  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
-	  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
-	  //	  std::cerr<<"\nkawalek "<<i;
-	  //	  std::cerr<<" mnoz_pol = "<<mnoznik_pol<<" cos2tet = "<<cos2tet;
-
-	  przekr_w_war = calki_kawalki[i + 1];
-	  wynik += sqrt(pasma->el_mac[i + 1] * mnoznik_pol) * przekr_w_war;
-	  //	  std::cerr<<" przekr_w_war = "<<przekr_w_war<< " wynik = "<<wynik;
-	  //	  std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[i+1]<<" wynik = "<<wynik;
-	}
-      przekr_w_war = calki_kawalki.back();
-      double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k*srednie_k/(2*srednia_masa_el);
-      double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k*srednie_k/(2*srednia_masa_dziu);
-      double rozn_obsadzen = fc(energia_elektronu - pasma->Egcc[nr_c]) - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]);
-      //      std::cerr<<"\nen_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" rozn_obsadzen = "<<rozn_obsadzen<<"\n";
-      Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
-      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
-      mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
-      wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
-      if (mInfo) std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac.back()<<" wynik = "<<wynik<<" rored = "<<rored(srednie_k, srednia_masa_el, srednia_masa_dziu)<<"\n"; // LUKASZ
-      wynik *= wynik; // dopiero teraz kwadrat modułu
-      //      std::cerr<<"\nwynik = "<<wynik;
-
-      wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en) * rozn_obsadzen;
+  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
+  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
+  //      std::cerr<<"lewa Eg = "<<Eg<<"\n";
+  //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+  cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
+  //      std::cerr<<"\ncos2tet = "<<cos2tet<<"\n";
+  calki_kawalki =  (*(pasma->calki_przekrycia_kawalki[nr_c][nr_v]))[poz_c][poz_v]; 
+  //      std::cerr<<"lewa po calkikawalki\n";
+  przekr_w_war = calki_kawalki[0];
+  //      std::cerr<<"lewa przed wynikiem\n";
+  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
+  wynik = sqrt(pasma->el_mac[0] * mnoznik_pol) * przekr_w_war;
+  //      std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[0]<<" wynik = "<<wynik;
+  for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
+    {
+      Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
+      //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+      cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
+      mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
+      //	  std::cerr<<"\nkawalek "<<i;
+      //	  std::cerr<<" mnoz_pol = "<<mnoznik_pol<<" cos2tet = "<<cos2tet;
+      
+      przekr_w_war = calki_kawalki[i + 1];
+      wynik += sqrt(pasma->el_mac[i + 1] * mnoznik_pol) * przekr_w_war;
+      //	  std::cerr<<" przekr_w_war = "<<przekr_w_war<< " wynik = "<<wynik;
+      //	  std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[i+1]<<" wynik = "<<wynik;
+    }
+  przekr_w_war = calki_kawalki.back();
+  double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_el);
+  double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_dziu);
+  double rozn_obsadzen = fc(energia_elektronu - pasma->Egcc[nr_c]) - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]);
+  //      std::cerr<<"\nen_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" rozn_obsadzen = "<<rozn_obsadzen<<"\n";
+  Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
+  //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+  cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
+  mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
+  wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
+  //  std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac.back()<<" wynik = "<<wynik<<" rored = "<<rored(srednie_k, srednia_masa_el, srednia_masa_dziu)<<"\n";
+  wynik *= wynik; // dopiero teraz kwadrat modułu
+  //      std::cerr<<"\nwynik = "<<wynik;
+  
+  wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en) * rozn_obsadzen;
       //      std::cerr<<"\nrored = "<<rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en);
-  //   }
-  /* stare, chyba niedobre, bo próbowało liczyć k i Fermiego w każej warswtwie osobno
-  if(E < E0)
-    {
-      wynik = 0;
-    }
-  else
-    {
-      std::cerr<<"lewa \n";
-      Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
-      std::cerr<<"lewa Eg = "<<Eg<<"\n";
-      cos2tet= (E>Eg)?(E0-Eg)/(E-Eg):1.0;
-      k=kodE(E-E0, el->lewa.masa_r, dziu->lewa.masa_r);
-      std::cerr<<"lewa k = "<<k<<"\n";
-      calki_kawalki =  *(pasma->calki_przekrycia_kawalki[nr_c][nr_v])[poz_c][poz_v];
-      std::cerr<<"lewa po calkikawalki\n";
-      przekr_w_war = calki_kawalki[0];
-      std::cerr<<"lewa przed wynikiem\n";
-      wynik = pasma->el_mac[0]* przekr_w_war *cos2tet *rored(k, el->lewa.masa_r, dziu->lewa.masa_r)*( fc(el->energia_od_k_na_ntym(k, 0, poz_c) - pasma->Egcc[nr_c]) - fv(-dziu->energia_od_k_na_ntym(k, 0, poz_v) + pasma->Egcv[0] - pasma->Egcv[nr_v]) );
-      for(int i = 0; i <= (int) el->kawalki.size() - 1; i++)
-	{
-	  std::cerr<<"kawalek "<<i<<"\n";
-	  k=kodE(E-E0, el->kawalki[i].masa_r, dziu->kawalki[i].masa_r);
-	  przekr_w_war = calki_kawalki[i + 1];
-	  wynik += pasma->el_mac[i + 1]* przekr_w_war *cos2tet *rored(k, el->kawalki[i].masa_r, dziu->kawalki[i].masa_r)*( fc(el->energia_od_k_na_ntym(k, i + 1, poz_c) - pasma->Egcc[nr_c]) - fv(-dziu->energia_od_k_na_ntym(k, i + 1, poz_v) + pasma->Egcv[0] - pasma->Egcv[nr_v]) );
-	}
-      int nr_ost = el->kawalki.size() + 1;
-      k=kodE(E-E0, el->prawa.masa_r, dziu->prawa.masa_r);
-      przekr_w_war = calki_kawalki.back();
-      double inwersja = fc(el->energia_od_k_na_ntym(k, nr_ost, poz_c) - pasma->Egcc[nr_c]) - fv(-dziu->energia_od_k_na_ntym(k, nr_ost, poz_v) + pasma->Egcv[0] - pasma->Egcv[nr_v]);
-      wynik += pasma->el_mac.back()* przekr_w_war *cos2tet *rored(k, el->prawa.masa_r, dziu->prawa.masa_r) * inwersja;
-      wynik = (wynik > 0)?wynik: -wynik;
-      wynik = (inwersja > 0)?wynik: -wynik; // znak nie zalezy od warstwy, wiec mozna z ostaniej wziac
-    }
-  */
-      return wynik*struktura::pi/(struktura::c*n_r*struktura::eps0*E)/struktura::przelm*1e8;
+  return wynik*struktura::pi/(struktura::c*n_r*struktura::eps0*E)/struktura::przelm*1e8;
 }
 /*****************************************************************************/
 double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v)
@@ -2214,10 +2649,14 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
   double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
   double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
   double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
-
-  double srednie_k = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):0.;
+  //  double erf_dor = erf_dorored(E, E0, posz_en);
+  double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
   Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
-  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie   
+  //  std::clog<<(E-E0)<<" "<<sr_E_E0_dod<<"\n";
+  //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+  //  cos2tet = 1.0; // na chwilę
+  cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
   calki_kawalki =  (*(pasma->calki_przekrycia_kawalki[nr_c][nr_v]))[poz_c][poz_v]; 
   przekr_w_war = calki_kawalki[0];
   mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6; // polaryzacja TE
@@ -2226,27 +2665,45 @@ double gain::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_
     {
       //      std::cerr<<"kawalek "<<i<<"\n";
       Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
-      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+      //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+      //      cos2tet = 1.0; // na chwilę
+      //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.0;
+      cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
       mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
+      //      std::cerr<<" mnoz_pol = "<<mnoznik_pol<<" cos2tet = "<<cos2tet<<"\n";
       przekr_w_war = calki_kawalki[i + 1];
       wynik += sqrt(pasma->el_mac[i + 1] * mnoznik_pol) * przekr_w_war;
     }
   przekr_w_war = calki_kawalki.back();
-  double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k*srednie_k/(2*srednia_masa_el);
-  double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k*srednie_k/(2*srednia_masa_dziu);
+  double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_el); // abs, żeby mieć znak, i energie poniżej E0
+  double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k_zeznakiem*abs(srednie_k_zeznakiem)/(2*srednia_masa_dziu);
   double obsadzenia = fc(energia_elektronu - pasma->Egcc[nr_c])*(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]));
+  //  std::cerr<<"\nen_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" obsadz el = "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" obsadz dziu = "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<" obsadzenia = "<<obsadzenia<<" przesunięcie w fv "<<(pasma->Egcv[0] - pasma->Egcv[nr_v])<<"\n";
   Eg = pasma->Egcv[nr_v] - pasma->Egcc[nr_c];
-  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+  //    cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
+  //  cos2tet = 1.0; // na chwilę
+  //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg);//:1.0;
+  cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
   mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;	  
   wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
   wynik *= wynik; // dopiero teraz kwadrat modułu
   //  double posz_en = 2*(E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
-  wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en) * obsadzenia;
+  wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en)*obsadzenia;
+  //  std::cerr<<"typ_"<<dziu->typ<<" "<<E<<" "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<"\n";
   //  std::cerr<<"\nrored = "<<rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en);
   return wynik*E*E*n_r/(struktura::c*struktura::c*struktura::c*struktura::pi*struktura::eps0)/(struktura::przelm*struktura::przelm*struktura::przelm)*1e24/struktura::przels*1e12; // w 1/(cm^3 s)
 }
 /*****************************************************************************/
-void gain::profil_wzmocnienia_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
+double gain::wzmocnienie_calk_bez_splotu(double E)
+{
+  double wynik = 0.;
+  for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+    for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+      wynik += wzmocnienie_od_pary_pasm(E, nr_c, nr_v);
+  return wynik;
+}
+/*****************************************************************************/
+void gain::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
 {
   double wynik;
     for(double E = pocz; E <= kon; E += krok)
@@ -2259,17 +2716,66 @@ void gain::profil_wzmocnienia_dopliku(std::ofstream & plik, double pocz, double 
     }
 }
 /*****************************************************************************/
+void gain::profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b)
+{
+  for(double E = pocz; E <= kon; E += krok)
+    {
+      plik<<E<<" "<<wzmocnienie_calk_ze_splotem(E, b)<<"\n";
+    }
+}
+/*****************************************************************************/
 void gain::profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
 {
-  double wynik;
+  //  double wynik;
+  /*
+  std::vector<double> wklady;
+  wklady.resize(pasmo_wal.size());
+  */
     for(double E = pocz; E <= kon; E += krok)
     {
-      wynik = 0;
+      plik<<E;
+      //     wynik = 0;
       for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
 	for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
-	  wynik += spont_od_pary_pasm(E, nr_c, nr_v);
-      plik<<E<<" "<<wynik<<"\n";
+	  {
+	    //	    wklady[nr_v] = spont_od_pary_pasm(E, nr_c, nr_v);
+	    //	    wynik += spont_od_pary_pasm(E, nr_c, nr_v);
+	    plik<<" "<<spont_od_pary_pasm(E, nr_c, nr_v);
+	  }
+      //      plik<<E<<" "<<wynik<<"\n";
+      plik<<"\n";
     }
+}
+/*****************************************************************************/
+double gain::moc_lumin()
+{
+  struktura * el = pasma->pasmo_przew[0];
+  struktura * dziu = pasma->pasmo_wal[0];
+  double min_E0 = pasma->Egcv[0] - pasma->Egcc[0] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+  double lok_min_E0;
+  for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+    for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+      {
+	lok_min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+	min_E0 = (min_E0 < lok_min_E0)?min_E0:lok_min_E0;
+      }
+  double minimalna_przerwa = pasma->min_przerwa_energetyczna();
+  double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
+  double pocz = min_E0 - 2*posz_en;
+  double kon = min_E0 + 6*struktura::kB*T;
+  kon = (pocz<kon)?kon:pocz + 2*struktura::kB*T;
+  std::clog<<"\nW mocy. pocz = "<<pocz<<" kon = "<<kon<<"\n";
+  double krok = struktura::kB*T/30;
+  double wynik = 0;
+  for(double E = pocz; E <= kon; E += krok)
+    {
+      for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+	for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+	  {
+	    wynik += spont_od_pary_pasm(E, nr_c, nr_v);
+	  }
+    }
+  return wynik*krok;
 }
 /*****************************************************************************/
 double gain::fc(double E)

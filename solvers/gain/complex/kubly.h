@@ -2,6 +2,7 @@
 #include "jama/jama_svd.h"
 #include "jama/jama_lu.h"
 #include <gsl/gsl_sf_fermi_dirac.h>
+#include <gsl/gsl_sf_airy.h>
 
 #include <cmath>
 #include <fstream>
@@ -30,39 +31,43 @@ class warstwa{
     friend class gain;
     //  friend void zrobmacierz(double, std::vector<warstwa> &, A2D & );
 
-    double x_pocz;
-    double x_kon;
-    double y_pocz;
-    double y_kon;
-    double pole;
-    double nieparab; // alfa nieparabolicznosci
-    double nieparab_2; // alfa nieparabolicznosci kwadratowa
-    double m_p; // masa prostopadla
-    int zera_ffal(double E, double A, double B) const;
-    double norma_kwadr(double E, double A, double B) const;
-    double tryg_kwadr_pierwotna(double x, double E, double A, double B) const;
-    double exp_kwadr_pierwotna(double x, double E, double A, double B) const;
-    inline double masa_p(double E) const;
+  double x_pocz;
+  double x_kon;
+  double y_pocz;
+  double y_kon;
+  double pole; // ladunek razy pole
+  double nieparab; // alfa nieparabolicznosci
+  double nieparab_2; // alfa nieparabolicznosci kwadratowa
+  double m_p; // masa prostopadla
+  int zera_ffal(double E, double A, double B, double sasiadl, double sasiadp) const;
+  int zera_ffal(double E, double A, double B) const;
+  double norma_kwadr(double E, double A, double B) const;
+  double tryg_kwadr_pierwotna(double x, double E, double A, double B) const;
+  double exp_kwadr_pierwotna(double x, double E, double A, double B) const;
+  double airy_kwadr_pierwotna(double x, double E, double A, double B) const;
+  inline double masa_p(double E) const;
 
-protected:
-    double masa_r; // masa rownolegla
-    double tryga(double x, double E) const;
-    double trygb(double x, double E) const;
-    double expa(double x, double E) const;
-    double expb(double x, double E) const;
-    double Ai(double x, double E) const;
-    double Bi(double x, double E) const;
-    double tryga_prim(double x, double E) const;
-    double trygb_prim(double x, double E) const;
-    double expa_prim(double x, double E) const;
-    double expb_prim(double x, double E) const;
-    double Ai_prim(double x, double E) const;
-    double Bi_prim(double x, double E) const;
-    double funkcjafal(double x, double E, double A, double B) const;
-    double funkcjafal_prim(double x, double E, double A, double B) const;
-    double k_kwadr(double E) const;
-    double Eodk(double k) const;
-    void przesun_igreki(double);
+ protected:
+  warstwa * nast; // wskaznik na sasiadke z prawej
+  double masa_r; // masa rownolegla
+  double tryga(double x, double E) const;
+  double trygb(double x, double E) const;
+  double expa(double x, double E) const;
+  double expb(double x, double E) const;
+  double Ai(double x, double E) const;
+  double Ai_skala(double x, double E) const;
+  double Bi(double x, double E) const;
+  double tryga_prim(double x, double E) const;
+  double trygb_prim(double x, double E) const;
+  double expa_prim(double x, double E) const;
+  double expb_prim(double x, double E) const;
+  double Ai_prim(double x, double E) const;
+  double Bi_prim(double x, double E) const;
+  double funkcjafal(double x, double E, double A, double B) const;
+  double funkcjafal_prim(double x, double E, double A, double B) const;
+  double k_kwadr(double E) const;
+  double Eodk(double k) const;
+  void przesun_igreki(double);
 
 public:
     warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar = 0, double niepar_2 = 0);
@@ -181,8 +186,8 @@ public:
     static const double c;
     static const double kB;
 
-    struktura(const std::vector<warstwa*> &, rodzaj); // won't be used LUKASZ
-    //struktura(std::ifstream & plik, rodzaj co);
+    struktura(const std::vector<warstwa*> &, rodzaj);
+    //struktura(std::ifstream & plik, rodzaj co); // won't be used LUKASZ
 
     static double dlugosc_z_A(const double);
     static double dlugosc_na_A(const double);
@@ -234,6 +239,7 @@ public:
 
     double calka_ij(const struktura * elektron, const struktura * dziura, int i, int j, vector<double> & wektor_calk_kaw);
     double iloczyn_pierwotna_bezpola(double x, int nr_war, const struktura * struk1, const struktura * struk2, int i, int j);
+double calka_iloczyn_zpolem(int nr_war, const struktura * struk1, const struktura * struk2, int i, int j); // numeryczne calkowanie
     //  void macierze_przejsc();
     void zrob_macierze_przejsc(); // dopisane 2013
     void paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v);
@@ -258,9 +264,9 @@ class gain
     double przel_gest_na_cm2(double gest_w_wew);
     double gdzie_qFlc(double E);
     double gdzie_qFlv(double E);
-
     double kodE(double E, double mc, double mv);
     double rored(double, double mc, double mv);
+    double erf_dorored(double E, double E0, double sigma);
     double rored_posz(double E, double E0, double mc, double mv, double sigma);
     double fc(double E);
     double fv(double E);
@@ -275,12 +281,18 @@ public:
     double policz_qFlv();
     double getT();
     double Get_gain_at_n(double E, double hQW); // LUKASZ remember to delete this
+
     double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
     double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v);
     double spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
     double spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v);
-    void profil_wzmocnienia_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
+    double wzmocnienie_calk_ze_splotem(double E, double b, double blad = 0.02); // podzia³ na kawa³ek o promieniu Rb wokó³ 0 i resztê
+    double wzmocnienie_calk_bez_splotu(double E);
+    void profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b);
+    void profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
     void profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
+    double moc_lumin();
+    static double L(double x, double b);
 
 private:
     static const int mInfo = 0;

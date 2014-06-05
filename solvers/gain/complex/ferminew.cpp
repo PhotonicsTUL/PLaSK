@@ -298,11 +298,11 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         double tFp = gainModule.policz_qFlv();
         writelog(LOG_RESULT, "Fe %1%", tFe);
         writelog(LOG_RESULT, "Fp %1%", tFp);
-        /*std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
+        std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
         for(int i = 0; i <= (int) tN.size() - 1; i++)
             writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
 
-        double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);
+        /*double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);
         double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1);
         //gainOnMesh[i] = tGehh+tGelh;
         //writelog(LOG_RESULT, "gainOnMesh %1%", gainOnMesh[i]);
