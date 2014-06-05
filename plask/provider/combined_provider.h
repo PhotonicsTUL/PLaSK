@@ -147,7 +147,7 @@ struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<Extra
         SumLazyDataImpl(std::vector<LazyData<ValueType>>&& to_sum, std::size_t size)
             : to_sum(std::move(to_sum)), _size(size) {}
 
-        ValueType get(std::size_t index) const override {
+        ValueType at(std::size_t index) const override {
             ValueType sum = to_sum[0][index];
             for (std::size_t i = 1; i < to_sum.size(); ++i)
                 sum += to_sum[i][index];

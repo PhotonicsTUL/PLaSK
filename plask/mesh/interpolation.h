@@ -235,14 +235,14 @@ LazyData<typename std::remove_const<DstT>::type> interpolate(shared_ptr<const Sr
  *
  * It has reference to source (src_mesh) and destination (dst_mesh) meshes and to source data vector (src_vec).
  */
-template <typename T, typename SrcMeshType>
-struct InterpolatedLazyDataImpl: public LazyDataImpl<T> {
+template <typename DstT, typename SrcMeshType, typename SrcT = DstT>
+struct InterpolatedLazyDataImpl: public LazyDataImpl<DstT> {
 
     shared_ptr<const SrcMeshType> src_mesh;
     shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh;
-    DataVector<const T> src_vec;
+    DataVector<const SrcT> src_vec;
 
-    InterpolatedLazyDataImpl(const shared_ptr<const SrcMeshType>& src_mesh, const DataVector<const T>& src_vec, const shared_ptr<const MeshD<SrcMeshType::DIM>>& dst_mesh)
+    InterpolatedLazyDataImpl(const shared_ptr<const SrcMeshType>& src_mesh, const DataVector<const SrcT>& src_vec, const shared_ptr<const MeshD<SrcMeshType::DIM>>& dst_mesh)
         : src_mesh(src_mesh), dst_mesh(dst_mesh), src_vec(src_vec) {}
 
     virtual std::size_t size() const override { return dst_mesh->size(); }
@@ -260,7 +260,7 @@ struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<T, SrcMes
     LinearInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const T>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
         InterpolatedLazyDataImpl<T, SrcMeshType>(src_mesh, src_vec, dst_mesh) {}
 
-    virtual T get(std::size_t index) const override {
+    virtual T at(std::size_t index) const override {
         return this->src_mesh->interpolateLinear(this->src_vec, this->dst_mesh->at(index));
     }
 
@@ -277,7 +277,7 @@ struct NearestNeighborInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<
     NearestNeighborInterpolatedLazyDataImpl(shared_ptr<const SrcMeshType> src_mesh, const DataVector<const T>& src_vec, shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh):
         InterpolatedLazyDataImpl<T, SrcMeshType>(src_mesh, src_vec, dst_mesh) {}
 
-    virtual T get(std::size_t index) const override {
+    virtual T at(std::size_t index) const override {
         return this->src_mesh->interpolateNearestNeighbor(this->src_vec, this->dst_mesh->at(index));
     }
 

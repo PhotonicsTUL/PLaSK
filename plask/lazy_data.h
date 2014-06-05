@@ -21,11 +21,11 @@ struct LazyDataImpl {
      * @param index should be a value from 0 to size()-1
      * @return index-th value from vector
      */
-    virtual T get(std::size_t index) const = 0;
+    virtual T at(std::size_t index) const = 0;
 
     /**
-     * Get the size of vector.
-     * @return the size of vector
+     * Get the number of elements in this vector.
+     * @return the number of elements in this vector
      */
     virtual std::size_t size() const = 0;
 
@@ -36,7 +36,7 @@ struct LazyDataImpl {
     virtual DataVector<const T> getAll() const {
         DataVector<T> res(this->size());
         #pragma omp parallel for
-        for (std::size_t i = 0; i < res.size(); ++i) res[i] = this->get(i);
+        for (std::size_t i = 0; i < res.size(); ++i) res[i] = this->at(i);
         return res;
     }
 
@@ -56,7 +56,7 @@ struct ConstValueLazyDataImpl: public LazyDataImpl<T> {
 
     ConstValueLazyDataImpl(const T& value, std::size_t size): value_(value), size_(size) {}
 
-    virtual T get(std::size_t) const override { return value_; }
+    virtual T at(std::size_t) const override { return value_; }
 
     virtual std::size_t size() const override { return size_; }
 
@@ -76,7 +76,7 @@ struct LazyDataFromVectorImpl: public LazyDataImpl<T> {
 
     LazyDataFromVectorImpl(DataVector<const T> vec): vec(vec) {}
 
-    virtual T get(std::size_t index) const override { return vec[index]; }
+    virtual T at(std::size_t index) const override { return vec[index]; }
 
     virtual std::size_t size() const override { return vec.size(); }
 
@@ -149,9 +149,19 @@ public:
     LazyData& operator=(const LazyData&) & = default;
     LazyData& operator=(LazyData&&) & = default;*/
 
-    T operator[](std::size_t index) const {
-        return impl->get(index);
-    }
+    /**
+     * Get index-th value from this vector.
+     * @param index should be a value from 0 to size()-1
+     * @return index-th value from this vector
+     */
+    T operator[](std::size_t index) const { return impl->at(index); }
+
+    /**
+     * Get index-th value from this vector.
+     * @param index should be a value from 0 to size()-1
+     * @return index-th value from this vector
+     */
+    T at(std::size_t index) const { return impl->at(index); }
 
     DataVector<const T> nonLazy() const { return impl->getAll(); }
 
@@ -163,6 +173,10 @@ public:
         //  (w przypadku trzymania data vectora zostanie on skopiowany)
     }
 
+    /**
+     * Get the number of elements in this vector.
+     * @return the number of elements in this vector
+     */
     std::size_t size() const { return impl->size(); }
 
     /**
@@ -194,7 +208,7 @@ struct ScaledLazyDataImpl: public LazyDataImpl<ReturnedType> {
     ScaledLazyDataImpl(LazyData<T> data, const ScaleT& scale)
         : data(std::move(data)), scale(scale) {}
 
-    virtual ReturnedType get(std::size_t index) const override { return data[index] * scale; }
+    virtual ReturnedType at(std::size_t index) const override { return data[index] * scale; }
 
     virtual std::size_t size() const override { return data.size(); }
 

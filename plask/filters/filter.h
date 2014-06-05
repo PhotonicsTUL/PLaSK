@@ -52,7 +52,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
             outerSourceData = filter.outerSource->operator()(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         }
 
-        virtual ValueType get(std::size_t point_index) const override {
+        virtual ValueType at(std::size_t point_index) const override {
             for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
                 //if (!innerSourcesData[source_index])
                 //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
