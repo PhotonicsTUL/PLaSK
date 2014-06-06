@@ -23,11 +23,11 @@ def save_rectangular1d(dest_group, mesh):
 
 def load_rectangular1d(src_group):
     mesh_type = plask.mesh.__dict__[src_group.attrs['type']]
+    data = src_group['points']
     if mesh_type is plask.mesh.Regular:
-        data = src_group['points']
         return plask.mesh.Regular(data[0][0], data[0][1], int(data[0][2]))
     else:
-        return plask.mesh.Rectilinear(data)
+        return plask.mesh.Ordered(data)
 
 
 def save_field(field, file, path='', mode='a'):
@@ -163,10 +163,10 @@ def load_field(file, path=''):
         msh = mst(**dict([ (k, (v[0][0],v[0][1],int(v[0][2]))) for k,v in mesh.items() ]))
     elif mst in (plask.mesh.Rectilinear2D, plask.mesh.Rectilinear3D):       # backward compatibility
         msh = mst(**dict(mesh.items()))
-    elif mst in (plask.mesh.Regular, plask.mesh.Rectilinear):
+    elif mst in (plask.mesh.Regular, plask.mesh.Ordered):
         msh = load_rectangular1d(mesh)
     elif mst in (plask.mesh.Rectangular2D, plask.mesh.Rectangular3D):
-        msh = mst(*tuple(load_rectangular1d(axis) for axis in mesh))
+        msh = mst(*tuple(load_rectangular1d(mesh[axis]) for axis in mesh))
 
     data = file[path+'/data']
     data = numpy.array(data)
