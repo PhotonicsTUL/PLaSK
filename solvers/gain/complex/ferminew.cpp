@@ -180,6 +180,10 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                 {
                     if (!in_active)
                     {
+                        // LUKASZ: jestem w obszarze z rola "active" po raz pierwszy
+                        // LUKASZ: trzeba dodac warstwe, ktora jest tuz pod obszarem czynnym
+                        // LUKASZ: i trzeba to zrobic tylko raz
+
                         iright = c;
                         if (layer_QW)
                         { // quantum well is at the egde of the active region, add one row below it
@@ -229,6 +233,12 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
             }
             else
             {
+                // LUKASZ: obszar czynny juz byl
+                // LUKASZ: jestem poza obszarem z rola "active"
+                // LUKASZ: trzeba dodac warstwe, ktora jest tuz nad obszarem czynnym
+                // LUKASZ: i trzeba to zrobic tylko raz
+
+
                 if (region->isQW(region->size()-1))
                 { // top layer of the active region is quantum well, add the next layer
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
@@ -607,10 +617,11 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
             for(int i = 0; i <= (int) tN.size() - 1; i++)
                 writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
 */
-            writelog(LOG_RESULT, "OK1");
-            double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);writelog(LOG_RESULT, "OK2");
-            double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1);writelog(LOG_RESULT, "OK3");
-            gainOnMesh[i] = tGehh+tGelh;writelog(LOG_RESULT, "OK4");
+            double L = region.qwtotallen / region.totallen; // no unit
+            writelog(LOG_RESULT, "L %1%", L);
+            double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0) / L;
+            double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1) / L;
+            gainOnMesh[i] = tGehh+tGelh;
             writelog(LOG_RESULT, "gainOnMesh %1%", gainOnMesh[i]);
         }
         else if (mEc)

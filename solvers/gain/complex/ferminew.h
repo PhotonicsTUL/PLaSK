@@ -233,11 +233,11 @@ struct GainSpectrum {
     FerminewGainSolver<GeometryT>* solver; ///< Source solver
     Vec<2> point;                       ///< Point in which the gain is calculated
 
-    /// Active region containg the point
+    /// Active region containing the point
     const typename FerminewGainSolver<GeometryT>::ActiveRegionInfo* region;
 
     double T;                           ///< Temperature
-    double n;                           ///< Carries concentration
+    double n;                           ///< Carriers concentration
 
     GainSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
         for (const auto& reg: solver->regions) {
@@ -269,7 +269,7 @@ struct GainSpectrum {
         if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
         if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
         return solver->getGainModule(wavelength, T, n, *region)
-            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen);
+            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen);
     }
 };
 

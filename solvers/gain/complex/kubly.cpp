@@ -2280,10 +2280,10 @@ double gain::getT()
   return T;
 }
 /*****************************************************************************/
-double gain::Get_gain_at_n(double E, double hQW)
+double gain::Get_gain_at_n(double E, double hQW, double iL)
 {
-    double tGehh = wzmocnienie_od_pary_pasm(E, 0, 0);
-    double tGelh = wzmocnienie_od_pary_pasm(E, 0, 1);
+    double tGehh = wzmocnienie_od_pary_pasm(E, 0, 0) / iL;
+    double tGelh = wzmocnienie_od_pary_pasm(E, 0, 1) / iL;
     return (tGehh+tGelh);
 }
 /*****************************************************************************/
