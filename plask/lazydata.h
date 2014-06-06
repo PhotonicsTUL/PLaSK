@@ -40,7 +40,7 @@ struct LazyDataImpl {
         std::exception_ptr error;
         #pragma omp parallel for
         for (std::size_t i = 0; i < res.size(); ++i) {
-            if (error) break;
+            if (error) continue;
             try {
                 res[i] = this->at(i);
             } catch(...) {
