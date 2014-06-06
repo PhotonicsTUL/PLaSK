@@ -238,8 +238,13 @@ struct GainSpectrum {
 
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
+    QW::gain gMod; // added
+    bool gModExist; // added
 
-    GainSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
+    GainSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
+    {
+        //std::cout << "Setting gModExist to false\n"; // added
+        gModExist = false; // added
         for (const auto& reg: solver->regions) {
             if (reg.contains(point)) {
                 region = &reg;
@@ -265,11 +270,20 @@ struct GainSpectrum {
      * \param wavelength wavelength to get gain
      * \return gain
      */
-    double getGain(double wavelength) {
+    double getGain(double wavelength)
+    {
+        //std::cout << "Runing getGain in spectrum\n"; // added
         if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
         if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
-        return solver->getGainModule(wavelength, T, n, *region)
-            .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen);
+        if (!gModExist) // added
+        { // added
+            //std::cout << "Getting GainModule in spectrum\n"; // added
+            gMod = solver->getGainModule(wavelength, T, n, *region); // added
+            gModExist = true; // added
+        } // added
+        return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // added
+        //return solver->getGainModule(wavelength, T, n, *region) // commented
+        //    .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // commented
     }
 };
 
