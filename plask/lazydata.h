@@ -7,6 +7,8 @@ namespace plask {
 
 /**
  * Base class for implementation used by lazy data vector.
+ *
+ * Subclasses must provide thread-safty reading.
  * @tparam T type of data served by the data vector
  */
 template <typename T>
@@ -38,7 +40,7 @@ struct LazyDataImpl {
         std::exception_ptr error;
         #pragma omp parallel for
         for (std::size_t i = 0; i < res.size(); ++i) {
-            if (error) continue;
+            if (error) break;
             try {
                 res[i] = this->at(i);
             } catch(...) {
@@ -133,6 +135,8 @@ struct LazyDataWithMeshImpl: public LazyDataImpl<T> {
  * Lazy data (vector).
  *
  * It ownership a pointer to implementation of lazy data (vector) which is of the type LazyDataImpl<T>.
+ *
+ * Reading from LazyData object is thread-safty.
  */
 template <typename T>
 class LazyData {
