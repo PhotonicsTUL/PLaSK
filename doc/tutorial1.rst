@@ -94,14 +94,14 @@ The generator definition in XPL file is done using the :xml:tag:`<generator> [re
 .. code-block:: xml
 
     <grids>
-      <generator type="rectilinear2d" method="divide" name="default">
+      <generator type="rectangular2d" method="divide" name="default">
         <postdiv by="2"/>
       </generator>
     </grids>
 
-Here we have defined the generator for a mesh of type ``"rectilinear2d"``, using ``"divide"`` method (i.e. *DivideGenerator*). We will refer to this generator later on using the specified name "default". As in solver configuration the meshes and generators are indistinguishable by the type, each of them must have unique name.
+Here we have defined the generator for a mesh of type ``"rectangular2d"``, using ``"divide"`` method (i.e. *DivideGenerator*). We will refer to this generator later on using the specified name "default". As in solver configuration the meshes and generators are indistinguishable by the type, each of them must have unique name.
 
-The :xml:tag:`<postdiv> [in rectilinear1d, divide generator]` tag is the generator configuration (for more details see chapter :ref:`sec-Meshes`) and says that, after ensuring that two adjacent cells do not differ more than twice in size, each mesh element should be divided by 2 along each axis (i. e. into four quarters). The fact that our structure has both very thick and very thin layers and that we have used DivideGenerator makes the manual final mesh division by two sufficient. Later on we may plot the resulted mesh and fine-tune the ``postdiv by`` value in the XPL file, add more configuration parameters (we will do this in the next tutorial), or even automatically tune the generator from the Python script.
+The :xml:tag:`<postdiv> [in rectangular2d, divide generator]` tag is the generator configuration (for more details see chapter :ref:`sec-Meshes`) and says that, after ensuring that two adjacent cells do not differ more than twice in size, each mesh element should be divided by 2 along each axis (i. e. into four quarters). The fact that our structure has both very thick and very thin layers and that we have used ``DivideGenerator``, makes the manual final mesh division by two sufficient. Later on we may plot the resulted mesh and fine-tune the ``postdiv by`` value in the XPL file, add more configuration parameters (we will do this in the next tutorial), or even automatically tune the generator from the Python script.
 
 
 Computational solvers
@@ -350,9 +350,9 @@ Before concluding this tutorial, let us make a second figure. This time, it will
 
 Now, we can extract the vertical component of the active layer position as ``pos.y``. Next, we want to create a one-dimensional mesh spanning all over the active region::
 
-    junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+    junction_mesh = mesh.Rectangular2D(linspace(-150., 150., 1000), [pos.y])
 
-Frankly speaking the created mesh is still a two-dimensional mesh, however, it has only one row. The thing that looks like a function invocation :class:`mesh.Rectilinear2D <plask.mesh.Rectilinear2D>` is a two-dimensinal rectilinear mesh class [#mesh-is-module]_ and by invoking it as a function, we create a particular instance of this class. Provided arguments are lists of the mesh points along *x* and *y* axes. If you have used Matlab, you should be familiar with the function ``linspace``. It returns a list of ``1000`` points (indicated by its third argument) spanning from –150 µm to 150 µm (first and second arguments). Along *y* axis we have only one point at the level of the active layer. Mind that you can correctly get fields for negative values of *x*, because you have specified ``left="mirror"`` in the geometry declaration.
+Frankly speaking the created mesh is still a two-dimensional mesh, however, it has only one row. The thing that looks like a function invocation :class:`mesh.Rectangular2D <plask.mesh.Rectangular2D>` is a two-dimensinal rectilinear mesh class [#mesh-is-module]_ and by invoking it as a function, we create a particular instance of this class. Provided arguments are lists of the mesh points along *x* and *y* axes. If you have used Matlab, you should be familiar with the function ``linspace``. It returns a list of ``1000`` points (indicated by its third argument) spanning from –150 µm to 150 µm (first and second arguments). Along *y* axis we have only one point at the level of the active layer. Mind that you can correctly get fields for negative values of *x*, because you have specified ``left="mirror"`` in the geometry declaration.
 
 Now, we can obtain the current density from the receiver of solver ``electr``::
 
@@ -397,7 +397,7 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
         plot_mesh(electr.mesh)
 
         pos = GEO["main"].get_object_positions(GEO["junction"])[0]
-        junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+        junction_mesh = mesh.Rectangular2D(linspace(-150., 150., 1000), [pos.y])
         current = electr.outCurrentDensity(junction_mesh)
         curry = [ abs(j.y) for j in current ]
         figure()
@@ -414,5 +414,5 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
 .. [#GEO.name] For your convenience it can be also accessed as ``GEO.main``.
 .. [#plot_field-limit] Actually ``plot_field`` sets the axes limit to the area covered by the mesh on which the field was computed. However, in this case it just covers the whole structure.
 .. [#show] ``show()`` will probably not work if you run PLaSK remotely or using any batch system. In such case, you should replace it with ``savefig("filename")`` in order to save the figure directly to disk. However, you should also adjust the plot ranges in advance: ``xlim(0, 150); ylim(0, 305)``
-.. [#mesh-is-module] Specifically, :mod:`mesh` is a Python module and :class:`~plask.mesh.Rectilinear2D` a class defined inside of this module.
+.. [#mesh-is-module] Specifically, :mod:`mesh` is a Python module and :class:`~plask.mesh.Rectangular2D` a class defined inside of this module.
 

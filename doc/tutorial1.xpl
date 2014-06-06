@@ -17,7 +17,7 @@
 </geometry>
 
 <grids>
-  <generator type="rectilinear2d" method="divide" name="default">
+  <generator type="rectangular2d" method="divide" name="default">
     <postdiv by="2"/>
   </generator>
 </grids>
@@ -68,7 +68,7 @@ plot_geometry(GEO["main"], set_limits=True)
 plot_mesh(electr.mesh)
 
 pos = GEO["main"].get_object_positions(GEO["junction"])[0]
-junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
+junction_mesh = mesh.Rectangular2D(linspace(-150., 150., 1000), [pos.y])
 current = electr.outCurrentDensity(junction_mesh)
 curry = [ abs(j.y) for j in current ]
 

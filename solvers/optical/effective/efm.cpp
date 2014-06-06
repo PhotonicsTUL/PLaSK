@@ -720,7 +720,140 @@ double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
 }
 
 
-plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const shared_ptr<const MeshD<2> > &dst_mesh, InterpolationMethod)
+struct LightMagnitudeDataInefficient: public LazyDataImpl<double>
+{
+    const EffectiveFrequencyCylSolver* solver;
+    int num;
+    shared_ptr<const MeshD<2>> dst_mesh;
+    size_t stripe;
+
+    LightMagnitudeDataInefficient(const EffectiveFrequencyCylSolver* solver,
+                                     int num,
+                                     const shared_ptr<const MeshD<2>>& dst_mesh,
+                                     size_t stripe):
+        solver(solver),
+        num(num),
+        dst_mesh(dst_mesh),
+        stripe(stripe)
+    {}
+
+    size_t size() const override { return dst_mesh->size(); }
+
+    double at(size_t id) const override {
+        auto point = dst_mesh->at(id);
+        double r = point.c0;
+        double z = point.c1;
+        if (r < 0) r = -r;
+
+        dcomplex val = solver->modes[num].rField(r);
+
+        size_t iz = solver->mesh->axis1->findIndex(z);
+        if (iz >= solver->zsize) iz = solver->zsize-1;
+        else if (iz < solver->zbegin) iz = solver->zbegin;
+        dcomplex kz = solver->k0 * sqrt(solver->nrCache[stripe][iz]*solver->nrCache[stripe][iz]
+                                      - solver->veffs[stripe] * solver->nrCache[stripe][iz]*solver->ngCache[stripe][iz]);
+        if (real(kz) < 0.) kz = -kz;
+        z -= solver->mesh->axis1->at(max(int(iz)-1, 0));
+        dcomplex phasz = exp(- I * kz * z);
+        val *= solver->zfields[iz].F * phasz + solver->zfields[iz].B / phasz;
+
+        return 1e-3 * solver->modes[num].power * abs2(val);
+    }
+
+};
+
+struct LightMagnitudeDataEfficient: public LazyDataImpl<double>
+{
+    const EffectiveFrequencyCylSolver* solver;
+    int num;
+    shared_ptr<const RectangularMesh<2>> rect_mesh;
+
+    std::vector<dcomplex> valr, valz;
+
+    LightMagnitudeDataEfficient(const EffectiveFrequencyCylSolver* solver,
+                                   int num,
+                                   const shared_ptr<const RectangularMesh<2>>& rect_mesh,
+                                   size_t stripe):
+        solver(solver),
+        num(num),
+        rect_mesh(rect_mesh),
+        valr(rect_mesh->axis0->size()),
+        valz(rect_mesh->axis1->size())
+    {
+        std::exception_ptr error; // needed to handle exceptions from OMP loop
+
+        #pragma omp parallel
+        {
+            #pragma omp for nowait
+            for (size_t idr = 0; idr < rect_mesh->axis0->size(); ++idr) {
+                if (error) continue;
+                double r = rect_mesh->axis0->at(idr);
+                if (r < 0.) r = -r;
+                try {
+                    valr[idr] = solver->modes[num].rField(r);
+                } catch (...) {
+                    #pragma omp critical
+                    error = std::current_exception();
+                }
+            }
+
+            if (!error) {
+                #pragma omp for
+                for (size_t idz = 0; idz < rect_mesh->axis1->size(); ++idz) {
+                    double z = rect_mesh->axis1->at(idz);
+                    size_t iz = solver->mesh->axis1->findIndex(z);
+                    if (iz >= solver->zsize) iz = solver->zsize-1;
+                    else if (iz < solver->zbegin) iz = solver->zbegin;
+                    dcomplex kz = solver->k0 * sqrt(solver->nrCache[stripe][iz]*solver->nrCache[stripe][iz]
+                                                  - solver->veffs[stripe] * solver->nrCache[stripe][iz]*solver->ngCache[stripe][iz]);
+                    if (real(kz) < 0.) kz = -kz;
+                    z -= solver->mesh->axis1->at(max(int(iz)-1, 0));
+                    dcomplex phasz = exp(- I * kz * z);
+                    valz[idz] = solver->zfields[iz].F * phasz + solver->zfields[iz].B / phasz;
+                }
+            }
+        }
+        if (error) std::rethrow_exception(error);
+    }
+
+    size_t size() const override { return rect_mesh->size(); }
+
+    double at(size_t id) const override {
+        size_t i0 = rect_mesh->index0(id);
+        size_t i1 = rect_mesh->index1(id);
+        return 1e-3 * solver->modes[num].power * abs2(valr[i0] * valz[i1]);
+    }
+
+    DataVector<const double> getAll() const override {
+
+        const double power = 1e-3 * solver->modes[num].power; // 1e-3 mW->W
+
+        DataVector<double> results(rect_mesh->size());
+
+        if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
+            #pragma omp parallel for
+            for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
+                double* data = results.data() + i1 * rect_mesh->axis0->size();
+                for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
+                    dcomplex f = valr[i0] * valz[i1];
+                    data[i0] = power * abs2(f);
+                }
+            }
+        } else {
+            #pragma omp parallel for
+            for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
+                double* data = results.data() + i0 * rect_mesh->axis1->size();
+                for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
+                    dcomplex f = valr[i0] * valz[i1];
+                    data[i1] = power * abs2(f);
+                }
+            }
+        }
+        return results;
+    }
+};
+
+const LazyData<double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting light intensity");
 
@@ -743,162 +876,68 @@ plask::DataVector<const double> EffectiveFrequencyCylSolver::getLightMagnitude(i
         modes[num].have_fields = true;
     }
 
-    DataVector<double> results(dst_mesh->size());
-
-    if (!getLightMagnitude_Efficient(num, stripe, *dst_mesh, results)) {
-        std::exception_ptr error; // needed to handle exceptions from OMP loop
-
-        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
-
-        #pragma omp parallel for schedule(static,1024)
-        for (size_t id = 0; id < dst_mesh->size(); ++id) {
-            if (error) continue;
-
-            auto point = dst_mesh->at(id);
-            double r = point.c0;
-            double z = point.c1;
-            if (r < 0) r = -r;
-
-            dcomplex val;
-            try {
-                val = modes[num].rField(r);
-            } catch (...) {
-                #pragma omp critical
-                error = std::current_exception();
-            }
-
-            size_t iz = mesh->axis1->findIndex(z);
-            if (iz >= zsize) iz = zsize-1;
-            else if (iz < zbegin) iz = zbegin;
-            dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
-            if (real(kz) < 0.) kz = -kz;
-            z -= mesh->axis1->at(max(int(iz)-1, 0));
-            dcomplex phasz = exp(- I * kz * z);
-            val *= zfields[iz].F * phasz + zfields[iz].B / phasz;
-
-            results[id] = power * abs2(val);
-        }
-
-        if (error) std::rethrow_exception(error);
-    }
-
-    return results;
+    if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
+        return LazyData<double>(new LightMagnitudeDataEfficient(this, num, rect_mesh, stripe));
+    else
+        return LazyData<double>(new LightMagnitudeDataInefficient(this, num, dst_mesh, stripe));
 }
 
-bool EffectiveFrequencyCylSolver::getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results)
-{
-    if (auto rect_mesh_ptr = dynamic_cast<const RectangularMesh<2>*>(&dst_mesh)) {
-
-        const RectangularMesh<2>& rect_mesh = *rect_mesh_ptr;
-
-        std::vector<dcomplex> valr(rect_mesh.axis0->size());
-        std::vector<dcomplex> valz(rect_mesh.axis1->size());
-
-        std::exception_ptr error; // needed to handle exceptions from OMP loop
-
-        const double power = 1e-3 * modes[num].power; // 1e-3 mW->W
-
-        #pragma omp parallel
-        {
-            #pragma omp for nowait
-            for (size_t idr = 0; idr < rect_mesh.axis0->size(); ++idr) {
-                if (error) continue;
-                double r = rect_mesh.axis0->at(idr);
-                if (r < 0.) r = -r;
-                try {
-                    valr[idr] = modes[num].rField(r);
-                } catch (...) {
-                    #pragma omp critical
-                    error = std::current_exception();
-                }
-            }
-
-            if (!error) {
-                #pragma omp for
-                for (size_t idz = 0; idz < rect_mesh.axis1->size(); ++idz) {
-                    double z = rect_mesh.axis1->at(idz);
-                    size_t iz = mesh->axis1->findIndex(z);
-                    if (iz >= zsize) iz = zsize-1;
-                    else if (iz < zbegin) iz = zbegin;
-                    dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
-                    if (real(kz) < 0.) kz = -kz;
-                    z -= mesh->axis1->at(max(int(iz)-1, 0));
-                    dcomplex phasz = exp(- I * kz * z);
-                    valz[idz] = zfields[iz].F * phasz + zfields[iz].B / phasz;
-                }
-
-                if (rect_mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
-                    #pragma omp for
-                    for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
-                        double* data = results.data() + i1 * rect_mesh.axis0->size();
-                        for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
-                            dcomplex f = valr[i0] * valz[i1];
-                            data[i0] = power * abs2(f);
-                        }
-                    }
-                } else {
-                    #pragma omp for
-                    for (size_t i0 = 0; i0 < rect_mesh.axis0->size(); ++i0) {
-                        double* data = results.data() + i0 * rect_mesh.axis1->size();
-                        for (size_t i1 = 0; i1 < rect_mesh.axis1->size(); ++i1) {
-                            dcomplex f = valr[i0] * valz[i1];
-                            data[i1] = power * abs2(f);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (error) std::rethrow_exception(error);
-
-        return true;
-    }
-
-    return false;
-}
-
-
-DataVector<const Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const shared_ptr<const MeshD<2> > &dst_mesh, double lam, InterpolationMethod)
+const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, double lam, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex lam0 = 2e3*M_PI / k0;
     if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
     updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
-    DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
-    for (size_t j = 0; j != dst_mesh->size(); ++j) {
-        auto point = target_mesh[j];
-        size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
-        size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
-        result[j] = Tensor3<dcomplex>(nrCache[ir][iz] + ngCache[ir][iz] * (1. - lam/lam0));
-    }
-    return result;
+    return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
+        [this, target_mesh, lam, lam0](size_t j) -> Tensor3<dcomplex> {
+            auto point = target_mesh[j];
+            size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
+            size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
+            return Tensor3<dcomplex>(this->nrCache[ir][iz] + this->ngCache[ir][iz] * (1. - lam/lam0));
+        }
+    );
 }
 
 
-DataVector<const double> EffectiveFrequencyCylSolver::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
+struct HeatDataImpl: public LazyDataImpl<double>
+{
+    EffectiveFrequencyCylSolver* solver;
+    WrappedMesh<2> mat_mesh;
+    std::vector<LazyData<double>> EE;
+    dcomplex lam0;
+
+    HeatDataImpl(EffectiveFrequencyCylSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
+        solver(solver), mat_mesh(dst_mesh, solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
+    {
+        for (size_t m = 0; m != solver->modes.size(); ++m)
+            EE[m] = solver->getLightMagnitude(m, dst_mesh, method);
+    }
+
+    size_t size() const override { return mat_mesh.size(); }
+
+    double at(size_t j) const override {
+        double result = 0.;
+        auto point = mat_mesh[j];
+        size_t ir = solver->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= solver->rsize) ir = solver->rsize-1;
+        size_t iz = solver->mesh->axis1->findIndex(point.c1); if (iz < solver->zbegin) iz = solver->zbegin; else if (iz >= solver->zsize) iz = solver->zsize-1;
+        for (size_t m = 0; m != solver->modes.size(); ++m) { // we sum heats from all modes
+            dcomplex n = solver->nrCache[ir][iz] + solver->ngCache[ir][iz] * (1. - solver->modes[m].lam/lam0);
+            double absp = - 2. * real(n) * imag(n);
+            result += 2e9*M_PI / real(solver->modes[m].lam) * absp * EE[m][j]; // 1e9: 1/nm -> 1/m
+        }
+        return result;
+    }
+};
+
+const LazyData<double> EffectiveFrequencyCylSolver::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
 {
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
 
     writelog(LOG_DETAIL, "Getting heat absorbed from %1% mode%2%", modes.size(), (modes.size()==1)? "" : "s");
-    DataVector<double> result(dst_mesh->size(), 0.);
-    if (modes.size() == 0) return result;
-    dcomplex lam0 = 2e3*M_PI / k0;
-    auto mat_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
-
-    for (size_t m = 0; m != modes.size(); ++m) { // we sum heats from all modes
-        auto EE = getLightMagnitude(m, dst_mesh, method); // 1e9: 1/nm -> 1/m
-        for (size_t j = 0; j != result.size(); ++j) {
-            auto point = mat_mesh[j];
-            size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= rsize) ir = rsize-1;
-            size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < zbegin) iz = zbegin; else if (iz >= zsize) iz = zsize-1;
-            dcomplex n = nrCache[ir][iz] + ngCache[ir][iz] * (1. - modes[m].lam/lam0);
-            double absp = - 2. * real(n) * imag(n);
-            result[j] += 2e9*M_PI / real(modes[m].lam) * absp * EE[j];
-        }
-    }
-    return result;
+    if (modes.size() == 0) return LazyData<double>(dst_mesh->size(), 0.);
+    return LazyData<double>(new HeatDataImpl(this, dst_mesh, method));
 }
 
 

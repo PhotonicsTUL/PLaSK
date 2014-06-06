@@ -654,11 +654,11 @@ const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<2>>(dst_mesh, this->geometry);
     auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method);
-    return LazyData<Vec<2>>(new LazyDataDelegateImpl<Vec<2>>(result.size(),
+    return LazyData<Vec<2>>(result.size(),
         [this, dest_mesh, result](size_t i) {
             return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : Vec<2>(0.,0.);
         }
-    ));
+    );
 }
 
 
@@ -671,11 +671,11 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<2>>(dst_mesh, this->geometry);
     auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method).claim();
-    return LazyData<double>(new LazyDataDelegateImpl<double>(result.size(),
+    return LazyData<double>(result.size(),
         [this, dest_mesh, result](size_t i) {
             return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : 0.;
         }
-    ));
+    );
 }
 
 

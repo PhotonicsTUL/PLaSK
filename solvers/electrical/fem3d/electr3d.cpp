@@ -649,11 +649,11 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
     auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method);
-    return LazyData<Vec<3>>(new LazyDataDelegateImpl<Vec<3>>(result.size(),
+    return LazyData<Vec<3>>(result.size(),
         [this, dest_mesh, result](size_t i) {
             return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : Vec<3>(0.,0.,0.);
         }
-    ));
+    );
 }
 
 
@@ -664,11 +664,11 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
     auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method).claim();
-    return LazyData<double>(new LazyDataDelegateImpl<double>(result.size(),
+    return LazyData<double>(result.size(),
         [this, dest_mesh, result](size_t i) {
             return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : 0.;
         }
-    ));
+    );
 }
 
 
@@ -677,7 +677,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
     this->writelog(LOG_DETAIL, "Getting conductivities");
     loadConductivity();
     auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
-    return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(target_mesh.size(),
+    return LazyData<Tensor2<double>>(target_mesh.size(),
         [this, target_mesh](size_t i) -> Tensor2<double> {
             auto point = target_mesh[i];
             size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
@@ -688,7 +688,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
             else
                 return conds[this->mesh->elements(x-1, y-1, z-1).getIndex()];
         }
-    ));
+    );
 }
 
 double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {

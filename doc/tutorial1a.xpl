@@ -17,7 +17,7 @@
 </geometry>
 
 <grids>
-  <generator type="rectilinear2d" method="divide" name="default">
+  <generator type="rectangular2d" method="divide" name="default">
     <postdiv by="2"/>
   </generator>
 </grids>

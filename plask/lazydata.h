@@ -35,8 +35,18 @@ struct LazyDataImpl {
      */
     virtual DataVector<const T> getAll() const {
         DataVector<T> res(this->size());
+        std::exception_ptr error;
         #pragma omp parallel for
-        for (std::size_t i = 0; i < res.size(); ++i) res[i] = this->at(i);
+        for (std::size_t i = 0; i < res.size(); ++i) {
+            if (error) continue;
+            try {
+                res[i] = this->at(i);
+            } catch(...) {
+                #pragma omp critical
+                error = std::current_exception();
+            }
+        }
+        if (error) std::rethrow_exception(error);
         return res;
     }
 
@@ -157,12 +167,24 @@ public:
     LazyData(DataVector<const T> data_vector): impl(new LazyDataFromVectorImpl<T>(data_vector)) {}
     LazyData(DataVector<T> data_vector): impl(new LazyDataFromVectorImpl<T>(data_vector)) {}
 
+    /**
+     * Construct lazy data from size and functor.
+     * \param size data size
+     * \param func function returnig dta at point
+     */
+    LazyData(std::size_t size, std::function<T(std::size_t)> func):
+        impl(new LazyDataDelegateImpl<T>(size, std::move(func))) {}
+
     void reset(const LazyDataImpl<T>* new_impl = nullptr) { impl.reset(new_impl); }
 
     void reset(std::size_t size, T value) { impl.reset(new ConstValueLazyDataImpl<T>(size, value)); }
 
     void reset(DataVector<const T> data_vector) { impl.reset(new LazyDataFromVectorImpl<T>(data_vector)); }
     void reset(DataVector<T> data_vector) { impl.reset(new LazyDataFromVectorImpl<T>(data_vector)); }
+
+    void reset(std::size_t size, std::function<T(std::size_t)> func) {
+        impl.reset(new LazyDataDelegateImpl<T>(size, std::move(func)));
+    }
 
     /*LazyData(const LazyData&) = default;
     LazyData(LazyData&&) = default;

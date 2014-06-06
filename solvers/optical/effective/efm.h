@@ -487,17 +487,18 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         return imag(2e4 * 2e3*M_PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
     }
 
+    friend struct LightMagnitudeDataInefficient;
+    friend struct LightMagnitudeDataEfficient;
+    friend struct HeatDataImpl;
+
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightMagnitude(int num, const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2> >& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2> >& dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
-    DataVector<const double> getHeat(const shared_ptr<const MeshD<2> > &dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
-
-  private:
-    bool getLightMagnitude_Efficient(size_t num, size_t stripe, const MeshD<2>& dst_mesh, DataVector<double>& results);
+    const LazyData<double> getHeat(const shared_ptr<const MeshD<2> > &dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 };
 
 
