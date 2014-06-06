@@ -202,7 +202,7 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
      * \return gain distribution
      */
     const LazyData<double> getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
-    const DataVector<double> getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
 

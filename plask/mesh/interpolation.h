@@ -74,8 +74,8 @@ Typically, the code of the function should iterate over all the points of the @a
 #include "mesh.h"
 #include "../exceptions.h"
 #include "../memory.h"
-#include "../lazy_data.h"
-#include <plask/log/log.h>
+#include "../lazydata.h"
+#include "../log/log.h"
 
 namespace plask {
 

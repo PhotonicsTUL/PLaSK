@@ -27,7 +27,6 @@ struct Radiation
     Radiation() = default;
 };
 
-
 /// Choice of matrix factorization algorithms
 enum Algorithm {
     ALGORITHM_CHOLESKY, ///< Cholesky factorization
@@ -127,11 +126,21 @@ struct FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType,
 
   protected:
 
-    DataVector<const double> getTemperatures(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
+    struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
+        const FiniteElementMethodThermal2DSolver* solver;
+        shared_ptr<RectangularMesh<2>> element_mesh;
+        WrappedMesh<2> target_mesh;
+        LazyData<double> temps;
+        ThermalConductivityData(const FiniteElementMethodThermal2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
+        Tensor2<double> at(std::size_t i) const;
+        std::size_t size() const;
+    };
 
-    DataVector<const Vec<2> > getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
+    const LazyData<double> getTemperatures(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Vec<2>> getHeatFluxes(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method);
+
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) const;
 
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {

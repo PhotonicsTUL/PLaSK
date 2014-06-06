@@ -591,28 +591,38 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
     }
 }
 
-template<typename Geometry2DType> const DataVector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, plask::InterpolationMethod interpolation)
+template<typename Geometry2DType> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::
+ConcentrationDataImpl::ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
+                                             shared_ptr<const plask::MeshD<2>> dest_mesh,
+                                             InterpolationMethod interp):
+    solver(solver), destination_mesh(make_shared<WrappedMesh<2>>(dest_mesh, solver->geometry)),
+    concentration(interpolate(solver->mesh2, solver->n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interp)))
 {
-    auto destination_mesh = make_shared<WrappedMesh<2>>(dest_mesh, this->geometry);
+}
 
-    if (!n_present.data()) throw NoValue("carriers concentration");
-    DataVector<double> concentration = interpolate(mesh2, n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interpolation)).claim();
+template<typename Geometry2DType>
+double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::at(size_t i) const
+{
     // Make sure we have concentration only in the quantum wells
     //TODO maybe more optimal approach would be reasonable?
-    size_t i = 0;
-    for (auto point: *destination_mesh)
-    {
-        bool inqw = false;
-        for (auto QW: detected_QW)
-            if (QW.contains(point))
-            {
-                inqw = true;
-                break;
-            }
-        if (!inqw) concentration[i] = NAN;
-        ++i;
-    }
-    return concentration;
+    auto point = destination_mesh->at(i);
+    bool inqw = false;
+    for (auto QW: solver->detected_QW)
+        if (QW.contains(point))
+        {
+            inqw = true;
+            break;
+        }
+    if (!inqw) return NAN;
+    return concentration[i];
+}
+
+template<typename Geometry2DType>
+const LazyData<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, InterpolationMethod interpolation) const
+{
+    auto destination_mesh = make_shared<WrappedMesh<2>>(dest_mesh, this->geometry);
+    if (!n_present.data()) throw NoValue("Carriers concentration");
+    return LazyData<double>(new FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataImpl(this, dest_mesh, interpolation));
 }
 
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(int i)
@@ -877,7 +887,9 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     global_QW_width *= 1e-4;
 }
 
-template<typename Geometry2DType> plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::DataVector<const double> initLi, const plask::RectangularMesh<2>& mesh_Li)
+template<typename Geometry2DType>
+plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::LazyData<double> initLi,
+                                                                                                      const plask::RectangularMesh<2>& mesh_Li)
 {
     plask::DataVector<double> Li(current_mesh().size());
 

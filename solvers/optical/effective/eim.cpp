@@ -359,7 +359,7 @@ void EffectiveIndex2DSolver::updateCache()
         auto midmesh = make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
-        DataVector<const double> gain;
+        LazyData<double> gain;
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
             for (size_t iy = ybegin; iy < yend; ++iy) {

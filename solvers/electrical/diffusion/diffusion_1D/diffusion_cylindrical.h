@@ -95,32 +95,17 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 
         std::vector<Box2D> detected_QW;
 
-        plask::DataVector<const Vec<2>> j_on_the_mesh;  // current density vector provided by inCurrentDensity reciever
-        plask::DataVector<const double> T_on_the_mesh;  // temperature vector provided by inTemperature reciever
-
-//        plask::DataVector<const double> Li;                   // Light intensity vector
-//        plask::DataVector<const double> g;                    // gain on the mesh
-//        plask::DataVector<const double> dgdn;                 // gain over concentration derivative on the mesh
+        plask::LazyData<Vec<2>> j_on_the_mesh;  // current density vector provided by inCurrentDensity reciever
+        plask::LazyData<double> T_on_the_mesh;  // temperature vector provided by inTemperature reciever
 
         plask::DataVector<double> PM;                   // Factor for overthreshold computations summed for all modes
         plask::DataVector<double> overthreshold_dgdn;   // Factor for overthreshold computations summed for all modes
-//        plask::DataVector<double> overthreshold_g;    // Factor for overthreshold computations summed for all modes
 
         plask::DataVector<double> n_previous;           // concentration computed in n-1 -th step vector
         plask::DataVector<double> n_present;            // concentration computed in n -th step vector
-//        plask::DataVector<double> j_on_the_mesh;    // current density on internal computation mesh
-//        plask::DataVector<double> T_on_the_mesh;    // temperature on internal computation mesh
-//        bool daneWczytane;        // Czy dane zostaly wczytane
-//        std::vector<std::string> wektorObliczen;    // przechowuje informacje o kolejnosci wykonywanych obliczen
-//
-//
 
-//
-//        std::string rodzajObliczen;       // rodzaj wykonywanych obliczen
+       /**********************************************************************/
 
-//
-//        /**********************************************************************/
-//
         // Methods for solving equation
         // K*n" -  E*n = -F
 
@@ -149,12 +134,26 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
         double getZQWCoordinate();
         std::vector<double> getZQWCoordinates();
 
-        plask::DataVector<const double> averageLi(plask::DataVector<const double>, const plask::RectangularMesh<2>& mesh_Li);
+        plask::DataVector<const double> averageLi(plask::LazyData<double> initLi, const plask::RectangularMesh<2>& mesh_Li);
 
         virtual void onInitialize();
         virtual void onInvalidate();
 
-        const DataVector<double> getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh, plask::InterpolationMethod interpolation=INTERPOLATION_DEFAULT ); // method providing concentration from inside to the provider (outConcentration)
+        struct ConcentrationDataImpl: public LazyDataImpl<double>
+        {
+            const FiniteElementMethodDiffusion2DSolver* solver;
+            shared_ptr<WrappedMesh<2>> destination_mesh;
+            LazyData<double> concentration;
+            ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
+                                  shared_ptr<const plask::MeshD<2>> dest_mesh,
+                                  InterpolationMethod interp);
+            double at(size_t i) const;
+            size_t size() const { return destination_mesh->size(); }
+        };
+
+        /// Provide concentration from inside to the provider (outConcentration).
+        const LazyData<double> getConcentration(shared_ptr<const plask::MeshD<2>> dest_mesh,
+                                                InterpolationMethod interpolation=INTERPOLATION_DEFAULT ) const;
 
 }; // class FiniteElementMethodDiffusion2DSolver
 

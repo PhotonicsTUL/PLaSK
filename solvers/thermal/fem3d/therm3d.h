@@ -153,11 +153,21 @@ struct FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, Rec
 
   protected:
 
-    DataVector<const double> getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
+    struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
+        const FiniteElementMethodThermal3DSolver* solver;
+        shared_ptr<RectangularMesh<3>> element_mesh;
+        WrappedMesh<3> target_mesh;
+        LazyData<double> temps;
+        ThermalConductivityData(const FiniteElementMethodThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh);
+        Tensor2<double> at(std::size_t i) const;
+        std::size_t size() const;
+    };
 
-    DataVector<const Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
+    const LazyData<double> getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
+    const LazyData<Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
+
+    const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const;
 };
 
 }} //namespaces

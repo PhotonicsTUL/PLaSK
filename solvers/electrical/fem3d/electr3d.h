@@ -183,7 +183,7 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
      * \return total electrostatic energy [J]
      */
     double getTotalEnergy();
-    
+
     /**
      * Estimate structure capacitance.
      * \return static structure capacitance [pF]
@@ -261,13 +261,13 @@ struct FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, 
 
   protected:
 
-    DataVector<const double> getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const;
+    const LazyData<double> getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const;
 
-    DataVector<const Vec<3>> getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
+    const LazyData<Vec<3>> getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
 
-    DataVector<const double> getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
+    const LazyData<double> getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
 
-    DataVector<const Tensor2<double>> getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
+    const LazyData<Tensor2<double>> getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method);
 };
 
 }}} //namespaces

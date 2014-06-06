@@ -635,7 +635,7 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 }
 
 
-DataVector<const double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const {
+const LazyData<double> FiniteElementMethodElectrical3DSolver::getPotential(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) const {
     if (!potential) throw NoValue("Potential");
     this->writelog(LOG_DETAIL, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -643,49 +643,52 @@ DataVector<const double> FiniteElementMethodElectrical3DSolver::getPotential(sha
 }
 
 
-DataVector<const Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
+const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Current density");
     this->writelog(LOG_DETAIL, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
     auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method);
-    constexpr Vec<3> zero(0.,0.,0.);
-    for (size_t i = 0; i < result.size(); ++i)
-        if (!geometry->getChildBoundingBox().contains(dest_mesh->at(i))) result[i] = zero;
-    return result;
+    return LazyData<Vec<3>>(new LazyDataDelegateImpl<Vec<3>>(result.size(),
+        [this, dest_mesh, result](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : Vec<3>(0.,0.,0.);
+        }
+    ));
 }
 
 
-DataVector<const double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
+const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Heat density");
     this->writelog(LOG_DETAIL, "Getting heat density");
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     auto dest_mesh = make_shared<WrappedMesh<3>>(dst_mesh, geometry);
-    DataVector<double> result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method).claim();
-    for (size_t i = 0; i < result.size(); ++i)
-        if (!geometry->getChildBoundingBox().contains(dest_mesh->at(i))) result[i] = 0.;
-    return result;
+    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method).claim();
+    return LazyData<double>(new LazyDataDelegateImpl<double>(result.size(),
+        [this, dest_mesh, result](size_t i) {
+            return this->geometry->getChildBoundingBox().contains(dest_mesh->at(i))? result[i] : 0.;
+        }
+    ));
 }
 
 
-DataVector<const Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
+const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) {
     initCalculation();
     this->writelog(LOG_DETAIL, "Getting conductivities");
     loadConductivity();
     auto target_mesh = WrappedMesh<3>(dst_mesh, this->geometry);
-    DataVector<Tensor2<double>> result(dst_mesh->size());
-    for (size_t i = 0; i != dst_mesh->size(); ++i) {
-        auto point = target_mesh[i];
-        size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
-        size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
-        size_t z = std::upper_bound(this->mesh->axis2->begin(), this->mesh->axis2->end(), point[2]) - this->mesh->axis2->begin();
-        if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size() || z == this->mesh->axis2->size())
-            result[i] = Tensor2<double>(NAN);
-        else
-            result[i] = conds[this->mesh->elements(x-1, y-1, z-1).getIndex()];
-    }
-    return result;
+    return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(target_mesh.size(),
+        [this, target_mesh](size_t i) -> Tensor2<double> {
+            auto point = target_mesh[i];
+            size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
+            size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
+            size_t z = std::upper_bound(this->mesh->axis2->begin(), this->mesh->axis2->end(), point[2]) - this->mesh->axis2->begin();
+            if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size() || z == this->mesh->axis2->size())
+                return Tensor2<double>(NAN);
+            else
+                return conds[this->mesh->elements(x-1, y-1, z-1).getIndex()];
+        }
+    ));
 }
 
 double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {

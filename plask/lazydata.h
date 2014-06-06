@@ -1,5 +1,5 @@
-#ifndef PLASK__LAZY_DATA_H
-#define PLASK__LAZY_DATA_H
+#ifndef PLASK__LAZYDATA_H
+#define PLASK__LAZYDATA_H
 
 #include "data.h"
 
@@ -54,7 +54,7 @@ struct ConstValueLazyDataImpl: public LazyDataImpl<T> {
     T value_;
     std::size_t size_;
 
-    ConstValueLazyDataImpl(const T& value, std::size_t size): value_(value), size_(size) {}
+    ConstValueLazyDataImpl(std::size_t size, const T& value): value_(value), size_(size) {}
 
     virtual T at(std::size_t) const override { return value_; }
 
@@ -67,7 +67,7 @@ struct ConstValueLazyDataImpl: public LazyDataImpl<T> {
 /**
  * Wrap DataVector and allow to access to it.
  *
- * getAll() do not copy the wrapped vector.
+ * getAll() does not copy the wrapped vector.
  */
 template <typename T>
 struct LazyDataFromVectorImpl: public LazyDataImpl<T> {
@@ -84,6 +84,26 @@ struct LazyDataFromVectorImpl: public LazyDataImpl<T> {
 
     virtual DataVector<T> claim() const override { return vec.claim(); }
 };
+
+/**
+ * Call functor to get data.
+ */
+template <typename T>
+struct LazyDataDelegateImpl: public LazyDataImpl<T> {
+
+  protected:
+    std::size_t siz;
+    std::function<T(std::size_t)> func;
+
+  public:
+    LazyDataDelegateImpl(std::size_t size, std::function<T(std::size_t)> func): siz(size), func(std::move(func)) {}
+
+    virtual T at(std::size_t index) const override { return func(index); }
+
+    virtual std::size_t size() const override { return siz; }
+};
+
+
 
 /*
  * Base class for lazy data (vector) that holds reference to destination mesh (dst_mesh).
@@ -119,7 +139,7 @@ public:
 
     /**
      * Construct lazy data vector which use given implementation to provide data.
-     * @param impl lazy data vector implementation to use (if nollptr, reset should be called before another methods)
+     * @param impl lazy data vector implementation to use (if nullptr, reset should be called before another methods)
      */
     LazyData(const LazyDataImpl<T>* impl = nullptr): impl(impl) {}
 
@@ -128,7 +148,7 @@ public:
      * @param size number of values, size of the vector
      * @param value value which will be returned for each index
      */
-    LazyData(std::size_t size, T value): impl(new ConstValueLazyDataImpl<T>(value, size)) {}
+    LazyData(std::size_t size, T value): impl(new ConstValueLazyDataImpl<T>(size, value)) {}
 
     /**
      * Construct lazy data vector which wraps DataVector and allows to access to it.
@@ -139,7 +159,7 @@ public:
 
     void reset(const LazyDataImpl<T>* new_impl = nullptr) { impl.reset(new_impl); }
 
-    void reset(std::size_t size, T value) { impl.reset(new ConstValueLazyDataImpl<T>(value, size)); }
+    void reset(std::size_t size, T value) { impl.reset(new ConstValueLazyDataImpl<T>(size, value)); }
 
     void reset(DataVector<const T> data_vector) { impl.reset(new LazyDataFromVectorImpl<T>(data_vector)); }
     void reset(DataVector<T> data_vector) { impl.reset(new LazyDataFromVectorImpl<T>(data_vector)); }
@@ -325,4 +345,4 @@ std::ostream& operator<<(std::ostream& out, LazyData<T> const& to_print) {
 
 }   // namespace plask
 
-#endif // PLASK__LAZY_DATA_H
+#endif // PLASK__LAZYDATA_H

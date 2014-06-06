@@ -574,7 +574,7 @@ const LazyData<double> FermiGainSolver<GeometryType>::getGain(const shared_ptr<c
 
 
 template <typename GeometryType>
-const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+const LazyData<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
 
@@ -582,7 +582,7 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr
     this->initCalculation(); // This must be called before any calculation!
 
     auto mesh2 = make_shared<RectangularMesh<2>>();
-    if (this->mesh) {        
+    if (this->mesh) {
         auto verts = make_shared<RectilinearAxis>();
         for (auto p: *dst_mesh) verts->addPoint(p.vert());
         mesh2->setAxis0(this->mesh); mesh2->setAxis1(verts);
@@ -591,8 +591,8 @@ const DataVector<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr
 
     auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
 
-    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
+    auto nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
+    auto TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
     DataVector<double> dGdn(geo_mesh->size(), 0.);
 
     std::vector<std::pair<size_t,size_t>> points;

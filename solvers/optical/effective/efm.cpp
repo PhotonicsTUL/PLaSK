@@ -298,8 +298,7 @@ void EffectiveFrequencyCylSolver::updateCache()
         auto midmesh = make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
-        DataVector<double> gain;
-        DataVector<double> gain_slope;
+        LazyData<double> gain1, gain2;
 
         for (size_t ir = 0; ir != rsize; ++ir) {
             for (size_t iz = zbegin; iz < zsize; ++iz) {
@@ -316,19 +315,12 @@ void EffectiveFrequencyCylSolver::updateCache()
                 } else { // we ignore the material absorption as it should be considered in the gain already
                     need_gain = true;
                     if (!have_gain) {
-                        gain = inGain(midmesh, lam1).claim();
-                        gain_slope = inGain(midmesh, lam2).claim();
-                        auto g1 = gain.begin();
-                        auto gs2 = gain_slope.begin();
-                        for (; gs2 != gain_slope.end(); ++gs2, ++g1) {
-                            double g = 0.5 * (*g1 + *gs2);
-                            *gs2 = (*gs2 - *g1) * i2h;
-                            *g1 = g;
-                        }
+                        gain1 = inGain(midmesh, lam1).claim();
+                        gain2 = inGain(midmesh, lam2).claim();
                         have_gain = true;
                     }
-                    double g = gain[idx];
-                    double gs = gain_slope[idx];
+                    double g = 0.5 * (gain1[idx] + gain2[idx]);
+                    double gs = (gain2[idx] - gain1[idx]) * i2h;
                     double nr = real(material->Nr(lam, T));
                     double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
                     nrCache[ir][iz] = dcomplex(nr, (0.25e-7/M_PI) * lam * g);
