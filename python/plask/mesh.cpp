@@ -4,7 +4,7 @@
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
-#include <plask/mesh/rectilinear1d.h>
+#include <plask/mesh/ordered1d.h>
 
 namespace plask { namespace python {
 
@@ -103,7 +103,7 @@ void register_mesh()
 
     register_mesh_rectangular();
 
-    register_vector_of<RectilinearAxis>("Ordered");
+    register_vector_of<OrderedAxis>("Ordered");
 
 }
 

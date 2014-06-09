@@ -1,7 +1,7 @@
 #include "rectangular3d.h"
 
 #include "regular1d.h"
-#include "rectilinear1d.h"
+#include "ordered1d.h"
 
 namespace plask {
 
@@ -89,7 +89,7 @@ void RectangularMesh<3>::onAxisChanged(Mesh::Event &e) {
 }
 
 RectangularMesh<3>::RectangularMesh(IterationOrder iterationOrder)
-    : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), axis2(make_shared<RectilinearAxis>()), elements(this) {
+    : axis0(make_shared<OrderedAxis>()), axis1(make_shared<OrderedAxis>()), axis2(make_shared<OrderedAxis>()), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);
@@ -132,7 +132,7 @@ void RectangularMesh<3>::writeXML(XMLElement& object) const {
 template class RectangularMesh<3>;
 
 shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &to_copy) {
-   return make_shared<RectangularMesh<3>>(make_shared<RectilinearAxis>(*to_copy.axis0), make_shared<RectilinearAxis>(*to_copy.axis1), make_shared<RectilinearAxis>(*to_copy.axis2), to_copy.getIterationOrder());
+   return make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), make_shared<OrderedAxis>(*to_copy.axis2), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {

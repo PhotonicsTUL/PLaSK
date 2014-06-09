@@ -37,7 +37,7 @@ template <typename SolverT>
 static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) { return self.getStack(); }
 
 template <typename SolverT>
-static const std::vector<RectilinearAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
+static const std::vector<OrderedAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
 
 struct PmlWrapper {
 

@@ -24,7 +24,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 /**
  * Generator of basic 2D geometry grid
  */
-class RectilinearMesh1DSimpleGenerator: public MeshGeneratorD<1> {
+class OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -35,7 +35,7 @@ class RectilinearMesh1DSimpleGenerator: public MeshGeneratorD<1> {
     /// Should we add line at horizontal zero
     bool extend_to_zero;
 
-    shared_ptr<RectilinearAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry);
+    shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry);
 
   public:
 
@@ -45,7 +45,7 @@ class RectilinearMesh1DSimpleGenerator: public MeshGeneratorD<1> {
      * \param min_ply minimum ply after split single, non-solid layer
      * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh1DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
+    OrderedMesh1DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
         : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
@@ -151,7 +151,7 @@ struct RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
 
     Refinements refinements[dim];
 
-    shared_ptr<RectilinearAxis> getAxis(shared_ptr<RectilinearAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir);
+    shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir);
 
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
          warn_missing,     ///< Warn if a defined refinement points to object absent from provided geometry.

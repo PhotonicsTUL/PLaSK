@@ -375,12 +375,12 @@ def Regular1D(*args, **kwargs):
 mesh.Regular1D = Regular1D
 del Regular1D
 
-def RectilinearAxis(*args, **kwargs):
+def OrderedAxis(*args, **kwargs):
     """Obsolete, use mesh.Ordered instead."""
-    print_log(LOG_WARNING, "mesh.RectilinearAxis is obsolete, use mesh.Ordered instead")
+    print_log(LOG_WARNING, "mesh.OrderedAxis is obsolete, use mesh.Ordered instead")
     return mesh.Ordered(*args, **kwargs)
-mesh.RectilinearAxis = RectilinearAxis
-del RectilinearAxis
+mesh.OrderedAxis = OrderedAxis
+del OrderedAxis
 
 def RegularAxis(*args, **kwargs):
     """Obsolete, use mesh.Regular instead."""

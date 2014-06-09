@@ -1,7 +1,7 @@
 #include "rectangular2d.h"
 
 #include "regular1d.h"
-#include "rectilinear1d.h"
+#include "ordered1d.h"
 
 namespace plask {
 
@@ -60,7 +60,7 @@ void RectangularMesh<2>::onAxisChanged(Mesh::Event &e) {
 }
 
 RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
-    : axis0(make_shared<RectilinearAxis>()), axis1(make_shared<RectilinearAxis>()), elements(this) {
+    : axis0(make_shared<OrderedAxis>()), axis1(make_shared<OrderedAxis>()), elements(this) {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);
@@ -99,7 +99,7 @@ void RectangularMesh<2>::writeXML(XMLElement& object) const {
 template class RectangularMesh<2>;
 
 shared_ptr<RectangularMesh<2> > make_rectilinear_mesh(const RectangularMesh<2> &to_copy) {
-   return make_shared<RectangularMesh<2>>(make_shared<RectilinearAxis>(*to_copy.axis0), make_shared<RectilinearAxis>(*to_copy.axis1), to_copy.getIterationOrder());
+   return make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {

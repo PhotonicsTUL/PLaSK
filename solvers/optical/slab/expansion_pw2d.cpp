@@ -130,7 +130,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    const RectilinearAxis& axis1 = SOLVER->getLayerPoints(l);
+    const OrderedAxis& axis1 = SOLVER->getLayerPoints(l);
 
     size_t refine = SOLVER->refine;
     if (refine == 0) refine = 1;
@@ -138,7 +138,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2% points)", l, M);
 
-    auto mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(xmesh), make_shared<RectilinearAxis>(axis1), RectangularMesh<2>::ORDER_01);
+    auto mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(xmesh), make_shared<OrderedAxis>(axis1), RectangularMesh<2>::ORDER_01);
 
     double lambda = real(SOLVER->getWavelength());
 
@@ -235,7 +235,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, RectilinearAxis mesh, InterpolationMethod interp)
+DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, OrderedAxis mesh, InterpolationMethod interp)
 {
     double L = right - left;
     DataVector<Tensor3<dcomplex>> result;
@@ -270,7 +270,7 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, Recti
             params[nN] = params[0];
         }
         auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(0,0,1));
-        auto dst_mesh = make_shared<RectangularMesh<2>>(make_shared<RectilinearAxis>(std::move(mesh)), shared_ptr<RectilinearAxis>(new RectilinearAxis({0})));
+        auto dst_mesh = make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(std::move(mesh)), shared_ptr<OrderedAxis>(new OrderedAxis({0})));
         const bool ignore_symmetry[2] = { !symmetric, false };
         result = interpolate(src_mesh, params, make_shared<const WrappedMesh<2>>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
     }

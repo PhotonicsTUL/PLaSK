@@ -282,11 +282,11 @@ void EffectiveFrequencyCylSolver::updateCache()
         double lam1 = lam - h, lam2 = lam + h;
         double i2h = 0.5 / h;
 
-        shared_ptr<RectilinearAxis> axis0, axis1;
+        shared_ptr<OrderedAxis> axis0, axis1;
         {
             shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
-            axis0 = make_shared<RectilinearAxis>(*midmesh->axis0);
-            axis1 = make_shared<RectilinearAxis>(*midmesh->axis1);
+            axis0 = make_shared<OrderedAxis>(*midmesh->axis0);
+            axis1 = make_shared<OrderedAxis>(*midmesh->axis1);
         }
         if (rsize == axis0->size())
             axis0->addPoint(axis0->at(axis0->size()-1) + outdist);

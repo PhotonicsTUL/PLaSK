@@ -88,7 +88,7 @@ struct ExpansionPW2D: public Expansion {
      * \param interp interpolation method
      * \return computed refractive indices
      */
-    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, RectilinearAxis mesh,
+    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, OrderedAxis mesh,
                                                       InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   private:

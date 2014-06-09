@@ -203,8 +203,8 @@ struct MeshTest {
     bool regular3d_changed() { bool r = changed_regular3d; changed_regular3d = false; return r; }
 
     MeshTest():
-        rectilinear2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>())),
-        rectilinear3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>(), plask::make_shared<plask::RectilinearAxis>())),
+        rectilinear2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::OrderedAxis>(), plask::make_shared<plask::OrderedAxis>())),
+        rectilinear3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::OrderedAxis>(), plask::make_shared<plask::OrderedAxis>(), plask::make_shared<plask::OrderedAxis>())),
         regular2d(plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>())),
         regular3d(plask::make_shared<plask::RectangularMesh<3>>(plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>(), plask::make_shared<plask::RegularAxis>())),
         changed_rectilinear2d(false), changed_rectilinear3d(false),

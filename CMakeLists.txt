@@ -536,10 +536,17 @@ if(WIN32)
             file(WRITE ${script_rc} "${manifest}101 256 \"${script_pyc}\"\n")
             set(exe_type console)
         endif()
-        add_custom_command(OUTPUT ${script_pyc}
-                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
-                           COMMAND ${PYTHON_EXECUTABLE} -c "import compileall; compileall.compile_file('${UTILS_BINARY_DIR}/${script}.py', '', quiet=True)"
-                           DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
+        if(CMAKE_HOST_UNIX)
+            add_custom_command(OUTPUT ${script_pyc}
+                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
+                               COMMAND ${PYTHON_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\', quiet=True\\)"
+                               DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
+        else()
+            add_custom_command(OUTPUT ${script_pyc}
+                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
+                               COMMAND ${PYTHON_EXECUTABLE} -c "import compileall; compileall.compile_file('${UTILS_BINARY_DIR}/${script}.py', '', quiet=True)"
+                               DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
+        endif()
         add_executable(${script} toolset/run_python.cpp ${script_rc})
         set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS ${script_pyc})
         set_source_files_properties(toolset/run_python.cpp PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")

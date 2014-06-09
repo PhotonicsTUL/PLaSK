@@ -337,11 +337,11 @@ void EffectiveIndex2DSolver::updateCache()
 
         double w = real(2e3*M_PI / k0);
 
-        shared_ptr<RectilinearAxis> axis0, axis1;
+        shared_ptr<OrderedAxis> axis0, axis1;
         {
             shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
-            axis0 = make_shared<RectilinearAxis>(*midmesh->axis0);
-            axis1 = make_shared<RectilinearAxis>(*midmesh->axis1);
+            axis0 = make_shared<OrderedAxis>(*midmesh->axis0);
+            axis1 = make_shared<OrderedAxis>(*midmesh->axis1);
         }
 
         if (xbegin == 0) {

@@ -42,10 +42,10 @@ static shared_ptr<To> Mesh__init__(const From& from) {
 
 
 namespace detail {
-    struct RectilinearAxis_from_Sequence
+    struct OrderedAxis_from_Sequence
     {
-        RectilinearAxis_from_Sequence() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<RectilinearAxis>());
+        OrderedAxis_from_Sequence() {
+            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<OrderedAxis>());
         }
 
         static void* convertible(PyObject* obj) {
@@ -55,16 +55,16 @@ namespace detail {
 
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
         {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<RectilinearAxis>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<OrderedAxis>*)data)->storage.bytes;
             py::stl_input_iterator<double> begin(py::object(py::handle<>(py::borrowed(obj)))), end;
-            new(storage) RectilinearAxis(std::vector<double>(begin, end));
+            new(storage) OrderedAxis(std::vector<double>(begin, end));
             data->convertible = storage;
         }
     };
 }
 
-static py::object RectilinearAxis__array__(py::object self, py::object dtype) {
-    RectilinearAxis* axis = py::extract<RectilinearAxis*>(self);
+static py::object OrderedAxis__array__(py::object self, py::object dtype) {
+    OrderedAxis* axis = py::extract<OrderedAxis*>(self);
     npy_intp dims[] = { axis->size() };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*axis->begin()));
     if (arr == nullptr) throw TypeError("cannot create array");
@@ -78,23 +78,23 @@ shared_ptr<RectilinearT> Rectilinear__init__seq(py::object seq) {
     return make_shared<RectilinearT>(std::vector<double>(begin, end));
 }
 
-static std::string RectilinearAxis__repr__(const RectilinearAxis& self) {
+static std::string OrderedAxis__repr__(const OrderedAxis& self) {
     return "Rectilinear(" + __str__(self) + ")";
 }
 
-static double RectilinearAxis__getitem__(const RectilinearAxis& self, int i) {
+static double OrderedAxis__getitem__(const OrderedAxis& self, int i) {
     if (i < 0) i = self.size() + i;
     if (i < 0) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
-static void RectilinearAxis__delitem__(RectilinearAxis& self, int i) {
+static void OrderedAxis__delitem__(OrderedAxis& self, int i) {
     if (i < 0) i = self.size() + i;
     if (i < 0) throw IndexError("axis/mesh index out of range");
     self.removePoint(i);
 }
 
-static void RectilinearAxis_extend(RectilinearAxis& self, py::object sequence) {
+static void OrderedAxis_extend(OrderedAxis& self, py::object sequence) {
     py::stl_input_iterator<double> begin(sequence), end;
     std::vector<double> points(begin, end);
     std::sort(points.begin(), points.end());
@@ -199,7 +199,7 @@ shared_ptr<RectangularAxis> extract_axis(const py::object& axis) {
         return convert;
     else if (PySequence_Check(axis.ptr())) {
         py::stl_input_iterator<double> begin(axis), end;
-        return make_shared<RectilinearAxis>(std::vector<double>(begin, end));
+        return make_shared<OrderedAxis>(std::vector<double>(begin, end));
     } else {
         throw TypeError("Wrong type of axis, it must derive from Rectangular1D or be a sequence.");
     }
@@ -657,35 +657,35 @@ void register_mesh_rectangular()
              py::no_init)
     ;
 
-    py::class_<RectilinearAxis, shared_ptr<RectilinearAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("Ordered",
+    py::class_<OrderedAxis, shared_ptr<OrderedAxis>, py::bases<RectangularMesh<1>>> rectilinear1d("Ordered",
         "One-dimesnional rectilinear mesh, used also as rectangular mesh axis\n\n"
         "Ordered()\n    create empty mesh\n\n"
         "Ordered(points)\n    create mesh filled with points provides in sequence type"
         );
-    rectilinear1d.def("__init__", py::make_constructor(&__init__empty<RectilinearAxis>))
-        .def("__init__", py::make_constructor(&Rectilinear__init__seq<RectilinearAxis>, py::default_call_policies(), (py::arg("points"))))
-        .def("__getitem__", &RectilinearAxis__getitem__)
-        .def("__delitem__", &RectilinearAxis__delitem__)
-        .def("__str__", &__str__<RectilinearAxis>)
-        .def("__repr__", &RectilinearAxis__repr__)
-        .def("__array__", &RectilinearAxis__array__, py::arg("dtype")=py::object())
-        .def("insert", &RectilinearAxis::addPoint, "Insert point to the mesh", (py::arg("point")))
-        .def("extend", &RectilinearAxis_extend, "Insert points from the sequence to the mesh", (py::arg("points")))
+    rectilinear1d.def("__init__", py::make_constructor(&__init__empty<OrderedAxis>))
+        .def("__init__", py::make_constructor(&Rectilinear__init__seq<OrderedAxis>, py::default_call_policies(), (py::arg("points"))))
+        .def("__getitem__", &OrderedAxis__getitem__)
+        .def("__delitem__", &OrderedAxis__delitem__)
+        .def("__str__", &__str__<OrderedAxis>)
+        .def("__repr__", &OrderedAxis__repr__)
+        .def("__array__", &OrderedAxis__array__, py::arg("dtype")=py::object())
+        .def("insert", &OrderedAxis::addPoint, "Insert point to the mesh", (py::arg("point")))
+        .def("extend", &OrderedAxis_extend, "Insert points from the sequence to the mesh", (py::arg("points")))
         .def(py::self == py::self)
-        .def("__iter__", py::range(&RectilinearAxis::begin, &RectilinearAxis::end))
+        .def("__iter__", py::range(&OrderedAxis::begin, &OrderedAxis::end))
     ;
-    detail::RectilinearAxis_from_Sequence();
-    py::implicitly_convertible<shared_ptr<RectilinearAxis>, shared_ptr<const RectilinearAxis>>();
+    detail::OrderedAxis_from_Sequence();
+    py::implicitly_convertible<shared_ptr<OrderedAxis>, shared_ptr<const OrderedAxis>>();
 
     {
         py::scope scope = rectilinear1d;
 
-        py::class_<RectilinearMesh1DSimpleGenerator, shared_ptr<RectilinearMesh1DSimpleGenerator>,
+        py::class_<OrderedMesh1DSimpleGenerator, shared_ptr<OrderedMesh1DSimpleGenerator>,
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("SimpleGenerator",
             "Generator of Rectilinear (1D) mesh with lines at transverse edges of all objects.\n\n"
             "SimpleGenerator()\n    create generator")
         ;
-        py::implicitly_convertible<shared_ptr<RectilinearMesh1DSimpleGenerator>, shared_ptr<const RectilinearMesh1DSimpleGenerator>>();
+        py::implicitly_convertible<shared_ptr<OrderedMesh1DSimpleGenerator>, shared_ptr<const OrderedMesh1DSimpleGenerator>>();
 
         register_divide_generator<1>();
     }
@@ -710,7 +710,7 @@ void register_mesh_rectangular()
         .def("__iter__", py::range(&RegularAxis::begin, &RegularAxis::end))
     ;
     //detail::RegularAxisFromTupleOrFloat();
-    py::implicitly_convertible<RegularAxis, RectilinearAxis>();
+    py::implicitly_convertible<RegularAxis, OrderedAxis>();
     py::implicitly_convertible<shared_ptr<RegularAxis>, shared_ptr<const RegularAxis>>();
 
 
@@ -787,7 +787,7 @@ void register_mesh_rectangular()
     py::class_<RectangularMesh<3>, shared_ptr<RectangularMesh<3>>, py::bases<MeshD<3>>> rectangular3D("Rectangular3D",
         "Three-dimensional mesh\n\n"
         "Rectangular3D(ordering='012')\n    create empty mesh\n\n"
-        "Rectangular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.RectilinearAxis\n\n"
+        "Rectangular3D(axis0, axis1, axis2, ordering='012')\n    create mesh with axes supplied as mesh.OrderedAxis\n\n"
         "Rectangular3D(geometry, ordering='012')\n    create coarse mesh based on bounding boxes of geometry objects\n\n"
         "ordering can be any a string containing any permutation of and specifies ordering of the\n"
         "mesh points (last index changing fastest).",

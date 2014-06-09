@@ -62,8 +62,8 @@ void SlabSolver<GeometryT>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    static_pointer_cast<RectilinearAxis>(points->axis1)->addPoint(vbounds[0] - outdist);
-    static_pointer_cast<RectilinearAxis>(points->axis1)->addPoint(vbounds[vbounds.size()-1] + outdist);
+    static_pointer_cast<OrderedAxis>(points->axis1)->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<OrderedAxis>(points->axis1)->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lverts.clear();
     lgained.clear();
@@ -125,9 +125,9 @@ void SlabSolver<Geometry3D>::setupLayers()
     std::vector<std::vector<LayerItem>> layers;
 
     // Add layers below bottom boundary and above top one
-    //static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[0] - outdist);
-    static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[0] - outdist);
-    static_pointer_cast<RectilinearAxis>(points->vert())->addPoint(vbounds[vbounds.size()-1] + outdist);
+    //static_pointer_cast<OrderedAxis>(points->vert())->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<OrderedAxis>(points->vert())->addPoint(vbounds[0] - outdist);
+    static_pointer_cast<OrderedAxis>(points->vert())->addPoint(vbounds[vbounds.size()-1] + outdist);
 
     lverts.clear();
     lgained.clear();

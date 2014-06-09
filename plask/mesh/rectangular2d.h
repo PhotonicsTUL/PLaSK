@@ -18,7 +18,7 @@ This file contains rectilinear mesh for 2d space.
 #include "../manager.h"
 
 #include "rectangular1d.h"
-#include "rectilinear1d.h"
+#include "ordered1d.h"
 
 namespace plask {
 
@@ -406,7 +406,7 @@ class RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Construct mesh which has all axes of type RectilinearAxis and all are empty.
+     * Construct mesh which has all axes of type OrderedAxis and all are empty.
      * @param iterationOrder iteration order
      */
     explicit RectangularMesh(IterationOrder iterationOrder = ORDER_01);
@@ -1415,9 +1415,9 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_NEAR
 };
 
 /**
- * Copy @p to_copy mesh using RectilinearAxis to represent each axis in returned mesh.
+ * Copy @p to_copy mesh using OrderedAxis to represent each axis in returned mesh.
  * @param to_copy mesh to copy
- * @return mesh with each axis of type RectilinearAxis
+ * @return mesh with each axis of type OrderedAxis
  */
 shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(const RectangularMesh<2>& to_copy);
 inline shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(shared_ptr<const RectangularMesh<2>> to_copy) { return make_rectilinear_mesh(*to_copy); }

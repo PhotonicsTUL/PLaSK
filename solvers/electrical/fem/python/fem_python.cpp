@@ -10,14 +10,14 @@ template <typename Cls>
 static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
     if (self->getMesh() && self->getGeometry()) {
         auto midmesh = self->getMesh()->getMidpointsMesh();
-        shared_ptr<RectilinearAxis> line1 = make_shared<RectilinearAxis>();
+        shared_ptr<OrderedAxis> line1 = make_shared<OrderedAxis>();
         for (size_t n = 0; n < self->getActNo(); ++n)
             line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
         auto mesh = make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     } else {
-        auto mesh = make_shared<RectangularMesh<2>>(make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}),
-                                                    make_shared<RectilinearAxis>(std::initializer_list<double>{NAN}));
+        auto mesh = make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
+                                                    make_shared<OrderedAxis>(std::initializer_list<double>{NAN}));
         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
     }
 }

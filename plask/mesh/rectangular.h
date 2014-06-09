@@ -5,7 +5,7 @@
 #include "rectangular2d.h"
 #include "rectangular3d.h"
 
-#include "rectilinear1d.h"
+#include "ordered1d.h"
 #include "regular1d.h"
 
 namespace plask {
@@ -21,7 +21,7 @@ template <>
 struct Rectangular_t<1> {
     typedef RectangularMesh<1> Rectangular;
     typedef RegularAxis Regular;
-    typedef RectilinearAxis Rectilinear;
+    typedef OrderedAxis Rectilinear;
 };
 
 }   // namespace plask

@@ -22,7 +22,7 @@ namespace plask {
 /**
  * Rectilinear mesh in 1D space.
  */
-class RectilinearAxis: public RectangularAxis {
+class OrderedAxis: public RectangularAxis {
 
     /// Points coordinates in ascending order.
     std::vector<double> points;
@@ -83,20 +83,20 @@ public:
     std::size_t findNearestIndex(double to_find) const { return findNearest(to_find) - begin(); }
 
     /// Construct an empty mesh.
-    RectilinearAxis() {}
+    OrderedAxis() {}
 
     /// Copy constructor. It does not copy the owner.
-    RectilinearAxis(const RectilinearAxis& src): points(src.points) {}
-    
+    OrderedAxis(const OrderedAxis& src): points(src.points) {}
+
     /// Move constructor. It does not move the owner.
-    RectilinearAxis(RectilinearAxis&& src): points(std::move(src.points)) {}
-    
+    OrderedAxis(OrderedAxis&& src): points(std::move(src.points)) {}
+
     /// Copy constructor from any RectangularAxis
-    RectilinearAxis(const RectangularAxis& src): points(src.size()) {
+    OrderedAxis(const RectangularAxis& src): points(src.size()) {
         if (src.isIncreasing())
             std::copy(src.begin(), src.end(), points.begin());
         else
-            std::reverse_copy(src.begin(), src.end(), points.begin());           
+            std::reverse_copy(src.begin(), src.end(), points.begin());
     }
 
     /**
@@ -104,24 +104,24 @@ public:
      * It use algorithm which has logarithmic time complexity.
      * @param points points, in any order
      */
-    RectilinearAxis(std::initializer_list<PointType> points);
+    OrderedAxis(std::initializer_list<PointType> points);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
-    RectilinearAxis(const std::vector<PointType>& points);
+    OrderedAxis(const std::vector<PointType>& points);
 
     /**
      * Construct mesh with points given in a vector.
      * It use algorithm which has logarithmic time complexity pew point in @p points.
      * @param points points, in any order
      */
-    RectilinearAxis(std::vector<PointType>&& points);
+    OrderedAxis(std::vector<PointType>&& points);
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearAxis& operator=(const RectilinearAxis& src) {
+    OrderedAxis& operator=(const OrderedAxis& src) {
         bool resized = size() != src.size();
         points = src.points;
         if (resized) fireResized(); else fireChanged();
@@ -129,7 +129,7 @@ public:
     }
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearAxis& operator=(RectilinearAxis&& src) {
+    OrderedAxis& operator=(OrderedAxis&& src) {
         bool resized = size() != src.size();
         std::swap(points, src.points);
         if (resized) fireResized(); else fireChanged();
@@ -137,7 +137,7 @@ public:
     }
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RectilinearAxis& operator=(const RectangularAxis& src) {
+    OrderedAxis& operator=(const RectangularAxis& src) {
         bool resized = size() != src.size();
         points.clear();
         points.reserve(src.size());
@@ -154,7 +154,7 @@ public:
      * @param to_compare mesh to compare
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
-    bool operator==(const RectilinearAxis& to_compare) const;
+    bool operator==(const OrderedAxis& to_compare) const;
 
     void writeXML(XMLElement& object) const override;
 
@@ -237,9 +237,9 @@ public:
 
 };
 
-// RectilinearAxis method templates implementation
+// OrderedAxis method templates implementation
 template <typename RandomAccessContainer>
-inline auto RectilinearAxis::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
+inline auto OrderedAxis::interpolateLinear(const RandomAccessContainer& data, double point) const -> typename std::remove_reference<decltype(data[0])>::type {
     std::size_t index = findIndex(point);
     if (index == size()) return data[index - 1];     //TODO what should it do if mesh is empty?
     if (index == 0 || points[index] == point) return data[index]; // hit exactly
@@ -248,7 +248,7 @@ inline auto RectilinearAxis::interpolateLinear(const RandomAccessContainer& data
 }
 
 template <typename IteratorT>
-inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
+inline void OrderedAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::size_t points_count_hint) {
     std::vector<double> result;
     result.reserve(this->size() + points_count_hint);
     std::set_union(this->points.begin(), this->points.end(), begin, end, std::back_inserter(result));
@@ -259,9 +259,9 @@ inline void RectilinearAxis::addOrderedPoints(IteratorT begin, IteratorT end, st
     fireResized();
 };
 
-typedef RectilinearAxis RectilinearMesh1D;
+typedef OrderedAxis OrderedMesh1D;
 
-shared_ptr<RectilinearMesh1D> readRectilinearMeshAxis(XMLReader& reader);
+shared_ptr<OrderedMesh1D> readRectilinearMeshAxis(XMLReader& reader);
 
 }   // namespace plask
 

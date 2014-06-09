@@ -1,5 +1,5 @@
 #include "rectangular1d.h"
-#include "rectilinear1d.h"
+#include "ordered1d.h"
 
 #include "../utils/stl.h"
 
@@ -71,7 +71,7 @@ bool MidpointsMesh::isIncreasing() const {
 
 shared_ptr<RectangularMesh<1> > RectangularMesh<1>::clone() const {
     //return make_shared<MidpointsMesh>(wrapped);
-    return make_shared<RectilinearAxis>(*this);
+    return make_shared<OrderedAxis>(*this);
 }
 
 std::size_t RectangularMesh<1>::findIndex(double to_find) const {
@@ -86,7 +86,7 @@ shared_ptr<RectangularMesh<1> > RectangularMesh<1>::getMidpointsMesh() const {
     beforeCalcMidpointMesh();
     /*const std::size_t s = this->size();
     if (s == 0) return this->clone();
-    auto result = make_shared<RectilinearAxis>();*/
+    auto result = make_shared<OrderedAxis>();*/
     return make_shared<MidpointsMesh>(*this)->clone();
 }
 

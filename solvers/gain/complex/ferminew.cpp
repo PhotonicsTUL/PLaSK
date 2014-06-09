@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace ferminew {
 
 template <typename GeometryType>
-FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): SolverWithMesh<GeometryType,RectilinearMesh1D>(name),
+FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): SolverWithMesh<GeometryType,OrderedMesh1D>(name),
     outGain(this, &FerminewGainSolver<GeometryType>::getGain)/*, // LUKASZ
     outGainOverCarriersConcentration(this, &FerminewGainSolver<GeometryType>::getdGdn)*/ // getDelegated will be called whether provider value is requested
 {
@@ -538,7 +538,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 
     auto mesh2 = make_shared<RectangularMesh<2>>();    //RectilinearMesh2D
     if (this->mesh) {
-        auto verts = make_shared<RectilinearAxis>();
+        auto verts = make_shared<OrderedAxis>();
         for (auto p: *dst_mesh) verts->addPoint(p.vert());
         mesh2->setAxis0(this->mesh); mesh2->setAxis1(verts);
     }
@@ -651,7 +651,7 @@ const DataVector<double> FerminewGainSolver<GeometryType>::getdGdn(const MeshD<2
 
     RectilinearMesh2D mesh2;
     if (this->mesh) {
-        RectilinearAxis verts;
+        OrderedAxis verts;
         for (auto p: dst_mesh) verts.addPoint(p.vert());
         mesh2.axis0 = this->mesh->axis; mesh2.axis1 = verts;
     }

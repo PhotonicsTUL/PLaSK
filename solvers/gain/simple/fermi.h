@@ -158,10 +158,6 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
     DataVector<const double> TOnMesh;
 
-//    double lambda_start;
-//    double lambda_stop;
-//    double lambda;
-
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
@@ -194,14 +190,24 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
      */
     void detectActiveRegions();
 
+    struct DataBase;
+
     /**
-     * Method computing the gain on the mesh (called by gain provider)
+     * Compute the gain on the mesh. This method is called by gain provider.
      * \param dst_mesh destination mesh
      * \param wavelength wavelength to compute gain for
      * \param interp interpolation method
      * \return gain distribution
      */
     const LazyData<double> getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
+    /**
+     * Compute the gain over carriers concentration on the mesh. This method is called by gain provider.
+     * \param dst_mesh destination mesh
+     * \param wavelength wavelength to compute gain for
+     * \param interp interpolation method
+     * \return gain distribution
+     */
     const LazyData<double> getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
@@ -258,7 +264,7 @@ struct GainSpectrum {
     }
 
     /**
-     * Get gain at given valenegth
+     * Get gain at given wavelength
      * \param wavelength wavelength to get gain
      * \return gain
      */

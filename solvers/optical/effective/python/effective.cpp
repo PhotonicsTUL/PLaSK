@@ -163,7 +163,7 @@ double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSol
 template <typename SolverT>
 static void Optical_setMesh(SolverT& self, py::object omesh) {
     try {
-        shared_ptr<RectilinearMesh1D> mesh = py::extract<shared_ptr<RectilinearMesh1D>>(omesh);
+        shared_ptr<OrderedMesh1D> mesh = py::extract<shared_ptr<OrderedMesh1D>>(omesh);
         self.setHorizontalMesh(mesh);
     } catch (py::error_already_set) {
         PyErr_Clear();

@@ -5,7 +5,7 @@
 
 namespace plask {
 
-inline static void addPoints(RectilinearAxis& dst, double lo, double up, bool singleMaterial, double min_ply, long max_points) {
+inline static void addPoints(OrderedAxis& dst, double lo, double up, bool singleMaterial, double min_ply, long max_points) {
     dst.addPoint(lo);
     dst.addPoint(up);
     if (!singleMaterial) {
@@ -17,9 +17,9 @@ inline static void addPoints(RectilinearAxis& dst, double lo, double up, bool si
     }
 }
 
-shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<OrderedAxis> OrderedMesh1DSimpleGenerator::makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = make_shared<RectilinearAxis>();
+    auto mesh = make_shared<OrderedAxis>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
@@ -36,7 +36,7 @@ shared_ptr<RectilinearAxis> RectilinearMesh1DSimpleGenerator::makeGeometryGrid1D
     return mesh;
 }
 
-shared_ptr<MeshD<1> > RectilinearMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<MeshD<1> > OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid1D(geometry);
     if (extend_to_zero) mesh->addPoint(0.);
@@ -47,7 +47,7 @@ shared_ptr<MeshD<1> > RectilinearMesh1DSimpleGenerator::generate(const shared_pt
 
 shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply, long max_points, bool extend_to_zero)
 {
-    shared_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis);
+    shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis);
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
@@ -88,7 +88,7 @@ shared_ptr<MeshD<2> > RectilinearMesh2DFrom1DGenerator::generate(const shared_pt
 
 shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply, long max_points)
 {
-    shared_ptr<RectilinearAxis> axis0(new RectilinearAxis), axis1(new RectilinearAxis), axis2(new RectilinearAxis);
+    shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis), axis2(new OrderedAxis);
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector< shared_ptr<const GeometryObject> > leafs = geometry->getLeafs();
@@ -123,12 +123,12 @@ shared_ptr<MeshD<3> > RectilinearMesh3DSimpleGenerator::generate(const shared_pt
 
 
 template <int dim>
-shared_ptr<RectilinearAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<RectilinearAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
 {
     if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
     if (post_divisions[dir] == 0) post_divisions[dir] = 1;
 
-    RectilinearAxis& result = *initial_and_result.get();
+    OrderedAxis& result = *initial_and_result.get();
 
     // First add refinement points
     for (auto ref: refinements[dir]) {
@@ -218,7 +218,7 @@ shared_ptr<RectilinearAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_
 template <> shared_ptr<MeshD<1>>
 RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
-    shared_ptr<RectilinearAxis> mesh = make_shared<RectilinearAxis>();
+    shared_ptr<OrderedAxis> mesh = make_shared<OrderedAxis>();
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
         if (box.isValid()) {
@@ -235,7 +235,7 @@ RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::Geome
 template <> shared_ptr<MeshD<2>>
 RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
-    shared_ptr<RectilinearAxis> axis0 = make_shared<RectilinearAxis>(), axis1 = make_shared<RectilinearAxis>();
+    shared_ptr<OrderedAxis> axis0 = make_shared<OrderedAxis>(), axis1 = make_shared<OrderedAxis>();
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
@@ -258,7 +258,7 @@ RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::Geome
 template <> shared_ptr<MeshD<3>>
 RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
-    shared_ptr<RectilinearAxis> axis0 = make_shared<RectilinearAxis>(), axis1 = make_shared<RectilinearAxis>(), axis2 = make_shared<RectilinearAxis>();
+    shared_ptr<OrderedAxis> axis0 = make_shared<OrderedAxis>(), axis1 = make_shared<OrderedAxis>(), axis2 = make_shared<OrderedAxis>();
 
     std::vector<Box3D> boxes = geometry->getLeafsBoundingBoxes();
     for (auto& box: boxes)
@@ -367,7 +367,7 @@ static shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reade
 }
 
 
-static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<RectilinearMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectilinearMesh3DSimpleGenerator>);
 
@@ -403,7 +403,7 @@ static shared_ptr<MeshGenerator> readTrivialGenerator_obsolete(XMLReader& reader
     return make_shared<GeneratorT>();
 }
 
-static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator_obsolete<RectilinearMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator_obsolete<OrderedMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator_obsolete<RectilinearMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator_obsolete<RectilinearMesh3DSimpleGenerator>);
 

@@ -277,7 +277,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         auto mesh_Li = make_shared<plask::RectangularMesh<2>>();         ///< Computational Light intensity mesh
 
                         mesh_Li->setAxis0(current_mesh_ptr());
-                        mesh_Li->setAxis1(make_shared<plask::RectilinearAxis>(getZQWCoordinates()));
+                        mesh_Li->setAxis1(make_shared<plask::OrderedAxis>(getZQWCoordinates()));
 
 //                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
                         auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);

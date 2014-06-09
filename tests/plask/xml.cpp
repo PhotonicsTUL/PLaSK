@@ -119,9 +119,9 @@ BOOST_AUTO_TEST_CASE(mesh) {
     mesh2.writeXML(writer.addTag("mesh").attr("name", "reg"));
 
     auto mesh3 = plask::RectangularMesh<3>(
-                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{1, 2, 3}),
-                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{20, 50}),
-                plask::shared_ptr<plask::RectilinearAxis>(new plask::RectilinearAxis{10})
+                plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis{1, 2, 3}),
+                plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis{20, 50}),
+                plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis{10})
          );
     mesh3.writeXML(writer.addTag("mesh").attr("name", "rec"));
 

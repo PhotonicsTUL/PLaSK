@@ -178,7 +178,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
-    const RectilinearAxis& axis2 = SOLVER->getLayerPoints(l);
+    const OrderedAxis& axis2 = SOLVER->getLayerPoints(l);
 
     const double Lt = right - left, Ll = front - back;
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
@@ -192,7 +192,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     auto mesh = make_shared<RectangularMesh<3>>
                            (make_shared<RegularAxis>(long_mesh),
                             make_shared<RegularAxis>(tran_mesh),
-                            make_shared<RectilinearAxis>(axis2),
+                            make_shared<OrderedAxis>(axis2),
                             RectangularMesh<3>::ORDER_102);
     double matv = axis2[0]; // at each point along any vertical axis material is the same
 
@@ -332,7 +332,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, RectilinearAxis lmesh, RectilinearAxis tmesh, InterpolationMethod interp)
+DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, OrderedAxis lmesh, OrderedAxis tmesh, InterpolationMethod interp)
 {
     DataVector<Tensor3<dcomplex>> result;
 //     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
@@ -385,9 +385,9 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Rec
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
         }
         auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1), RectangularMesh<3>::ORDER_210);
-        auto dst_mesh = make_shared<RectangularMesh<3>>(make_shared<RectilinearAxis>(std::move(lmesh)),
-                                    make_shared<RectilinearAxis>(std::move(tmesh)),
-                                    shared_ptr<RectilinearAxis>(new RectilinearAxis{0}));
+        auto dst_mesh = make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(std::move(lmesh)),
+                                    make_shared<OrderedAxis>(std::move(tmesh)),
+                                    shared_ptr<OrderedAxis>(new OrderedAxis{0}));
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
         result = interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
 //     }

@@ -1,34 +1,34 @@
-#include "rectilinear1d.h"
+#include "ordered1d.h"
 
 #include "../utils/stl.h"
 #include "../log/log.h"
 
 namespace plask {
 
-void RectilinearAxis::sortPointsAndRemoveNonUnique()
+void OrderedAxis::sortPointsAndRemoveNonUnique()
 {
     std::sort(this->points.begin(), this->points.end());
     auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
 }
 
-RectilinearAxis::RectilinearAxis(std::initializer_list<PointType> points): points(points) {
+OrderedAxis::OrderedAxis(std::initializer_list<PointType> points): points(points) {
     sortPointsAndRemoveNonUnique();
 }
 
-RectilinearAxis::RectilinearAxis(const std::vector<PointType>& points): points(points) {
+OrderedAxis::OrderedAxis(const std::vector<PointType>& points): points(points) {
     sortPointsAndRemoveNonUnique();
 }
 
-RectilinearAxis::RectilinearAxis(std::vector<PointType>&& points): points(std::move(points)) {
+OrderedAxis::OrderedAxis(std::vector<PointType>&& points): points(std::move(points)) {
     sortPointsAndRemoveNonUnique();
 }
 
-bool RectilinearAxis::operator==(const plask::RectilinearAxis& to_compare) const {
+bool OrderedAxis::operator==(const plask::OrderedAxis& to_compare) const {
     return points == to_compare.points;
 }
 
-void RectilinearAxis::writeXML(XMLElement &object) const {
+void OrderedAxis::writeXML(XMLElement &object) const {
     object.attr("type", "ordered");
     object.indent();
     for (auto x: this->points) {
@@ -40,15 +40,15 @@ void RectilinearAxis::writeXML(XMLElement &object) const {
 
 
 
-RectilinearAxis::native_const_iterator RectilinearAxis::find(double to_find) const {
+OrderedAxis::native_const_iterator OrderedAxis::find(double to_find) const {
     return std::lower_bound(points.begin(), points.end(), to_find);
 }
 //
-RectilinearAxis::native_const_iterator RectilinearAxis::findNearest(double to_find) const {
+OrderedAxis::native_const_iterator OrderedAxis::findNearest(double to_find) const {
     return find_nearest_binary(points.begin(), points.end(), to_find);
 }
 
-bool RectilinearAxis::addPoint(double new_node_cord) {
+bool OrderedAxis::addPoint(double new_node_cord) {
     auto where = std::lower_bound(points.begin(), points.end(), new_node_cord);
     if (where == points.end()) {
         if (points.size() == 0 || new_node_cord - points.back() > MIN_DISTANCE) {
@@ -66,7 +66,7 @@ bool RectilinearAxis::addPoint(double new_node_cord) {
     return false;
 }
 
-void RectilinearAxis::addPointsLinear(double first, double last, std::size_t points_count) {
+void OrderedAxis::addPointsLinear(double first, double last, std::size_t points_count) {
     if (points_count == 0) return;
     --points_count;
     double len = last - first;
@@ -75,23 +75,23 @@ void RectilinearAxis::addPointsLinear(double first, double last, std::size_t poi
     fireResized();
 }
 
-void RectilinearAxis::removePoint(std::size_t index) {
+void OrderedAxis::removePoint(std::size_t index) {
     points.erase(points.begin() + index);
     fireResized();
 }
 
 
-void RectilinearAxis::clear() {
+void OrderedAxis::clear() {
     points.clear();
     fireResized();
 }
 
-shared_ptr<RectangularAxis> RectilinearAxis::clone() const {
-    return make_shared<RectilinearAxis>(*this);
+shared_ptr<RectangularAxis> OrderedAxis::clone() const {
+    return make_shared<OrderedAxis>(*this);
 }
 
-shared_ptr<RectilinearMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
-    auto result = make_shared<RectilinearMesh1D>();
+shared_ptr<OrderedMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
+    auto result = make_shared<OrderedMesh1D>();
     if (reader.hasAttribute("start")) {
          double start = reader.requireAttribute<double>("start");
          double stop = reader.requireAttribute<double>("stop");
@@ -112,23 +112,23 @@ shared_ptr<RectilinearMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
     return result;
 }
 
-shared_ptr<RectilinearMesh1D> readRectilinearMesh1D(XMLReader& reader) {
+shared_ptr<OrderedMesh1D> readOrderedMesh1D(XMLReader& reader) {
     reader.requireTag("axis");
     auto result = readRectilinearMeshAxis(reader);
     reader.requireTagEnd();
     return result;
 }
 
-static RegisterMeshReader rectilinearmesh_reader("ordered", readRectilinearMesh1D);
+static RegisterMeshReader rectilinearmesh_reader("ordered", readOrderedMesh1D);
 
 
 // obsolete:
 
-shared_ptr<RectilinearMesh1D> readRectilinearMesh1D_obsolete(XMLReader& reader) {
+shared_ptr<OrderedMesh1D> readOrderedMesh1D_obsolete(XMLReader& reader) {
     writelog(LOG_WARNING, "Mesh type \"%1%\" is obsolete, use \"ordered\" instead.", reader.requireAttribute("type"));
-    return readRectilinearMesh1D(reader);
+    return readOrderedMesh1D(reader);
 }
-RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readRectilinearMesh1D_obsolete);
+RegisterMeshReader rectilinearmesh1d_reader("rectilinear1d", readOrderedMesh1D_obsolete);
 
 
 
