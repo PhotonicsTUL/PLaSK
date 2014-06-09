@@ -531,37 +531,40 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
 template <typename GeometryT>
 struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 {
-    struct AveragedData: LazyDataImpl<double> {
+    struct AveragedData {
         shared_ptr<const RectangularMesh<2>> mesh;
         LazyData<double> data;
-        template <typename TP>
-        AveragedData(const shared_ptr<const RectangularAxis>& axis, const ActiveRegionInfo& region, FermiGainSolver<GeometryT>* solver, TP provider):
-            mesh(make_shared<const RectangularMesh<2>>(axis, shared_ptr<OrderedAxis>(), RectangularMesh<2>::ORDER_01)) {
-            shared_ptr<OrderedAxis> vaxis = const_pointer_cast<OrderedAxis>(mesh->axis1);
+        double factor;
+        AveragedData(const shared_ptr<const RectangularAxis>& haxis, const ActiveRegionInfo& region)
+        {
+            auto vaxis = make_shared<OrderedAxis>();
             for(size_t n = 0; n != region.size(); ++n) {
                 if (region.isQW(n)) {
-                    auto box = region.getBoundingBox(n);
+                    auto box = region.getLayerBox(n);
                     vaxis->addPoint(0.5 * (box.lower.c1 + box.upper.c1));
                 }
             }
-            data = solver->*provider(mesh);
+            mesh = make_shared<const RectangularMesh<2>>(const_pointer_cast<RectangularAxis>(haxis),
+                                                         vaxis, RectangularMesh<2>::ORDER_01);
+            factor = 1. / vaxis->size();
         }
-
-        size_t size() const override { return mesh->axis0->size(); }
-
-        double at(size_t i) const override {
-
+        size_t size() const { return mesh->axis0->size(); }
+        double operator[](size_t i) const {
+            double val = 0.;
+            for (size_t j = 0; j != mesh->axis1->size(); ++j)
+                val += data[mesh->index(i,j)];
+            return val * factor;
         }
     };
 
-
-    FermiGainSolver<GeometryT>* solver;         ///< Solver
-
+    FermiGainSolver<GeometryT>* solver;                 ///< Solver
     std::vector<shared_ptr<RectangularAxis>> regpoints; ///< Points in each active region
+    std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
+    shared_ptr<const MeshD<2>> dst_mesh;                ///< Destination mesh
 
     DataBase(FermiGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-        solver(solver) {
-
+        solver(solver), dst_mesh(dst_mesh)
+    {
         // Create horizontal points lists
         if (solver->mesh) {
             regpoints.assign(solver->regions.size(), solver->mesh);
@@ -579,107 +582,101 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         }
     }
 
+    void compute(double wavelength, InterpolationMethod interp)
+    {
+        // Compute gains on mesh for each active region
+        data.resize(solver->regions.size());
+        shared_ptr<OrderedAxis> zero(new OrderedAxis({0}));
+        for (size_t reg = 0; reg != solver->regions.size(); ++reg)
+        {
+            DataVector<double> values(regpoints[reg]->size());
+            AveragedData temps(regpoints[reg], solver->regions[reg]);
+            AveragedData concs(temps);
+            temps.data = solver->inTemperature(temps.mesh, interp);
+            concs.data = solver->inCarriersConcentration(temps.mesh, interp);
+            #pragma omp parallel for
+            for (size_t i = 0; i < regpoints[reg]->size(); ++i) {
+                const ActiveRegionInfo& region = solver->regions[reg];
+                if (concs[i] > 0.)
+                    values[i] = getValue(wavelength, temps[i], concs[i], region);
+                else
+                    values[i] = 0.;
+            }
+            data[reg] = interpolate(make_shared<RectangularMesh<2>>(regpoints[reg], zero),
+                                    values, dst_mesh, interp);
+        }
+    }
 
+    virtual double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) = 0;
+
+    size_t size() const override { return dst_mesh->size(); }
+
+    double at(size_t i) const override {
+        for (size_t reg = 0; reg != solver->regions.size(); ++reg)
+            if (solver->regions[reg].contains(dst_mesh->at(i)))
+                return data[reg][i];
+        return 0.;
+    }
 };
 
+template <typename GeometryT>
+struct FermiGainSolver<GeometryT>::GainData: public FermiGainSolver<GeometryT>::DataBase
+{
+    using DataBase::DataBase;
 
+    double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
+    {
+        QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
+        double len = (this->solver->extern_levels)? region.qwtotallen : region.qwlen;
+        return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
+    }
+};
+
+template <typename GeometryT>
+struct FermiGainSolver<GeometryT>::DgdnData: public FermiGainSolver<GeometryT>::DataBase
+{
+    using DataBase::DataBase;
+
+    double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
+    {
+        double len = region.qwlen;
+        if (this->solver->extern_levels) len = region.qwtotallen;
+        double h = 0.5*this->solver->differenceQuotient;
+        double gain1 =
+            this->solver->getGainModule(wavelength, temp, (1.-h)*conc, region)
+                .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
+        double gain2 =
+            this->solver->getGainModule(wavelength, temp, (1.+h)*conc, region)
+                .Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen
+        return (gain2 - gain1) / (2.*h*conc);
+    }
+};
 
 
 
 template <typename GeometryType>
 const LazyData<double> FermiGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
-    if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
-
     this->writelog(LOG_DETAIL, "Calculating gain");
     this->initCalculation(); // This must be called before any calculation!
 
-    auto mesh2 = make_shared<RectangularMesh<2>>();    //RectilinearMesh2D
-    if (this->mesh) {
-        auto verts = make_shared<OrderedAxis>();
-        for (auto p: *dst_mesh) verts->addPoint(p.vert());
-        mesh2->setAxis0(this->mesh); mesh2->setAxis1(verts);
-    }
-    const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
+    GainData* data = new GainData(this, dst_mesh);
+    data->compute(wavelength, defInterpolation<INTERPOLATION_SPLINE>(interp));
 
-    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
-
-    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
-    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
-    DataVector<double> gainOnMesh(geo_mesh->size(), 0.);
-
-    std::vector<std::pair<size_t,size_t>> points;
-    for (size_t i = 0; i != geo_mesh->size(); i++)
-        for (size_t r = 0; r != regions.size(); ++r)
-            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
-                points.push_back(std::make_pair(i,r));
-
-    #pragma omp parallel for
-    for (int j = 0; j < points.size(); j++)
-    {
-        size_t i = points[j].first;
-        const ActiveRegionInfo& region = regions[points[j].second];
-        QW::gain gainModule = getGainModule(wavelength, TOnMesh[i], nOnMesh[i], region);
-        double len = region.qwlen;
-        if (extern_levels) len = region.qwtotallen;
-        gainOnMesh[i] = gainModule.Get_gain_at_n(nm_to_eV(wavelength), len); // earlier: qwtotallen
-    }
-
-    if (this->mesh) {
-        return interpolate(mesh2, gainOnMesh, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), interp).claim();
-    } else {
-        return gainOnMesh;
-    }
+    return LazyData<double>(data);
 }
 
 
 template <typename GeometryType>
 const LazyData<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
 {
-    if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
-
     this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration first derivative");
     this->initCalculation(); // This must be called before any calculation!
 
-    auto mesh2 = make_shared<RectangularMesh<2>>();
-    if (this->mesh) {
-        auto verts = make_shared<OrderedAxis>();
-        for (auto p: *dst_mesh) verts->addPoint(p.vert());
-        mesh2->setAxis0(this->mesh); mesh2->setAxis1(verts);
-    }
-    const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
+    DgdnData* data = new DgdnData(this, dst_mesh);
+    data->compute(wavelength, defInterpolation<INTERPOLATION_SPLINE>(interp));
 
-    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
-
-    auto nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
-    auto TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
-    DataVector<double> dGdn(geo_mesh->size(), 0.);
-
-    std::vector<std::pair<size_t,size_t>> points;
-    for (size_t i = 0; i != geo_mesh->size(); i++)
-        for (size_t r = 0; r != regions.size(); ++r)
-            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
-                points.push_back(std::make_pair(i,r));
-
-    #pragma omp parallel for
-    for (int j = 0; j < points.size(); j++)
-    {
-        size_t i = points[j].first;
-        const ActiveRegionInfo& region = regions[points[j].second];
-        double len = region.qwlen;
-        if (extern_levels) len = region.qwtotallen;
-        double gainOnMesh1 = getGainModule(wavelength, TOnMesh[i], (1.-0.5*differenceQuotient) * nOnMesh[i], region)
-            .Get_gain_at_n(nm_to_eV(wavelength), len); // earlier: qwtotallen
-        double gainOnMesh2 = getGainModule(wavelength, TOnMesh[i], (1.+0.5*differenceQuotient) * nOnMesh[i], region)
-            .Get_gain_at_n(nm_to_eV(wavelength), len); // earlier: qwtotallen
-        dGdn[i] = (gainOnMesh2 - gainOnMesh1) / (differenceQuotient*nOnMesh[i]);
-    }
-
-    if (this->mesh) {
-        return interpolate(mesh2, dGdn, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), interp).claim();
-    } else {
-        return dGdn;
-    }
+    return LazyData<double>(data);
 }
 
 

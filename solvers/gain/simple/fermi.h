@@ -191,6 +191,8 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
     void detectActiveRegions();
 
     struct DataBase;
+    struct GainData;
+    struct DgdnData;
 
     /**
      * Compute the gain on the mesh. This method is called by gain provider.

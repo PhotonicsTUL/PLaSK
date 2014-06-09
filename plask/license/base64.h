@@ -26,7 +26,6 @@
 */
 
 #include <string>
-#include <../../PSlab/util.h>
 
 namespace base64 {
 
@@ -100,10 +99,10 @@ inline std::string encode(const std::string& string_to_encode) {
 /**
  * Decode BASE64
  * @param encoded_string bytes to decode
+ * @param in_len length of string to decode
  * @return decoded string
  */
-std::string decode(std::string const& encoded_string) {
-  int in_len = encoded_string.size();
+inline std::string decode(std::string const& encoded_string, int in_len) {
   int i = 0;
   int j = 0;
   int in_ = 0;
@@ -141,6 +140,15 @@ std::string decode(std::string const& encoded_string) {
   }
 
   return ret;
+}
+
+/**
+ * Decode BASE64
+ * @param encoded_string bytes to decode
+ * @return decoded string
+ */
+inline std::string decode(std::string const& encoded_string) {
+    return decode(encoded_string, encoded_string.size());
 }
 
 }
