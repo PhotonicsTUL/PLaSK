@@ -487,9 +487,9 @@ struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical,
         return imag(2e4 * 2e3*M_PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
     }
 
-    friend struct LightMagnitudeDataInefficient;
-    friend struct LightMagnitudeDataEfficient;
-    friend struct HeatDataImpl;
+    struct LightMagnitudeDataInefficient;
+    struct LightMagnitudeDataEfficient;
+    struct HeatDataImpl;
 
     /// Method computing the distribution of light intensity
     const LazyData<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);

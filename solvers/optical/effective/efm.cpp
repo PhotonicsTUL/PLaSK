@@ -720,7 +720,7 @@ double EffectiveFrequencyCylSolver::getGainIntegral(size_t num)
 }
 
 
-struct LightMagnitudeDataInefficient: public LazyDataImpl<double>
+struct EffectiveFrequencyCylSolver::LightMagnitudeDataInefficient: public LazyDataImpl<double>
 {
     const EffectiveFrequencyCylSolver* solver;
     int num;
@@ -728,9 +728,9 @@ struct LightMagnitudeDataInefficient: public LazyDataImpl<double>
     size_t stripe;
 
     LightMagnitudeDataInefficient(const EffectiveFrequencyCylSolver* solver,
-                                     int num,
-                                     const shared_ptr<const MeshD<2>>& dst_mesh,
-                                     size_t stripe):
+                                  int num,
+                                  const shared_ptr<const MeshD<2>>& dst_mesh,
+                                  size_t stripe):
         solver(solver),
         num(num),
         dst_mesh(dst_mesh),
@@ -762,7 +762,7 @@ struct LightMagnitudeDataInefficient: public LazyDataImpl<double>
 
 };
 
-struct LightMagnitudeDataEfficient: public LazyDataImpl<double>
+struct EffectiveFrequencyCylSolver::LightMagnitudeDataEfficient: public LazyDataImpl<double>
 {
     const EffectiveFrequencyCylSolver* solver;
     int num;
@@ -771,9 +771,9 @@ struct LightMagnitudeDataEfficient: public LazyDataImpl<double>
     std::vector<dcomplex> valr, valz;
 
     LightMagnitudeDataEfficient(const EffectiveFrequencyCylSolver* solver,
-                                   int num,
-                                   const shared_ptr<const RectangularMesh<2>>& rect_mesh,
-                                   size_t stripe):
+                                int num,
+                                const shared_ptr<const RectangularMesh<2>>& rect_mesh,
+                                size_t stripe):
         solver(solver),
         num(num),
         rect_mesh(rect_mesh),
@@ -818,9 +818,9 @@ struct LightMagnitudeDataEfficient: public LazyDataImpl<double>
 
     size_t size() const override { return rect_mesh->size(); }
 
-    double at(size_t id) const override {
-        size_t i0 = rect_mesh->index0(id);
-        size_t i1 = rect_mesh->index1(id);
+    double at(size_t idx) const override {
+        size_t i0 = rect_mesh->index0(idx);
+        size_t i1 = rect_mesh->index1(idx);
         return 1e-3 * solver->modes[num].power * abs2(valr[i0] * valz[i1]);
     }
 
@@ -900,7 +900,7 @@ const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveInde
 }
 
 
-struct HeatDataImpl: public LazyDataImpl<double>
+struct EffectiveFrequencyCylSolver::HeatDataImpl: public LazyDataImpl<double>
 {
     EffectiveFrequencyCylSolver* solver;
     WrappedMesh<2> mat_mesh;

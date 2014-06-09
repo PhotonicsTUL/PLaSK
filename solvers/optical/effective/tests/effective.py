@@ -82,11 +82,11 @@ class EffectiveIndexLaser(unittest.TestCase):
             gain = brentq(fun, 0., 100.)
             self.assertAlmostEqual(gain, 81.6495, 3)
 
-    #def testAbsorptionIntegral(self):
-       #self.profile[self.rect2] = 81.649513489
-       #m = self.solver.find_mode(1.15)
-       #self.solver.modes[m].power = 0.7
-       #self.assertAlmostEqual( self.solver.get_total_absorption(m), -1.0, 3 )
+    def testAbsorptionIntegral(self):
+       self.profile[self.rect2] = 81.649513489
+       m = self.solver.find_mode(1.15)
+       self.solver.modes[m].power = 1.4
+       self.assertAlmostEqual( self.solver.get_total_absorption(m), -2.0, 1 )
 
     def testAbsorbedHeat(self):
         self.profile[self.rect2] = 81.649513489

@@ -426,20 +426,19 @@ struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, Rectan
         return modes[n].neff;
     }
 
+    struct LightMagnitudeDataBase;
+    struct LightMagnitudeDataInefficient;
+    struct LightMagnitudeDataEfficient;
+    struct HeatDataImpl;
+
     /// Method computing the distribution of light intensity
-    DataVector<const double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
-    DataVector<const double> getHeat(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
-
-  private:
-
-    bool getLightMagnitude_Efficient(size_t num, const plask::MeshD<2>& dst_mesh, DataVector<double>& result,
-                                     const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx,
-                                     const std::vector<dcomplex,aligned_allocator<dcomplex>>& ky);
+    const LazyData<double> getHeat(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
 
 };
 
