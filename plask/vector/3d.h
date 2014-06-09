@@ -12,6 +12,8 @@ This file contains implementation of vector in 3D space.
 
 #include "common.h"
 
+#include "../utils/metaprog.h"   // for is_callable
+
 namespace plask {
 
 /**
@@ -164,12 +166,24 @@ struct Vec<3,T> {
     constexpr bool operator==(const Vec<3,OtherT>& p) const { return p.c0 == c0 && p.c1 == c1 && p.c2 == c2; }
 
     /**
-     * Compare two vectors, this and @p p.
+     * Check if two vectors, this and @p p are almost equal.
      * @param p vector to compare
      * @param abs_supremum maximal allowed difference for one coordinate
      * @return @c true only if this vector and @p p have almost equals coordinates
      */
-    constexpr bool equal(const Vec<3, T>& p, const T& abs_supremum = SMALL) const { return is_zero(p.c0 - c0, abs_supremum) && is_zero(p.c1 - c1, abs_supremum) && is_zero(p.c2 - c2, abs_supremum); }
+    template <typename OtherT, typename SuprType>
+    constexpr bool equal(const Vec<3, OtherT>& p, const SuprType& abs_supremum) const {
+        return is_zero(p.c0 - c0, abs_supremum) && is_zero(p.c1 - c1, abs_supremum) && is_zero(p.c2 - c2, abs_supremum); }
+
+    /**
+     * Check if two vectors, this and @p p are almost equal.
+     * @param p vector to compare
+     * @return @c true only if this vector and @p p have almost equals coordinates
+     */
+    template <typename OtherT>
+    constexpr bool equal(const Vec<3, OtherT>& p) const {
+        return is_zero(p.c0 - c0) && is_zero(p.c1 - c1) && is_zero(p.c2 - c2);
+    }
 
     /**
      * Compare two vectors, @c this and @p p.
@@ -395,6 +409,9 @@ template <typename T>
 inline constexpr Vec<3,T> vec(const T c0__lon, const T c1__tran, const T c2__up) {
     return Vec<3,T>(c0__lon, c1__tran, c2__up);
 }
+
+extern template PLASK_API struct Vec<3, double>;
+extern template PLASK_API struct Vec<3, std::complex<double> >;
 
 } //namespace plask
 

@@ -13,6 +13,8 @@ This file contains implementation of vector in 2D space.
 #include "common.h"
 #include <cassert>
 
+#include "../utils/metaprog.h"   // for is_callable
+
 namespace plask {
 
 /**
@@ -141,12 +143,23 @@ struct Vec<2,T> {
     constexpr bool operator==(const Vec<2,OtherT>& p) const { return p.c0 == c0 && p.c1 == c1; }
 
     /**
-     * Compare two vectors, this and @p p.
+     * Check if two vectors, this and @p p are almost equal.
      * @param p vector to compare
      * @param abs_supremum maximal allowed difference for one coordinate
      * @return @c true only if this vector and @p p have almost equals coordinates
      */
-    constexpr bool equal(const Vec<2, T>& p, const T& abs_supremum = SMALL) const { return is_zero(p.c0 - c0, abs_supremum) && is_zero(p.c1 - c1, abs_supremum); }
+    template <typename OtherT, typename SuprType>
+    constexpr bool equal(const Vec<2, OtherT>& p, const SuprType& abs_supremum) const {
+        return is_zero(p.c0 - c0, abs_supremum) && is_zero(p.c1 - c1, abs_supremum); }
+
+    /**
+     * Check if two vectors, this and @p p are almost equal.
+     * @param p vector to compare
+     * @return @c true only if this vector and @p p have almost equals coordinates
+     */
+    template <typename OtherT>
+    constexpr bool equal(const Vec<2, OtherT>& p) const {
+        return is_zero(p.c0 - c0) && is_zero(p.c1 - c1); }
 
     /**
      * Compare two vectors, this and @p p.
@@ -364,6 +377,9 @@ template <typename T>
 inline constexpr Vec<2,T> vec(const T c0__tran, const T c1__up) {
     return Vec<2,T>(c0__tran, c1__up);
 }
+
+extern template PLASK_API struct Vec<2, double>;
+extern template PLASK_API struct Vec<2, std::complex<double> >;
 
 } //namespace plask
 

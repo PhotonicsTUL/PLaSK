@@ -73,7 +73,6 @@ PLaSK contains some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<
 #include "../utils/xml/reader.h"
 #include "../memory.h"
 
-#include "../utils/metaprog.h"   // for is_callable
 #include "../exceptions.h"
 #include "../geometry/space.h"
 #include <vector>

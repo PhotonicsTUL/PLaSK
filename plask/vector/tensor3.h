@@ -76,7 +76,7 @@ struct Tensor3 {
     Tensor3(const std::pair<T0,T1>& comp): c00(comp.first), c11(comp.first), c22(comp.second), c01(0.) {}
 
     /// Convert to std::tuple
-    operator std::tuple<T,T,T,T,T>() const {
+    operator std::tuple<T,T,T,T>() const {
         return std::make_tuple(c00, c11, c22, c01);
     }
 
@@ -241,7 +241,7 @@ struct Tensor3 {
      */
     Tensor3<T> inv() const {
         T M = c00*c11 - c01*c01;
-        return Tensor3<dcomplex>(c11/M, c00/M, 1./c22, -c01/M);
+        return Tensor3<T>(c11/M, c00/M, 1./c22, -c01/M);
     }
 
     /**
@@ -274,6 +274,9 @@ auto operator*(const OtherT scale, const Tensor3<T>& tensor) -> decltype(tensor*
  */
 template <typename T>
 inline Tensor3<T> conj(const Tensor3<T>& v) { return Tensor3<T>(conj(v.c00), conj(v.c11), conj(v.c22), conj(v.c01)); }
+
+extern template PLASK_API struct Tensor3<double>;
+extern template PLASK_API struct Tensor3< std::complex<double> >;
 
 } //namespace plask
 
