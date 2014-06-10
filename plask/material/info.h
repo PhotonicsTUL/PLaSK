@@ -12,6 +12,8 @@ This file contains classes which stores meta-informations about materials.
 
 #include <boost/optional.hpp>
 
+#include <plask/config.h>   // for PLASK_API
+
 namespace plask {
 
 /**
@@ -19,7 +21,7 @@ namespace plask {
  *
  * It also namespace for all class connected with collecting meta-informations about materials, like material informations database, etc.
  */
-struct MaterialInfo {
+struct PLASK_API MaterialInfo {
 
     enum PROPERTY_NAME {
         kind,       ///< material kind
@@ -83,7 +85,7 @@ struct MaterialInfo {
     /**
      * Represent link ("see also") to property in class.
      */
-    struct Link {
+    struct PLASK_API Link {
         ///Class name.
         std::string className;
         ///Property.
@@ -96,7 +98,7 @@ struct MaterialInfo {
     };
 
     ///Collect information about material property.
-    struct PropertyInfo {
+    struct PLASK_API PropertyInfo {
 
         typedef std::pair<double, double> ArgumentRange;
 
@@ -278,7 +280,7 @@ struct MaterialInfo {
     //const PropertyInfo& operator()(PROPERTY_NAME property) const;
 
     /// Material info database
-    class DB {
+    class PLASK_API DB {
 
         /// Material name -> material information
         std::map<std::string, MaterialInfo> materialInfo;
@@ -366,7 +368,7 @@ struct MaterialInfo {
     /**
      * Helper which allow to add (do this in constructor) information about material to default material meta-info database.
      */
-    class Register {
+    class PLASK_API Register {
 
         void set(PropertyInfo&) {}
 

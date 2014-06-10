@@ -14,7 +14,7 @@ namespace plask {
  *
  * Create materials with given name, composition and dopant.
  */
-struct MaterialsDB {
+struct PLASK_API MaterialsDB {
 
     /*
      * Materials source functor which use materials database.
@@ -64,14 +64,14 @@ struct MaterialsDB {
      * Creating global objects of this type allow to fill the default database.
      */
     template <typename MaterialType>
-    struct Register {
+    struct PLASK_API Register {
         Register(const std::string& name) { getDefault().add<MaterialType>(name); }
         Register() { getDefault().add<MaterialType>(); }
     };
 
     /// Same as Register but for materials without static field NAME.
     template <typename MaterialType>
-    struct RegisterUnderName {
+    struct PLASK_API RegisterUnderName {
         RegisterUnderName(const std::string& name) { getDefault().add<MaterialType>(name); }
     };
 
@@ -79,7 +79,7 @@ struct MaterialsDB {
      * Object of this class (inherited from it) construct material instance.
      * It produces materials of one type but with variouse composition and ammount of dopant.
      */
-    struct MaterialConstructor {
+    struct PLASK_API MaterialConstructor {
 
         /**
          * Full name (with eventualy dopant name) of material which this constructor can create.
@@ -107,7 +107,7 @@ struct MaterialsDB {
     /**
      * Base class for factories of complex material which construct it version with mixed version of two compositions and/or doping amounts.
      */
-    struct MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double [0.0, 1.0]
+    struct PLASK_API MixedCompositionFactory {    //TODO mieszanie nie liniowe, funkcja, funktor double [0.0, 1.0] -> double [0.0, 1.0]
 
     protected:
 
@@ -142,7 +142,7 @@ struct MaterialsDB {
      * Factory of complex material which construct it version with mixed version of two compositions (for materials without dopants).
      */
     //TODO cache: double -> constructed material
-    struct MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nieliniowe, funkcja, funktor double [0.0, 1.0] -> double
+    struct PLASK_API MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO mieszanie nieliniowe, funkcja, funktor double [0.0, 1.0] -> double
 
     protected:
 
@@ -181,7 +181,7 @@ struct MaterialsDB {
     /**
      * Factory of complex material which construct it version with mixed version of two compositions and dopants.
      */
-    struct MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
+    struct PLASK_API MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
     protected:
         Material::DopingAmountType dopAmountType;
 
@@ -219,7 +219,7 @@ struct MaterialsDB {
     /**
      * Factory of complex material which construct it version with mixed version of two dopants (for material with same compositions).
      */
-    struct MixedDopantFactory: public MixedCompositionFactory {
+    struct PLASK_API MixedDopantFactory: public MixedCompositionFactory {
     protected:
         Material::DopingAmountType dopAmountType;
 
@@ -574,7 +574,7 @@ private:
 /**
  * Type of material source, can return material with given name.
  */
-struct MaterialsSource {
+struct PLASK_API MaterialsSource {
 
     virtual ~MaterialsSource() {}
 
@@ -598,7 +598,7 @@ struct MaterialsSource {
     virtual shared_ptr<MaterialsDB::MixedCompositionFactory> getFactory(const std::string& material1_fullname, const std::string& material2_fullname) const = 0;
 };
 
-struct MaterialsSourceDB: public MaterialsSource {
+struct PLASK_API MaterialsSourceDB: public MaterialsSource {
 
     const MaterialsDB& db;
 

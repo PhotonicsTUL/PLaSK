@@ -35,7 +35,7 @@ struct MaterialsDB;
 /**
  * Represent material, its physical properties.
  */
-struct Material {
+struct PLASK_API Material {
 
     /// Dopting specification type
     enum DopingAmountType {

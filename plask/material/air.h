@@ -12,7 +12,7 @@ namespace plask { namespace materials {
 /**
  * Represent undoped AlN, its physical properties.
  */
-struct Air: public Material {
+struct PLASK_API Air: public Material {
 
     static constexpr const char* NAME = "air";
 
