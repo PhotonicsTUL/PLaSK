@@ -100,7 +100,7 @@ struct PLASK_API Material {
      *
      * Can be obtained either from string (see parse(std::string)) or material (see getParameters()).
      */
-    struct Parameters {
+    struct PLASK_API Parameters {
 
         /// short (without composition and doping amounts) name of material
         /// only for simple material(?)
@@ -136,7 +136,7 @@ struct PLASK_API Material {
      * //str is "Al(0.6)GaN:Mg=0.1"
      * @endcode
      */
-    struct StringBuilder {
+    struct PLASK_API StringBuilder {
 
         /// Part of name which has been already built
         std::stringstream str;
