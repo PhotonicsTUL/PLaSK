@@ -62,6 +62,13 @@ struct FermiGainSolver: public SolverWithMesh<GeometryType, RectangularMesh<1>> 
             return getBoundingBox().contains(point);
         }
 
+        /// Return \p true if given point is inside quantum well
+        bool inQW(const Vec<2>& point) const {
+            if (!contains(point)) return false;
+            assert(layers->getChildForHeight(point.c1-origin.c1));
+            return layers->getChildForHeight(point.c1-origin.c1)->getChild()->hasRole("QW");
+        }
+
         shared_ptr<Material> materialQW;        ///< Quantum well material
         shared_ptr<Material> materialBarrier;   ///< Barrier material
         double qwlen;                           ///< Single quantum well thickness [Å]

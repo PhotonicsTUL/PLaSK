@@ -613,7 +613,7 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 
     double at(size_t i) const override {
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
-            if (solver->regions[reg].contains(dst_mesh->at(i)))
+            if (solver->regions[reg].inQW(dst_mesh->at(i)))
                 return data[reg][i];
         return 0.;
     }
