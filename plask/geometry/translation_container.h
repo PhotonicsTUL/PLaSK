@@ -175,8 +175,8 @@ private:
 
 };
 
-extern template struct TranslationContainer<2>;
-extern template struct TranslationContainer<3>;
+extern template struct PLASK_API TranslationContainer<2>;
+extern template struct PLASK_API TranslationContainer<3>;
 
 } // namespace plask
 

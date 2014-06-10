@@ -157,15 +157,15 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 };
 
-extern template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
-extern template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
-extern template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+extern template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+extern template struct PLASK_API StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
+extern template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
 /**
  * Horizontal stack.
  * @ingroup GEOMETRY_OBJ
  */
-struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
+struct PLASK_API ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
     /// Type of this child.
     typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::ChildType ChildType;
@@ -500,8 +500,8 @@ protected:
 template <> const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner();
 template <> const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner();
 
-extern template struct StackContainer<2>;
-extern template struct StackContainer<3>;
+extern template struct PLASK_API StackContainer<2>;
+extern template struct PLASK_API StackContainer<3>;
 
 /**
  * N-stacks

@@ -93,8 +93,8 @@ struct Clip: public GeometryObjectTransform<dim> {
 template <> void Clip<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 template <> void Clip<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
-extern template struct Clip<2>;
-extern template struct Clip<3>;
+extern template struct PLASK_API Clip<2>;
+extern template struct PLASK_API Clip<3>;
 
 }   // namespace plask
 

@@ -335,8 +335,8 @@ struct Block: public GeometryObjectLeaf<dim> {
 template <> void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 template <> void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
-extern template struct Block<2>;
-extern template struct Block<3>;
+extern template struct PLASK_API Block<2>;
+extern template struct PLASK_API Block<3>;
 
 shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
 

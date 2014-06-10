@@ -37,10 +37,7 @@ struct WrappedMesh: public MeshD<dim> {
      * \param geometry geometry in which the mesh is defined
      * \param ignore symmetry parameter specifying if the symmetry should be igroned
      */
-    WrappedMesh(shared_ptr<const MeshD<dim>> original, const shared_ptr<const GeometryD<dim>>& geometry, const bool ignore_symmetry[dim]):
-        original(original), geometry(geometry) {
-        for (size_t i = 0; i != dim; ++i) this->ignore_symmetry[i] = ignore_symmetry[i];
-    }
+    WrappedMesh(shared_ptr<const MeshD<dim>> original, const shared_ptr<const GeometryD<dim>>& geometry, const bool ignore_symmetry[dim]);
 
     /**
      * Construct mirror adapter
@@ -58,8 +55,16 @@ struct WrappedMesh: public MeshD<dim> {
     virtual void writeXML(XMLElement& object) const;
 };
 
-//extern template struct PLASK_API WrappedMesh<2>;
-//extern template struct PLASK_API WrappedMesh<3>;
+template <> inline
+WrappedMesh<2>::WrappedMesh(shared_ptr<const MeshD<2>> original, const shared_ptr<const GeometryD<2>>& geometry)
+    : original(original), geometry(geometry), ignore_symmetry{false, false} {}
+
+template <> inline
+WrappedMesh<3>::WrappedMesh(shared_ptr<const MeshD<3>> original, const shared_ptr<const GeometryD<3>>& geometry)
+    : original(original), geometry(geometry), ignore_symmetry{false, false, false} {}
+
+extern template struct PLASK_API WrappedMesh<2>;
+extern template struct PLASK_API WrappedMesh<3>;
 
 } // namespace plask
 

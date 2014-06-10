@@ -262,8 +262,8 @@ public:
 
 };
 
-extern template struct GeometryObjectContainer<2>;
-extern template struct GeometryObjectContainer<3>;
+extern template struct PLASK_API GeometryObjectContainer<2>;
+extern template struct PLASK_API GeometryObjectContainer<3>;
 
 /**
  * Read children, call child_param_read if children is in \<item\> tag and without_child_param_read if there was no \<item\> tag.

@@ -251,7 +251,7 @@ std::complex<T> parse_complex(const std::string& str_to_parse) {
     return std::complex<T>(real, imag);
 }
 
-extern template std::complex<double> parse_complex<double>(const std::string& str_to_parse);
+extern template PLASK_API std::complex<double> parse_complex<double>(const std::string& str_to_parse);
 
 } // namespace plask
 

@@ -378,8 +378,8 @@ inline constexpr Vec<2,T> vec(const T c0__tran, const T c1__up) {
     return Vec<2,T>(c0__tran, c1__up);
 }
 
-extern template PLASK_API struct Vec<2, double>;
-extern template PLASK_API struct Vec<2, std::complex<double> >;
+extern template struct PLASK_API Vec<2, double>;
+extern template struct PLASK_API Vec<2, std::complex<double> >;
 
 } //namespace plask
 

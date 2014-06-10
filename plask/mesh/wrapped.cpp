@@ -2,14 +2,11 @@
 
 namespace plask {
 
-template <>
-WrappedMesh<2>::WrappedMesh(shared_ptr<const MeshD<2>> original, const shared_ptr<const GeometryD<2>>& geometry):
-        original(original), geometry(geometry), ignore_symmetry{false, false} {}
-
-template <>
-WrappedMesh<3>::WrappedMesh(shared_ptr<const MeshD<3>> original, const shared_ptr<const GeometryD<3>>& geometry):
-        original(original), geometry(geometry), ignore_symmetry{false, false, false} {}
-
+template <int dim>
+WrappedMesh<dim>::WrappedMesh(shared_ptr<const MeshD<dim> > original, const shared_ptr<const GeometryD<dim> > &geometry, const bool ignore_symmetry[dim]):
+    original(original), geometry(geometry) {
+    for (size_t i = 0; i != dim; ++i) this->ignore_symmetry[i] = ignore_symmetry[i];
+}
 
 template <int dim>
 std::size_t WrappedMesh<dim>::size() const {
