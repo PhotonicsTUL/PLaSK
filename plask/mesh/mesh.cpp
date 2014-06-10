@@ -34,6 +34,14 @@ RegisterMeshGeneratorReader::ReadingFunction RegisterMeshGeneratorReader::getRea
 }
 
 template <int dimension>
+bool MeshD<dimension>::operator==(const MeshD<dimension> &to_compare) const {
+    const std::size_t s = this->size();
+    if (s != to_compare.size()) return false;
+    for (std::size_t i = 0; i < s; ++i) if (this->at(i) != to_compare.at(i)) return false;
+    return true;
+}
+
+template <int dimension>
 void MeshD<dimension>::print(std::ostream& out) const {
     print_seq(out << '[', begin(), end(), ", ") << ']';
 }

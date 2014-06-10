@@ -274,19 +274,14 @@ struct MeshD: public Mesh {
      */
     MeshD& operator=(const MeshD& to_copy) { return *this; }
 
-    MeshD() = default;
+    MeshD() {}
 
     /**
      * Check if this mesh and @p to_compare represent the same sequence of points (have exactly the same points in the same order).
      * @param to_compare mesh to compare
      * @return @p to_compare represent the same sequence of points as this
      */
-    bool operator==(const MeshD& to_compare) const {
-        const std::size_t s = this->size();
-        if (s != to_compare.size()) return false;
-        for (std::size_t i = 0; i < s; ++i) if (this->at(i) != to_compare.at(i)) return false;
-        return true;
-    }
+    bool operator==(const MeshD& to_compare) const;
 
     /**
      * Check if this mesh and @p to_compare represent different sequences of points.
