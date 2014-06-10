@@ -18,7 +18,7 @@ struct Manager;
  * Have references to both: XML data source reader and geometry manager.
  * Manage names of axis while reading.
  */
-class GeometryReader {
+class PLASK_API GeometryReader {
 
     /// Allow to access objects by auto-name (with names beggined with '#').
     std::map<std::string, shared_ptr<GeometryObject> > autoNamedObjects;

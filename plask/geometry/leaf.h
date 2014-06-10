@@ -27,7 +27,7 @@ struct GeometryObjectLeaf: public GeometryObjectD<dim> {
 
 protected:
 
-    struct MaterialProvider {
+    struct PLASK_API MaterialProvider {
         virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const = 0;
 
         /**
@@ -51,7 +51,7 @@ protected:
         virtual ~MaterialProvider() {}
     };
 
-    struct SolidMaterial: public MaterialProvider {
+    struct PLASK_API SolidMaterial: public MaterialProvider {
         shared_ptr<Material> material;
 
         SolidMaterial() = default;
@@ -79,7 +79,7 @@ protected:
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
 
-    struct MixedCompositionMaterial: public MaterialProvider {
+    struct PLASK_API MixedCompositionMaterial: public MaterialProvider {
 
         shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory;
 
@@ -259,6 +259,9 @@ public:
 
 };
 
+extern template struct PLASK_API GeometryObjectLeaf<2>;
+extern template struct PLASK_API GeometryObjectLeaf<3>;
+
 /**
 Represent figure which, depends from @p dim is:
 - for dim = 2 - rectangle,
@@ -338,7 +341,7 @@ template <> void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, con
 extern template struct PLASK_API Block<2>;
 extern template struct PLASK_API Block<3>;
 
-shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
+PLASK_API shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
 
 typedef Block<2> Rectangle;
 typedef Block<3> Cuboid;

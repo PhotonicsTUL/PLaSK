@@ -1,6 +1,8 @@
 #ifndef PLASK__PHYS_FUNCTIONS_H
 #define PLASK__PHYS_FUNCTIONS_H
 
+#include <plask/config.h>   //for PLASK_API
+
 namespace plask { namespace phys {
 
     /**
@@ -12,7 +14,7 @@ namespace plask { namespace phys {
      * \param T [K]
      * \return [eV]
      */
-    double Varshni(double Eg0K, double alpha, double beta, double T);
+    PLASK_API double Varshni(double Eg0K, double alpha, double beta, double T);
 
 }} // namespace plask::phys
 

@@ -16,7 +16,7 @@ namespace plask {
  * Allows for some basic operation on boxes.
  * Has almost identical interface as .
  */
-struct Box2D {
+struct PLASK_API Box2D {
 
     ///Lower corner of box (with minimal all coordinates).
     Vec<2,double> lower;
@@ -304,7 +304,7 @@ struct Box2D {
  * Allow for some basic operation on cuboid.
  * Has almost identical interface as .
  */
-struct Box3D {
+struct PLASK_API Box3D {
 
     /// Position of lower corner of cuboid (with minimal all coordinates).
     Vec<3,double> lower;

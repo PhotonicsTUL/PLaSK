@@ -28,93 +28,63 @@ struct GeometryObjectSeparator: public GeometryObjectD<dim> {
     using GeometryObjectD<dim>::getBoundingBox;
     using GeometryObjectD<dim>::shared_from_this;
 
-    virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_SEPARATOR; }
+    virtual GeometryObject::Type getType() const override;
 
     static constexpr const char* NAME = dim == 2 ?
                 ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override;
 
     /**
      * Separators typically have no materials, so this just return nullptr.
      * @param p point
      * @return @c nullptr
      */
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return shared_ptr<Material>();
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const {
-        // do nothing
-    }
+    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const {
-        //do nothing
-        //if (predicate(*this)) dest.push_back(this->getBoundingBox());
-    }
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    inline std::vector<Box> getLeafsBoundingBoxes() const {
-        return { };
-    }
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-    inline std::vector<Box> getLeafsBoundingBoxes(const PathHints&) const {
-        return { };
-    }
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
-        if (predicate(*this)) dest.push_back(this->shared_from_this());
-    }
-
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const {
-        if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
-    }
-
-    inline void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const {
+/*    inline void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const override {
         dest.push_back(this->shared_from_this());
     }
 
-    inline std::vector< shared_ptr<const GeometryObject> > getLeafs() const {
+    inline std::vector< shared_ptr<const GeometryObject> > getLeafs() const override {
         return { this->shared_from_this() };
-    }
+    }*/
 
-    virtual bool hasInSubtree(const GeometryObject& el) const {
-        return &el == this;
-    }
+    virtual bool hasInSubtree(const GeometryObject& el) const override;
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const {
-        return GeometryObject::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
-    }
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const {
-        return GeometryObject::Subtree( this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
-    }
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const override;
 
-    virtual std::size_t getChildrenCount() const { return 0; }
+    virtual std::size_t getChildrenCount() const override { return 0; }
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
-        throw OutOfBoundsException("GeometryObjectLeaf::getChildNo", "child_no");
-    }
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const {
-        shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
-        changer.apply(result, translation);
-        return result;
-    }
+    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
 
     // void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const {
     //     if (predicate(*this)) dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
     // }
 
-    virtual bool contains(const DVec& p) const {
-        return false;
-    }
+    virtual bool contains(const DVec& p) const override;
 
-    virtual bool intersects(const Box& area) const {
+    /*virtual bool intersects(const Box& area) const override {
         return this->getBoundingBox().intersects(area); //TODO ?? maybe set area to empty
-    }
+    }*/
 
 };
+
+extern template struct PLASK_API GeometryObjectSeparator<2>;
+extern template struct PLASK_API GeometryObjectSeparator<3>;
 
 /**
  * Gap in one, choose at compile time, direction.

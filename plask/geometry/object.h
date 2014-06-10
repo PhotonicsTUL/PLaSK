@@ -47,7 +47,7 @@ template < int dimensions > struct TranslationContainer;
  * Base class for all geometries.
  * @ingroup GEOMETRY_OBJ
  */
-struct GeometryObject: public enable_shared_from_this<GeometryObject> {
+struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> {
 
     ///Type of geometry object.
     enum Type {
@@ -67,7 +67,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subroles of GeometryObject,
      * because source() is already partially deleted.
      */
-    class Event: public EventWithSourceAndFlags<GeometryObject> {
+    class PLASK_API Event: public EventWithSourceAndFlags<GeometryObject> {
 
         const GeometryObject& _oryginalSource;
 
@@ -170,7 +170,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      *
      * Provides extra information about changes: first and last index.
      */
-    struct ChildrenListChangedEvent: public Event {
+    struct PLASK_API ChildrenListChangedEvent: public Event {
 
         ChildrenListChangedEvent(GeometryObject& source, unsigned char flags, const std::size_t beginIndex, const std::size_t endIndex)
             : Event(source, flags), beginIndex(beginIndex), endIndex(endIndex) {}
@@ -186,7 +186,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     /**
      * This structure can refer to part of geometry tree.
      */
-    struct Subtree {
+    struct PLASK_API Subtree {
 
         /// Geometry object.
         shared_ptr<const GeometryObject> object;
@@ -270,7 +270,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      *
      * Geometry changer can change GeometryObject to another one.
      */
-    struct Changer {
+    struct PLASK_API Changer {
 
         /// Virtual destructor. Do nothing.
         virtual ~Changer() {}
@@ -292,7 +292,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * up to time when one of this call returns @c true (and then it returns @c true) or
      * there are no mora changers in changes vector (and then it returns @c false).
      */
-    struct CompositeChanger: public Changer {
+    struct PLASK_API CompositeChanger: public Changer {
 
         std::vector<const Changer*> changers;
 
@@ -331,7 +331,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     /**
      * Changer which replaces given geometry object @a from to given geometry object @a to.
      */
-    struct ReplaceChanger: public Changer {
+    struct PLASK_API ReplaceChanger: public Changer {
 
         shared_ptr<const GeometryObject> from;
         shared_ptr<GeometryObject> to;
@@ -367,13 +367,13 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      * Changer which replaces given geometry object @a toChange to block (2d or 3d, depents from @a toChange)
      * with size equals to @a toChange bounding box, and with given material.
      */
-    struct ToBlockChanger: public ReplaceChanger {
+    struct PLASK_API ToBlockChanger: public ReplaceChanger {
 
         ToBlockChanger(shared_ptr<const GeometryObject> toChange, shared_ptr<Material> material);
 
     };
 
-    struct DeleteChanger: public Changer {
+    struct PLASK_API DeleteChanger: public Changer {
 
         shared_ptr<const GeometryObject> toDel;
 
@@ -390,7 +390,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     static bool PredicateIsLeaf(const GeometryObject& el) { return el.isLeaf(); }
 
     /// Predicate which check if given object is another instance of some particular object (given in constructor).
-    struct PredicateIsA {
+    struct PLASK_API PredicateIsA {
         const GeometryObject& objectToBeEqual;
         PredicateIsA(const GeometryObject& objectToBeEqual): objectToBeEqual(objectToBeEqual) {}
         PredicateIsA(const shared_ptr<GeometryObject>& objectToBeEqual): objectToBeEqual(*objectToBeEqual) {}
@@ -399,7 +399,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
     };
 
     /// Predicate which check if given object belong to class with given name.
-    struct PredicateHasRole {
+    struct PLASK_API PredicateHasRole {
         std::string role_name;
         PredicateHasRole(const std::string& role_name): role_name(role_name) {};
         PredicateHasRole(std::string&& role_name): role_name(std::move(role_name)) {};
@@ -425,7 +425,7 @@ struct GeometryObject: public enable_shared_from_this<GeometryObject> {
      *   e->writeXML(geom_section, namer);
      * @endcode
      */
-    class WriteXMLCallback {
+    class PLASK_API WriteXMLCallback {
 
         /**
          * Names of already saved objects.

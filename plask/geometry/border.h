@@ -13,7 +13,7 @@ namespace border {
 /**
  * Base, abstract for all classes which describe what do with points outside geometry in calculation space.
  */
-struct Strategy {
+struct PLASK_API Strategy {
 
     /// Enum holding strategy types
     enum Type {
@@ -108,14 +108,14 @@ struct Strategy {
  *
  * Universal strategies form subset of strategies, and could be required in some context.
  */
-struct UniversalStrategy: public Strategy {
+struct PLASK_API UniversalStrategy: public Strategy {
     virtual UniversalStrategy* clone() const = 0;
 };
 
 /**
  * Strategy which does nothing.
  */
-struct Null: public UniversalStrategy {
+struct PLASK_API Null: public UniversalStrategy {
     virtual Type type() const { return DEFAULT; }
     virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
     virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const;
@@ -126,7 +126,7 @@ struct Null: public UniversalStrategy {
 /**
  * Strategy which assigns constant material.
  */
-struct SimpleMaterial: public UniversalStrategy {
+struct PLASK_API SimpleMaterial: public UniversalStrategy {
 
     /**
      * Material which will be assigned to result_material by apply method.
@@ -153,7 +153,7 @@ struct SimpleMaterial: public UniversalStrategy {
 /**
  * Strategy which moves point p to nearest border.
  */
-struct Extend: public UniversalStrategy {
+struct PLASK_API Extend: public UniversalStrategy {
 
     virtual Type type() const { return EXTEND; }
 
@@ -169,7 +169,7 @@ struct Extend: public UniversalStrategy {
 /**
  * Strategy which moves point p by multiple of (bbox_hi - bbox_lo) to be in range [bbox_lo, bbox_hi].
  */
-struct Periodic: public Strategy {
+struct PLASK_API Periodic: public Strategy {
 
     virtual Type type() const { return PERIODIC; }
 
@@ -185,7 +185,7 @@ struct Periodic: public Strategy {
     }*/
 };
 
-struct Mirror: public Strategy {
+struct PLASK_API Mirror: public Strategy {
 
     virtual Type type() const { return MIRROR; }
 

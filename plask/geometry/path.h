@@ -28,7 +28,7 @@ Typically, hints are returned by methods which adds new objects to containers.
 
 @see @ref geometry_paths
 */
-struct PathHints {
+struct PLASK_API PathHints {
 
     /// Type for map: geometry object container -> object in container
 #ifdef PLASK_SHARED_PTR_STD
@@ -223,7 +223,7 @@ struct PathHints {
 /**
  * Path in geometry graph.
  */
-struct Path {
+struct PLASK_API Path {
 
   private:
 

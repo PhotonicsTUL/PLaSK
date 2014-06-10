@@ -10,7 +10,7 @@ namespace plask {
  *
  * Center of cylinders' base lies in point (0.0, 0.0, 0.0)
  */
-struct Cylinder: public GeometryObjectLeaf<3> {
+struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
 
     double radius, height;
 
