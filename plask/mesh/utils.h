@@ -12,7 +12,7 @@ namespace plask {
 /**
  * Object of this class alows to check if mesh is the same mesh which has been used recently.
  */
-struct SameMeshChecker {
+struct PLASK_API SameMeshChecker {
 
 private:
 
@@ -22,12 +22,7 @@ private:
     /// Mesh which was given recently.
     const Mesh* mesh;
 
-    void setMesh(const Mesh* mesh) {
-        connection_with_mesh.disconnect();
-        this->mesh = mesh;
-        if (this->mesh)
-            connection_with_mesh = const_cast<Mesh*>(this->mesh)->changed.connect(boost::bind(&SameMeshChecker::onMeshChanged, this, _1), boost::signals2::at_front);
-    }
+    void setMesh(const Mesh* mesh);
 
     /**
      * Refresh bounding box cache. Called by mesh changed signal.

@@ -18,7 +18,7 @@ namespace plask {
 /**
  * Regular mesh in 1d space.
  */
-class RegularAxis: public RectangularAxis {
+class PLASK_API RegularAxis: public RectangularAxis {
 
     double lo, _step;
     std::size_t points_count;
@@ -55,12 +55,7 @@ class RegularAxis: public RectangularAxis {
         points_count(points_count) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    RegularAxis& operator=(const RegularAxis& src) {
-        bool resized = points_count != src.points_count;
-        lo = src.lo; _step = src._step; points_count = src.points_count;
-        if (resized) fireResized(); else fireChanged();
-        return *this;
-    }
+    RegularAxis& operator=(const RegularAxis& src);
 
     /**
      * Set new mesh parameters.
@@ -68,13 +63,7 @@ class RegularAxis: public RectangularAxis {
      * @param last coordinate of last point in mesh
      * @param points_count number of points in mesh
      */
-    void reset(double first, double last, std::size_t points_count) {
-        lo = first;
-        _step = (last - first) / ((points_count>1)?(points_count-1):1.);
-        bool resized = this->points_count != points_count;
-        this->points_count = points_count;
-        if (resized) fireResized(); else fireChanged();
-    }
+    void reset(double first, double last, std::size_t points_count);
 
     /**
      * @return coordinate of the first point in the mesh

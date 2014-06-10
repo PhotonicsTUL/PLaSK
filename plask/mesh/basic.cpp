@@ -45,4 +45,7 @@ static shared_ptr<Mesh> readOnePoint2DMesh(XMLReader& reader) {
 
 static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint2DMesh);
 
+template struct TranslatedMesh<2>;
+template struct TranslatedMesh<3>;
+
 }   // namespace plask

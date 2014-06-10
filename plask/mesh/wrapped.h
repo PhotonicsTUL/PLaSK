@@ -58,6 +58,9 @@ struct WrappedMesh: public MeshD<dim> {
     virtual void writeXML(XMLElement& object) const;
 };
 
+//extern template struct PLASK_API WrappedMesh<2>;
+//extern template struct PLASK_API WrappedMesh<3>;
+
 } // namespace plask
 
 #endif // PLASK__MESH_MIRROR_H

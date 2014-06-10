@@ -4,6 +4,21 @@
 
 namespace plask {
 
+RegularAxis &RegularAxis::operator=(const RegularAxis &src) {
+    bool resized = points_count != src.points_count;
+    lo = src.lo; _step = src._step; points_count = src.points_count;
+    if (resized) fireResized(); else fireChanged();
+    return *this;
+}
+
+void RegularAxis::reset(double first, double last, std::size_t points_count) {
+    lo = first;
+    _step = (last - first) / ((points_count>1)?(points_count-1):1.);
+    bool resized = this->points_count != points_count;
+    this->points_count = points_count;
+    if (resized) fireResized(); else fireChanged();
+}
+
 void RegularAxis::writeXML(XMLElement &object) const {
     object.attr("type", "regular").attr("start", first()).attr("stop", last()).attr("num", size());
 }
