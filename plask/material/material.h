@@ -654,7 +654,7 @@ protected:
 /**
  * Base material class for all semiconductors and similar materials
  */
-struct Semiconductor: public Material {
+struct PLASK_API Semiconductor: public Material {
     static constexpr const char* NAME = "semiconductor";
     virtual std::string name() const override;
     virtual Kind kind() const override;
@@ -663,7 +663,7 @@ struct Semiconductor: public Material {
 /**
  * Base material class for all metals
  */
-struct Metal: public Material {
+struct PLASK_API Metal: public Material {
     static constexpr const char* NAME = "metal";
     virtual std::string name() const override;
     virtual Kind kind() const override;
@@ -674,7 +674,7 @@ struct Metal: public Material {
 /**
  * Base material class for all oxides
  */
-struct Oxide: public Material {
+struct PLASK_API Oxide: public Material {
     static constexpr const char* NAME = "oxide";
     virtual std::string name() const override;
     virtual Kind kind() const override;
@@ -683,7 +683,7 @@ struct Oxide: public Material {
 /**
  * Base material class for all dielectrics
  */
-struct Dielectric: public Material {
+struct PLASK_API Dielectric: public Material {
     static constexpr const char* NAME = "dielectric";
     virtual std::string name() const override;
     virtual Kind kind() const override;
@@ -692,7 +692,7 @@ struct Dielectric: public Material {
 /**
  * Base material class for all liquid crystals
  */
-struct LiquidCrystal: public Material {
+struct PLASK_API LiquidCrystal: public Material {
     static constexpr const char* NAME = "liquid_crystal";
     virtual std::string name() const override;
     virtual Kind kind() const override;
@@ -712,7 +712,7 @@ struct LiquidCrystal: public Material {
  * double avg_VB = m.VB(300);
  * @endcode
  */
-struct MixedMaterial: public Material {
+struct PLASK_API MixedMaterial: public Material {
 
     /** Vector of materials and its weights. */
     std::vector < std::pair<shared_ptr<Material>,double> > materials;
@@ -862,7 +862,7 @@ private:
  * Material which wrap one material and rotate its tensors properties.
  */
 //TODO write or remove??
-struct RotatedMaterial: public Material {
+struct PLASK_API RotatedMaterial: public Material {
 
     shared_ptr<Material> wrapped;
 
@@ -871,7 +871,7 @@ struct RotatedMaterial: public Material {
 /**
  * Empty material, which can actually be instantiated
  */
-struct EmptyMaterial : public Material {
+struct PLASK_API EmptyMaterial : public Material {
     virtual std::string name() const { return ""; }
     virtual Material::Kind kind() const { return Material::NONE; }
     virtual bool isEqual(const Material&) const { return true; } // all empty materials are always equal
