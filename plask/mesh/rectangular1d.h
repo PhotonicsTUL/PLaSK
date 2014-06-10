@@ -8,7 +8,7 @@
 namespace plask {
 
 template<>
-struct RectangularMesh<1>: public MeshD<1> {
+struct PLASK_API RectangularMesh<1>: public MeshD<1> {
 
     /**
      * Create new mesh wich has copy of data included in @c this.

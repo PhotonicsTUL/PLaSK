@@ -195,7 +195,7 @@ inline bool dbl_compare_gteq(double x, double y) { return !dbl_compare_lt(x, y);
 /**
  * Exception thrown by complex parser when complex number is ill-formated.
  */
-struct IllFormatedComplex: public Exception {
+struct PLASK_API IllFormatedComplex: public Exception {
 
     /**
      * Constructor.

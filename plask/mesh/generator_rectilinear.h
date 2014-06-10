@@ -12,19 +12,19 @@ namespace plask {
  * \param geometry given geometry
  * \return generated mesh
  */
-shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply = 0.01, long max_points = 10, bool extend_to_zero = false);
+PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply = 0.01, long max_points = 10, bool extend_to_zero = false);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
  * \return generated mesh
  */
-shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply = 0.01, long max_points = 10);
+PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply = 0.01, long max_points = 10);
 
 /**
  * Generator of basic 2D geometry grid
  */
-class OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
+class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -55,7 +55,7 @@ class OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 /**
  * Generator of basic 2D geometry grid
  */
-class RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
+class PLASK_API RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;
@@ -83,7 +83,7 @@ class RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 /**
  * Generator of 2D geometry grid using other generator for horizontal axis
  */
-class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
+class PLASK_API RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 
     shared_ptr<MeshGeneratorD<1>> horizontal_generator;
 
@@ -112,7 +112,7 @@ class RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 /**
  * Generator of basic 3D geometry grid
  */
-struct RectilinearMesh3DSimpleGenerator: public MeshGeneratorD<3> {
+struct PLASK_API RectilinearMesh3DSimpleGenerator: public MeshGeneratorD<3> {
 
     /// Minimum ply after split single, non-solid layer.
     double min_ply;

@@ -114,7 +114,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
      */
     Gap1D(double size = 0.0): size(size) {}
 
-    virtual Box getBoundingBox() const {
+    virtual Box getBoundingBox() const override {
         auto size_vec = Primitive<dim>::ZERO_VEC;
         size_vec[direction] = size;
         return Box(Primitive<dim>::ZERO_VEC, size_vec);
@@ -129,7 +129,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames&) const {
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames&) const override {
         dest_xml_object.attr(XML_SIZE_ATTR, size);
     }
 

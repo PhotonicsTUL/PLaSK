@@ -449,7 +449,7 @@ struct Manager;
  *
  * @see @ref solvers
  */
-class Solver {
+class PLASK_API Solver {
 
     /// Id of the instance of this solver
     std::string solver_name;

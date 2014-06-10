@@ -17,7 +17,7 @@ namespace plask {
  *
  * Almost all GeometryObject methods are delegate to child of this.
  */
-struct Geometry: public GeometryObject {
+struct PLASK_API Geometry: public GeometryObject {
 
     /// Default material (which will be used for places in which geometry doesn't define any material), typically air.
     shared_ptr<Material> defaultMaterial;
@@ -653,11 +653,25 @@ public:
 
 };
 
+template <> inline
+void GeometryD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
+    setBorders(DIRECTION_TRAN, border_to_set);
+}
+
+template <> inline
+void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
+    setBorders(DIRECTION_LONG, border_to_set);
+    setBorders(DIRECTION_TRAN, border_to_set);
+}
+
+extern template class PLASK_API GeometryD<2>;
+extern template class PLASK_API GeometryD<3>;
+
 /**
  * Geometry trunk in 2D Cartesian space
  * @see plask::Extrusion
  */
-class Geometry2DCartesian: public GeometryD<2> {
+class PLASK_API Geometry2DCartesian: public GeometryD<2> {
 
     shared_ptr<Extrusion> extrusion;
 
@@ -819,7 +833,7 @@ public:
  * Geometry trunk in 2D Cylindrical space
  * @see plask::Revolution
  */
-class Geometry2DCylindrical: public GeometryD<2> {
+class PLASK_API Geometry2DCylindrical: public GeometryD<2> {
 
     shared_ptr<Revolution> revolution;
 
@@ -965,7 +979,7 @@ public:
 /**
  * Geometry trunk in 3D space
  */
-class Geometry3D: public GeometryD<3> {
+class PLASK_API Geometry3D: public GeometryD<3> {
 
     shared_ptr< GeometryObjectD<3> > child;
 

@@ -14,12 +14,14 @@ This file contains string and parsers utils.
 #include <boost/tokenizer.hpp>
 #include <boost/units/detail/utility.hpp>
 
+#include <plask/config.h>   //for PLASK_API
+
 namespace plask {
 
 /**
  * Base class / helper for printable classes with virtual print method.
  */
-struct Printable {
+struct PLASK_API Printable {
 
     /**
      * Print this to stream @p out.

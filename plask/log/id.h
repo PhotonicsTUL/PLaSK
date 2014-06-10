@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+#include <plask/config.h>
+
 namespace plask {
 
 /**
@@ -12,7 +14,7 @@ namespace plask {
  * This function is threads-safe.
  * @return unique number
  */
-std::uint64_t getUniqueNumber();
+PLASK_API std::uint64_t getUniqueNumber();
 
 /**
  * Get unique string.
@@ -20,7 +22,7 @@ std::uint64_t getUniqueNumber();
  * This function is threads-safe.
  * @return lexical_cast<std::string>(getUniqueNumber())
  */
-std::string getUniqueString();
+PLASK_API std::string getUniqueString();
 
 }   // namespace plask
 

@@ -265,7 +265,7 @@ struct DataVector {
      * @param init initializer list with data
      */
     DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(size_)) {
-        std::copy(init.begin(), init.end(), data_);
+        std::copy(init.begin(), init.end(), const_cast<VT*>(data_));
     }
 
     /**
@@ -274,7 +274,7 @@ struct DataVector {
      */
     template <typename TS>
     DataVector(std::initializer_list<TS> init): size_(init.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(size_)) {
-        std::copy(init.begin(), init.end(), data_);
+        std::copy(init.begin(), init.end(), const_cast<VT*>(data_));
     }
 
     /// Delete data if this was last reference to it.
@@ -797,7 +797,9 @@ inline DataVector<RT> const_data_cast(const DataVector<T>& src) {
 }
 
 extern template struct PLASK_API DataVector<double>;
+extern template struct PLASK_API DataVector<const double>;
 extern template struct PLASK_API DataVector<std::complex<double>>;
+extern template struct PLASK_API DataVector<const std::complex<double>>;
 
 }   // namespace plask
 

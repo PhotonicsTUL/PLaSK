@@ -30,7 +30,7 @@ extern bool forcedLoglevel;
  * \param level log level to log
  * \param msg log message
  */
-void writelog(LogLevel level, const std::string& msg);
+PLASK_API void writelog(LogLevel level, const std::string& msg);
 
 /**
  * Log a message
@@ -47,7 +47,7 @@ inline void writelog(LogLevel level, const std::string& msg, Args&&... params) {
  * Logger switch.
  * Creating objects of these class temporarily turns off logging.
  */
-class NoLogging {
+class PLASK_API NoLogging {
     bool old_state;
 
   public:
@@ -67,7 +67,7 @@ class NoLogging {
 /**
  * Abstract class that is base for all loggers
  */
-class Logger {
+class PLASK_API Logger {
 
     /// Flag indicating temporarily turned of logging
     bool silent;

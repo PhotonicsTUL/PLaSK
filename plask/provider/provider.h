@@ -174,7 +174,7 @@ namespace plask {
  *
  * @see @ref providers
  */
-struct Provider {
+struct PLASK_API Provider {
 
     static constexpr const char* NAME = "undefined";
     virtual const char* name() const { return NAME; }
@@ -208,7 +208,7 @@ struct Provider {
  * Common non-template base for all receivers.
  * This class is usefult for metaprogramming and also can be used for holding pointers to receivers.
  */
-struct ReceiverBase {
+struct PLASK_API ReceiverBase {
 
     /// The reason of change of provider value
     enum class ChangeReason {

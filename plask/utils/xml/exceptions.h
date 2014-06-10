@@ -16,7 +16,7 @@ class XMLReader;
 /**
  * Base class for all exceptions thrown by plask library.
  */
-struct XMLException: public std::runtime_error {
+struct PLASK_API XMLException: public std::runtime_error {
 
     /**
      * @param reader current reader
@@ -40,7 +40,7 @@ struct XMLException: public std::runtime_error {
 /**
  * Exceptions of this class are thrown when the required attribute is not found in XML tag.
  */
-struct XMLUnexpectedAttrException: public XMLException {
+struct PLASK_API XMLUnexpectedAttrException: public XMLException {
     /**
      * @param reader current reader
      * @param attr_name name of required attribute
@@ -52,7 +52,7 @@ struct XMLUnexpectedAttrException: public XMLException {
 /**
  * Exceptions of this class are thrown when the required attribute is not found in XML tag.
  */
-struct XMLNoAttrException: public XMLException {
+struct PLASK_API XMLNoAttrException: public XMLException {
     /**
      * @param reader current reader
      * @param attr_name name of required attribute
@@ -64,7 +64,7 @@ struct XMLNoAttrException: public XMLException {
 /**
  * Exceptions of this class are thrown when the attribute has wrong value.
  */
-struct XMLBadAttrException: public XMLException {
+struct PLASK_API XMLBadAttrException: public XMLException {
     /**
      * @param reader current reader
      * @param attr_name name of attribute
@@ -87,7 +87,7 @@ struct XMLBadAttrException: public XMLException {
 /**
  * Exceptions of this class are thrown when XML file/data stream unexpected end.
  */
-struct XMLUnexpectedEndException: public XMLException {
+struct PLASK_API XMLUnexpectedEndException: public XMLException {
     XMLUnexpectedEndException(const XMLReader& reader):
         XMLException(reader, "unexpected end of data") {}
 };
@@ -95,7 +95,7 @@ struct XMLUnexpectedEndException: public XMLException {
 /**
  * Exceptions of this class are thrown when the type of XML element is different than expected.
  */
-struct XMLUnexpectedElementException: public XMLException {
+struct PLASK_API XMLUnexpectedElementException: public XMLException {
     /**
      * @param reader current reader
      * @param what_is_expected what is expected (typically tag with name, etc.)
@@ -114,7 +114,7 @@ struct XMLUnexpectedElementException: public XMLException {
 /**
  * Exceptions of this class are thrown when illegal repetition of tag appears.
  */
-struct XMLDuplicatedElementException: public XMLException {
+struct PLASK_API XMLDuplicatedElementException: public XMLException {
     /**
      * @param reader current reader
      * @param duplicated name of duplicated thing
@@ -132,7 +132,7 @@ struct XMLDuplicatedElementException: public XMLException {
 /**
  * Exceptions of this class are thown if two optional attributes in XML conflict with each other.
  */
-struct XMLConflictingAttributesException: public XMLException {
+struct PLASK_API XMLConflictingAttributesException: public XMLException {
     /**
      * @param reader current reader
      * @param attr1 first attribute name
@@ -145,7 +145,7 @@ struct XMLConflictingAttributesException: public XMLException {
 /**
  * Exceptions of this type are thrown by XMLWriter class
  */
-struct XMLWriterException: public std::runtime_error {
+struct PLASK_API XMLWriterException: public std::runtime_error {
     /**
      * \param msg error message
      */

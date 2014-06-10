@@ -11,7 +11,7 @@ namespace plask {
  * Child must have getBoundingBox().lower.tran() >= 0.
  * @ingroup GEOMETRY_OBJ
  */
-struct Revolution: public GeometryObjectTransformSpace<3, 2> {
+struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     /**
      * @param child object to revolve, must have getBoundingBox().lower.tran() >= 0

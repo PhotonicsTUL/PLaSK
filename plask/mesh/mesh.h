@@ -115,7 +115,7 @@ namespace plask {
  * @see @ref meshes
  */
 
-struct Mesh: public Printable {
+struct PLASK_API Mesh: public Printable {
 
 
     /**
@@ -299,6 +299,10 @@ struct MeshD: public Mesh {
 
 };
 
+extern template struct PLASK_API MeshD<1>;
+extern template struct PLASK_API MeshD<2>;
+extern template struct PLASK_API MeshD<3>;
+
 /**
  * Implementation of Mesh::IteratorImpl.
  * Holds iterator of wrapped type (const_internal_iterator_t) and delegate all calls to it.
@@ -349,7 +353,7 @@ inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
 template <int dim> class RectangularMesh {};
 
 /** Base class for every mesh generator */
-class MeshGenerator {
+class PLASK_API MeshGenerator {
   public:
 
     /// Mesh generator event.
@@ -458,11 +462,15 @@ class MeshGeneratorD: public MeshGenerator
 
 };
 
+extern template class PLASK_API MeshGeneratorD<1>;
+extern template class PLASK_API MeshGeneratorD<2>;
+extern template class PLASK_API MeshGeneratorD<3>;
+
 /**
  * Helper which call stores mesh reader when constructed.
  * Each mesh can create one global instance of this class to its reader.
  */
-struct RegisterMeshReader {
+struct PLASK_API RegisterMeshReader {
     typedef std::function<shared_ptr<Mesh>(XMLReader&)> ReadingFunction;
     RegisterMeshReader(const std::string& tag_name, ReadingFunction fun);
     static std::map<std::string, ReadingFunction>& getReaders();
@@ -475,7 +483,7 @@ struct Manager;
  * Helper which call stores mesh reader when constructed.
  * Each mesh can create one global instance of this class to its reader.
  */
-struct RegisterMeshGeneratorReader {
+struct PLASK_API RegisterMeshGeneratorReader {
     typedef std::function<shared_ptr<MeshGenerator>(XMLReader&, const Manager&)> ReadingFunction;
     RegisterMeshGeneratorReader(const std::string& tag_name, ReadingFunction fun);
     static std::map<std::string, ReadingFunction>& getReaders();

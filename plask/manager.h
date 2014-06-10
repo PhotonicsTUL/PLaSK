@@ -32,7 +32,7 @@ class Solver;
  *
  * @see @ref geometry
  */
-struct Manager {
+struct PLASK_API Manager {
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
     static void disallowExternalSources(Manager& manager, shared_ptr<const MaterialsSource> materialsSource, const std::string& url, const std::string& section) {
@@ -187,7 +187,7 @@ private:
      * Set axis name from current reader tag, set it in manager as current,
      * and restore old axisNames value when out of the scope.
      */
-    class SetAxisNames {
+    class PLASK_API SetAxisNames {
         Manager& manager;
         const AxisNames* old;
 

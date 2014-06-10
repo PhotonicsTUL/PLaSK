@@ -42,4 +42,8 @@ template struct MeshD<1>;
 template struct MeshD<2>;
 template struct MeshD<3>;
 
+template class MeshGeneratorD<1>;
+template class MeshGeneratorD<2>;
+template class MeshGeneratorD<3>;
+
 }   // namespace plask

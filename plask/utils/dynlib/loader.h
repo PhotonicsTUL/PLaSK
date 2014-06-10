@@ -13,6 +13,8 @@
 #include <string>
 #include <functional>   //std::hash
 
+#include <plask/config.h>
+
 namespace plask {
 
 /**
@@ -20,7 +22,7 @@ namespace plask {
  *
  * Close holded library in destructor.
  */
-struct DynamicLibrary {
+struct PLASK_API DynamicLibrary {
 
     enum Flags {
         DONT_CLOSE = 1  ///< if this flag is set DynamicLibrary will not close the library, but it will be closed on application exit

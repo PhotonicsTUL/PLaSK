@@ -42,16 +42,8 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
 }
 
 
-template <>
-void GeometryD<2>::setPlanarBorders(const border::Strategy& border_to_set) {
-    setBorders(DIRECTION_TRAN, border_to_set);
-}
-
-template <>
-void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
-    setBorders(DIRECTION_LONG, border_to_set);
-    setBorders(DIRECTION_TRAN, border_to_set);
-}
+template class GeometryD<2>;
+template class GeometryD<3>;
 
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
     : extrusion(extrusion)
@@ -316,6 +308,7 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     //TODO borders
 }
+
 
 
 }   // namespace plask

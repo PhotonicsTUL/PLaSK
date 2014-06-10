@@ -83,7 +83,7 @@ namespace plask {
  * Base class for boundaries logic. Reperesnt polymorphic set of mesh indexes.
  * @see @ref boundaries
  */
-struct BoundaryLogicImpl {
+struct PLASK_API BoundaryLogicImpl {
 
     /// Base class for boundary iterator implementation.
     typedef PolymorphicForwardIteratorImpl<std::size_t, std::size_t> IteratorImpl;
@@ -177,7 +177,7 @@ struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl {
 /**
  * Holds BoundaryLogicImpl and delegate all calls to it.
  */
-struct BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
+struct PLASK_API BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
 
     typedef typename BoundaryLogicImpl::const_iterator const_iterator;
     typedef typename BoundaryLogicImpl::iterator iterator;
@@ -410,7 +410,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
  *
  * This boundary represents empty index set.
  */
-struct EmptyBoundaryImpl: public BoundaryLogicImpl {
+struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     struct IteratorImpl: public BoundaryLogicImpl::IteratorImpl {
 

@@ -14,7 +14,7 @@ namespace plask {
  * It also contains one static, singleton instance available by defaultSet().
  * This set is especially useful to load libraries which should be closed on program exit (see defaultLoad method).
  */
-class DynamicLibraries {
+class PLASK_API DynamicLibraries {
 
     /// Set of library, low level container type.
     typedef std::set<DynamicLibrary> DynamicLibrarySet;

@@ -30,12 +30,12 @@ namespace plask {
  * w.addElement("o").addElement("i1").attr("a", 1).end().addElement("i2");    // \<o>\<i1 a="1"/>\<i2/>\</o>
  * @endcode
  */
-struct XMLWriter {
+struct PLASK_API XMLWriter {
 
     /**
      * Base class for output (stream).
      */
-    struct Output {
+    struct PLASK_API Output {
 
         virtual ~Output() {}
 
@@ -75,7 +75,7 @@ struct XMLWriter {
      *
      * Constructor put in stream opening tag and destructor closing one.
      */
-    class Element {
+    class PLASK_API Element {
 
         /// Tag name.
         std::string name;

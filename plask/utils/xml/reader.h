@@ -31,7 +31,7 @@ namespace plask {
  *
  * By default boost::lexical_cast is used to parse, but this can be changed, for each required result type, to custom parser.
  */
-class StringInterpreter {
+class PLASK_API StringInterpreter {
 
     typedef std::function<boost::any(const std::string&)> type_parser;
 
@@ -103,7 +103,7 @@ public:
  * - it check open/close tags,
  * - it checks if all attributes was read.
  */
-class XMLReader {
+class PLASK_API XMLReader {
   public:
 
     /// Enumeration for all xml nodes which are parsed by XMLReader
@@ -118,7 +118,7 @@ class XMLReader {
     };
 
     /// Base class to source of data.
-    struct DataSource {
+    struct PLASK_API DataSource {
 
         /**
          * Read @p buf_size bytes of data and store it in buffer @p buff.
@@ -135,7 +135,7 @@ class XMLReader {
     };
 
     /// Allows to read XML from standard C++ input stream (std::istream).
-    struct StreamDataSource: public DataSource {
+    struct PLASK_API StreamDataSource: public DataSource {
 
         /// Stream to read from.
         std::unique_ptr<std::istream> input;
@@ -155,7 +155,7 @@ class XMLReader {
     };
 
     /// Allows to read XML from old C FILE.
-    struct CFileDataSource: public DataSource {
+    struct PLASK_API CFileDataSource: public DataSource {
 
         /// Stream to read from.
         FILE* desc;
@@ -267,7 +267,7 @@ class XMLReader {
      * dub_checke(reader);  //throw if tag has the same name as previouse one
      * </code>
      */
-    class CheckTagDuplication {
+    class PLASK_API CheckTagDuplication {
 
         std::set<std::string> namesAlreadySeen;
 
