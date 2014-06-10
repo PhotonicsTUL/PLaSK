@@ -622,7 +622,8 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
 template <typename GeometryT>
 struct FermiGainSolver<GeometryT>::GainData: public FermiGainSolver<GeometryT>::DataBase
 {
-    using DataBase::DataBase;
+    template <typename... Args>
+    GainData(Args... args): DataBase(args...) {}
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
@@ -635,7 +636,9 @@ struct FermiGainSolver<GeometryT>::GainData: public FermiGainSolver<GeometryT>::
 template <typename GeometryT>
 struct FermiGainSolver<GeometryT>::DgdnData: public FermiGainSolver<GeometryT>::DataBase
 {
-    using DataBase::DataBase;
+    template <typename... Args>
+    DgdnData(Args... args): DataBase(args...) {}
+
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {

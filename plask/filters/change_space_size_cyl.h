@@ -71,7 +71,7 @@ struct DataFrom3DtoCyl2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateT
         auto data = this->in(
                         make_shared<PointsOnCircleMeshExtend>(dst_mesh, this->inTranslation, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
-        return [=] (std::size_t index) {
+        return [point_count, data] (std::size_t index) {
             index *= point_count;
             auto sum = data[index];
             for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];

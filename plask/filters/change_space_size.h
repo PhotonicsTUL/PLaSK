@@ -92,7 +92,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
             auto data = this->in(
                         make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
-            return [=] (std::size_t index) {
+            return [point_count, data] (std::size_t index) {
                 index *= point_count;
                 auto sum = data[index];
                 for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
@@ -102,7 +102,7 @@ struct DataFrom3Dto2DSourceImpl< PropertyT, FIELD_PROPERTY, VariadicTemplateType
             auto data = this->in(
                         make_shared<CartesianMesh2DTo3D>(dst_mesh, this->inTranslation, this->outputObj->getLength() * 0.5),
                         std::forward<ExtraArgs>(extra_args)..., method);
-            return [=] (std::size_t index) { return PropertyT::value3Dto2D(data[index]); };
+            return [data] (std::size_t index) { return PropertyT::value3Dto2D(data[index]); };
         }
     }
 };
