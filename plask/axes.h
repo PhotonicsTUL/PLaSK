@@ -18,12 +18,12 @@ namespace plask {
  *
  * Can change: axis number (from 0 to 2) <-> axis name (string)
  */
-struct AxisNames {
+struct PLASK_API AxisNames {
 
     /**
      * Register of axis names.
      */
-    struct Register {
+    struct PLASK_API Register {
         /// Name of system of axis names -> AxisNames
         std::map<std::string, AxisNames> axisNames;
 

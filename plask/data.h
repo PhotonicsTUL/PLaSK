@@ -529,7 +529,7 @@ struct DataVector {
      * @return data vector which refers to same data as this and is valid not longer than the data of this
      */
     inline DataVector<T> getSubrangeRef(iterator begin, iterator end) {
-        assert(begin() <= begin && begin <= end && end <= end());
+        assert(this->begin() <= begin && begin <= end && end <= this->end());
         return DataVector<T>(begin, end - begin);
     }
 
@@ -539,8 +539,8 @@ struct DataVector {
      * @return data vector which refers to same data as this and is valid not longer than the data of this
      */
     inline DataVector<const T> getSubrangeRef(const_iterator begin, const_iterator end) const {
-        assert(begin() <= begin && begin <= end && end <= end());
-        return DataVector<T>(begin, end-begin);
+        assert(this->begin() <= begin && begin <= end && end <= this->end());
+        return DataVector<const T>(begin, end-begin);
     }
 
     /**
@@ -549,7 +549,7 @@ struct DataVector {
      * @return data vector which stores new data which are copy of the data from this
      */
     inline DataVector<T> getSubrangeCopy(const_iterator begin, const_iterator end) {
-        assert(begin() <= begin && begin <= end && end <= end());
+        assert(this->begin() <= begin && begin <= end && end <= this->end());
         return getSubrangeRef(begin, end).copy();
     }
 };
@@ -795,6 +795,9 @@ template<typename RT, typename T>
 inline DataVector<RT> const_data_cast(const DataVector<T>& src) {
     return src.remove_const();
 }
+
+extern template struct PLASK_API DataVector<double>;
+extern template struct PLASK_API DataVector<std::complex<double>>;
 
 }   // namespace plask
 

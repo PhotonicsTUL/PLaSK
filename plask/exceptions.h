@@ -9,12 +9,14 @@ This file contains definitions of most exceptions classes which are used in PLaS
 #include "utils/format.h"
 #include "utils/string.h"
 
+#include <plask/config.h>
+
 namespace plask {
 
 /**
  * Base class for all exceptions thrown by plask library.
  */
-struct Exception: public std::runtime_error {
+struct PLASK_API Exception: public std::runtime_error {
 
     /// @param msg error message
     Exception(const std::string& msg);
@@ -29,7 +31,7 @@ struct Exception: public std::runtime_error {
 /**
  * Exceptions of this class are thrownin cases of critical and very unexpected errors (possible plask bugs).
  */
-struct CriticalException: public Exception {
+struct PLASK_API CriticalException: public Exception {
 
     /// @param msg error message
     CriticalException(const std::string& msg): Exception("Critical exception: " + msg) {}
@@ -41,7 +43,7 @@ struct CriticalException: public Exception {
 /**
  * This exception is thrown when some method is not implemented.
  */
-struct NotImplemented: public Exception {
+struct PLASK_API NotImplemented: public Exception {
     //std::string methodName;
 
     /// @param method_name name of not implemented method
@@ -59,7 +61,7 @@ struct NotImplemented: public Exception {
 /**
  * This exception is thrown when some value (function argument) is out of bound.
  */
-struct OutOfBoundsException: public Exception {
+struct PLASK_API OutOfBoundsException: public Exception {
 
     OutOfBoundsException(const std::string& where, const std::string& argname)
         : Exception("%1%: argument %2% out of bounds", where, argname) {}
@@ -72,7 +74,7 @@ struct OutOfBoundsException: public Exception {
 /**
  * This exception is thrown if there is a problem with dimensions.
  */
-struct DimensionError: public Exception {
+struct PLASK_API DimensionError: public Exception {
     template <typename... T>
     DimensionError(T... args) : Exception(args...) {}
 };
@@ -80,7 +82,7 @@ struct DimensionError: public Exception {
 /**
  * This exception is thrown when value specified by the user is bad
  */
-struct BadInput: public Exception {
+struct PLASK_API BadInput: public Exception {
 
     /**
      * @param where name of class/function/operation doing the computations
@@ -95,7 +97,7 @@ struct BadInput: public Exception {
 /**
  * This exception is called when operation on data vectors cannot be performed
  */
-struct DataError: public Exception {
+struct PLASK_API DataError: public Exception {
 
     /**
      * @param msg error message (format)
@@ -110,7 +112,7 @@ struct DataError: public Exception {
 /**
  * This exception should be thrown by solvers in case of error in computations.
  */
-struct ComputationError: public Exception {
+struct PLASK_API ComputationError: public Exception {
 
     /**
      * @param where name of class/function/operation doing the computations
@@ -125,7 +127,7 @@ struct ComputationError: public Exception {
 /**
  * This is throwed if name is bad id.
  */
-struct BadId: public Exception {
+struct PLASK_API BadId: public Exception {
 
     BadId(const std::string& where, const char* str_to_check, char underline_ch = '_')
         : Exception("\"%1%\" is bad name for %2%, this name shouldn't be empty and should consists of english letters, '%3%' character and digits (but not at beginning).", str_to_check, where, underline_ch) {};
@@ -148,11 +150,11 @@ struct BadId: public Exception {
  * when there is no @ref plask::Provider "provider" connected with it.
  * @see @ref providers
  */
-struct NoProvider: public Exception {
+struct PLASK_API NoProvider: public Exception {
     NoProvider(const char* provider_name): Exception("No provider nor value for %1%", provider_name) {}
 };
 
-struct NoValue: public Exception {
+struct PLASK_API NoValue: public Exception {
     NoValue(const char* provider_name): Exception("%1% cannot be provided now", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
 };
 
@@ -170,7 +172,7 @@ struct NoValue: public Exception {
 /**
  * This exception is thrown when material (typically with given name) is not found.
  */
-class NoSuchMaterial: public Exception {
+class PLASK_API NoSuchMaterial: public Exception {
 
     template <typename ComponentMap>
     std::string constructMsg(const ComponentMap& comp, const std::string dopant_name) {
@@ -197,7 +199,7 @@ public:
 /**
  * This exception is thrown by material methods which are not implemented.
  */
-struct MaterialMethodNotImplemented: public NotImplemented {
+struct PLASK_API MaterialMethodNotImplemented: public NotImplemented {
 
     /**
      * @param material_name name of material
@@ -212,7 +214,7 @@ struct MaterialMethodNotImplemented: public NotImplemented {
 /**
  * This exception is thrown by if some material property does not make sense for particular material.
  */
-struct MaterialMethodNotApplicable: public Exception {
+struct PLASK_API MaterialMethodNotApplicable: public Exception {
 
     /**
      * @param material_name name of material
@@ -227,7 +229,7 @@ struct MaterialMethodNotApplicable: public Exception {
 /**
  * Exceptions of this class are thrownwhen material string parser find errors.
  */
-struct MaterialParseException: public Exception {
+struct PLASK_API MaterialParseException: public Exception {
     MaterialParseException(): Exception("Material parse error") {}
     /// @param msg error message
     MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
@@ -237,7 +239,7 @@ struct MaterialParseException: public Exception {
     }
 };
 
-class MaterialCantBeMixedException: public Exception {
+class PLASK_API MaterialCantBeMixedException: public Exception {
 
     /*template <typename ComponentMap>
     std::string constructMsg(const ComponentMap& comp, const std::string dopant_name) {
@@ -261,21 +263,21 @@ public:
 /**
  * Exceptions of this class are thrown when solvers don't have geometry set
  */
-struct NoGeometryException: public Exception {
+struct PLASK_API NoGeometryException: public Exception {
     NoGeometryException(const std::string& where): Exception("%1%: No geometry specified", where) {}
 };
 
 /**
  * Exceptions of this class are thrown by some geometry object classes when there is no required child.
  */
-struct NoChildException: public Exception {
+struct PLASK_API NoChildException: public Exception {
     NoChildException(): Exception("Incomplete geometry tree") {}
 };
 
 /**
  * Exceptions of this class are thrown by some geometry object classes
  */
-struct NotUniqueObjectException: public Exception {
+struct PLASK_API NotUniqueObjectException: public Exception {
     NotUniqueObjectException(): Exception("Unique object instance required") {}
     NotUniqueObjectException(const std::string& msg): Exception(msg) {}
 
@@ -286,14 +288,14 @@ struct NotUniqueObjectException: public Exception {
 /**
  * Exceptions of this class are thrown when called operation on geometry graph will cause cyclic reference.
  */
-struct CyclicReferenceException: public Exception {
+struct PLASK_API CyclicReferenceException: public Exception {
     CyclicReferenceException(): Exception("Detected cycle in geometry tree") {}
 };
 
 /**
  * This exception is thrown when geometry object (typically with given name) is not found.
  */
-struct NoSuchGeometryObjectType: public Exception {
+struct PLASK_API NoSuchGeometryObjectType: public Exception {
     //std::string materialName;
 
     /**
@@ -306,7 +308,7 @@ struct NoSuchGeometryObjectType: public Exception {
 /**
  * Exceptions of this class are thrownby some geometry object classes when there is no required child.
  */
-struct NamesConflictException: public Exception {
+struct PLASK_API NamesConflictException: public Exception {
 
     /**
      * @param what type of object
@@ -319,7 +321,7 @@ struct NamesConflictException: public Exception {
 /**
  * This exception is thrown when geometry object (typically with given name) is not found.
  */
-struct NoSuchGeometryObject: public Exception {
+struct PLASK_API NoSuchGeometryObject: public Exception {
     //std::string materialName;
 
     /**
@@ -332,7 +334,7 @@ struct NoSuchGeometryObject: public Exception {
 /**
  * This exception is thrown when geometry (typically with given name) is not found.
  */
-struct NoSuchGeometry: public Exception {
+struct PLASK_API NoSuchGeometry: public Exception {
     /**
      * @param object_name name of object which is not found
      */
@@ -343,7 +345,7 @@ struct NoSuchGeometry: public Exception {
 /**
  * This exception is thrown when named PatHints are not found.
  */
-struct NoSuchPath: public Exception {
+struct PLASK_API NoSuchPath: public Exception {
     /**
      * @param object_name name of object which is not found
      */
@@ -354,14 +356,14 @@ struct NoSuchPath: public Exception {
 /**
  * This exception is thrown when geometry object has type different than expectation (for example is 3d but expected 2d).
  */
-struct UnexpectedGeometryObjectTypeException: public Exception {
+struct PLASK_API UnexpectedGeometryObjectTypeException: public Exception {
     UnexpectedGeometryObjectTypeException(): Exception("Geometry object has unexpected type") {}
 };
 
 /**
  * This exception is thrown when axis (typically with given name) is not found.
  */
-struct NoSuchAxisNames: public Exception {
+struct PLASK_API NoSuchAxisNames: public Exception {
     //std::string materialName;
 
     /// @param axis_names name of axis which not exists
@@ -375,7 +377,7 @@ struct NoSuchAxisNames: public Exception {
 /**
  * Exceptions of this class are thrown when solvers don't have mesh set
  */
-struct NoMeshException: public Exception {
+struct PLASK_API NoMeshException: public Exception {
     NoMeshException(const std::string& where): Exception("$1$: No mesh specified", where) {}
 };
 
@@ -383,7 +385,7 @@ struct NoMeshException: public Exception {
 /**
  * This exception is thrown when the mesh is somehow bad
  */
-struct BadMesh: public Exception {
+struct PLASK_API BadMesh: public Exception {
 
     /**
      * @param where name of class/function/operation doing the computations
