@@ -40,9 +40,11 @@ struct ExpansionPW3D: public Expansion {
     Component symmetry_long,            ///< Indicates symmetry if `symmetric` in longitudinal direction
               symmetry_tran;            ///< Indicates symmetry if `symmetric` in transverse direction
 
-//     size_t pil,                         ///< Index of the beginning of the left PML
-//            pir;                         ///< Index of the beginning of the right PML
-//
+    size_t pil,                         ///< Index of the beginning of the left PML
+           pir,                         ///< Index of the beginning of the right PML
+           pif,                         ///< Index of the beginning of the front PML
+           pib;                         ///< Index of the beginning of the back PML
+
     /// Cached permittivity expansion coefficients
     std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
 
@@ -111,7 +113,8 @@ struct ExpansionPW3D: public Expansion {
 
   protected:
 
-//     DataVector<Tensor2<dcomplex>> mag;      ///< Magnetic permeability coefficients (used with for PMLs)
+    DataVector<Tensor2<dcomplex>> mag_long; ///< Magnetic permeability coefficients in longitudinal direction (used with for PMLs)
+    DataVector<Tensor2<dcomplex>> mag_tran; ///< Magnetic permeability coefficients in transverse direction (used with for PMLs)
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
 

@@ -109,46 +109,77 @@ void ExpansionPW3D::init()
 
     matFFT = FFT::Forward2D(4, nNl, nNt, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
-//     // Compute permeability coefficients
-//     mag.reset(nN, Tensor2<dcomplex>(0.));
-//     if (periodic) {
-//         mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
-//     } else {
-//         DataVector<dcomplex> Sy(M, 1.);   // PML coeffs for mu
-//         // Add PMLs
-//         SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
-//         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-//         if (symmetric) pil = 0;
-//         else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
-//         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
-//         for (size_t i = 0; i < pil; ++i) {
-//             double h = (pl - xmesh[i]) / SOLVER->pml.size;
-//             Sy[i] = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
-//         }
-//         for (size_t i = pir+1; i < xmesh.size(); ++i) {
-//             double h = (xmesh[i] - pr) / SOLVER->pml.size;
-//             Sy[i] = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
-//         }
-//         // Average mu
-//         std::fill(mag.begin(), mag.end(), Tensor2<dcomplex>(0.));
-//         for (size_t i = 0; i != nN; ++i) {
-//             for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-//                 mag[i] += Tensor2<dcomplex>(Sy[j], 1./Sy[j]);
-//             }
-//             mag[i] /= refine;
-//         }
-//         // Compute FFT
-//         FFT::Forward1D(2, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
-//         // Smooth coefficients
-//         if (SOLVER->smooth) {
-//             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
-//             for (size_t i = 0; i != nN; ++i) {
-//                 int k = i; if (k > nN/2) k -= nN;
-//                 mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
-//             }
-//         }
-//     }
-//
+    // Compute permeability coefficients
+    mag_long.reset(nNl, Tensor2<dcomplex>(0.));
+    mag_tran.reset(nNt, Tensor2<dcomplex>(0.));
+    if (!periodic_long || !periodic_tran) {
+        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
+    }
+    if (periodic_long) {
+        mag_long[0].c00 = 1.; mag_long[0].c11 = 1.; // constant 1
+    } else {
+        double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
+        if (symmetric_long) pib = 0;
+        else pib = std::lower_bound(long_mesh.begin(), long_mesh.end(), pb) - long_mesh.begin();
+        pif = std::lower_bound(long_mesh.begin(), long_mesh.end(), pf) - long_mesh.begin();
+        for (size_t i = 0; i != nNl; ++i) {
+            for (size_t j = refl*i, end = refl*(i+1); j != end; ++j) {
+                dcomplex s = 1.;
+                if (j < pib) {
+                    double h = (pb - long_mesh[j]) / SOLVER->pml_long.size;
+                    s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
+                } else if (j > pif) {
+                    double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
+                    s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
+                }
+                mag_long[i] += Tensor2<dcomplex>(s, 1./s);
+            }
+            mag_long[i] /= refl;
+        }
+        // Compute FFT
+        FFT::Forward1D(2, nNl, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_long.data()));
+        // Smooth coefficients
+        if (SOLVER->smooth) {
+            double bb4 = M_PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
+            for (size_t i = 0; i != nNl; ++i) {
+                int k = i; if (k > nNl/2) k -= nNl;
+                mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
+            }
+        }
+    }
+    if (periodic_tran) {
+        mag_tran[0].c00 = 1.; mag_tran[0].c11 = 1.; // constant 1
+    } else {
+        double pb = back + SOLVER->pml_tran.size, pf = front - SOLVER->pml_tran.size;
+        if (symmetric_tran) pil = 0;
+        else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pb) - tran_mesh.begin();
+        pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pf) - tran_mesh.begin();
+        for (size_t i = 0; i != nNt; ++i) {
+            for (size_t j = reft*i, end = reft*(i+1); j != end; ++j) {
+                dcomplex s = 1.;
+                if (j < pil) {
+                    double h = (pb - tran_mesh[j]) / SOLVER->pml_tran.size;
+                    s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
+                } else if (j > pir) {
+                    double h = (tran_mesh[j] - pf) / SOLVER->pml_tran.size;
+                    s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
+                }
+                mag_tran[i] += Tensor2<dcomplex>(s, 1./s);
+            }
+            mag_tran[i] /= reft;
+        }
+        // Compute FFT
+        FFT::Forward1D(2, nNt, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_tran.data()));
+        // Smooth coefficients
+        if (SOLVER->smooth) {
+            double bb4 = M_PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
+            for (size_t i = 0; i != nNt; ++i) {
+                int k = i; if (k > nNt/2) k -= nNt;
+                mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
+            }
+        }
+    }
+
     // Allocate memory for expansion coefficients
     size_t nlayers = lcount();
     coeffs.resize(nlayers);
@@ -249,18 +280,49 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     auto& eps = cell[j];
                     eps.sqr_inplace();  // make epsilon from NR
 
-                    // // Add PMLs
-                    // if (!periodic) {
-                    //     if (j < pil) {
-                    //         double h = (pl - xmesh[j]) / SOLVER->pml.size;
-                    //         dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-                    //         nr = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
-                    //     } else if (j > pir) {
-                    //         double h = (xmesh[j] - pr) / SOLVER->pml.size;
-                    //         dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-                    //         nr = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
-                    //     }
-                    // }
+                    // Add PMLs
+//                     if (!periodic_long) {
+//                         double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
+//                         if (symmetric_long) pib = 0;
+//                         else pib = std::lower_bound(long_mesh.begin(), long_mesh.end(), pb) - long_mesh.begin();
+//                         pif = std::lower_bound(long_mesh.begin(), long_mesh.end(), pf) - long_mesh.begin();
+//                         for (size_t i = 0; i != nNl; ++i) {
+//                             for (size_t j = refl*i, end = refl*(i+1); j != end; ++j) {
+//                                 dcomplex s = 1.;
+//                                 if (j < pib) {
+//                                     double h = (pb - long_mesh[j]) / SOLVER->pml_long.size;
+//                                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
+//                                 } else if (j > pif) {
+//                                     double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
+//                                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
+//                                 }
+//                                 mag[i] += Tensor2<dcomplex>(s, 1./s);
+//                             }
+//                             mag[i] /= refl;
+//                         }
+//                     }
+//                     if (!periodic_tran) {
+//                         double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
+//                         if (symmetric_tran) pil = 0;
+//                         else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pl) - tran_mesh.begin();
+//                         pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pr) - tran_mesh.begin();
+//                         for (size_t i = 0; i != nNt; ++i) {
+//                             dcomplex val = 0.;
+//                             for (size_t j = reft*i, end = reft*(i+1); j != end; ++j) {
+//                                 dcomplex s = 1.;
+//                                 if (j < pil) {
+//                                     double h = (pl - tran_mesh[j]) / SOLVER->pml_tran.size;
+//                                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
+//                                 } else if (j > pir) {
+//                                     double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
+//                                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
+//                                 }
+//                                 val += Tensor2<dcomplex>(s, 1./ s);
+//                             }
+//                             if (mag[i]) mag[i] *= val / reft;
+//                             else mag[i] = val / reft;
+//                         }
+//                     }
 
                     norm += (real(eps.c00) + real(eps.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
                 }
@@ -269,11 +331,11 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
             double a = abs(norm);
             auto& eps = coeffs[l][nNl * it + il];
             if (a < normlim) {
-                // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); //TODO just for testing
+                // coeffs[l][nNl * it + il] = Tensor3<dcomplex>(0.); // just for testing
                 // Nothing to average
                 eps = cell[cell.size() / 2];
             } else {
-                // eps = Tensor3<dcomplex>(norm.c0/a, norm.c1/a, 0.); //TODO just for testing
+                // eps = Tensor3<dcomplex>(norm.c0/a, norm.c1/a, 0.); // just for testing
 
                 // Compute avg(eps) and avg(eps**(-1))
                 Tensor3<dcomplex> ieps(0.);

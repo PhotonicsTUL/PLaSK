@@ -639,7 +639,6 @@ struct FermiGainSolver<GeometryT>::DgdnData: public FermiGainSolver<GeometryT>::
     template <typename... Args>
     DgdnData(Args... args): DataBase(args...) {}
 
-
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
         double len = region.qwlen;
