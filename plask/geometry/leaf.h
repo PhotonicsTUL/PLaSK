@@ -18,7 +18,7 @@ class GeometryReader;
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
-struct GeometryObjectLeaf: public GeometryObjectD<dim> {
+struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
 
     typedef typename GeometryObjectD<dim>::DVec DVec;
     typedef typename GeometryObjectD<dim>::Box Box;
@@ -274,7 +274,7 @@ Block is filled with one material.
 @ingroup GEOMETRY_OBJ
 */
 template <int dim>
-struct Block: public GeometryObjectLeaf<dim> {
+struct PLASK_API Block: public GeometryObjectLeaf<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectLeaf<dim>::DVec DVec;

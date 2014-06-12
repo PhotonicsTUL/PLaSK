@@ -275,10 +275,10 @@ auto operator*(const OtherT scale, const Tensor3<T>& tensor) -> decltype(tensor*
 template <typename T>
 inline Tensor3<T> conj(const Tensor3<T>& v) { return Tensor3<T>(conj(v.c00), conj(v.c11), conj(v.c22), conj(v.c01)); }
 
-#ifndef PLASK_EXPORTS
+/*#ifndef PLASK_EXPORTS
 extern template struct PLASK_API Tensor3<double>;
 extern template struct PLASK_API Tensor3< std::complex<double> >;
-#endif
+#endif*/
 
 } //namespace plask
 

@@ -178,7 +178,7 @@ protected:
  * @tparam dim number of speace dimensions
  */
 template <int dim>
-class GeometryD: public Geometry {
+class PLASK_API GeometryD: public Geometry {
 
     /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
     boost::signals2::connection connection_with_child;

@@ -26,7 +26,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct GeometryObjectContainer: public GeometryObjectD<dim> {
+struct PLASK_API GeometryObjectContainer: public GeometryObjectD<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;

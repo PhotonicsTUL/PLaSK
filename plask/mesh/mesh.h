@@ -223,7 +223,7 @@ struct PLASK_API Mesh: public Printable {
  * Base class for all meshes defined for specified number of dimensions.
  */
 template <int dimension>
-struct MeshD: public Mesh {
+struct PLASK_API MeshD: public Mesh {
 
     /// Number of dimensions
     enum { DIM = dimension };
@@ -401,7 +401,7 @@ class PLASK_API MeshGenerator {
 
 /** Base class for specific mesh generator */
 template <int MESH_DIM>
-class MeshGeneratorD: public MeshGenerator
+class PLASK_API MeshGeneratorD: public MeshGenerator
 {
   public:
       /// Type of the generated mesh

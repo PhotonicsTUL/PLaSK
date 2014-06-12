@@ -10,7 +10,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct Clip: public GeometryObjectTransform<dim> {
+struct PLASK_API Clip: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
