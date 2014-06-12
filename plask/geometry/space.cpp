@@ -42,8 +42,8 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
 }
 
 
-template class GeometryD<2>;
-template class GeometryD<3>;
+template class PLASK_API GeometryD<2>;
+template class PLASK_API GeometryD<3>;
 
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
     : extrusion(extrusion)

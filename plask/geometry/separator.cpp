@@ -70,8 +70,8 @@ bool GeometryObjectSeparator<dim>::contains(const GeometryObjectSeparator<dim>::
 
 
 
-template struct GeometryObjectSeparator<2>;
-template struct GeometryObjectSeparator<3>;
+template struct PLASK_API GeometryObjectSeparator<2>;
+template struct PLASK_API GeometryObjectSeparator<3>;
 
 
 

@@ -226,7 +226,7 @@ std::set<std::string> GeometryObjectD<dims>::getRolesAt(const DVec& point, const
     return result;
 }
 
-template struct GeometryObjectD<2>;
-template struct GeometryObjectD<3>;
+template struct PLASK_API GeometryObjectD<2>;
+template struct PLASK_API GeometryObjectD<3>;
 
 } // namespace plask

@@ -182,8 +182,8 @@ bool GeometryObjectContainer<dim>::removeIfT(const std::function<bool(const shar
         return false;
 }
 
-template struct GeometryObjectContainer<2>;
-template struct GeometryObjectContainer<3>;
+template struct PLASK_API GeometryObjectContainer<2>;
+template struct PLASK_API GeometryObjectContainer<3>;
 
 
 } // namespace plask

@@ -129,7 +129,7 @@ void RectangularMesh<3>::writeXML(XMLElement& object) const {
 }
 
 // Particular instantations
-template class RectangularMesh<3>;
+template class PLASK_API RectangularMesh<3>;
 
 shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &to_copy) {
    return make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), make_shared<OrderedAxis>(*to_copy.axis2), to_copy.getIterationOrder());

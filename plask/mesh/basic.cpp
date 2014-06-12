@@ -2,8 +2,8 @@
 
 namespace plask {
 
-template struct OnePointMesh<2>;
-template struct OnePointMesh<3>;
+template struct PLASK_API OnePointMesh<2>;
+template struct PLASK_API OnePointMesh<3>;
 
 template <>
 void OnePointMesh<3>::writeXML(XMLElement& object) const {
@@ -45,7 +45,7 @@ static shared_ptr<Mesh> readOnePoint2DMesh(XMLReader& reader) {
 
 static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint2DMesh);
 
-template struct TranslatedMesh<2>;
-template struct TranslatedMesh<3>;
+template struct PLASK_API TranslatedMesh<2>;
+template struct PLASK_API TranslatedMesh<3>;
 
 }   // namespace plask

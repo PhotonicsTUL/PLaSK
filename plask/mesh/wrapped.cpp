@@ -47,7 +47,7 @@ void WrappedMesh<dim>::writeXML(XMLElement& object) const {
     original->writeXML(object);
 }
 
-template struct WrappedMesh<2>;
-template struct WrappedMesh<3>;
+template struct PLASK_API WrappedMesh<2>;
+template struct PLASK_API WrappedMesh<3>;
 
 } // namespace plask

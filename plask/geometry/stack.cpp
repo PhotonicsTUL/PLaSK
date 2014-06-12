@@ -343,8 +343,8 @@ GeometryObject::Subtree MultiStackContainer<dim>::getPathsAt(const MultiStackCon
     return GeometryObjectContainer<dim>::getPathsAt(new_point, all);
 }
 
-template class MultiStackContainer<2>;
-template class MultiStackContainer<3>;
+template class PLASK_API MultiStackContainer<2>;
+template class PLASK_API MultiStackContainer<3>;
 
 template <int dim>
 shared_ptr<GeometryObject> MultiStackContainer<dim>::getChildNo(std::size_t child_no) const {
@@ -475,11 +475,11 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
 static GeometryReader::RegisterObjectReader horizontalstack_reader(ShelfContainer2D::NAME, read_ShelfContainer2D);
 static GeometryReader::RegisterObjectReader horizontalstack2D_reader("shelf" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D, read_ShelfContainer2D);
 
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
-template struct StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
-template struct StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
+template struct PLASK_API StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
+template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
 
-template struct StackContainer<2>;
-template struct StackContainer<3>;
+template struct PLASK_API StackContainer<2>;
+template struct PLASK_API StackContainer<3>;
 
 }   // namespace plask

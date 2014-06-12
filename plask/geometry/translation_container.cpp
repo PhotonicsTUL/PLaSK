@@ -341,7 +341,7 @@ shared_ptr<GeometryObject> read_TranslationContainer(GeometryReader& reader) {
 static GeometryReader::RegisterObjectReader container2D_reader(TranslationContainer<2>::NAME, read_TranslationContainer<2>);
 static GeometryReader::RegisterObjectReader container3D_reader(TranslationContainer<3>::NAME, read_TranslationContainer<3>);
 
-template struct TranslationContainer<2>;
-template struct TranslationContainer<3>;
+template struct PLASK_API TranslationContainer<2>;
+template struct PLASK_API TranslationContainer<3>;
 
 } // namespace plask

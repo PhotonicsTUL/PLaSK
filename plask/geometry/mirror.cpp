@@ -118,10 +118,10 @@ static GeometryReader::RegisterObjectReader flip3D_reader(Flip<3>::NAME, read_fl
 static GeometryReader::RegisterObjectReader mirror2D_reader(Mirror<2>::NAME, read_flip_like<Mirror<2>>);
 static GeometryReader::RegisterObjectReader mirror3D_reader(Mirror<3>::NAME, read_flip_like<Mirror<3>>);
 
-template struct Flip<2>;
-template struct Flip<3>;
+template struct PLASK_API Flip<2>;
+template struct PLASK_API Flip<3>;
 
-template struct Mirror<2>;
-template struct Mirror<3>;
+template struct PLASK_API Mirror<2>;
+template struct PLASK_API Mirror<3>;
 
 }

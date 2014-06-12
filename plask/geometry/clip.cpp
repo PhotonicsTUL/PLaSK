@@ -86,7 +86,7 @@ shared_ptr<GeometryObject> read_Clip3D(GeometryReader& reader) {
 static GeometryReader::RegisterObjectReader Clip2D_reader(Clip<2>::NAME, read_Clip2D);
 static GeometryReader::RegisterObjectReader Clip3D_reader(Clip<3>::NAME, read_Clip3D);
 
-template struct Clip<2>;
-template struct Clip<3>;
+template struct PLASK_API Clip<2>;
+template struct PLASK_API Clip<3>;
 
 }   // namespace plask

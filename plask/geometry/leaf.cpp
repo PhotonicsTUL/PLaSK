@@ -27,11 +27,11 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
     return src;
 }
 
-template struct GeometryObjectLeaf<2>;
-template struct GeometryObjectLeaf<3>;
+template struct PLASK_API GeometryObjectLeaf<2>;
+template struct PLASK_API GeometryObjectLeaf<3>;
 
-template struct Block<2>;
-template struct Block<3>;
+template struct PLASK_API Block<2>;
+template struct PLASK_API Block<3>;
 
 // Initialization common for all leafs
 template <typename LeafType>

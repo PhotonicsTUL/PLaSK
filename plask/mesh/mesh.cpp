@@ -46,12 +46,12 @@ void MeshD<dimension>::print(std::ostream& out) const {
     print_seq(out << '[', begin(), end(), ", ") << ']';
 }
 
-template struct MeshD<1>;
-template struct MeshD<2>;
-template struct MeshD<3>;
+template struct PLASK_API MeshD<1>;
+template struct PLASK_API MeshD<2>;
+template struct PLASK_API MeshD<3>;
 
-template class MeshGeneratorD<1>;
-template class MeshGeneratorD<2>;
-template class MeshGeneratorD<3>;
+template class PLASK_API MeshGeneratorD<1>;
+template class PLASK_API MeshGeneratorD<2>;
+template class PLASK_API MeshGeneratorD<3>;
 
 }   // namespace plask

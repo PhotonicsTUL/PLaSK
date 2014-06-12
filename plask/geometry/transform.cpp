@@ -103,7 +103,7 @@ shared_ptr<GeometryObject> read_translation3D(GeometryReader& reader) {
 static GeometryReader::RegisterObjectReader translation2D_reader(Translation<2>::NAME, read_translation2D);
 static GeometryReader::RegisterObjectReader translation3D_reader(Translation<3>::NAME, read_translation3D);
 
-template struct Translation<2>;
-template struct Translation<3>;
+template struct PLASK_API Translation<2>;
+template struct PLASK_API Translation<3>;
 
 }   // namespace plask
