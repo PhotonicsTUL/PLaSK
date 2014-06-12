@@ -969,7 +969,7 @@ template <int dim> struct Translation;
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct GeometryObjectD: public GeometryObject {
+struct PLASK_API GeometryObjectD: public GeometryObject {
 
     static const int DIM = dim;
     typedef typename Primitive<dim>::Box Box;
