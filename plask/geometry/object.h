@@ -1500,8 +1500,10 @@ struct GeometryObjectD: public GeometryObject {
     }
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API GeometryObjectD<2>;
 extern template struct PLASK_API GeometryObjectD<3>;
+#endif
 
 } // namespace plask
 

@@ -664,8 +664,10 @@ void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
+#ifndef PLASK_EXPORTS
 extern template class PLASK_API GeometryD<2>;
 extern template class PLASK_API GeometryD<3>;
+#endif
 
 /**
  * Geometry trunk in 2D Cartesian space

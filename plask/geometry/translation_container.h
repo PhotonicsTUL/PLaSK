@@ -175,8 +175,10 @@ private:
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API TranslationContainer<2>;
 extern template struct PLASK_API TranslationContainer<3>;
+#endif
 
 } // namespace plask
 

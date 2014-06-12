@@ -63,8 +63,10 @@ template <> inline
 WrappedMesh<3>::WrappedMesh(shared_ptr<const MeshD<3>> original, const shared_ptr<const GeometryD<3>>& geometry)
     : original(original), geometry(geometry), ignore_symmetry{false, false, false} {}
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API WrappedMesh<2>;
 extern template struct PLASK_API WrappedMesh<3>;
+#endif
 
 } // namespace plask
 

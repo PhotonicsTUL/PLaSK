@@ -322,8 +322,10 @@ struct Translation: public GeometryObjectTransform<dim> {
 template <> void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 template <> void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API Translation<2>;
 extern template struct PLASK_API Translation<3>;
+#endif
 
 }       // namespace plask
 

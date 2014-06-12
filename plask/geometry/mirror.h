@@ -88,8 +88,10 @@ struct Flip: public GeometryObjectTransform<dim> {
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API Flip<2>;
 extern template struct PLASK_API Flip<3>;
+#endif
 
 /**
  * We suppose that getBoundingBoxes().upper[flipDir] > 0
@@ -191,8 +193,10 @@ struct Mirror: public GeometryObjectTransform<dim> {
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API Mirror<2>;
 extern template struct PLASK_API Mirror<3>;
+#endif
 
 }   // namespace plask
 

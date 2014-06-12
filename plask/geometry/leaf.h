@@ -259,8 +259,10 @@ public:
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API GeometryObjectLeaf<2>;
 extern template struct PLASK_API GeometryObjectLeaf<3>;
+#endif
 
 /**
 Represent figure which, depends from @p dim is:
@@ -338,8 +340,10 @@ struct Block: public GeometryObjectLeaf<dim> {
 template <> void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 template <> void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API Block<2>;
 extern template struct PLASK_API Block<3>;
+#endif
 
 PLASK_API shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
 

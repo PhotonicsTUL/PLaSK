@@ -138,11 +138,13 @@ template <> AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::ChildAligner AlignC
 template <> AlignContainer<3, Primitive<3>::DIRECTION_VERT>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_VERT>::defaultAligner();
 template <> AlignContainer<3, Primitive<3>::DIRECTION_LONG>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_LONG>::defaultAligner();
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
 extern template struct PLASK_API AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
 extern template struct PLASK_API AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
 extern template struct PLASK_API AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
 extern template struct PLASK_API AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
+#endif
 
 }   // namespace plask
 

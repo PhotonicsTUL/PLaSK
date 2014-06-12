@@ -42,8 +42,10 @@ inline shared_ptr<OnePointMesh<DIM>> toMesh(const plask::Vec<DIM, double>& point
 template<> void OnePointMesh<2>::writeXML(XMLElement& object) const;
 template<> void OnePointMesh<3>::writeXML(XMLElement& object) const;
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API OnePointMesh<2>;
 extern template struct PLASK_API OnePointMesh<3>;
+#endif
 
 /**
  * Mesh which trasnlate another mesh by given vector.
@@ -68,8 +70,10 @@ struct TranslatedMesh: public MeshD<DIM> {
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API TranslatedMesh<2>;
 extern template struct PLASK_API TranslatedMesh<3>;
+#endif
 
 //TODO return special type for rectangular meshes
 template <int DIM>

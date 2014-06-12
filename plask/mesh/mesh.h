@@ -294,9 +294,11 @@ struct MeshD: public Mesh {
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API MeshD<1>;
 extern template struct PLASK_API MeshD<2>;
 extern template struct PLASK_API MeshD<3>;
+#endif
 
 /**
  * Implementation of Mesh::IteratorImpl.
@@ -457,9 +459,11 @@ class MeshGeneratorD: public MeshGenerator
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template class PLASK_API MeshGeneratorD<1>;
 extern template class PLASK_API MeshGeneratorD<2>;
 extern template class PLASK_API MeshGeneratorD<3>;
+#endif
 
 /**
  * Helper which call stores mesh reader when constructed.

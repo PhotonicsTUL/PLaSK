@@ -157,9 +157,11 @@ struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
 extern template struct PLASK_API StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
 extern template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
+#endif
 
 /**
  * Horizontal stack.
@@ -500,8 +502,10 @@ protected:
 template <> const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner();
 template <> const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner();
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API StackContainer<2>;
 extern template struct PLASK_API StackContainer<3>;
+#endif
 
 /**
  * N-stacks

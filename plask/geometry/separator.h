@@ -83,8 +83,10 @@ struct GeometryObjectSeparator: public GeometryObjectD<dim> {
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API GeometryObjectSeparator<2>;
 extern template struct PLASK_API GeometryObjectSeparator<3>;
+#endif
 
 /**
  * Gap in one, choose at compile time, direction.

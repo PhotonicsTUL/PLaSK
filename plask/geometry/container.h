@@ -262,8 +262,10 @@ public:
 
 };
 
+#ifndef PLASK_EXPORTS
 extern template struct PLASK_API GeometryObjectContainer<2>;
 extern template struct PLASK_API GeometryObjectContainer<3>;
+#endif
 
 /**
  * Read children, call child_param_read if children is in \<item\> tag and without_child_param_read if there was no \<item\> tag.
