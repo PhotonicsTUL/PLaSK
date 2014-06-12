@@ -1499,7 +1499,7 @@ template <>
 inline Boundary<RectangularMesh<3>> parseBoundary<RectangularMesh<3>>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh<3>::getBoundary(boundary_desc, env); }
 
 #ifndef PLASK_EXPORTS
-extern template struct PLASK_API RectangularMesh<3>;
+extern template class PLASK_API RectangularMesh<3>;
 #endif
 
 }   // namespace plask
