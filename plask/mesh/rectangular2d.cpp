@@ -135,6 +135,7 @@ static shared_ptr<Mesh> readRectangularMesh2D_obsolete(XMLReader& reader) {
 static RegisterMeshReader regularmesh2d_reader("regular2d", readRectangularMesh2D_obsolete);
 static RegisterMeshReader rectilinear2d_reader("rectilinear2d", readRectangularMesh2D_obsolete);
 
+template struct PLASK_API RectangularMesh<2>;
 
 } // namespace plask
 

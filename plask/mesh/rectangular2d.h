@@ -1428,6 +1428,10 @@ inline Boundary<RectangularMesh<2>> parseBoundary<RectangularMesh<2>>(const std:
 template <>
 inline Boundary<RectangularMesh<2>> parseBoundary<RectangularMesh<2>>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh<2>::getBoundary(boundary_desc, env); }
 
+#ifndef PLASK_EXPORTS
+extern template struct PLASK_API RectangularMesh<2>;
+#endif
+
 } // namespace plask
 
 #endif // PLASK__RECTANGULAR2D_H

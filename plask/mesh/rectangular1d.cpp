@@ -95,4 +95,6 @@ void RectangularMesh<1>::beforeCalcMidpointMesh() const {
         throw BadMesh("getMidpointsMesh", "at least two points are required");
 }
 
+template struct PLASK_API RectangularMesh<1>;
+
 }   // namespace plask

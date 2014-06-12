@@ -54,6 +54,10 @@ protected:
 
 typedef RectangularMesh<1> RectangularAxis;
 
+#ifndef PLASK_EXPORTS
+extern template struct PLASK_API RectangularMesh<1>;
+#endif
+
 }   // namespace plask
 
 #endif // PLASK__RECTANGULAR1D_H
