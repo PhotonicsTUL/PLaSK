@@ -46,8 +46,6 @@ struct PLASK_API WrappedMesh: public MeshD<dim> {
      */
     WrappedMesh(shared_ptr<const MeshD<dim>> original, const shared_ptr<const GeometryD<dim>>& geometry);
 
-    virtual ~WrappedMesh() {}
-
     virtual std::size_t size() const;
 
     virtual Vec<dim> at(std::size_t index) const;
