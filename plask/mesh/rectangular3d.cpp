@@ -128,9 +128,6 @@ void RectangularMesh<3>::writeXML(XMLElement& object) const {
     { auto a = object.addTag("axis2"); axis2->writeXML(a); }
 }
 
-// Particular instantations
-template class PLASK_API RectangularMesh<3>;
-
 shared_ptr<RectangularMesh<3> > make_rectilinear_mesh(const RectangularMesh<3> &to_copy) {
    return make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), make_shared<OrderedAxis>(*to_copy.axis2), to_copy.getIterationOrder());
 }
@@ -167,6 +164,6 @@ static shared_ptr<Mesh> readRectangularMesh3D_obsolete(XMLReader& reader) {
 static RegisterMeshReader regularmesh3d_reader("regular3d", readRectangularMesh3D_obsolete);
 static RegisterMeshReader rectilinear3d_reader("rectilinear3d", readRectangularMesh3D_obsolete);
 
-template struct PLASK_API RectangularMesh<3>;
+template class PLASK_API RectangularMesh<3>;
 
 } // namespace plask
