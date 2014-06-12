@@ -22,7 +22,7 @@ namespace plask {
 /**
  * Rectilinear mesh in 1D space.
  */
-class OrderedAxis: public RectangularAxis {
+class PLASK_API OrderedAxis: public RectangularAxis {
 
     /// Points coordinates in ascending order.
     std::vector<double> points;

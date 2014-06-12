@@ -9,7 +9,7 @@ namespace plask {
  * Represent 3D geometry object which are extend of 2D object (child) in lon direction.
  * @ingroup GEOMETRY_OBJ
  */
-class Extrusion: public GeometryObjectTransformSpace<3, 2> {
+class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     double length;
 

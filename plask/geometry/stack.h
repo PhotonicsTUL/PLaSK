@@ -291,7 +291,7 @@ using StackContainerChildAligner =
 //TODO copy constructor
 //TODO remove some redundant code and use one from WithAligners
 template <int dim>
-struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
+struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
 
     typedef StackContainerChildAligner<dim> ChildAligner;
     static const StackContainer<dim>::ChildAligner& DefaultAligner();
@@ -512,7 +512,7 @@ extern template struct PLASK_API StackContainer<3>;
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-class MultiStackContainer: public StackContainer<dim> {
+class PLASK_API MultiStackContainer: public StackContainer<dim> {
 
     ///Type of parent class of this.
     typedef StackContainer<dim> UpperClass;
