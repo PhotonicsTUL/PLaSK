@@ -440,12 +440,7 @@ class PLASK_API MeshGeneratorD: public MeshGenerator
     }
 
     /// Get generated mesh if it is cached or create a new one
-    shared_ptr<MeshType> operator()(const shared_ptr<GeometryObjectD<DIM>>& geometry) {
-        if (auto res = cache.get(geometry))
-            return res;
-        else
-            return cache(geometry, generate(geometry));
-    }
+    shared_ptr<MeshType> operator()(const shared_ptr<GeometryObjectD<DIM>>& geometry);
 
     template <typename RequiredType>
     shared_ptr<RequiredType> get(const shared_ptr<GeometryObjectD<DIM>>& geometry) {

@@ -46,6 +46,14 @@ void MeshD<dimension>::print(std::ostream& out) const {
     print_seq(out << '[', begin(), end(), ", ") << ']';
 }
 
+template <int MESH_DIM>
+shared_ptr<typename MeshGeneratorD<MESH_DIM>::MeshType> MeshGeneratorD<MESH_DIM>::operator()(const shared_ptr<GeometryObjectD<MeshGeneratorD<MESH_DIM>::DIM> > &geometry) {
+    if (auto res = cache.get(geometry))
+        return res;
+    else
+        return cache(geometry, generate(geometry));
+}
+
 template struct PLASK_API MeshD<1>;
 template struct PLASK_API MeshD<2>;
 template struct PLASK_API MeshD<3>;
@@ -53,5 +61,7 @@ template struct PLASK_API MeshD<3>;
 template class PLASK_API MeshGeneratorD<1>;
 template class PLASK_API MeshGeneratorD<2>;
 template class PLASK_API MeshGeneratorD<3>;
+
+
 
 }   // namespace plask
