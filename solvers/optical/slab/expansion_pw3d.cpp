@@ -244,6 +244,10 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     DataVector<Tensor3<dcomplex>> cell(refl*reft);
     double nfact = 1. / cell.size();
 
+    double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
+    double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
+
+
     for (size_t it = 0; it != nNt; ++it) {
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
         double tran0 = 0.5 * (tran_mesh[tbegin] + tran_mesh[tend-1]);
@@ -281,48 +285,28 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     eps.sqr_inplace();  // make epsilon from NR
 
                     // Add PMLs
-//                     if (!periodic_long) {
-//                         double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
-//                         if (symmetric_long) pib = 0;
-//                         else pib = std::lower_bound(long_mesh.begin(), long_mesh.end(), pb) - long_mesh.begin();
-//                         pif = std::lower_bound(long_mesh.begin(), long_mesh.end(), pf) - long_mesh.begin();
-//                         for (size_t i = 0; i != nNl; ++i) {
-//                             for (size_t j = refl*i, end = refl*(i+1); j != end; ++j) {
-//                                 dcomplex s = 1.;
-//                                 if (j < pib) {
-//                                     double h = (pb - long_mesh[j]) / SOLVER->pml_long.size;
-//                                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
-//                                 } else if (j > pif) {
-//                                     double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
-//                                     s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
-//                                 }
-//                                 mag[i] += Tensor2<dcomplex>(s, 1./s);
-//                             }
-//                             mag[i] /= refl;
-//                         }
-//                     }
-//                     if (!periodic_tran) {
-//                         double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
-//                         if (symmetric_tran) pil = 0;
-//                         else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pl) - tran_mesh.begin();
-//                         pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pr) - tran_mesh.begin();
-//                         for (size_t i = 0; i != nNt; ++i) {
-//                             dcomplex val = 0.;
-//                             for (size_t j = reft*i, end = reft*(i+1); j != end; ++j) {
-//                                 dcomplex s = 1.;
-//                                 if (j < pil) {
-//                                     double h = (pl - tran_mesh[j]) / SOLVER->pml_tran.size;
-//                                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
-//                                 } else if (j > pir) {
-//                                     double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
-//                                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
-//                                 }
-//                                 val += Tensor2<dcomplex>(s, 1./ s);
-//                             }
-//                             if (mag[i]) mag[i] *= val / reft;
-//                             else mag[i] = val / reft;
-//                         }
-//                     }
+                    if (!periodic_long) {
+                        dcomplex s = 1.;
+                        if (j < pib) {
+                            double h = (pb - long_mesh[j]) / SOLVER->pml_long.size;
+                            s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
+                        } else if (j > pif) {
+                            double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
+                            s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
+                        }
+//                         cell[j] *= Tensor2<dcomplex>(s, 1./s); TODO
+                    }
+                    if (!periodic_tran) {
+                        dcomplex s = 1.;
+                        if (j < pil) {
+                            double h = (pl - tran_mesh[j]) / SOLVER->pml_tran.size;
+                            s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
+                        } else if (j > pir) {
+                            double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
+                            s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
+                        }
+//                         cell[j] *= Tensor2<dcomplex>(s, 1./ s); TODO
+                    }
 
                     norm += (real(eps.c00) + real(eps.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
                 }
