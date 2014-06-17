@@ -47,7 +47,7 @@
 // PLASK_API (/PLASK_SOLVER_API) functions as being imported from a DLL, wheras this DLL sees symbols
 // defined with this macro as being exported.
 //
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     #if defined(PLASK_EXPORTS)
         #define PLASK_API __declspec(dllexport)
     #else
@@ -65,6 +65,9 @@
     #else
         #define PLASK_PYTHON_API __declspec(dllimport)
     #endif
+#else
+    // extern templates does not work well with dllexport/dllimport and so we can't used it at win32
+    #define PLASK_USE_EXTERN_TEMPLATES
 #endif
 
 #if !defined(PLASK_API)

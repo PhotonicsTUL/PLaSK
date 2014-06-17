@@ -178,7 +178,7 @@ protected:
  * @tparam dim number of speace dimensions
  */
 template <int dim>
-class PLASK_API GeometryD: public Geometry {
+class GeometryD: public Geometry {
 
     /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
     boost::signals2::connection connection_with_child;
@@ -664,7 +664,7 @@ void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(DIRECTION_TRAN, border_to_set);
 }
 
-#ifndef PLASK_EXPORTS
+#ifdef PLASK_USE_EXTERN_TEMPLATES
 extern template class PLASK_API GeometryD<2>;
 extern template class PLASK_API GeometryD<3>;
 #endif
