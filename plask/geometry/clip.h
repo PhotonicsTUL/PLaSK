@@ -10,7 +10,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API Clip: public GeometryObjectTransform<dim> {
+struct Clip: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("clip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -94,8 +94,8 @@ template <> void Clip<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, cons
 template <> void Clip<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
 #ifndef PLASK_EXPORTS
-extern template struct PLASK_API Clip<2>;
-extern template struct PLASK_API Clip<3>;
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Clip<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Clip<3>)
 #endif
 
 }   // namespace plask

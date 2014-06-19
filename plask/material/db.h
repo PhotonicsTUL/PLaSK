@@ -64,14 +64,14 @@ struct PLASK_API MaterialsDB {
      * Creating global objects of this type allow to fill the default database.
      */
     template <typename MaterialType>
-    struct PLASK_API Register {
+    struct Register {
         Register(const std::string& name) { getDefault().add<MaterialType>(name); }
         Register() { getDefault().add<MaterialType>(); }
     };
 
     /// Same as Register but for materials without static field NAME.
     template <typename MaterialType>
-    struct PLASK_API RegisterUnderName {
+    struct RegisterUnderName {
         RegisterUnderName(const std::string& name) { getDefault().add<MaterialType>(name); }
     };
 

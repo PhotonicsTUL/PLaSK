@@ -796,12 +796,12 @@ inline DataVector<RT> const_data_cast(const DataVector<T>& src) {
     return src.remove_const();
 }
 
-/*#ifndef PLASK_EXPORTS
-extern template struct PLASK_API DataVector<double>;
-extern template struct PLASK_API DataVector<const double>;
-extern template struct PLASK_API DataVector<std::complex<double>>;
-extern template struct PLASK_API DataVector<const std::complex<double>>;
-#endif*/
+/*
+PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<double>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<const double>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(PLASK_API DataVector<std::complex<double>>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(DataVector<const std::complex<double>>)
+*/
 
 }   // namespace plask
 

@@ -36,7 +36,7 @@ using TranslationContainerChildAligner = typename chooseType<dim-2,
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
-struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>> {
+struct TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
@@ -175,10 +175,8 @@ private:
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API TranslationContainer<2>;
-extern template struct PLASK_API TranslationContainer<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(TranslationContainer<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(TranslationContainer<3>)
 
 } // namespace plask
 

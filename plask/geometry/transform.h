@@ -204,7 +204,7 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API Translation: public GeometryObjectTransform<dim> {
+struct Translation: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -322,10 +322,8 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
 template <> void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 template <> void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API Translation<2>;
-extern template struct PLASK_API Translation<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Translation<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Translation<3>)
 
 }       // namespace plask
 

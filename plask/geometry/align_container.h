@@ -24,7 +24,7 @@ using AlignContainerChildAligner = typename chooseType<dim-2,
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-struct PLASK_API AlignContainer: public WithAligners<GeometryObjectContainer<dim>, AlignContainerChildAligner<dim, alignDirection>> {
+struct AlignContainer: public WithAligners<GeometryObjectContainer<dim>, AlignContainerChildAligner<dim, alignDirection>> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -138,13 +138,11 @@ template <> AlignContainer<3, Primitive<3>::DIRECTION_TRAN>::ChildAligner AlignC
 template <> AlignContainer<3, Primitive<3>::DIRECTION_VERT>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_VERT>::defaultAligner();
 template <> AlignContainer<3, Primitive<3>::DIRECTION_LONG>::ChildAligner AlignContainer<3, Primitive<3>::DIRECTION_LONG>::defaultAligner();
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API AlignContainer<2, Primitive<2>::DIRECTION_TRAN>;
-extern template struct PLASK_API AlignContainer<2, Primitive<2>::DIRECTION_VERT>;
-extern template struct PLASK_API AlignContainer<3, Primitive<3>::DIRECTION_LONG>;
-extern template struct PLASK_API AlignContainer<3, Primitive<3>::DIRECTION_TRAN>;
-extern template struct PLASK_API AlignContainer<3, Primitive<3>::DIRECTION_VERT>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(AlignContainer<2, Primitive<2>::DIRECTION_TRAN>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(AlignContainer<2, Primitive<2>::DIRECTION_VERT>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(AlignContainer<3, Primitive<3>::DIRECTION_LONG>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(AlignContainer<3, Primitive<3>::DIRECTION_TRAN>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(AlignContainer<3, Primitive<3>::DIRECTION_VERT>)
 
 }   // namespace plask
 

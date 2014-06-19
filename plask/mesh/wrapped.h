@@ -20,7 +20,7 @@ namespace plask {
  * TODO handle periodicity as well.
  */
 template <int dim>
-struct PLASK_API WrappedMesh: public MeshD<dim> {
+struct WrappedMesh: public MeshD<dim> {
 
   protected:
 
@@ -61,10 +61,8 @@ template <> inline
 WrappedMesh<3>::WrappedMesh(shared_ptr<const MeshD<3>> original, const shared_ptr<const GeometryD<3>>& geometry)
     : original(original), geometry(geometry), ignore_symmetry{false, false, false} {}
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API WrappedMesh<2>;
-extern template struct PLASK_API WrappedMesh<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(WrappedMesh<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(WrappedMesh<3>)
 
 } // namespace plask
 

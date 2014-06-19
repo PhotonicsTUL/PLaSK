@@ -14,7 +14,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim, typename Primitive<dim>::Direction growingDirection = Primitive<dim>::DIRECTION_VERT>
-struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
+struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
@@ -157,17 +157,15 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>;
-extern template struct PLASK_API StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>;
-extern template struct PLASK_API StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainerBaseImpl<3, Primitive<3>::DIRECTION_VERT>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>)
 
 /**
  * Horizontal stack.
  * @ingroup GEOMETRY_OBJ
  */
-struct PLASK_API ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
+struct ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
     /// Type of this child.
     typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::ChildType ChildType;
@@ -291,7 +289,7 @@ using StackContainerChildAligner =
 //TODO copy constructor
 //TODO remove some redundant code and use one from WithAligners
 template <int dim>
-struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
+struct StackContainer: public WithAligners< StackContainerBaseImpl<dim>, StackContainerChildAligner<dim> > {
 
     typedef StackContainerChildAligner<dim> ChildAligner;
     static const StackContainer<dim>::ChildAligner& DefaultAligner();
@@ -502,17 +500,15 @@ protected:
 template <> const StackContainer<2>::ChildAligner& StackContainer<2>::DefaultAligner();
 template <> const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner();
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API StackContainer<2>;
-extern template struct PLASK_API StackContainer<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainer<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainer<3>)
 
 /**
  * N-stacks
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-class PLASK_API MultiStackContainer: public StackContainer<dim> {
+class MultiStackContainer: public StackContainer<dim> {
 
     ///Type of parent class of this.
     typedef StackContainer<dim> UpperClass;

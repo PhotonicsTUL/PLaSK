@@ -14,7 +14,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API Flip: public GeometryObjectTransform<dim> {
+struct Flip: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -88,17 +88,15 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API Flip<2>;
-extern template struct PLASK_API Flip<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<3>)
 
 /**
  * We suppose that getBoundingBoxes().upper[flipDir] > 0
  */
 //TODO add checking of coordinates
 template <int dim>
-struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
+struct Mirror: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
@@ -193,10 +191,8 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API Mirror<2>;
-extern template struct PLASK_API Mirror<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Mirror<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Mirror<3>)
 
 }   // namespace plask
 

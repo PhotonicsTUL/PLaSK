@@ -191,7 +191,7 @@ inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager,
  * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
 template<>
-class PLASK_API RectangularMesh<2>: public MeshD<2> {
+class RectangularMesh<2>: public MeshD<2> {
 
     typedef std::size_t index_ft(const RectangularMesh<2>* mesh, std::size_t axis0_index, std::size_t axis1_index);
     typedef std::size_t index01_ft(const RectangularMesh<2>* mesh, std::size_t mesh_index);
@@ -216,7 +216,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     /**
      * Represent FEM-like element in RectangularMesh.
      */
-    class PLASK_API Element {
+    class Element {
         const RectangularMesh<2>& mesh;
         std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
 
@@ -1428,9 +1428,7 @@ inline Boundary<RectangularMesh<2>> parseBoundary<RectangularMesh<2>>(const std:
 template <>
 inline Boundary<RectangularMesh<2>> parseBoundary<RectangularMesh<2>>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh<2>::getBoundary(boundary_desc, env); }
 
-#ifndef PLASK_EXPORTS
-extern template class PLASK_API RectangularMesh<2>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_CLASS(RectangularMesh<2>)
 
 } // namespace plask
 

@@ -21,7 +21,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
-struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
+struct GeometryObjectSeparator: public GeometryObjectD<dim> {
 
     typedef typename GeometryObjectD<dim>::DVec DVec;
     typedef typename GeometryObjectD<dim>::Box Box;
@@ -83,10 +83,8 @@ struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API GeometryObjectSeparator<2>;
-extern template struct PLASK_API GeometryObjectSeparator<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectSeparator<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectSeparator<3>)
 
 /**
  * Gap in one, choose at compile time, direction.

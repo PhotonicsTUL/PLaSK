@@ -18,7 +18,7 @@ class GeometryReader;
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
-struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
+struct GeometryObjectLeaf: public GeometryObjectD<dim> {
 
     typedef typename GeometryObjectD<dim>::DVec DVec;
     typedef typename GeometryObjectD<dim>::Box Box;
@@ -27,7 +27,7 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
 
 protected:
 
-    struct PLASK_API MaterialProvider {
+    struct MaterialProvider {
         virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const = 0;
 
         /**
@@ -51,7 +51,7 @@ protected:
         virtual ~MaterialProvider() {}
     };
 
-    struct PLASK_API SolidMaterial: public MaterialProvider {
+    struct SolidMaterial: public MaterialProvider {
         shared_ptr<Material> material;
 
         SolidMaterial() = default;
@@ -79,7 +79,7 @@ protected:
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
 
-    struct PLASK_API MixedCompositionMaterial: public MaterialProvider {
+    struct MixedCompositionMaterial: public MaterialProvider {
 
         shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory;
 
@@ -259,10 +259,8 @@ public:
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API GeometryObjectLeaf<2>;
-extern template struct PLASK_API GeometryObjectLeaf<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectLeaf<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectLeaf<3>)
 
 /**
 Represent figure which, depends from @p dim is:
@@ -274,7 +272,7 @@ Block is filled with one material.
 @ingroup GEOMETRY_OBJ
 */
 template <int dim>
-struct PLASK_API Block: public GeometryObjectLeaf<dim> {
+struct Block: public GeometryObjectLeaf<dim> {
 
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectLeaf<dim>::DVec DVec;
@@ -340,10 +338,8 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
 template <> void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 template <> void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API Block<2>;
-extern template struct PLASK_API Block<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<3>)
 
 PLASK_API shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material, const shared_ptr<const GeometryObject>& to_change, Vec<3, double>& translation);
 

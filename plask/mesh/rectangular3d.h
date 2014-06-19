@@ -19,7 +19,7 @@ namespace plask {
  * Represent all points (x, y, z) such that x is in axis0, y is in axis1, z is in axis2.
  */
 template<>
-class PLASK_API RectangularMesh<3>: public MeshD<3> {
+class RectangularMesh<3>: public MeshD<3> {
 
     typedef std::size_t index_ft(const RectangularMesh<3>* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
     typedef std::size_t index012_ft(const RectangularMesh<3>* mesh, std::size_t mesh_index);
@@ -45,7 +45,7 @@ class PLASK_API RectangularMesh<3>: public MeshD<3> {
     /**
      * Represent FEM-like element in RectangularMesh.
      */
-    class PLASK_API Element {
+    class Element {
         const RectangularMesh<3>& mesh;
         std::size_t index0, index1, index2; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
 
@@ -1498,9 +1498,7 @@ inline Boundary<RectangularMesh<3>> parseBoundary<RectangularMesh<3>>(const std:
 template <>
 inline Boundary<RectangularMesh<3>> parseBoundary<RectangularMesh<3>>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh<3>::getBoundary(boundary_desc, env); }
 
-#ifndef PLASK_EXPORTS
-extern template class PLASK_API RectangularMesh<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_CLASS(RectangularMesh<3>)
 
 }   // namespace plask
 

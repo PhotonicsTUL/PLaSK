@@ -12,7 +12,7 @@ namespace plask {
 
 /// Mesh which represent set with only one point in space with size given as template parameter @p DIM.
 template <int DIM>
-struct PLASK_API OnePointMesh: public plask::MeshD<DIM> {
+struct OnePointMesh: public plask::MeshD<DIM> {
 
     /// Held point:
     Vec<DIM, double> point;
@@ -42,16 +42,14 @@ inline shared_ptr<OnePointMesh<DIM>> toMesh(const plask::Vec<DIM, double>& point
 template<> void OnePointMesh<2>::writeXML(XMLElement& object) const;
 template<> void OnePointMesh<3>::writeXML(XMLElement& object) const;
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API OnePointMesh<2>;
-extern template struct PLASK_API OnePointMesh<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(OnePointMesh<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(OnePointMesh<3>)
 
 /**
  * Mesh which trasnlate another mesh by given vector.
  */
 template <int DIM>
-struct PLASK_API TranslatedMesh: public MeshD<DIM> {
+struct TranslatedMesh: public MeshD<DIM> {
 
     Vec<DIM, double> translation;
 
@@ -70,10 +68,8 @@ struct PLASK_API TranslatedMesh: public MeshD<DIM> {
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API TranslatedMesh<2>;
-extern template struct PLASK_API TranslatedMesh<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(TranslatedMesh<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(TranslatedMesh<3>)
 
 //TODO return special type for rectangular meshes
 template <int DIM>

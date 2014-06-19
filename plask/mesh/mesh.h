@@ -223,7 +223,7 @@ struct PLASK_API Mesh: public Printable {
  * Base class for all meshes defined for specified number of dimensions.
  */
 template <int dimension>
-struct PLASK_API MeshD: public Mesh {
+struct MeshD: public Mesh {
 
     /// Number of dimensions
     enum { DIM = dimension };
@@ -294,11 +294,9 @@ struct PLASK_API MeshD: public Mesh {
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API MeshD<1>;
-extern template struct PLASK_API MeshD<2>;
-extern template struct PLASK_API MeshD<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<1>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<3>)
 
 /**
  * Implementation of Mesh::IteratorImpl.
@@ -401,7 +399,7 @@ class PLASK_API MeshGenerator {
 
 /** Base class for specific mesh generator */
 template <int MESH_DIM>
-class PLASK_API MeshGeneratorD: public MeshGenerator
+class MeshGeneratorD: public MeshGenerator
 {
   public:
       /// Type of the generated mesh
@@ -454,11 +452,9 @@ class PLASK_API MeshGeneratorD: public MeshGenerator
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template class PLASK_API MeshGeneratorD<1>;
-extern template class PLASK_API MeshGeneratorD<2>;
-extern template class PLASK_API MeshGeneratorD<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_CLASS(MeshGeneratorD<1>)
+PLASK_API_EXTERN_TEMPLATE_CLASS(MeshGeneratorD<2>)
+PLASK_API_EXTERN_TEMPLATE_CLASS(MeshGeneratorD<3>)
 
 /**
  * Helper which call stores mesh reader when constructed.

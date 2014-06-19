@@ -26,7 +26,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API GeometryObjectContainer: public GeometryObjectD<dim> {
+struct GeometryObjectContainer: public GeometryObjectD<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
@@ -262,10 +262,8 @@ public:
 
 };
 
-#ifndef PLASK_EXPORTS
-extern template struct PLASK_API GeometryObjectContainer<2>;
-extern template struct PLASK_API GeometryObjectContainer<3>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectContainer<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectContainer<3>)
 
 /**
  * Read children, call child_param_read if children is in \<item\> tag and without_child_param_read if there was no \<item\> tag.

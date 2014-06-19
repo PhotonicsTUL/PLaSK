@@ -969,7 +969,7 @@ template <int dim> struct Translation;
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct PLASK_API GeometryObjectD: public GeometryObject {
+struct GeometryObjectD: public GeometryObject {
 
     static const int DIM = dim;
     typedef typename Primitive<dim>::Box Box;
@@ -1500,8 +1500,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     }
 };
 
-extern template struct PLASK_API GeometryObjectD<2>;
-extern template struct PLASK_API GeometryObjectD<3>;
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<3>)
 
 } // namespace plask
 

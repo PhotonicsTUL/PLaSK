@@ -8,7 +8,7 @@
 namespace plask {
 
 template<>
-struct PLASK_API RectangularMesh<1>: public MeshD<1> {
+struct RectangularMesh<1>: public MeshD<1> {
 
     /**
      * Create new mesh wich has copy of data included in @c this.
@@ -54,9 +54,7 @@ protected:
 
 typedef RectangularMesh<1> RectangularAxis;
 
-#ifndef PLASK_EXPORTS
-extern template class PLASK_API RectangularMesh<1>;
-#endif
+PLASK_API_EXTERN_TEMPLATE_CLASS(RectangularMesh<1>)
 
 }   // namespace plask
 
