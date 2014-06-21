@@ -8,7 +8,7 @@ namespace plask {
 /**
  * Electric potential/voltage [V]
  */
-struct Potential: public ScalarFieldProperty {
+struct PLASK_API Potential: public ScalarFieldProperty {
     static constexpr const char* NAME = "potential";
     static constexpr const char* UNIT = "V";
 };
@@ -17,7 +17,7 @@ struct Potential: public ScalarFieldProperty {
  * Electric current density [kA/cm²]
  * This is 2D vector for two-dimensional sovers
  */
-struct CurrentDensity: public VectorFieldProperty<> {
+struct PLASK_API CurrentDensity: public VectorFieldProperty<> {
     static constexpr const char* NAME = "current density";
     static constexpr const char* UNIT = "kA/cm²";
 };
@@ -26,7 +26,7 @@ struct CurrentDensity: public VectorFieldProperty<> {
  * Majority carriers concentration [1/cm^3]
  * It is not specified whether the carriers are electrons or holes
  */
-struct CarriersConcentration: public ScalarFieldProperty {
+struct PLASK_API CarriersConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "carriers concentration";
     static constexpr const char* UNIT = "1/cm³";
 };
@@ -34,7 +34,7 @@ struct CarriersConcentration: public ScalarFieldProperty {
 /**
  * Electrons concentration [1/cm^3]
  */
-struct ElectronsConcentration: public ScalarFieldProperty {
+struct PLASK_API ElectronsConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "electrons concentration";
     static constexpr const char* UNIT = "1/cm³";
 };
@@ -42,7 +42,7 @@ struct ElectronsConcentration: public ScalarFieldProperty {
 /**
  * Holes concentration [1/cm^3]
  */
-struct HolesConcentration: public ScalarFieldProperty {
+struct PLASK_API HolesConcentration: public ScalarFieldProperty {
     static constexpr const char* NAME = "holes concentration";
     static constexpr const char* UNIT = "1/cm³";
 };
