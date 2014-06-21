@@ -638,7 +638,7 @@ struct Primitive {};
  * Specialization of Primitive, which define types of primitives and constants in space with 1 dimensions.
  */
 template <>
-struct Primitive<1> {
+struct PLASK_API Primitive<1> {
 
     /// Real (double) vector type in 1d space.
     typedef double DVec;
@@ -654,7 +654,7 @@ struct Primitive<1> {
  * Specialization of Primitive, which define types of primitives and constants in space with 2 dimensions.
  */
 template <>
-struct Primitive<2> {
+struct PLASK_API Primitive<2> {
 
     /// Rectangle type in 2d space.
     typedef Box2D Box;
@@ -688,7 +688,7 @@ struct Primitive<2> {
  * Specialization of Primitive, which define types of primitives and constants in space with 3 dimensions.
  */
 template <>
-struct Primitive<3> {
+struct PLASK_API Primitive<3> {
 
     /// Rectangle type (cuboid) in 3d space.
     typedef Box3D Box;
