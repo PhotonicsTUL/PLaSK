@@ -204,7 +204,7 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim>
-struct Translation: public GeometryObjectTransform<dim> {
+struct PLASK_API Translation: public GeometryObjectTransform<dim> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
