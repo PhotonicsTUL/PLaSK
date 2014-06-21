@@ -20,7 +20,7 @@ namespace plask {
  * TODO handle periodicity as well.
  */
 template <int dim>
-struct WrappedMesh: public MeshD<dim> {
+struct PLASK_API WrappedMesh: public MeshD<dim> {
 
   protected:
 
