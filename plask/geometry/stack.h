@@ -14,7 +14,7 @@ namespace plask {
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim, typename Primitive<dim>::Direction growingDirection = Primitive<dim>::DIRECTION_VERT>
-struct StackContainerBaseImpl: public GeometryObjectContainer<dim> {
+struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
