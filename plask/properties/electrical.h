@@ -50,7 +50,7 @@ struct PLASK_API HolesConcentration: public ScalarFieldProperty {
 /**
  * Electrical conductivity [S/m]
  */
-struct ElectricalConductivity: FieldProperty<Tensor2<double>> {
+struct PLASK_API ElectricalConductivity: FieldProperty<Tensor2<double>> {
     static constexpr const char* NAME = "electrical conductivity";
     static constexpr const char* UNIT = "S/m";
 };

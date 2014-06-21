@@ -58,7 +58,7 @@ namespace plask {
 /**
  * Temperature [K].
  */
-struct Temperature: public ScalarFieldProperty {
+struct PLASK_API Temperature: public ScalarFieldProperty {
     static constexpr const char* NAME = "temperature";
     static constexpr const char* UNIT = "K";
     static inline double getDefaultValue() { return 300.; }
@@ -67,7 +67,7 @@ struct Temperature: public ScalarFieldProperty {
 /**
  * Heat flux in 2D or 3D space [W/m] or [W/m²].
  */
-struct HeatFlux: public VectorFieldProperty<> {
+struct PLASK_API HeatFlux: public VectorFieldProperty<> {
     static constexpr const char* NAME = "heat flux";
     static constexpr const char* UNIT = "W/m²";
 };
@@ -75,7 +75,7 @@ struct HeatFlux: public VectorFieldProperty<> {
 /**
  * Density of heat sources [W/m²] or [W/m³].
  */
-struct Heat: public ScalarFieldProperty {
+struct PLASK_API Heat: public ScalarFieldProperty {
     static constexpr const char* NAME = "heat sources density";
     static constexpr const char* UNIT = "W/m³";
 };
@@ -89,7 +89,7 @@ struct HeatSumProvider: public FieldSumProvider<Heat, SpaceT> {};
 /**
  * Thermal conductivity [W/m*K]
  */
-struct ThermalConductivity: FieldProperty<Tensor2<double>> {
+struct PLASK_API ThermalConductivity: FieldProperty<Tensor2<double>> {
     static constexpr const char* NAME = "thermal conductivity";
     static constexpr const char* UNIT = "W/(m×K)";
 };
