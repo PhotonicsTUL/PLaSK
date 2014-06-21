@@ -54,8 +54,8 @@
         #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
     #else
         #define PLASK_API __declspec(dllimport)
-        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
-        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
+        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __VA_ARGS__ ;
+        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
     #endif
 
     #if defined(PLASK_SOLVERS_EXPORTS)
