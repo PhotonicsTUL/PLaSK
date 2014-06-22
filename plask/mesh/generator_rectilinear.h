@@ -137,7 +137,7 @@ public:
  * Dividing generator ensuring no rapid change of element size
  */
 template <int dim>
-struct RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
+struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
 
     size_t pre_divisions[dim];
     size_t post_divisions[dim];
