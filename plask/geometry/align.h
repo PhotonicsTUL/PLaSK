@@ -684,9 +684,9 @@ template <Primitive<3>::Direction dir1, Primitive<3>::Direction dir2> inline Ali
 typedef std::function<boost::optional<double>(const std::string& name)> Dictionary;
 
 namespace details {
-    Aligner<Primitive<3>::DIRECTION_TRAN> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
-    Aligner<Primitive<3>::DIRECTION_LONG> lonAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
-    Aligner<Primitive<3>::DIRECTION_VERT> vertAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
+    PLASK_API Aligner<Primitive<3>::DIRECTION_TRAN> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
+    PLASK_API Aligner<Primitive<3>::DIRECTION_LONG> lonAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
+    PLASK_API Aligner<Primitive<3>::DIRECTION_VERT> vertAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
 }
 
 /**
