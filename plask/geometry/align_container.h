@@ -24,7 +24,7 @@ using AlignContainerChildAligner = typename chooseType<dim-2,
  * @ingroup GEOMETRY_OBJ
  */
 template <int dim, typename Primitive<dim>::Direction alignDirection>
-struct AlignContainer: public WithAligners<GeometryObjectContainer<dim>, AlignContainerChildAligner<dim, alignDirection>> {
+struct PLASK_API AlignContainer: public WithAligners<GeometryObjectContainer<dim>, AlignContainerChildAligner<dim, alignDirection>> {
 
     static constexpr const char* NAME = dim == 2 ?
                 ("align" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
