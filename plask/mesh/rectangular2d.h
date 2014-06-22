@@ -1419,7 +1419,7 @@ struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_NEAR
  * @param to_copy mesh to copy
  * @return mesh with each axis of type OrderedAxis
  */
-shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(const RectangularMesh<2>& to_copy);
+PLASK_API shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(const RectangularMesh<2>& to_copy);
 inline shared_ptr<RectangularMesh<2>> make_rectilinear_mesh(shared_ptr<const RectangularMesh<2>> to_copy) { return make_rectilinear_mesh(*to_copy); }
 
 template <>
