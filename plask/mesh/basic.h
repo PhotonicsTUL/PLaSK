@@ -12,7 +12,7 @@ namespace plask {
 
 /// Mesh which represent set with only one point in space with size given as template parameter @p DIM.
 template <int DIM>
-struct OnePointMesh: public plask::MeshD<DIM> {
+struct PLASK_API OnePointMesh: public plask::MeshD<DIM> {
 
     /// Held point:
     Vec<DIM, double> point;
@@ -49,7 +49,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(OnePointMesh<3>)
  * Mesh which trasnlate another mesh by given vector.
  */
 template <int DIM>
-struct TranslatedMesh: public MeshD<DIM> {
+struct PLASK_API TranslatedMesh: public MeshD<DIM> {
 
     Vec<DIM, double> translation;
 
