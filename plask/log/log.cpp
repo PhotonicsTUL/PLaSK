@@ -13,12 +13,12 @@ using namespace std;
 namespace plask {
 
 #ifdef NDEBUG
-LogLevel maxLoglevel = LOG_DETAIL;
+PLASK_API LogLevel maxLoglevel = LOG_DETAIL;
 #else
-LogLevel maxLoglevel = LOG_DEBUG;
+PLASK_API LogLevel maxLoglevel = LOG_DEBUG;
 #endif
 
-bool forcedLoglevel = false;
+PLASK_API bool forcedLoglevel = false;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
@@ -146,7 +146,7 @@ bool forcedLoglevel = false;
 
 #endif
 
-shared_ptr<Logger> default_logger { new StderrLogger() };
+PLASK_API shared_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
     if (level <= maxLoglevel && (!default_logger->silent || level <= LOG_WARNING)) {
