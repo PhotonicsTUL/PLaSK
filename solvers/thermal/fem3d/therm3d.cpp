@@ -516,10 +516,14 @@ Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(
             size_t idx = element_mesh->index(x-1, y-1, z-1);
             auto point = element_mesh->at(idx);
             auto material = solver->geometry->getMaterial(point);
+            Tensor2<double> result;
             if (auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(solver->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf)))
-                return material->thermk(temps[idx], leaf->getBoundingBox().height());
+                #pragma omp critical
+                result = material->thermk(temps[idx], leaf->getBoundingBox().height());
             else
-                return material->thermk(temps[idx]);
+                #pragma omp critical
+                result = material->thermk(temps[idx]);
+            return result;
         }
 }
 std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return target_mesh.size(); }
@@ -531,3 +535,4 @@ const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalCo
 
 
 }}} // namespace plask::solvers::thermal
+\

@@ -597,8 +597,9 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             #pragma omp parallel for
             for (size_t i = 0; i < regpoints[reg]->size(); ++i) {
                 const ActiveRegionInfo& region = solver->regions[reg];
-                if (concs[i] > 0.)
-                    values[i] = getValue(wavelength, temps[i], concs[i], region);
+                double conc = concs[i];
+                if (conc > 0.)
+                    values[i] = getValue(wavelength, temps[i], conc, region);
                 else
                     values[i] = 0.;
             }
