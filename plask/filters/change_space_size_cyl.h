@@ -11,7 +11,7 @@ namespace plask {
  * Each point from sourceMesh is replaced by pointsCount points that lie on circle.
  * Point with index I in sourceMesh is used to creates points I * pointsCount to I * (pointsCount + 1) - 1.
  */
-struct PointsOnCircleMeshExtend: public MeshD<3> {
+struct PLASK_API PointsOnCircleMeshExtend: public MeshD<3> {
 
     const shared_ptr<const MeshD<2>> sourceMesh;
 
@@ -97,7 +97,7 @@ struct DataFromCyl2Dto3DSourceImpl {
 /**
  * This class is a 2D mesh which wraps 3D mesh (@p sourceMesh), reduce each point of sourceMesh (in cylinder) to 2D and translate it by given vector (@p translation).
  */
-struct CylReductionTo2DMesh: public MeshD<2> {
+struct PLASK_API CylReductionTo2DMesh: public MeshD<2> {
 
     Vec<3, double> translation;
 

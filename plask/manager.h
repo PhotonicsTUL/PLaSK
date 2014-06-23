@@ -39,7 +39,7 @@ struct PLASK_API Manager {
         throw Exception("Can't load section \"%1%\" from \"%2%\". Loading from external sources is not supported or disallowed.", section, url); }
 
     /// Allow to support reading some sections from other files.
-    struct ExternalSourcesFromFile {
+    struct PLASK_API ExternalSourcesFromFile {
 
         /// Current file name.
         boost::filesystem::path originalFileName;

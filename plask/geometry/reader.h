@@ -57,7 +57,7 @@ class PLASK_API GeometryReader {
      *
      * Each object can create one global instance of this class to register own reader.
      */
-    struct RegisterObjectReader {
+    struct PLASK_API RegisterObjectReader {
         RegisterObjectReader(const std::string& tag_name, object_read_f* reader) {
             GeometryReader::registerObjectReader(tag_name, reader);
         }
@@ -101,7 +101,7 @@ class PLASK_API GeometryReader {
     /**
      * Store current expectedSuffix, set new one, and restore old when out of the scope (in destructor).
      */
-    struct SetExpectedSuffix {
+    struct PLASK_API SetExpectedSuffix {
         GeometryReader& reader;
         const char* old;
         SetExpectedSuffix(GeometryReader& reader, const char* new_expected_suffix);

@@ -11,7 +11,10 @@
 
 namespace plask {
 
-struct FiltersFactory
+/**
+ * Construct filters using data from XML.
+ */
+struct PLASK_API FiltersFactory
 {
 
     typedef std::function<shared_ptr<Solver>(XMLReader& reader, Manager& manager)> FilterCreator;
@@ -33,7 +36,7 @@ public:
      *
      * Creating global objects of this type allow to fill the default filters database.
      */
-    struct Register {
+    struct PLASK_API Register {
         Register(const std::string typeName, FilterCreator filterCreator) { getDefault().add(typeName, filterCreator); }
     };
 
