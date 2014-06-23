@@ -42,7 +42,7 @@ namespace plask { namespace python {
 
     void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
-    shared_ptr<Logger> makePythonLogger();
+    PLASK_PYTHON_API shared_ptr<Logger> makePythonLogger();
 
     extern PLASK_PYTHON_API AxisNames current_axes;
 }}
