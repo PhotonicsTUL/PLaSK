@@ -71,7 +71,7 @@ std::ostream& print_seq(std::ostream& out, Iter begin, Iter end, const char* sep
  * @param splitter splitter character
  * @return two strings, @a to_split after split
  */
-std::pair<std::string, std::string> splitString2(const std::string& to_split, char splitter);
+PLASK_API std::pair<std::string, std::string> splitString2(const std::string& to_split, char splitter);
 
 /**
  * Calculate copy of string @p str without some characters.
@@ -107,7 +107,7 @@ std::string replaceChars(const std::string& str, CharReplacer repl) {
  * @param chars_to_remove set of characters to remove
  * @return copy of @a str with removed chars which are include in @a chars_to_remove
  */
-std::string removedChars(const std::string& str, const std::string& chars_to_remove);
+PLASK_API std::string removedChars(const std::string& str, const std::string& chars_to_remove);
 
 /**
  * Split @p input to sequence of tokens. White spaces on beginning and ending of each token are removed.
@@ -134,7 +134,7 @@ typedef boost::tokenizer< boost::escaped_list_separator<char> > split_esc_tokeni
  * @param esc_char escape character which alow to insert separate character in token, typically '\\'
  * @return tokenizer which allow to iterate over tokens
  */
-split_esc_tokenizer splitEscIterator(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
+PLASK_API split_esc_tokenizer splitEscIterator(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
 
 /**
  * Split @p str to sequence of tokens. White spaces on beginning and ending of each token are removed.
@@ -144,7 +144,7 @@ split_esc_tokenizer splitEscIterator(const std::string& str, char splitter, char
  * @param esc_char escape character which alow to insert separate character in token
  * @return sequence of token
  */
-std::vector<std::string> splitEsc(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
+PLASK_API std::vector<std::string> splitEsc(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
 
 /**
  * Check if @p potential_id is valid C/C++/python name.
@@ -152,7 +152,7 @@ std::vector<std::string> splitEsc(const std::string& str, char splitter, char qu
  * @param underline_ch underline character which can be in id, '_' by default
  * @return @c true only if @p potential_id is valid C/C++/python name
  */
-bool isCid(const char* potential_id, char underline_ch = '_');
+PLASK_API bool isCid(const char* potential_id, char underline_ch = '_');
 
 
 /// Get simplified type name of given type
