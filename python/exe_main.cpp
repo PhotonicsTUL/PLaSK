@@ -38,9 +38,9 @@ py::dict globals;
 // static PyThreadState* mainTS;   // state of the main thread
 namespace plask { namespace python {
 
-    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
+    PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false);
 
-    void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
+    PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
     PLASK_PYTHON_API shared_ptr<Logger> makePythonLogger();
 

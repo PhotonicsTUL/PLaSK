@@ -165,7 +165,7 @@ py::dict xml_globals;
 
 // Print Python exception to PLaSK logging system
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-//__declspec(dllexport)
+__declspec(dllexport)
 #endif
 int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, unsigned startline=0, const char* scriptname=nullptr, bool second_is_script=false) {
     PyTypeObject* type = (PyTypeObject*)otype;
