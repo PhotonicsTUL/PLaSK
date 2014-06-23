@@ -50,31 +50,35 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     #if defined(PLASK_EXPORTS)
         #define PLASK_API __declspec(dllexport)
-        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
-        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
     #else
         #define PLASK_API __declspec(dllimport)
-        #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
-        #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
     #endif
+    #define PLASK_API_EXTERN_TEMPLATE_STRUCT(...)
+    #define PLASK_API_EXTERN_TEMPLATE_CLASS(...)
 
     #if defined(PLASK_SOLVERS_EXPORTS)
         #define PLASK_SOLVER_API __declspec(dllexport)
     #else
         #define PLASK_SOLVER_API __declspec(dllimport)
     #endif
+    #define PLASK_SOLVER_API_EXTERN_TEMPLATE_STRUCT(...)
+    #define PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS(...)
 
     #if defined(PLASK_PYTHON_EXPORTS)
         #define PLASK_PYTHON_API __declspec(dllexport)
     #else
         #define PLASK_PYTHON_API __declspec(dllimport)
     #endif
+    #define PLASK_PYTHON_API_EXTERN_TEMPLATE_STRUCT(...)
+    #define PLASK_PYTHON_API_EXTERN_TEMPLATE_CLASS(...)
 #else
     // extern templates does not work well with dllexport/dllimport and so we can't used it at win32
     #define PLASK_USE_EXTERN_TEMPLATES
 #endif
 
-#if !defined(PLASK_API)
+
+
+#ifndef PLASK_API
     #define PLASK_API
 #endif
 
@@ -86,12 +90,32 @@
     #define PLASK_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
 #endif
 
-#if !defined(PLASK_SOLVER_API)
+
+
+#ifndef PLASK_SOLVER_API
     #define PLASK_SOLVER_API
 #endif
 
-#if !defined(PLASK_PYTHON_API)
+#ifndef PLASK_SOLVER_API_EXTERN_TEMPLATE_STRUCT
+    #define PLASK_SOLVER_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __VA_ARGS__ ;
+#endif
+
+#ifndef PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS
+    #define PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
+#endif
+
+
+
+#ifndef PLASK_PYTHON_API
     #define PLASK_PYTHON_API
+#endif
+
+#ifndef PLASK_PYTHON_API_EXTERN_TEMPLATE_STRUCT
+    #define PLASK_PYTHON_API_EXTERN_TEMPLATE_STRUCT(...) extern template struct __VA_ARGS__ ;
+#endif
+
+#ifndef PLASK_PYTHON_API_EXTERN_TEMPLATE_CLASS
+    #define PLASK_PYTHON_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
 #endif
 
 
