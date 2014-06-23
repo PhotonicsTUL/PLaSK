@@ -63,8 +63,7 @@
 </geometry>
 
 <grids>
-
- <generator type="rectilinear2d" method="divide" name="default">
+ <generator type="rectangular2d" method="divide" name="default">
    <postdiv by0="3" by1="2"/>
    <refinements>
 	 <axis1 object="p-contact" at="50"/>
@@ -74,15 +73,15 @@
    </refinements>
  </generator>
 
- <mesh type="regular1d" name="diffusion">
+ <mesh type="regular" name="diffusion">
    <axis start="0" stop="{mesaRadius}" num="2000"/>
  </mesh>
 
- <generator type="rectilinear2d" method="divide" name="optical">
+ <generator type="rectangular2d" method="divide" name="optical">
    <prediv by0="10" by1="3"/>
  </generator>
 
-	<generator type="rectilinear2d" method="divide" name="plots">
+	<generator type="rectangular2d" method="divide" name="plots">
 		<postdiv by="30"/>
 	</generator>
 </grids>
@@ -132,7 +131,7 @@
 
 <connects>
  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>
- <connect in="THERMAL.inHeatDensity" out="ELECTRICAL.outHeatDensity"/>
+ <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>
 
  <connect in="DIFFUSION.inTemperature" out="THERMAL.outTemperature"/>
  <connect in="DIFFUSION.inCurrentDensity"
@@ -158,13 +157,10 @@ figure()
 plot_geometry(GEO.GeoTE, set_limits=True)
 defmesh = MSG.default(GEO.GeoTE.item)
 plot_mesh(defmesh, color="0.75")
-plot_boundary(ELECTRICAL.voltage_boundary, defmesh,
-              ELECTRICAL.geometry, color="b", marker="D")
-plot_boundary(THERMAL.temperature_boundary, defmesh,
-              THERMAL.geometry, color="r")
+plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")
+plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")
 gcf().canvas.set_window_title("Default mesh")
-
 show()
-]]></script>
 
+]]></script>
 </plask>
