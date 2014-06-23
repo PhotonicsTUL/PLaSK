@@ -6,7 +6,7 @@
 namespace plask { namespace  python {
 
 
-struct PythonManager: public Manager {
+struct PLASK_PYTHON_API PythonManager: public Manager {
 
 //     /// List of constant profiles
 //     py::dict profiles;
