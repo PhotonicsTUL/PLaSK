@@ -2,24 +2,23 @@ from .grid import GridTreeBased
 from .mesh_rectilinear import RectilinearMesh
 
 MESHES_TYPES = {
-    'rectilinear1d': RectilinearMesh.from_XML,
-    'rectilinear2d': RectilinearMesh.from_XML,
-    'rectilinear3d': RectilinearMesh.from_XML,
-    'regular1d': GridTreeBased.from_XML,
-    'regular2d': GridTreeBased.from_XML,
-    'regular3d': GridTreeBased.from_XML,
+    'ordered': GridTreeBased.from_XML,
+    'regular': GridTreeBased.from_XML,
+    'rectangular2d': GridTreeBased.from_XML,
+    'rectangular3d': GridTreeBased.from_XML,
+    #RectilinearMesh.from_XML
 }
 
 GENERATORS_TYPES = {
-    'rectilinear1d': {
+    'ordered': {
             'divide': GridTreeBased.from_XML,
             'simple': GridTreeBased.from_XML,
     },
-    'rectilinear2d': {
+    'rectangular2d': {
             'divide': GridTreeBased.from_XML,
             'simple': GridTreeBased.from_XML,
     },
-    'rectilinear3d': {
+    'rectangular3d': {
             'divide': GridTreeBased.from_XML,
             'simple': GridTreeBased.from_XML,
     },
