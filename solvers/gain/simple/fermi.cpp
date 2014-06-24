@@ -594,15 +594,20 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             AveragedData concs(temps);
             temps.data = solver->inTemperature(temps.mesh, interp);
             concs.data = solver->inCarriersConcentration(temps.mesh, interp);
+            std::exception_ptr error;
             #pragma omp parallel for
             for (size_t i = 0; i < regpoints[reg]->size(); ++i) {
+                if (error) continue;
                 const ActiveRegionInfo& region = solver->regions[reg];
                 double conc = concs[i];
-                if (conc > 0.)
+                try {
                     values[i] = getValue(wavelength, temps[i], conc, region);
-                else
-                    values[i] = 0.;
+                } catch(...) {
+                    #pragma omp critical
+                    error = std::current_exception();
+                }
             }
+            if (error) std::rethrow_exception(error);
             data[reg] = interpolate(make_shared<RectangularMesh<2>>(regpoints[reg], zero),
                                     values, dst_mesh, interp);
         }

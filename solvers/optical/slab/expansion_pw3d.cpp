@@ -294,7 +294,9 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                             double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                         }
-//                         cell[j] *= Tensor2<dcomplex>(s, 1./s); TODO
+                         cell[j].c00 *= 1./s;
+                         cell[j].c11 *= s;
+                         cell[j].c22 *= s;
                     }
                     if (!periodic_tran) {
                         dcomplex s = 1.;
@@ -305,7 +307,9 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                             double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                         }
-//                         cell[j] *= Tensor2<dcomplex>(s, 1./ s); TODO
+                        cell[j].c00 *= s;
+                        cell[j].c11 *= 1./s;
+                        cell[j].c22 *= s;
                     }
 
                     norm += (real(eps.c00) + real(eps.c11)) * vec(long_mesh[l] - long0, tran_mesh[t] - tran0);
