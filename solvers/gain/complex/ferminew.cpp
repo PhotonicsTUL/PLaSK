@@ -199,6 +199,17 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                             region.origin += Vec<2>(0., -h);
                             region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
                         }
+
+                        // add layer below active region (cladding) LUKASZ
+                        /*auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+                        for (size_t cc = ileft; cc < iright; ++cc)
+                            if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
+                                throw Exception("%1%: Material below quantum well not uniform.", this->getId());
+                        auto& region = regions.back();
+                        double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+                        double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+                        region.origin += Vec<2>(0., -h);
+                        region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
                     }
                     else
                         throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
@@ -238,6 +249,12 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                 // LUKASZ: trzeba dodac warstwe, ktora jest tuz nad obszarem czynnym
                 // LUKASZ: i trzeba to zrobic tylko raz
 
+                // add layer above active region (top cladding)
+                /*auto top_material = this->geometry->getMaterial(points->at(ileft,r));
+                for (size_t cc = ileft; cc < iright; ++cc)
+                    if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
+                        throw Exception("%1%: Material above quantum well not uniform.", this->getId());
+                region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));*/
 
                 if (region->isQW(region->size()-1))
                 { // top layer of the active region is quantum well, add the next layer
