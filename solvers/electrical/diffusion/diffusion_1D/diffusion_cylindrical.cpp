@@ -910,7 +910,7 @@ plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DT
 template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "Diffusion2D"; }
 template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "DiffusionCyl"; }
 
-template class FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
-template class FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;
+template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
+template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;
 
 }}} //namespaces

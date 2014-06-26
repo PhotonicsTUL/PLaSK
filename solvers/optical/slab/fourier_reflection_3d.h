@@ -11,7 +11,7 @@ namespace plask { namespace solvers { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 3D geometry.
  */
-struct FourierReflection3D: public ReflectionSolver<Geometry3D> {
+struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D> {
 
     std::string getClassName() const { return "optical.FourierReflection3D"; }
 

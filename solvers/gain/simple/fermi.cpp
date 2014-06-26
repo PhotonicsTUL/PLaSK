@@ -699,7 +699,7 @@ GainSpectrum<GeometryType> FermiGainSolver<GeometryType>::getGainSpectrum(const 
 template <> std::string FermiGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.Fermi2D"; }
 template <> std::string FermiGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FermiCyl"; }
 
-template struct FermiGainSolver<Geometry2DCartesian>;
-template struct FermiGainSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API FermiGainSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API FermiGainSolver<Geometry2DCylindrical>;
 
 }}} // namespace

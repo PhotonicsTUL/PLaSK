@@ -3,7 +3,7 @@
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
 template<typename Geometry2DType>
-class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometry2DType, plask::RegularMesh1D>
+class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometry2DType, plask::RegularMesh1D>
 {
     public:
         enum FemMethod {
@@ -157,5 +157,7 @@ class FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometr
 
 }; // class FiniteElementMethodDiffusion2DSolver
 
+//PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>)
+//PLASK_SOLVER_API_EXTERN_TEMPLATE_CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>)
 
 }}} //namespace plask::solvers::diffusion_cylindrical

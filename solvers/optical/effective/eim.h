@@ -13,7 +13,7 @@ namespace plask { namespace solvers { namespace effective {
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>> {
+struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>> {
 
     /// Mode symmetry in horizontal axis
     enum Symmetry {

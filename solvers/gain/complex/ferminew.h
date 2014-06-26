@@ -16,7 +16,7 @@ template <typename GeometryT> struct GainSpectrum;
  * Gain solver using Fermi Golden Rule
  */
 template <typename GeometryType>
-struct FerminewGainSolver: public SolverWithMesh<GeometryType,OrderedMesh1D>
+struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,OrderedMesh1D>
 {
     /// Structure containing information about each active region
     struct ActiveRegionInfo

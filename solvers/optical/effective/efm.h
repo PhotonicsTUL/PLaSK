@@ -16,7 +16,7 @@ static constexpr int MH = 2; // Hankel function type (1 or 2)
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>> {
+struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>> {
 
     struct FieldZ {
         dcomplex F, B;

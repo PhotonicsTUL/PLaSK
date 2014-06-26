@@ -11,7 +11,7 @@ namespace plask { namespace solvers { namespace slab {
  * Base class for all solvers using reflection matrix method.
  */
 template <typename GeometryT>
-struct ReflectionSolver: public SlabSolver<GeometryT> {
+struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
 
     /// Struct containng data for computing field in a layer
     struct LayerFields {

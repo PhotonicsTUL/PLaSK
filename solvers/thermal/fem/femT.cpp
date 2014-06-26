@@ -657,7 +657,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DTyp
 template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "thermal.Static2D"; }
 template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "thermal.StaticCyl"; }
 
-template struct FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;
-template struct FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>;
 
 }}} // namespace plask::solvers::thermal

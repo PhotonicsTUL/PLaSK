@@ -761,7 +761,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCapacitance() {
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Shockley2D"; }
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ShockleyCyl"; }
 
-template struct FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;
-template struct FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>;
 
 }}} // namespace plask::solvers::thermal

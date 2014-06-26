@@ -1048,8 +1048,8 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldIntensity(double pow
 //     diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, outVectorField2D);
 // }
 
-template struct ReflectionSolver<Geometry2DCartesian>;
-template struct ReflectionSolver<Geometry2DCylindrical>;
-template struct ReflectionSolver<Geometry3D>;
+template struct PLASK_SOLVER_API ReflectionSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API ReflectionSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API ReflectionSolver<Geometry3D>;
 
 }}} // namespace plask::solvers::slab
