@@ -248,7 +248,7 @@ private:
     static const int mInfo = 0; // LUKASZ
 };
 /*******************************************************************/
-class gain
+class PLASK_SOLVER_API gain
 {
     plask::shared_ptr<obszar_aktywny> pasma;
     double nosniki_c, nosniki_v; // gestosc powierzchniowa
