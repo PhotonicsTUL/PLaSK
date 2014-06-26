@@ -70,6 +70,8 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     BOOST_CHECK_EQUAL(solver.regions.size(), 2);
     BOOST_CHECK_EQUAL(solver.regions[0].origin, Vec<2>(0., 500.000)); // info: 500.020-0.020, -0.020 -> - cladding
     //BOOST_CHECK_EQUAL(solver.regions[1].origin, Vec<2>(0., 500.038)); // info: 500.058-0.020, -0.020 -> - cladding
+    BOOST_CHECK_CLOSE(solver.regions[1].origin[0], 0.0, 1e-5);
+    BOOST_CHECK_CLOSE(solver.regions[1].origin[1], 500.038, 1e-5);
 
     BOOST_CHECK_EQUAL(solver.regions[0].layers->getChildrenCount(), 3+2); // info: +2 -> + claddings
     BOOST_CHECK_EQUAL(solver.regions[0].size(), 3+2); // info: +2 -> + claddings
