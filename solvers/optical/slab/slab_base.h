@@ -21,7 +21,7 @@ struct PML {
  * Base class for all slab solvers
  */
 template <typename GeometryT>
-struct SlabSolver: public SolverOver<GeometryT> {
+struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
 
   protected:
 

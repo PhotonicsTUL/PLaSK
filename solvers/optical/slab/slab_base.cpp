@@ -179,9 +179,9 @@ void SlabSolver<Geometry3D>::setupLayers()
     this->writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
 
-template struct SlabSolver<Geometry2DCartesian>;
-template struct SlabSolver<Geometry2DCylindrical>;
-template struct SlabSolver<Geometry3D>;
+template struct PLASK_SOLVER_API SlabSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API SlabSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API SlabSolver<Geometry3D>;
 
 // FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
 
