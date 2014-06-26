@@ -7,7 +7,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-struct Expansion {
+struct PLASK_SOLVER_API Expansion {
 
     struct FieldParams {
         /// Indentification of the field obtained by the getField

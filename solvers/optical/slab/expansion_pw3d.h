@@ -10,7 +10,7 @@ namespace plask { namespace solvers { namespace slab {
 
 struct FourierReflection3D;
 
-struct ExpansionPW3D: public Expansion {
+struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Specified component in polarization or symmetry
     enum Component {
