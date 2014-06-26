@@ -20,24 +20,24 @@ struct PLASK_API Revolution: public GeometryObjectTransformSpace<3, 2> {
 
     static constexpr const char* NAME = "revolution";
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override;
 
-    virtual bool contains(const DVec& p) const;
+    virtual bool contains(const DVec& p) const override;
 
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
-    virtual Box getBoundingBox() const;
+    virtual Box getBoundingBox() const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const;
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual shared_ptr<GeometryObjectTransform<3, GeometryObjectD<2> > > shallowCopy() const;
+    virtual shared_ptr<GeometryObjectTransform<3, GeometryObjectD<2> > > shallowCopy() const override;
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
     // virtual void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const;
 

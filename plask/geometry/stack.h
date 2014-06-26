@@ -66,25 +66,16 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
      */
     const shared_ptr<TranslationT> getChildForHeight(double height) const;
 
-    virtual bool contains(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection]);
-        return c ? c->contains(p) : false;
-    }
+    virtual bool contains(const DVec& p) const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection]);
-        return c ? c->getMaterial(p) : shared_ptr<Material>();
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
 
-    virtual void removeAtUnsafe(std::size_t index);
+    virtual void removeAtUnsafe(std::size_t index) override;
 
     /// Called by child.change signal, update heights call this change
-    void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
-        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
-    }
+    void onChildChanged(const GeometryObject::Event& evt) override;
 
     /**
      * Get height of stack.
@@ -140,21 +131,15 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
      * Update stack heights and translation in stack growing direction of all children, with indexes from @a first_child_index.
      * @param first_child_index index of first child for which stackHeights should be update
      */
-    void updateAllHeights(std::size_t first_child_index = 0) {
-        for ( ; first_child_index < children.size(); ++first_child_index)
-            updateHeight(first_child_index);
-    }
+    void updateAllHeights(std::size_t first_child_index = 0);
 
     /**
      * Resize stackHeights (to be compatibile with children vector) and refresh its value from given index.
      * @param first_child_index index of first child for which stackHeights should be update
      */
-    void rebuildStackHeights(std::size_t first_child_index = 0) {
-        stackHeights.resize(children.size() + 1);
-        updateAllHeights(first_child_index);
-    }
+    void rebuildStackHeights(std::size_t first_child_index = 0);
 
-    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainerBaseImpl<2, Primitive<2>::DIRECTION_VERT>)
@@ -273,9 +258,9 @@ public:
         return insertUnsafe(el, 0);
     }
 
-    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 
-    virtual void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const;
+    virtual void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const override;
 };
 
 template <int dim>
@@ -324,13 +309,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
      * @param elBB bouding box of @p el
      * @return translation over @p el
      */
-    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const ChildAligner& aligner, double up_trans, const Box& elBB) const {
-        shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
-        result->translation.vert() = up_trans;
-        aligner.align(*result, elBB);
-        //el->fireChanged();    //??
-        return result;
-    }
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const ChildAligner& aligner, double up_trans, const Box& elBB) const;
 
     /**
      * Get translation object over given object @p el.
@@ -339,12 +318,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
      * @param up_trans translation in growing direction
      * @return translation over @p el
      */
-    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const ChildAligner& aligner, double up_trans) const {
-        shared_ptr<TranslationT> result(new TranslationT(el, Primitive<dim>::ZERO_VEC));
-        result->translation.vert() = up_trans;
-        aligner.align(*result);
-        return result;
-    }
+    shared_ptr<TranslationT> newTranslation(const shared_ptr<ChildType>& el, const ChildAligner& aligner, double up_trans) const;
 
   public:
 
@@ -355,13 +329,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
     explicit StackContainer(const double baseHeight = 0.0, const ChildAligner& aligner=DefaultAligner()):
         ParentClass(baseHeight), default_aligner(aligner) {}
 
-    void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) {
-            ParentClass::align(const_cast<TranslationT&>(evt.source<TranslationT>()));
-            this->updateAllHeights(); //TODO optimization: find evt source index and update size from this index to back
-        }
-        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
-    }
+    void onChildChanged(const GeometryObject::Event& evt) override;
 
     /**
      * Insert children to stack at given position.
@@ -401,18 +369,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
      * @param aligner aligner which will be used to calculate horizontal translation of inserted object
      * @return path hint, see @ref geometry_paths
      */
-    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const ChildAligner& aligner) {
-        double el_translation, next_height;
-        auto elBB = el->getBoundingBox();
-        this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
-        shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation, elBB);
-        this->connectOnChildChanged(*trans_geom);
-        children.push_back(trans_geom);
-        stackHeights.push_back(next_height);
-        this->aligners.push_back(aligner);
-        this->fireChildrenInserted(children.size()-1, children.size());
-        return PathHints::Hint(shared_from_this(), trans_geom);
-    }
+    PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el, const ChildAligner& aligner);
 
     PathHints::Hint addUnsafe(const shared_ptr<ChildType>& el) {
         return addUnsafe(el);
@@ -483,12 +440,12 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }*/
 
-    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate);
+    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
 
-    virtual void removeAtUnsafe(std::size_t index);
+    virtual void removeAtUnsafe(std::size_t index) override;
 
     //add in reverse order
-    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const override;
 
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;
@@ -581,51 +538,33 @@ class PLASK_API MultiStackContainer: public StackContainer<dim> {
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
-    virtual Box getBoundingBox() const {
-        Box result = UpperClass::getBoundingBox();
-        result.upper.vert() += result.height() * (repeat_count-1);
-        return result;
-    }
+    virtual Box getBoundingBox() const override;
 
-    virtual Box getRealBoundingBox() const {
-        return UpperClass::getBoundingBox();
-    }
+    virtual Box getRealBoundingBox() const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const;
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path = 0) const;
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual bool contains(const DVec& p) const {
-        DVec p_reduced = p;
-        if (!reduceHeight(p_reduced.vert())) return false;
-        return UpperClass::contains(p_reduced);
-    }
+    virtual bool contains(const DVec& p) const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        DVec p_reduced = p;
-        if (!reduceHeight(p_reduced.vert())) return shared_ptr<Material>();
-        return UpperClass::getMaterial(p_reduced);
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     virtual std::size_t getChildrenCount() const { return children.size() * repeat_count; }
 
     virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
 
-    virtual std::size_t getRealChildrenCount() const {
-        return StackContainer<dim>::getChildrenCount();
-    }
+    virtual std::size_t getRealChildrenCount() const override;
 
-    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const {
-        return StackContainer<dim>::getChildNo(child_no);
-    }
+    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
 
     unsigned getRepeatCount() const { return repeat_count; }
 
@@ -636,9 +575,9 @@ class PLASK_API MultiStackContainer: public StackContainer<dim> {
     }
 
 protected:
-    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
 
-    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const;
+    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 
 };
 

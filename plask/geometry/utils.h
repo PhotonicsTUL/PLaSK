@@ -9,11 +9,12 @@ This file contains some utils usefull with geometry classes.
 
 namespace plask {
 
+//TODO at the moment, this template is not used, consider to remove it
 /**
  * Lazy cache of object bounding box.
  */
 template <int dims>
-struct BoundingBoxCache {
+struct PLASK_API BoundingBoxCache {
 
     typedef typename Primitive<dims>::Box BoundingBoxT;
 
@@ -25,14 +26,11 @@ private:
     /// Cached bounding box
     BoundingBoxT boundingBox;
 
-    const GeometryObjectD<dims>* object;
+    GeometryObjectD<dims>* object;
 
     bool isFresh; ///< @c true only if value in cache is fresh
 
-    void connect() {
-        if (this->object)
-            connection_with_object = this->object.changed.connect(boost::bind(&BoundingBoxCache<dims>::onObjectChanged, this, _1), boost::signals2::at_front);
-    }
+    void connect();
 
 public:
 
@@ -41,47 +39,25 @@ public:
      * @return bouding box of connected object
      * @throw Exception if no object is connected
      */
-    const BoundingBoxT& operator()() const {
-        if (!isFresh) {
-            //if (!object) return BoundingBoxT::invalidInstance();
-            if (!object) throw Exception("BoundingBoxCache is not initialized or object was deleted, so can't get bounding box");
-            boundingBox = object->getBoundingBox();
-            isFresh = true;
-        }
-        return boundingBox;
-    }
+    const BoundingBoxT& operator()();
 
     /**
      * Refresh bounding box cache. Called by object changed signal.
      * @param evt
      */
-    void onObjectChanged(const GeometryObject::Event& evt) {
-        //if (evt.isResize())
-        //    boundingBox = static_cast<GeometryObjectD<dims>&>(evt.source())->getBoundingBox();
-        if (evt.isResize()) isFresh = false;
-        if (evt.isDelete()) {
-            object = nullptr;
-            isFresh = false;
-        }
-    }
+    void onObjectChanged(const GeometryObject::Event& evt);
 
     /**
      * Set object for which bounding box should be cached.
      * @param object object for which bounding box should be cached, can be nullptr to disconnect
      */
-    void setObject(const GeometryObjectD<dims>* object) {
-        if (this->object == object) return;
-        connection_with_object.disconnect();
-        this->object = object;
-        isFresh = false;
-        connect();
-    }
+    void setObject(GeometryObjectD<dims>* object);
 
     /**
      * Set object for which bounding box should be cached.
      * @param object object for which bounding box should be cached
      */
-    void setObject(const GeometryObjectD<dims>& object) {
+    void setObject(GeometryObjectD<dims>& object) {
         setObject(&object);
     }
 
@@ -89,7 +65,7 @@ public:
      * Set object for which bounding box should be cached.
      * @param object object for which bounding box should be cached
      */
-    void setObject(shared_ptr<const GeometryObjectD<dims> > object) {
+    void setObject(shared_ptr<GeometryObjectD<dims> > object) {
         setObject(*object);
     }
 
@@ -105,7 +81,7 @@ public:
      * Construct bouding box cache connected with given object
      * @param object object for which bounding box should be cached, can be nullptr (typically you should later call setObject in such cache)
      */
-    BoundingBoxCache(const GeometryObjectD<dims>* object = 0): object(object), isFresh(false) {
+    BoundingBoxCache(GeometryObjectD<dims>* object = 0): object(object), isFresh(false) {
         connect();
     }
 
@@ -113,7 +89,7 @@ public:
      * Construct bouding box cache connected with given object
      * @param object object for which bounding box should be cached
      */
-    BoundingBoxCache(const GeometryObjectD<dims>& object): object(&object), isFresh(false) {
+    BoundingBoxCache(GeometryObjectD<dims>& object): object(&object), isFresh(false) {
         connect();
     }
 
@@ -121,7 +97,7 @@ public:
      * Construct bouding box cache connected with given object
      * @param object object for which bounding box should be cached
      */
-    BoundingBoxCache(shared_ptr< const GeometryObjectD<dims> > object): object(&object), isFresh(false) {
+    BoundingBoxCache(shared_ptr< GeometryObjectD<dims> > object): object(object.get()), isFresh(false) {
         connect();
     }
 
@@ -131,6 +107,8 @@ public:
 
 };
 
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BoundingBoxCache<2>)
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BoundingBoxCache<3>)
 
 }   // namespace plask
 

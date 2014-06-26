@@ -210,7 +210,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
                 ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override;
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 
@@ -249,17 +249,11 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
      */
     static shared_ptr<Translation<dim>> compress(shared_ptr< GeometryObjectD<dim> > child_or_translation = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC);
 
-    virtual Box getBoundingBox() const {
-        return getChild()->getBoundingBox().translated(translation);
-    }
+    virtual Box getBoundingBox() const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return getChild()->getMaterial(p-translation);
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const {
-        return getChild()->contains(p-translation);
-    }
+    virtual bool contains(const DVec& p) const override;
 
     //TODO to use (impl. is good) or remove
     /*virtual bool intersects(const Box& area) const {
@@ -268,9 +262,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const {
-        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point-translation, all));
-    }
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
     /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryObject>, Box, DVec> >& dest, const PathHints* path = 0) const {
         const std::size_t old_size = dest.size();
@@ -281,7 +273,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
         }
     }*/
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
         std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result = getChild()->getLeafsWithTranslations();
@@ -289,7 +281,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
         return result;
     }*/
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
@@ -299,11 +291,9 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
          return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), translation));
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const {
-        return copyShallow();
-    }
+    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
+    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
 
     /**
      * Get shallow copy of this with diffrent translation.
@@ -313,7 +303,7 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
         return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), new_translation));
     }
 
-   virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+   virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const;
 

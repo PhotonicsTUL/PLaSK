@@ -5,6 +5,8 @@
 
 namespace plask {
 
+std::string Extrusion::getTypeName() const { return NAME; }
+
 void Extrusion::setLength(double new_length) {
     if (length == new_length) return;
     length = new_length;
@@ -37,9 +39,9 @@ void Extrusion::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate
                    [&](const ChildBox& r) { return parentBox(r); });
 }
 
-std::vector< plask::shared_ptr< const plask::GeometryObject > > Extrusion::getLeafs() const {
+/*std::vector< plask::shared_ptr< const plask::GeometryObject > > Extrusion::getLeafs() const {
     return getChild()->getLeafs();
-}
+}*/
 
 shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>> Extrusion::shallowCopy() const {
     return shared_ptr<GeometryObjectTransform<3, Extrusion::ChildType>>(new Extrusion(getChild(), length));

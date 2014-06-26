@@ -5,6 +5,9 @@
 namespace plask {
 
 template <int dim>
+std::string Translation<dim>::getTypeName() const { return NAME; }
+
+template <int dim>
 shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjectD<dim> > child_or_translation, const Translation<dim>::DVec &translation) {
     shared_ptr< Translation<dim> > as_translation = dynamic_pointer_cast< Translation<dim> >(child_or_translation);
     if (as_translation) {    // translations are compressed, we must create new object because we can't modify child_or_translation (which can include pointer to objects in original tree)
@@ -12,6 +15,26 @@ shared_ptr<Translation<dim>> Translation<dim>::compress(shared_ptr<GeometryObjec
     } else {
         return make_shared< Translation<dim> >(child_or_translation, translation);
     }
+}
+
+template <int dim>
+typename Translation<dim>::Box Translation<dim>::getBoundingBox() const {
+    return getChild()->getBoundingBox().translated(translation);
+}
+
+template <int dim>
+shared_ptr<Material> Translation<dim>::getMaterial(const typename Translation<dim>::DVec &p) const {
+    return getChild()->getMaterial(p-translation);
+}
+
+template <int dim>
+bool Translation<dim>::contains(const typename Translation<dim>::DVec &p) const {
+    return getChild()->contains(p-translation);
+}
+
+template <int dim>
+GeometryObject::Subtree Translation<dim>::getPathsAt(const Translation::DVec &point, bool all) const {
+    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point-translation, all));
 }
 
 template <int dim>
@@ -35,6 +58,11 @@ void Translation<dim>::getPositionsToVec(const GeometryObject::Predicate& predic
     getChild()->getPositionsToVec(predicate, dest, path);
     for (std::size_t i = old_size; i < dest.size(); ++i)
         dest[i] += translation;
+}
+
+template <int dim>
+shared_ptr<GeometryObjectTransform<dim> > Translation<dim>::shallowCopy() const {
+    return copyShallow();
 }
 
 template <int dim>

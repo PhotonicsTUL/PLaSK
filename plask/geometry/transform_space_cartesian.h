@@ -26,7 +26,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     static constexpr const char* NAME = "extrusion";
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override;
 
     double getLength() const { return length; }
 
@@ -36,28 +36,28 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
      */
     void setLength(double new_length);
 
-    virtual bool contains(const DVec& p) const;
+    virtual bool contains(const DVec& p) const override;
 
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
     virtual Box getBoundingBox() const;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const;
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const;
+    //virtual std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const override;
 
-    virtual shared_ptr<GeometryObjectTransform<3, ChildType>> shallowCopy() const;
+    virtual shared_ptr<GeometryObjectTransform<3, ChildType>> shallowCopy() const override;
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
-    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
 
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path = 0) const;
 

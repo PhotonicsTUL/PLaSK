@@ -207,17 +207,10 @@ class PLASK_API GeometryD: public Geometry {
      * Refresh bounding box cache. Called by childrenChanged signal. Delegate this signal.
      * @param evt
      */
-    void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
-        //comipler should optimized out dim == 2 condition checking
-        fireChanged(evt.oryginalSource(), dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
-    }
+    void onChildChanged(const GeometryObject::Event& evt);
 
     /// Disconnect onChildChanged from current child change signal
-    void disconnectOnChildChanged() {
-        //if (getChild())
-        connection_with_child.disconnect();
-    }
+    void disconnectOnChildChanged();
 
     /**
      * Initialize bounding box cache and onChange connection.
@@ -225,15 +218,7 @@ class PLASK_API GeometryD: public Geometry {
      * Subclasses should call this from it's constructors (can't be moved to constructor because it uses virtual method getChildUnsafe)
      * and after changing child.
      */
-    void initNewChild() {
-        disconnectOnChildChanged(); //disconnect old child, if any
-        auto c3d = getObject3D();
-        if (c3d) {
-            if (c3d) connection_with_child = c3d->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
-            auto c = getChildUnsafe();
-            if (c) cachedBoundingBox = c->getBoundingBox();
-        }
-    }
+    void initNewChild();
 
     virtual ~GeometryD() {
         disconnectOnChildChanged();
@@ -241,7 +226,7 @@ class PLASK_API GeometryD: public Geometry {
 
 public:
 
-    virtual int getDimensionsCount() const { return DIM; }
+    virtual int getDimensionsCount() const override;
 
     /**
      * Get material in point @p p of child space.
@@ -254,9 +239,7 @@ public:
      * @param p point
      * @return material, which is not nullptr
      */
-    virtual shared_ptr<Material> getMaterial(const Vec<dim, double>& p) const {
-        return getMaterialOrDefault(p);
-    }
+    virtual shared_ptr<Material> getMaterial(const Vec<dim, double>& p) const;
 
     /**
      * Get child geometry.
@@ -317,7 +300,7 @@ public:
      * Get number of children of @c this.
      * @return 1 if this has a child or 0 if it hasn't
      */
-    std::size_t getChildrenCount() const {
+    std::size_t getChildrenCount() const override {
         return getChildUnsafe() ? 1 : 0;
     }
 
@@ -326,7 +309,7 @@ public:
      * @param child_no must be 0
      * @return child of this
      */
-    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override {
         //if (!hasChild() || child_no > 0) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
         if (child_no >= getChildrenCount()) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
         return getChild();
@@ -795,7 +778,7 @@ public:
 
     void removeAtUnsafe(std::size_t) { extrusion->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
-    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
+    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
 
     /**
      * Get extrusion object included in this geometry.
@@ -922,7 +905,7 @@ public:
 
     void removeAtUnsafe(std::size_t) { revolution->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
-    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const;
+    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
 
     /**
      * Get revolution object included in this geometry.
@@ -1109,7 +1092,7 @@ public:
      */
     virtual shared_ptr< GeometryObjectD<3> > getObject3D() const;
 
-    virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const;
+    virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const override;
 
 //     virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr, bool copyBorders=false) const;
 

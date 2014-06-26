@@ -41,6 +41,36 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
     }
 }
 
+template <int dim>
+void GeometryD<dim>::onChildChanged(const GeometryObject::Event &evt) {
+    if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
+    //comipler should optimized out dim == 2 condition checking
+    fireChanged(evt.oryginalSource(), dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
+}
+
+template <int dim>
+void GeometryD<dim>::disconnectOnChildChanged() {
+    connection_with_child.disconnect();
+}
+
+template <int dim>
+void GeometryD<dim>::initNewChild() {
+    disconnectOnChildChanged(); //disconnect old child, if any
+    auto c3d = getObject3D();
+    if (c3d) {
+        if (c3d) connection_with_child = c3d->changedConnectMethod(this, &GeometryD<dim>::onChildChanged);
+        auto c = getChildUnsafe();
+        if (c) cachedBoundingBox = c->getBoundingBox();
+    }
+}
+
+template <int dim>
+int GeometryD<dim>::getDimensionsCount() const { return DIM; }
+
+template <int dim>
+shared_ptr<Material> GeometryD<dim>::getMaterial(const Vec<dim, double> &p) const {
+    return getMaterialOrDefault(p);
+}
 
 template class PLASK_API GeometryD<2>;
 template class PLASK_API GeometryD<3>;
@@ -54,7 +84,7 @@ Geometry2DCartesian::Geometry2DCartesian(shared_ptr<Extrusion> extrusion)
 Geometry2DCartesian::Geometry2DCartesian(shared_ptr<GeometryObjectD<2>> childGeometry, double length)
     : extrusion(make_shared<Extrusion>(childGeometry, length))
 {
-   initNewChild();
+    initNewChild();
 }
 
 shared_ptr< GeometryObjectD<2> > Geometry2DCartesian::getChild() const {
