@@ -2,6 +2,12 @@
 
 namespace plask {
 
+void Mesh::writeXML(XMLElement &) const {
+    throw NotImplemented("Mesh::writeXML()");
+}
+
+void Mesh::onChange(const Mesh::Event &) {}
+
 std::map<std::string, RegisterMeshReader::ReadingFunction>& RegisterMeshReader::getReaders() {
     static std::map<std::string, RegisterMeshReader::ReadingFunction> result;
     return result;
@@ -46,6 +52,8 @@ void MeshD<dimension>::print(std::ostream& out) const {
     print_seq(out << '[', begin(), end(), ", ") << ']';
 }
 
+void MeshGenerator::onChange(const MeshGenerator::Event &) {}
+
 template <int MESH_DIM>
 shared_ptr<typename MeshGeneratorD<MESH_DIM>::MeshType> MeshGeneratorD<MESH_DIM>::operator()(const shared_ptr<GeometryObjectD<MeshGeneratorD<MESH_DIM>::DIM> > &geometry) {
     if (auto res = cache.get(geometry))
@@ -61,7 +69,6 @@ template struct PLASK_API MeshD<3>;
 template class PLASK_API MeshGeneratorD<1>;
 template class PLASK_API MeshGeneratorD<2>;
 template class PLASK_API MeshGeneratorD<3>;
-
 
 
 }   // namespace plask

@@ -203,19 +203,17 @@ struct PLASK_API Mesh: public Printable {
      * Write mesh to XML
      * \param object XML object to write to
      */
-    virtual void writeXML(XMLElement& object) const {
-        throw NotImplemented("Mesh::writeXML()");
-    }
+    virtual void writeXML(XMLElement& object) const;
 
     virtual ~Mesh() { fireChanged(Event::EVENT_DELETE); }
 
   protected:
 
     /**
-     * This method is called when the mesh is changed
+     * This method is called when the mesh is changed, just before changed signal.
      * \param evt triggering event
      */
-    virtual void onChange(const Event& evt) {}
+    virtual void onChange(const Event& evt);
 
 };
 
@@ -298,52 +296,6 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<1>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<3>)
 
-/**
- * Implementation of Mesh::IteratorImpl.
- * Holds iterator of wrapped type (const_internal_iterator_t) and delegate all calls to it.
- */
-template <typename const_internal_iterator_t, int dim = std::iterator_traits<const_internal_iterator_t>::value_type::DIMS>
-struct MeshIteratorWrapperImpl: public MeshD<dim>::IteratorImpl {
-
-    const_internal_iterator_t internal_iterator;
-
-    MeshIteratorWrapperImpl(const const_internal_iterator_t& internal_iterator)
-    : internal_iterator(internal_iterator) {}
-
-    virtual const typename MeshD<dim>::LocalCoords dereference() const {
-        return *internal_iterator;
-    }
-
-    virtual void increment() {
-        ++internal_iterator;
-    }
-
-    virtual bool equal(const typename MeshD<dim>::IteratorImpl& other) const {
-        return internal_iterator == static_cast<const MeshIteratorWrapperImpl<const_internal_iterator_t, dim>&>(other).internal_iterator;
-    }
-
-    virtual MeshIteratorWrapperImpl<const_internal_iterator_t, dim>* clone() const {
-        return new MeshIteratorWrapperImpl<const_internal_iterator_t, dim>(internal_iterator);
-    }
-
-    virtual std::size_t getIndex() const {
-        return internal_iterator.getIndex();
-    }
-
-};
-
-/**
- * Construct MeshD<dim>::Iterator which wraps non-polymorphic iterator, using MeshIteratorWrapperImpl.
- * @param iter iterator to wrap
- * @return wrapper over @p iter
- * @tparam IteratorType type of iterator to wrap
- * @tparam dim number of dimensions of IteratorType and resulted iterator (can be auto-detected in most situations)
- */
-template <typename IteratorType, int dim = std::iterator_traits<IteratorType>::value_type::DIMS>
-inline typename MeshD<dim>::Iterator makeMeshIterator(IteratorType iter) {
-    return typename MeshD<dim>::Iterator(new MeshIteratorWrapperImpl<IteratorType, dim>(iter));
-}
-
 /** Base template for rectangular mesh of any dimension */
 template <int dim> class RectangularMesh {};
 
@@ -390,10 +342,10 @@ class PLASK_API MeshGenerator {
   protected:
 
     /**
-     * This method is called when the generator is changed
+     * This method is called when the generator is changed, just before changed signal.
      * \param evt triggering event
      */
-    virtual void onChange(const Event& evt) {}
+    virtual void onChange(const Event& evt);
 
 };
 

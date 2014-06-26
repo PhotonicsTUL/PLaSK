@@ -121,32 +121,13 @@ public:
     OrderedAxis(std::vector<PointType>&& points);
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    OrderedAxis& operator=(const OrderedAxis& src) {
-        bool resized = size() != src.size();
-        points = src.points;
-        if (resized) fireResized(); else fireChanged();
-        return *this;
-    }
+    OrderedAxis& operator=(const OrderedAxis& src);
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    OrderedAxis& operator=(OrderedAxis&& src) {
-        bool resized = size() != src.size();
-        std::swap(points, src.points);
-        if (resized) fireResized(); else fireChanged();
-        return *this;
-    }
+    OrderedAxis& operator=(OrderedAxis&& src);
 
     /// Assign a new mesh. This operation preserves the \a owner.
-    OrderedAxis& operator=(const RectangularAxis& src) {
-        bool resized = size() != src.size();
-        points.clear();
-        points.reserve(src.size());
-        for (auto i: src)  points.push_back(i);
-        std::sort(points.begin(), points.end());    //TODO is this required?
-        if (resized) fireResized(); else fireChanged();
-        return *this;
-    }
-
+    OrderedAxis& operator=(const RectangularAxis& src);
 
     /**
      * Compares meshes
@@ -257,7 +238,7 @@ inline void OrderedAxis::addOrderedPoints(IteratorT begin, IteratorT end, std::s
     auto almost_equal = [](const double& x, const double& y) -> bool { return std::abs(x-y) < MIN_DISTANCE; };
     this->points.erase(std::unique(this->points.begin(), this->points.end(), almost_equal), this->points.end());
     fireResized();
-};
+}
 
 typedef OrderedAxis OrderedMesh1D;
 

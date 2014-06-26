@@ -2,6 +2,16 @@
 
 namespace plask {
 
+template <int DIM>
+std::size_t OnePointMesh<DIM>::size() const {
+    return 1;
+}
+
+template <int DIM>
+plask::Vec<DIM, double> OnePointMesh<DIM>::at(std::size_t) const {
+    return point;
+}
+
 template struct PLASK_API OnePointMesh<2>;
 template struct PLASK_API OnePointMesh<3>;
 
@@ -45,7 +55,19 @@ static shared_ptr<Mesh> readOnePoint2DMesh(XMLReader& reader) {
 
 static RegisterMeshReader onepoint2dmesh_reader("point2d", &readOnePoint2DMesh);
 
+template <int DIM>
+Vec<DIM, double> TranslatedMesh<DIM>::at(std::size_t index) const {
+    return sourceMesh->at(index) + translation;
+}
+
+template <int DIM>
+std::size_t TranslatedMesh<DIM>::size() const {
+    return sourceMesh->size();
+}
+
 template struct PLASK_API TranslatedMesh<2>;
 template struct PLASK_API TranslatedMesh<3>;
+
+
 
 }   // namespace plask

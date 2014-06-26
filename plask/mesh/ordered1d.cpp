@@ -48,6 +48,30 @@ OrderedAxis::native_const_iterator OrderedAxis::findNearest(double to_find) cons
     return find_nearest_binary(points.begin(), points.end(), to_find);
 }
 
+OrderedAxis &OrderedAxis::operator=(const RectangularAxis &src) {
+    bool resized = size() != src.size();
+    points.clear();
+    points.reserve(src.size());
+    for (auto i: src) points.push_back(i);
+    std::sort(points.begin(), points.end());    //TODO is this required?
+    if (resized) fireResized(); else fireChanged();
+    return *this;
+}
+
+OrderedAxis &OrderedAxis::operator=(OrderedAxis &&src) {
+    bool resized = size() != src.size();
+    this->points = std::move(src.points);
+    if (resized) fireResized(); else fireChanged();
+    return *this;
+}
+
+OrderedAxis &OrderedAxis::operator=(const OrderedAxis &src) {
+    bool resized = size() != src.size();
+    points = src.points;
+    if (resized) fireResized(); else fireChanged();
+    return *this;
+}
+
 bool OrderedAxis::addPoint(double new_node_cord) {
     auto where = std::lower_bound(points.begin(), points.end(), new_node_cord);
     if (where == points.end()) {

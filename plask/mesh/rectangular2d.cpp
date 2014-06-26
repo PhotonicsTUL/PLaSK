@@ -94,6 +94,43 @@ void RectangularMesh<2>::writeXML(XMLElement& object) const {
     { auto a = object.addTag("axis1"); axis1->writeXML(a); }
 }
 
+RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(const std::string &boundary_desc) {
+    if (boundary_desc == "bottom") return getBottomBoundary();
+    if (boundary_desc == "left") return getLeftBoundary();
+    if (boundary_desc == "right") return getRightBoundary();
+    if (boundary_desc == "top") return getTopBoundary();
+    return Boundary();
+}
+
+RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary_desc, Manager &manager) {
+    auto side = boundary_desc.getAttribute("side");
+    auto line = boundary_desc.getAttribute("line");
+    if (side && line) {
+        throw XMLConflictingAttributesException(boundary_desc, "size", "line");
+    } else if (side) {
+        if (*side == "bottom")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getBottomBoundary, &getBottomOfBoundary);
+        if (*side == "left")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getLeftBoundary, &getLeftOfBoundary);
+        if (*side == "right")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getRightBoundary, &getRightOfBoundary);
+        if (*side == "top")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getTopBoundary, &getTopOfBoundary);
+        throw XMLBadAttrException(boundary_desc, "side", *side);
+    } else if (line) {
+        double at = boundary_desc.requireAttribute<double>("at"),
+                start = boundary_desc.requireAttribute<double>("start"),
+                stop = boundary_desc.requireAttribute<double>("stop");
+        boundary_desc.requireTagEnd();
+        if (*line == "vertical")
+            return getVerticalBoundaryNear(at, start, stop);
+        if (*line == "horizontal")
+            return getHorizontalBoundaryNear(at, start, stop);
+        throw XMLBadAttrException(boundary_desc, "line", *line);
+    }
+    return Boundary();
+}
+
 shared_ptr<RectangularMesh<2> > make_rectilinear_mesh(const RectangularMesh<2> &to_copy) {
    return make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(*to_copy.axis0), make_shared<OrderedAxis>(*to_copy.axis1), to_copy.getIterationOrder());
 }
@@ -120,7 +157,6 @@ static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
     return make_shared<RectangularMesh<2>>(std::move(axis[0]), std::move(axis[1]));
 }
 
-
 static RegisterMeshReader rectangular2d_reader("rectangular2d", readRectangularMesh2D);
 
 // obsolete:
@@ -134,6 +170,12 @@ static RegisterMeshReader rectilinear2d_reader("rectilinear2d", readRectangularM
 template class PLASK_API RectangularMesh<2>;
 
 } // namespace plask
+
+
+
+
+
+
 
 
 

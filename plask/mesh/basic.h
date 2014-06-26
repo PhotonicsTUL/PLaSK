@@ -22,18 +22,19 @@ struct PLASK_API OnePointMesh: public plask::MeshD<DIM> {
 
     // plask::MeshD<DIM> methods implementation:
 
-    virtual std::size_t size() const override {
-        return 1;
-    }
+    virtual std::size_t size() const override;
 
-    virtual plask::Vec<DIM, double> at(std::size_t index) const override {
-        return point;
-    }
+    virtual plask::Vec<DIM, double> at(std::size_t index) const override;
 
     virtual void writeXML(XMLElement& object) const override;
 
 };
 
+/**
+ * Create one-point mesh that includes given @p point.
+ * @param point point to include
+ * @return mesh with one point
+ */
 template <int DIM>
 inline shared_ptr<OnePointMesh<DIM>> toMesh(const plask::Vec<DIM, double>& point) {
     return make_shared<OnePointMesh<DIM>>(point);
@@ -58,13 +59,9 @@ struct PLASK_API TranslatedMesh: public MeshD<DIM> {
     TranslatedMesh(const shared_ptr<const MeshD<DIM>>& sourceMesh, const Vec<DIM, double>& translation)
         : translation(translation), sourceMesh(sourceMesh) {}
 
-    virtual Vec<DIM, double> at(std::size_t index) const override {
-        return sourceMesh->at(index) + translation;
-    }
+    virtual Vec<DIM, double> at(std::size_t index) const override;
 
-    virtual std::size_t size() const override {
-        return sourceMesh->size();
-    }
+    virtual std::size_t size() const override;
 
 };
 
