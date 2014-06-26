@@ -44,7 +44,7 @@ namespace QW{
     ~parametry();
   };
 
-  class gain{
+  class PLASK_SOLVER_API gain{
   public:
     gain();
     double En_to_len(double);
