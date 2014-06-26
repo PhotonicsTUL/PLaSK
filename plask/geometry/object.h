@@ -324,7 +324,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
         /// Delete all held changers (using delete operator).
         ~CompositeChanger();
 
-        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const;
+        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
 
     };
 
@@ -359,7 +359,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
             this->to = calc_replace(this->from);
         }
 
-        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const;
+        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
 
     };
 
@@ -379,7 +379,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
 
         DeleteChanger(shared_ptr<const GeometryObject> toDel): toDel(toDel) {}
 
-        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const;
+        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
 
     };
 

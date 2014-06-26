@@ -27,11 +27,68 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
     return src;
 }
 
+template <int dim>
+bool GeometryObjectLeaf<dim>::singleMaterialInBB(Primitive<3>::Direction direction) const {
+    return materialProvider->singleMaterialInBB(direction);
+}
+
+template <int dim>
+GeometryObject::Type GeometryObjectLeaf<dim>::getType() const { return GeometryObject::TYPE_LEAF; }
+
+template <int dim>
+shared_ptr<Material> GeometryObjectLeaf<dim>::getMaterial(const GeometryObjectLeaf::DVec &p) const {
+    return this->contains(p) ? materialProvider->getMaterial(*this, p) : shared_ptr<Material>();
+}
+
+/*void GeometryObjectLeaf::getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, GeometryObjectLeaf::Box, GeometryObjectLeaf::DVec> > &dest, const PathHints *path) const {
+    dest.push_back( std::tuple<shared_ptr<const GeometryObject>, Box, DVec>(this->shared_from_this(), this->getBoundingBox(), Primitive<dim>::ZERO_VEC) );
+}*/
+
+template <int dim>
+void GeometryObjectLeaf<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectLeaf::Box> &dest, const PathHints *) const {
+    if (predicate(*this))
+        dest.push_back(this->getBoundingBox());
+}
+
+template <int dim>
+void GeometryObjectLeaf<dim>::getObjectsToVec(const GeometryObject::Predicate &predicate, std::vector<shared_ptr<const GeometryObject> > &dest, const PathHints *path) const {
+    if (predicate(*this)) dest.push_back(this->shared_from_this());
+}
+
+template <int dim>
+void GeometryObjectLeaf<dim>::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectLeaf::DVec> &dest, const PathHints *) const {
+    if (predicate(*this)) dest.push_back(Primitive<dim>::ZERO_VEC);
+}
+
+template <int dim>
+bool GeometryObjectLeaf<dim>::hasInSubtree(const GeometryObject &el) const {
+    return &el == this;
+}
+
+template <int dim>
+GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsTo(const GeometryObject &el, const PathHints *) const {
+    return GeometryObject::Subtree( &el == this ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
+}
+
+template <int dim>
+GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsAt(const GeometryObjectLeaf::DVec &point, bool) const {
+    return GeometryObject::Subtree( this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>() );
+}
+
+template <int dim>
+shared_ptr<GeometryObject> GeometryObjectLeaf<dim>::getChildNo(std::size_t) const {
+    throw OutOfBoundsException("GeometryObjectLeaf::getChildNo", "child_no");
+}
+
+template <int dim>
+shared_ptr<const GeometryObject> GeometryObjectLeaf<dim>::changedVersion(const GeometryObject::Changer &changer, Vec<3, double> *translation) const {
+    shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
+    changer.apply(result, translation);
+    return result;
+}
+
 template struct PLASK_API GeometryObjectLeaf<2>;
 template struct PLASK_API GeometryObjectLeaf<3>;
-
-template struct PLASK_API Block<2>;
-template struct PLASK_API Block<3>;
 
 // Initialization common for all leafs
 template <typename LeafType>
@@ -87,6 +144,22 @@ void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
                     .attr(axes.getNameForTran(), size.tran())
                     .attr(axes.getNameForVert(), size.vert());
 }
+
+template <int dim>
+std::string Block<dim>::getTypeName() const { return NAME; }
+
+template <int dim>
+typename Block<dim>::Box Block<dim>::getBoundingBox() const {
+    return Block<dim>::Box(Primitive<dim>::ZERO_VEC, size);
+}
+
+template <int dim>
+bool Block<dim>::contains(const Block<dim>::DVec &p) const {
+    return this->getBoundingBox().contains(p);
+}
+
+template struct PLASK_API Block<2>;
+template struct PLASK_API Block<3>;
 
 static GeometryReader::RegisterObjectReader block2D_reader(Block<2>::NAME, read_block2D);
 static GeometryReader::RegisterObjectReader rectangle_reader("rectangle", read_block2D);

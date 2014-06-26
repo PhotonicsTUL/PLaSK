@@ -25,10 +25,14 @@ void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
             .attr("radius", radius).attr("height", height);
 }
 
+bool Cylinder::singleMaterialInBB(Primitive<3>::Direction direction) const {
+    return direction == Primitive<3>::DIRECTION_VERT && materialProvider->singleMaterialInBB(direction);
+}
+
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {
     shared_ptr<Cylinder> result(new Cylinder(
-                               reader.source.requireAttribute<double>("radius"),
-                               reader.source.requireAttribute<double>("height")
+                                    reader.source.requireAttribute<double>("radius"),
+                                    reader.source.requireAttribute<double>("height")
                          ));
     result->readMaterial(reader);
     reader.source.requireTagEnd();

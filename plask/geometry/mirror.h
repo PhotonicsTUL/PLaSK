@@ -20,7 +20,7 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
                 ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override;
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 
@@ -43,9 +43,7 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
     /// 2D or 3D axis number
     typename Primitive<dim>::Direction flipDir;
 
-    virtual Box getBoundingBox() const {
-        return fliped(getChild()->getBoundingBox());
-    }
+    virtual Box getBoundingBox() const override;
 
     /**
      * Get fliped version of @p v.
@@ -56,23 +54,17 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
     Box fliped(Box res) const { return res.fliped(flipDir); }
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return getChild()->getMaterial(fliped(p));
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const {
-        return getChild()->contains(fliped(p));
-    }
+    virtual bool contains(const DVec& p) const override;
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const {
-        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(fliped(point), all));
-    }
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
@@ -82,9 +74,9 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
          return shared_ptr<Flip<dim>>(new Flip<dim>(flipDir, getChild()));
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const { return copyShallow(); }
+    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
 };
 
@@ -102,7 +94,7 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
                 ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("mirror" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const { return NAME; }
+    virtual std::string getTypeName() const override;
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 
@@ -124,13 +116,9 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
     /// 2D or 3D axis number
     typename Primitive<dim>::Direction flipDir;
 
-    virtual Box getBoundingBox() const {
-        return extended(getChild()->getBoundingBox());
-    }
+    virtual Box getBoundingBox() const override;
 
-    virtual Box getRealBoundingBox() const {
-        return getChild()->getBoundingBox();
-    }
+    virtual Box getRealBoundingBox() const override;
 
     DVec flipedIfNeg(DVec v) const {
         return v[flipDir] >= 0 ? v : v.fliped(flipDir);
@@ -145,37 +133,29 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
         return res;
     }
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const {
-        return getChild()->getMaterial(flipedIfNeg(p));
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const {
-        return getChild()->contains(flipedIfNeg(p));
-    }
+    virtual bool contains(const DVec& p) const override;
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const;
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual std::size_t getChildrenCount() const;
+    virtual std::size_t getChildrenCount() const override;
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const;
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
-    virtual std::size_t getRealChildrenCount() const {
-        return GeometryObjectTransform<dim>::getChildrenCount();
-    }
+    virtual std::size_t getRealChildrenCount() const override;
 
-    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const {
-        return GeometryObjectTransform<dim>::getChildNo(child_no);
-    }
+    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
 
     /**
      * Get shallow copy of this.
@@ -185,9 +165,9 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
          return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, getChild()));
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const { return copyShallow(); }
+    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
 };
 

@@ -7,10 +7,25 @@
 namespace plask {
 
 template <int dim>
+typename Clip<dim>::Box Clip<dim>::getBoundingBox() const {
+    return getChild()->getBoundingBox().intersection(clipBox);
+}
+
+template <int dim>
+shared_ptr<Material> Clip<dim>::getMaterial(const typename Clip<dim>::DVec &p) const {
+    return clipBox.contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
+}
+
+template <int dim>
+bool Clip<dim>::contains(const typename Clip<dim>::DVec &p) const {
+    return clipBox.contains(p) && getChild()->contains(p);
+}
+
+template <int dim>
 GeometryObject::Subtree Clip<dim>::getPathsAt(const Clip<dim>::DVec &point, bool all) const
 {
-        if (clipBox.contains(point))
-            return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
+    if (clipBox.contains(point))
+        return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
         else
             return GeometryObject::Subtree();
 }
@@ -36,6 +51,11 @@ void Clip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
         return;
     }
     getChild()->getPositionsToVec(predicate, dest, path);
+}
+
+template <int dim>
+shared_ptr<GeometryObjectTransform<dim> > Clip<dim>::shallowCopy() const {
+    return copyShallow();
 }
 
 template <typename ClipBoxType>

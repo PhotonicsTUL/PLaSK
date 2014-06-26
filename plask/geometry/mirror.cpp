@@ -4,6 +4,29 @@
 namespace plask {
 
 template <int dim>
+std::string Flip<dim>::getTypeName() const { return NAME; }
+
+template <int dim>
+typename Flip<dim>::Box Flip<dim>::getBoundingBox() const {
+    return fliped(getChild()->getBoundingBox());
+}
+
+template <int dim>
+shared_ptr<Material> Flip<dim>::getMaterial(const Flip::DVec &p) const {
+    return getChild()->getMaterial(fliped(p));
+}
+
+template <int dim>
+bool Flip<dim>::contains(const Flip<dim>::DVec &p) const {
+    return getChild()->contains(fliped(p));
+}
+
+template <int dim>
+GeometryObject::Subtree Flip<dim>::getPathsAt(const Flip::DVec &point, bool all) const {
+    return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(fliped(point), all));
+}
+
+template <int dim>
 void Flip<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(getBoundingBox());
@@ -25,8 +48,36 @@ void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate, st
 }
 
 template <int dim>
+shared_ptr<GeometryObjectTransform<dim> > Flip<dim>::shallowCopy() const {
+    return copyShallow();
+}
+
+template <int dim>
 void Flip<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
+}
+
+template <int dim>
+std::string Mirror<dim>::getTypeName() const { return NAME; }
+
+template <int dim>
+typename Mirror<dim>::Box Mirror<dim>::getBoundingBox() const {
+    return extended(getChild()->getBoundingBox());
+}
+
+template <int dim>
+typename Mirror<dim>::Box Mirror<dim>::getRealBoundingBox() const {
+    return getChild()->getBoundingBox();
+}
+
+template <int dim>
+shared_ptr<Material> Mirror<dim>::getMaterial(const Mirror<dim>::DVec &p) const {
+    return getChild()->getMaterial(flipedIfNeg(p));
+}
+
+template <int dim>
+bool Mirror<dim>::contains(const Mirror<dim>::DVec &p) const {
+    return getChild()->contains(flipedIfNeg(p));
 }
 
 template <int dim>
@@ -97,6 +148,20 @@ shared_ptr<GeometryObject> Mirror<dim>::getChildNo(std::size_t child_no) const {
         return make_shared<Flip<dim>>(flipDir, getChild());
 }
 
+template <int dim>
+std::size_t Mirror<dim>::getRealChildrenCount() const {
+    return GeometryObjectTransform<dim>::getChildrenCount();
+}
+
+template <int dim>
+shared_ptr<GeometryObject> Mirror<dim>::getRealChildNo(std::size_t child_no) const {
+    return GeometryObjectTransform<dim>::getChildNo(child_no);
+}
+
+template <int dim>
+shared_ptr<GeometryObjectTransform<dim> > Mirror<dim>::shallowCopy() const {
+    return copyShallow();
+}
 
 template <int dim>
 void Mirror<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {

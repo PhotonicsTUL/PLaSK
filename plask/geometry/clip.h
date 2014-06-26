@@ -45,25 +45,19 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
     explicit Clip(GeometryObjectD<dim>& child, const Box& clipBox = Primitive<dim>::INF_BOX)
         : GeometryObjectTransform<dim>(child), clipBox(clipBox) {}
 
-    virtual Box getBoundingBox() const override {
-        return getChild()->getBoundingBox().intersection(clipBox);
-    }
+    virtual Box getBoundingBox() const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override {
-        return clipBox.contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
-    }
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const override {
-        return clipBox.contains(p) && getChild()->contains(p);
-    }
+    virtual bool contains(const DVec& p) const override;
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
     GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
@@ -73,9 +67,7 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
          return make_shared<Clip<dim>>(getChild(), clipBox);
     }
 
-    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const {
-        return copyShallow();
-    }
+    virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
 
     /**
      * Get shallow copy of this with diffrent clip box.

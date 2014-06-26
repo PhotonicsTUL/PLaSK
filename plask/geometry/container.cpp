@@ -21,6 +21,27 @@ void GeometryObjectContainer<dim>::writeXML(XMLWriter::Element &parent_xml_objec
 }
 
 template <int dim>
+void GeometryObjectContainer<dim>::onChildChanged(const GeometryObject::Event &evt) {
+    this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
+}
+
+template <int dim>
+void GeometryObjectContainer<dim>::connectOnChildChanged(Translation<dim> &child) {
+    child.changedConnectMethod(this, &GeometryObjectContainer::onChildChanged);
+}
+
+template <int dim>
+void GeometryObjectContainer<dim>::disconnectOnChildChanged(Translation<dim> &child) {
+    child.changedDisconnectMethod(this, &GeometryObjectContainer::onChildChanged);
+}
+
+template <int dim>
+bool GeometryObjectContainer<dim>::contains(const GeometryObjectContainer::DVec &p) const {
+    for (auto child: children) if (child->contains(p)) return true;
+    return false;
+}
+
+template <int dim>
 typename GeometryObjectContainer<dim>::Box GeometryObjectContainer<dim>::getBoundingBox() const {
     if (children.empty()) return Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     Box result = children[0]->getBoundingBox();
@@ -138,6 +159,15 @@ GeometryObject::Subtree GeometryObjectContainer<dim>::getPathsAt(const GeometryO
 }
 
 template <int dim>
+std::size_t GeometryObjectContainer<dim>::getChildrenCount() const { return children.size(); }
+
+template <int dim>
+shared_ptr<GeometryObject> GeometryObjectContainer<dim>::getChildNo(std::size_t child_no) const {
+    this->ensureIsValidChildNr(child_no);
+    return children[child_no];
+}
+
+template <int dim>
 shared_ptr<const GeometryObject> GeometryObjectContainer<dim>::changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation) const {
     shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
     if (changer.apply(result, translation) || children.empty()) return result;
@@ -180,6 +210,12 @@ bool GeometryObjectContainer<dim>::removeIfT(const std::function<bool(const shar
         return true;
     } else
         return false;
+}
+
+template <int dim>
+void GeometryObjectContainer<dim>::removeAtUnsafe(std::size_t index) {
+    disconnectOnChildChanged(*children[index]);
+    children.erase(children.begin() + index);
 }
 
 template struct PLASK_API GeometryObjectContainer<2>;

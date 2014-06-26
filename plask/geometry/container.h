@@ -82,19 +82,13 @@ public:
     }
 
     /// Called by child.change signal, call this change
-    virtual void onChildChanged(const GeometryObject::Event& evt) {
-        this->fireChanged(evt.oryginalSource(), evt.flagsForParent());
-    }
+    virtual void onChildChanged(const GeometryObject::Event& evt);
 
     /// Connect onChildChanged to current child change signal
-    void connectOnChildChanged(Translation<dim>& child) {
-        child.changedConnectMethod(this, &GeometryObjectContainer::onChildChanged);
-    }
+    void connectOnChildChanged(Translation<dim>& child);
 
     /// Disconnect onChildChanged from current child change signal
-    void disconnectOnChildChanged(Translation<dim>& child) {
-        child.changedDisconnectMethod(this, &GeometryObjectContainer::onChildChanged);
-    }
+    void disconnectOnChildChanged(Translation<dim>& child);
 
     /**
      * Get phisicaly stored children (with translations).
@@ -105,12 +99,9 @@ public:
     }
 
     /// @return GE_TYPE_CONTAINER
-    virtual GeometryObject::Type getType() const { return GeometryObject::TYPE_CONTAINER; }
+    virtual GeometryObject::Type getType() const override { return GeometryObject::TYPE_CONTAINER; }
 
-    virtual bool contains(const DVec& p) const {
-        for (auto child: children) if (child->contains(p)) return true;
-        return false;
-    }
+    virtual bool contains(const DVec& p) const override;
 
     //TODO to use (impl. is good) or remove
     /*virtual bool intersects(const Box& area) const {
@@ -118,13 +109,13 @@ public:
         return false;
     }*/
 
-    virtual Box getBoundingBox() const;
+    virtual Box getBoundingBox() const override;
 
     /**
      * Iterate over children in reverse order and check if any returns material.
      * @return material of first child which returns non @c nullptr or @c nullptr if all children return @c nullptr
      */
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const;
+    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryObject>, Box, DVec> >& dest, const PathHints* path = 0) const {
         if (path) {
@@ -137,15 +128,15 @@ public:
         for (auto child: children) child->getLeafsInfoToVec(dest, path);
     }*/
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const;
+    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
     /*virtual void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const {
         for (auto child: children) child->getLeafsToVec(dest);
     }*/
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const;
 
@@ -158,7 +149,7 @@ public:
         return result;
     }*/
 
-    virtual bool hasInSubtree(const GeometryObject& el) const;
+    virtual bool hasInSubtree(const GeometryObject& el) const override;
 
     template <typename ChildIter>
     GeometryObject::Subtree findPathsFromChildTo(ChildIter childBegin, ChildIter childEnd, const GeometryObject& el, const PathHints* path = 0) const {
@@ -173,21 +164,18 @@ public:
         return result;
     }
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const;
+    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const;
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual std::size_t getChildrenCount() const { return children.size(); }
+    virtual std::size_t getChildrenCount() const override;
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const {
+    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
+
+    /*virtual shared_ptr<TranslationT> getTranslationOfRealChildAt(std::size_t child_no) const {
         this->ensureIsValidChildNr(child_no);
         return children[child_no];
-    }
-
-    virtual shared_ptr<TranslationT> getTranslationOfRealChildAt(std::size_t child_no) const {
-        this->ensureIsValidChildNr(child_no);
-        return children[child_no];
-    }
+    }*/
 
     virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const;
 
@@ -255,10 +243,7 @@ public:
      * Caller should do this manually or call removeAt(std::size_t) instead.
      * @param index index of real child to remove
      */
-    virtual void removeAtUnsafe(std::size_t index) {
-        disconnectOnChildChanged(*children[index]);
-        children.erase(children.begin() + index);
-    }
+    virtual void removeAtUnsafe(std::size_t index) override;
 
 };
 

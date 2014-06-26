@@ -145,7 +145,7 @@ struct PLASK_API Geometry: public GeometryObject {
     virtual Type getType() const { return TYPE_GEOMETRY; }
 
     /**
-     * Get 3D object held by this geometry (which has type Extrusion or Revolution for 2d geometries).
+     * Get 3D object held by this geometry (which has type Extrusion or Revolution for 2D geometries).
      * @return 3D geometry object held by this geometry
      */
     virtual shared_ptr< GeometryObjectD<3> > getObject3D() const = 0;
