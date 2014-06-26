@@ -399,7 +399,7 @@ class PLASK_API MeshGenerator {
 
 /** Base class for specific mesh generator */
 template <int MESH_DIM>
-class MeshGeneratorD: public MeshGenerator
+class PLASK_API MeshGeneratorD: public MeshGenerator
 {
   public:
       /// Type of the generated mesh
