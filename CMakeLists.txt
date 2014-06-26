@@ -481,9 +481,9 @@ if(BUILD_TESTING)
     endif(BUILD_PYTHON)
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} --output-on-failure --timeout 30 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} --output-on-failure --timeout 30 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)

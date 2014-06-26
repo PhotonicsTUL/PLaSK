@@ -535,7 +535,11 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         shared_ptr<const RectangularMesh<2>> mesh;
         LazyData<double> data;
         double factor;
-        AveragedData(const shared_ptr<const RectangularAxis>& haxis, const ActiveRegionInfo& region)
+        const FermiGainSolver<GeometryT>* solver;
+        const char* name;
+        AveragedData(const FermiGainSolver<GeometryT>* solver, const char* name,
+                     const shared_ptr<const RectangularAxis>& haxis, const ActiveRegionInfo& region):
+            solver(solver), name(name)
         {
             auto vaxis = make_shared<OrderedAxis>();
             for(size_t n = 0; n != region.size(); ++n) {
@@ -551,8 +555,12 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         size_t size() const { return mesh->axis0->size(); }
         double operator[](size_t i) const {
             double val = 0.;
-            for (size_t j = 0; j != mesh->axis1->size(); ++j)
-                val += data[mesh->index(i,j)];
+            for (size_t j = 0; j != mesh->axis1->size(); ++j) {
+                auto v = data[mesh->index(i,j)];
+                if (isnan(v) || v < 0)
+                    throw ComputationError(solver->getId(), "Wrong %1% (%2%) at %3%", name, v, mesh->at(i,j));
+                val += v;
+            }
             return val * factor;
         }
     };
@@ -573,10 +581,12 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         } else {
             regpoints.reserve(solver->regions.size());
             for (size_t r = 0; r != solver->regions.size(); ++r) {
-                auto msh = make_shared<OrderedAxis>();
+                std::set<double> pts;
                 for (auto point: *dst_mesh) {
-                    if (solver->regions[r].contains(point)) msh->addPoint(point.c0);
+                    if (solver->regions[r].contains(point)) pts.insert(point.c0);
                 }
+                auto msh = make_shared<OrderedAxis>();
+                msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
                 regpoints.emplace_back(std::move(msh));
             }
         }
@@ -590,8 +600,8 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
         {
             DataVector<double> values(regpoints[reg]->size());
-            AveragedData temps(regpoints[reg], solver->regions[reg]);
-            AveragedData concs(temps);
+            AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
+            AveragedData concs(temps); concs.name = "carriers concentration";
             temps.data = solver->inTemperature(temps.mesh, interp);
             concs.data = solver->inCarriersConcentration(temps.mesh, interp);
             std::exception_ptr error;
