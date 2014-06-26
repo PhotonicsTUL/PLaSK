@@ -535,4 +535,3 @@ const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalCo
 
 
 }}} // namespace plask::solvers::thermal
-\

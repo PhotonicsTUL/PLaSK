@@ -23,7 +23,7 @@ enum Symmetry {
 };
 
 /// Fourier transform of multiple 1D arrays
-struct Forward1D {
+struct PLASK_SOLVER_API Forward1D {
     /// Create uninitialized transform
     Forward1D();
     /// Move constructor
@@ -55,7 +55,7 @@ struct Forward1D {
 };
 
 /// Fourier transform of multiple 2D arrays
-struct Forward2D {
+struct PLASK_SOLVER_API Forward2D {
     /// Create uninitialized transform
     Forward2D();
     /// Move constructor
@@ -88,7 +88,7 @@ struct Forward2D {
 };
 
 /// Fourier transform of multiple 1D arrays
-struct Backward1D {
+struct PLASK_SOLVER_API Backward1D {
     /// Create uninitialized transform
     Backward1D();
     /// Move constructor
@@ -120,7 +120,7 @@ struct Backward1D {
 };
 
 /// Fourier transform of multiple 2D arrays
-struct Backward2D {
+struct PLASK_SOLVER_API Backward2D {
     /// Create uninitialized transform
     Backward2D();
     /// Move constructor
