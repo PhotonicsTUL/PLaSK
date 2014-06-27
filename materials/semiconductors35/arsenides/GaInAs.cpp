@@ -33,7 +33,8 @@ double GaInAs::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*0.477;
     else if (point == 'X') tEg = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*1.4;
     else if (point == 'L') tEg = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*0.33;
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(GaInAs, Dso,

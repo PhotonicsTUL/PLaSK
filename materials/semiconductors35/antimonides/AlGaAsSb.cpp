@@ -43,7 +43,8 @@ double AlGaAsSb::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*Sb*mGaSb.Eg(T,e,point)
             + Al*As*mAlAs.Eg(T,e,point) + Al*Sb*mAlSb.Eg(T,e,point)
             - Ga*As*Sb*(1.2) - Al*As*Sb*(0.28);
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(AlGaAsSb, Dso,

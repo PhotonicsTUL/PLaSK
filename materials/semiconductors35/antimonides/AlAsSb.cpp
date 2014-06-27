@@ -33,7 +33,8 @@ double AlAsSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = As*mAlAs.Eg(T,e,point) + Sb*mAlSb.Eg(T,e,point) - As*Sb*0.8;
     else if (point == 'X') tEg = As*mAlAs.Eg(T,e,point) + Sb*mAlSb.Eg(T,e,point) - As*Sb*0.28;
     else if (point == 'L') tEg = As*mAlAs.Eg(T,e,point) + Sb*mAlSb.Eg(T,e,point) - As*Sb*0.28;
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(AlAsSb, Dso,

@@ -41,7 +41,8 @@ double GaInNAs::Eg(double T, double e, char point) const {
         tEg = Ga*tEgG_GaNAs + In*tEgG_InNAs - Ga*In*(0.477);
     }
     else return 0.;
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(GaInNAs, Dso,

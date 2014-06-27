@@ -33,7 +33,8 @@ double AlInSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point) - Al*In*(0.43);
     else if (point == 'X') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
     else if (point == 'L') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(AlInSb, Dso,

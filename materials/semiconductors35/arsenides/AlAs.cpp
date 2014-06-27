@@ -25,7 +25,8 @@ double AlAs::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(3.099, 0.885e-3, 530., T);
     else if (point == 'X') tEg = phys::Varshni(2.24, 0.70e-3, 530., T);
     else if (point == 'L') tEg = phys::Varshni(2.46, 0.605e-3, 204., T);
-    return tEg;
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 

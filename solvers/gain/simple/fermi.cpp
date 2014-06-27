@@ -285,6 +285,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;
     double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
+    double qEgG, qEgX, qEgL, bEgG, bEgX, bEgL; // qw and barrier energy gaps
 
     #pragma omp critical // necessary as the material may be defined in Python
     {
@@ -298,6 +299,13 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
         gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));
 
+        qEgG = region.materialQW->Eg(T,0.,'G');
+        qEgX = region.materialQW->Eg(T,0.,'X');
+        qEgL = region.materialQW->Eg(T,0.,'L');
+        bEgG = region.materialBarrier->Eg(T,0.,'G');
+        bEgX = region.materialBarrier->Eg(T,0.,'X');
+        bEgL = region.materialBarrier->Eg(T,0.,'L');
+
         qEc = region.materialQW->CB(T,qstrain);
         qEvhh = region.materialQW->VB(T,qstrain,'G','H');
         qEvlh = region.materialQW->VB(T,qstrain,'G','L');
@@ -305,6 +313,12 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
         bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
     }
+
+    // TODO co robic w ponizszych przypadkach? - poprawic jak bedzie wiadomo
+    if ((qEgG>=qEgX) && (qEgX)) this->writelog(LOG_DETAIL, "indirect Eg for QW: Eg,G = %1% eV, Eg,X = %2% eV; using Eg,G in calculations", qEgG, qEgX);
+    if ((qEgG>=qEgL) && (qEgL)) this->writelog(LOG_DETAIL, "indirect Eg for QW: Eg,G = %1% eV, Eg,L = %2% eV; using Eg,G in calculations", qEgG, qEgL);
+    if ((bEgG>=bEgX) && (bEgX)) this->writelog(LOG_DETAIL, "indirect Eg for barrier: Eg,G = %1% eV, Eg,X = %2% eV; using Eg,G in calculations", bEgG, bEgX);
+    if ((bEgG>=bEgL) && (bEgL)) this->writelog(LOG_DETAIL, "indirect Eg for barrier: Eg,G = %1% eV, Eg,L = %2% eV; using Eg,G in calculations", bEgG, bEgL);
 
     if (qEc<qEvhh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for heavy holes = %2% eV", qEc, qEvhh);
     if (qEc<qEvlh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for light holes = %2% eV", qEc, qEvlh);
@@ -643,6 +657,7 @@ struct FermiGainSolver<GeometryT>::GainData: public FermiGainSolver<GeometryT>::
 
     double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) override
     {
+        //if (isnan(conc) || (conc<0.)) return 0.; // odkomentowac poki sa problemy z liczeniem dyfuzji obok obszaru czynnego
         QW::gain gainModule = this->solver->getGainModule(wavelength, temp, conc, region);
         double len = (this->solver->extern_levels)? region.qwtotallen : region.qwlen;
         return gainModule.Get_gain_at_n(this->solver->nm_to_eV(wavelength), len); // earlier: qwtotallen

@@ -33,7 +33,8 @@ double AlInAs::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Al*In*(0.70);
     else if (point == 'X') tEg = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point);
     else if (point == 'L') tEg = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point);
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(AlInAs, Dso,

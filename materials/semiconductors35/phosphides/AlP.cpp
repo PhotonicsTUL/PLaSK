@@ -25,7 +25,8 @@ double AlP::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(3.63, 0.5771e-3, 372., T);
     else if (point == 'X') tEg = phys::Varshni(2.52, 0.318e-3, 588., T);
     else if (point == 'L') tEg = phys::Varshni(3.57, 0.318e-3, 588., T);
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(AlP, Dso,

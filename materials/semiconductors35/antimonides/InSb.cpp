@@ -26,7 +26,8 @@ double InSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(0.235, 0.32e-3, 170., T);
     else if (point == 'X') tEg = phys::Varshni(0.63, 0.32e-3, 170., T);
     else if (point == 'L') tEg = phys::Varshni(0.93, 0.32e-3, 170., T);
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(InSb, Dso,

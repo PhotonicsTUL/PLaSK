@@ -43,7 +43,8 @@ double GaInAsSb::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*Sb*mGaSb.Eg(T,e,point)
             + In*As*mInAs.Eg(T,e,point) + In*Sb*mInSb.Eg(T,e,point)
             - Ga*In*As*(0.33) - Ga*In*Sb*(0.4) - Ga*As*Sb*(1.2) - In*As*Sb*(0.6);
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(GaInAsSb, Dso,

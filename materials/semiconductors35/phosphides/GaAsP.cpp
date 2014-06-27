@@ -33,7 +33,8 @@ double GaAsP::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = As*mGaAs.Eg(T,e,point) + P*mGaP.Eg(T,e,point) - As*P*0.19;
     else if (point == 'X') tEg = As*mGaAs.Eg(T,e,point) + P*mGaP.Eg(T,e,point) - As*P*0.24;
     else if (point == 'L') tEg = As*mGaAs.Eg(T,e,point) + P*mGaP.Eg(T,e,point) - As*P*0.16;
-    return ( tEg );
+    if (!e) return tEg;
+    else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
 
 MI_PROPERTY(GaAsP, Dso,
