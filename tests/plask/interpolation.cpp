@@ -2,6 +2,9 @@
 
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/mesh.h>
+#include <plask/mesh/rectangular2d.h>
+#include <plask/mesh/ordered1d.h>
+#include <plask/mesh/rectangular_spline.h>
 
 #include<fstream>
 
@@ -39,6 +42,48 @@ BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
         // Check simple interpolate
         auto ret_data = plask::interpolate<plask::DummyMesh,int>(src_mesh, src_data, dst_mesh, plask::INTERPOLATION_LINEAR);
         BOOST_CHECK_EQUAL(ret_data[0], 11);
+    }
+
+    BOOST_AUTO_TEST_CASE(spline) {
+        auto src_mesh = plask::make_shared<plask::RectangularMesh<2>>(
+            plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis({0., 1., 2.})),
+            plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis({-1., 0., 2., 5.})),
+            plask::RectangularMesh<2>::ORDER_10);
+        plask::DataVector<const double> src({4., 8., 4., 1., 2., 3., 1., 0., 0., 16., 0., 0.});
+
+        auto dst_mesh = plask::make_shared<plask::RectangularMesh<2>>(
+            plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis({0., 0.5, 1.5, 2.})),
+            plask::shared_ptr<plask::OrderedAxis>(new plask::OrderedAxis({-1.0, -0.1, 0.1, 4.0, 5.0})),
+            plask::RectangularMesh<2>::ORDER_01);
+
+        plask::DataVector<const double> dst = plask::interpolate(src_mesh, src, dst_mesh, plask::INTERPOLATION_SPLINE);
+
+        for (size_t i = 0; i != 4; ++i) {
+            for (size_t j = 0; j != 5; ++j)
+                std::cerr << plask::format("%12.9f ", dst[dst_mesh->index(i,j)]);
+            std::cerr << "\n";
+        }
+
+        BOOST_CHECK_CLOSE(dst[ 0],  4.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 1],  1.084000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 2],  1.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 3], 12.111111111,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 4], 16.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 5],  6.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 6],  1.504500000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 7],  1.368656250,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 8],  6.055555556,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 9],  8.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[10],  6.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[11],  2.719500000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[12],  2.605968750,  1e-9);
+        BOOST_CHECK_CLOSE(dst[13],  0.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[14],  0.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[15],  4.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[16],  3.028000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[17],  2.978250000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[18],  0.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[19],  0.000000000,  1e-9);
     }
 
 BOOST_AUTO_TEST_SUITE_END()

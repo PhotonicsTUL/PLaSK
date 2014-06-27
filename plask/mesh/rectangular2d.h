@@ -11,6 +11,7 @@ This file contains rectilinear mesh for 2d space.
 #include "boundary.h"
 #include "interpolation.h"
 #include "../utils/interpolation.h"
+#include "rectangular_spline.h"
 #include "../geometry/object.h"
 #include "../geometry/space.h"
 #include "../geometry/path.h"
