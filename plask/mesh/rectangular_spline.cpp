@@ -86,17 +86,11 @@ SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<
            stride1 = src_mesh->index(0, 1);
 
     if (n0 > 1)
-        for (size_t i1 = 0, i = 0; i1 < src_mesh->axis1->size(); ++i1, i += stride1) {
+        for (size_t i1 = 0, i = 0; i1 < src_mesh->axis1->size(); ++i1, i += stride1)
             detail::computeDiffs(diff0.data()+i, src_mesh->axis0, src_vec.data()+i, stride0);
-        }
-    else
-        std::fill(diff0.begin(), diff0.end(), 0.*SrcT());
     if (n1 > 1)
-        for (size_t i0 = 0, i = 0; i0 < src_mesh->axis0->size(); ++i0, i += stride0) {
+        for (size_t i0 = 0, i = 0; i0 < src_mesh->axis0->size(); ++i0, i += stride0)
             detail::computeDiffs(diff1.data()+i, src_mesh->axis1, src_vec.data()+i, stride1);
-        }
-    else
-        std::fill(diff1.begin(), diff1.end(), 0.*SrcT());
 }
 
 template <typename DstT, typename SrcT>
