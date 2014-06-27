@@ -11,7 +11,6 @@ This file contains rectilinear mesh for 2d space.
 #include "boundary.h"
 #include "interpolation.h"
 #include "../utils/interpolation.h"
-#include "rectangular_spline.h"
 #include "../geometry/object.h"
 #include "../geometry/space.h"
 #include "../geometry/path.h"
@@ -1399,5 +1398,7 @@ inline Boundary<RectangularMesh<2>> parseBoundary<RectangularMesh<2>>(XMLReader&
 PLASK_API_EXTERN_TEMPLATE_CLASS(RectangularMesh<2>)
 
 } // namespace plask
+
+#include "rectangular_spline.h"
 
 #endif // PLASK__RECTANGULAR2D_H
