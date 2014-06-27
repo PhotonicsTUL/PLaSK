@@ -64,26 +64,26 @@ BOOST_AUTO_TEST_SUITE(interpolation) // MUST be the same as the file name
             std::cerr << "\n";
         }
 
-        BOOST_CHECK_CLOSE(dst[ 0],  4.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 1],  1.084000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 2],  1.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 3], 12.111111111,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 4], 16.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 5],  6.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 6],  1.504500000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 7],  1.368656250,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 8],  6.055555556,  1e-9);
-        BOOST_CHECK_CLOSE(dst[ 9],  8.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[10],  6.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[11],  2.719500000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[12],  2.605968750,  1e-9);
-        BOOST_CHECK_CLOSE(dst[13],  0.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[14],  0.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[15],  4.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[16],  3.028000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[17],  2.978250000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[18],  0.000000000,  1e-9);
-        BOOST_CHECK_CLOSE(dst[19],  0.000000000,  1e-9);
+        BOOST_CHECK_CLOSE(dst[ 0],  4.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 1],  1.084000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 2],  1.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 3], 12.111111111,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 4], 16.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 5],  6.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 6],  1.626000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 7],  1.233281250,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 8],  6.055555556,  1e-7);
+        BOOST_CHECK_CLOSE(dst[ 9],  8.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[10],  6.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[11],  2.888250000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[12],  2.417947917,  1e-7);
+        BOOST_CHECK_CLOSE(dst[13],  0.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[14],  0.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[15],  4.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[16],  3.122500000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[17],  2.872958333,  1e-7);
+        BOOST_CHECK_CLOSE(dst[18],  0.000000000,  1e-7);
+        BOOST_CHECK_CLOSE(dst[19],  0.000000000,  1e-7);
     }
 
 BOOST_AUTO_TEST_SUITE_END()
