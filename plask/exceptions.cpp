@@ -15,11 +15,17 @@ void plask_win_signal_handler (int param) {
     printStack();   //print stack-trace
 }
 
+void plask_win_terminate_handler () {
+  printStack();   //print stack-trace
+  abort();  // forces abnormal termination
+}
+
 struct PlaskWinRegisterSignalHandler {
     PlaskWinRegisterSignalHandler() {
         signal(SIGABRT, plask_win_signal_handler);
         signal(SIGSEGV, plask_win_signal_handler);
         signal(SIGTERM, plask_win_signal_handler);
+        std::set_terminate (plask_win_terminate_handler);
     }
 } __plaskWinRegisterSignalHandler;
 
