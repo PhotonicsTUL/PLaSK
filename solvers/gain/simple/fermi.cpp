@@ -626,9 +626,6 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         shared_ptr<OrderedAxis> zero(new OrderedAxis({0}));
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
         {
-std::cerr << "REGPOINTS[" << reg << "]: ";
-for (auto p: *regpoints[reg]) std::cerr << p << " ";
-std::cerr << "\n";
             DataVector<double> values(regpoints[reg]->size());
             AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
