@@ -261,6 +261,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (isnan(n) || n < 0) throw ComputationError(this->getId(), "Wrong carriers concentration (%1%/cm3)", n);
 
+    if (n == 0) n = 1e-6; // To avoid hangs
+
     gainModule.Set_temperature(T);
     gainModule.Set_koncentr(n);
 
@@ -591,7 +593,18 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         if (solver->mesh) {
             regpoints.assign(solver->regions.size(), solver->mesh);
         } else if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh)) {
-            regpoints.assign(solver->regions.size(), rect_mesh->axis0);
+            regpoints.reserve(solver->regions.size());
+            for (size_t r = 0; r != solver->regions.size(); ++r) {
+                std::set<double> pts;
+                auto box = solver->regions[r].getBoundingBox();
+                double y = 0.5 * (box.lower.c1 + box.upper.c1);
+                for (auto x: *rect_mesh->axis0) {
+                    if (solver->regions[r].contains(vec(x,y))) pts.insert(x);
+                }
+                auto msh = make_shared<OrderedAxis>();
+                msh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
+                regpoints.emplace_back(std::move(msh));
+            }
         } else {
             regpoints.reserve(solver->regions.size());
             for (size_t r = 0; r != solver->regions.size(); ++r) {
@@ -613,6 +626,9 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
         shared_ptr<OrderedAxis> zero(new OrderedAxis({0}));
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
         {
+std::cerr << "REGPOINTS[" << reg << "]: ";
+for (auto p: *regpoints[reg]) std::cerr << p << " ";
+std::cerr << "\n";
             DataVector<double> values(regpoints[reg]->size());
             AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
@@ -622,10 +638,8 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             #pragma omp parallel for
             for (size_t i = 0; i < regpoints[reg]->size(); ++i) {
                 if (error) continue;
-                const ActiveRegionInfo& region = solver->regions[reg];
-                double conc = concs[i];
                 try {
-                    values[i] = getValue(wavelength, temps[i], conc, region);
+                    values[i] = getValue(wavelength, temps[i], concs[i], solver->regions[reg]);
                 } catch(...) {
                     #pragma omp critical
                     error = std::current_exception();

@@ -613,7 +613,7 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataIm
             inqw = true;
             break;
         }
-    if (!inqw) return NAN;
+    if (!inqw) return 0.; // small number but non-zero to make gain solver happy
     return concentration[i];
 }
 
