@@ -11,7 +11,7 @@
 #include <signal.h>     /* signal, raise, sig_atomic_t */
 
 void plask_win_signal_handler (int param) {
-    SIG_DFL(param); //call default signal handler
+    //SIG_DFL(param); //call default signal handler
     printStack();   //print stack-trace
 }
 
