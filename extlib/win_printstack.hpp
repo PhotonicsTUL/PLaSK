@@ -13,10 +13,10 @@ inline int backtrace(void **buffer, int size)
 {
  USHORT frames;
 
- HANDLE hProcess;
+ //HANDLE hProcess;
  if (size <= 0)
    return 0;
- hProcess = GetCurrentProcess();
+ //hProcess = GetCurrentProcess();
  frames = CaptureStackBackTrace(0, (DWORD) size, buffer, NULL);
 
  return (int) frames;
@@ -38,7 +38,7 @@ inline char **backtrace_symbols(void *const *buffer, int size)
  for(i = 0; i < size; i++)
    {
      r[i] = cur;
-     sprintf(cur, "[+0x%Ix]", (size_t) buffer[i]);
+     sprintf(cur, "[+0x%zx]", (size_t) buffer[i]);
      cur += strlen(cur) + 1;
    }
 
@@ -52,7 +52,7 @@ inline void backtrace_symbols_fd(void *const *buffer, int size, int fd)
 
  for (i = 0; i < size; i++)
    {
-     sprintf(s, "[+0x%Ix]\n", (size_t) buffer[i]);
+     sprintf(s, "[+0x%zx]\n", (size_t) buffer[i]);
      write(fd, s, strlen(s));
    }
  _commit(fd);
@@ -75,7 +75,7 @@ inline void printStack(void)
  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
  for(i = 0;i < frames; i++) {
    SymFromAddr(hProcess, (DWORD_PTR) (stack[i]), 0, symbol);
-   printf("%u: %p %s = 0x%Ix\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
+   printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
  }
 
  free(symbol);
