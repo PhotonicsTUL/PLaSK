@@ -59,7 +59,7 @@ enable_testing()
 
 if(BUILD_TESTING)
     add_executable(complexgaintest tests/complexgaintest.cpp)
-    target_link_libraries(complexgaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
+    target_link_libraries(complexgaintest ${SOLVER_LIBRARY} libplask ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
     set(SOLVER_TEST_DEPENDS complexgaintest)
 
     add_test(solvers/gain/complex ${PLASK_SOLVER_PATH}/complexgaintest)

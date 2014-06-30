@@ -4,24 +4,34 @@
 //#undef PRINT_STACKTRACE_ON_EXCEPTION
 
 #ifdef PRINT_STACKTRACE_ON_EXCEPTION
+
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) //win32 support
+
+#include <win_printstack.hpp>
+#include <signal.h>     /* signal, raise, sig_atomic_t */
+
+void plask_win_signal_handler (int param) {
+    SIG_DFL(param); //call default signal handler
+    printStack();   //print stack-trace
+}
+
+struct PlaskWinRegisterSignalHandler {
+    PlaskWinRegisterSignalHandler() {
+        signal(SIGABRT, plask_win_signal_handler);
+        signal(SIGSEGV, plask_win_signal_handler);
+        signal(SIGTERM, plask_win_signal_handler);
+    }
+} __plaskWinRegisterSignalHandler;
+
+#else       //other systems:
+
 #include <backward.hpp>
 namespace backward {
     backward::SignalHandling sh;
 } // print backtrace on segfault, etc.
 
-/*void terminate_handler() {  //this can be eventually put: std::set_terminate(terminate_handler); but this is not required because signal is generated
-    backward::StackTrace st; st.load_here(128);
-    backward::Printer p; p.print(st);
-    std::exception_ptr exptr = std::current_exception();
-    if (exptr) {
-        try {
-            std::rethrow_exception(exptr);
-        }
-        catch (std::exception &ex) { std::cerr << "Terminated due to exception: " << ex.what();  }
-        catch (...) { std::cerr << "Terminated due to non-std exception."; }
-    } else { std::cerr << "Terminated, but not due to exception."; }
-    std::abort();  // forces abnormal termination, see http://www.cplusplus.com/reference/exception/set_terminate/
-}*/
+#endif  //other systems support
+
 #endif
 
 namespace plask {
