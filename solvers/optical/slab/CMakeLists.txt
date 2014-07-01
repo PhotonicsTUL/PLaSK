@@ -53,8 +53,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/inclu
 
 
 # To add unit tests to your project create appropriate targets (binary executables
-# or Python scripts) and register them using CMake command add_test for binaries
-# and macro add_python_test(name file.py) for Python scripts. You should name
+# or Python scripts) and register them using macro add_solver_test for binaries
+# and add_python_test(name file.py) for Python scripts. You should name
 # the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
 # below.
 #

@@ -46,15 +46,14 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 
 # To add unit tests to your project create appropriate targets (binary executables
-# or Python scripts) and register them using CMake command add_test for binaries
-# and macro add_python_test(name file.py) for Python scripts. You should name
+# or Python scripts) and register them using macro add_solver_test for binaries
+# and add_python_test(name file.py) for Python scripts. You should name
 # the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
 # below.
 #
-#add_executable(mytest test/source1.cpp test/source2.cpp)
-#set(SOLVER_TEST_DEPENDS mytest)
 #enable_testing()
-#add_test(solvers/foo/bar ${PLASK_SOLVER_PATH}/mytest)
+#add_executable(mytest test/source1.cpp test/source2.cpp)
+#add_solver_test(solvers/foo/bar mytest)
 #add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
