@@ -108,9 +108,11 @@ Now we assume that our solver uses rectilinear mesh provided by the user, so we 
 
 namespace plask { namespace solvers { namespace optical_finite_differences { // put everything in private namespace
 
-class FiniteDifferencesSolver: public plask::SolverWithMesh < plask::Geometry2DCartesian, plask::RectilinearMesh2D >
+class PLASK_SOLVER_API FiniteDifferencesSolver: public plask::SolverWithMesh < plask::Geometry2DCartesian, plask::RectilinearMesh2D >
 {
 \endcode
+
+(note that \b PLASK_SOLVER_API is require for proper exporting/importing the solver to/from DLL file)
 
 Then, you declare all the fields and methods of the class. We will skip all the fields that are required privately for
 computations from this tutorial and focus only on the ones necessary for PLaSK interface. Assume, that \b FiniteDifferencesSolver
