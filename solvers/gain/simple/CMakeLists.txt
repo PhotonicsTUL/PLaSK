@@ -60,10 +60,7 @@ enable_testing()
 if(BUILD_TESTING)
     add_executable(simplegaintest tests/simplegaintest.cpp)
     target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-    set(SOLVER_TEST_DEPENDS simplegaintest)
-
-    add_test(solvers/gain/simple ${PLASK_SOLVER_PATH}/simplegaintest)
-    #add_python_test(python/solvers/foo/bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+    add_solver_test(solvers/gain/simple simplegaintest)
 endif()
 
 # Build everything the default way.

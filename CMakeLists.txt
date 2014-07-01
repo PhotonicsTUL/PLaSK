@@ -378,6 +378,12 @@ macro(add_python_test test test_file)
     set_tests_properties(python/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
 endmacro()
 
+macro(add_solver_test test test_file)
+    add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
+    set_tests_properties(${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
+    set(SOLVER_TEST_DEPENDS ${test_file})
+endmacro()
+
 # ----------===== Solvers =====--------------------------------------------
 
 macro(solv_option solv opt)
