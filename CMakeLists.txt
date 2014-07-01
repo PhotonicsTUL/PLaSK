@@ -380,7 +380,9 @@ endmacro()
 
 macro(add_solver_test test test_file)
     add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
-    set_tests_properties(${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
+	if(WIN32)
+		set_tests_properties(${test} PROPERTIES ENVIRONMENT "PATH=${plask_bin_path}\;$ENV{PATH}")
+	endif()
     set(SOLVER_TEST_DEPENDS ${test_file})
 endmacro()
 
