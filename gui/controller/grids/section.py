@@ -6,6 +6,7 @@ from ...utils.gui import table_last_col_fill, exception_to_msg
 from ..table import table_with_manipulators
 from ...model.grids.section import GridsModel
 
+
 class GridsController(Controller):
 
     def __init__(self, document, model=None):

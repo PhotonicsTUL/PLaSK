@@ -5,6 +5,7 @@ from ...controller.grids.new_dialog import construct_grid_using_dialog
 from ..table import TableModel
 from .types import construct_grid
 
+
 class GridsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
