@@ -329,6 +329,32 @@ BOOST_PYTHON_MODULE(slab)
     py::converter::registry::push_back(&PythonComponentConventer2D::convertible, &PythonComponentConventer2D::construct,
                                        py::type_id<ExpansionPW2D::Component>());
 
+    py::class_<PmlWrapper>("PML", "Perfectly matched layer details.", py::no_init)
+        .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
+        .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
+        .add_property("dist", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML distance from the structure.")
+        .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
+        .def("__str__", &PmlWrapper::__str__)
+        .def("__repr__", &PmlWrapper::__repr__)
+    ;
+
+    py_enum<RootDigger::Method>("RootMethod", "Root finding method")
+        .value("MULLER", RootDigger::ROOT_MULLER)
+        .value("BROYDEN", RootDigger::ROOT_BROYDEN)
+    ;
+
+    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
+        .def_readwrite("method", &RootDigger::Params::method, "Root finding method ('muller' or 'broyden')")
+        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
+        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
+        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
+        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
+        .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
+        .def_readwrite("lambda", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller method only).")
+    ;
+
     {CLASS(FourierReflection2D, "FourierReflection2D",
         "Optical Solver using Fourier expansion in 2D.\n\n"
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -379,7 +405,6 @@ BOOST_PYTHON_MODULE(slab)
                    "    mesh: Target mesh.\n"
                    "    interp: Interpolation method\n"
                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        RO_PROPERTY(tran_mesh, getXmesh, "Transverse mesh with points where materials parameters are sampled.");
         solver.add_property("pml", py::make_function(&FourierReflection2D_PML, py::with_custodian_and_ward_postcall<0,1>()),
                             &FourierReflection2D_setPML,
                             "Side Perfectly Matched Layers boundary conditions.\n\n"
@@ -432,32 +457,6 @@ BOOST_PYTHON_MODULE(slab)
         ;
     }
 
-    py::class_<PmlWrapper>("PML", "Perfectly matched layer details.", py::no_init)
-        .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
-        .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
-        .add_property("dist", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML distance from the structure.")
-        .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
-        .def("__str__", &PmlWrapper::__str__)
-        .def("__repr__", &PmlWrapper::__repr__)
-    ;
-
-    py_enum<RootDigger::Method>("RootMethod", "Root finding method")
-        .value("MULLER", RootDigger::ROOT_MULLER)
-        .value("BROYDEN", RootDigger::ROOT_BROYDEN)
-    ;
-
-    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
-        .def_readwrite("method", &RootDigger::Params::method, "Root finding method ('muller' or 'broyden')")
-        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
-        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
-        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
-        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
-        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
-        .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
-        .def_readwrite("lambda", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
-        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller method only).")
-    ;
-
     {CLASS(FourierReflection3D, "FourierReflection3D",
         "Optical Solver using Fourier expansion in 3D.\n\n"
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -507,14 +506,12 @@ BOOST_PYTHON_MODULE(slab)
                    "    mesh: Target mesh.\n"
                    "    interp: Interpolation method\n"
                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        RO_PROPERTY(long_mesh, getLongMesh, "Longitudinal mesh with points where materials parameters are sampled.");
-        RO_PROPERTY(tran_mesh, getTranMesh, "Transverse mesh with points where materials parameters are sampled.");
         solver.add_property("long_pml", py::make_function(&FourierReflection3D_longPML, py::with_custodian_and_ward_postcall<0,1>()),
                             &FourierReflection3D_setLongPML,
                             "Longitudinal edge Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC
                            );
-        solver.add_property("tran_pml", py::make_function(&FourierReflection3D_longPML, py::with_custodian_and_ward_postcall<0,1>()),
+        solver.add_property("tran_pml", py::make_function(&FourierReflection3D_tranPML, py::with_custodian_and_ward_postcall<0,1>()),
                             &FourierReflection3D_setTranPML,
                             "Transverse edge Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC

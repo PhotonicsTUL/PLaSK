@@ -4,7 +4,7 @@
 namespace plask { namespace solvers { namespace slab {
 
 FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSolver<Geometry3D>(name),
-    size_long(11), size_tran(11),
+    size_long(12), size_tran(12),
     expansion(this),
     refine_long(16), refine_tran(16)//,
 //     outNeff(this, &FourierReflection3D::getEffectiveIndex, &FourierReflection3D::nummodes)
