@@ -4,9 +4,8 @@ from .mesh_rectilinear import RectangularMesh
 MESHES_TYPES = {
     'ordered': GridTreeBased.from_XML,
     'regular': GridTreeBased.from_XML,
-    'rectangular2d': GridTreeBased.from_XML,
-    'rectangular3d': GridTreeBased.from_XML,
-    #RectilinearMesh.from_XML
+    'rectangular2d': RectangularMesh.from_XML,
+    'rectangular3d': RectangularMesh.from_XML,
 }
 
 GENERATORS_TYPES = {

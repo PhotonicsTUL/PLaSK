@@ -35,36 +35,35 @@ class AxisConf(object):
         #self.points = [float(x) for x in axis_element.text.split(',')]
 
 
+#RectangularMesh1D(Grid)
+#if mesh_type in ('ordered', 'regular'):
+
+
+
 class RectangularMesh(Grid):
-    """Model of RectangularMesh (1D, 2D, or 3D - see self.dim)"""
+    """Model of RectangularMesh (2D, or 3D - see self.dim)"""
 
     @staticmethod
     def from_XML(grids_model, element):
-        e = RectangularMesh(grids_model, element.attrib['type'], element.attrib['name'])
+        e = RectangularMesh(grids_model, int(element.attrib['type'][-2]), element.attrib['name'])
         e.set_XML_element(element)
         return e
 
-    def __init__(self, grids_model, mesh_type, name):
-        super(RectangularMesh, self).__init__(grids_model, name, mesh_type)
-        if mesh_type in ('ordered', 'regular'):
-            self.dim = 1
-        else:
-            self.dim = int(mesh_type[-2])
+    def __init__(self, grids_model, dim, name):
+        super(RectangularMesh, self).__init__(grids_model, name, 'rectangular{}d'.format(dim))
+        self.dim = dim
         self.axis = [AxisConf() for _ in range(0, self.dim)]
 
-    @property
-    def axes_index_name(self):
-        if self.dim == 1:
-            yield 0, 'axis'
-        else:
-            for i in range(0, self.dim): yield i, "axis%d" % i
+    @staticmethod
+    def axis_tag_name(nr):
+        return "axis{}".format(nr)
 
     def get_XML_element(self):
         res = super(RectangularMesh, self).get_XML_element()
-        for i, n in self.axes_index_name:
-            self.axis[i].fillXMLElement(SubElement(res, n))
+        for i in range(0, self.dim):
+            self.axis[i].fillXMLElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
         return res;
 
     def set_XML_element(self, element):
-        for i, n in self.axes_index_name:
-            self.axis[i].set_XML_element(element.find(n))
+        for i in range(0, self.dim):
+            self.axis[i].set_XML_element(element.find(RectangularMesh.axis_tag_name(i)))
