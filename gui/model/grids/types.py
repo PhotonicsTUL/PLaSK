@@ -1,5 +1,5 @@
 from .grid import GridTreeBased
-from .mesh_rectilinear import RectilinearMesh
+from .mesh_rectilinear import RectangularMesh
 
 MESHES_TYPES = {
     'ordered': GridTreeBased.from_XML,

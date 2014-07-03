@@ -35,23 +35,22 @@ class AxisConf(object):
         #self.points = [float(x) for x in axis_element.text.split(',')]
 
 
-class RectilinearMesh(Grid):
+class RectangularMesh(Grid):
     """Model of RectangularMesh (1D, 2D, or 3D - see self.dim)"""
 
     @staticmethod
     def from_XML(grids_model, element):
-        if element.attrib['type'] in ('ordered', 'regular'):
-            dim = 1
-        else:
-            dim = int(element.attrib['type'][-2])
-        e = RectilinearMesh(grids_model, dim, element.attrib['name'])
+        e = RectangularMesh(grids_model, element.attrib['type'], element.attrib['name'])
         e.set_XML_element(element)
         return e
 
-    def __init__(self, grids_model, dim, name):
-        super(RectilinearMesh, self).__init__(grids_model, name, "rectilinear%dd" % dim)
-        self.dim = dim
-        self.axis = [AxisConf() for _ in range(0, dim)]
+    def __init__(self, grids_model, mesh_type, name):
+        super(RectangularMesh, self).__init__(grids_model, name, mesh_type)
+        if mesh_type in ('ordered', 'regular'):
+            self.dim = 1
+        else:
+            self.dim = int(mesh_type[-2])
+        self.axis = [AxisConf() for _ in range(0, self.dim)]
 
     @property
     def axes_index_name(self):
@@ -61,7 +60,7 @@ class RectilinearMesh(Grid):
             for i in range(0, self.dim): yield i, "axis%d" % i
 
     def get_XML_element(self):
-        res = super(RectilinearMesh, self).get_XML_element()
+        res = super(RectangularMesh, self).get_XML_element()
         for i, n in self.axes_index_name:
             self.axis[i].fillXMLElement(SubElement(res, n))
         return res;
