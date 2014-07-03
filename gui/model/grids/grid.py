@@ -5,6 +5,7 @@ from xml.sax.saxutils import quoteattr
 from ...utils.xml import print_interior, XML_parser
 from ..info import InfoSource
 
+
 class Grid(InfoSource): # or (TreeFragmentModel)??
     """Base class for models of grids (meshes or generators)"""
 
@@ -71,6 +72,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
 
 #class Mesh(Grid):
 #    """Base class for models of meshes"""
+
 
 class GridTreeBased(Grid):
     """Universal grid model, used for grids not supported in other way (data are stored as XML element)"""

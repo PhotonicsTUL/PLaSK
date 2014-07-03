@@ -3,17 +3,19 @@ from lxml.etree import ElementTree, SubElement
 from ...utils.xml import AttributeReader
 from .grid import Grid
 
+
 class AxisConf(object):
     """Store axis configuration of RectilinearMesh"""
 
-    def __init__(self, start=None, stop=None, num=None, points=None):
+    def __init__(self, start=None, stop=None, num=None, points=None, type=None):
         self.start = start
         self.stop = stop
         self.num = num
         self.points = points
+        self.type = type
 
     def fillXMLElement(self, axisElement):
-        for attr in ['start', 'stop', 'num']:
+        for attr in ['start', 'stop', 'num', 'type']:
             a = getattr(self, attr, None)
             if a is not None: axisElement.attrib[attr] = a
         axisElement.text = self.points if self.points else ''
@@ -27,17 +29,22 @@ class AxisConf(object):
     def set_XML_element(self, axis_element):
         if axis_element is None or len(axis_element) == 0: return
         with AttributeReader(axis_element) as a:
-            for attr in ['start', 'stop', 'num']:
+            for attr in ['start', 'stop', 'num', 'type']:
                 setattr(self, attr, a.get(attr, None))
         self.points = axis_element.text
         #self.points = [float(x) for x in axis_element.text.split(',')]
 
+
 class RectilinearMesh(Grid):
-    """Model of RectilinearMesh (1D, 2D, or 3D - see self.dim)"""
+    """Model of RectangularMesh (1D, 2D, or 3D - see self.dim)"""
 
     @staticmethod
     def from_XML(grids_model, element):
-        e = RectilinearMesh(grids_model, int(element.attrib['type'][-2]), element.attrib['name'])
+        if element.attrib['type'] in ('ordered', 'regular'):
+            dim = 1
+        else:
+            dim = int(element.attrib['type'][-2])
+        e = RectilinearMesh(grids_model, dim, element.attrib['name'])
         e.set_XML_element(element)
         return e
 
