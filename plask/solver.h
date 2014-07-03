@@ -112,7 +112,7 @@ class PLASK_SOLVER_API FiniteDifferencesSolver: public plask::SolverWithMesh < p
 {
 \endcode
 
-(note that \b PLASK_SOLVER_API is require for proper exporting/importing the solver to/from DLL file)
+(note that \b PLASK_SOLVER_API is required for proper exporting/importing the solver to/from DLL file)
 
 Then, you declare all the fields and methods of the class. We will skip all the fields that are required privately for
 computations from this tutorial and focus only on the ones necessary for PLaSK interface. Assume, that \b FiniteDifferencesSolver

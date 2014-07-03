@@ -124,49 +124,67 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
      */
     void layerMaterialCoefficients(size_t l);
 
-//   public:
-//
-//     /// Get \f$ \varepsilon_{zz} \f$
-//     dcomplex epszz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c00; }
-//
-//     /// Get \f$ \varepsilon_{xx} \f$
-//     dcomplex epsxx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c11; }
-//
-//     /// Get \f$ \varepsilon_{yy}^{-1} \f$
-//     dcomplex iepsyy(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c22; }
-//
-//     /// Get \f$ \varepsilon_{zx} \f$
-//     dcomplex epszx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c01; }
-//
-//     /// Get \f$ \varepsilon_{xz} \f$
-//     dcomplex epsxz(size_t l, int i) { return conj(coeffs[l][(i>=0)?i:i+nN].c01); }
-//
-//     /// Get \f$ \mu_{xx} \f$
-//     dcomplex muzz(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
-//
-//     /// Get \f$ \mu_{xx} \f$
-//     dcomplex muxx(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
-//
-//     /// Get \f$ \mu_{xx} \f$
-//     dcomplex imuyy(size_t l, int i) { return mag[(i>=0)?i:i+nN].c11; }
-//
-//     /// Get \f$ E_x \f$ index
-//     size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }
-//
-//     /// Get \f$ E_x \f$ index
-//     size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
-//
-//     /// Get \f$ E_x \f$ index
-//     size_t iHx(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
-//
-//     /// Get \f$ E_x \f$ index
-//     size_t iHz(int i) { return 2 * ((i>=0)?i:i+N); }
-//
-//     /// Get \f$ E_x \f$ index
-//     size_t iE(int i) { return (i>=0)?i:i+N; }
-//
-//     /// Get \f$ E_x \f$ index
-//     size_t iH(int i) { return (i>=0)?i:i+N; }
+  public:
+
+    /// Get \f$ \varepsilon_{xx} \f$
+    dcomplex epsxx(size_t lay, int l, int t) {
+        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        return coeffs[lay][nNl * t + l].c00;
+    }
+
+    /// Get \f$ \varepsilon_{yy} \f$
+    dcomplex epsyy(size_t lay, int l, int t) {
+        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        return coeffs[lay][nNl * t + l].c11;
+    }
+
+    /// Get \f$ \varepsilon_{zz}^{-1} \f$
+    dcomplex iepszz(size_t lay, int l, int t) {
+        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        return coeffs[lay][nNl * t + l].c22;
+    }
+
+    /// Get \f$ \varepsilon_{xy} \f$
+    dcomplex epsxy(size_t lay, int l, int t) {
+        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        return coeffs[lay][nNl * t + l].c01;
+    }
+
+    /// Get \f$ \varepsilon_{yx} \f$
+    dcomplex epsyx(size_t lay, int l, int t) { return conj(epsxy(lay, l, t)); }
+
+    /// Get \f$ \mu_{xx} \f$
+    dcomplex muxx(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c00; }
+
+    /// Get \f$ \mu_{yy} \f$
+    dcomplex muyy(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c00 * mag_tran[(t>=0)?t:t+nNt].c11; }
+
+    /// Get \f$ \mu_{zz}^{-1} \f$
+    dcomplex imuzz(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
+
+    /// Get \f$ E_x \f$ index
+    size_t iEx(int l, int t) {
+        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        return 2 * (Nl*t + l);
+    }
+
+    /// Get \f$ E_y \f$ index
+    size_t iEy(int l, int t) {
+        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        return 2 * (Nl*t + l) + 1;
+    }
+
+    /// Get \f$ H_x \f$ index
+    size_t iHx(int l, int t) {
+        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        return 2 * (Nl*t + l) + 1;
+    }
+
+    /// Get \f$ H_y \f$ index
+    size_t iHy(int l, int t) {
+        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        return 2 * (Nl*t + l);
+    }
 };
 
 }}} // namespace plask

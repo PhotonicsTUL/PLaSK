@@ -19,8 +19,12 @@ using namespace plask::solvers::slab;
 #define ROOTDIGGER_ATTRS_DOC \
     ".. rubric:: Attributes\n\n" \
     ".. autosummary::\n\n" \
+    "   ~optical.slab.RootParams.alpha\n" \
+    "   ~optical.slab.RootParams.lambda\n" \
+    "   ~optical.slab.RootParams.initial_range\n" \
     "   ~optical.slab.RootParams.maxiter\n" \
     "   ~optical.slab.RootParams.maxstep\n" \
+    "   ~optical.slab.RootParams.method\n" \
     "   ~optical.slab.RootParams.tolf_max\n" \
     "   ~optical.slab.RootParams.tolf_min\n" \
     "   ~optical.slab.RootParams.tolx\n"
@@ -29,8 +33,8 @@ using namespace plask::solvers::slab;
     ".. rubric:: Attributes\n\n" \
     ".. autosummary::\n\n" \
     "   ~optical.slab.PML.factor\n" \
-    "   ~optical.slab.PML.order\n" \
-    "   ~optical.slab.PML.shift\n" \
+    "   ~optical.slab.PML.shape\n" \
+    "   ~optical.slab.PML.dist\n" \
     "   ~optical.slab.PML.size\n"
 
 template <typename SolverT>
@@ -71,11 +75,11 @@ struct PmlWrapper {
     }
 
     std::string __str__() const {
-        return format("<factor: %1%, size: %2%, shift: %3%, order: %4%>", pml->factor, pml->size, pml->shift, pml->order);
+        return format("<factor: %1%, size: %2%, dist: %3%, shape: %4%>", str(pml->factor), pml->size, pml->shift, pml->order);
     }
 
     std::string __repr__() const {
-        return format("PML(factor=%1%, size=%2%, shift=%3%, order=%4%)", pml->factor, pml->size, pml->shift, pml->order);
+        return format("PML(factor=%1%, size=%2%, dist=%3%, shape=%4%)", str(pml->factor), pml->size, pml->shift, pml->order);
     }
 };
 
@@ -256,8 +260,13 @@ py::object FourierReflection2D_computeTransmitticity(FourierReflection2D* self,
     }, wavelength);
 }
 
-PmlWrapper FourierReflection2D_getPML(FourierReflection2D* self) {
+PmlWrapper FourierReflection2D_PML(FourierReflection2D* self) {
     return PmlWrapper(self, &self->pml);
+}
+
+void FourierReflection2D_setPML(FourierReflection2D* self, const PmlWrapper& value) {
+    self->pml = *value.pml;
+    self->invalidate();
 }
 
 double FourierReflection2D_Mode_Wavelength(const FourierReflection2D::Mode& mode) {
@@ -288,6 +297,25 @@ shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(Four
 DataVectorWrap<const Tensor3<dcomplex>,3> FourierReflection3D_getRefractiveIndexProfile(FourierReflection3D& self,
                 const shared_ptr<RectangularMesh<3>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
     return DataVectorWrap<const Tensor3<dcomplex>,3>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
+}
+
+
+PmlWrapper FourierReflection3D_longPML(FourierReflection3D* self) {
+    return PmlWrapper(self, &self->pml_long);
+}
+
+PmlWrapper FourierReflection3D_tranPML(FourierReflection3D* self) {
+    return PmlWrapper(self, &self->pml_tran);
+}
+
+void FourierReflection3D_setLongPML(FourierReflection3D* self, const PmlWrapper& value) {
+    self->pml_long = *value.pml;
+    self->invalidate();
+}
+
+void FourierReflection3D_setTranPML(FourierReflection3D* self, const PmlWrapper& value) {
+    self->pml_tran = *value.pml;
+    self->invalidate();
 }
 
 
@@ -352,7 +380,8 @@ BOOST_PYTHON_MODULE(slab)
                    "    interp: Interpolation method\n"
                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
         RO_PROPERTY(tran_mesh, getXmesh, "Transverse mesh with points where materials parameters are sampled.");
-        solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()),
+        solver.add_property("pml", py::make_function(&FourierReflection2D_PML, py::with_custodian_and_ward_postcall<0,1>()),
+                            &FourierReflection2D_setPML,
                             "Side Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC
                            );
@@ -406,8 +435,8 @@ BOOST_PYTHON_MODULE(slab)
     py::class_<PmlWrapper>("PML", "Perfectly matched layer details.", py::no_init)
         .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
         .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
-        .add_property("shift", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML shift from the structure.")
-        .add_property("order", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
+        .add_property("dist", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML distance from the structure.")
+        .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
         .def("__str__", &PmlWrapper::__str__)
         .def("__repr__", &PmlWrapper::__repr__)
     ;
@@ -480,10 +509,16 @@ BOOST_PYTHON_MODULE(slab)
                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
         RO_PROPERTY(long_mesh, getLongMesh, "Longitudinal mesh with points where materials parameters are sampled.");
         RO_PROPERTY(tran_mesh, getTranMesh, "Transverse mesh with points where materials parameters are sampled.");
-//         solver.add_property("pml", py::make_function(&FourierReflection2D_getPML, py::with_custodian_and_ward_postcall<0,1>()),
-//                             "Side Perfectly Matched Layers boundary conditions.\n\n"
-//                             PML_ATTRS_DOC
-//                            );
+        solver.add_property("long_pml", py::make_function(&FourierReflection3D_longPML, py::with_custodian_and_ward_postcall<0,1>()),
+                            &FourierReflection3D_setLongPML,
+                            "Longitudinal edge Perfectly Matched Layers boundary conditions.\n\n"
+                            PML_ATTRS_DOC
+                           );
+        solver.add_property("tran_pml", py::make_function(&FourierReflection3D_longPML, py::with_custodian_and_ward_postcall<0,1>()),
+                            &FourierReflection3D_setTranPML,
+                            "Transverse edge Perfectly Matched Layers boundary conditions.\n\n"
+                            PML_ATTRS_DOC
+                           );
 //         RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
 //         RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),

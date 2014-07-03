@@ -144,7 +144,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 
     auto temperature = SOLVER->inTemperature(mesh);
 
-    DataVector<const double> gain;
+    LazyData<double> gain;
     bool have_gain = false;
     if (SOLVER->inGain.hasProvider()) {
         gain = SOLVER->inGain(mesh, lambda);

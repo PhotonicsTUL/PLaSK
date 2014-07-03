@@ -125,31 +125,31 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     /// Get \f$ \varepsilon_{xz} \f$
     dcomplex epsxz(size_t l, int i) { return conj(coeffs[l][(i>=0)?i:i+nN].c01); }
 
-    /// Get \f$ \mu_{xx} \f$
+    /// Get \f$ \mu_{zz} \f$
     dcomplex muzz(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
+    dcomplex muxx(size_t l, int i) { return mag[(i>=0)?i:i+nN].c11; }
 
-    /// Get \f$ \mu_{xx} \f$
+    /// Get \f$ \mu_{yy}^{-1} \f$
     dcomplex imuyy(size_t l, int i) { return mag[(i>=0)?i:i+nN].c11; }
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }
 
-    /// Get \f$ E_x \f$ index
+    /// Get \f$ E_z \f$ index
     size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
 
-    /// Get \f$ E_x \f$ index
+    /// Get \f$ H_x \f$ index
     size_t iHx(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
 
-    /// Get \f$ E_x \f$ index
+    /// Get \f$ H_z \f$ index
     size_t iHz(int i) { return 2 * ((i>=0)?i:i+N); }
 
-    /// Get \f$ E_x \f$ index
+    /// Get \f$ E \f$ index for separated equations
     size_t iE(int i) { return (i>=0)?i:i+N; }
 
-    /// Get \f$ E_x \f$ index
+    /// Get \f$ H \f$ index for separated equations
     size_t iH(int i) { return (i>=0)?i:i+N; }
 };
 

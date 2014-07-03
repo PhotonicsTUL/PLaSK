@@ -20,10 +20,10 @@ void ExpansionPW3D::init()
     periodic_long = geometry->isPeriodic(Geometry3D::DIRECTION_LONG);
     periodic_tran = geometry->isPeriodic(Geometry3D::DIRECTION_TRAN);
 
-    left = geometry->getChild()->getBoundingBox().lower[0];
-    right = geometry->getChild()->getBoundingBox().upper[0];
-    back = geometry->getChild()->getBoundingBox().lower[1];
-    front = geometry->getChild()->getBoundingBox().upper[1];
+    back = geometry->getChild()->getBoundingBox().lower[0];
+    front = geometry->getChild()->getBoundingBox().upper[0];
+    left = geometry->getChild()->getBoundingBox().lower[1];
+    right = geometry->getChild()->getBoundingBox().upper[1];
 
     size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran, Ml, Mt;
     if (refl == 0) refl = 1;  if (reft == 0) reft = 1;
@@ -231,7 +231,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     auto temperature = SOLVER->inTemperature(mesh);
 
-    DataVector<const double> gain;
+    LazyData<double> gain;
     bool have_gain = false;
     if (SOLVER->inGain.hasProvider()) {
         gain = SOLVER->inGain(mesh, lambda);
@@ -246,7 +246,6 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
     double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
     double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
-
 
     for (size_t it = 0; it != nNt; ++it) {
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
@@ -287,24 +286,24 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     // Add PMLs
                     if (!periodic_long) {
                         dcomplex s = 1.;
-                        if (j < pib) {
-                            double h = (pb - long_mesh[j]) / SOLVER->pml_long.size;
+                        if (l < pib) {
+                            double h = (pb - long_mesh[l]) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
-                        } else if (j > pif) {
-                            double h = (long_mesh[j] - pf) / SOLVER->pml_long.size;
+                        } else if (l > pif) {
+                            double h = (long_mesh[l] - pf) / SOLVER->pml_long.size;
                             s = 1. + (SOLVER->pml_long.factor-1.)*pow(h, SOLVER->pml_long.order);
                         }
-                         cell[j].c00 *= 1./s;
-                         cell[j].c11 *= s;
-                         cell[j].c22 *= s;
+                        cell[j].c00 *= 1./s;
+                        cell[j].c11 *= s;
+                        cell[j].c22 *= s;
                     }
                     if (!periodic_tran) {
                         dcomplex s = 1.;
-                        if (j < pil) {
-                            double h = (pl - tran_mesh[j]) / SOLVER->pml_tran.size;
+                        if (t < pil) {
+                            double h = (pl - tran_mesh[t]) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
-                        } else if (j > pir) {
-                            double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
+                        } else if (t > pir) {
+                            double h = (tran_mesh[t] - pr) / SOLVER->pml_tran.size;
                             s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                         }
                         cell[j].c00 *= s;
@@ -384,27 +383,24 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 
 DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, OrderedAxis lmesh, OrderedAxis tmesh, InterpolationMethod interp)
 {
-    DataVector<Tensor3<dcomplex>> result;
-//     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
-//         const double Lt = right - left, Ll = front - back;
-//         if (!symmetric) {
-//             result.reset(mesh.size(), Tensor3<dcomplex>(0.));
-//             for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
-//                 size_t j = (k>=0)? k : k + nN;
-//                 for (size_t i = 0; i != mesh.size(); ++i) {
-//                     result[i] += coeffs[lay][j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
-//                 }
-//             }
-//         } else {
-//             result.reset(mesh.size());
-//             for (size_t i = 0; i != mesh.size(); ++i) {
-//                 result[i] = coeffs[lay][0];
-//                 for (int k = 1; k != nN; ++k) {
-//                     result[i] += 2. * coeffs[lay][k] * cos(M_PI * k * mesh[i] / L);
-//                 }
-//             }
-//         }
-//     } else {
+    DataVector<Tensor3<dcomplex>> result(lmesh.size() * tmesh.size(), Tensor3<dcomplex>(0.));
+    if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
+        const double Lt = right - left, Ll = front - back;
+        const int endt = int(nNt+1)/2, endl = int(nNl+1)/2;
+        for (int kt = -int(nNt)/2; kt != endt; ++kt) {
+            size_t t = (kt >= 0)? kt : (symmetric_tran)? -kt : kt + nNt;
+            for (int kl = -int(nNl)/2; kl != endl; ++kl) {
+                size_t l = (kl >= 0)? kl : (symmetric_long)? -kl : kl + nNl;
+                for (size_t it = 0; it != tmesh.size(); ++it) {
+                    const double phast = kt * (tmesh[it]-left) / Lt;
+                    size_t offset = lmesh.size()*it;
+                    for (size_t il = 0; il != lmesh.size(); ++il) {
+                        result[offset+il] += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(lmesh[il]-back)/ Ll + phast));
+                    }
+                }
+            }
+        }
+    } else {
         size_t nl = symmetric_long? nNl : nNl+1, nt = symmetric_tran? nNt : nNt+1;
         DataVector<Tensor3<dcomplex>> params(nl * nt);
         for (size_t t = 0; t != nNt; ++t) {
@@ -435,12 +431,11 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Ord
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
         }
         auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1), RectangularMesh<3>::ORDER_210);
-        auto dst_mesh = make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(std::move(lmesh)),
-                                    make_shared<OrderedAxis>(std::move(tmesh)),
-                                    shared_ptr<OrderedAxis>(new OrderedAxis{0}));
+        auto dst_mesh = make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(std::move(lmesh)), make_shared<OrderedAxis>(std::move(tmesh)),
+                                    shared_ptr<OrderedAxis>(new OrderedAxis{0}), RectangularMesh<3>::ORDER_210);
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
         result = interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
-//     }
+    }
     for (Tensor3<dcomplex>& eps: result) {
         eps.c22 = 1. / eps.c22;
         eps.sqrt_inplace();
