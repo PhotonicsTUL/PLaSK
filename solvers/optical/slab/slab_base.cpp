@@ -114,7 +114,7 @@ void SlabSolver<Geometry3D>::setupLayers()
 {
     if (vbounds.empty()) prepareLayers();
 
-    auto points = make_rectilinear_mesh( RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->getMidpointsMesh() );
+    auto points = make_rectilinear_mesh(RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->getMidpointsMesh());
 
     struct LayerItem {
         shared_ptr<Material> material;
@@ -141,7 +141,7 @@ void SlabSolver<Geometry3D>::setupLayers()
         for (size_t i = 0; i != points->axis1->size(); ++i) {
             size_t offs = i * points->axis0->size();
             for (size_t j = 0; j != points->axis0->size(); ++j) {
-                Vec<3> p(points->axis0->at(i), points->axis1->at(j), v);
+                Vec<3> p(points->axis0->at(j), points->axis1->at(i), v);
                 size_t n = offs + j;
                 layer[n].material = this->geometry->getMaterial(p);
                 for (const std::string& role: this->geometry->getRolesAt(p)) {
