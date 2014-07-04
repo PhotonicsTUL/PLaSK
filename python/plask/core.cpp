@@ -263,7 +263,7 @@ py::docstring_options doc_options(
 #       include <backward.hpp>
         void printStack(void) {
             backward::StackTrace st;
-            st.load_here(32);
+            st.load_here(256);
             backward::Printer printer;
             printer.address = true;
             printer.print(st, stderr);
