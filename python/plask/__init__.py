@@ -32,6 +32,9 @@ _os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
 from ._plask import *
 from ._plask import _print_exception
 
+try: from ._plask import _print_stack # for debug only
+except ImportError: pass
+
 try:
     from ._plask import __globals
 except ImportError:

@@ -256,6 +256,21 @@ py::docstring_options doc_options(
 
 }} // namespace plask::python
 
+#ifdef PRINT_STACKTRACE_ON_EXCEPTION
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) //win32 support
+#       include <win_printstack.hpp>
+#   else
+#       include <backward.hpp>
+        void printStack(void) {
+            backward::StackTrace st;
+            st.load_here(32);
+            backward::Printer printer;
+            printer.address = true;
+            printer.print(st, stderr);
+        }
+#   endif
+#endif
+
 BOOST_PYTHON_MODULE(_plask)
 {
     // Initialize numpy
@@ -345,6 +360,10 @@ BOOST_PYTHON_MODULE(_plask)
 
     py::def("_print_exception", &printPythonException, "Print exception information to PLaSK logging system",
             (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("startline")=0, py::arg("scriptname")="", py::arg("second_is_script")=false));
+
+#   ifdef PRINT_STACKTRACE_ON_EXCEPTION
+        py::def("_print_stack", &printStack, "Print C stack (for debug purposes_");
+#   endif
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;
