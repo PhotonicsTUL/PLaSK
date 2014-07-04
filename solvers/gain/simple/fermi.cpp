@@ -318,14 +318,10 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     }
 
     // TODO co robic w ponizszych przypadkach? - poprawic jak bedzie wiadomo
-    if ((qEgG > qEgX) && (qEgX))
-        this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", qEgG, qEgX);
-    else if ((qEgG >= qEgL) && (qEgL))
-        this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", qEgG, qEgL);
-    if ((bEgG > bEgX) && (bEgX))
-        this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", bEgG, bEgX);
-    else if ((bEgG >= bEgL) && (bEgL))
-        this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", bEgG, bEgL);
+         if ((qEgG > qEgX) && (qEgX)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", qEgG, qEgX);
+    else if ((qEgG > qEgL) && (qEgL)) this->writelog(LOG_WARNING, "Indirect Eg for QW: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", qEgG, qEgL);
+         if ((bEgG > bEgX) && (bEgX)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[X] = %2% eV; using Eg[G] in calculations", bEgG, bEgX);
+    else if ((bEgG > bEgL) && (bEgL)) this->writelog(LOG_WARNING, "Indirect Eg for barrier: Eg[G] = %1% eV, Eg[L] = %2% eV; using Eg[G] in calculations", bEgG, bEgL);
 
     if (qEc < qEvhh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for heavy holes = %2% eV", qEc, qEvhh);
     if (qEc < qEvlh) throw ComputationError(this->getId(), "QW CB = %1% eV is below VB for light holes = %2% eV", qEc, qEvlh);
