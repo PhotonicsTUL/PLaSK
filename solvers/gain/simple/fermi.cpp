@@ -289,38 +289,33 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     double qEc, qEvhh, qEvlh, bEc, bEvhh, bEvlh, qEg, vhhdepth, vlhdepth, cdepth, vdepth;
     double qEgG, qEgX, qEgL, bEgG, bEgX, bEgL; // qw and barrier energy gaps
 
-    std::exception_ptr error;
-    #pragma omp critical // necessary as the material may be defined in Python
     {
-        try {
-            qme = region.materialQW->Me(T,qstrain);
-            qmhh = region.materialQW->Mhh(T,qstrain);
-            qmlh = region.materialQW->Mlh(T,qstrain);
-            bme = region.materialBarrier->Me(T,bstrain);
-            bmhh = region.materialBarrier->Mhh(T,bstrain);
-            bmlh = region.materialBarrier->Mlh(T,bstrain);
+        OmpLockGuard lock(material_omp_lock); // necessary as the material may be defined in Python
 
-            gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
-            gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));
+        qme = region.materialQW->Me(T,qstrain);
+        qmhh = region.materialQW->Mhh(T,qstrain);
+        qmlh = region.materialQW->Mlh(T,qstrain);
+        bme = region.materialBarrier->Me(T,bstrain);
+        bmhh = region.materialBarrier->Mhh(T,bstrain);
+        bmlh = region.materialBarrier->Mlh(T,bstrain);
 
-            qEgG = region.materialQW->Eg(T,0.,'G');
-            qEgX = region.materialQW->Eg(T,0.,'X');
-            qEgL = region.materialQW->Eg(T,0.,'L');
-            bEgG = region.materialBarrier->Eg(T,0.,'G');
-            bEgX = region.materialBarrier->Eg(T,0.,'X');
-            bEgL = region.materialBarrier->Eg(T,0.,'L');
+        gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
+        gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));
 
-            qEc = region.materialQW->CB(T,qstrain);
-            qEvhh = region.materialQW->VB(T,qstrain,'G','H');
-            qEvlh = region.materialQW->VB(T,qstrain,'G','L');
-            bEc = region.materialBarrier->CB(T,bstrain);
-            bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
-            bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
-        } catch (...) {
-            error = std::current_exception();
-        }
+        qEgG = region.materialQW->Eg(T,0.,'G');
+        qEgX = region.materialQW->Eg(T,0.,'X');
+        qEgL = region.materialQW->Eg(T,0.,'L');
+        bEgG = region.materialBarrier->Eg(T,0.,'G');
+        bEgX = region.materialBarrier->Eg(T,0.,'X');
+        bEgL = region.materialBarrier->Eg(T,0.,'L');
+
+        qEc = region.materialQW->CB(T,qstrain);
+        qEvhh = region.materialQW->VB(T,qstrain,'G','H');
+        qEvlh = region.materialQW->VB(T,qstrain,'G','L');
+        bEc = region.materialBarrier->CB(T,bstrain);
+        bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
+        bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');
     }
-    if (error) std::rethrow_exception(error);
 
     // TODO co robic w ponizszych przypadkach? - poprawic jak bedzie wiadomo
     if ((qEgG>=qEgX) && (qEgX)) this->writelog(LOG_DETAIL, "indirect Eg for QW: Eg,G = %1% eV, Eg,X = %2% eV; using Eg,G in calculations", qEgG, qEgX);
@@ -359,32 +354,14 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     vdepth = vhhdepth;
 
     if ((vhhdepth < 0.)&&(vlhdepth < 0.)) {
-        std::string qname, bname;
-        #pragma omp critical
-        {
-            try {
-                qname = region.materialQW->name();
-                bname = region.materialBarrier->name();
-            } catch (...) {
-                error = std::current_exception();
-            }
-        }
-        if (error) std::rethrow_exception(error);
+        std::string qname = region.materialQW->name(),
+                    bname = region.materialBarrier->name();
         throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of materials %1% and %2%", qname, bname);
     }
 
     if (cdepth < 0.) {
-        std::string qname, bname;
-        #pragma omp critical
-        {
-            try {
-                qname = region.materialQW->name();
-                bname = region.materialBarrier->name();
-            } catch (...) {
-                error = std::current_exception();
-            }
-        }
-        if (error) std::rethrow_exception(error);
+        std::string qname = region.materialQW->name(),
+                    bname = region.materialBarrier->name();
         throw BadInput(this->getId(), "Conduction QW depth negative, check CB values of materials %1% and %2%", qname, bname);
     }
 

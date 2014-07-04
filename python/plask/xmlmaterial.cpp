@@ -99,18 +99,21 @@ class PythonEvalMaterial : public Material
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1); \
+        OmpLockGuard lock(material_omp_lock); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_2(rtype, fun, arg1, arg2) \
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1, arg2); \
+        OmpLockGuard lock(material_omp_lock); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_3(rtype, fun, arg1, arg2, arg3) \
         if (cls->cache.fun) return *cls->cache.fun; \
         if (cls->fun == NULL) return base->fun(arg1, arg2, arg3); \
+        OmpLockGuard lock(material_omp_lock); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
@@ -118,6 +121,7 @@ class PythonEvalMaterial : public Material
 #   define PYTHON_EVAL_CALL_4(rtype, fun, arg1, arg2, arg3, arg4) \
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1, arg2, arg3, arg4); \
+        OmpLockGuard lock(material_omp_lock); \
         py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; locals[BOOST_PP_STRINGIZE(arg4)] = arg4; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));

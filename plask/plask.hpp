@@ -75,6 +75,8 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "utils/xml.h"
 
+#include "parallel.h"
+
 //this contains all geometry stuff
 #include "geometry/geometry.h"
 

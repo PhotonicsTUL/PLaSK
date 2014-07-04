@@ -36,6 +36,7 @@ namespace boost { namespace python {
 #include <plask/axes.h>
 #include <plask/geometry/space.h>
 #include <plask/log/log.h>
+#include <plask/parallel.h>
 
 #include "python_enum.h"
 
@@ -238,9 +239,8 @@ inline AxisNames* getCurrentAxes() {
 }
 
 // ----------------------------------------------------------------------------------------------------------------------
-
-/// Helper for parsing arguments in raw_function
 // Helpers for parsing kwargs
+
 namespace detail
 {
     template <size_t i>
@@ -262,6 +262,7 @@ namespace detail
     }
 }
 
+/// Helper for parsing arguments in raw_function
 template <typename... Names>
 static inline void parseKwargs(const std::string& fname, py::tuple& args, py::dict& kwargs, const Names&... names) {
     kwargs = kwargs.copy();
@@ -276,6 +277,8 @@ static inline void parseKwargs(const std::string& fname, py::tuple& args, py::di
     args = py::tuple(arglist);
 }
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Parallel locking
 
 }} // namespace plask::python
 

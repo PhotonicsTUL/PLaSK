@@ -17,11 +17,14 @@ This file contains base classes for materials and material database class.
 #include "../exceptions.h"
 #include "../phys/constants.h"
 #include "../phys/functions.h"
-
 #include "../vector/tensor2.h"
 #include "../vector/tensor3.h"
+#include "../parallel.h"
 
 namespace plask {
+
+/// Global Python lock
+extern OmpNestLock material_omp_lock;
 
 /**
  * Get group in periodic table of given @p object.

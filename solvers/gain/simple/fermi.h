@@ -279,9 +279,10 @@ struct GainSpectrum {
      */
     double getGain(double wavelength) {
         #pragma omp critical
-        if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
-        #pragma omp critical
-        if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        {
+            if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+            if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        }
         return solver->getGainModule(wavelength, T, n, *region) // returns gain for single QW layer!
             .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwlen); // earlier: qwtotallen
     }

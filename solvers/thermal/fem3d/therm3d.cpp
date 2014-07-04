@@ -518,10 +518,8 @@ Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(
             auto material = solver->geometry->getMaterial(point);
             Tensor2<double> result;
             if (auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(solver->geometry->getMatchingAt(point, &GeometryObject::PredicateIsLeaf)))
-                #pragma omp critical
                 result = material->thermk(temps[idx], leaf->getBoundingBox().height());
             else
-                #pragma omp critical
                 result = material->thermk(temps[idx]);
             return result;
         }

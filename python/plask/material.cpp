@@ -145,7 +145,10 @@ class PythonMaterial : public Material
     template <typename R, typename F, typename... Args>
     inline R call(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
         if (cached) return *cached;
-        if (overriden(name)) return py::call_method<R>(self, name, args...);
+        if (overriden(name)) {
+            OmpLockGuard lock(material_omp_lock);
+            return py::call_method<R>(self, name, args...);
+        }
         return ((*base).*f)(args...);
     }
 
@@ -241,7 +244,10 @@ class PythonMaterial : public Material
         py::object oself { py::borrowed(self) },
                    oother { py::object(py::borrowed(theother.self)) };
 
-        if (overriden("__eq__")) return py::call_method<bool>(self, "__eq__", oother);
+        if (overriden("__eq__")) {
+            OmpLockGuard lock(material_omp_lock);
+            return py::call_method<bool>(self, "__eq__", oother);
+        }
 
         return *base == *theother.base &&
                 oself.attr("__class__") == oother.attr("__class__") &&
@@ -261,7 +267,10 @@ class PythonMaterial : public Material
     }
 
     virtual std::string str() const override {
-        if (overriden("__str__")) return py::call_method<std::string>(self, "__str__");
+        if (overriden("__str__")) {
+            OmpLockGuard lock(material_omp_lock);
+            return py::call_method<std::string>(self, "__str__");
+        }
         else return name();
     }
 
@@ -333,16 +342,28 @@ class PythonMaterial : public Material
     virtual double absp(double wl, double T) const override { return call<double>("absp", &Material::absp, cache->absp, wl, T); }
     virtual dcomplex Nr(double wl, double T, double n) const override {
         if (cache->Nr) return *cache->Nr;
-        if (overriden("Nr")) return py::call_method<dcomplex>(self, "Nr", wl, T, n);
+        if (overriden("Nr")) {
+            OmpLockGuard lock(material_omp_lock);
+            return py::call_method<dcomplex>(self, "Nr", wl, T, n);
+        }
         if (cache->nr || cache->absp || overriden("nr") || overriden("absp"))
             return dcomplex(call<double>("nr", &Material::nr, cache->nr, wl, T, n), -7.95774715459e-09*call<double>("absp", &Material::absp, cache->absp, wl,T)*wl);
         return base->Nr(wl, T, n);
     }
     virtual Tensor3<dcomplex> NR(double wl, double T, double n) const override {
         if (cache->NR) return *cache->NR;
-        if (overriden("NR")) return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
+        if (overriden("NR")) {
+            OmpLockGuard lock(material_omp_lock);
+            return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
+        }
         if (cache->Nr || overriden("Nr")) {
-            dcomplex nr = cache->Nr? *cache->Nr : py::call_method<dcomplex>(self, "Nr", wl, T, n);
+            dcomplex nr;
+            if (cache->Nr)
+                nr = *cache->Nr;
+            else {
+                OmpLockGuard lock(material_omp_lock);
+                nr = py::call_method<dcomplex>(self, "Nr", wl, T, n);
+            }
             return Tensor3<dcomplex>(nr, nr, nr, 0.);
         }
         if (cache->nr || cache->absp || overriden("nr") || overriden("absp")) {

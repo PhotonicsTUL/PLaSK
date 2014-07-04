@@ -2,6 +2,14 @@
 
 namespace plask { namespace solvers { namespace effective {
 
+#define CALL_FUN(result, re, im) \
+    if (error) continue; \
+    try { \
+        result = fun(dcomplex(re, im)); \
+    } catch (...) { \
+        _Pragma("omp critical") \
+        error = std::current_exception();\
+    }
 
 Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& fun, dcomplex corner0, dcomplex corner1, size_t ren, size_t imn):
     solver(solver), fun(fun), re0(real(corner0)), im0(imag(corner0)), re1(real(corner1)), im1(imag(corner1))
@@ -19,43 +27,19 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     {
         #pragma for nowait
         for (size_t i = 0; i < ren; ++i) {
-            if (error) continue;
-            try {
-                bottom[i] = fun(dcomplex(re0+i*dr, im0));
-            } catch (...) { 
-                #pragma omp critical
-                error = std::current_exception();
-            }
+            CALL_FUN(bottom[i], re0+i*dr, im0)
         }
         #pragma for nowait
         for (size_t i = 0; i < imn; ++i) {
-            if (error) continue;
-            try {
-                right[i] = fun(dcomplex(re1, im0+i*di));
-            } catch (...) { 
-                #pragma omp critical
-                error = std::current_exception();
-            }
+            CALL_FUN(right[i], re1, im0+i*di)
         }
         #pragma for nowait
         for (size_t i = 1; i <= ren; ++i) {
-            if (error) continue;
-            try {
-                top[i] = fun(dcomplex(re0+i*dr, im1));
-            } catch (...) { 
-                #pragma omp critical
-                error = std::current_exception();
-            }
+            CALL_FUN(top[i], re0+i*dr, im1)
         }
         #pragma for
         for (size_t i = 1; i <= imn; ++i) {
-            if (error) continue;
-            try {
-                left[i] = fun(dcomplex(re0, im0+i*di));
-            } catch (...) { 
-                #pragma omp critical
-                error = std::current_exception();
-            }
+            CALL_FUN(left[i], re0, im0+i*di)
         }
     }
     if (error) std::rethrow_exception(error);
@@ -110,9 +94,9 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
         DataVector<dcomplex> middle(imn+1);
         middle[0] = bottom[n]; middle[imn] = top[n];
         double di = (im1 - im0) / imn;
-        
+
         std::exception_ptr error;
-        #pragma omp parallel for 
+        #pragma omp parallel for
         for (size_t i = 1; i < imn; ++i) {
             if (error) continue;
             try {
@@ -154,7 +138,7 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
             size_t n = (right.size()-1) / 2; // no less than 1
             middle[0] = left[n]; middle[ren] = right[n];
             double dr = (re1 - re0) / ren;
-            
+
             std::exception_ptr error;
             #pragma omp parallel for
             for (size_t i = 1; i < ren; ++i) {
@@ -165,7 +149,7 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
                     error = std::current_exception();
                 }
             }
-            
+
             contoura.left = DataVector<dcomplex>(const_cast<dcomplex*>(&left[0]), n+1);
             contoura.right = DataVector<dcomplex>(const_cast<dcomplex*>(&right[0]), n+1);
             contourb.left = DataVector<dcomplex>(const_cast<dcomplex*>(&left[n]), n+1);
@@ -220,7 +204,7 @@ std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const 
     for(; imsteps > Ni; Ni <<= 1);
 
     double reps = real(eps), ieps = imag(eps);
-    
+
     std::vector<std::pair<dcomplex,dcomplex>> results;
     detail::ContourBisect bisection(reps, ieps, results);
     Contour contour(solver, fun, corner0, corner1, Nr, Ni);

@@ -4,13 +4,15 @@
 #include "../utils/stl.h"
 #include "../utils/string.h"
 #include "../log/log.h"
-
 #include "db.h"
 
 #include <cmath>
 #include <set>
 
 namespace plask {
+
+// Parallel locking
+OmpNestLock material_omp_lock;
 
 inline std::pair<std::string, int> el_g(const std::string& g, int p) { return std::pair<std::string, int>(g, p); }
 

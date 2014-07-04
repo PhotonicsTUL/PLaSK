@@ -263,7 +263,6 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                     double T = 0.; // average temperature in all vertical points
                     for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2.size()); v != end; ++v) T += temperature[v];
                     T /= axis2.size();
-                    #pragma omp critical
                     cell[j] = material->NR(lambda, T);
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long || symmetric_tran) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
