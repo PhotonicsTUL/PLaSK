@@ -75,9 +75,6 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
-
-        //TODO remove after 1.06.2014
-        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "OBSOLETE");
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
@@ -99,9 +96,6 @@ BOOST_PYTHON_MODULE(fem)
         solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
         solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
-
-        //TODO remove after 1.06.2014
-        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "OBSOLETE");
     }
 
 //     // Add methods to create classes using depreciate names

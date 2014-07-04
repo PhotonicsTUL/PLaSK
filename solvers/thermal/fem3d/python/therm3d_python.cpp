@@ -69,9 +69,6 @@ BOOST_PYTHON_MODULE(fem3d)
         RW_FIELD(itererr, "Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
         RW_FIELD(logfreq, "Frequency of iteration progress reporting");
-
-        //TODO remove after 1.06.2014
-        solver.add_property("inHeatDensity", &inHeatDensity_get, &inHeatDensity_set, "OBSOLETE");
     }
 
 }

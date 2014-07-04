@@ -188,13 +188,6 @@ void EffectiveFrequencyCylSolver_setStripeR(EffectiveFrequencyCylSolver& self, p
     else self.setStripeR(py::extract<double>(r));
 }
 
-//TODO remove after 1.06.2014
-py::object outLightIntensity_get(const py::object& self) {
-    writelog(LOG_WARNING, "'outLightIntensity' is obsolete. Use 'outLightMagnitude' instead!");
-    return self.attr("outLightMagnitude");
-}
-
-
 /**
  * Initialization of your solver to Python
  *
@@ -297,9 +290,6 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.power\n");
-
-        //TODO remove after 1.06.2014
-        solver.add_property("outLightIntensity", &outLightIntensity_get, "OBSOLETE");
 
         py::scope scope = solver;
 
@@ -413,9 +403,6 @@ BOOST_PYTHON_MODULE(effective)
                             "Radial position of at which the vertical part of the field is calculated.\n\n"
                             "Should be a float number or ``None`` to compute effective frequencies for all\n"
                             "the stripes.\n");
-
-        //TODO remove after 1.06.2014
-        solver.add_property("outLightIntensity", &outLightIntensity_get, "OBSOLETE");
 
         py::scope scope = solver;
 

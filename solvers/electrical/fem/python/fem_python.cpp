@@ -112,7 +112,6 @@ inline static void register_electrical_solver(const char* name, const char* geon
            "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
            "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
     );
-    solver.add_property("outHeatDensity", outHeatDensity_get, "OBSOLETE"); // TODO remove after 1.06.2014
 }
 
 /**

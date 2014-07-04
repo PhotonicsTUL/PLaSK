@@ -14,18 +14,6 @@ shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(FiniteElementMethodDiffus
     return make_shared<RegularMesh1D>(self.current_mesh());
 }
 
-//TODO remove after 1.06.2014
-py::object inLightIntensity_get(py::object self) {
-    writelog(LOG_WARNING, "'inLightIntensity' is obsolete. Use 'inLightMagnitude' instead!");
-    return self.attr("inLightMagnitude");
-}
-//TODO remove after 1.06.2014
-void inLightIntensity_set(py::object self, py::object value) {
-    writelog(LOG_WARNING, "'inLightIntensity' is obsolete. Use 'inLightMagnitude' instead!");
-    self.attr("__setattr__")("inLightMagnitude", value);
-}
-
-
 /**
  * Initialization of your solver class to Python
  *
@@ -98,9 +86,6 @@ BOOST_PYTHON_MODULE(diffusion)
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
-
-        //TODO remove after 1.06.2014
-        solver.add_property("inLightIntensity", &inLightIntensity_get, &inLightIntensity_set, "OBSOLETE");
 
         py::scope scope = solver;
 
