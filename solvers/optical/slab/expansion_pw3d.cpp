@@ -446,8 +446,8 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Ord
 
 void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
 {
-//     assert(initialized);
-//
+    assert(initialized);
+
 //     int order = SOLVER->getSize();
 //     dcomplex f = 1. / k0, k02 = k0*k0;
 //     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);

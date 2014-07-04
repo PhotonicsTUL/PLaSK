@@ -392,20 +392,25 @@ int main(int argc, const char *argv[])
                     PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
                     throw py::error_already_set();
                 }
+                PyObject* pyfile = nullptr;
 #               if PY_VERSION_HEX >= 0x03000000
-                    PyObject* pyfile = PyUnicode_FromString(filename.c_str());
-                    FILE* file = _Py_fopen(pyfile, "r");
+#                   if PY_VERSION_HEX >= 0x03040000
+                        FILE* file = _Py_fopen(filename.c_str(), "r");
+#                   else
+                        pyfile = PyUnicode_FromString(filename.c_str());
+                        FILE* file = _Py_fopen(pyfile, "r");
+#                   endif
                     PyObject* result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
                     fclose(file);
 #               else
                     // We want to set "from __future__ import division" flag
-                    PyObject *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
+                    *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
                     if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
                     FILE* file = PyFile_AsFile(pyfile);
                     PyCompilerFlags flags { CO_FUTURE_DIVISION };
                     PyObject* result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
 #               endif
-                Py_DECREF(pyfile);
+                Py_XDECREF(pyfile);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
             }
