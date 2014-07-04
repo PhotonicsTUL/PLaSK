@@ -404,7 +404,7 @@ int main(int argc, const char *argv[])
                     fclose(file);
 #               else
                     // We want to set "from __future__ import division" flag
-                    *pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
+                    pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
                     if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
                     FILE* file = PyFile_AsFile(pyfile);
                     PyCompilerFlags flags { CO_FUTURE_DIVISION };
