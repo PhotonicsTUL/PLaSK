@@ -15,6 +15,11 @@ namespace plask {
     struct OmpNestLock {
         omp_nest_lock_t lck;
 
+        OmpNestLock(const OmpNestLock&) = delete;
+        OmpNestLock& operator=(const OmpNestLock&) = delete;
+        OmpNestLock(OmpNestLock&&) = delete;
+        OmpNestLock& operator=(OmpNestLock&&) = delete;
+
         /// Initialize the lock
         OmpNestLock() {
             omp_init_nest_lock(&lck);
@@ -32,6 +37,12 @@ namespace plask {
     struct OmpLockGuard {
         omp_nest_lock_t* lck;
 
+        OmpLockGuard() = delete;
+        OmpLockGuard(const OmpLockGuard&) = delete;
+        OmpNestLock& operator=(const OmpLockGuard&) = delete;
+        OmpLockGuard(OmpLockGuard&&) = delete;
+        OmpNestLock& operator=(OmpLockGuard&&) = delete;
+
         /** Lock the lock.
          * If the lock is already locked by the same thread, just increase its depth
          */
@@ -48,10 +59,24 @@ namespace plask {
 #else
 
     // Empty placeholder
-    struct OmpNestLock {};
+    struct OmpNestLock {
+        OmpNestLock(const OmpNestLock&) = delete;
+        OmpNestLock& operator=(const OmpNestLock&) = delete;
+        OmpNestLock(OmpNestLock&&) = delete;
+        OmpNestLock& operator=(OmpNestLock&&) = delete;
+
+        OmpNestLock() = default;
+    };
 
     // Empty placeholder
     struct OmpLockGuard {
+
+        OmpLockGuard() = delete;
+        OmpLockGuard(const OmpLockGuard&) = delete;
+        OmpNestLock& operator=(const OmpLockGuard&) = delete;
+        OmpLockGuard(OmpLockGuard&&) = delete;
+        OmpNestLock& operator=(OmpLockGuard&&) = delete;
+
         OmpLockGuard(const OmpNestLock&) {}
     };
 
