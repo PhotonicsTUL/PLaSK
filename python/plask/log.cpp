@@ -4,6 +4,7 @@
 
 #include <plask/log/log.h>
 #include <plask/log/data.h>
+#include <plask/parallel.h>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <windows.h>
@@ -154,6 +155,7 @@ const char* PythonSysLogger::head(LogLevel level) {
 }
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
+    OmpLockGuard lock(python_omp_lock);
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
             PySys_WriteStderr("%s: %s" ANSI_DEFAULT "\n", head(level), msg.c_str());

@@ -24,7 +24,7 @@ This file contains base classes for materials and material database class.
 namespace plask {
 
 /// Global Python lock
-extern OmpNestLock material_omp_lock;
+extern PLASK_API OmpNestLock material_omp_lock;
 
 /**
  * Get group in periodic table of given @p object.

@@ -139,6 +139,7 @@ PLASK_API bool forcedLoglevel = false;
       public:
 
         virtual void writelog(LogLevel level, const std::string& msg) {
+            #pragma omp critical
             fprintf(stderr, "%s: %s%s\n", head(level), msg.c_str(), tty? DEFAULT : "");
         }
     };
@@ -150,7 +151,6 @@ PLASK_API shared_ptr<Logger> default_logger { new StderrLogger() };
 
 void writelog(LogLevel level, const std::string& msg) {
     if (level <= maxLoglevel && (!default_logger->silent || level <= LOG_WARNING)) {
-        #pragma omp critical(writelog)
         default_logger->writelog(level, msg);
     }
 }
