@@ -11,9 +11,6 @@
 
 namespace plask {
 
-// Parallel locking
-OmpNestLock PLASK_API material_omp_lock;
-
 inline std::pair<std::string, int> el_g(const std::string& g, int p) { return std::pair<std::string, int>(g, p); }
 
 int objectGroup(const std::string& objectName) {

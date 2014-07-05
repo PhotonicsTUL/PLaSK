@@ -290,14 +290,16 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     double qEgG, qEgX, qEgL, bEgG, bEgX, bEgL; // qw and barrier energy gaps
 
     {
-        OmpLockGuard lock(material_omp_lock); // necessary as the material may be defined in Python
+        // Usefull as the material may be defined in Python
+        OmpLockGuard lockq = region.materialQW->lock();
 
         qme = region.materialQW->Me(T,qstrain);
         qmhh = region.materialQW->Mhh(T,qstrain);
         qmlh = region.materialQW->Mlh(T,qstrain);
-        bme = region.materialBarrier->Me(T,bstrain);
-        bmhh = region.materialBarrier->Mhh(T,bstrain);
-        bmlh = region.materialBarrier->Mlh(T,bstrain);
+
+        qEc = region.materialQW->CB(T,qstrain);
+        qEvhh = region.materialQW->VB(T,qstrain,'G','H');
+        qEvlh = region.materialQW->VB(T,qstrain,'G','L');
 
         gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
         gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));
@@ -305,13 +307,17 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         qEgG = region.materialQW->Eg(T,0.,'G');
         qEgX = region.materialQW->Eg(T,0.,'X');
         qEgL = region.materialQW->Eg(T,0.,'L');
+
+        OmpLockGuard lockb = region.materialBarrier->lock();
+
+        bme = region.materialBarrier->Me(T,bstrain);
+        bmhh = region.materialBarrier->Mhh(T,bstrain);
+        bmlh = region.materialBarrier->Mlh(T,bstrain);
+
         bEgG = region.materialBarrier->Eg(T,0.,'G');
         bEgX = region.materialBarrier->Eg(T,0.,'X');
         bEgL = region.materialBarrier->Eg(T,0.,'L');
 
-        qEc = region.materialQW->CB(T,qstrain);
-        qEvhh = region.materialQW->VB(T,qstrain,'G','H');
-        qEvlh = region.materialQW->VB(T,qstrain,'G','L');
         bEc = region.materialBarrier->CB(T,bstrain);
         bEvhh = region.materialBarrier->VB(T,bstrain,'G','H');
         bEvlh = region.materialBarrier->VB(T,bstrain,'G','L');

@@ -74,8 +74,12 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         #pragma omp parallel for
         for (size_t l = 0; l < nlayers; ++l) {
             if (error) continue;
-            try { layerMaterialCoefficients(l); }
-            catch(...) { error = std::current_exception(); }
+            try {
+                layerMaterialCoefficients(l);
+            } catch(...) {
+                #pragma omp critical
+                error = std::current_exception();
+            }
         }
         if (error) std::rethrow_exception(error);
     }

@@ -39,6 +39,9 @@ std::string getPythonExceptionMessage() {
     return py::extract<std::string>(py::str(value_h));
 }
 
+// Parallel locking
+PLASK_PYTHON_API OmpNestLock python_omp_lock;
+
 // Config
 PLASK_PYTHON_API AxisNames current_axes = AxisNames::axisNamesRegister.get("zxy");
 

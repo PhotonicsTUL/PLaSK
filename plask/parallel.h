@@ -12,8 +12,12 @@ namespace plask {
     /**
      * OMP nest lock class.
      */
-    struct OmpNestLock {
+    class OmpNestLock {
         omp_nest_lock_t lck;
+
+        friend class OmpLockGuard;
+
+      public:
 
         OmpNestLock(const OmpNestLock&) = delete;
         OmpNestLock& operator=(const OmpNestLock&) = delete;
@@ -34,25 +38,43 @@ namespace plask {
     /**
      * OMP nest lock guard class.
      */
-    struct OmpLockGuard {
+    class OmpLockGuard {
         omp_nest_lock_t* lck;
 
-        OmpLockGuard() = delete;
-        OmpLockGuard(const OmpLockGuard&) = delete;
-        OmpNestLock& operator=(const OmpLockGuard&) = delete;
-        OmpLockGuard(OmpLockGuard&&) = delete;
-        OmpNestLock& operator=(OmpLockGuard&&) = delete;
+      public:
+        OmpLockGuard(): lck(nullptr) {}
 
-        /** Lock the lock.
+        /**
+         * Lock the lock.
          * If the lock is already locked by the same thread, just increase its depth
          */
         OmpLockGuard(OmpNestLock& lock): lck(&lock.lck) {
             omp_set_nest_lock(lck);
         }
 
+        /**
+         * Move the lock
+         */
+        OmpLockGuard(OmpLockGuard&& orig): lck(orig.lck){
+            orig.lck = nullptr;
+        };
+
+        /**
+         * Move the lock
+         */
+        OmpLockGuard& operator=(OmpLockGuard&& orig) {
+            if (lck) omp_unset_nest_lock(lck);
+            lck = orig.lck;
+            orig.lck = nullptr;
+            return *this;
+        }
+
+        OmpLockGuard(const OmpLockGuard&) = delete;
+        OmpLockGuard& operator=(const OmpLockGuard&) = delete;
+
         /** Unlock the lock */
         ~OmpLockGuard() {
-            omp_unset_nest_lock(lck);
+            if (lck) omp_unset_nest_lock(lck);
         }
     };
 
@@ -60,24 +82,21 @@ namespace plask {
 
     // Empty placeholder
     struct OmpNestLock {
+        OmpNestLock() = default;
         OmpNestLock(const OmpNestLock&) = delete;
         OmpNestLock& operator=(const OmpNestLock&) = delete;
         OmpNestLock(OmpNestLock&&) = delete;
         OmpNestLock& operator=(OmpNestLock&&) = delete;
-
-        OmpNestLock() = default;
     };
 
     // Empty placeholder
     struct OmpLockGuard {
-
-        OmpLockGuard() = delete;
-        OmpLockGuard(const OmpLockGuard&) = delete;
-        OmpNestLock& operator=(const OmpLockGuard&) = delete;
-        OmpLockGuard(OmpLockGuard&&) = delete;
-        OmpNestLock& operator=(OmpLockGuard&&) = delete;
-
+        OmpLockGuard() {}
         OmpLockGuard(const OmpNestLock&) {}
+        OmpLockGuard(OmpLockGuard&&) = default;
+        OmpLockGuard& operator=(OmpLockGuard&&) = default;
+        OmpLockGuard(const OmpLockGuard&) = delete;
+        OmpLockGuard& operator=(const OmpLockGuard&) = delete;
     };
 
 #endif

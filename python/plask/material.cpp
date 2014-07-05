@@ -145,8 +145,8 @@ class PythonMaterial : public Material
     template <typename R, typename F, typename... Args>
     inline R call(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
         if (cached) return *cached;
+        OmpLockGuard lock(python_omp_lock);
         if (overriden(name)) {
-            OmpLockGuard lock(material_omp_lock);
             return py::call_method<R>(self, name, args...);
         }
         return ((*base).*f)(args...);
@@ -230,8 +230,8 @@ class PythonMaterial : public Material
             CHECK_CACHE(double, cp, "cp", 300.)
             CHECK_CACHE(double, nr, "nr", py::object(), 300., 0.)
             CHECK_CACHE(double, absp, "absp", py::object(), 300.)
-            CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300.)
-            CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", 0., 300.)
+            CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300., 0.)
+            CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", py::object(), 300., 0.)
         }
         return sptr;
     }
@@ -239,13 +239,17 @@ class PythonMaterial : public Material
 
     // Here there are overridden methods from Material class
 
+    OmpLockGuard lock() const override {
+        return OmpLockGuard(python_omp_lock);
+    }
+
     virtual bool isEqual(const Material& other) const override {
         auto theother = static_cast<const PythonMaterial&>(other);
         py::object oself { py::borrowed(self) },
                    oother { py::object(py::borrowed(theother.self)) };
 
         if (overriden("__eq__")) {
-            OmpLockGuard lock(material_omp_lock);
+            OmpLockGuard lock(python_omp_lock);
             return py::call_method<bool>(self, "__eq__", oother);
         }
 
@@ -268,7 +272,7 @@ class PythonMaterial : public Material
 
     virtual std::string str() const override {
         if (overriden("__str__")) {
-            OmpLockGuard lock(material_omp_lock);
+            OmpLockGuard lock(python_omp_lock);
             return py::call_method<std::string>(self, "__str__");
         }
         else return name();
@@ -343,7 +347,7 @@ class PythonMaterial : public Material
     virtual dcomplex Nr(double wl, double T, double n) const override {
         if (cache->Nr) return *cache->Nr;
         if (overriden("Nr")) {
-            OmpLockGuard lock(material_omp_lock);
+            OmpLockGuard lock(python_omp_lock);
             return py::call_method<dcomplex>(self, "Nr", wl, T, n);
         }
         if (cache->nr || cache->absp || overriden("nr") || overriden("absp"))
@@ -353,7 +357,7 @@ class PythonMaterial : public Material
     virtual Tensor3<dcomplex> NR(double wl, double T, double n) const override {
         if (cache->NR) return *cache->NR;
         if (overriden("NR")) {
-            OmpLockGuard lock(material_omp_lock);
+            OmpLockGuard lock(python_omp_lock);
             return py::call_method<Tensor3<dcomplex>>(self, "NR", wl, T, n);
         }
         if (cache->Nr || overriden("Nr")) {
@@ -361,7 +365,7 @@ class PythonMaterial : public Material
             if (cache->Nr)
                 nr = *cache->Nr;
             else {
-                OmpLockGuard lock(material_omp_lock);
+                OmpLockGuard lock(python_omp_lock);
                 nr = py::call_method<dcomplex>(self, "Nr", wl, T, n);
             }
             return Tensor3<dcomplex>(nr, nr, nr, 0.);

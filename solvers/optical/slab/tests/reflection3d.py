@@ -12,7 +12,8 @@ from optical.slab import FourierReflection3D
 @material.simple
 class Mat(material.Material):
     @staticmethod
-    def nr(): return 2.
+    def nr():
+        return 2.
 
 
 class Averaging_Test(unittest.TestCase):
@@ -51,7 +52,7 @@ class Averaging_Test(unittest.TestCase):
         self.assertAlmostEqual(prof_tran.array[0,23,0,0], 1., 5)
         self.assertAlmostEqual(prof_tran.array[0,23,0,1], 1., 5)
         self.assertAlmostEqual(prof_tran.array[0,23,0,2], 1., 5)
-        print("{} {} {}".format(*prof_tran.array[0, [0,1,-2], 0, :3].real))
+        # print("{} {} {}".format(*prof_tran.array[0, [0,1,-2], 0, :3].real))
         # figure()
         # plot(msh_tran.axis1, prof_tran.array[0,:,0,0].real, '.')
         # plot(msh_tran.axis1, prof_tran.array[0,:,0,1].real, '.')
@@ -77,7 +78,7 @@ class Averaging_Test(unittest.TestCase):
         self.assertAlmostEqual(prof_long.array[23,0,0,0], 1., 5)
         self.assertAlmostEqual(prof_long.array[23,0,0,1], 1., 5)
         self.assertAlmostEqual(prof_long.array[23,0,0,2], 1., 5)
-        print("{} {} {}".format(*prof_long.array[[0,1,-2], 0, 0, :3].real))
+        # print("{} {} {}".format(*prof_long.array[[0,1,-2], 0, 0, :3].real))
         # figure()
         # plot(msh_long.axis0, prof_long.array[:,0,0,0].real, '.')
         # plot(msh_long.axis0, prof_long.array[:,0,0,1].real, '.')

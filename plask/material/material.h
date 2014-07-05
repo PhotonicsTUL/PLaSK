@@ -272,6 +272,13 @@ struct PLASK_API Material {
      */
     static std::vector<std::string> parseObjectsNames(const std::string& allNames);
 
+    /**
+     * Create OpenMP lock guard.
+     */
+    virtual OmpLockGuard lock() const {
+        return OmpLockGuard();
+    }
+
     /// Do nothing.
     virtual ~Material() {}
 

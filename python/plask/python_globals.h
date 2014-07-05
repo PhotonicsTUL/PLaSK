@@ -280,14 +280,9 @@ static inline void parseKwargs(const std::string& fname, py::tuple& args, py::di
 // ----------------------------------------------------------------------------------------------------------------------
 // Parallel locking
 
-// Use materials lock for all Python locking (makes sense as it is used to lock Python materials access)
-#define python_omp_lock material_omp_lock
+extern PLASK_PYTHON_API OmpNestLock python_omp_lock;
 
-} // namespace python
-
-extern PLASK_API OmpNestLock material_omp_lock;
-
-} // namespace plask
+}} // namespace python::plask
 
 
 #endif // PLASK__PYTHON_GLOBALS_H
