@@ -1,5 +1,8 @@
 #include <iostream>
 
+#include "fermidirac.h"
+using namespace plask;
+
 #include "gainQW.h"
 
 using QW::nosnik;
@@ -316,7 +319,7 @@ double gain::gdzieqflc(double ef,double *) /// zero wyznacza kwazi poziom fermie
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
   double k;
   //  std::cerr<<"\nszer w gdzieqflc_n="<<szer<<"\n";
-  f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
+  f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* fermiDiracHalf((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
   //    std::cerr<<"\n3D = "<<f<<" dla ef = "<<ef;
   if(el.gleb_fal>0)
     {
@@ -362,7 +365,7 @@ double gain::gdzieqflc_n(double ef,double * wsk_sszer) /// dla n studni - poziom
   //  std::cerr<<"\nsumaszer w gdzieqflc_n="<<sumaszer<<"\n";
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
    double k;
-  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
+  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*el.masabar)*el.masabar/(2*M_PI*M_PI)* fermiDiracHalf((ef-el.gleb-el.gleb_fal)/(kB*T)); // w sztukach na powierzchnię
   //  std::cerr<<"\n3D_n = "<<f<<" dla ef = "<<ef;
   for(int j=(int)ceil(szer_fal*sqrt(2*el.masabar*el.gleb_fal)/M_PI);j>=1;j--)
     {
@@ -386,7 +389,7 @@ double gain::gdzieqflv(double ef,double *) /// zero wyznacza kwazi poziom fermie
   double kT=kB*T;
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
   double k;
-  f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
+  f+=szer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
   if(lh.gleb_fal>0)
     {
       for(int j=(int)ceil(szer_fal*sqrt(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
@@ -397,7 +400,7 @@ double gain::gdzieqflv(double ef,double *) /// zero wyznacza kwazi poziom fermie
         }
     }
   //  f*=szer/szer_fal;  // stosunek objętości falowodu i studni
-  f+=szer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
+  f+=szer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
   if(hh.gleb_fal>0)
     {
       for(int j=(int)ceil(szer_fal*sqrt(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
@@ -450,14 +453,14 @@ double gain::gdzieqflv_n(double ef,double * wsk_sszer)
   double kT=kB*T;
   double gam32 = sqrt(M_PI)/2; // Gamma(3/2)
   double k;
-  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
+  f+=sumaszer*kT*gam32*sqrt(kT)*2*sqrt(2*lh.masabar)*lh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-lh.gleb-lh.gleb_fal)/(kB*T));
   for(int j=(int)ceil(szer_fal*sqrt(2*lh.masabar*lh.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);
       en=k*k/(2*lh.masabar)+lh.gleb;
       f+=sumaszer/szer_fal*lh.masabar*kT/M_PI*log(1+exp((-en-ef)/(kB*T)));
     }
-  f+=sumaszer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* gsl_sf_fermi_dirac_half ((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
+  f+=sumaszer*gam32*kT*sqrt(kT)*2*sqrt(2*hh.masabar)*hh.masabar/(2*M_PI*M_PI)* fermiDiracHalf((-ef-hh.gleb-hh.gleb_fal)/(kB*T));
   for(int j=(int)ceil(szer_fal*sqrt(2*hh.masabar*hh.gleb_fal)/M_PI);j>=1;j--)
     {
       k = j*M_PI/(szer_fal);
@@ -1290,123 +1293,85 @@ long gain::Calculate_Gain_Profile_n(const ExternalLevels& zewpoziomy, double sum
   ilpt=j;
   return j;
 }
-/*****************************************************************************/
-double gain::Find_max_gain() /// szuka maksimum wzmocnienia
-{
-  int iter=0, it_max=200;
-  const gsl_min_fminimizer_type *T;
-  gsl_min_fminimizer *s;
-  vector<double> min;
-  if(ustawione=='n')
-    przygobl();
-  int k=0;
-  while(el.pozoddna(k)>0 && hh.pozoddna(k)>0)
-    {
-      min.push_back(el.pozoddna(k)+hh.pozoddna(k)+Eg);
-      k++;
-    }
-  k=0;
-  while(el.pozoddna(k)>0 && lh.pozoddna(k)>0)
-    {
-      min.push_back(el.pozoddna(k)+lh.pozoddna(k)+Eg);
-      k++;
-    }
-  sort(min.begin(),min.end());
-  double m= min[0];
-  unsigned int gdzie=0;
-  for(unsigned int i=1;i<=min.size()-1;i++)
-    {
-      if(Get_gain_at(m)<Get_gain_at(min[i]))
-        {
-          m=min[i];
-          gdzie=i;
-        }
-    }
-  double max=0;
-  if(Get_gain_at(m)>0)
-    {
-      double u=(gdzie==min.size()-1)?Eg+Efc+Efv:min[gdzie+1];
-      double l=(gdzie==0)?Eg:min[gdzie-1];
-      gsl_function F;
-      F.function=min_wzmoc;
-      F.params=this;
-      T=gsl_min_fminimizer_brent;
-      s=gsl_min_fminimizer_alloc(T);
-      gsl_min_fminimizer_set(s,&F,m,l,u);
-      int /*stat_it,*/ stat_przedz;
-      do{
-        iter++;
-        /*stat_it=*/gsl_min_fminimizer_iterate(s);
-        m=gsl_min_fminimizer_minimum(s);
-        l=gsl_min_fminimizer_x_lower(s);
-        u=gsl_min_fminimizer_x_upper(s);
-        stat_przedz=gsl_min_test_interval(l,u,1e-5,0);
-        if(stat_przedz==GSL_SUCCESS)
-          max=m;
-      }while(iter<it_max && stat_przedz!=GSL_SUCCESS);
-    }
-  else max=-1.;
-  return max;
-}
-/*****************************************************************************/
-double gain::Find_max_gain_n(const ExternalLevels& zewpoziomy, double sumaszer)
-{
-  int iter=0, it_max=200;
-  const gsl_min_fminimizer_type *T;
-  gsl_min_fminimizer *s;
-  vector<double> min;
-  double sszer=przel_dlug_z_angstr(sumaszer);
-  if(ustawione=='n')
-    przygobl_n(zewpoziomy, sszer);
-  int k=0;
-  while(el.pozoddna(k)>0 && hh.pozoddna(k)>0)
-    {
-      min.push_back(el.pozoddna(k)+hh.pozoddna(k)+Eg);
-      k++;
-    }
-  k=0;
-  while(el.pozoddna(k)>0 && lh.pozoddna(k)>0)
-    {
-      min.push_back(el.pozoddna(k)+lh.pozoddna(k)+Eg);
-      k++;
-    }
-  sort(min.begin(),min.end());
-  double m= min[0];
-  unsigned int gdzie=0;
-  for(unsigned int i=1;i<=min.size()-1;i++)
-    {
-      if(Get_gain_at_n(m, zewpoziomy, sumaszer)<Get_gain_at_n(min[i], zewpoziomy, sumaszer))
-        {
-          m=min[i];
-          gdzie=i;
-        }
-    }
-  double max=0;
-  if(Get_gain_at_n(m, zewpoziomy, sumaszer)>0)
-    {
-      double u=(gdzie==min.size()-1)?Eg+Efc+Efv:min[gdzie+1];
-      double l=(gdzie==0)?Eg:min[gdzie-1];
-      gsl_function F;
-      F.function=min_wzmoc;
-      F.params=this;
-      T=gsl_min_fminimizer_brent;
-      s=gsl_min_fminimizer_alloc(T);
-      gsl_min_fminimizer_set(s,&F,m,l,u);
-      int /*stat_it,*/ stat_przedz;
-      do{
-        iter++;
-        /*stat_it=*/gsl_min_fminimizer_iterate(s);
-        m=gsl_min_fminimizer_minimum(s);
-        l=gsl_min_fminimizer_x_lower(s);
-        u=gsl_min_fminimizer_x_upper(s);
-        stat_przedz=gsl_min_test_interval(l,u,1e-5,0);
-        if(stat_przedz==GSL_SUCCESS)
-          max=m;
-      }while(iter<it_max && stat_przedz!=GSL_SUCCESS);
-    }
-  else max=-1.;
-  return max;
-}
+///*****************************************************************************/
+//double gain::Find_max_gain() /// szuka maksimum wzmocnienia
+//{
+//  vector<double> min;
+//  if(ustawione=='n')
+//    przygobl();
+//  int k=0;
+//  while(el.pozoddna(k)>0 && hh.pozoddna(k)>0)
+//    {
+//      min.push_back(el.pozoddna(k)+hh.pozoddna(k)+Eg);
+//      k++;
+//    }
+//  k=0;
+//  while(el.pozoddna(k)>0 && lh.pozoddna(k)>0)
+//    {
+//      min.push_back(el.pozoddna(k)+lh.pozoddna(k)+Eg);
+//      k++;
+//    }
+//  sort(min.begin(),min.end());
+//  double m= min[0];
+//  unsigned int gdzie=0;
+//  for(unsigned int i=1;i<=min.size()-1;i++)
+//    {
+//      if(Get_gain_at(m)<Get_gain_at(min[i]))
+//        {
+//          m=min[i];
+//          gdzie=i;
+//        }
+//    }
+//  double max=0;
+//  if(Get_gain_at(m)>0)
+//    {
+//      double u=(gdzie==min.size()-1)?Eg+Efc+Efv:min[gdzie+1];
+//      double l=(gdzie==0)?Eg:min[gdzie-1];
+//      brent::local_min(l, u, 1e-5, [this](double E){return -this->Get_gain_at(E);}, max);
+//    }
+//  else max=-1.;
+//  return max;
+//}
+///*****************************************************************************/
+//double gain::Find_max_gain_n(const ExternalLevels& zewpoziomy, double sumaszer)
+//{
+//  vector<double> min;
+//  double sszer=przel_dlug_z_angstr(sumaszer);
+//  if(ustawione=='n')
+//    przygobl_n(zewpoziomy, sszer);
+//  int k=0;
+//  while(el.pozoddna(k)>0 && hh.pozoddna(k)>0)
+//    {
+//      min.push_back(el.pozoddna(k)+hh.pozoddna(k)+Eg);
+//      k++;
+//    }
+//  k=0;
+//  while(el.pozoddna(k)>0 && lh.pozoddna(k)>0)
+//    {
+//      min.push_back(el.pozoddna(k)+lh.pozoddna(k)+Eg);
+//      k++;
+//    }
+//  sort(min.begin(),min.end());
+//  double m= min[0];
+//  unsigned int gdzie=0;
+//  for(unsigned int i=1;i<=min.size()-1;i++)
+//    {
+//      if(Get_gain_at_n(m, zewpoziomy, sumaszer)<Get_gain_at_n(min[i], zewpoziomy, sumaszer))
+//        {
+//          m=min[i];
+//          gdzie=i;
+//        }
+//    }
+//  double max=0;
+//  if(Get_gain_at_n(m, zewpoziomy, sumaszer)>0)
+//    {
+//      double u=(gdzie==min.size()-1)?Eg+Efc+Efv:min[gdzie+1];
+//      double l=(gdzie==0)?Eg:min[gdzie-1];
+//      brent::local_min(l, u, 1e-5, [this](double E){return -this->Get_gain_at(E);}, max);
+//    }
+//  else max=-1.;
+//  return max;
+//}
 /*****************************************************************************/
 void gain::przygoblE() // LUKASZ
 {
@@ -1481,12 +1446,6 @@ void gain::przygoblQFL(double iTotalWellH) // LUKASZ
   //std::cout << "Quasi Fermi level for electrons = " << Efc << "\n";
   //std::cout << "Quasi Fermi level for holes = " << Efv << "\n";
   ustawione='t';
-}
-/*****************************************************************************/
-double QW::min_wzmoc(double E,void * klasa) /// ?
-{
-  gain * wzmoc = (gain *)klasa;
-  return -wzmoc->Get_gain_at(E);
 }
 /*****************************************************************************/
 double gain::Get_gain_at(double E) /// wzmocnienie dla energii E

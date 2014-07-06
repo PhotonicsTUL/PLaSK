@@ -19,8 +19,8 @@ find_package(PLaSK)
 # Some libraries, that you can find using find_package command are:
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
 #
-find_package(GSL REQUIRED)
-set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
+#find_package(GSL REQUIRED)
+#set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 
 
 # Uncomment and edit the line below if you need some special include directories.
@@ -28,7 +28,7 @@ set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
 #
-set(SOLVER_INCLUDE_DIRECTORIES ${GSL_INCLUDE_DIRS})
+#set(SOLVER_INCLUDE_DIRECTORIES ${GSL_INCLUDE_DIRS})
 
 
 # Uncomment and edit the line below if you need some special linker flags.

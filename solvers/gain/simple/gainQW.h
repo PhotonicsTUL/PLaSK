@@ -126,8 +126,8 @@ namespace QW{
     double ** Get_gain_tab(); //Wskaznik do tabl [2][ile_trzeba]
     std::vector<std::vector<double> > & Get_spont_wek();
     //    void przygobl();
-    double Find_max_gain();
-    double Find_max_gain_n(const ExternalLevels&, double);
+    // double Find_max_gain();
+    // double Find_max_gain_n(const ExternalLevels&, double);
     ~gain();
 
     void przygobl();
@@ -226,5 +226,4 @@ namespace QW{
     double Prost(double (gain::*)(double, parametry *),double,double,double,parametry *,double);
     double metsiecz(double (gain::*)(double,double *),double,double,double * =NULL,double prec=1e-7);
   };
-  double min_wzmoc(double E,void*);
 }
