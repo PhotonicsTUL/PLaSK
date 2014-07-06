@@ -375,7 +375,6 @@ endif()
 macro(add_python_test test test_file)
     add_test(NAME python/${test}
              COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
-    set_tests_properties(python/${test} PROPERTIES ENVIRONMENT "${plask_test_env}")
 endmacro()
 
 macro(add_solver_test test test_file)
