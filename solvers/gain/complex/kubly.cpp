@@ -159,8 +159,7 @@ double warstwa::tryga(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"Zła funkcja (tryga)!\n";
-      abort();
+      throw "tryga: Bad function";
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
   return sin(k*x);
@@ -170,8 +169,7 @@ double warstwa::tryga_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"Zła funkcja (tryga_prim)!\n";
-      abort();
+      throw "tryga_prim: Bad function";
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
   return k*cos(k*x);
@@ -181,8 +179,7 @@ double warstwa::trygb(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"Zła funkcja (trygb)!\n";
-      abort();
+      throw "trygb: Bad function";
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
   return cos(k*x);
@@ -192,8 +189,7 @@ double warstwa::trygb_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"Zła funkcja (trygb_prim)!\n";
-      abort();
+      throw "trygb_prim: Bad function";
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
   return -k*sin(k*x);
@@ -203,8 +199,7 @@ double warstwa::tryg_kwadr_pierwotna(double x, double E, double A, double B) con
 {
   if((y_kon != y_pocz) || (E <= y_pocz))
     {
-      std::cerr<<"Zla funkcja (tryg_kwadr_pierwotna)!\n";
-      abort();
+      throw "tryg_kwadr_pierwotna: Bad function";
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
   double si2 = sin(2*k*x);
@@ -216,8 +211,7 @@ double warstwa::expa(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"Zła funkcja (expa)!\n";
-      abort();
+      throw "expa: Bad function";
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
   return exp(-kp*(x - x_pocz));
@@ -227,8 +221,7 @@ double warstwa::expa_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"Zła funkcja (expa_prim)!\n";
-      abort();
+      throw "expa_prim: Bad function";
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
   return -kp*exp(-kp*(x - x_pocz));
@@ -238,9 +231,7 @@ double warstwa::expb(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"Zła funkcja (expb)!\n";
-      std::cerr<<"y_pocz = "<<y_pocz<<"\ty_kon = "<<y_kon<<"\n";
-      abort();
+      throw "expb: Bad function";
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz - E));
   return exp(kp*(x - x_kon));
@@ -250,8 +241,7 @@ double warstwa::expb_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"Zła funkcja (expb_prim)!\n";
-      abort();
+      throw "expb_prim: Bad function";
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
   return kp*exp(kp*(x - x_kon));
@@ -261,8 +251,7 @@ double warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) cons
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"Zła funkcja (expa)!\n";
-      abort();
+      throw "exp_kwadr_pierwotna: Bad function";
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
   double b = expb(x, E);
@@ -273,10 +262,7 @@ double warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) cons
 double warstwa::Ai(double x, double E) const
 {
   if(y_kon == y_pocz)
-    {
-      std::cerr<<"Zła funkcja!\n";
-      abort();
-    }
+      throw "Ai: Bad funtion";
   // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
@@ -286,49 +272,40 @@ double warstwa::Ai(double x, double E) const
   double b_a23 = (U - E)/pole;
   double arg = a13*(x + b_a23);
   //  std::cerr<<"\narg_Ai = "<<arg;
-  return gsl_sf_airy_Ai(arg, GSL_PREC_DOUBLE);
+  return boost::math::airy_ai(arg);
 }
-/*****************************************************************************/
-double warstwa::Ai_skala(double x, double E) const
-{
-  if(y_kon == y_pocz)
-    {
-      std::cerr<<"Zła funkcja!\n";
-      abort();
-    }
-  // równanie: -f''(x) + (b + ax)f(x) = 0
-  // a = 2m*pole/h^2
-  // b = 2m(U - E)/h^2
-  // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
-  double U = y_pocz - pole*x_pocz;
-  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
-  double b_a23 = (U - E)/pole;
-  double arg = a13*(x + b_a23);
-  return gsl_sf_airy_Ai_scaled(arg, GSL_PREC_DOUBLE); // Na razie nie ma
-}
+///*****************************************************************************/
+//double warstwa::Ai_skala(double x, double E) const
+//{
+//  if(y_kon == y_pocz)
+//      throw "Ai_skala: Bad funtion";
+//  // równanie: -f''(x) + (b + ax)f(x) = 0
+//  // a = 2m*pole/h^2
+//  // b = 2m(U - E)/h^2
+//  // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
+//  double U = y_pocz - pole*x_pocz;
+//  double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3}
+//  double b_a23 = (U - E)/pole;
+//  double arg = a13*(x + b_a23);
+//  return gsl_sf_airy_Ai_scaled(arg, GSL_PREC_DOUBLE); // Na razie nie ma
+//}
 /*****************************************************************************/
 double warstwa::Ai_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
-    {
-      std::cerr<<"Zła funkcja!\n";
-      abort();
-    }
+      throw "Ai_prim: Bad funtion";
   double U = y_pocz - pole*x_pocz;
   double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
   double b_a23 = (U - E)/pole;
   double arg = a13*(x + b_a23);
   //  std::cerr<<"\nx = "<<x<<" x_pocz = "<<x_pocz<<" pole = "<<pole<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" arg_Ai' = "<<arg<<" inaczej (w x_pocz)"<<(2*masa_p(E)*(y_pocz - E)/(a13*a13))<<" inaczej (w x_kon)"<<(2*masa_p(E)*(y_kon - E)/(a13*a13));
-  return a13*gsl_sf_airy_Ai_deriv(arg, GSL_PREC_DOUBLE); // Na razie nie ma
+  return a13 * boost::math::airy_ai_prime(arg);
 }
 /*****************************************************************************/
 double warstwa::Bi(double x, double E) const
 {
   if(y_kon == y_pocz)
-    {
-      std::cerr<<"Zła funkcja!\n";
-      abort();
-    }
+      throw "Bi: Bad funtion";
   // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
@@ -338,31 +315,25 @@ double warstwa::Bi(double x, double E) const
   double b_a23 = (U - E)/pole;
   double arg = a13*(x + b_a23);
   //  std::cerr<<"\narg_Bi = "<<arg;
-  return gsl_sf_airy_Bi(arg, GSL_PREC_DOUBLE); // Na razie nie ma
+  return boost::math::airy_bi(arg);
 }
 /*****************************************************************************/
 double warstwa::Bi_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
-    {
-      std::cerr<<"Zła funkcja!\n";
-      abort();
-    }
+      throw "Bi_prim: Bad funtion";
   double U = y_pocz - pole*x_pocz;
   double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3} 
   double b_a23 = (U - E)/pole;
   double arg = a13*(x + b_a23);
   //  std::cerr<<"\narg_Bi' = "<<arg;
-  return a13*gsl_sf_airy_Bi_deriv(arg, GSL_PREC_DOUBLE); // Na razie nie ma
+  return a13 * boost::math::airy_bi_prime(arg);
 }
 /*****************************************************************************/
 double warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) const
 {
   if(y_kon == y_pocz)
-    {
-      std::cerr<<"Zła funkcja!\n";
-      abort();
-    }
+      throw "airy_kwadr_pierwotna: Bad funtion";
   double U = y_pocz - pole*x_pocz;
   double b_a23 = (U - E)/pole;
   double a = 2*masa_p(E)*pole;
@@ -376,8 +347,7 @@ double warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod b
   double wartosc;
   if(pole !=0)
     {
-      std::cerr<<"Jesze nie ma airych!\n";
-      abort();
+      throw "Airy functions not computed";
     }
   else
     {
@@ -413,7 +383,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       nrprzed = floor((argp-z1)/dz + 1);
       nrprzed = (nrprzed >= 1)?nrprzed:1;
       int tymcz=0;
-      double ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+      double ntezero = zeroBi(nrprzed);
       std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
       double brak; // oszacowanie z dołu braku
       long licznik = 0;
@@ -422,7 +392,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
 	{
 	  if(nrprzed>2)
 	    {
-	      dz = ntezero - gsl_sf_airy_zero_Bi(nrprzed-1);
+          dz = ntezero - zeroBi(nrprzed-1);
 	      brak = (argp-ntezero)/dz;
 	      if(brak > 2.) //jeśli jeszcze daleko
 		{
@@ -432,24 +402,24 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
 	    }
 	  else
 	    nrprzed++;
-	  ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+      ntezero = zeroBi(nrprzed);
 	  licznik++;
 	  std::cerr<<"\nnrprzed = "<<nrprzed<<" ntezero = "<<ntezero;
 	}
       //  std::cerr<<"\tnrprzed kon "<<nrprzed<<" po "<<licznik<<" dodawaniach\n";
       nrza=nrprzed;
       nrprzed--;
-      //      while(gsl_sf_airy_zero_Bi(nrza)>=argp)
-      while(gsl_sf_airy_zero_Bi(nrza)>=argl)
+      //      while(zeroBi(nrza)>=argp)
+      while(zeroBi(nrza)>=argl)
 	{
 	  nrza++;
-	  std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<gsl_sf_airy_zero_Bi(nrza);
+      std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<zeroBi(nrza);
 	}
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
       /*
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
-      x1 = b_a23 - gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-      x2 = b_a23 - gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+      x1 = b_a23 - zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = b_a23 - zeroBi(nrza-1)/a13;
       xlew = std::min(x1, x2);
       xpra = std::max(x1, x2);
       std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -458,8 +428,8 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       if(nrza-nrprzed>=2)
 	{
 	  tymcz=nrza-nrprzed-2;
-	  x1 = -b_a23 + gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-	  x2 = -b_a23 + gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+      x1 = -b_a23 + zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = -b_a23 + zeroBi(nrza-1)/a13;
 	  xlew = std::min(x1, x2);
 	  xpra = std::max(x1, x2);
 	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -538,7 +508,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
       nrprzed = floor((argp-z1)/dz + 1);
       nrprzed = (nrprzed >= 1)?nrprzed:1;
       int tymcz=0;
-      double ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+      double ntezero = zeroBi(nrprzed);
       std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
       double brak; // oszacowanie z dołu braku
       long licznik = 0;
@@ -547,7 +517,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
 	{
 	  if(nrprzed>2)
 	    {
-	      dz = ntezero - gsl_sf_airy_zero_Bi(nrprzed-1);
+          dz = ntezero - zeroBi(nrprzed-1);
 	      brak = (argp-ntezero)/dz;
 	      if(brak > 2.) //jeśli jeszcze daleko
 		{
@@ -557,24 +527,24 @@ int warstwa::zera_ffal(double E, double A, double B) const
 	    }
 	  else
 	    nrprzed++;
-	  ntezero = gsl_sf_airy_zero_Bi(nrprzed);
+      ntezero = zeroBi(nrprzed);
 	  licznik++;
 	  std::cerr<<"\nnrprzed = "<<nrprzed<<" ntezero = "<<ntezero;
 	}
       //  std::cerr<<"\tnrprzed kon "<<nrprzed<<" po "<<licznik<<" dodawaniach\n";
       nrza=nrprzed;
       nrprzed--;
-      //      while(gsl_sf_airy_zero_Bi(nrza)>=argp)
-      while(gsl_sf_airy_zero_Bi(nrza)>=argl)
+      //      while(zeroBi(nrza)>=argp)
+      while(zeroBi(nrza)>=argl)
 	{
 	  nrza++;
-	  std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<gsl_sf_airy_zero_Bi(nrza);
+      std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<zeroBi(nrza);
 	}
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
       /*
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
-      x1 = b_a23 - gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-      x2 = b_a23 - gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+      x1 = b_a23 - zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = b_a23 - zeroBi(nrza-1)/a13;
       xlew = std::min(x1, x2);
       xpra = std::max(x1, x2);
       std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -583,8 +553,8 @@ int warstwa::zera_ffal(double E, double A, double B) const
       if(nrza-nrprzed>=2)
 	{
 	  tymcz=nrza-nrprzed-2;
-	  x1 = -b_a23 + gsl_sf_airy_zero_Bi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-	  x2 = -b_a23 + gsl_sf_airy_zero_Bi(nrza-1)/a13; 
+      x1 = -b_a23 + zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = -b_a23 + zeroBi(nrza-1)/a13;
 	  xlew = std::min(x1, x2);
 	  xpra = std::max(x1, x2);
 	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -1774,7 +1744,7 @@ double struktura::ilenosnikow(double qFl, double T)
       szer = kawalki[i].x_kon - kawalki[i].x_pocz;
       niepomnozone += szer*sqrt(2*kawalki[i].masa_p(Egorna))*kawalki[i].masa_r; // Spin juz jest
     }
-  tylenosnikow += niepomnozone * kT*gam32*sqrt(kT)*2*gsl_sf_fermi_dirac_half ((qFl-Egorna)/(kB*T))/(2*pi*pi); // Powinno byc rozpoznawanie, ktore warstwy wystaja ponad poziom bariery, ale w GSL nie ma niezupelnych calek F-D. Mozna by je przyblizyc niezupelnymi funkcjami Gamma.
+  tylenosnikow += niepomnozone * kT*gam32*sqrt(kT)*2*fermiDiracHalf((qFl-Egorna)/(kB*T))/(2*pi*pi); // Powinno byc rozpoznawanie, ktore warstwy wystaja ponad poziom bariery, ale w GSL nie ma niezupelnych calek F-D. Mozna by je przyblizyc niezupelnymi funkcjami Gamma.
   return tylenosnikow;
 }
 /*****************************************************************************/
@@ -1787,7 +1757,7 @@ std::vector<double> struktura::koncentracje_w_warstwach(double qFl, double T)
   double gam32 = sqrt(pi)/2; // Gamma(3/2)
   double kT = kB*T;
   double Egorna = lewa.y;
-  calkaFD12 = gsl_sf_fermi_dirac_half ((qFl-Egorna)/(kB*T));
+  calkaFD12 = fermiDiracHalf((qFl-Egorna)/(kB*T));
   std::vector<double> koncentr(kawalki.size() + 2);
   std::vector<stan>::iterator it;
   if (mInfo) std::clog<<"Liczba stanow = "<<rozwiazania.size()<<"\n"; // LUKASZ

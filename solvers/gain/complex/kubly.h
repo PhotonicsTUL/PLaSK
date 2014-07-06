@@ -1,8 +1,6 @@
 #include "tnt/tnt.h"
 #include "jama/jama_svd.h"
 #include "jama/jama_lu.h"
-#include <gsl/gsl_sf_fermi_dirac.h>
-#include <gsl/gsl_sf_airy.h>
 
 #include <cmath>
 #include <fstream>
@@ -12,9 +10,13 @@
 #include <complex>
 #include <string>
 #include <sstream>
+#include <boost/math/special_functions/airy.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/regex.hpp> // tylko do wczytywania z pliku
 #include <boost/lexical_cast.hpp>
+
+#include "fermidirac.h"
+#include "airy_zeros.h"
 
 #include <plask/plask.hpp>
 using namespace plask;
@@ -55,7 +57,7 @@ class warstwa{
   double expa(double x, double E) const;
   double expb(double x, double E) const;
   double Ai(double x, double E) const;
-  double Ai_skala(double x, double E) const;
+  //double Ai_skala(double x, double E) const;
   double Bi(double x, double E) const;
   double tryga_prim(double x, double E) const;
   double trygb_prim(double x, double E) const;
