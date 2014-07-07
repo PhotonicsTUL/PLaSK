@@ -383,7 +383,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       nrprzed = floor((argp-z1)/dz + 1);
       nrprzed = (nrprzed >= 1)?nrprzed:1;
       int tymcz=0;
-      double ntezero = zeroBi(nrprzed);
+      double ntezero = boost::math::airy_bi_zero<double>(nrprzed);
       std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
       double brak; // oszacowanie z dołu braku
       long licznik = 0;
@@ -392,7 +392,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
 	{
 	  if(nrprzed>2)
 	    {
-          dz = ntezero - zeroBi(nrprzed-1);
+          dz = ntezero - boost::math::airy_bi_zero<double>(nrprzed-1);
 	      brak = (argp-ntezero)/dz;
 	      if(brak > 2.) //jeśli jeszcze daleko
 		{
@@ -402,24 +402,24 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
 	    }
 	  else
 	    nrprzed++;
-      ntezero = zeroBi(nrprzed);
+      ntezero = boost::math::airy_bi_zero<double>(nrprzed);
 	  licznik++;
 	  std::cerr<<"\nnrprzed = "<<nrprzed<<" ntezero = "<<ntezero;
 	}
       //  std::cerr<<"\tnrprzed kon "<<nrprzed<<" po "<<licznik<<" dodawaniach\n";
       nrza=nrprzed;
       nrprzed--;
-      //      while(zeroBi(nrza)>=argp)
-      while(zeroBi(nrza)>=argl)
+      //      while(boost::math::airy_bi_zero<double>(nrza)>=argp)
+      while(boost::math::airy_bi_zero<double>(nrza)>=argl)
 	{
 	  nrza++;
-      std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<zeroBi(nrza);
+      std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<boost::math::airy_bi_zero<double>(nrza);
 	}
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
       /*
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
-      x1 = b_a23 - zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-      x2 = b_a23 - zeroBi(nrza-1)/a13;
+      x1 = b_a23 - boost::math::airy_bi_zero<double>(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = b_a23 - boost::math::airy_bi_zero<double>(nrza-1)/a13;
       xlew = std::min(x1, x2);
       xpra = std::max(x1, x2);
       std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -428,8 +428,8 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       if(nrza-nrprzed>=2)
 	{
 	  tymcz=nrza-nrprzed-2;
-      x1 = -b_a23 + zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-      x2 = -b_a23 + zeroBi(nrza-1)/a13;
+      x1 = -b_a23 + boost::math::airy_bi_zero<double>(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = -b_a23 + boost::math::airy_bi_zero<double>(nrza-1)/a13;
 	  xlew = std::min(x1, x2);
 	  xpra = std::max(x1, x2);
 	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -508,7 +508,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
       nrprzed = floor((argp-z1)/dz + 1);
       nrprzed = (nrprzed >= 1)?nrprzed:1;
       int tymcz=0;
-      double ntezero = zeroBi(nrprzed);
+      double ntezero = boost::math::airy_bi_zero<double>(nrprzed);
       std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
       double brak; // oszacowanie z dołu braku
       long licznik = 0;
@@ -517,7 +517,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
 	{
 	  if(nrprzed>2)
 	    {
-          dz = ntezero - zeroBi(nrprzed-1);
+          dz = ntezero - boost::math::airy_bi_zero<double>(nrprzed-1);
 	      brak = (argp-ntezero)/dz;
 	      if(brak > 2.) //jeśli jeszcze daleko
 		{
@@ -527,24 +527,24 @@ int warstwa::zera_ffal(double E, double A, double B) const
 	    }
 	  else
 	    nrprzed++;
-      ntezero = zeroBi(nrprzed);
+      ntezero = boost::math::airy_bi_zero<double>(nrprzed);
 	  licznik++;
 	  std::cerr<<"\nnrprzed = "<<nrprzed<<" ntezero = "<<ntezero;
 	}
       //  std::cerr<<"\tnrprzed kon "<<nrprzed<<" po "<<licznik<<" dodawaniach\n";
       nrza=nrprzed;
       nrprzed--;
-      //      while(zeroBi(nrza)>=argp)
-      while(zeroBi(nrza)>=argl)
+      //      while(boost::math::airy_bi_zero<double>(nrza)>=argp)
+      while(boost::math::airy_bi_zero<double>(nrza)>=argl)
 	{
 	  nrza++;
-      std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<zeroBi(nrza);
+      std::cerr<<"\nnrza = "<<nrza<<" ntezero = "<<boost::math::airy_bi_zero<double>(nrza);
 	}
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
       /*
       std::cerr<<"\nnrprzed = "<<nrprzed<<" nrza = "<<nrza;
-      x1 = b_a23 - zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-      x2 = b_a23 - zeroBi(nrza-1)/a13;
+      x1 = b_a23 - boost::math::airy_bi_zero<double>(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = b_a23 - boost::math::airy_bi_zero<double>(nrza-1)/a13;
       xlew = std::min(x1, x2);
       xpra = std::max(x1, x2);
       std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
@@ -553,8 +553,8 @@ int warstwa::zera_ffal(double E, double A, double B) const
       if(nrza-nrprzed>=2)
 	{
 	  tymcz=nrza-nrprzed-2;
-      x1 = -b_a23 + zeroBi(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
-      x2 = -b_a23 + zeroBi(nrza-1)/a13;
+      x1 = -b_a23 + boost::math::airy_bi_zero<double>(nrprzed+1)/a13; // polozenia skrajnych zer Ai w studni
+      x2 = -b_a23 + boost::math::airy_bi_zero<double>(nrza-1)/a13;
 	  xlew = std::min(x1, x2);
 	  xpra = std::max(x1, x2);
 	  std::cerr<<"\n xlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);

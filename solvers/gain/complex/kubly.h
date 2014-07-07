@@ -16,7 +16,6 @@
 #include <boost/lexical_cast.hpp>
 
 #include "fermidirac.h"
-#include "airy_zeros.h"
 
 #include <plask/plask.hpp>
 using namespace plask;
