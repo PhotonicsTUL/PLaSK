@@ -7,7 +7,7 @@
 project(plask/gain/complex)
 
 
-# Do not change thew following two lines
+# Do not change the following two lines
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
 find_package(PLaSK)
 
@@ -28,7 +28,9 @@ find_package(PLaSK)
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
 #
-#set(SOLVER_INCLUDE_DIRECTORIES ${GSL_INCLUDE_DIRS})
+if(${Boost_VERSION} LESS 105200)
+    set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/boostfix)
+endif()
 
 
 # Uncomment and edit the line below if you need some special linker flags.
