@@ -9,6 +9,7 @@ FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSol
     refine(32),
     outNeff(this, &FourierReflection2D::getEffectiveIndex, &FourierReflection2D::nummodes)
 {
+    smooth = 0.00025;
     detlog.global_prefix = this->getId();
 }
 

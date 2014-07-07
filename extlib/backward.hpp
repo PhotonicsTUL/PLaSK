@@ -1935,9 +1935,9 @@ private:
 #	warning ":/ sorry, ain't know no nothing none not of your architecture!"
 #endif
         if (error_addr) {
-            st.load_from(error_addr, 32);
+            st.load_from(error_addr, 128);
         } else {
-            st.load_here(32);
+            st.load_here(128);
         }
 
         Printer printer;

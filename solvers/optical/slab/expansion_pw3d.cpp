@@ -140,7 +140,7 @@ void ExpansionPW3D::init()
         FFT::Forward1D(2, nNl, symmetric_long? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_long.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
             for (size_t i = 0; i != nNl; ++i) {
                 int k = i; if (k > nNl/2) k -= nNl;
                 mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -172,7 +172,7 @@ void ExpansionPW3D::init()
         FFT::Forward1D(2, nNt, symmetric_tran? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag_tran.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = M_PI*M_PI / Ll / Lt;   // (2π/L)² / 4
             for (size_t i = 0; i != nNt; ++i) {
                 int k = i; if (k > nNt/2) k -= nNt;
                 mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -366,13 +366,13 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = 2.*M_PI / ((right-left) * (symmetric_tran? 2 : 1)) / ((front-back) * (symmetric_long? 2 : 1));
-            bb4 *= bb4; bb4 *= 0.25;  // (2π/Lt)² (2π/Ll)² / 4
+            double bb4l = M_PI / ((front-back) * (symmetric_long? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
+            double bb4t = M_PI / ((right-left) * (symmetric_tran? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
             for (size_t it = 0; it != nNl; ++it) {
                 int kt = it; if (kt > nNt/2) kt -= nNt;
                 for (size_t il = 0; il != nNl; ++il) {
                     int kl = il; if (kl > nNl/2) kl -= nNl;
-                    coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * bb4 * kt*kt * kl*kl);
+                    coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
                 }
             }
         }

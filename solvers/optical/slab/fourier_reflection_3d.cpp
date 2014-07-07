@@ -9,6 +9,7 @@ FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSol
     refine_long(16), refine_tran(16)//,
 //     outNeff(this, &FourierReflection3D::getEffectiveIndex, &FourierReflection3D::nummodes)
 {
+    smooth = 0.05;
 //     detlog.global_prefix = this->getId();
 }
 //

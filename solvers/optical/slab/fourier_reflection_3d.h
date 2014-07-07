@@ -34,12 +34,12 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
         }
     };
 
-  protected:
-
     /// Maximum order of the orthogonal base in longitudinal direction
     size_t size_long;
     /// Maximum order of the orthogonal base in transverse direction
     size_t size_tran;
+
+  protected:
 
     /// Class responsoble for computing expansion coefficients
     ExpansionPW3D expansion;

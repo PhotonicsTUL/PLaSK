@@ -15,6 +15,7 @@ struct PML {
     double shift;     ///< Distance of the PMLs from defined computational domain
     double order;     ///< Order of the PMLs
     PML(): factor(1.,0.), size(1.), shift(0.5), order(2) {}
+    PML(dcomplex factor, double size, double shift, double order): factor(factor), size(size), shift(shift), order(order) {}
 };
 
 /**

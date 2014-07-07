@@ -43,95 +43,6 @@ static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) 
 template <typename SolverT>
 static const std::vector<OrderedAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
 
-struct PmlWrapper {
-
-    Solver* solver;
-    PML* pml;
-
-    PmlWrapper(Solver* solver, PML* pml): solver(solver), pml(pml) {}
-
-    dcomplex get_factor() const { return pml->factor; }
-    void set_factor(dcomplex val) {
-        pml->factor = val;
-        solver->invalidate();
-    }
-
-    double get_size() const { return pml->size; }
-    void set_size(double val) {
-        pml->size = val;
-        solver->invalidate();
-    }
-
-    double get_shift() const { return pml->shift; }
-    void set_shift(double val) {
-        pml->shift = val;
-        solver->invalidate();
-    }
-
-    double get_order() const { return pml->order; }
-    void set_order(double val) {
-        pml->order = val;
-        solver->invalidate();
-    }
-
-    std::string __str__() const {
-        return format("<factor: %1%, size: %2%, dist: %3%, shape: %4%>", str(pml->factor), pml->size, pml->shift, pml->order);
-    }
-
-    std::string __repr__() const {
-        return format("PML(factor=%1%, size=%2%, dist=%3%, shape=%4%)", str(pml->factor), pml->size, pml->shift, pml->order);
-    }
-};
-
-template <typename Class>
-inline void export_base(Class solver) {
-    typedef typename Class::wrapped_type Solver;
-    solver.def_readwrite("outdist", &Solver::outdist, "Distance outside outer borders where material is sampled.");
-    solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position.");
-    solver.def("set_interface", (void(Solver::*)(const shared_ptr<GeometryObject>&, const PathHints&))&Solver::setInterfaceOn,
-               "Set interface at the bottom of the specified object.\n\n"
-               "Args:\n"
-               "    object (geometry object): object to set the interface at.\n"
-               "    path (path): Optional path specifying an instance of the object.",
-               (py::arg("object"), py::arg("path")=py::object()));
-    solver.def("set_interface", &Solver::setInterfaceAt,
-               "Set interface as close as possible to the specified position.\n\n"
-               "Args:\n"
-               "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
-    solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
-    solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers.");
-    solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
-    solver.add_receiver("inTemperature", &Solver::inTemperature, "");
-    solver.add_receiver("inGain", &Solver::inGain, "");
-    solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
-    solver.add_provider("outElectricField", &Solver::outElectricField, "");
-    solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
-    solver.def_readwrite("root", &Solver::root,
-                         "Configuration of the root searching algorithm for horizontal component of the\n"
-                         "mode.\n\n"
-                         ROOTDIGGER_ATTRS_DOC
-                        );
-}
-
-template <typename SolverT>
-void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
-
-template <typename Class>
-inline void export_reflection_base(Class solver) {
-    export_base(solver);
-    typedef typename Class::wrapped_type Solver;
-    solver.add_property("emitting", &Solver::getEmitting, &Solver::setEmitting, "Should emitted field be computed?");
-    solver.add_property("wavelength", &Solver::getWavelength, Solver_setWavelength<Solver>, "Wavelength of the light.");
-    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light.");
-    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light.");
-    py::scope scope = solver;
-    py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
-        .value("TOP", Solver::INCIDENCE_TOP)
-        .value("BOTTOM", Solver::INCIDENCE_BOTTOM)
-    ;
-}
-
-
 struct PythonComponentConventer2D {
 
     // Determine if obj can be converted into an Aligner
@@ -176,6 +87,82 @@ struct PythonComponentConventer2D {
         }
     }
 };
+
+struct PmlWrapper {
+
+    Solver* solver;
+    PML* pml;
+
+    PmlWrapper(Solver* solver, PML* pml): solver(solver), pml(pml) {}
+
+    PmlWrapper(const PmlWrapper& orig): solver(orig.solver) {
+        if (solver) pml = orig.pml;
+        else pml = new PML(*pml);
+    }
+
+    ~PmlWrapper() { if (!solver) delete pml; }
+
+    static shared_ptr<PmlWrapper> __init__(dcomplex factor, double size, double shift, double order) {
+        return make_shared<PmlWrapper>(nullptr, new PML(factor, size, shift, order));
+    }
+
+    operator PML() const { return *pml; }
+
+    dcomplex get_factor() const { return pml->factor; }
+    void set_factor(dcomplex val) {
+        pml->factor = val;
+        if (solver) solver->invalidate();
+    }
+
+    double get_size() const { return pml->size; }
+    void set_size(double val) {
+        pml->size = val;
+        if (solver) solver->invalidate();
+    }
+
+    double get_shift() const { return pml->shift; }
+    void set_shift(double val) {
+        pml->shift = val;
+        if (solver) solver->invalidate();
+    }
+
+    double get_order() const { return pml->order; }
+    void set_order(double val) {
+        pml->order = val;
+        if (solver) solver->invalidate();
+    }
+
+    std::string __str__() const {
+        return format("<factor: %1%, size: %2%, dist: %3%, shape: %4%>", str(pml->factor), pml->size, pml->shift, pml->order);
+    }
+
+    std::string __repr__() const {
+        return format("PML(factor=%1%, size=%2%, dist=%3%, shape=%4%)", str(pml->factor), pml->size, pml->shift, pml->order);
+    }
+};
+
+template <typename T>
+struct WrappedType {
+    typedef T Wrapper;
+    typedef T Extracted;
+    typedef py::default_call_policies CallPolicy;
+    template <typename S> static Wrapper make(S* solver, T* item) { return *item; }
+};
+
+template <>
+struct WrappedType<PML> {
+    typedef PmlWrapper Wrapper;
+    typedef PmlWrapper& Extracted;
+    typedef py::with_custodian_and_ward_postcall<0,1> CallPolicy;
+    template <typename S> static Wrapper make(S* solver, PML* item) { return PmlWrapper(solver, item); }
+};
+
+
+
+
+
+template <typename SolverT>
+void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
 
 void FourierReflection2D_parseKeywords(const char* name, FourierReflection2D* self, const py::dict& kwargs) {
     AxisNames* axes = getCurrentAxes();
@@ -294,32 +281,191 @@ shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(Four
 }
 
 
+
+template <typename T>
+struct FourierReflection3D_LongTranWrapper {
+    FourierReflection3D* self;
+    T* ptr_long;
+    T* ptr_tran;
+
+    FourierReflection3D_LongTranWrapper(FourierReflection3D* self, T* ln, T* tr):
+        self(self), ptr_long(ln), ptr_tran(tr) {}
+
+    typename WrappedType<T>::Wrapper __getitem__(int i) {
+        if (i < 0) i = 2 - i;
+        switch (i) {
+            case 0: return WrappedType<T>::make(self, ptr_long);
+            case 1: return WrappedType<T>::make(self, ptr_tran);
+            default: throw IndexError("index out of range");
+        }
+    }
+
+    void __setitem__(int i, const typename WrappedType<T>::Wrapper& value) {
+        if (i < 0) i = 2 - i;
+        switch (i) {
+            case 0: *ptr_long = value; self->invalidate(); return;
+            case 1: *ptr_tran = value; self->invalidate(); return;
+            default: throw IndexError("index out of range");
+        }
+    }
+
+    typename WrappedType<T>::Wrapper __getattr__(const std::string& name) {
+        AxisNames* axes = getCurrentAxes();
+        if (name == "long" || name == "l" || name == axes->getNameForLong()) return WrappedType<T>::make(self, ptr_long);
+        if (name == "tran" || name == "t" || name == axes->getNameForTran()) return WrappedType<T>::make(self, ptr_tran);
+        throw AttributeError("object has no attribute '%1%'", name);
+    }
+
+    void __setattr__(const std::string& name, const typename WrappedType<T>::Wrapper& value) {
+        AxisNames* axes = getCurrentAxes();
+        if (name == "long" || name == "l" || name == axes->getNameForLong()) { *ptr_long = value; self->invalidate(); }
+        else if (name == "tran" || name == "t" || name == axes->getNameForLong()) { *ptr_tran = value; self->invalidate(); }
+        else throw AttributeError("object has no attribute '%1%'", name);
+    }
+
+    std::string __str__() {
+        return "(" + std::string(py::extract<std::string>(py::str(py::object(WrappedType<T>::make(self, ptr_long))))) + ", "
+                   + std::string(py::extract<std::string>(py::str(py::object(WrappedType<T>::make(self, ptr_tran))))) + ")";
+    }
+
+    static void register_(const std::string& name) {
+        py::class_<FourierReflection3D_LongTranWrapper<T>>(name.c_str(), "Access wrapper for parameter along long/tran axis", py::no_init)
+            .def("__getitem__", &FourierReflection3D_LongTranWrapper<T>::__getitem__, typename WrappedType<T>::CallPolicy())
+            .def("__setitem__", &FourierReflection3D_LongTranWrapper<T>::__setitem__)
+            .def("__getattr__", &FourierReflection3D_LongTranWrapper<T>::__getattr__, typename WrappedType<T>::CallPolicy())
+            .def("__setattr__", &FourierReflection3D_LongTranWrapper<T>::__setattr__)
+            .def("__str__", &FourierReflection3D_LongTranWrapper<T>::__str__)
+        ;
+    }
+};
+
+
+
+
+template <typename T>
+struct FourierReflection3D_LongTranSetter {
+    T FourierReflection3D::* field_long;
+    T FourierReflection3D::* field_tran;
+
+    FourierReflection3D_LongTranSetter(T FourierReflection3D::* ln, T FourierReflection3D::* tr):
+        field_long(ln), field_tran(tr) {}
+
+    void operator()(FourierReflection3D& self, const py::object object) {
+        try {
+            typename WrappedType<T>::Extracted value = py::extract<typename WrappedType<T>::Extracted>(object);
+            self.*field_long = value;
+            self.*field_tran = value;
+            self.invalidate();
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            try {
+                FourierReflection3D_LongTranWrapper<T>* value = py::extract<FourierReflection3D_LongTranWrapper<T>*>(object);
+                self.*field_long = *value->ptr_long;
+                self.*field_tran = *value->ptr_tran;
+                self.invalidate();
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+                try {
+                    if (py::len(object) != 2) throw py::error_already_set();
+                    T value_long = py::extract<T>(object[0]),
+                    value_tran = py::extract<T>(object[1]);
+                    self.*field_long = value_long;
+                    self.*field_tran = value_tran;
+                    self.invalidate();
+                } catch (py::error_already_set) {
+                    throw TypeError("You may only assign a value or a sequence of two values");
+                }
+            }
+        }
+    }
+};
+
+FourierReflection3D_LongTranWrapper<size_t> FourierReflection3D_getSize(FourierReflection3D* self) {
+    return FourierReflection3D_LongTranWrapper<size_t>(self, &self->size_long, &self->size_tran);
+}
+
+FourierReflection3D_LongTranWrapper<size_t> FourierReflection3D_getRefine(FourierReflection3D* self) {
+    return FourierReflection3D_LongTranWrapper<size_t>(self, &self->refine_long, &self->refine_tran);
+}
+
+FourierReflection3D_LongTranWrapper<PML> FourierReflection3D_getPml(FourierReflection3D* self) {
+    return FourierReflection3D_LongTranWrapper<PML>(self, &self->pml_long, &self->pml_tran);
+}
+
+void FourierReflection3D_parseKeywords(const char* name, FourierReflection3D* self, const py::dict& kwargs) {
+    AxisNames* axes = getCurrentAxes();
+    boost::optional<dcomplex> lambda, klong, ktran;
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    for (auto i = begin; i != end; ++i) {
+        if (*i == "lam")
+            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
+            klong.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
+            ktran.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "k" || *i == "wavevector") {
+            klong.reset(py::extract<dcomplex>(kwargs[*i][0]));
+            ktran.reset(py::extract<dcomplex>(kwargs[*i][1]));
+        } else
+            throw TypeError("%2%() got unexpected keyword argument '%1%'", *i, name);
+    }
+    if (lambda) self->setWavelength(*lambda);
+    if (klong) self->setKlong(*klong);
+    if (ktran) self->setKtran(*ktran);
+}
+
 DataVectorWrap<const Tensor3<dcomplex>,3> FourierReflection3D_getRefractiveIndexProfile(FourierReflection3D& self,
                 const shared_ptr<RectangularMesh<3>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
     return DataVectorWrap<const Tensor3<dcomplex>,3>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
 }
 
 
-PmlWrapper FourierReflection3D_longPML(FourierReflection3D* self) {
-    return PmlWrapper(self, &self->pml_long);
+
+
+template <typename Class>
+inline void export_base(Class solver) {
+    typedef typename Class::wrapped_type Solver;
+    solver.def_readwrite("outdist", &Solver::outdist, "Distance outside outer borders where material is sampled.");
+    solver.add_property("interface", &Solver::getInterface, &Solver::setInterface, "Matching interface position.");
+    solver.def("set_interface", (void(Solver::*)(const shared_ptr<GeometryObject>&, const PathHints&))&Solver::setInterfaceOn,
+               "Set interface at the bottom of the specified object.\n\n"
+               "Args:\n"
+               "    object (geometry object): object to set the interface at.\n"
+               "    path (path): Optional path specifying an instance of the object.",
+               (py::arg("object"), py::arg("path")=py::object()));
+    solver.def("set_interface", &Solver::setInterfaceAt,
+               "Set interface as close as possible to the specified position.\n\n"
+               "Args:\n"
+               "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
+    solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
+    solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers.");
+    solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
+    solver.add_receiver("inTemperature", &Solver::inTemperature, "");
+    solver.add_receiver("inGain", &Solver::inGain, "");
+    solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
+    solver.add_provider("outElectricField", &Solver::outElectricField, "");
+    solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
+    solver.def_readwrite("root", &Solver::root,
+                         "Configuration of the root searching algorithm for horizontal component of the\n"
+                         "mode.\n\n"
+                         ROOTDIGGER_ATTRS_DOC
+                        );
 }
 
-PmlWrapper FourierReflection3D_tranPML(FourierReflection3D* self) {
-    return PmlWrapper(self, &self->pml_tran);
+template <typename Class>
+inline void export_reflection_base(Class solver) {
+    export_base(solver);
+    typedef typename Class::wrapped_type Solver;
+    solver.add_property("emitting", &Solver::getEmitting, &Solver::setEmitting, "Should emitted field be computed?");
+    solver.add_property("wavelength", &Solver::getWavelength, Solver_setWavelength<Solver>, "Wavelength of the light.");
+    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light.");
+    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light.");
+    py::scope scope = solver;
+    py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
+        .value("TOP", Solver::INCIDENCE_TOP)
+        .value("BOTTOM", Solver::INCIDENCE_BOTTOM)
+    ;
 }
-
-void FourierReflection3D_setLongPML(FourierReflection3D* self, const PmlWrapper& value) {
-    self->pml_long = *value.pml;
-    self->invalidate();
-}
-
-void FourierReflection3D_setTranPML(FourierReflection3D* self, const PmlWrapper& value) {
-    self->pml_tran = *value.pml;
-    self->invalidate();
-}
-
-
-
 
 BOOST_PYTHON_MODULE(slab)
 {
@@ -329,7 +475,9 @@ BOOST_PYTHON_MODULE(slab)
     py::converter::registry::push_back(&PythonComponentConventer2D::convertible, &PythonComponentConventer2D::construct,
                                        py::type_id<ExpansionPW2D::Component>());
 
-    py::class_<PmlWrapper>("PML", "Perfectly matched layer details.", py::no_init)
+    py::class_<PmlWrapper, shared_ptr<PmlWrapper>>("PML", "Perfectly matched layer details.", py::no_init)
+        .def("__init__", py::make_constructor(&PmlWrapper::__init__, py::default_call_policies(),
+                                              (py::arg("factor"), "size", "dist", py::arg("shape")=2)))
         .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
         .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
         .add_property("dist", &PmlWrapper::get_shift, &PmlWrapper::set_shift, "PML distance from the structure.")
@@ -462,15 +610,25 @@ BOOST_PYTHON_MODULE(slab)
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in three-dimensional Cartesian space.")
         export_reflection_base(solver);
+        solver.add_property("size",
+                            py::make_function(FourierReflection3D_getSize, py::with_custodian_and_ward_postcall<0,1>()),
+                            py::make_function(FourierReflection3D_LongTranSetter<size_t>(&FourierReflection3D::size_long, &FourierReflection3D::size_tran),
+                                              py::default_call_policies(),
+                                              boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
+                            "Orthogonal expansion sizes in longitudinal and transverse directions.");
+        solver.add_property("refine",
+                            py::make_function(FourierReflection3D_getRefine, py::with_custodian_and_ward_postcall<0,1>()),
+                            py::make_function(FourierReflection3D_LongTranSetter<size_t>(&FourierReflection3D::refine_long, &FourierReflection3D::refine_tran),
+                                              py::default_call_policies(),
+                                              boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
+                            "Number of refinement points for refractive index averaging in longitudinal and transverse directions.");
 //         METHOD(find_mode, findMode,
 //                "Compute the mode near the specified effective index.\n\n"
 //                "Args:\n"
 //                "    neff: starting effective index.\n"
 //                , "neff");
-//         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
 //         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
 //         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
-//         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
 //         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
 //                    "Compute discontinuity matrix determinant.");
 //         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
@@ -506,16 +664,13 @@ BOOST_PYTHON_MODULE(slab)
                    "    mesh: Target mesh.\n"
                    "    interp: Interpolation method\n"
                    , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
-        solver.add_property("long_pml", py::make_function(&FourierReflection3D_longPML, py::with_custodian_and_ward_postcall<0,1>()),
-                            &FourierReflection3D_setLongPML,
-                            "Longitudinal edge Perfectly Matched Layers boundary conditions.\n\n"
-                            PML_ATTRS_DOC
-                           );
-        solver.add_property("tran_pml", py::make_function(&FourierReflection3D_tranPML, py::with_custodian_and_ward_postcall<0,1>()),
-                            &FourierReflection3D_setTranPML,
-                            "Transverse edge Perfectly Matched Layers boundary conditions.\n\n"
-                            PML_ATTRS_DOC
-                           );
+        solver.add_property("pmls",
+                            py::make_function(FourierReflection3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
+                            py::make_function(FourierReflection3D_LongTranSetter<PML>(&FourierReflection3D::pml_long, &FourierReflection3D::pml_tran),
+                                              py::default_call_policies(),
+                                              boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
+                            "Longitudinal and transverse edge Perfectly Matched Layers boundary conditions.\n\n"
+                            PML_ATTRS_DOC);
 //         RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
 //         RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
@@ -542,6 +697,13 @@ BOOST_PYTHON_MODULE(slab)
 //             .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
 //             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
 //         ;
+
+        FourierReflection3D_LongTranWrapper<size_t>::register_("Sizes");
+
+        py::scope scope = solver;
+
+        FourierReflection3D_LongTranWrapper<PML>::register_("PMLs");
+
     }
 
 }

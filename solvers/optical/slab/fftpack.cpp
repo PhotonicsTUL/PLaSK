@@ -139,16 +139,16 @@ Forward2D::Forward2D(Forward2D&& old):
     strid(old.strid), istrid(old.istrid),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     wsave1(old.wsave1), wsave2(old.wsave2) {
-    old.wsave1 = nullptr; old.wsave2 = nullptr;
+    old.wsave1 = nullptr; if (old.wsave2 != old.wsave1) old.wsave2 = nullptr;
 }
 
 Forward2D& Forward2D::operator=(Forward2D&& old) {
     lot = old.lot; n1 = old.n1; n2 = old.n2;
     strid = old.strid; istrid = old.istrid;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
-    aligned_free(wsave1); aligned_free(wsave2);
+    aligned_free(wsave1); if (wsave2 != wsave1) aligned_free(wsave2);
     wsave1 = old.wsave1; wsave2 = old.wsave2;
-    old.wsave1 = nullptr;  old.wsave2 = nullptr;
+    old.wsave1 = nullptr; if (old.wsave2 != old.wsave1) old.wsave2 = nullptr;
     return *this;
 }
 
@@ -225,16 +225,16 @@ Backward2D::Backward2D(Backward2D&& old):
     strid(old.strid), istrid(old.istrid),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     wsave1(old.wsave1), wsave2(old.wsave2) {
-    old.wsave1 = nullptr; old.wsave2 = nullptr;
+    old.wsave1 = nullptr; if (old.wsave2 != old.wsave1) old.wsave2 = nullptr;
 }
 
 Backward2D& Backward2D::operator=(Backward2D&& old) {
     lot = old.lot; n1 = old.n1; n2 = old.n2;
     strid = old.strid; istrid = old.istrid;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
-    aligned_free(wsave1); aligned_free(wsave2);
+    aligned_free(wsave1); if (wsave2 != wsave1) aligned_free(wsave2);
     wsave1 = old.wsave1; wsave2 = old.wsave2;
-    old.wsave1 = nullptr;  old.wsave2 = nullptr;
+    old.wsave1 = nullptr; if (old.wsave2 != old.wsave1) old.wsave2 = nullptr;
     return *this;
 }
 
