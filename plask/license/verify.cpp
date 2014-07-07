@@ -52,7 +52,7 @@ bool try_verify(const std::string& filename) {
     if (t == (std::time_t) (-1))
         throw Exception("License error: Ill-formated exparation date \"%1%\".", expiry);
 
-    if (t > std::time(nullptr))
+    if (t > std::time(nullptr) + 24 * 3600)
         throw Exception("License has expired.");
 
     return true;
