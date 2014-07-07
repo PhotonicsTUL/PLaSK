@@ -51,32 +51,36 @@ struct CFileOutput: public XMLWriter::Output {
 };
 
 XMLWriter::Element::Element(XMLWriter &writer, const std::string &name)
-: name(name), writer(&writer) {
+: name(name), writer(&writer), hasChildren(false) {
     writeOpening();
 }
 
 XMLWriter::Element::Element(XMLWriter &writer, std::string &&name)
-: name(std::move(name)), writer(&writer) {
+: name(std::move(name)), writer(&writer), hasChildren(false) {
     writeOpening();
 }
 
 XMLWriter::Element::Element(XMLWriter::Element &parent, const std::string &name)
-: name(name), writer(parent.writer) {
+: name(name), writer(parent.writer), hasChildren(false) {
     parent.ensureIsCurrent();
     writeOpening();
 }
 
 XMLWriter::Element::Element(XMLWriter::Element &parent, std::string&& name)
-: name(std::move(name)), writer(parent.writer) {
+: name(std::move(name)), writer(parent.writer), hasChildren(false) {
     parent.ensureIsCurrent();
     writeOpening();
 }
 
-XMLWriter::Element::Element(XMLWriter::Element&& to_move)
-    : name(std::move(to_move.name)), writer(to_move.writer), parent(to_move.parent), attributesStillAlowed(to_move.attributesStillAlowed) {
-    to_move.ensureIsCurrent();
+XMLWriter::Element::Element(XMLWriter::Element&& to_move) {
+    this->operator =(std::move(to_move));
+/*    to_move.ensureIsCurrent();
+    name = std::move(to_move.name);
+    writer = to_move.writer;
     to_move.writer = 0;
-    this->writer->current = this;
+    parent = to_move.parent;
+    attributesStillAlowed = to_move.attributesStillAlowed;
+    this->writer->current = this;*/
 }
 
 XMLWriter::Element &XMLWriter::Element::operator=(XMLWriter::Element && to_move) {
@@ -85,6 +89,7 @@ XMLWriter::Element &XMLWriter::Element::operator=(XMLWriter::Element && to_move)
     writer = to_move.writer;
     parent = to_move.parent;
     attributesStillAlowed = to_move.attributesStillAlowed;
+    hasChildren = to_move.hasChildren;
     to_move.writer = 0;
     this->writer->current = this;
     return *this;
@@ -129,7 +134,7 @@ XMLWriter::Element &XMLWriter::Element::writeCDATA(const std::string& str) {
 }
 
 void XMLWriter::Element::indent () {
-    disallowAttributes();
+    if (disallowAttributes()) writer->out->newline();
     std::size_t l = (getLevel() + 1) * writer->indentation;
     while (l > 0) { writer->out->put(' '); --l; }
 }
@@ -145,7 +150,11 @@ XMLWriter::Element &XMLWriter::Element::end() {
 void XMLWriter::Element::writeOpening() {
     attributesStillAlowed = true;
     parent = writer->current;
-    if (writer->current) writer->current->disallowAttributes();
+    if (writer->current) {
+        writer->current->hasChildren = true;
+        if (writer->current->disallowAttributes())  //parent has nothing inside?
+            writer->out->newline();
+    }
     writer->current = this;
     std::size_t l = getLevel() * writer->indentation;
     while (l > 0) { writer->out->put(' '); --l; }
@@ -158,22 +167,26 @@ void XMLWriter::Element::writeClosing()
     if (attributesStillAlowed) {   //empty tag?
         writer->out->puts("/>");
     } else {
-        std::size_t l = getLevel() * writer->indentation;
-        while (l > 0) { writer->out->put(' '); --l; }
+        if (hasChildren) {
+            std::size_t l = getLevel() * writer->indentation;
+            while (l > 0) { writer->out->put(' '); --l; }
+        }
         writer->out->puts("</");
         writer->appendStr(name);
         writer->out->put('>');
     }
-    writer->out->newline();
+    writer->out->newline();   //TODO ??
     writer->current = this->parent;
 }
 
-void XMLWriter::Element::disallowAttributes() {
+bool XMLWriter::Element::disallowAttributes() {
     if (attributesStillAlowed) {
         writer->out->put('>');
-        writer->out->newline();
+        //writer->out->newline();   //TODO ??
         writer->current->attributesStillAlowed = false;
-    }
+        return true;
+    } else
+        return false;
 }
 
 void XMLWriter::Element::ensureIsCurrent() {

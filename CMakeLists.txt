@@ -255,6 +255,11 @@ set(PLaSK_LIBRARIES libplask)
 
 add_subdirectory(materials)
 
+# ---------- Program to sign license file ----------------------
+file(GLOB_RECURSE sign_license_src FOLLOW_SYMLINKS license_sign/*.cpp license_sign/*.h)
+add_executable(sign_license ${sign_license_src})
+target_link_libraries(sign_license libplask)
+
 # ---------- Python --------------------------------------------
 
 if(BUILD_PYTHON)

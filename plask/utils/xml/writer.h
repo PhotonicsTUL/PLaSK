@@ -89,6 +89,9 @@ struct PLASK_API XMLWriter {
         /// @c true only if this tag is open and allow to append attributes
         bool attributesStillAlowed;
 
+        /// @c true if has any child
+        bool hasChildren;
+
      public:
 
         /**
@@ -245,7 +248,7 @@ struct PLASK_API XMLWriter {
 
         void writeClosing();    ///< called by destructor, write element closing and set parent of this as current
 
-        void disallowAttributes(); ///< set attributesStillAlowed to false, and put '>' in out if necessary
+        bool disallowAttributes(); ///< set attributesStillAlowed to false, and put '>' in out if necessary, return true if attributes was alowed before call this
 
         void ensureIsCurrent(); ///< throw exception if this is not current element
     };

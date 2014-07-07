@@ -576,6 +576,8 @@ private:
      */
     std::size_t getAttributeCount() const { ensureHasCurrent(); return getCurrent().attributes.size(); }
 
+    std::map<std::string, std::string> getAttributes();
+
     /**
      * Mark attribute with given name as read, so parser does not throw an exception if this attribute will be not read.
      * @param name name of attribute to ignore
@@ -583,7 +585,7 @@ private:
     void ignoreAttribute(const std::string& name) { getAttribute(name); }
 
     /**
-     * Allow to have unread attributes.
+     * Allow to have unread attributes in currect tag.
      */
     void ignoreAllAttributes() { check_if_all_attributes_were_read = false; }
 

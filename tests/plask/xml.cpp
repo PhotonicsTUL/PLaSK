@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(xml_read) {
     BOOST_CHECK_EQUAL(r.getTextContent<double>(), 3.0);
     BOOST_CHECK(r.read());  //tag end
     BOOST_CHECK(r.getNodeType() == plask::XMLReader::NODE_ELEMENT_END);
-    //BOOST_CHECK(!r.read()); //and nothing more, end
+    BOOST_CHECK(!r.read()); //and nothing more, end
 }
 
 BOOST_AUTO_TEST_CASE(empty_xml) {

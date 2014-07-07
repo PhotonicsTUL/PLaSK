@@ -57,9 +57,11 @@ bool XMLReader::readSome() {
     std::size_t read = source->read(buff, buff_size);
     bool has_more = buff_size == read;
     if (XML_Parse(parser, buff, read, !has_more) == XML_STATUS_ERROR) {
-        throw XMLException("XML line " +
-                           boost::lexical_cast<std::string>(XML_GetCurrentLineNumber(parser)) + ": parse error: "
-                           + XML_ErrorString(XML_GetErrorCode(parser)));
+        auto error_code = XML_GetErrorCode(parser);
+        if (error_code != XML_ERROR_FINISHED)
+            throw XMLException("XML line " +
+                               boost::lexical_cast<std::string>(XML_GetCurrentLineNumber(parser)) + ": parse error: "
+                               + XML_ErrorString(error_code));
     }
     return has_more;
 }
@@ -161,6 +163,12 @@ bool XMLReader::read() {
         return false;
 }
 
+std::map<std::string, std::string> XMLReader::getAttributes() {
+    ensureHasCurrent();
+    ignoreAllAttributes();
+    return getCurrent().attributes;
+}
+
 void XMLReader::removeAlienNamespaceAttr() {
     if (getNodeType() != NODE_ELEMENT)
         throw XMLUnexpectedElementException(*this, "element");
@@ -175,8 +183,11 @@ void XMLReader::removeAlienNamespaceAttr() {
 
 std::string XMLReader::getNodeName() const {
     NodeType n = getNodeType();
-    if (n != NODE_ELEMENT && n != NODE_ELEMENT_END)
-        throw XMLUnexpectedElementException(*this, "element or end of element");
+    if (n == NODE_TEXT)
+        return path.back();
+    //if (n == NODE_ELEMENT || n == NODE_ELEMENT_END)
+    //    return getCurrent().text;
+    //throw XMLUnexpectedElementException(*this, "element or end of element");
     return getCurrent().text;
 }
 
@@ -198,7 +209,7 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
     auto res_it = this->getCurrent().attributes.find(name);
     if (res_it == this->getCurrent().attributes.end())
         return boost::optional<std::string>();
-    const_cast<std::set<std::string>&>(read_attributes).insert(name);
+    const_cast<std::set<std::string>&>(read_attributes).insert(name);   //TODO should this be thread-safty?
     if (attributeFilter) {
         try {
             return attributeFilter(res_it->second);
