@@ -22,6 +22,7 @@ namespace plask {
  */
 inline bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry = nullptr) {
     boost::optional<std::string> read_signature;
+    boost::optional<std::string> read_expiry;
     std::string calculated_signature;
     std::string to_sign = "PLASK LICENSE DATA AH64C20D\n";
     std::deque<XMLElement> writtenPath;    //unused if dst is nullptr
@@ -48,7 +49,10 @@ inline bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry =
 
             case XMLReader::NODE_TEXT: {
                 std::string text = src.getTextContent();
-                if (expiry && src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) *expiry = text;
+                if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) {
+                    if (read_expiry) src.throwException("duplicated <" PLASK_LICENSE_EXPIRY_TAG_NAME "> tag in license file");
+                    read_expiry = text;
+                }
                 if (dst) dst->writeText(text);
                 to_sign += 'T';
                 to_sign += text;
@@ -65,13 +69,16 @@ inline bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry =
                         calculated_signature += to_hex[h % 16]; //lower half of byte
                         calculated_signature += to_hex[h / 16]; //upper half of byte
                     }
-                    if (dst)
+                    if (dst) {
                         dst->getCurrent()->addElement(PLASK_LICENSE_SIGNATURE_TAG_NAME).writeText(calculated_signature);
+                        //if (!read_expiry && expiry) dst->getCurrent()->addElement(PLASK_LICENSE_EXPIRY_TAG_NAME).writeText(*expiry);  //should be signed!!
+                    }
                 }
                 if (dst) writtenPath.pop_back();
                 break;
         }
 
+    if (read_expiry && expiry) *expiry = *read_expiry;
     return read_signature ? *read_signature == calculated_signature : false;
 }
 

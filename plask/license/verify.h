@@ -4,19 +4,15 @@
 #include "../utils/xml.h"
 
 #include <string>
-#include "data.h"
 
 namespace plask {
 
-extern std::string info;
-
 /**
  * Verify if the license is correct.
- * It checks for checksums and also validates expiration date
+ * It checks for checksums and also validates expiration date.
+ * Throw exception if verification fail.
  */
 PLASK_API void verifyLicense();
 
-
 }
 #endif
-
