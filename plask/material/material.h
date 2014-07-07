@@ -275,8 +275,8 @@ struct PLASK_API Material {
     /**
      * Create OpenMP lock guard.
      */
-    virtual OmpLockGuard lock() const {
-        return OmpLockGuard();
+    virtual OmpLockGuard<OmpNestLock> lock() const {
+        return OmpLockGuard<OmpNestLock>();
     }
 
     /// Do nothing.

@@ -291,7 +291,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     {
         // Usefull as the material may be defined in Python
-        OmpLockGuard lockq = region.materialQW->lock();
+        OmpLockGuard<OmpNestLock> lockq = region.materialQW->lock();
 
         qme = region.materialQW->Me(T,qstrain);
         qmhh = region.materialQW->Mhh(T,qstrain);
@@ -308,7 +308,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         qEgX = region.materialQW->Eg(T,0.,'X');
         qEgL = region.materialQW->Eg(T,0.,'L');
 
-        OmpLockGuard lockb = region.materialBarrier->lock();
+        OmpLockGuard<OmpNestLock> lockb = region.materialBarrier->lock();
 
         bme = region.materialBarrier->Me(T,bstrain);
         bmhh = region.materialBarrier->Mhh(T,bstrain);

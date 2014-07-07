@@ -13,9 +13,8 @@ namespace plask {
      * OMP nest lock class.
      */
     class OmpNestLock {
-        omp_nest_lock_t lck;
 
-        friend class OmpLockGuard;
+        omp_nest_lock_t lck;
 
       public:
 
@@ -33,29 +32,66 @@ namespace plask {
         ~OmpNestLock() {
             omp_destroy_nest_lock(&lck);
         }
+
+        void lock() { omp_set_nest_lock(&lck); }
+
+        void unlock() { omp_unset_nest_lock(&lck); }
     };
 
     /**
-     * OMP nest lock guard class.
+     * OMP lock class.
      */
+    class OmpLock {
+
+        omp_lock_t lck;
+
+      public:
+
+        OmpLock(const OmpLock&) = delete;
+        OmpLock& operator=(const OmpLock&) = delete;
+        OmpLock(OmpLock&&) = delete;
+        OmpLock& operator=(OmpLock&&) = delete;
+
+        /// Initialize the lock
+        OmpLock() {
+            omp_init_lock(&lck);
+        }
+
+        /// Destroy the
+        ~OmpLock() {
+            omp_destroy_lock(&lck);
+        }
+
+        void lock() { omp_set_lock(&lck); }
+
+        void unlock() { omp_unset_lock(&lck); }
+    };
+
+
+    /**
+     * Template of OMP lock guard class.
+     * @tpatam LockType type of lock, either OmpLock or OmpNestLock
+     */
+    template <typename LockType>
     class OmpLockGuard {
-        omp_nest_lock_t* lck;
+
+        LockType* lck;
 
       public:
         OmpLockGuard(): lck(nullptr) {}
 
         /**
          * Lock the lock.
-         * If the lock is already locked by the same thread, just increase its depth
+         * In case of OmpNestLock, if the lock is already locked by the same thread, just increase its depth.
          */
-        OmpLockGuard(OmpNestLock& lock): lck(&lock.lck) {
-            omp_set_nest_lock(lck);
+        OmpLockGuard(LockType& lock): lck(&lock) {
+            lck->lock();
         }
 
         /**
          * Move the lock
          */
-        OmpLockGuard(OmpLockGuard&& orig): lck(orig.lck){
+        OmpLockGuard(OmpLockGuard<LockType>&& orig): lck(orig.lck) {
             orig.lck = nullptr;
         };
 
@@ -63,7 +99,7 @@ namespace plask {
          * Move the lock
          */
         OmpLockGuard& operator=(OmpLockGuard&& orig) {
-            if (lck) omp_unset_nest_lock(lck);
+            if (lck) lck->unlock();
             lck = orig.lck;
             orig.lck = nullptr;
             return *this;
@@ -74,7 +110,7 @@ namespace plask {
 
         /** Unlock the lock */
         ~OmpLockGuard() {
-            if (lck) omp_unset_nest_lock(lck);
+            if (lck) lck->unlock();
         }
     };
 
@@ -87,16 +123,32 @@ namespace plask {
         OmpNestLock& operator=(const OmpNestLock&) = delete;
         OmpNestLock(OmpNestLock&&) = delete;
         OmpNestLock& operator=(OmpNestLock&&) = delete;
+
+        void lock() {}
+        void unlock() {}
     };
 
     // Empty placeholder
+    struct OmpLock {
+        OmpLock() = default;
+        OmpLock(const OmpLock&) = delete;
+        OmpLock& operator=(const OmpLock&) = delete;
+        OmpLock(OmpNestLock&&) = delete;
+        OmpLock& operator=(OmpLock&&) = delete;
+
+        void lock() {}
+        void unlock() {}
+    };
+
+    // Empty placeholder
+    template <typename LockType>
     struct OmpLockGuard {
         OmpLockGuard() {}
-        OmpLockGuard(const OmpNestLock&) {}
-        OmpLockGuard(OmpLockGuard&&) = default;
-        OmpLockGuard& operator=(OmpLockGuard&&) = default;
-        OmpLockGuard(const OmpLockGuard&) = delete;
-        OmpLockGuard& operator=(const OmpLockGuard&) = delete;
+        OmpLockGuard(const LockType&) {}
+        OmpLockGuard(OmpLockGuard<LockType>&&) = default;
+        OmpLockGuard& operator=(OmpLockGuard<LockType>&&) = default;
+        OmpLockGuard(const OmpLockGuard<LockType>&) = delete;
+        OmpLockGuard& operator=(const OmpLockGuard<LockType>&) = delete;
     };
 
 #endif
