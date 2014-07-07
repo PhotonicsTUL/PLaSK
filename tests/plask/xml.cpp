@@ -49,9 +49,9 @@ BOOST_AUTO_TEST_CASE(simple_xml_object_with_text) {
     {
         plask::XMLWriter writer(ss);
         auto tag = writer.addTag("tag");
-        writer.writeText("hello\n");
+        writer.writeText("hello");
     }
-    BOOST_CHECK_EQUAL(ss.str(), "<tag>\nhello\n</tag>\n");
+    BOOST_CHECK_EQUAL(ss.str(), "<tag>hello</tag>\n");
 }
 
 BOOST_AUTO_TEST_CASE(nested_xml_objects_with_text) {
@@ -61,12 +61,11 @@ BOOST_AUTO_TEST_CASE(nested_xml_objects_with_text) {
       plask::XMLWriter writer(ss);
       auto tag = writer.addTag("tag");
        auto inner = writer.addTag("inner");
-        writer.indent();
-        writer.writeText("hello\n");
+        writer.writeText("hello");
        inner.end();
        writer.addTag("inner");
     } // two tags should be closed automatically
-    BOOST_CHECK_EQUAL(ss.str(), "<tag>\n  <inner>\n    hello\n  </inner>\n  <inner/>\n</tag>\n");
+    BOOST_CHECK_EQUAL(ss.str(), "<tag>\n  <inner>hello</inner>\n  <inner/>\n</tag>\n");
 }
 
 BOOST_AUTO_TEST_CASE(simple_xml_object_with_attr) {
@@ -74,9 +73,9 @@ BOOST_AUTO_TEST_CASE(simple_xml_object_with_attr) {
     plask::XMLWriter writer(ss);
     auto tag = writer.addTag("tag");
     tag.attr("name", "Flip").attr("friend", "Flap");
-    tag.writeText("hello\n");
+    tag.writeText("hello");
     tag.end();
-    BOOST_CHECK_EQUAL(ss.str(), "<tag name=\"Flip\" friend=\"Flap\">\nhello\n</tag>\n");
+    BOOST_CHECK_EQUAL(ss.str(), "<tag name=\"Flip\" friend=\"Flap\">hello</tag>\n");
 }
 
 BOOST_AUTO_TEST_CASE(xml_object_with_quotes) {
@@ -85,9 +84,9 @@ BOOST_AUTO_TEST_CASE(xml_object_with_quotes) {
     {
         auto tag = writer.addTag("tag");
         tag.attr("name", "Flip").attr("friend", "\"Flap\"");
-        writer.writeText("<hello>\n");
+        writer.writeText("<hello>");
     }
-    BOOST_CHECK_EQUAL(ss.str(), "<tag name=\"Flip\" friend=\"&quot;Flap&quot;\">\n&lt;hello&gt;\n</tag>\n");
+    BOOST_CHECK_EQUAL(ss.str(), "<tag name=\"Flip\" friend=\"&quot;Flap&quot;\">&lt;hello&gt;</tag>\n");
 }
 
 BOOST_AUTO_TEST_CASE(numeric_attributes) {
@@ -106,7 +105,7 @@ BOOST_AUTO_TEST_CASE(cdata) {
     auto tag = writer.addTag("tag");
     writer.writeCDATA("<hello>");
     tag.end();
-    BOOST_CHECK_EQUAL(ss.str(), "<tag>\n<![CDATA[<hello>]]></tag>\n");
+    BOOST_CHECK_EQUAL(ss.str(), "<tag><![CDATA[<hello>]]></tag>\n");
 }
 
 BOOST_AUTO_TEST_CASE(mesh) {
@@ -134,15 +133,9 @@ BOOST_AUTO_TEST_CASE(mesh) {
         "    <axis1 type=\"regular\" start=\"10\" stop=\"40\" num=\"4\"/>\n"
         "  </mesh>\n"
         "  <mesh name=\"rec\" type=\"rectangular3d\">\n"
-        "    <axis0 type=\"ordered\">\n"
-        "      1 2 3 \n"
-        "    </axis0>\n"
-        "    <axis1 type=\"ordered\">\n"
-        "      20 50 \n"
-        "    </axis1>\n"
-        "    <axis2 type=\"ordered\">\n"
-        "      10 \n"
-        "    </axis2>\n"
+        "    <axis0 type=\"ordered\">1 2 3 </axis0>\n"
+        "    <axis1 type=\"ordered\">20 50 </axis1>\n"
+        "    <axis2 type=\"ordered\">10 </axis2>\n"
         "  </mesh>\n"
         "</grids>\n"
     );

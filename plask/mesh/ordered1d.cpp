@@ -30,12 +30,12 @@ bool OrderedAxis::operator==(const plask::OrderedAxis& to_compare) const {
 
 void OrderedAxis::writeXML(XMLElement &object) const {
     object.attr("type", "ordered");
-    object.indent();
+    //object.indent();
     for (auto x: this->points) {
         object.writeText(x);
         object.writeText(" ");
     }
-    object.writeText("\n");
+    //object.writeText("\n");
 }
 
 
