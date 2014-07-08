@@ -114,22 +114,22 @@ void Manager::loadFromReader(XMLReader &reader, shared_ptr<const MaterialsSource
     load(reader, materialsSource, load_from_cb);
 }
 
-void Manager::loadFromStream(std::istream* input, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
-    XMLReader reader(input);
+void Manager::loadFromStream(std::unique_ptr<std::istream>&& input, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
+    XMLReader reader(std::move(input));
     loadFromReader(reader, materialsDB, load_from_cb);
 }
 
-void Manager::loadFromStream(std::istream* input, shared_ptr<const MaterialsSource> materialsSource, const LoadFunCallbackT& load_from_cb) {
-    XMLReader reader(input);
+void Manager::loadFromStream(std::unique_ptr<std::istream>&& input, shared_ptr<const MaterialsSource> materialsSource, const LoadFunCallbackT& load_from_cb) {
+    XMLReader reader(std::move(input));
     loadFromReader(reader, materialsSource, load_from_cb);
 }
 
 void Manager::loadFromXMLString(const std::string &input_XML_str, const MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
-    loadFromStream(new std::istringstream(input_XML_str), materialsDB, load_from_cb);
+    loadFromStream(std::unique_ptr<std::istream>(new std::istringstream(input_XML_str)), materialsDB, load_from_cb);
 }
 
 void Manager::loadFromXMLString(const std::string &input_XML_str, shared_ptr<const MaterialsSource> materialsSource, const LoadFunCallbackT& load_from_cb) {
-    loadFromStream(new std::istringstream(input_XML_str), materialsSource, load_from_cb);
+    loadFromStream(std::unique_ptr<std::istream>(new std::istringstream(input_XML_str)), materialsSource, load_from_cb);
 }
 
 void Manager::loadFromFile(const std::string &fileName, const MaterialsDB& materialsDB) {

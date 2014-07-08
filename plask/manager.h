@@ -391,7 +391,7 @@ private:
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromStream(std::istream* input, const MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromStream(std::unique_ptr<std::istream>&& input, const MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from (XML) stream.
@@ -400,7 +400,7 @@ private:
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromStream(std::istream* input, shared_ptr<const MaterialsSource> materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromStream(std::unique_ptr<std::istream>&& input, shared_ptr<const MaterialsSource> materialsSource, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from string which consist of XML.

@@ -73,14 +73,14 @@ void XMLReader::initParser() {
     XML_SetCharacterDataHandler(parser, &XMLReader::characterData);
 }
 
-XMLReader::XMLReader(DataSource* source):
-    source(source), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
+XMLReader::XMLReader(std::unique_ptr<DataSource> &&source):
+    source(std::move(source)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
-XMLReader::XMLReader(std::istream *istream):
-    source(new StreamDataSource(istream)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
+XMLReader::XMLReader(std::unique_ptr<std::istream> &&istream):
+    source(new StreamDataSource(std::move(istream))), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
@@ -119,7 +119,6 @@ XMLReader &XMLReader::operator=(XMLReader &&to_move)
 
 XMLReader::~XMLReader() {
     XML_ParserFree(this->parser);
-    delete source;
 }
 
 void XMLReader::swap(XMLReader &to_swap)

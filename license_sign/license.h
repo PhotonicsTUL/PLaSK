@@ -20,7 +20,7 @@ namespace plask {
  * @param expiry[out] optional place to store content of "expiry" tag
  * @return @c true only if @p src has proper signature
  */
-inline bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry = nullptr) {
+inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry = nullptr) {
     boost::optional<std::string> read_signature;
     boost::optional<std::string> read_expiry;
     std::string calculated_signature;
@@ -71,7 +71,6 @@ inline bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry =
                     }
                     if (dst) {
                         dst->getCurrent()->addElement(PLASK_LICENSE_SIGNATURE_TAG_NAME).writeText(calculated_signature);
-                        //if (!read_expiry && expiry) dst->getCurrent()->addElement(PLASK_LICENSE_EXPIRY_TAG_NAME).writeText(*expiry);  //should be signed!!
                     }
                 }
                 if (dst) writtenPath.pop_back();

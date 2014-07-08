@@ -15,6 +15,7 @@ namespace py = boost::python;
 #include <plask/python_globals.h>
 #include <plask/python_manager.h>
 #include <plask/utils/string.h>
+#include <plask/license/verify.h>
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
@@ -136,12 +137,18 @@ int main(int argc, const char *argv[])
         return 102;
     }
 
+    try {
+        plask::verifyLicense();
+    } catch (plask::Exception& e) {
+        plask::writelog(plask::LOG_CRITICAL_ERROR, e.what());
+        return 103;
+    }
+
     // Set the Python logger
     plask::default_logger = plask::python::makePythonLogger();
 
     // Import and run GUI
     try {
-
         py::object gui = py::import("gui");
         gui.attr("main")();
 

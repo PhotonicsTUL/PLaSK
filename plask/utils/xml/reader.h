@@ -141,14 +141,10 @@ class PLASK_API XMLReader {
         std::unique_ptr<std::istream> input;
 
         /**
-        * @param input stream to read from
-        */
-        StreamDataSource(std::istream* input): input(input) {}
-
-        /**
-        * @param input stream to read from
-        */
-        StreamDataSource(std::unique_ptr<std::istream>&& input): input(std::move(input)) {}
+         * @param params arguments for std::unique_ptr<std::istream> constructor
+         */
+        template <typename... Args>
+        StreamDataSource(Args&&... params): input(std::forward<Args>(params)...) {}
 
         std::size_t read(char* buff, std::size_t buf_size);
 
@@ -309,7 +305,7 @@ class PLASK_API XMLReader {
     static void characterData(void* data, const char *string, int string_len);
 
     /// Source of data.
-    DataSource* source;
+    std::unique_ptr<DataSource> source;
 
     template <typename RequiredType>
     RequiredType parse(const std::string& attr_str) const {
@@ -463,13 +459,13 @@ private:
      * Construct XML reader to read XML from given source.
      * @param source source of XML data, will be delete by this after use by this
      */
-    XMLReader(DataSource* source);
+    XMLReader(std::unique_ptr<DataSource>&& source);
 
     /**
      * Construct XML reader to read XML from given stream.
      * @param istream stream to read, will be closed and delete by this
      */
-    XMLReader(std::istream* istream);
+    XMLReader(std::unique_ptr<std::istream>&& istream);
 
     /**
      * Construct XML reader to read XML from given file.

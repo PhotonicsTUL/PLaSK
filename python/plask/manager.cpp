@@ -129,7 +129,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 {
     PythonManager* manager = py::extract<PythonManager*>(self);
 
-    XMLReader::DataSource* source;
+    std::unique_ptr<XMLReader::DataSource> source;
 
     boost::filesystem::path filename;
 
@@ -137,10 +137,10 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     try {
         str = py::extract<std::string>(src);
         if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
-            source = new XMLReader::StreamDataSource(new std::ifstream(str));
+            source.reset(new XMLReader::StreamDataSource(new std::ifstream(str)));
             filename = str;
         } else
-            source = new XMLReader::StreamDataSource(new std::istringstream(str));
+            source.reset(new XMLReader::StreamDataSource(new std::istringstream(str)));
     } catch (py::error_already_set) {
         PyErr_Clear();
         if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
@@ -150,10 +150,10 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
         } catch(...) {
             PyErr_Clear();
         }
-        source = new XMLPythonDataSource(src);
+        source.reset(new XMLPythonDataSource(src));
     }
 
-    XMLReader reader(source);
+    XMLReader reader(std::move(source));
 
     // Variables
     manager->locals = vars.copy();

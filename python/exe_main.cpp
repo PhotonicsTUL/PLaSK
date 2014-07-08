@@ -17,6 +17,7 @@ namespace py = boost::python;
 #include <plask/utils/string.h>
 #include <plask/utils/system.h>
 #include <plask/config.h>
+#include <plask/license/verify.h>
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
@@ -165,6 +166,13 @@ int main(int argc, const char *argv[])
     if (argc > 1 && std::string(argv[1]) == "-V") {
         printf("PLaSK " PLASK_VERSION "\n");
         return 0;
+    }
+
+    try {
+        plask::verifyLicense();
+    } catch (plask::Exception& e) {
+        plask::writelog(plask::LOG_CRITICAL_ERROR, e.what());
+        return 103;
     }
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)

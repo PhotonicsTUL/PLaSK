@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
     plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
     plask::Manager manager;
     std::string xml_content = "<cond><condition place=\"bottom\" value=\"123\"/><condition place=\"left\" value=\"234\"/></cond>";
-    plask::XMLReader reader(new std::stringstream(xml_content));
+    plask::XMLReader reader(std::unique_ptr<std::istream>(new std::stringstream(xml_content)));
     BOOST_CHECK_NO_THROW(reader.requireTag("cond"));
     manager.readBoundaryConditions(reader, conditions);
     BOOST_CHECK_EQUAL(conditions.size(), 2);

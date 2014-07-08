@@ -11,7 +11,7 @@
 BOOST_AUTO_TEST_SUITE(xml) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(xml_read) {
-    plask::XMLReader r(new std::stringstream("<tag a1=\"1\" a2=\"2.0\">3</tag>"));
+    plask::XMLReader r(std::unique_ptr<std::istream>(new std::stringstream("<tag a1=\"1\" a2=\"2.0\">3</tag>")));
     r.stringInterpreter.set([] (const std::string&) { return 0; });  //all int will be parsed as 0
     BOOST_CHECK(r.read());
     BOOST_CHECK(r.getNodeType() == plask::XMLReader::NODE_ELEMENT);

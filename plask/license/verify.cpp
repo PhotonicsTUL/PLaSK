@@ -39,9 +39,11 @@ std::time_t extractDate(const std::string& s){
 }
 
 bool try_verify(const std::string& filename) {
-    std::ifstream f(filename);
-    if (!f) return false;
-    XMLReader r(&f);
+    std::cout << filename << std::endl;
+
+    std::unique_ptr<std::ifstream> f(new std::ifstream(filename));
+    if (!*f) return false;
+    XMLReader r(std::move(f));
     std::string expiry;
     if (!processLicense(r, nullptr, &expiry))
         throw Exception("License error: Invalid signature in file \"%1%\".", filename);
@@ -52,7 +54,7 @@ bool try_verify(const std::string& filename) {
     if (t == (std::time_t) (-1))
         throw Exception("License error: Ill-formated exparation date \"%1%\".", expiry);
 
-    if (t > std::time(nullptr) + 24 * 3600)
+    if (std::time(nullptr) + 24 * 3600 > t)
         throw Exception("License has expired.");
 
     return true;
@@ -63,8 +65,11 @@ void verifyLicense() {
 
     if (
             ! try_verify(home + "/.plask_license.xml")  &&
+            ! try_verify(home + "/.plask/license.xml")  &&
             ! try_verify(home + "/etc/plask_license.xml")  &&
-            ! try_verify(prefixPath() + "plask_license.xml")
+            ! try_verify(home + "/etc/plask/license.xml")  &&
+            ! try_verify(prefixPath() + "/plask_license.xml") &&
+            ! try_verify(prefixPath() + "/etc/license.xml")
        )
         throw Exception("Could not find license file.");
 }
