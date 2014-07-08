@@ -138,7 +138,7 @@ int main(int argc, const char *argv[])
     }
 
     try {
-        plask::verifyLicense();
+        //plask::verifyLicense();
     } catch (plask::Exception& e) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, e.what());
         return 103;
