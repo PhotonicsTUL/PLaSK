@@ -28,6 +28,7 @@ class Averaging_Test(unittest.TestCase):
         self.solver = FourierReflection3D()
         self.solver.geometry = geom
         self.solver.wavelength = 1000.
+        self.solver.smooth = 0.
         self.solver.size = 11, 11        # number of material coefficients in each direction 4*11+1 = 45
         self.solver.refine = 16, 16
 

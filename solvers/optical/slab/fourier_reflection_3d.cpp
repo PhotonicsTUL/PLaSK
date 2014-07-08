@@ -10,24 +10,108 @@ FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSol
 //     outNeff(this, &FourierReflection3D::getEffectiveIndex, &FourierReflection3D::nummodes)
 {
     smooth = 0.05;
-//     detlog.global_prefix = this->getId();
+    // detlog.global_prefix = this->getId();
 }
-//
-//
-// void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
-// {
-//     while (reader.requireTagOrEnd()) {
-//         std::string param = reader.getNodeName();
-//         if (param == "expansion") {
-//             size = reader.getAttribute<double>("size", size);
-//             reader.requireTagEnd();
-//         } else
-//             parseStandardConfiguration(reader, manager, "TODO");
-//     }
-// }
-//
-//
-//
+
+static inline PML readPML(XMLReader& reader) {
+    PML pml;
+    pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
+    pml.size = reader.getAttribute<double>("size", pml.size);
+    pml.shift = reader.getAttribute<double>("shift", pml.shift);
+    pml.order = reader.getAttribute<double>("order", pml.order);
+    return pml;
+}
+
+template <typename T>
+static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& long_field, T& tran_field) {
+    if (reader.hasAttribute(attr)) {
+        std::string value = reader.requireAttribute<std::string>(attr);
+        if (value.find(',') == std::string::npos)
+            long_field = tran_field = boost::lexical_cast<T>(value);
+        else {
+            auto values = splitString2(value, ',');
+            long_field = boost::lexical_cast<T>(values.first);
+            tran_field = boost::lexical_cast<T>(values.first);
+        }
+        if (reader.hasAttribute(attr+"-long")) throw XMLConflictingAttributesException(reader, attr, attr+"-long");
+        if (reader.hasAttribute(attr+"-tran")) throw XMLConflictingAttributesException(reader, attr, attr+"-tran");
+    } else {
+        long_field = reader.getAttribute<T>(attr+"-long", long_field);
+        tran_field = reader.getAttribute<T>(attr+"-tran", tran_field);
+    }
+}
+
+
+void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
+{
+    while (reader.requireTagOrEnd()) {
+        std::string param = reader.getNodeName();
+        if (param == "expansion") {
+            readComaAttr(reader, "size", size_long, size_tran);
+            readComaAttr(reader, "refine", refine_long, refine_tran);
+            smooth = reader.getAttribute<double>("smooth", smooth);
+            reader.requireTagEnd();
+        } else if (param == "interface") {
+            if (reader.hasAttribute("index")) {
+                if (reader.hasAttribute("position")) throw XMLConflictingAttributesException(reader, "index", "position");
+                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
+                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
+                setInterface(reader.requireAttribute<size_t>("interface"));
+            } else if (reader.hasAttribute("position")) {
+                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
+                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
+                setInterfaceAt(reader.requireAttribute<double>("interface"));
+            } else if (reader.hasAttribute("object")) {
+                auto object = manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
+                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
+                setInterfaceOn(object, path);
+            } else if (reader.hasAttribute("path")) {
+                throw XMLUnexpectedAttrException(reader, "path");
+            }
+            reader.requireTagEnd();
+        } else if (param == "pmls") {
+            pml_long = pml_tran = readPML(reader);
+            while (reader.requireTagOrEnd()) {
+                std::string node = reader.getNodeName();
+                if (node == "long") {
+                    pml_long = readPML(reader);
+                } else if (node == "tran") {
+                    pml_tran = readPML(reader);
+                } else throw XMLUnexpectedElementException(reader, "<tran>, <long>, or </pmls>", node);
+            }
+        } else if (param == "mode") {
+            k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
+            ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
+            klong = reader.getAttribute<dcomplex>("k-long", klong);
+//             if (reader.hasAttribute("symmetry")) {
+//                 std::string repr = reader.requireAttribute("symmetry");
+//                 ExpansionPW2D::Component val;
+//                 AxisNames* axes = nullptr;
+//                 if (geometry) axes = &geometry->axisNames;
+//                 if (repr == "none" || repr == "NONE" || repr == "None")
+//                     val = ExpansionPW3D::E_UNSPECIFIED;
+//                 else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
+//                          repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
+//                     val = ExpansionPW3D::E_TRAN;
+//                 else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
+//                          repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
+//                     val = ExpansionPW3D::E_LONG;
+//                 else
+//                     throw XMLBadAttrException(reader, "symmetry", repr, "symmetric field component name (maybe you need to specify the geometry first)");
+//                 setSymmetry(val);
+//             }
+        } else if (param == "root") {
+            readRootDiggerConfig(reader);
+        } else if (param == "outer") {
+            outdist = reader.requireAttribute<double>("dist");
+            reader.requireTagEnd();
+        } else
+            parseStandardConfiguration(reader, manager);
+    }
+}
+
+
+
 void FourierReflection3D::onInitialize()
 {
     setupLayers();

@@ -62,6 +62,26 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
     /// Create and return rootdigger of a desired type
     std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
 
+    /**
+     * Read root digger configuration
+     * \param reader XML reader
+     */
+    void readRootDiggerConfig(XMLReader& reader) {
+        root.tolx = reader.getAttribute<double>("tolx", root.tolx);
+        root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
+        root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
+        root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
+        root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
+        root.alpha = reader.getAttribute<double>("alpha", root.alpha);
+        root.lambda_min = reader.getAttribute<double>("lambda", root.lambda_min);
+        root.initial_dist = reader.getAttribute<dcomplex>("initial-range", root.initial_dist);
+        root.method = reader.enumAttribute<RootDigger::Method>("method")
+            .value("broyden", RootDigger::ROOT_BROYDEN)
+            .value("muller", RootDigger::ROOT_MULLER)
+            .get(root.method);
+        reader.requireTagEnd();
+    }
+
   public:
 
     /// Distance outside outer borders where material is sampled

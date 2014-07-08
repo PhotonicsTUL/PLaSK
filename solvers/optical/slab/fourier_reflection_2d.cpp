@@ -49,8 +49,8 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
             reader.requireTagEnd();
         } else if (param == "mode") {
             k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
-            ktran = 2e3*M_PI / reader.getAttribute<dcomplex>("k-tran", ktran);
-            klong = 2e3*M_PI / reader.getAttribute<dcomplex>("k-long", klong);
+            ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
+            klong = reader.getAttribute<dcomplex>("k-long", klong);
             if (reader.hasAttribute("symmetry")) {
                 std::string repr = reader.requireAttribute("symmetry");
                 ExpansionPW2D::Component val;
@@ -86,12 +86,7 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
                 setPolarization(val);
             }
         } else if (param == "root") {
-            root.tolx = reader.getAttribute<double>("tolx", root.tolx);
-            root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
-            root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
-            root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
-            root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
-            reader.requireTagEnd();
+            readRootDiggerConfig(reader);
         } else if (param == "mirrors") {
             double R1 = reader.requireAttribute<double>("R1");
             double R2 = reader.requireAttribute<double>("R2");

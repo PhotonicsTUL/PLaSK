@@ -698,10 +698,8 @@ BOOST_PYTHON_MODULE(slab)
 //             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
 //         ;
 
-        FourierReflection3D_LongTranWrapper<size_t>::register_("Sizes");
-
         py::scope scope = solver;
-
+        FourierReflection3D_LongTranWrapper<size_t>::register_("Sizes");
         FourierReflection3D_LongTranWrapper<PML>::register_("PMLs");
 
     }

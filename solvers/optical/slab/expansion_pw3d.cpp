@@ -448,63 +448,39 @@ void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex 
 {
     assert(initialized);
 
+    int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
+
+    char syml = 0, symt = 0; //TODO select basing on mode symmetry
+
+    double Gx = 2.*M_PI / (front-back) * (syml? 0.5 : 1.),
+           Gy = 2.*M_PI / (right-left) * (symt? 0.5 : 1.);
+
+    size_t N = (syml? ordl+1 : 2*ordl+1) * (symt? ordt+1 : 2*ordt+1);
+    std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
+    std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
+
+    for (int iy = (symt? 0 : -ordt); iy <= ordt; ++iy) {
+        dcomplex gy = iy * Gy - ktran;
+        for (int ix = (syml? 0 : -ordl); ix <= ordl; ++ix) {
+            dcomplex gx = ix * Gx - klong;
+            for (int jy = -ordt; jy <= ordt; ++jy) {
+                int ijy = iy - jy;
+                for (int jx = -ordl; jx <= ordl; ++jx) {
+                    int ijx = ix - jx;
+
+                    //TODO
+
+                }
+            }
+        }
+    }
+
 //     int order = SOLVER->getSize();
 //     dcomplex f = 1. / k0, k02 = k0*k0;
 //     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
 //
 //     // Ez represents -Ez
 //
-//     if (separated) {
-//         if (symmetric) {
-//             // Separated symmetric
-//             std::fill_n(RE.data(), N*N, dcomplex(0.));
-//             std::fill_n(RH.data(), N*N, dcomplex(0.));
-//             if (polarization == E_LONG) {                   // Ez & Hx
-//                 for (int i = 0; i <= order; ++i) {
-//                     double gi = b * double(i);
-//                     for (int j = -order; j <= order; ++j) {
-//                         int ij = abs(i-j);   double gj = b * double(j);
-//                         dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
-//                         int aj = abs(j);
-//                         RE(iH(i), iE(aj)) += fz * (- gi * gj * imuyy(l,ij) + k02 * epszz(l,ij) );
-//                         RH(iE(i), iH(aj)) += fz *                            k02 * muxx(l,ij);
-//                     }
-//                 }
-//             } else {                                        // Ex & Hz
-//                 for (int i = 0; i <= order; ++i) {
-//                     double gi = b * double(i);
-//                     for (int j = -order; j <= order; ++j) {
-//                         int ij = abs(i-j);   double gj = b * double(j);
-//                         dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
-//                         int aj = abs(j);
-//                         RE(iH(i), iE(aj)) += fx *                             k02 * epsxx(l,ij);
-//                         RH(iE(i), iH(aj)) += fx * (- gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij) );
-//                     }
-//                 }
-//             }
-//         } else {
-//             // Separated asymmetric
-//             if (polarization == E_LONG) {                   // Ez & Hx
-//                 for (int i = -order; i <= order; ++i) {
-//                     dcomplex gi = b * double(i) - kx;
-//                     for (int j = -order; j <= order; ++j) {
-//                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-//                         RE(iH(i), iE(j)) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-//                         RH(iE(i), iH(j)) = f *                              k02 * muxx(l,ij);
-//                     }
-//                 }
-//             } else {                                        // Ex & Hz
-//                 for (int i = -order; i <= order; ++i) {
-//                     dcomplex gi = b * double(i) - kx;
-//                     for (int j = -order; j <= order; ++j) {
-//                         int ij = i-j;   dcomplex gj = b * double(j) - kx;
-//                         RE(iH(i), iE(j)) = f *                               k02 * epsxx(l,ij);
-//                         RH(iE(i), iH(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-//                     }
-//                 }
-//             }
-//         }
-//     } else {
 //         if (symmetric) {
 //             // Full symmetric
 //             std::fill_n(RE.data(), 4*N*N, dcomplex(0.));

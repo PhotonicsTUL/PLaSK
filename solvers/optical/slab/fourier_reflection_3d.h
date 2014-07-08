@@ -70,8 +70,8 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 
     FourierReflection3D(const std::string& name="");
 
-//     void loadConfiguration(XMLReader& reader, Manager& manager);
-//
+    void loadConfiguration(XMLReader& reader, Manager& manager);
+
 //     /**
 //      * Find the mode around the specified effective index.
 //      * This method remembers the determined mode, for retrieval of the field profiles.

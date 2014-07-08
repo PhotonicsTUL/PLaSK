@@ -12,6 +12,8 @@ py::object UFUNC(F f, py::object input) {
     } catch (py::error_already_set) {
         PyErr_Clear();
 
+//         if (py::len(input) == 0) return 
+
         PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(input.ptr(), detail::typenum<T>());
 
         if (inarr == NULL || PyArray_TYPE(inarr) != detail::typenum<T>()) {
