@@ -237,6 +237,14 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
     void determineReflectedFields(const cvector& incident, IncidentDirection side);
 
     /**
+     * Get refractive index after expansion
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    LazyData<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh,
+                                                                InterpolationMethod interp=INTERPOLATION_DEFAULT);
+
+    /**
      * Compute electric field at the given mesh.
      * \param dst_mesh target mesh
      * \param method interpolation method
@@ -256,7 +264,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> computeFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method);
+    DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method);
 
     /**
      * Get electric field at the given mesh for resonant mode.
@@ -286,7 +294,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      */
     DataVector<double> getFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineFields();
-        return computeFieldIntensity(power, dst_mesh, method);
+        return computeFieldMagnitude(power, dst_mesh, method);
     }
 
     /**
@@ -322,7 +330,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      */
     DataVector<double> getReflectedFieldIntensity(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldIntensity(1., dst_mesh, method);
+        return computeFieldMagnitude(1., dst_mesh, method);
     }
 };
 

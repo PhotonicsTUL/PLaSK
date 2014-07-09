@@ -168,25 +168,29 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int l, int t) {
-        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
         return 2 * (Nl*t + l);
     }
 
     /// Get \f$ E_y \f$ index
     size_t iEy(int l, int t) {
-        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
         return 2 * (Nl*t + l) + 1;
     }
 
     /// Get \f$ H_x \f$ index
     size_t iHx(int l, int t) {
-        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
         return 2 * (Nl*t + l) + 1;
     }
 
     /// Get \f$ H_y \f$ index
     size_t iHy(int l, int t) {
-        if (l < 0) l += Nl; if (t < 0) t += Nt;
+        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
         return 2 * (Nl*t + l);
     }
 };

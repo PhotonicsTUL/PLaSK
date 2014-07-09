@@ -15,10 +15,19 @@ template <int dim> struct LevelMeshAdapter: public MeshD<dim>
 {
     /// Base of adapter generators
     struct GeneratorBase {
+        /**
+         * Copy generator
+         */
+        virtual std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> copy() const = 0;
         /** Yield pointers to the consecutive levels
          * \return pointer to the new level object or \c nullptr at the end
          */
         virtual shared_ptr<LevelMeshAdapter<dim>> yield() = 0;
+        /**
+         * Return level at given vertical position
+         * \param level at given vertical posiotion
+         */
+        virtual shared_ptr<LevelMeshAdapter<dim>> at(double pos) const = 0;
     };
 
     /**
@@ -28,7 +37,9 @@ template <int dim> struct LevelMeshAdapter: public MeshD<dim>
      */
     virtual size_t index(size_t i) const = 0;
 
-    /// Get level vertical position
+    /**
+     * Get level vertical position
+     */
     virtual double vpos() const = 0;
 };
 
@@ -51,17 +62,25 @@ struct LevelMeshAdapterGeneric: public LevelMeshAdapter<dim>
     /// Generator for the generic levels
     struct Generator: public LevelMeshAdapter<dim>::GeneratorBase {
         shared_ptr<const MeshD<dim>> src;
-        std::set<double> levels;
+        shared_ptr<std::set<double>> levels;
         std::set<double>::iterator iter;
-        Generator(shared_ptr<const MeshD<dim>> src): src(src) {
+        Generator(shared_ptr<const MeshD<dim>> src): src(src), levels(new std::set<double>) {
             for (auto point: *src) {
-                levels.insert(point[dim-1]);
+                levels->insert(point[dim-1]);
             }
-            iter = levels.begin();
+            iter = levels->begin();
         }
-        virtual shared_ptr<LevelMeshAdapter<dim>> yield() override {
-            if (iter == levels.end()) return shared_ptr<LevelMeshAdapter<dim>>();
+        Generator(const Generator& orig): src(orig.src), levels(orig.levels) {}
+        std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> copy() const override {
+            return std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase>(new Generator(*this));
+        }
+        shared_ptr<LevelMeshAdapter<dim>> yield() override {
+            if (iter == levels->end()) return shared_ptr<LevelMeshAdapter<dim>>();
             return shared_ptr<LevelMeshAdapter<dim>>(new LevelMeshAdapterGeneric<dim>(src, *(iter++)));
+        }
+        shared_ptr<LevelMeshAdapter<dim>> at(double pos) const override {
+            assert(levels->find(pos) != levels->end());
+            return shared_ptr<LevelMeshAdapter<dim>>(new LevelMeshAdapterGeneric<dim>(src, pos));
         }
     };
 
@@ -103,9 +122,18 @@ struct LevelMeshAdapterRectangular<2>: public LevelMeshAdapter<2>
         shared_ptr<const RectangularT> src;
         size_t idx;
         Generator(shared_ptr<const RectangularT> src): src(src), idx(0) {}
-        virtual shared_ptr<LevelMeshAdapter<2>> yield() override {
+        Generator(const Generator& orig): src(orig.src), idx(0) {}
+        std::unique_ptr<typename LevelMeshAdapter<2>::GeneratorBase> copy() const override {
+            return std::unique_ptr<typename LevelMeshAdapter<2>::GeneratorBase>(new Generator(*this));
+        }
+        shared_ptr<LevelMeshAdapter<2>> yield() override {
             if (idx == src->axis1->size()) return shared_ptr<LevelMeshAdapter<2>>();
             return shared_ptr<LevelMeshAdapter<2>>(new LevelMeshAdapterRectangular<2>(src, idx++));
+        }
+        shared_ptr<LevelMeshAdapter<2>> at(double pos) const override {
+            size_t i = src->axis1->findIndex(pos);
+            assert (i < src->axis1->size() && src->axis1->at(i) == pos);
+            return shared_ptr<LevelMeshAdapter<2>>(new LevelMeshAdapterRectangular<2>(src, i));
         }
     };
 
@@ -140,9 +168,18 @@ struct LevelMeshAdapterRectangular<3>: public LevelMeshAdapter<3>
         shared_ptr<const RectangularT> src;
         size_t idx;
         Generator(shared_ptr<const RectangularT> src): src(src), idx(0) {}
-        virtual shared_ptr<LevelMeshAdapter<3>> yield() override {
+        Generator(const Generator& orig): src(orig.src), idx(0) {}
+        std::unique_ptr<typename LevelMeshAdapter<3>::GeneratorBase> copy() const override {
+            return std::unique_ptr<typename LevelMeshAdapter<3>::GeneratorBase>(new Generator(*this));
+        }
+        shared_ptr<LevelMeshAdapter<3>> yield() override {
             if (idx == src->axis2->size()) return shared_ptr<LevelMeshAdapter<3>>();
             return shared_ptr<LevelMeshAdapter<3>>(new LevelMeshAdapterRectangular<3>(src, idx++));
+        }
+        shared_ptr<LevelMeshAdapter<3>> at(double pos) const override {
+            size_t i = src->axis2->findIndex(pos);
+            assert (i < src->axis2->size() && src->axis2->at(i) == pos);
+            return shared_ptr<LevelMeshAdapter<3>>(new LevelMeshAdapterRectangular<3>(src, i));
         }
     };
 
@@ -168,6 +205,49 @@ std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> LevelsGenerator(c
         return ReturnT(new typename LevelMeshAdapterRectangular<dim>::Generator(mesh));
     return ReturnT(new typename LevelMeshAdapterGeneric<dim>::Generator(src));
 }
+
+/**
+ * Lazy data implementation for leveled data
+ */
+template <int dim, typename T>
+struct LevelLazyDataImpl: public LazyDataImpl<T> {
+
+    shared_ptr<const MeshD<dim>> mesh;
+    std::unique_ptr<typename LevelMeshAdapter<dim>::GeneratorBase> levels;
+
+    std::function<LazyData<T>(const shared_ptr<LevelMeshAdapter<dim>>&)> func;
+
+    LevelLazyDataImpl(const std::function<LazyData<T>(const shared_ptr<LevelMeshAdapter<dim>>&)>& func, const shared_ptr<const MeshD<dim>>& mesh):
+        func(func), mesh(mesh), levels(LevelsGenerator<dim>(mesh))
+    {
+    }
+
+    size_t size() const override {
+        return mesh->size();
+    }
+
+    T at(std::size_t idx) const override {
+        // This method is rather inefficient
+        auto level = levels->at(mesh[idx][dim-1]);
+        for (size_t i = 0, end = level->size(); i != end; ++i)
+            if (level->index(i) == idx) return func(level)[i];
+        assert(false);
+    }
+
+    DataVector<const T> getAll() const override {
+        DataVector<T> result(mesh->size());
+        auto local_levels = levels.copy();
+        while (auto level = local_levels->yield()) {
+            auto data = func(level);
+            for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
+        }
+        return result;
+    }
+};
+
+
+
+
 
 
 }}} // namespace plask::solvers::slab

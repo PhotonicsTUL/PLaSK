@@ -444,93 +444,74 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Ord
 
 
 
-void ExpansionPW3D::getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
+void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
-    char syml = 0, symt = 0; //TODO select basing on mode symmetry
+    char symx = int(symmetric_long)-1, symy = int(symmetric_tran)-1;
+    // +1: Ex+, Ey-, Hx-, Hy+
+    //  0: no symmetry
+    // -1: Ex-, Ey+, Hx+, Hy-
 
-    double Gx = 2.*M_PI / (front-back) * (syml? 0.5 : 1.),
-           Gy = 2.*M_PI / (right-left) * (symt? 0.5 : 1.);
+    double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
+           Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
 
-    size_t N = (syml? ordl+1 : 2*ordl+1) * (symt? ordt+1 : 2*ordt+1);
+    dcomplex k02 = k0 * k0;
+
+    size_t N = (symx ? ordl+1 : 2*ordl+1) * (symy ? ordt+1 : 2*ordt+1);
     std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
     std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
 
-    for (int iy = (symt? 0 : -ordt); iy <= ordt; ++iy) {
+    for (int iy = (symy ? 0 : -ordt); iy <= ordt; ++iy) {
+
         dcomplex gy = iy * Gy - ktran;
-        for (int ix = (syml? 0 : -ordl); ix <= ordl; ++ix) {
+
+        for (int ix = (symx ? 0 : -ordl); ix <= ordl; ++ix) {
+
             dcomplex gx = ix * Gx - klong;
+
+            size_t iex = iEx(ix, iy), iey = iEy(ix, iy);
+            size_t ihx = iHx(ix, iy), ihy = iHy(ix, iy);
+
             for (int jy = -ordt; jy <= ordt; ++jy) {
-                int ijy = iy - jy;
+
+                dcomplex py = jy * Gy - ktran;
+
+                int ijy = iy - jy; if (symy && ijy < 0) ijy = - ijy;
+
                 for (int jx = -ordl; jx <= ordl; ++jx) {
-                    int ijx = ix - jx;
 
-                    //TODO
+                    dcomplex px = jx * Gx - klong;
 
+                    int ijx = ix - jx; if (symx && ijx < 0) ijx = - ijx;
+
+                    size_t jex = iEx(jx, jy), jey = iEy(jx, jy);
+                    size_t jhx = iHx(jx, jy), jhy = iHy(jx, jy);
+
+                    double fx = 1., fy = 1.;
+                    if (symx && jx < 0) { fx *= symx; fy *= -symx; }
+                    if (symy && jy < 0) { fx *= symy; fy *= -symy; }
+
+                    dcomplex ieps = iepszz(lay, ijx, ijy);
+                    RH(iex,jhy) += - fx * gx * px * ieps + k02 * muyy(lay, ijx, ijy);
+                    RH(iex,jhx) += - fy * gx * py * ieps;
+                    RH(iey,jhy) += - fx * gy * px * ieps;
+                    RH(iey,jhx) += - fy * gy * py * ieps + k02 * muxx(lay, ijx, ijy);
+
+                    dcomplex imu = imuzz(lay, ijx, ijy);
+                    RE(ihy,jex) += - fx * gy * py * imu + k02 * epsxx(lay, ijx, ijy);
+                    RE(ihy,jey) +=   fy * gy * px * imu + k02 * epsxy(lay, ijx, ijy);
+                    RE(ihx,jex) +=   fx * gx * py * imu + k02 * epsyx(lay, ijx, ijy);
+                    RE(ihx,jey) += - fy * gx * px * imu + k02 * epsyy(lay, ijx, ijy);
                 }
             }
         }
     }
-
-//     int order = SOLVER->getSize();
-//     dcomplex f = 1. / k0, k02 = k0*k0;
-//     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-//
-//     // Ez represents -Ez
-//
-//         if (symmetric) {
-//             // Full symmetric
-//             std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
-//             std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
-//             for (int i = 0; i <= order; ++i) {
-//                 double gi = b * double(i);
-//                 for (int j = -order; j <= order; ++j) {
-//                     int ij = abs(i-j);   double gj = b * double(j);
-//                     dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
-//                     dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
-//                     int aj = abs(j);
-//                     RE(iHz(i), iEx(aj)) += fx * (- klong*klong * imuyy(l,ij) + k02 * epsxx(l,ij) );
-//                     RE(iHx(i), iEx(aj)) += fx * (  klong* gi  * imuyy(l,ij)                     );
-//                     RE(iHz(i), iEz(aj)) += fz * (  klong* gj  * imuyy(l,ij)                     );
-//                     RE(iHx(i), iEz(aj)) += fz * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-//                     RH(iEx(i), iHz(aj)) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-//                     RH(iEz(i), iHz(aj)) += fx * (- klong* gj  * iepsyy(l,ij)                    );
-//                     RH(iEx(i), iHx(aj)) += fz * (- klong* gi  * iepsyy(l,ij)                    );
-//                     RH(iEz(i), iHx(aj)) += fz * (- klong*klong * iepsyy(l,ij) + k02 * muxx(l,ij) );
-//                     // if(RE(iHz(i), iEx(j)) == 0.) RE(iHz(i), iEx(j)) = 1e-32;
-//                     // if(RE(iHx(i), iEz(j)) == 0.) RE(iHx(i), iEz(j)) = 1e-32;
-//                     // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
-//                     // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
-//                 }
-//             }
-//         } else {
-//             // Full asymmetric
-//             for (int i = -order; i <= order; ++i) {
-//                 dcomplex gi = b * double(i) - kx;
-//                 for (int j = -order; j <= order; ++j) {
-//                     int ij = i-j;   dcomplex gj = b * double(j) - kx;
-//                     RE(iHz(i), iEx(j)) = f * (- klong*klong * imuyy(l,ij) + k02 * epsxx(l,ij) );
-//                     RE(iHx(i), iEx(j)) = f * (  klong* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
-//                     RE(iHz(i), iEz(j)) = f * (  klong* gj  * imuyy(l,ij) - k02 * epsxz(l,ij) );
-//                     RE(iHx(i), iEz(j)) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-//                     RH(iEx(i), iHz(j)) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-//                     RH(iEz(i), iHz(j)) = f * (- klong* gj  * iepsyy(l,ij)                    );
-//                     RH(iEx(i), iHx(j)) = f * (- klong* gi  * iepsyy(l,ij)                    );
-//                     RH(iEz(i), iHx(j)) = f * (- klong*klong * iepsyy(l,ij) + k02 * muxx(l,ij) );
-//                     // if(RE(iHz(i), iEx(j)) == 0.) RE(iHz(i), iEx(j)) = 1e-32;
-//                     // if(RE(iHx(i), iEz(j)) == 0.) RE(iHx(i), iEz(j)) = 1e-32;
-//                     // if(RH(iEx(i), iHz(j)) == 0.) RH(iEx(i), iHz(j)) = 1e-32;
-//                     // if(RH(iEz(i), iHx(j)) == 0.) RH(iEz(i), iHx(j)) = 1e-32;
-//                 }
-//             }
-//         }
-//     }
 }
-//
-//
+
+
 // void ExpansionPW3D::prepareField()
 // {
 //     field.reset(N + (symmetric? 0 : 1));
@@ -688,7 +669,7 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
 //             double dx = 0.5 * (right-left) / N;
 //             RegularMesh3D src_mesh(RegularAxis(left+dx, right-dx, field.size()), RegularAxis(vpos, vpos, 1));
 //             auto result = interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry()),
-//                                       defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
+//                                       getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
 //             double L = 2. * right;
 //             if (sym == E_TRAN)
 //                 for (size_t i = 0; i != dest_mesh.size(); ++i) {
@@ -707,7 +688,7 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
 //             field[N] = field[0];
 //             RegularMesh3D src_mesh(RegularAxis(left, right, field.size()), RegularAxis(vpos, vpos, 1));
 //             return interpolate(src_mesh, field, WrappedMesh<2>(dest_mesh, SOLVER->getGeometry(), true),
-//                                defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
+//                                getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
 //         }
 //     }
 }

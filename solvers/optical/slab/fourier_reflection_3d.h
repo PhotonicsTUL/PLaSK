@@ -128,31 +128,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 //         if (k != ktran) fields_determined = DETERMINED_NOTHING;
 //         ktran = k;
 //     }
-//
-//     /// Return current mode polarization
-//     ExpansionPW3D::Component getPolarization() const { return expansion.polarization; }
-//     /// Set new mode polarization
-//     void setPolarization(ExpansionPW3D::Component polarization) {
-//         if (expansion.initialized) {
-//             if (expansion.separated && polarization == ExpansionPW3D::E_UNSPECIFIED)
-//                 throw Exception("%1%: Cannot remove polarizations separation now -- invalidate the solver first", getId());
-//             if (!expansion.separated && polarization != ExpansionPW3D::E_UNSPECIFIED)
-//                 throw Exception("%1%: Cannot add polarizations separation now -- invalidate the solver first", getId());
-//         }
-//         expansion.polarization = polarization;
-//     }
-//
-//     /**
-//      * Get period
-//      */
-//     double getPeriod() {
-//         bool not_initialized(!expansion.initialized);
-//         if (not_initialized) expansion.init();
-//         double result = (expansion.right - expansion.left) * (expansion.symmetric? 2. : 1.);
-//         if (not_initialized) expansion.free();
-//         return result;
-//     }
-//
+
     /// Get refractive index after expansion
     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectangularMesh<3>& dst_mesh,
                                                                   InterpolationMethod interp=INTERPOLATION_DEFAULT);

@@ -706,7 +706,7 @@ DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldH(const sha
 
 
 template <typename GeometryT>
-DataVector<double> ReflectionSolver<GeometryT>::computeFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method)
+DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method)
 {
     auto E = computeFieldE(dst_mesh, method);
     DataVector<double> result(E.size());

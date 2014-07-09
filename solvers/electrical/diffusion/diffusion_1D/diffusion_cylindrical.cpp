@@ -596,7 +596,7 @@ ConcentrationDataImpl::ConcentrationDataImpl(const FiniteElementMethodDiffusion2
                                              shared_ptr<const plask::MeshD<2>> dest_mesh,
                                              InterpolationMethod interp):
     solver(solver), destination_mesh(make_shared<WrappedMesh<2>>(dest_mesh, solver->geometry)),
-    concentration(interpolate(solver->mesh2, solver->n_present, destination_mesh, defInterpolation<INTERPOLATION_LINEAR>(interp)))
+    concentration(interpolate(solver->mesh2, solver->n_present, destination_mesh, getInterpolationMethod<INTERPOLATION_LINEAR>(interp)))
 {
 }
 

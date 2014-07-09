@@ -704,7 +704,7 @@ const LazyData<double> FermiGainSolver<GeometryType>::getGain(const shared_ptr<c
     this->initCalculation(); // This must be called before any calculation!
 
     GainData* data = new GainData(this, dst_mesh);
-    data->compute(wavelength, defInterpolation<INTERPOLATION_SPLINE>(interp));
+    data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
 
     return LazyData<double>(data);
 }
@@ -717,7 +717,7 @@ const LazyData<double> FermiGainSolver<GeometryType>::getdGdn(const shared_ptr<c
     this->initCalculation(); // This must be called before any calculation!
 
     DgdnData* data = new DgdnData(this, dst_mesh);
-    data->compute(wavelength, defInterpolation<INTERPOLATION_SPLINE>(interp));
+    data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
 
     return LazyData<double>(data);
 }

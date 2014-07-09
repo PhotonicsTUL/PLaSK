@@ -113,7 +113,7 @@ static constexpr const char* interpolationMethodNames[] = {
  * Helper utility that replaces INTERPOLATION_DEFAULT with particular method.
  */
 template <InterpolationMethod default_method>
-inline InterpolationMethod defInterpolation(InterpolationMethod method) {
+inline InterpolationMethod getInterpolationMethod(InterpolationMethod method) {
     return (method == INTERPOLATION_DEFAULT)? default_method : method;
 }
 
@@ -144,7 +144,7 @@ struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, INTERPOLATION_DEFAULT>
     static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>&, const DataVector<const SrcT>&, const shared_ptr<const MeshD<SrcMeshT::DIM>>&) {
         throw CriticalException("interpolate(...) called for INTERPOLATION_DEFAULT method. Contact solver author to fix this issue."
 #ifndef NDEBUG
-                                "\n\nINFO FOR SOLVER AUTHOR: To avoid this error use 'defInterpolation<YOUR_DEFAULT_METHOD>(interpolation_method) in C++ code of the provider in your solver.\n"
+                                "\n\nINFO FOR SOLVER AUTHOR: To avoid this error use 'getInterpolationMethod<YOUR_DEFAULT_METHOD>(interpolation_method) in C++ code of the provider in your solver.\n"
 #endif
                                );
     }

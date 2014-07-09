@@ -62,7 +62,7 @@ void YourSolver::onInvalidate() // This will be called when e.g. geometry or mes
 const DataVector<const double> YourSolver::getDelegated(const MeshD<2>& dst_mesh, InterpolationMethod method) {
     if (!outSingleValue.hasValue())  // this is one possible indication that the solver is invalidated
         throw NoValue(SomeSingleValueProperty::NAME);
-    return interpolate(*mesh, my_data, dst_mesh, defInterpolation<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh
+    return interpolate(*mesh, my_data, dst_mesh, getInterpolationMethod<INTERPOLATION_LINEAR>(method)); // interpolate your data to the requested mesh
 }
 
 

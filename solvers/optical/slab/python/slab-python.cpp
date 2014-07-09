@@ -558,7 +558,6 @@ BOOST_PYTHON_MODULE(slab)
                             "Side Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC
                            );
-        RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
         RO_FIELD(modes, "Computed modes.");
         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
                    "Access to the reflected field.\n\n"
@@ -671,7 +670,6 @@ BOOST_PYTHON_MODULE(slab)
                                               boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
                             "Longitudinal and transverse edge Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC);
-//         RO_PROPERTY(period, getPeriod, "Period for the periodic structures.");
 //         RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
 //                    "Access to the reflected field.\n\n"
@@ -688,12 +686,10 @@ BOOST_PYTHON_MODULE(slab)
 //         register_vector_of<FourierReflection2D::Mode>("Modes");
 //         py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
 //             .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry.")
-//             .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization.")
 //             .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
 //             .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
 //             .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm].")
-//             .add_property("beta", &FourierReflection2D_Mode_Beta, "Mode longitudinal wavevector.")
-//             .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal wavevector.")
+//             .add_property("klong", &FourierReflection2D_Mode_KLong, "Mode longitudinal wavevector.")
 //             .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
 //             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
 //         ;

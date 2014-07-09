@@ -125,17 +125,6 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
     }
 
     /**
-     * Get period
-     */
-    double getPeriod() {
-        bool not_initialized(!expansion.initialized);
-        if (not_initialized) expansion.init();
-        double result = (expansion.right - expansion.left) * (expansion.symmetric? 2. : 1.);
-        if (not_initialized) expansion.free();
-        return result;
-    }
-
-    /**
      * Get refractive index after expansion
      */
     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectangularMesh<2>& dst_mesh,

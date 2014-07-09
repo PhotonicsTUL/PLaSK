@@ -554,7 +554,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             double dx = 0.5 * (right-left) / N;
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             auto result = interpolate(src_mesh, field, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry()),
-                                      defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
+                                      getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
             double L = 2. * right;
             if (sym == E_TRAN)
                 for (size_t i = 0; i != dest_mesh->size(); ++i) {
@@ -574,7 +574,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             const bool ignore_symmetry[2] = { true, false };
             auto result = interpolate(src_mesh, field, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-                                      defInterpolation<INTERPOLATION_SPLINE>(field_params.method), false);
+                                      getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
             dcomplex ikx = I * kx;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(ikx * dest_mesh->at(i).c0);
