@@ -435,7 +435,7 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
     const LazyData<double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, double lam, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
     const LazyData<double> getHeat(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);

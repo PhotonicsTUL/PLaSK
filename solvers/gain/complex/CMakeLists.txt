@@ -11,6 +11,7 @@ project(plask/gain/complex)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
 find_package(PLaSK)
 
+message(${Boost_VERSION})
 
 # Uncomment and edit the line below if you need to link some external libraries.
 # Note that most probably you will need to use CMake command find_package or find_library

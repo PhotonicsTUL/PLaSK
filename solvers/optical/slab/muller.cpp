@@ -34,7 +34,7 @@ dcomplex RootMuller::find(dcomplex start) const
         dcomplex S = sqrt(B*B - 4.*A*C);
         x2 = x1; f2 = f1;
         x1 = x0; f1 = f0;
-        x0 = x1 - (x1-x2) * ( 2*C / std::max(B+S, B-S, [](const dcomplex& a, const dcomplex& b){return abs2(a) < abs2(b);}) );
+        x0 = x1 - (x1-x2) * ( 2.*C / std::max(B+S, B-S, [](const dcomplex& a, const dcomplex& b){return abs2(a) < abs2(b);}) );
         f0 = val_function(x0); log_value.count(x0, f0);
         if (abs2(f0) < fmin2 || (abs2(x0-x1) < xtol2 && abs2(f0) < fmax2)) {
             writelog(LOG_RESULT, "Found root at " + str(x0));

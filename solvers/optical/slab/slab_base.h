@@ -3,6 +3,7 @@
 
 #include <plask/plask.hpp>
 #include "rootdigger.h"
+#include "diagonalizer.h"
 
 #undef interface
 
@@ -43,6 +44,9 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
 
     /// Position of the matching interface
     size_t interface;
+
+    /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
+    std::unique_ptr<Diagonalizer> diagonalizer;
 
     void onInitialize() {
         setupLayers();
@@ -93,11 +97,17 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
     /// Parameters for main rootdigger
     RootDigger::Params root;
 
+    /// Force recomputation of material coefficients
+    bool recompute_coefficients;
+
     /// Receiver for the temperature
     ReceiverFor<Temperature, GeometryT> inTemperature;
 
     /// Receiver for the gain
     ReceiverFor<Gain, GeometryT> inGain;
+
+    /// Provider of the refractive index
+    typename ProviderFor<RefractiveIndex, GeometryT>::Delegate outRefractiveIndex;
 
     /// Provider of the optical field intensity
     typename ProviderFor<LightMagnitude, GeometryT>::Delegate outLightMagnitude;
@@ -200,9 +210,22 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
   protected:
 
     /**
+     * Recompute expansion coefficients
+     */
+    virtual void computeCoefficients() = 0;
+
+    /**
      * Return number of determined modes
      */
     virtual size_t nummodes() const = 0;
+
+    /**
+     * Get refractive index after expansion
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh,
+                                                                  InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
     /**
      * Compute electric field

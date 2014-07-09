@@ -24,7 +24,7 @@ class Matrix {
 
   public:
 
-    Matrix() : gc(nullptr) {};
+    Matrix() : gc(nullptr) {}
 
     Matrix(int m, int n) : r(m), c(n) {
         data_ = aligned_new_array<T>(m*n); gc = new int;

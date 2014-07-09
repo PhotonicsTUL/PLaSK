@@ -882,19 +882,18 @@ const LazyData<double> EffectiveFrequencyCylSolver::getLightMagnitude(int num, c
         return LazyData<double>(new LightMagnitudeDataInefficient(this, num, dst_mesh, stripe));
 }
 
-const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, double lam, InterpolationMethod)
+const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCylSolver::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
     dcomplex lam0 = 2e3*M_PI / k0;
-    if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
     updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
-        [this, target_mesh, lam, lam0](size_t j) -> Tensor3<dcomplex> {
+        [this, target_mesh, lam0](size_t j) -> Tensor3<dcomplex> {
             auto point = target_mesh[j];
             size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
             size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
-            return Tensor3<dcomplex>(this->nrCache[ir][iz] + this->ngCache[ir][iz] * (1. - lam/lam0));
+            return Tensor3<dcomplex>(this->nrCache[ir][iz]/* + this->ngCache[ir][iz] * (1. - lam/lam0)*/);
         }
     );
 }

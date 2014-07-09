@@ -27,8 +27,6 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
         DETERMINED_REFLECTED    ///< Reflected field has been determined
     };
 
-    std::unique_ptr<Diagonalizer> diagonalizer; ///< Diagonalizer used to compute matrix of eigenvalues and eigenvectors
-
     cmatrix interface_field_matrix;             ///< Determined field at the interface
     dcomplex* interface_field;                  ///< Pointer to the interface field data
 
@@ -52,8 +50,6 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
 
     bool emitting;                              ///< \c True if the structure is emitting vertically.
 
-    bool recompute_coefficients;                ///< Force recomputation of material coefficients
-
   private:
 
     cdiagonal phas;                             ///< current phase shift matrix
@@ -61,7 +57,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
     std::vector<cmatrix> memP;                  ///< reflection matrices for each layer
 
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        recompute_coefficients = true;
+        this->recompute_coefficients = true;
     }
 
   public:
@@ -76,7 +72,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            recompute_coefficients |= recompute;
+            this->recompute_coefficients |= recompute;
         }
     }
 
@@ -87,7 +83,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            recompute_coefficients |= recompute;
+            this->recompute_coefficients |= recompute;
         }
     }
 
@@ -182,15 +178,12 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
     /// Init diagonalization
     void initDiagonalization() {
     // Get new coefficients if needed
-        if (recompute_coefficients) {
-            computeCoefficients();
-            recompute_coefficients = false;
+        if (this->recompute_coefficients) {
+            this->computeCoefficients();
+            this->recompute_coefficients = false;
         }
-        diagonalizer->initDiagonalization(k0, klong, ktran);
+        this->diagonalizer->initDiagonalization(k0, klong, ktran);
     }
-
-    /// Recompute expansion coefficients
-    virtual void computeCoefficients() = 0;
 
     /// Compute discontinuity matrix determinant for the current parameters
     dcomplex determinant();
@@ -235,14 +228,6 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      * \param side incidence side
      */
     void determineReflectedFields(const cvector& incident, IncidentDirection side);
-
-    /**
-     * Get refractive index after expansion
-     * \param dst_mesh target mesh
-     * \param method interpolation method
-     */
-    LazyData<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh,
-                                                                InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
     /**
      * Compute electric field at the given mesh.

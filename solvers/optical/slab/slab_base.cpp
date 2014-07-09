@@ -1,4 +1,5 @@
 #include "slab_base.h"
+#include "mesh_adapter.h"
 #include "muller.h"
 #include "broyden.h"
 
@@ -10,6 +11,8 @@ SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT
     interface(1),
     outdist(0.1),
     smooth(0.),
+    recompute_coefficients(true),
+    outRefractiveIndex(this, &SlabSolver<GeometryT>::getRefractiveIndexProfile),
     outLightMagnitude(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
     outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
     outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
@@ -178,6 +181,46 @@ void SlabSolver<Geometry3D>::setupLayers()
 
     this->writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
+
+
+template <typename GeometryT>
+DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexProfile
+                                  (const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh,
+                                   InterpolationMethod interp)
+{
+    this->initCalculation();
+    if (recompute_coefficients) {
+        computeCoefficients();
+        recompute_coefficients = false;
+    }
+
+    //TODO maybe there is a more efficient way to implement this
+    DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
+    auto levels = makeLevelsAdapter<GeometryT::DIM>(dst_mesh);
+
+    //std::map<size_t, LazyData<const Tensor3<dcomplex>>> cache;
+    //while (auto level = levels->yield()) {
+    //    double h = level->vpos();
+    //    size_t n = getLayerFor(h);
+    //    size_t l = stack[n];
+    //    LazyData<Tensor3<dcomplex>> data = cache.find(l);
+    //    if (data == cache.end()) {
+    //        data = diagonalizer->source()->getMaterialNR(l, level, interp);
+    //        cache[l] = data;
+    //    }
+    //    for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
+    //}
+    while (auto level = levels->yield()) {
+        double h = level->vpos();
+        size_t n = getLayerFor(h);
+        size_t l = stack[n];
+        auto data = diagonalizer->source()->getMaterialNR(l, level, interp);
+        for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
+    }
+
+    return result;
+}
+
 
 template struct PLASK_SOLVER_API SlabSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API SlabSolver<Geometry2DCylindrical>;

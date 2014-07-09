@@ -870,17 +870,12 @@ const LazyData<double> EffectiveIndex2DSolver::getLightMagnitude(int num, shared
 }
 
 
-const LazyData<Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, double lam, InterpolationMethod) {
+const LazyData<Tensor3<dcomplex>> EffectiveIndex2DSolver::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
     this->writelog(LOG_DETAIL, "Getting refractive indices");
-    dcomplex ok0 = k0;
-    if (lam == 0.) throw BadInput(getId(), "Wavelength cannot be 0");
-    if (!isnan(lam)) k0 = 2e3*M_PI / lam;
-    try { updateCache(); }
-    catch(...) { k0 = ok0; throw; }
-    k0 = ok0;
+    updateCache();
     auto target_mesh = WrappedMesh<2>(dst_mesh, this->geometry);
     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
-        [this, target_mesh, lam](size_t i) -> Tensor3<dcomplex> {
+        [this, target_mesh](size_t i) -> Tensor3<dcomplex> {
             auto point = target_mesh[i];
             size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < this->xbegin) ix = this->xbegin;
             size_t iy = this->mesh->axis1->findIndex(point.c1);

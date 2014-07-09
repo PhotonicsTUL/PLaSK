@@ -137,31 +137,6 @@ size_t FourierReflection2D::findMode(dcomplex neff)
 }
 
 
-DataVector<const Tensor3<dcomplex>> FourierReflection2D::getRefractiveIndexProfile(const RectangularMesh<2>& dst_mesh,
-                                                                                   InterpolationMethod interp)
-{
-    initCalculation();
-    if (recompute_coefficients) {
-        computeCoefficients();
-        recompute_coefficients = false;
-    }
-    std::map<size_t,DataVector<const Tensor3<dcomplex>>> cache;
-    DataVector<Tensor3<dcomplex>> result(dst_mesh.size());
-    for (size_t y = 0; y != dst_mesh.axis1->size(); ++y) {
-        double h = dst_mesh.axis1->at(y);
-        size_t n = getLayerFor(h);
-        size_t l = stack[n];
-        if (cache.find(l) == cache.end()) {
-            cache[l] = expansion.getMaterialNR(l, *dst_mesh.axis0, interp);
-        }
-        for (size_t x = 0; x != dst_mesh.axis0->size(); ++x) {
-            result[dst_mesh.index(x,y)] = cache[l][x];
-        }
-    }
-    return result;
-}
-
-
 cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
                                                     IncidentDirection incidence, size_t* savidx)
 {

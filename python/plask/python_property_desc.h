@@ -19,11 +19,6 @@ template <> inline const char* docstrig_property_optional_args_desc<GainOverCarr
     ":param float wavelength: The wavelength at which the gain is computed [nm].\n";
 }
 
-template <> inline const char* docstrig_property_optional_args<RefractiveIndex>() { return ", wavelength"; }
-template <> inline const char* docstrig_property_optional_args_desc<RefractiveIndex>() { return
-    ":param float wavelength: The wavelength at which the refractive index is computed [nm].\n";
-}
-
 
 }} // namespace plask
 

@@ -48,7 +48,7 @@ class EffectiveIndex(unittest.TestCase):
         msh = self.solver.mesh.get_midpoints()
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
-        self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh, 1000.)], refr )
+        self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh)], refr )
 
 
 class EffectiveIndexLaser(unittest.TestCase):
@@ -186,7 +186,7 @@ class EffectiveFrequency(unittest.TestCase):
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(980., 300.) for point in msh]
         self.assertEqual(
-            ["%.8g" % nr[0].real for nr in self.solver.outRefractiveIndex(msh, 980.)],
+            ["%.8g" % nr[0].real for nr in self.solver.outRefractiveIndex(msh)],
             ["%.8g" % r.real for r in refr]
         )
 

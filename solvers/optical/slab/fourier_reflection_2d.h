@@ -125,12 +125,6 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
     }
 
     /**
-     * Get refractive index after expansion
-     */
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const RectangularMesh<2>& dst_mesh,
-                                            InterpolationMethod interp=INTERPOLATION_DEFAULT);
-
-    /**
      * Get mesh at which material parameters are sampled
      */
     RegularAxis getXmesh() const { return expansion.xmesh; }

@@ -100,15 +100,9 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 //
     DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh>& dst_mesh, const cvector& E, const cvector& H) override;
 
-    /**
-     * Get refractive index back from expansion
-     * \param l layer number
-     * \param lmesh,tmesh mesh to get parameters to
-     * \param interp interpolation method
-     * \return computed refractive indices
-     */
-    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, OrderedAxis lmesh, OrderedAxis tmesh,
-                                                      InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t lay,
+                                              const shared_ptr<const Mesh> &mesh,
+                                              InterpolationMethod interp) override;
 
 //   private:
 //

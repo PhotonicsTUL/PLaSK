@@ -37,7 +37,7 @@ class Averaging_Test(unittest.TestCase):
 
     def testTran(self):
         msh_tran = mesh.Rectangular3D(mesh.Ordered([0.25]), mesh.Regular(0, 1, 46), mesh.Ordered([0.1]))
-        prof_tran = self.solver.get_refractive_index_profile(msh_tran, 'nearest')
+        prof_tran = self.solver.outRefractiveIndex(msh_tran, 'nearest')
         self.assertAlmostEqual( prof_tran.array[0,0,0,0], sqrt(2.5), 5 )
         self.assertAlmostEqual( prof_tran.array[0,0,0,1], sqrt(1.6), 5 )
         self.assertAlmostEqual( prof_tran.array[0,0,0,2], sqrt(2.5), 5 )
@@ -63,7 +63,7 @@ class Averaging_Test(unittest.TestCase):
 
     def testLong(self):
         msh_long = mesh.Rectangular3D(mesh.Regular(0, 1, 46), mesh.Ordered([0.25]), mesh.Ordered([0.1]))
-        prof_long = self.solver.get_refractive_index_profile(msh_long, 'nearest')
+        prof_long = self.solver.outRefractiveIndex(msh_long, 'nearest')
         self.assertAlmostEqual( prof_long.array[0,0,0,0], sqrt(1.6), 5 )
         self.assertAlmostEqual( prof_long.array[0,0,0,1], sqrt(2.5), 5 )
         self.assertAlmostEqual( prof_long.array[0,0,0,2], sqrt(2.5), 5 )
@@ -111,13 +111,13 @@ class Solver_Test(unittest.TestCase):
         self.assertEqual( self.solver.size.x, 4 )
 
         self.solver.wavelength = 1000.
-        self.solver.get_refractive_index_profile(mesh.Rectangular3D([0.], [0.25], [0.1]))
+        self.solver.outRefractiveIndex(mesh.Rectangular3D([0.], [0.25], [0.1]))
         self.assertEqual( self.solver.initialized, True )
         self.solver.size = 5
         self.assertEqual( self.solver.initialized, False )
         self.assertEqual( str(self.solver.size), "(5, 5)" )
 
-        self.solver.get_refractive_index_profile(mesh.Rectangular3D([0.], [0.25], [0.1]))
+        self.solver.outRefractiveIndex(mesh.Rectangular3D([0.], [0.25], [0.1]))
         self.assertEqual( self.solver.initialized, True )
         self.solver.refine[1] = 7
         self.assertEqual( self.solver.refine.y, 7 )
@@ -128,7 +128,7 @@ class Solver_Test(unittest.TestCase):
         self.assertEqual( self.solver.pmls[0].size, 1. )
 
         self.assertEqual( self.solver.initialized, False )
-        self.solver.get_refractive_index_profile(mesh.Rectangular3D([0.], [0.25], [0.1]))
+        self.solver.outRefractiveIndex(mesh.Rectangular3D([0.], [0.25], [0.1]))
         self.assertEqual( self.solver.initialized, True )
         self.solver.pmls[1].size = 2.
         self.assertEqual( self.solver.pmls.y.size, 2. )

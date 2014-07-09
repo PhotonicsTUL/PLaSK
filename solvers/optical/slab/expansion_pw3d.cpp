@@ -380,26 +380,29 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, OrderedAxis lmesh, OrderedAxis tmesh, InterpolationMethod interp)
+LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const shared_ptr<const Mesh> &mesh, InterpolationMethod interp)
 {
-    DataVector<Tensor3<dcomplex>> result(lmesh.size() * tmesh.size(), Tensor3<dcomplex>(0.));
+    assert(dynamic_pointer_cast<const typename LevelsAdapter<3>::Mesh>(mesh));
+    auto dest_mesh = static_pointer_cast<const typename LevelsAdapter<3>::Mesh>(mesh);
+
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
-        const double Lt = right - left, Ll = front - back;
-        const int endt = int(nNt+1)/2, endl = int(nNl+1)/2;
-        for (int kt = -int(nNt)/2; kt != endt; ++kt) {
-            size_t t = (kt >= 0)? kt : (symmetric_tran)? -kt : kt + nNt;
-            for (int kl = -int(nNl)/2; kl != endl; ++kl) {
-                size_t l = (kl >= 0)? kl : (symmetric_long)? -kl : kl + nNl;
-                for (size_t it = 0; it != tmesh.size(); ++it) {
-                    const double phast = kt * (tmesh[it]-left) / Lt;
-                    size_t offset = lmesh.size()*it;
-                    for (size_t il = 0; il != lmesh.size(); ++il) {
-                        result[offset+il] += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(lmesh[il]-back)/ Ll + phast));
-                    }
+        return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,lay,dest_mesh](size_t i)->Tensor3<dcomplex>{
+            Tensor3<dcomplex> eps(0.);
+            const int endt = int(nNt+1)/2, endl = int(nNl+1)/2;
+            for (int kt = -int(nNt)/2; kt != endt; ++kt) {
+                const double phast = kt * (dest_mesh->at(i).c1-left) / (right-left);
+                size_t t = (kt >= 0)? kt : (symmetric_tran)? -kt : kt + nNt;
+                for (int kl = -int(nNl)/2; kl != endl; ++kl) {
+                    size_t l = (kl >= 0)? kl : (symmetric_long)? -kl : kl + nNl;
+                    eps += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(dest_mesh->at(i).c0-back)/ (front-back) + phast));
                 }
             }
-        }
+            eps.c22 = 1. / eps.c22;
+            eps.sqrt_inplace();
+            return eps;
+        });
     } else {
+        DataVector<Tensor3<dcomplex>> result(dest_mesh->size(), Tensor3<dcomplex>(0.));
         size_t nl = symmetric_long? nNl : nNl+1, nt = symmetric_tran? nNt : nNt+1;
         DataVector<Tensor3<dcomplex>> params(nl * nt);
         for (size_t t = 0; t != nNt; ++t) {
@@ -429,17 +432,15 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, Ord
             tcmesh->reset(left, right, nNt+1);
             for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
         }
-        auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh, make_shared<RegularAxis>(0,0,1), RectangularMesh<3>::ORDER_210);
-        auto dst_mesh = make_shared<RectangularMesh<3>>(make_shared<OrderedAxis>(std::move(lmesh)), make_shared<OrderedAxis>(std::move(tmesh)),
-                                    shared_ptr<OrderedAxis>(new OrderedAxis{0}), RectangularMesh<3>::ORDER_210);
+        for (Tensor3<dcomplex>& eps: params) {
+            eps.c22 = 1. / eps.c22;
+            eps.sqrt_inplace();
+        }
+        auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
+                            make_shared<RegularAxis>(dest_mesh->vpos(), dest_mesh->vpos(), 1), RectangularMesh<3>::ORDER_210);
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
-        result = interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
+        return interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
     }
-    for (Tensor3<dcomplex>& eps: result) {
-        eps.c22 = 1. / eps.c22;
-        eps.sqrt_inplace();
-    }
-    return result;
 }
 
 

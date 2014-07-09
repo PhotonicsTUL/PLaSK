@@ -235,29 +235,35 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 }
 
 
-DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, OrderedAxis mesh, InterpolationMethod interp)
+LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_ptr<const Mesh> &mesh, InterpolationMethod interp)
 {
-    double L = right - left;
-    DataVector<Tensor3<dcomplex>> result;
+    assert(dynamic_pointer_cast<const typename LevelsAdapter<2>::Mesh>(mesh));
+    auto dest_mesh = static_pointer_cast<const typename LevelsAdapter<2>::Mesh>(mesh);
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         if (!symmetric) {
-            result.reset(mesh.size(), Tensor3<dcomplex>(0.));
-            for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
-                size_t j = (k>=0)? k : k + nN;
-                for (size_t i = 0; i != mesh.size(); ++i) {
-                    result[i] += coeffs[l][j] * exp(2*M_PI * k * I * (mesh[i]-left) / L);
+            return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
+                Tensor3<dcomplex> eps(0.);
+                for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
+                    size_t j = (k>=0)? k : k + nN;
+                    eps += coeffs[l][j] * exp(2*M_PI * k * I * (dest_mesh->at(i).c0-left) / (right-left));
                 }
-            }
+                eps.c22 = 1. / eps.c22;
+                eps.sqrt_inplace();
+                return eps;
+            });
         } else {
-            result.reset(mesh.size());
-            for (size_t i = 0; i != mesh.size(); ++i) {
-                result[i] = coeffs[l][0];
+            return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
+                Tensor3<dcomplex> eps = coeffs[l][0];
                 for (int k = 1; k != nN; ++k) {
-                    result[i] += 2. * coeffs[l][k] * cos(M_PI * k * mesh[i] / L);
+                    eps += 2. * coeffs[l][k] * cos(M_PI * k * dest_mesh->at(i).c0 / (right-left));
                 }
-            }
+                eps.c22 = 1. / eps.c22;
+                eps.sqrt_inplace();
+                return eps;
+            });
         }
     } else {
+
         DataVector<Tensor3<dcomplex>> params(symmetric? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
         FFT::Backward1D(4, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
@@ -269,16 +275,15 @@ DataVector<const Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, Order
             cmesh->reset(left, right, nN+1);
             params[nN] = params[0];
         }
-        auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(0,0,1));
-        auto dst_mesh = make_shared<RectangularMesh<2>>(make_shared<OrderedAxis>(std::move(mesh)), shared_ptr<OrderedAxis>(new OrderedAxis({0})));
+        for (Tensor3<dcomplex>& eps: params) {
+            eps.c22 = 1. / eps.c22;
+            eps.sqrt_inplace();
+        }
+        auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(dest_mesh->vpos(), dest_mesh->vpos(), 1));
         const bool ignore_symmetry[2] = { !symmetric, false };
-        result = interpolate(src_mesh, params, make_shared<const WrappedMesh<2>>(dst_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
+        return interpolate(src_mesh, params, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
+
     }
-    for (Tensor3<dcomplex>& eps: result) {
-        eps.c22 = 1. / eps.c22;
-        eps.sqrt_inplace();
-    }
-    return result;
 }
 
 
@@ -420,9 +425,9 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
 
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-    assert(dynamic_pointer_cast<const LevelMeshAdapter<2>>(dst_mesh));
+    assert(dynamic_pointer_cast<const typename LevelsAdapter<2>::Mesh>(dst_mesh));
     shared_ptr<const MeshD<2>> dest_mesh = static_pointer_cast<const MeshD<2>>(dst_mesh);
-    double vpos = static_pointer_cast<const LevelMeshAdapter<2>>(dst_mesh)->vpos();
+    double vpos = static_pointer_cast<const typename LevelsAdapter<2>::Mesh>(dst_mesh)->vpos();
 
     int dt = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0;
     int dl = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0;

@@ -57,6 +57,16 @@ struct PLASK_SOLVER_API Expansion {
     virtual void getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH) = 0;
 
     /**
+     * Get refractive index back from expansion
+     * \param lay layer number
+     * \param mesh mesh to get parameters to
+     * \param interp interpolation method
+     * \return computed refractive indices
+     */
+    virtual LazyData<Tensor3<dcomplex>> getMaterialNR(size_t lay,
+                                                      const shared_ptr<const Mesh> &mesh,
+                                                      InterpolationMethod interp) = 0;
+    /**
      * Prepare for computatiations of the fields
      * \param field which field is computed
      * \param k0 normalized frequency [1/µm]
@@ -67,19 +77,19 @@ struct PLASK_SOLVER_API Expansion {
         field_params.which = field; field_params.k0 = k0; field_params.klong = klong; field_params.ktran = ktran;
         field_params.method = method;
         prepareField();
-    };
+    }
 
   protected:
     /**
      * Prepare for computatiations of the fields
      */
-    virtual void prepareField() {};
+    virtual void prepareField() {}
 
   public:
     /**
      * Cleanup after computatiations of the fields
      */
-    virtual void cleanupField() {};
+    virtual void cleanupField() {}
 
     /**
      * Compute electric og magnetic field on \c dst_mesh at certain level

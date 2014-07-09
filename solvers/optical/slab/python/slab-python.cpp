@@ -208,11 +208,6 @@ void FourierReflection2D_setMirrors(FourierReflection2D& self, py::object value)
 }
 
 
-DataVectorWrap<const Tensor3<dcomplex>,2> FourierReflection2D_getRefractiveIndexProfile(FourierReflection2D& self,
-                const shared_ptr<RectangularMesh<2>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
-    return DataVectorWrap<const Tensor3<dcomplex>,2>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
-}
-
 dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
@@ -414,13 +409,6 @@ void FourierReflection3D_parseKeywords(const char* name, FourierReflection3D* se
     if (ktran) self->setKtran(*ktran);
 }
 
-DataVectorWrap<const Tensor3<dcomplex>,3> FourierReflection3D_getRefractiveIndexProfile(FourierReflection3D& self,
-                const shared_ptr<RectangularMesh<3>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT) {
-    return DataVectorWrap<const Tensor3<dcomplex>,3>(self.getRefractiveIndexProfile(*dst_mesh, interp), dst_mesh);
-}
-
-
-
 
 template <typename Class>
 inline void export_base(Class solver) {
@@ -442,6 +430,7 @@ inline void export_base(Class solver) {
     solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
     solver.add_receiver("inTemperature", &Solver::inTemperature, "");
     solver.add_receiver("inGain", &Solver::inGain, "");
+    solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outElectricField", &Solver::outElectricField, "");
     solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
@@ -547,12 +536,6 @@ BOOST_PYTHON_MODULE(slab)
         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
                    "Fresnel equations.");
-        solver.def("get_refractive_index_profile", &FourierReflection2D_getRefractiveIndexProfile,
-                   "Get profile of the expanded refractive index.\n\n"
-                   "Args:\n"
-                   "    mesh: Target mesh.\n"
-                   "    interp: Interpolation method\n"
-                   , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
         solver.add_property("pml", py::make_function(&FourierReflection2D_PML, py::with_custodian_and_ward_postcall<0,1>()),
                             &FourierReflection2D_setPML,
                             "Side Perfectly Matched Layers boundary conditions.\n\n"
@@ -657,12 +640,6 @@ BOOST_PYTHON_MODULE(slab)
 //         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
 //                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
 //                    "Fresnel equations.");
-        solver.def("get_refractive_index_profile", &FourierReflection3D_getRefractiveIndexProfile,
-                   "Get profile of the expanded refractive index.\n\n"
-                   "Args:\n"
-                   "    mesh: Target mesh.\n"
-                   "    interp: Interpolation method\n"
-                   , (py::arg("mesh"), py::arg("interp")=INTERPOLATION_DEFAULT));
         solver.add_property("pmls",
                             py::make_function(FourierReflection3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
                             py::make_function(FourierReflection3D_LongTranSetter<PML>(&FourierReflection3D::pml_long, &FourierReflection3D::pml_tran),

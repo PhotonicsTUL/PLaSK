@@ -4,6 +4,7 @@
 #include <plask/plask.hpp>
 
 #include "expansion.h"
+#include "mesh_adapter.h"
 #include "fft.h"
 
 namespace plask { namespace solvers { namespace slab {
@@ -81,15 +82,8 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H) override;
 
-    /**
-     * Get refractive index back from expansion
-     * \param l layer number
-     * \param mesh mesh to get parameters to
-     * \param interp interpolation method
-     * \return computed refractive indices
-     */
-    DataVector<const Tensor3<dcomplex>> getMaterialNR(size_t l, OrderedAxis mesh,
-                                                      InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t l, const shared_ptr<const Mesh> &mesh,
+                                              InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
   private:
 
