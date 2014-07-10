@@ -251,6 +251,7 @@ void FourierReflection3D::onInvalidate()
 //
 const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
+    throw NotImplemented("FourierReflection3D::getE");
 //     if (modes.size() <= num) throw NoValue(LightE::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -264,6 +265,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, sh
 
 const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
+    throw NotImplemented("FourierReflection3D::getH");
 //     if (modes.size() <= num) throw NoValue(LightH::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -277,6 +279,7 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, sh
 
 const DataVector<const double> FourierReflection3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
 {
+    throw NotImplemented("FourierReflection3D::getIntensity");
 //     if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
