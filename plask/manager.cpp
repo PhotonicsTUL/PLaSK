@@ -102,7 +102,7 @@ shared_ptr<Mesh> Manager::getMesh(const std::string& name) const {
 }
 
 void Manager::loadDefines(XMLReader &reader) {
-    writelog(LOG_ERROR, "Loading defines from C++ not implemented. Ignoring XML section <defines>");
+    writelog(LOG_ERROR, "Loading defines from C++ not implemented. Ignoring XML section <defines>.");
     reader.gotoEndOfCurrentTag();
 }
 
@@ -163,7 +163,7 @@ void Manager::loadGeometry(GeometryReader& greader) {
 
 void Manager::loadMaterials(XMLReader& reader, shared_ptr<const MaterialsSource> materialsSource)
 {
-    writelog(LOG_ERROR, "Loading materials from C++ not implemented. Ignoring XML section <materials>");
+    writelog(LOG_ERROR, "Loading materials from C++ not implemented. Ignoring XML section <materials>.");
     reader.gotoEndOfCurrentTag();
 }
 
@@ -251,13 +251,13 @@ void Manager::loadSolvers(XMLReader& reader) {
 
 void Manager::loadConnects(XMLReader& reader)
 {
-    writelog(LOG_ERROR, "Loading interconnects only possible from Python interface. Ignoring XML section <connects>");
+    writelog(LOG_ERROR, "Loading interconnects only possible from Python interface. Ignoring XML section <connects>.");
     reader.gotoEndOfCurrentTag();
 }
 
 void Manager::loadScript(XMLReader& reader)
 {
-    if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("script"))
+    if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != "script")
         throw XMLUnexpectedElementException(reader, "<script>");
     scriptline = reader.getLineNr();
     script = reader.requireTextInCurrentTag();

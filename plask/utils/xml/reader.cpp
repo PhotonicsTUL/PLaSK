@@ -133,24 +133,24 @@ void XMLReader::swap(XMLReader &to_swap)
 }
 
 bool XMLReader::read() {
-    if (!states.empty() && getNodeType() == NODE_ELEMENT) {
-        if (check_if_all_attributes_were_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
-            std::string attr;
-            for (const std::pair<const std::string, std::string>& a: getCurrent().attributes)
-                if (read_attributes.find(a.first) == read_attributes.end()) {
-                    if (!attr.empty()) attr += ", ";
-                    attr += a.first;
-                }
-            throw XMLUnexpectedAttrException(*this, attr);
-        }
-        read_attributes.clear();
-    }
-    check_if_all_attributes_were_read = true;
-
     if (!states.empty()) {
-        if (getCurrent().type == NODE_ELEMENT_END) path.pop_back();
+        if (getNodeType() == NODE_ELEMENT) {
+            if (check_if_all_attributes_were_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
+                std::string attr;
+                for (const std::pair<const std::string, std::string>& a: getCurrent().attributes)
+                    if (read_attributes.find(a.first) == read_attributes.end()) {
+                        if (!attr.empty()) attr += ", ";
+                        attr += a.first;
+                    }
+                throw XMLUnexpectedAttrException(*this, attr);
+            }
+            read_attributes.clear();
+        }
+        else if (getCurrent().type == NODE_ELEMENT_END)
+            path.pop_back();
         states.pop_front();
     }
+    check_if_all_attributes_were_read = true;
 
     while (!hasCurrent() && readSome())
         ;
@@ -162,7 +162,7 @@ bool XMLReader::read() {
         return false;
 }
 
-std::map<std::string, std::string> XMLReader::getAttributes() {
+const std::map<std::string, std::string>& XMLReader::getAttributes() {
     ensureHasCurrent();
     ignoreAllAttributes();
     return getCurrent().attributes;

@@ -559,8 +559,8 @@ private:
     const std::vector<std::string>& getPath() const { return path; }
 
     /**
-     * Get level of current node. Root has level 0, children of root have level 1, and so on.
-     * @return level of current node which is equal to size of path returned by getPath()
+     * Get level of current node. Root has level 1, children of root have level 2, and so on.
+     * @return level of current node which is equal to length of path returned by getPath()
      */
     std::size_t getLevel() const { return path.size(); }
 
@@ -572,7 +572,11 @@ private:
      */
     std::size_t getAttributeCount() const { ensureHasCurrent(); return getCurrent().attributes.size(); }
 
-    std::map<std::string, std::string> getAttributes();
+    /**
+     * Get all attributes, empty if current node is not NODE_ELEMENT.
+     * @return all attributes, reference is valid up to read() call
+     */
+    const std::map<std::string, std::string>& getAttributes();
 
     /**
      * Mark attribute with given name as read, so parser does not throw an exception if this attribute will be not read.
