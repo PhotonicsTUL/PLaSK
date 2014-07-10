@@ -26,7 +26,7 @@ inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::string* e
     std::string calculated_signature;
     std::string to_sign = "PLASK LICENSE DATA AH64C20D\n";
     std::deque<XMLElement> writtenPath;    //unused if dst is nullptr
-    while (src.read())
+    while (src.next())
         switch (src.getNodeType()) {
 
             case XMLReader::NODE_ELEMENT:

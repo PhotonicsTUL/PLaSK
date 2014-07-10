@@ -540,8 +540,7 @@ private:
      * Reads forward to the next xml node.
      * @return @c false only if there is no further node.
      */
-    //TODO rename to next();    - like in most pull API (java)
-    bool read();
+    bool next();
 
     /*
      * Check if node is empty, like \<foo /\>.
@@ -554,6 +553,7 @@ private:
 
     /**
      * Get vector of names of all opened tags from root to current one.
+     * Includes tag which is just closed when the current node is NODE_ELEMENT_END.
      * @return vector of names of all opened tags, first is root, last is current tag
      */
     const std::vector<std::string>& getPath() const { return path; }
@@ -773,7 +773,7 @@ private:
     bool gotoNextTagOnCurrentLevel();
 
     /**
-     * Skip everything up to end of current tag.
+     * Skip everything up to end of the current tag.
      */
     void gotoEndOfCurrentTag();
 
