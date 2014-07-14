@@ -83,7 +83,7 @@ inline void printStack(void)
    int demangl_status;  //0 for success
    const char *realname = abi::__cxa_demangle(symbol->Name, 0, 0, &demangl_status);
    printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], demangl_status == 0 ? realname : symbol->Name, symbol->Address);
-   free(realname);
+   free((void*)realname);
 #else
    printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
 #endif
