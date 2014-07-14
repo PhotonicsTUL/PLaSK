@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <io.h>
 
+#ifdef __GNUC__
+#include <cxxabi.h> //abi::__cxa_demangle
+#endif
+
 inline int backtrace(void **buffer, int size)
 {
  USHORT frames;
@@ -75,7 +79,14 @@ inline void printStack(void)
  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
  for(i = 0;i < frames; i++) {
    SymFromAddr(hProcess, (DWORD_PTR) (stack[i]), 0, symbol);
+#ifdef __GNUC__
+   int demangl_status;  //0 for success
+   const char *realname = abi::__cxa_demangle(symbol->Name, 0, 0, &demangl_status);
+   printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], demangl_status == 0 ? realname : symbol->Name, symbol->Address);
+   free(realname);
+#else
    printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
+#endif
  }
 
  free(symbol);
