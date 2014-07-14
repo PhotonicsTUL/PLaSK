@@ -10,13 +10,29 @@
 #include <win_printstack.hpp>
 #include <signal.h>     /* signal, raise, sig_atomic_t */
 
+inline void print_current_exception() {
+    std::exception_ptr p = std::current_exception();
+    if (p) {
+        try {
+             std::rethrow_exception (p);
+        } catch (std::exception& e) {
+             printf("Current exception: %s", e.what());
+        } catch (...) {
+             printf("%s", "Current exception is not std one.");
+        }
+    } else
+        printf("%s", "There is no current exception.");
+}
+
 void plask_win_signal_handler (int param) {
     //SIG_DFL(param); //call default signal handler
     printStack();   //print stack-trace
+    print_current_exception();
 }
 
 void plask_win_terminate_handler () {
   printStack();   //print stack-trace
+  print_current_exception();
   abort();  // forces abnormal termination
 }
 
