@@ -83,7 +83,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
         if (k != k0) {
             fields_determined = DETERMINED_NOTHING;
             k0 = k;
-            if (k0 == 0) k0 = 1e-12;
+            if (k0 == 0.) k0 = 1e-12;
             this->recompute_coefficients |= recompute;
         }
     }
