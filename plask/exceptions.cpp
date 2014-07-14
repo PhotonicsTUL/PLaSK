@@ -16,24 +16,26 @@ inline void print_current_exception() {
         try {
              std::rethrow_exception (p);
         } catch (std::exception& e) {
-             printf("Current exception: %s", e.what());
+             printf("Current exception: %s\n", e.what());
         } catch (...) {
-             printf("%s", "Current exception is not std one.");
+             printf("%s\n", "Current exception is not std one.");
         }
     } else
-        printf("%s", "There is no current exception.");
+        printf("%s\n", "There is no current exception.");
 }
 
 void plask_win_signal_handler (int param) {
+	printf("Signal %d handler:\n", param);
+	print_current_exception();
     //SIG_DFL(param); //call default signal handler
     printStack();   //print stack-trace
-    print_current_exception();
 }
 
 void plask_win_terminate_handler () {
-  printStack();   //print stack-trace
-  print_current_exception();
-  abort();  // forces abnormal termination
+	printf("Terminate hadnler:\n");
+	print_current_exception();
+	printStack();   //print stack-trace
+	abort();  // forces abnormal termination
 }
 
 struct PlaskWinRegisterSignalHandler {
