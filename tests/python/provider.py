@@ -72,7 +72,7 @@ class PythonProviderTest(unittest.TestCase):
             self._receiver = plask.flow.GainReceiver2D()
         inGain = property(lambda self: self._receiver, lambda self,provider: self._receiver.connect(provider))
         def get_gain(self, mesh, wavelength, interp):
-            self.parent.assertEqual(interp, plask.interpolation.SPLINE)
+            self.parent.assertEqual(interp, 'SPLINE')
             return wavelength * numpy.arange(len(mesh))
 
     def setUp(self):

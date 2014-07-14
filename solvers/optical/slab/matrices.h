@@ -83,11 +83,25 @@ class Matrix {
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
 
-    inline const T& operator[](int i) const { return data_[i]; }
-    inline T& operator[](int i) { return data_[i]; }
+    inline const T& operator[](int i) const {
+        assert(i < r*c);
+        return data_[i];
+    }
+    inline T& operator[](int i) {
+        assert(i < r*c);
+        return data_[i];
+    }
 
-    inline const T& operator()(int m, int n) const { return data_[n*r + m]; }
-    inline T& operator()(int m, int n) { return data_[n*r + m]; }
+    inline const T& operator()(int m, int n) const {
+        assert(m < r);
+        assert(n < c);
+        return data_[n*r + m];
+    }
+    inline T& operator()(int m, int n) {
+        assert(m < r);
+        assert(n < c);
+        return data_[n*r + m];
+    }
 
     inline int rows() const { return r; }
     inline int cols() const { return c; }
@@ -165,11 +179,26 @@ class MatrixDiagonal {
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
 
-    inline const T& operator[](int n) const { return data_[n]; }
-    inline T& operator[](int n) { return data_[n]; }
+    inline const T& operator[](int n) const {
+        assert(n < siz);
+        return data_[n];
+    }
+    inline T& operator[](int n) {
+        assert(n < siz);
+        return data_[n];
+    }
 
-    inline const T& operator()(int m, int n) const { return (m == n)? data_[n] : 0; }
-    inline T& operator()(int m, int n) { if (m !=n) throw ComputationError("MatrixDiagonal::operator()", "wrong index"); else return data_[n]; }
+    inline const T& operator()(int m, int n) const {
+        assert(m < siz);
+        assert(n < siz);
+        return (m == n)? data_[n] : 0;
+    }
+    inline T& operator()(int m, int n) {
+        assert(m < siz);
+        assert(n < siz);
+        if (m !=n) throw ComputationError("MatrixDiagonal::operator()", "wrong index");
+        else return data_[n];
+    }
 
     inline int size() const { return siz; }
 

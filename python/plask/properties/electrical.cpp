@@ -7,7 +7,7 @@ namespace plask { namespace python {
 
 void register_standard_properties_electrical()
 {
-    registerProperty<ElectricalConductivity>();
+    registerProperty<Conductivity>();
 }
 
 }} // namespace plask::python

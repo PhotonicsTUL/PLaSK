@@ -73,7 +73,7 @@ add_python_test(solvers/optical/slab/refl3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/re
 
 # Uncomment and edit the line below if you need to link some external libraries
 # to Python wrapper.
-set(SOLVER_PYTHON_LINK_LIBRARIES libplask_python)
+# set(SOLVER_PYTHON_LINK_LIBRARIES)
 
 
 # Build everything the default way.

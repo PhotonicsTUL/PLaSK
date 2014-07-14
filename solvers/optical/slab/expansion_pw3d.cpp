@@ -451,10 +451,11 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
-    char symx = int(symmetric_long)-1, symy = int(symmetric_tran)-1;
-    // +1: Ex+, Ey-, Hx-, Hy+
-    //  0: no symmetry
-    // -1: Ex-, Ey+, Hx+, Hy-
+    char symx = symmetric_long? int(symmetry_long)-1 : 0,
+         symy = symmetric_tran? int(symmetry_tran)-1 : 0;
+         // +1: Ex+, Ey-, Hx-, Hy+
+         //  0: no symmetry
+         // -1: Ex-, Ey+, Hx+, Hy-
 
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
@@ -510,6 +511,28 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
             }
         }
     }
+    // std::cerr << "\nlayer: " << lay << "\nRE:\n";
+    // for (size_t i = 0; i != RE.rows(); ++i) {
+    //     for (size_t j = 0; j != RE.cols(); ++j) {
+    //         std::cerr << format("%7.2f", real(RE(i,j))) << " ";
+    //     }
+    //     std::cerr << "\n";
+    // }
+    // std::cerr << "RH:\n";
+    // for (size_t i = 0; i != RH.rows(); ++i) {
+    //     for (size_t j = 0; j != RH.cols(); ++j) {
+    //         std::cerr << format("%7.2f", real(RH(i,j))) << " ";
+    //     }
+    //     std::cerr << "\n";
+    // }
+    // auto QE = RH * RE;
+    // std::cerr << "QE:\n";
+    // for (size_t i = 0; i != QE.rows(); ++i) {
+    //     for (size_t j = 0; j != QE.cols(); ++j) {
+    //         std::cerr << format("%7.2f", real(QE(i,j))) << " ";
+    //     }
+    //     std::cerr << "\n";
+    // }
 }
 
 

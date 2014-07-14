@@ -273,6 +273,8 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
         modes.push_back(mode);
         outNeff.fireChanged();
         outLightMagnitude.fireChanged();
+        outElectricField.fireChanged();
+        outMagneticField.fireChanged();
         return modes.size()-1;
     }
 

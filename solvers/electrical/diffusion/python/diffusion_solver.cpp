@@ -50,12 +50,12 @@ BOOST_PYTHON_MODULE(diffusion)
 
         py::scope scope = solver;
 
-        py_enum<__Class__::FemMethod>("Method")
+        py_enum<__Class__::FemMethod>()
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC)
         ;
 
-        py_enum<__Class__::ComputationType>("Computation")
+        py_enum<__Class__::ComputationType>()
             .value("INITIAL", __Class__::COMPUTATION_INITIAL)
             .value("THRESHOLD", __Class__::COMPUTATION_THRESHOLD)
             .value("OVERTHRESHOLD", __Class__::COMPUTATION_OVERTHRESHOLD)
@@ -89,12 +89,12 @@ BOOST_PYTHON_MODULE(diffusion)
 
         py::scope scope = solver;
 
-        py_enum<__Class__::FemMethod>("Method")
+        py_enum<__Class__::FemMethod>()
             .value("LINEAR", __Class__::FEM_LINEAR)
             .value("PARABOLIC", __Class__::FEM_PARABOLIC)
         ;
 
-        py_enum<__Class__::ComputationType>("Computation")
+        py_enum<__Class__::ComputationType>()
             .value("INITIAL", __Class__::COMPUTATION_INITIAL)
             .value("THRESHOLD", __Class__::COMPUTATION_THRESHOLD)
             .value("OVERTHRESHOLD", __Class__::COMPUTATION_OVERTHRESHOLD)

@@ -258,10 +258,11 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 int info;
                 zgetrf(N, N, A.data(), N, ipiv, info);                                      // A = LU(A)         (= A)
                 if (info > 0) throw ComputationError(this->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
+                assert(info == 0);
                 ztrsm('R', 'U', 'N', 'N', N, N, 1., A.data(), N, P.data(), N);              // P = P * U^{-1}    (= P)
                 ztrsm('R', 'L', 'N', 'U', N, N, 1., A.data(), N, P.data(), N);              // P = P * L^{-1}
                 // reorder columns (there is no such function in LAPACK)
-                for (int j = N-1; j >=0 ; j--) {
+                for (int j = N-1; j >= 0; j--) {
                     int jp = ipiv[j]-1;
                     for (int i = 0; i < N; i++) std::swap(P(i,j), P(i,jp));
                 }

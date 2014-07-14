@@ -301,7 +301,7 @@ BOOST_PYTHON_MODULE(effective)
             .def_readwrite("power", &EffectiveIndex2DSolver::Mode::power, "Total power emitted into the mode [mW].")
         ;
 
-        py_enum<EffectiveIndex2DSolver::Emission>("Emission", "Emission direction for Cartesian structure.")
+        py_enum<EffectiveIndex2DSolver::Emission>()
             .value("FRONT", EffectiveIndex2DSolver::FRONT)
             .value("BACK", EffectiveIndex2DSolver::BACK)
         ;
@@ -416,7 +416,7 @@ BOOST_PYTHON_MODULE(effective)
             .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode.")
         ;
 
-        py_enum<EffectiveFrequencyCylSolver::Emission>("Emission", "Emission direction for cylindrical structure.")
+        py_enum<EffectiveFrequencyCylSolver::Emission>()
             .value("TOP", EffectiveFrequencyCylSolver::TOP)
             .value("BOTTOM", EffectiveFrequencyCylSolver::BOTTOM)
         ;

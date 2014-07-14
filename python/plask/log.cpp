@@ -15,7 +15,7 @@
 
 namespace plask { namespace python {
 
-#define LOG_ENUM(v) loglevel.value(BOOST_PP_STRINGIZE(v), LOG_##v); scope.attr(BOOST_PP_STRINGIZE(LOG_##v)) = loglevel.attr(BOOST_PP_STRINGIZE(v));
+#define LOG_ENUM(v) loglevel.value(BOOST_PP_STRINGIZE(v), LOG_##v); scope.attr(BOOST_PP_STRINGIZE(LOG_##v)) = BOOST_PP_STRINGIZE(v);
 
 typedef Data2DLog<std::string, std::string> LogOO;
 
@@ -252,7 +252,7 @@ void print_log(LogLevel level, py::object msg) {
 
 void register_python_log()
 {
-    py_enum<LogLevel> loglevel("loglevel", "Log levels used in PLaSK");
+    py_enum<LogLevel> loglevel;
     py::scope scope;
     LOG_ENUM(CRITICAL_ERROR);
     LOG_ENUM(ERROR);

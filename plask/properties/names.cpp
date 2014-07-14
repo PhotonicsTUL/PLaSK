@@ -15,7 +15,7 @@ constexpr const char* CurrentDensity::NAME;                 constexpr const char
 constexpr const char* CarriersConcentration::NAME;          constexpr const char* CarriersConcentration::UNIT;
 constexpr const char* ElectronsConcentration::NAME;         constexpr const char* ElectronsConcentration::UNIT;
 constexpr const char* HolesConcentration::NAME;             constexpr const char* HolesConcentration::UNIT;
-constexpr const char* ElectricalConductivity::NAME;         constexpr const char* ElectricalConductivity::UNIT;
+constexpr const char* Conductivity::NAME;                   constexpr const char* Conductivity::UNIT;
 
 constexpr const char* Gain::NAME;                           constexpr const char* Gain::UNIT;
 constexpr const char* GainOverCarriersConcentration::NAME;  constexpr const char* GainOverCarriersConcentration::UNIT;

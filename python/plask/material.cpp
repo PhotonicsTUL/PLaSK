@@ -862,7 +862,7 @@ void initMaterials() {
     detail::Tensor2_fromto_Python();
     detail::ComplexTensor_fromto_Python();
 
-    py_enum<Material::Kind> MaterialKind("Kind", "Kind of the material"); MaterialKind
+    py_enum<Material::Kind>()
         .value("NONE", Material::NONE)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
         .value("OXIDE", Material::OXIDE)
@@ -872,7 +872,7 @@ void initMaterials() {
         .value("MIXED", Material::MIXED)
     ;
 
-    py_enum<Material::ConductivityType> MaterialConductivityType("ConductivityType", "Conductivity type of the material"); MaterialConductivityType
+    py_enum<Material::ConductivityType>()
         .value("N", Material::CONDUCTIVITY_N)
         .value("I", Material::CONDUCTIVITY_I)
         .value("P", Material::CONDUCTIVITY_P)

@@ -1,22 +1,18 @@
 #ifndef PLASK__PYTHON_ENUM_H
 #define PLASK__PYTHON_ENUM_H
 
-# include <boost/python/detail/prefix.hpp>
-
-# include <boost/python/object/enum_base.hpp>
-# include <boost/python/converter/rvalue_from_python_data.hpp>
-# include <boost/python/converter/registered.hpp>
+#include <boost/python.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace plask { namespace python {
 
 template <class T>
-struct py_enum : public boost::python::objects::enum_base
+struct py_enum
 {
     typedef boost::python::objects::enum_base base;
 
     // Declare a new enumeration type in the current scope()
-    py_enum(char const* name, char const* doc = 0);
+    py_enum();
 
     // Add a new enumeration value with the given name and value.
     inline py_enum<T>& value(char const* name, T);
@@ -26,39 +22,40 @@ struct py_enum : public boost::python::objects::enum_base
     inline py_enum<T>& export_values();
 
   private:
-    static boost::python::object& names_dict();
-    static PyObject* to_python(void const* x);
-    static void* convertible_from_python(PyObject* obj);
+    static std::map<std::string,T>& names();
+    static void* convertible(PyObject* obj);
     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data);
+
+  public:
+    static PyObject* convert(T const& x);
 };
 
 template <class T>
-inline py_enum<T>::py_enum(char const* name, char const* doc)
-    : base(
-        name
-        , &py_enum<T>::to_python
-        , &py_enum<T>::convertible_from_python
-        , &py_enum<T>::construct
-        , boost::python::type_id<T>()
-        , doc
-        )
-{
-    names_dict() = this->attr("names");
+inline py_enum<T>::py_enum() {
+    boost::python::to_python_converter<T, py_enum<T>>();
+    boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<T>());
 }
 
 template <typename T>
-boost::python::object& py_enum<T>::names_dict() {
-    static boost::python::object value;
+std::map<std::string,T>& py_enum<T>::names() {
+    static std::map<std::string,T> value;
     return value;
 }
 
 // This is the conversion function that gets registered for converting
 // these enums to Python.
 template <class T>
-PyObject* py_enum<T>::to_python(void const* x)
+PyObject* py_enum<T>::convert(T const& x)
 {
-    return base::to_python(
-        boost::python::converter::registered<T>::converters.m_class_object, static_cast<long>(*(T const*)x));
+    for(auto item: names()) {
+        if (item.second == x) {
+            boost::python::object value(item.first);
+            return boost::python::incref(value.ptr());
+        }
+    }
+    PyErr_SetString(PyExc_ValueError, "wrong enumeration value");
+    throw boost::python::error_already_set();
+    return nullptr;
 }
 
 //
@@ -69,9 +66,9 @@ PyObject* py_enum<T>::to_python(void const* x)
 // This checks that a given Python object can be converted to the
 // enumeration type.
 template <class T>
-void* py_enum<T>::convertible_from_python(PyObject* obj)
+void* py_enum<T>::convertible(PyObject* obj)
 {
-    return PyObject_IsInstance(obj, boost::python::upcast<PyObject>(boost::python::converter::registered<T>::converters.m_class_object)) ||
+    return
 #       if PY_VERSION_HEX >= 0x03000000
         (PyUnicode_Check(obj))
 #       else
@@ -85,36 +82,27 @@ void* py_enum<T>::convertible_from_python(PyObject* obj)
 template <class T>
 void py_enum<T>::construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
 {
-#if PY_VERSION_HEX >= 0x03000000
-    if (PyUnicode_Check(obj)) {
-#else
-    if (PyString_Check(obj)) {
-#endif
-        std::string key = boost::python::extract<std::string>(obj);
-        boost::algorithm::to_upper(key);
-        obj = boost::python::object(names_dict()[key]).ptr();
+    std::string key = boost::python::extract<std::string>(obj);
+    boost::algorithm::to_upper(key);
+    boost::algorithm::replace_all(key, " ", "_");
+    boost::algorithm::replace_all(key, "-", "_");
+
+    auto item = names().find(key);
+    if (item == names().end()) {
+        std::string msg = "Bad parameter value '" + key + "'";
+        PyErr_SetString(PyExc_ValueError, msg.c_str());
+        throw boost::python::error_already_set();
     }
-#if PY_VERSION_HEX >= 0x03000000
-    T x = static_cast<T>(PyLong_AS_LONG(obj));
-#else
-    T x = static_cast<T>(PyInt_AS_LONG(obj));
-#endif
+
     void* const storage = ((boost::python::converter::rvalue_from_python_storage<T>*)data)->storage.bytes;
-    new (storage) T(x);
+    new (storage) T(item->second);
     data->convertible = storage;
 }
 
 template <class T>
 inline py_enum<T>& py_enum<T>::value(char const* name, T x)
 {
-    this->add_value(name, static_cast<long>(x));
-    return *this;
-}
-
-template <class T>
-inline py_enum<T>& py_enum<T>::export_values()
-{
-    this->base::export_values();
+    names()[name] = x;
     return *this;
 }
 

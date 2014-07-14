@@ -122,13 +122,13 @@ inline static void register_electrical_solver(const char* name, const char* geon
  */
 BOOST_PYTHON_MODULE(fem)
 {
-    py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
+    py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<HeatMethod>("HeatType", "Methods used for computing heats")
+    py_enum<HeatMethod>()
         .value("JOULES", HEAT_JOULES)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;

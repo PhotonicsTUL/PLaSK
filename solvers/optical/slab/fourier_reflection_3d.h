@@ -15,6 +15,14 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 
     std::string getClassName() const { return "optical.FourierReflection3D"; }
 
+    /// Indication of parameter to search
+    enum What {
+        WHAT_WAVELENGTH,    ///< Search for wavelength
+        WHAT_K0,            ///< Search for normalized frequency
+        WHAT_KLONG,         ///< Search for longitudinal wavevector
+        WHAT_KTRAN          ///< Search for transverse wavevector
+    };
+
     struct Mode {
         FourierReflection3D* solver;                            ///< Solver this mode belongs to
         ExpansionPW3D::Component symmetry_long;                 ///< Mode symmetry in long direction
@@ -72,14 +80,15 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
 
-//     /**
-//      * Find the mode around the specified effective index.
-//      * This method remembers the determined mode, for retrieval of the field profiles.
-//      * \param neff initial effective index to search the mode around
-//      * \return determined effective index
-//      */
-//     size_t findMode(dcomplex neff);
-//
+    /**
+     * Find the mode around the specified effective index.
+     * This method remembers the determined mode, for retrieval of the field profiles.
+     * \param what what to search for
+     * \param start initial value of \a what to search the mode around
+     * \return determined effective index
+     */
+    size_t findMode(What what, dcomplex start);
+
     /// Get order of the orthogonal base in the longitudinal direction
     size_t getLongSize() const { return size_long; }
 
@@ -267,20 +276,21 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 //     }
 //
 //
-//   protected:
-//
-//     /// Insert mode to the list or return the index of the exiting one
-//     size_t insertMode() {
-//         Mode mode(this);
-//         mode.k0 = k0; mode.klong = klong; mode.ktran = ktran;
-//         mode.symmetry = expansion.symmetry; mode.polarization = expansion.polarization;
-//         for (size_t i = 0; i != modes.size(); ++i)
-//             if (modes[i] == mode) return i;
-//         modes.push_back(mode);
-//         outNeff.fireChanged();
-//         outLightMagnitude.fireChanged();
-//         return modes.size()-1;
-//     }
+  protected:
+
+    /// Insert mode to the list or return the index of the exiting one
+    size_t insertMode() {
+        Mode mode(this);
+        mode.k0 = k0; mode.klong = klong; mode.ktran = ktran;
+        mode.symmetry_long = expansion.symmetry_long; mode.symmetry_tran = expansion.symmetry_tran;
+        for (size_t i = 0; i != modes.size(); ++i)
+            if (modes[i] == mode) return i;
+        modes.push_back(mode);
+        outLightMagnitude.fireChanged();
+        outElectricField.fireChanged();
+        outMagneticField.fireChanged();
+        return modes.size()-1;
+    }
 
     size_t nummodes() const { return 1; }
 

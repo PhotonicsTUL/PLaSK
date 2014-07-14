@@ -6,6 +6,10 @@
 
 #include <utility>
 
+#ifdef OPENMP_FOUND
+#   include <omp.h>
+#endif
+
 #include <plask/plask.hpp>
 
 #include "matrices.h"
@@ -25,14 +29,15 @@ namespace plask { namespace  solvers { namespace slab {
 class Diagonalizer
 {
   protected:
-    Expansion* src;                 ///< Information about the matrices to diagonalize
-    std::vector<bool> diagonalized; ///< True if the given layer was diagonalized
+    Expansion* src;                     ///< Information about the matrices to diagonalize
+    std::vector<bool> diagonalized;     ///< True if the given layer was diagonalized
 
   public:
-    const int lcount;                // number of layers
+    const int lcount;                   // number of layers
 
     Diagonalizer(Expansion* src) :
-        src(src), diagonalized(src->lcount(), false), lcount(src->lcount()) {}
+        src(src), diagonalized(src->lcount(), false), lcount(src->lcount())
+        {}
 
     virtual ~Diagonalizer() {}
 
@@ -87,11 +92,15 @@ class SimpleDiagonalizer : public Diagonalizer
     dcomplex k0;                        // The frequency for which we compute the diagonalization for all layers
     dcomplex Kx, Ky;                    // The wavevector for which we compute the diagonalization for all layers
 
-    std::vector<cdiagonal> gamma;       // diagonal matrices Gamma
-    std::vector<cmatrix> Te, Th;        // matrices TE and TH
-    std::vector<cmatrix> Te1, Th1;      // matrices TE^-1 and TH^-1
+    std::vector<cdiagonal> gamma;       ///< Diagonal matrices Gamma
+    std::vector<cmatrix> Te, Th;        ///< Matrices TE and TH
+    std::vector<cmatrix> Te1, Th1;      ///< Matrices TE^-1 and TH^-1
 
-    cmatrix* tmpmx;                     // QE matrices for temporary storage
+    cmatrix* tmpmx;                     ///< QE matrices for temporary storage
+
+    #ifdef OPENMP_FOUND
+        omp_lock_t* tmplx;                 ///< Locks of allocated temporary matrices
+    #endif
 
   public:
     SimpleDiagonalizer(Expansion* g);

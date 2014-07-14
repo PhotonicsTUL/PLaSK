@@ -545,7 +545,7 @@ void register_geometry_object()
     export_set<std::string>("string_set");
     py::delattr(py::scope(), "string_set");
 
-    // py_enum<GeometryObject::Type>("ObjectType")
+    // py_enum<GeometryObject::Type>()
     //     .value("LEAF", GeometryObject::TYPE_LEAF)
     //     .value("TRANSFORM", GeometryObject::TYPE_TRANSFORM)
     //     .value("SPACE_CHANGER", GeometryObject::TYPE_SPACE_CHANGER)

@@ -136,7 +136,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     typename ProviderFor<Heat, Geometry2DType>::Delegate outHeat;
 
-    typename ProviderFor<ElectricalConductivity, Geometry2DType>::Delegate outConductivity;
+    typename ProviderFor<Conductivity, Geometry2DType>::Delegate outConductivity;
 
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 

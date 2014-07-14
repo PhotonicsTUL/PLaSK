@@ -142,7 +142,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
     typename ProviderFor<Heat,Geometry3D>::Delegate outHeat;
 
-    typename ProviderFor<ElectricalConductivity,Geometry3D>::Delegate outConductivity;
+    typename ProviderFor<Conductivity,Geometry3D>::Delegate outConductivity;
 
     ReceiverFor<Temperature,Geometry3D> inTemperature;
 

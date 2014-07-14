@@ -129,21 +129,33 @@ void FourierReflection3D::onInvalidate()
     diagonalizer.reset();
     fields.clear();
 }
-//
-//
-// size_t FourierReflection3D::findMode(dcomplex neff)
-// {
-//     if (expansion.polarization != ExpansionPW3D::E_UNSPECIFIED)
-//         throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
-//     klong = neff * k0;
-//     if (klong == 0.) klong = 1e-12;
-//     initCalculation();
-//     detlog.axis_arg_name = "neff";
-//     klong =  k0 *
-//         RootDigger(*this, [this](const dcomplex& x) { this->klong = x * this->k0; return this->determinant(); },
-//                    detlog, root)(neff);
-//     return insertMode();
-// }
+
+
+size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex start)
+{
+    initCalculation();
+    std::unique_ptr<RootDigger> root;
+    switch (what) {
+        case FourierReflection3D::WHAT_WAVELENGTH:
+            detlog.axis_arg_name = "lam";
+            root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return this->determinant(); });
+            break;
+        case FourierReflection3D::WHAT_K0:
+            detlog.axis_arg_name = "k0";
+            root = getRootDigger([this](const dcomplex& x) { this->k0 = x; return this->determinant(); });
+            break;
+        case FourierReflection3D::WHAT_KLONG:
+            detlog.axis_arg_name = "klong";
+            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return this->determinant(); });
+            break;
+        case FourierReflection3D::WHAT_KTRAN:
+            detlog.axis_arg_name = "ktran";
+            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return this->determinant(); });
+            break;
+    }
+    root->find(start);
+    return insertMode();
+}
 
 
 // cvector FourierReflection3D::getReflectedAmplitudes(ExpansionPW3D::Component polarization,

@@ -88,6 +88,42 @@ struct PythonComponentConventer2D {
     }
 };
 
+/*struct PythonFourierReflection3DWhatConverter {
+
+    static void* convertible(PyObject* obj) {
+        return
+#           if PY_VERSION_HEX >= 0x03000000
+            (PyUnicode_Check(obj))
+#           else
+            (PyString_Check(obj))
+#           endif
+            ? obj : 0;
+    }
+
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
+    {
+        std::string key = boost::python::extract<std::string>(obj);
+        boost::algorithm::to_lower(key);
+
+        auto axes = getCurrentAxes();
+
+        void* const storage = ((boost::python::converter::rvalue_from_python_storage<FourierReflection3D::What>*)data)->storage.bytes;
+
+        if (key == "wavelength" || key == "lam" || key == "lambda")
+            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_WAVELENGTH);
+        if (key == "k0")
+            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_K0);
+        else if (key == "klong" || key == "kl" || key == "k"+axes->getNameForLong())
+            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_KLONG);
+        else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
+            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_KTRAN);
+        else
+            throw TypeError("I don't know what you want to search for");
+
+        data->convertible = storage;
+    }
+};*/
+
 struct PmlWrapper {
 
     Solver* solver;
@@ -158,30 +194,13 @@ struct WrappedType<PML> {
 };
 
 
-
-
-
 template <typename SolverT>
 void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
 
-void FourierReflection2D_parseKeywords(const char* name, FourierReflection2D* self, const py::dict& kwargs) {
-    AxisNames* axes = getCurrentAxes();
-    boost::optional<dcomplex> lambda, neff, ktran;
-    py::stl_input_iterator<std::string> begin(kwargs), end;
-    for (auto i = begin; i != end; ++i) {
-        if (*i == "lam")
-            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "neff")
-            neff.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
-            ktran.reset(py::extract<dcomplex>(kwargs[*i]));
-        else
-            throw TypeError("%2%() got unexpected keyword argument '%1%'", *i, name);
-    }
-    if (lambda) self->setWavelength(*lambda);
-    if (neff) self->setKlong(*neff * self->getK0());
-    if (ktran) self->setKtran(*ktran);
-}
+template <typename SolverT>
+void Solver_setK0(SolverT& self, dcomplex k0) { self.setWavelength(k0); }
+
+
 
 py::object FourierReflection2D_getMirrors(const FourierReflection2D& self) {
     if (!self.mirrors) return py::object();
@@ -212,7 +231,26 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierReflection2D* self = py::extract<FourierReflection2D*>(args[0]);
-    FourierReflection2D_parseKeywords("determinant", self, kwargs);
+
+    AxisNames* axes = getCurrentAxes();
+    boost::optional<dcomplex> lambda, neff, ktran;
+    py::stl_input_iterator<std::string> begin(kwargs), end;
+    for (auto i = begin; i != end; ++i) {
+        if (*i == "lam" || *i == "wavelength")
+            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "k0")
+            lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+        else if (*i == "neff")
+            neff.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
+            ktran.reset(py::extract<dcomplex>(kwargs[*i]));
+        else
+            throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
+    }
+    if (lambda) self->setWavelength(*lambda);
+    if (neff) self->setKlong(*neff * self->getK0());
+    if (ktran) self->setKtran(*ktran);
+
     return self->getDeterminant();
 }
 
@@ -251,28 +289,39 @@ void FourierReflection2D_setPML(FourierReflection2D* self, const PmlWrapper& val
     self->invalidate();
 }
 
-double FourierReflection2D_Mode_Wavelength(const FourierReflection2D::Mode& mode) {
-    return real(2e3 / mode.k0);
-}
-double FourierReflection2D_Mode_ModalLoss(const FourierReflection2D::Mode& mode) {
-    return imag(2e4 * mode.beta);
-}
-double FourierReflection2D_Mode_Beta(const FourierReflection2D::Mode& mode) {
-    return real(mode.beta);
-}
-double FourierReflection2D_Mode_Neff(const FourierReflection2D::Mode& mode) {
-    return real(mode.beta / mode.k0);
-}
-double FourierReflection2D_Mode_KTran(const FourierReflection2D::Mode& mode) {
-    return real(mode.ktran);
-}
-
 shared_ptr<FourierReflection2D::Reflected> FourierReflection2D_getReflected(FourierReflection2D* parent,
                                                                 double wavelength,
                                                                 ExpansionPW2D::Component polarization,
                                                                 FourierReflection2D::IncidentDirection side)
 {
     return make_shared<FourierReflection2D::Reflected>(parent, wavelength, polarization, side);
+}
+
+dcomplex FourierReflection2D_Mode_Neff(const FourierReflection2D::Mode& mode) {
+    return mode.beta / mode.k0;
+}
+
+py::object FourierReflection2D_Mode__getattr__(const FourierReflection2D::Mode& mode, const std::string name) {
+    auto axes = getCurrentAxes();
+    if (name == "k"+axes->getNameForLong()) return py::object(mode.beta);
+    if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
+    throw AttributeError("'Mode' object has no attribute '%1%'", name);
+    return py::object();
+}
+
+
+template <typename Mode>
+dcomplex getModeWavelength(const Mode& mode) {
+    return 2e3 / mode.k0;
+}
+
+
+py::object FourierReflection3D_Mode__getattr__(const FourierReflection3D::Mode& mode, const std::string name) {
+    auto axes = getCurrentAxes();
+    if (name == "k"+axes->getNameForLong()) return py::object(mode.klong);
+    if (name == "k"+axes->getNameForTran()) return py::object(mode.ktran);
+    throw AttributeError("'Mode' object has no attribute '%1%'", name);
+    return py::object();
 }
 
 
@@ -387,27 +436,55 @@ FourierReflection3D_LongTranWrapper<PML> FourierReflection3D_getPml(FourierRefle
     return FourierReflection3D_LongTranWrapper<PML>(self, &self->pml_long, &self->pml_tran);
 }
 
-void FourierReflection3D_parseKeywords(const char* name, FourierReflection3D* self, const py::dict& kwargs) {
+dcomplex FourierReflection3D_getDeterminant(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+    FourierReflection3D* self = py::extract<FourierReflection3D*>(args[0]);
+
     AxisNames* axes = getCurrentAxes();
-    boost::optional<dcomplex> lambda, klong, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam")
-            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        if (*i == "lam" || *i == "wavelength")
+            self->setWavelength(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "k0")
+            self->setK0(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
-            klong.reset(py::extract<dcomplex>(kwargs[*i]));
+            self->setKlong(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
-            ktran.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "k" || *i == "wavevector") {
-            klong.reset(py::extract<dcomplex>(kwargs[*i][0]));
-            ktran.reset(py::extract<dcomplex>(kwargs[*i][1]));
-        } else
-            throw TypeError("%2%() got unexpected keyword argument '%1%'", *i, name);
+            self->setKtran(py::extract<dcomplex>(kwargs[*i]));
+        else
+            throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
     }
-    if (lambda) self->setWavelength(*lambda);
-    if (klong) self->setKlong(*klong);
-    if (ktran) self->setKtran(*ktran);
+
+    return self->getDeterminant();
 }
+
+size_t FourierReflection3D_findMode(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+    FourierReflection3D* self = py::extract<FourierReflection3D*>(args[0]);
+
+    if (py::len(kwargs) != 1)
+        throw TypeError("determinant() takes exactly one keyword argument (%1% given)", py::len(kwargs));
+    std::string key = py::extract<std::string>(kwargs.keys()[0]);
+    dcomplex value = py::extract<dcomplex>(kwargs[key]);
+    AxisNames* axes = getCurrentAxes();
+    FourierReflection3D::What what;
+
+    if (key == "lam" || key == "wavelength")
+        what = FourierReflection3D::WHAT_WAVELENGTH;
+    else if (key == "k0")
+        what = FourierReflection3D::WHAT_K0;
+    else if (key == "klong" || key == "kl" || key == "k"+axes->getNameForLong())
+        what = FourierReflection3D::WHAT_KLONG;
+    else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
+        what = FourierReflection3D::WHAT_KTRAN;
+    else
+        throw TypeError("determinant() got unexpected keyword argument '%1%'", key);
+
+    return self->findMode(what, value);
+}
+
 
 
 template <typename Class>
@@ -446,11 +523,12 @@ inline void export_reflection_base(Class solver) {
     export_base(solver);
     typedef typename Class::wrapped_type Solver;
     solver.add_property("emitting", &Solver::getEmitting, &Solver::setEmitting, "Should emitted field be computed?");
-    solver.add_property("wavelength", &Solver::getWavelength, Solver_setWavelength<Solver>, "Wavelength of the light.");
-    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light.");
-    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light.");
+    solver.add_property("wavelength", &Solver::getWavelength, &Solver_setWavelength<Solver>, "Wavelength of the light [nm].");
+    solver.add_property("k0", &Solver::getK0, &Solver_setK0<Solver>, "Normalized frequency of the light [1/µm].");
+    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light [1/µm].");
+    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light [1/µm].");
     py::scope scope = solver;
-    py_enum<typename Solver::IncidentDirection>("Incindent", "Direction of incident light for reflection calculations.")
+    py_enum<typename Solver::IncidentDirection>()
         .value("TOP", Solver::INCIDENCE_TOP)
         .value("BOTTOM", Solver::INCIDENCE_BOTTOM)
     ;
@@ -464,6 +542,9 @@ BOOST_PYTHON_MODULE(slab)
     py::converter::registry::push_back(&PythonComponentConventer2D::convertible, &PythonComponentConventer2D::construct,
                                        py::type_id<ExpansionPW2D::Component>());
 
+    // py::converter::registry::push_back(&PythonFourierReflection3DWhatConverter::convertible, &PythonFourierReflection3DWhatConverter::construct,
+    //                                    py::type_id<FourierReflection3D::What>());
+
     py::class_<PmlWrapper, shared_ptr<PmlWrapper>>("PML", "Perfectly matched layer details.", py::no_init)
         .def("__init__", py::make_constructor(&PmlWrapper::__init__, py::default_call_policies(),
                                               (py::arg("factor"), "size", "dist", py::arg("shape")=2)))
@@ -475,7 +556,7 @@ BOOST_PYTHON_MODULE(slab)
         .def("__repr__", &PmlWrapper::__repr__)
     ;
 
-    py_enum<RootDigger::Method>("RootMethod", "Root finding method")
+    py_enum<RootDigger::Method>()
         .value("MULLER", RootDigger::ROOT_MULLER)
         .value("BROYDEN", RootDigger::ROOT_BROYDEN)
     ;
@@ -501,14 +582,20 @@ BOOST_PYTHON_MODULE(slab)
         METHOD(find_mode, findMode,
                "Compute the mode near the specified effective index.\n\n"
                "Args:\n"
-               "    neff: starting effective index.\n"
+               "    neff: Starting effective index.\n"
                , "neff");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
-                   "Compute discontinuity matrix determinant.");
+                   "Compute discontinuity matrix determinant.\n\n"
+                   "Arguments can be given through keywords only.\n\n"
+                   "Args:\n"
+                   "    lam: Wavelength.\n"
+                   "    k0: Normalized frequency.\n"
+                   "    neff: Effective index.\n"
+                   "    ktran: Transverse wavevector.\n");
         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
@@ -558,13 +645,14 @@ BOOST_PYTHON_MODULE(slab)
         py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
             .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry.")
             .def_readonly("polarization", &FourierReflection2D::Mode::polarization, "Mode polarization.")
-            .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
-            .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
-            .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm].")
-            .add_property("beta", &FourierReflection2D_Mode_Beta, "Mode longitudinal wavevector.")
-            .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal wavevector.")
-            .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
+            .add_property("lam", &getModeWavelength<FourierReflection2D::Mode>, "Mode wavelength [nm].")
+            .add_property("wavelength", &getModeWavelength<FourierReflection2D::Mode>, "Mode wavelength [nm].")
+            .def_readonly("k0", &FourierReflection2D::Mode::k0, "Mode normalized frequency [1/µm].")
+            .def_readonly("beta", &FourierReflection2D::Mode::beta, "Mode longitudinal wavevector [1/µm].")
+            .add_property("neff", &FourierReflection2D_Mode_Neff, "Mode longitudinal effective index [-].")
+            .def_readonly("ktran", &FourierReflection2D::Mode::ktran, "Mode transverse wavevector [1/µm].")
             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
+            .def("__getattr__", &FourierReflection2D_Mode__getattr__)
         ;
 
         py::class_<FourierReflection2D::Reflected, shared_ptr<FourierReflection2D::Reflected>, boost::noncopyable>("Reflected",
@@ -604,15 +692,23 @@ BOOST_PYTHON_MODULE(slab)
                                               py::default_call_policies(),
                                               boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
                             "Number of refinement points for refractive index averaging in longitudinal and transverse directions.");
-//         METHOD(find_mode, findMode,
-//                "Compute the mode near the specified effective index.\n\n"
-//                "Args:\n"
-//                "    neff: starting effective index.\n"
-//                , "neff");
-//         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
-//         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
-//         solver.def("determinant", py::raw_function(FourierReflection2D_getDeterminant),
-//                    "Compute discontinuity matrix determinant.");
+        solver.def("determinant", py::raw_function(FourierReflection3D_getDeterminant),
+                   "Compute discontinuity matrix determinant.\n\n"
+                   "Arguments can be given through keywords only.\n\n"
+                   "Args:\n"
+                   "    lam: Wavelength.\n"
+                   "    k0: Normalized frequency.\n"
+                   "    klong: Longitudinal wavevector.\n"
+                   "    ktran: Transverse wavevector.\n");
+        solver.def("find_mode", py::raw_function(FourierReflection3D_findMode),
+                   "Compute the mode near the specified effective index.\n\n"
+                   "Only one of the following arguments can be given through a keyword.\n"
+                   "It is the starting point for search of the specified parameter.\n\n"
+                   "Args:\n"
+                   "    lam: Wavelength.\n"
+                   "    k0: Normalized frequency.\n"
+                   "    klong: Longitudinal wavevector.\n"
+                   "    ktran: Transverse wavevector.\n");
 //         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
 //                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
 //                    "Args:\n"
@@ -637,9 +733,6 @@ BOOST_PYTHON_MODULE(slab)
 //                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
 //                    "        wavelength, as they may change due to the dispersion.\n"
 //                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
-//         solver.add_property("mirrors", FourierReflection2D_getMirrors, FourierReflection2D_setMirrors,
-//                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
-//                    "Fresnel equations.");
         solver.add_property("pmls",
                             py::make_function(FourierReflection3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
                             py::make_function(FourierReflection3D_LongTranSetter<PML>(&FourierReflection3D::pml_long, &FourierReflection3D::pml_tran),
@@ -647,7 +740,7 @@ BOOST_PYTHON_MODULE(slab)
                                               boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
                             "Longitudinal and transverse edge Perfectly Matched Layers boundary conditions.\n\n"
                             PML_ATTRS_DOC);
-//         RO_FIELD(modes, "Computed modes.");
+        RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
 //                    "Access to the reflected field.\n\n"
 //                    "Args:\n"
@@ -658,20 +751,21 @@ BOOST_PYTHON_MODULE(slab)
 //                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                    "        present.\n"
 //                    , (py::arg("lam"), "polarization", "side"));
-//         py::scope scope = solver;
-
-//         register_vector_of<FourierReflection2D::Mode>("Modes");
-//         py::class_<FourierReflection2D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
-//             .def_readonly("symmetry", &FourierReflection2D::Mode::symmetry, "Mode horizontal symmetry.")
-//             .add_property("lam", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
-//             .add_property("wavelength", &FourierReflection2D_Mode_Wavelength, "Mode wavelength [nm].")
-//             .add_property("loss", &FourierReflection2D_Mode_ModalLoss, "Mode loss [1/cm].")
-//             .add_property("klong", &FourierReflection2D_Mode_KLong, "Mode longitudinal wavevector.")
-//             .add_property("ktran", &FourierReflection2D_Mode_KTran, "Mode transverse wavevector.")
-//             .def_readwrite("power", &FourierReflection2D::Mode::power, "Total power emitted into the mode.")
-//         ;
 
         py::scope scope = solver;
+
+        register_vector_of<FourierReflection3D::Mode>("Modes");
+        py::class_<FourierReflection3D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
+//TODO             .def_readonly("symmetry", &FourierReflection3D::Mode::symmetry, "Mode horizontal symmetry.")
+            .add_property("lam", &getModeWavelength<FourierReflection3D::Mode>, "Mode wavelength [nm].")
+            .add_property("wavelength", &getModeWavelength<FourierReflection3D::Mode>, "Mode wavelength [nm].")
+            .def_readonly("k0", &FourierReflection3D::Mode::k0, "Mode normalized frequency [1/µm].")
+            .def_readonly("klong", &FourierReflection3D::Mode::klong, "Mode longitudinal wavevector [1/µm].")
+            .def_readonly("ktran", &FourierReflection3D::Mode::ktran, "Mode transverse wavevector [1/µm].")
+            .def_readwrite("power", &FourierReflection3D::Mode::power, "Total power emitted into the mode.")
+            .def("__getattr__", &FourierReflection3D_Mode__getattr__)
+        ;
+
         FourierReflection3D_LongTranWrapper<size_t>::register_("Sizes");
         FourierReflection3D_LongTranWrapper<PML>::register_("PMLs");
 

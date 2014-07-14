@@ -52,7 +52,7 @@ ExportMeshGenerator(const char* name) {
 
 void register_mesh()
 {
-    py_enum<InterpolationMethod> pyInterpolationMethod("interpolation", "Available interpolation methods.");
+    py_enum<InterpolationMethod> pyInterpolationMethod;
     for (unsigned method = INTERPOLATION_DEFAULT; method != __ILLEGAL_INTERPOLATION_METHOD__; ++method) {
         pyInterpolationMethod.value(interpolationMethodNames[method], (InterpolationMethod)method);
     }

@@ -63,13 +63,13 @@ py::object outHeatDensity_get(const py::object& self) {
 
 BOOST_PYTHON_MODULE(fem3d)
 {
-    py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
+    py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    py_enum<HeatMethod>("HeatType", "Methods used for computing heats")
+    py_enum<HeatMethod>()
         .value("JOULES", HEAT_JOULES)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;

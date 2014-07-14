@@ -33,7 +33,7 @@ void inHeatDensity_set(py::object self, py::object value) {
 
 BOOST_PYTHON_MODULE(fem3d)
 {
-    py_enum<Algorithm>("Algorithm", "Algorithms used for matrix factorization")
+    py_enum<Algorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
