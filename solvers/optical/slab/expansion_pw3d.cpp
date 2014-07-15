@@ -555,6 +555,7 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 
 DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H)
 {
+    throw NotImplemented("ExpansionPW3D::getField");
 //     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
 //
 //     const dcomplex klong = field_params.klong;
