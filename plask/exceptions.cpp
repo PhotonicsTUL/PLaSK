@@ -24,10 +24,19 @@ inline void print_current_exception() {
         printf("%s\n", "There is no current exception.");
 }
 
+const char* sig_name(int sig_nr) {
+    switch (sig_nr) {
+        case SIGABRT: return "SIGABRT";
+        case SIGSEGV: return "SIGSEGV";
+        case SIGTERM: return "SIGTERM";
+    }
+    return "unknown";
+}
+
 void plask_win_signal_handler (int param) {
 	#pragma omp critical (winbacktrace)
 	{
-		printf("Signal %d handler:\n", param);
+        printf("Signal %s (%d) handler:\n", sig_name(param), param);
 		print_current_exception();
 		//SIG_DFL(param); //call default signal handler
 		printStack();   //print stack-trace
