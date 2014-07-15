@@ -70,6 +70,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     if (diagonalized[layer]) return;
 
     int N = src->matrixSize();         // Size of each matrix
+    int NN = N*N;
 
     #ifdef OPENMP_FOUND
         int nthr = min(omp_get_max_threads(), lcount);
@@ -89,6 +90,12 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         cmatrix RE = Th1[layer], RH = Th[layer];
 
         src->getMatrices(layer, k0, Kx, Ky, RE, RH);
+
+        // Ugly hack to avoid singularities
+        for (int i = 0; i != N; ++i) {
+            if (RE(i,i) == 0.) RE(i,i) = SMALL;
+            if (RH(i,i) == 0.) RH(i,i) = SMALL;
+        }
 
         if (src->diagonalQE(layer)) {
 
@@ -130,33 +137,30 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // std::cerr << "\n";
 
             // This is probably expensive but necessary check to avoid hangs
-            int NN = N*N;
-            for (int i = 0; i < NN; i++) {
-                if (isnan(real(QE[i])) || isnan(imag(QE[i])))
-                    throw ComputationError("SimpleDiagonalizer", "NaN in Q matrix");
-            }
+            if (QE.isnan()) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: NaN in Q matrix");
 
             // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
             // we use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
             int info;
             zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), NULL, N,  Te[layer].data(), N,
                 Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
-
-            // ...and rewrite the eigenvectors to their final locations
-            memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
+            if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute %1%-th eignevalue of QE", info);
 
             // Find the inverse of Te in the classical way (maybe to be optimized in future)
             // TODO: eigenvectors should be built by hand based on Schur vectors
+            memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
             memset(Te1[layer].data(), 0., NN*sizeof(dcomplex));
             for (int i = 0; i < NN; i += (N+1))
                 Te1[layer][i] = 1.;
             invmult(Th[layer], Te1[layer]);
         }
 
+
         // Make Gamma of Gamma^2
         cdiagonal& gam = gamma[layer];
         for (int j = 0; j < N; j++) {
             dcomplex g = sqrt(gam[j]);
+            if (g == 0.) g = SMALL; // Ugly hack to avoid singularity!
             if (real(g) < -SMALL) g = -g;
             if (imag(g) > SMALL) g = -g;
             gam[j] = g;
@@ -170,6 +174,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             for (int i = 0; i < N; i++) *(th+i) *= g;
             th += N;
         }
+        assert(!Th[layer].isnan());
 
         // Compute the Th1[layer] = Gamma[layer] * Te1[layer] * inv(RE)
         // we use the LU factorization of the RE matrix for this purpose and then solve Th1^T = inv(RE)^T * Te1^T * Gamma^T
@@ -181,14 +186,17 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         int ierr;
         std::unique_ptr<int[]> ipiv(new int[N]);
         zgetrf(N, N, RE.data(), N, ipiv.get(), ierr);
+        if (ierr != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: RE matrix singular");
         // the QE will contain inv(RE)^T * Te1^T
         zgetrs('t', N, N, RE.data(), N, ipiv.get(), QE.data(), N, ierr);
+        if (ierr != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute inv(RE)");
         // compute QE^T and store it in Th1
         for (int j = 0; j < N; j++) {
             dcomplex g = gam[j];
             for (int i = 0; i < N; i++)
                 Th1[layer](j,i) = QE(i,j) * g;
         }
+        assert(!Th1[layer].isnan());
 
     } catch (...) {
         #ifdef OPENMP_FOUND

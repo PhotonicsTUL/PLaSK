@@ -5,6 +5,7 @@
 #define PLASK__SOLVER_VSLAB_MATRIX_H
 
 #include <cstring>
+#include <cmath>
 
 #include <plask/plask.hpp>
 #include "fortran.h"
@@ -121,6 +122,14 @@ class Matrix {
         return *this;
     }
 
+    /// Check if the matrix contains any NaN
+    inline bool isnan() const {
+        int n = r * c;
+        for (int i = 0; i < n; ++i)
+            if (std::isnan(real(data_[i])) || std::isnan(imag(data_[i]))) return true;
+        return false;
+    }
+
 };
 
 
@@ -210,6 +219,13 @@ class MatrixDiagonal {
 
     MatrixDiagonal<T>& operator*=(T a) { for (int i = 0; i < siz; i++) data_[i] *= a; return *this; }
     MatrixDiagonal<T>& operator/=(T a) { for (int i = 0; i < siz; i++) data_[i] /= a; return *this; }
+
+    /// Check if the matrix contains any NaN
+    inline bool isnan() const {
+        for (int i = 0; i != siz; ++i)
+            if (std::isnan(real(data_[i])) || std::isnan(imag(data_[i]))) return true;
+        return false;
+    }
 
 };
 

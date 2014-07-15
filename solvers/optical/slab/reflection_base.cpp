@@ -208,6 +208,7 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 layer_locks[this->stack[n]].lock(); layer_locks[this->stack[n]].unlock();
                 #endif
                 gamma = this->diagonalizer->Gamma(this->stack[n]);
+                assert(!gamma.isnan());
 
                 double H = (n == start)? 0. : (this->vbounds[n] - this->vbounds[n-1]);
 
@@ -220,9 +221,13 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                         phas[i] = exp(-I*g*H);
                     }
                 }
+                assert(!P.isnan());
+                assert(!phas.isnan());
                 mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
 
                 // ee = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
+                assert(!this->diagonalizer->TE(this->stack[n]).isnan());
+                assert(!this->diagonalizer->invTE(this->stack[n]).isnan());
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P.orig + I
                 mult_matrix_by_matrix(this->diagonalizer->TE(this->stack[n]), P, wrk);            // wrk = TE[n] * P
                 #ifdef OPENMP_FOUND
@@ -231,6 +236,8 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 mult_matrix_by_matrix(this->diagonalizer->invTE(this->stack[n+inc]), wrk, ee);    // ee = invTE[n+1] * wrk (= A)
 
                 // hh = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
+                assert(!this->diagonalizer->TH(this->stack[n]).isnan());
+                assert(!this->diagonalizer->invTH(this->stack[n]).isnan());
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
 
                 // multiply rows of P by -1 where necessary for properly outgoing wave
@@ -261,6 +268,7 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 assert(info == 0);
                 ztrsm('R', 'U', 'N', 'N', N, N, 1., A.data(), N, P.data(), N);              // P = P * U^{-1}    (= P)
                 ztrsm('R', 'L', 'N', 'U', N, N, 1., A.data(), N, P.data(), N);              // P = P * L^{-1}
+                if (P.isnan()) throw ComputationError(this->getId(), "findReflection: NaN in reflection matrix");
                 // reorder columns (there is no such function in LAPACK)
                 for (int j = N-1; j >= 0; j--) {
                     int jp = ipiv[j]-1;

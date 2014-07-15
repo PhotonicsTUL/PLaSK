@@ -156,7 +156,7 @@ int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) 
 void endPlask() {
     // PyEval_RestoreThread(mainTS);
     fixMatplotlibBug();
-    Py_Finalize(); // Py_Finalize is not supported by Boost
+    // Py_Finalize(); // Py_Finalize is not supported by Boost
 }
 
 

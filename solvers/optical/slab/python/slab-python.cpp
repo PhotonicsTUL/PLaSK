@@ -234,6 +234,7 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
 
     AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
+    bool dispersive = true;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength")
@@ -244,10 +245,12 @@ dcomplex FourierReflection2D_getDeterminant(py::tuple args, py::dict kwargs) {
             neff.reset(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
             ktran.reset(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "dispersive")
+            dispersive = py::extract<bool>(kwargs[*i]);
         else
             throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
     }
-    if (lambda) self->setWavelength(*lambda);
+    if (lambda) self->setWavelength(*lambda, dispersive);
     if (neff) self->setKlong(*neff * self->getK0());
     if (ktran) self->setKtran(*ktran);
 
@@ -443,18 +446,25 @@ dcomplex FourierReflection3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
+    bool dispersive = true;
+    boost::optional<dcomplex> wavelength, k0;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength")
-            self->setWavelength(py::extract<dcomplex>(kwargs[*i]));
+            wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "k0")
-            self->setK0(py::extract<dcomplex>(kwargs[*i]));
+            k0.reset(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
             self->setKlong(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
             self->setKtran(py::extract<dcomplex>(kwargs[*i]));
+        else if (*i == "dispersive")
+            dispersive = py::extract<bool>(kwargs[*i]);
         else
             throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
     }
+
+    if (wavelength) self->setWavelength(*wavelength, dispersive);
+    if (k0) self->setK0(*k0, dispersive);
 
     return self->getDeterminant();
 }
@@ -582,7 +592,7 @@ BOOST_PYTHON_MODULE(slab)
         METHOD(find_mode, findMode,
                "Compute the mode near the specified effective index.\n\n"
                "Args:\n"
-               "    neff: Starting effective index.\n"
+               "    neff (complex): Starting effective index.\n"
                , "neff");
         RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
@@ -592,10 +602,12 @@ BOOST_PYTHON_MODULE(slab)
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
                    "Args:\n"
-                   "    lam: Wavelength.\n"
-                   "    k0: Normalized frequency.\n"
-                   "    neff: Effective index.\n"
-                   "    ktran: Transverse wavevector.\n");
+                   "    lam (complex): Wavelength.\n"
+                   "    k0 (complex): Normalized frequency.\n"
+                   "    neff (complex): Effective index.\n"
+                   "    ktran (complex): Transverse wavevector.\n"
+                   "    dispersive (bool): If ``False`` then material coefficients are not\n"
+                   "                       recomputed even if the wavelength is changed.\n");
         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
@@ -696,19 +708,21 @@ BOOST_PYTHON_MODULE(slab)
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
                    "Args:\n"
-                   "    lam: Wavelength.\n"
-                   "    k0: Normalized frequency.\n"
-                   "    klong: Longitudinal wavevector.\n"
-                   "    ktran: Transverse wavevector.\n");
+                   "    lam (complex): Wavelength.\n"
+                   "    k0 (complex): Normalized frequency.\n"
+                   "    klong (complex): Longitudinal wavevector.\n"
+                   "    ktran (complex): Transverse wavevector.\n"
+                   "    dispersive (bool): If ``False`` then material coefficients are not\n"
+                   "                       recomputed even if the wavelength is changed.\n");
         solver.def("find_mode", py::raw_function(FourierReflection3D_findMode),
                    "Compute the mode near the specified effective index.\n\n"
                    "Only one of the following arguments can be given through a keyword.\n"
                    "It is the starting point for search of the specified parameter.\n\n"
                    "Args:\n"
-                   "    lam: Wavelength.\n"
-                   "    k0: Normalized frequency.\n"
-                   "    klong: Longitudinal wavevector.\n"
-                   "    ktran: Transverse wavevector.\n");
+                   "    lam (complex): Wavelength.\n"
+                   "    k0 (complex): Normalized frequency.\n"
+                   "    klong (complex): Longitudinal wavevector.\n"
+                   "    ktran (complex): Transverse wavevector.\n");
 //         solver.def("compute_reflectivity", &FourierReflection2D_computeReflectivity,
 //                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
 //                    "Args:\n"
