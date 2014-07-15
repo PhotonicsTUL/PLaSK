@@ -7,6 +7,9 @@
 
 namespace plask {
 
+#define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
+//#define PLASK_LICENSE_MAC_HWID_NAME "hwid"
+
 // function expects the string in format dd/mm/yyyy:
 // cose from http://stackoverflow.com/questions/19482378/how-to-parse-and-validate-a-date-in-stdstring-in-c
 std::time_t extractDate(const std::string& s){
@@ -44,15 +47,24 @@ bool try_verify(const std::string& filename) {
     std::unique_ptr<std::ifstream> f(new std::ifstream(filename));
     if (!*f) return false;
     XMLReader r(std::move(f));
-    std::string expiry;
-    if (!processLicense(r, nullptr, &expiry))
-        throw Exception("License error: Invalid signature in file \"%1%\".", filename);
-    if (expiry.empty())
+
+    boost::optional<std::string> expiry;
+    if (!processLicense(r, nullptr,
+            [&] (XMLReader& src) {
+                if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) {
+                    if (expiry) src.throwException("duplicated <" PLASK_LICENSE_EXPIRY_TAG_NAME "> tag in license file");
+                        expiry = src.getTextContent();
+                }
+            }
+        ))
+            throw Exception("License error: Invalid signature in file \"%1%\".", filename);
+
+    if (!expiry)
         throw Exception("License error: No information about expiration date in file \"%1%\".", filename);
 
-    std::time_t t = extractDate(expiry);
+    std::time_t t = extractDate(*expiry);
     if (t == (std::time_t) (-1))
-        throw Exception("License error: Ill-formated exparation date \"%1%\".", expiry);
+        throw Exception("License error: Ill-formated exparation date \"%1%\".", *expiry);
 
     if (std::time(nullptr) + 24 * 3600 > t)
         throw Exception("License has expired.");

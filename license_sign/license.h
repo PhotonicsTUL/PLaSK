@@ -9,7 +9,6 @@
 namespace plask {
 
 #define PLASK_LICENSE_SIGNATURE_TAG_NAME "signature"
-#define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
 
 /**
  * Check if license has valid signature or append signature to license XML.
@@ -17,12 +16,11 @@ namespace plask {
  * Throw exception if there are duplicated signature tags or @p src is ill-formated.
  * @param src source license XML
  * @param dst optional destination license XML, if given all content of @p src, completed with proper signature tag, will be added to it
- * @param expiry[out] optional place to store content of "expiry" tag
+ * @param content_cb callback called for each content node (with @p src argument), do nothing by default
  * @return @c true only if @p src has proper signature
  */
-inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::string* expiry = nullptr) {
+inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::function<void (XMLReader& src)> content_cb = [] (XMLReader&) {}) {
     boost::optional<std::string> read_signature;
-    boost::optional<std::string> read_expiry;
     std::string calculated_signature;
     std::string to_sign = "PLASK LICENSE DATA AH64C20D\n";
     std::deque<XMLElement> writtenPath;    //unused if dst is nullptr
@@ -48,11 +46,8 @@ inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::string* e
                 break;
 
             case XMLReader::NODE_TEXT: {
+                content_cb(src);
                 std::string text = src.getTextContent();
-                if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) {
-                    if (read_expiry) src.throwException("duplicated <" PLASK_LICENSE_EXPIRY_TAG_NAME "> tag in license file");
-                    read_expiry = text;
-                }
                 if (dst) dst->writeText(text);
                 to_sign += 'T';
                 to_sign += text;
@@ -77,7 +72,6 @@ inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::string* e
                 break;
         }
 
-    if (read_expiry && expiry) *expiry = *read_expiry;
     return read_signature ? *read_signature == calculated_signature : false;
 }
 
