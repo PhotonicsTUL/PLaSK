@@ -25,17 +25,23 @@ inline void print_current_exception() {
 }
 
 void plask_win_signal_handler (int param) {
-	printf("Signal %d handler:\n", param);
-	print_current_exception();
-    //SIG_DFL(param); //call default signal handler
-    printStack();   //print stack-trace
+	#pragma omp critical (winbacktrace)
+	{
+		printf("Signal %d handler:\n", param);
+		print_current_exception();
+		//SIG_DFL(param); //call default signal handler
+		printStack();   //print stack-trace
+	}
 }
 
 void plask_win_terminate_handler () {
-	printf("Terminate hadnler:\n");
-	print_current_exception();
-	printStack();   //print stack-trace
-	abort();  // forces abnormal termination
+	#pragma omp critical (winbacktrace)
+	{
+		printf("Terminate hadnler:\n");
+		print_current_exception();
+		printStack();   //print stack-trace
+		abort();  // forces abnormal termination
+	}
 }
 
 struct PlaskWinRegisterSignalHandler {

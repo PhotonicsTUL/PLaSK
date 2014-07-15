@@ -66,7 +66,7 @@ inline void backtrace_symbols_fd(void *const *buffer, int size, int fd)
 inline void printStack(void)
 {
  unsigned int i;
- void *stack[100];
+ void *stack[60];
  unsigned short frames;
  SYMBOL_INFO *symbol;
  HANDLE hProcess;
@@ -74,7 +74,7 @@ inline void printStack(void)
  hProcess = GetCurrentProcess();
  SymInitialize(hProcess, NULL, TRUE);
  //SymSetOptions(SymGetOptions() & ~SYMOPT_UNDNAME);	//does not work
- frames = CaptureStackBackTrace( 0, 100, stack, NULL );
+ frames = CaptureStackBackTrace( 0, 60, stack, NULL );
  symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
  symbol->MaxNameLen = 255;
  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -84,7 +84,7 @@ inline void printStack(void)
 #ifdef __GNUC__
    int demangl_status;  //0 for success
    const char *realname = abi::__cxa_demangle(symbol->Name, 0, 0, &demangl_status);
-   printf("%u: %p %s = 0x%zx %d\n", frames - i - 1, stack[i], demangl_status == 0 ? realname : symbol->Name, symbol->Address, demangl_status);
+   printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], demangl_status == 0 ? realname : symbol->Name, symbol->Address);
    free((void*)realname);
 #else
    printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
