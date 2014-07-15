@@ -460,7 +460,7 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
 
-    dcomplex k02 = k0 * k0;
+    dcomplex ik0 = 1./k0;
 
     size_t N = (symx ? ordl+1 : 2*ordl+1) * (symy ? ordt+1 : 2*ordt+1);
     std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
@@ -496,43 +496,21 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
                     if (symx && jx < 0) { fx *= symx; fy *= -symx; }
                     if (symy && jy < 0) { fx *= symy; fy *= -symy; }
 
-                    dcomplex ieps = iepszz(lay, ijx, ijy);
-                    RH(iex,jhy) += - fx * gx * px * ieps + k02 * muyy(lay, ijx, ijy);
-                    RH(iex,jhx) += - fy * gx * py * ieps;
-                    RH(iey,jhy) += - fx * gy * px * ieps;
-                    RH(iey,jhx) += - fy * gy * py * ieps + k02 * muxx(lay, ijx, ijy);
+                    dcomplex ieps = iepszz(lay, ijx, ijy) * ik0;
+                    RH(iex,jhy) += fx * (- gx * px * ieps + k0 * muyy(lay, ijx, ijy));
+                    RH(iex,jhx) += fy * (- gx * py * ieps);
+                    RH(iey,jhy) += fx * (- gy * px * ieps);
+                    RH(iey,jhx) += fy * (- gy * py * ieps + k0 * muxx(lay, ijx, ijy));
 
-                    dcomplex imu = imuzz(lay, ijx, ijy);
-                    RE(ihy,jex) += - fx * gy * py * imu + k02 * epsxx(lay, ijx, ijy);
-                    RE(ihy,jey) +=   fy * gy * px * imu + k02 * epsxy(lay, ijx, ijy);
-                    RE(ihx,jex) +=   fx * gx * py * imu + k02 * epsyx(lay, ijx, ijy);
-                    RE(ihx,jey) += - fy * gx * px * imu + k02 * epsyy(lay, ijx, ijy);
+                    dcomplex imu = imuzz(lay, ijx, ijy) * ik0;
+                    RE(ihy,jex) += fx * (- gy * py * imu + k0 * epsxx(lay, ijx, ijy));
+                    RE(ihy,jey) += fy * (  gy * px * imu + k0 * epsxy(lay, ijx, ijy));
+                    RE(ihx,jex) += fx * (  gx * py * imu + k0 * epsyx(lay, ijx, ijy));
+                    RE(ihx,jey) += fy * (- gx * px * imu + k0 * epsyy(lay, ijx, ijy));
                 }
             }
         }
     }
-    // std::cerr << "\nlayer: " << lay << "\nRE:\n";
-    // for (size_t i = 0; i != RE.rows(); ++i) {
-    //     for (size_t j = 0; j != RE.cols(); ++j) {
-    //         std::cerr << format("%7.2f", real(RE(i,j))) << " ";
-    //     }
-    //     std::cerr << "\n";
-    // }
-    // std::cerr << "RH:\n";
-    // for (size_t i = 0; i != RH.rows(); ++i) {
-    //     for (size_t j = 0; j != RH.cols(); ++j) {
-    //         std::cerr << format("%7.2f", real(RH(i,j))) << " ";
-    //     }
-    //     std::cerr << "\n";
-    // }
-    // auto QE = RH * RE;
-    // std::cerr << "QE:\n";
-    // for (size_t i = 0; i != QE.rows(); ++i) {
-    //     for (size_t j = 0; j != QE.cols(); ++j) {
-    //         std::cerr << format("%7.2f", real(QE(i,j))) << " ";
-    //     }
-    //     std::cerr << "\n";
-    // }
 }
 
 

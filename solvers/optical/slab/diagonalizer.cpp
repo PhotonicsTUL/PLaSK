@@ -97,6 +97,19 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (RH(i,i) == 0.) RH(i,i) = SMALL;
         }
 
+// std::cerr << "PLaSK\nRE:\n";
+// for (unsigned r = 0; r != N; ++r) {
+//     for (unsigned c = 0; c != N; ++c)
+//         std::cerr << format("%7.1f ", real(RE(r,c)));
+//     std::cerr << "\n";
+// }
+// std::cerr << "RH:\n";
+// for (unsigned r = 0; r != N; ++r) {
+//     for (unsigned c = 0; c != N; ++c)
+//         std::cerr << format("%7.1f ", real(RH(r,c)));
+//     std::cerr << "\n";
+// }
+
         if (src->diagonalQE(layer)) {
 
             // We are lucky - the QH matrix is diagonal so we can make it fast and easy
