@@ -3,7 +3,11 @@
 #include <sstream>
 #include <fstream>
 
+//#include "getmac.h"
+
 int main(int argc, char *argv[]) {
+    //for (auto& m: getMacs()) std::cout << ' ' << macToString(m) << std::endl;
+
     try {
 
         if (argc != 2) {
