@@ -54,7 +54,7 @@ class PythonEvalMaterial : public Material
 
     py::object self;
 
-    static inline PyObject* PY_EVAL(PyCodeObject *fun, const py::dict& locals) {
+    static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
         return
 #if PY_VERSION_HEX >= 0x03000000
             PyEval_EvalCode((PyObject*)fun, xml_globals.ptr(), locals.ptr());
@@ -66,9 +66,15 @@ class PythonEvalMaterial : public Material
     template <typename RETURN>
     inline RETURN call(PyCodeObject *fun, const py::dict& locals, const char* funname) const {
         try {
-            return py::extract<RETURN>(py::handle<>(PY_EVAL(fun, locals)).get());
+            return py::extract<RETURN>(py::handle<>(py_eval(fun, locals)).get());
         } catch (py::error_already_set) {
-            throw ValueError("Error in the custom material function <%2%> of \"%1%\"", this->name(), funname);
+            PyObject *ptype, *pvalue, *ptraceback;
+            PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+            Py_XDECREF(ptraceback);
+            std::string type, value;
+            if (ptype) { type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__")); type = ": " + type; }
+            if (pvalue) { value = py::extract<std::string>(py::str(py::handle<>(pvalue))); value = ": " + value; }
+            throw ValueError("Error in the custom material function <%2%> of '%1%'%3%%4%", this->name(), funname, type, value);
         }
     }
 
@@ -173,20 +179,20 @@ class PythonEvalMaterial : public Material
     virtual double nr(double wl, double T, double n = .0) const override { PYTHON_EVAL_CALL_3(double, nr, wl, T, n) }
     virtual double absp(double wl, double T) const override { PYTHON_EVAL_CALL_2(double, absp, wl, T) }
     virtual dcomplex Nr(double wl, double T, double n = .0) const override {
-        py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            return py::extract<dcomplex>(py::handle<>(PY_EVAL(cls->Nr, locals)).get());
+            py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
+            return py::extract<dcomplex>(py::handle<>(py_eval(cls->Nr, locals)).get());
         }
         if (cls->nr != NULL || cls->absp != NULL)
             return dcomplex(nr(wl, T, n), -7.95774715459e-09 * absp(wl, T)*wl);
         return base->Nr(wl, T, n);
     }
     virtual Tensor3<dcomplex> NR(double wl, double T, double n = .0) const override {
-        py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
         if (cls->NR != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            return py::extract<Tensor3<dcomplex>>(py::handle<>(PY_EVAL(cls->NR, locals)).get());
+            py::dict locals; locals["self"] = self; locals["wl"] = wl; locals["T"] = T; locals["n"] = n;
+            return py::extract<Tensor3<dcomplex>>(py::handle<>(py_eval(cls->NR, locals)).get());
         }
         if (cls->Nr != NULL) {
             dcomplex nc = Nr(wl, T, n);

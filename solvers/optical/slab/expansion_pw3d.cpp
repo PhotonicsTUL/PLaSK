@@ -368,10 +368,10 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
         if (SOLVER->smooth) {
             double bb4l = M_PI / ((front-back) * (symmetric_long? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
             double bb4t = M_PI / ((right-left) * (symmetric_tran? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
-            for (size_t it = 0; it != nNl; ++it) {
-                int kt = it; if (kt > nNt/2) kt -= nNt;
+            for (size_t it = 0; it != nNt; ++it) {
+                int kt = it; if (!symmetric_tran && kt > nNt/2) kt -= nNt;
                 for (size_t il = 0; il != nNl; ++il) {
-                    int kl = il; if (kl > nNl/2) kl -= nNl;
+                    int kl = il; if (!symmetric_long && kl > nNl/2) kl -= nNl;
                     coeffs[l][nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
                 }
             }
@@ -390,11 +390,13 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             Tensor3<dcomplex> eps(0.);
             const int endt = int(nNt+1)/2, endl = int(nNl+1)/2;
             for (int kt = -int(nNt)/2; kt != endt; ++kt) {
-                const double phast = kt * (dest_mesh->at(i).c1-left) / (right-left);
+                double Lt = right-left; if (symmetric_tran) Lt *= 2;
                 size_t t = (kt >= 0)? kt : (symmetric_tran)? -kt : kt + nNt;
+                const double phast = kt * (dest_mesh->at(i).c1-left) / Lt;
                 for (int kl = -int(nNl)/2; kl != endl; ++kl) {
+                    double Ll = front-back; if (symmetric_long) Ll *= 2;
                     size_t l = (kl >= 0)? kl : (symmetric_long)? -kl : kl + nNl;
-                    eps += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(dest_mesh->at(i).c0-back)/ (front-back) + phast));
+                    eps += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast));
                 }
             }
             eps.c22 = 1. / eps.c22;
@@ -498,14 +500,14 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 
                     dcomplex ieps = iepszz(lay, ijx, ijy) * ik0;
                     RH(iex,jhy) += fx * (- gx * px * ieps + k0 * muyy(lay, ijx, ijy));
-                    RH(iex,jhx) += fy * (- gx * py * ieps);
                     RH(iey,jhy) += fx * (- gy * px * ieps);
+                    RH(iex,jhx) += fy * (- gx * py * ieps);
                     RH(iey,jhx) += fy * (- gy * py * ieps + k0 * muxx(lay, ijx, ijy));
 
                     dcomplex imu = imuzz(lay, ijx, ijy) * ik0;
                     RE(ihy,jex) += fx * (- gy * py * imu + k0 * epsxx(lay, ijx, ijy));
-                    RE(ihy,jey) += fy * (  gy * px * imu + k0 * epsxy(lay, ijx, ijy));
                     RE(ihx,jex) += fx * (  gx * py * imu + k0 * epsyx(lay, ijx, ijy));
+                    RE(ihy,jey) += fy * (  gy * px * imu + k0 * epsxy(lay, ijx, ijy));
                     RE(ihx,jey) += fy * (- gx * px * imu + k0 * epsyy(lay, ijx, ijy));
                 }
             }

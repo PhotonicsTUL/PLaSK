@@ -12,13 +12,6 @@ struct FourierReflection3D;
 
 struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
-    /// Specified component in polarization or symmetry
-    enum Component {
-        E_TRAN = 0,         ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
-        E_UNSPECIFIED = 1,  ///< All components exist or no symmetry
-        E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
-    };
-
     RegularAxis long_mesh,              ///< Horizontal axis for structure sampling in longitudinal direction
                 tran_mesh;              ///< Horizontal axis for structure sampling in transverse direction
 

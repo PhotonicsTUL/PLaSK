@@ -41,6 +41,7 @@ class Reflection2D_Test(unittest.TestCase):
         #plot(X, [abs(self.solver.determinant(neff=x)) for x in X])
         #show()
         nm = self.solver.find_mode(3.1996)
+        #figure()
         #plot_field(self.solver.outLightMagnitude(nm,
             #mesh.Rectangular2D(mesh.Regular(-0.75, 0.75, 100), mesh.Regular(-0.25, 0.75, 100))))
         #plot_geometry(self.solver.geometry, color='w', mirror=True)

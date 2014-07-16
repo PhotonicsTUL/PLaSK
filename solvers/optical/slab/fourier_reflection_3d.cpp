@@ -7,10 +7,9 @@ FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSol
     size_long(12), size_tran(12),
     expansion(this),
     refine_long(16), refine_tran(16)//,
-//     outNeff(this, &FourierReflection3D::getEffectiveIndex, &FourierReflection3D::nummodes)
 {
-    smooth = 0.05;
-    // detlog.global_prefix = this->getId();
+    detlog.global_prefix = this->getId();
+    smooth = 0.005;
 }
 
 static inline PML readPML(XMLReader& reader) {
@@ -23,12 +22,13 @@ static inline PML readPML(XMLReader& reader) {
 }
 
 template <typename T>
-static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& long_field, T& tran_field) {
+static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& long_field, T& tran_field, bool nocommon=false) {
     if (reader.hasAttribute(attr)) {
         std::string value = reader.requireAttribute<std::string>(attr);
-        if (value.find(',') == std::string::npos)
+        if (value.find(',') == std::string::npos) {
+            if (nocommon) throw XMLBadAttrException(reader, attr, value);
             long_field = tran_field = boost::lexical_cast<T>(value);
-        else {
+        } else {
             auto values = splitString2(value, ',');
             long_field = boost::lexical_cast<T>(values.first);
             tran_field = boost::lexical_cast<T>(values.first);
@@ -41,6 +41,20 @@ static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& l
     }
 }
 
+static inline Expansion::Component readSymmetry(const FourierReflection3D* solver, const XMLReader& reader, const std::string& repr) {
+    AxisNames* axes = nullptr;
+    if (solver->getGeometry()) axes = &solver->getGeometry()->axisNames;
+    if (repr == "none" || repr == "NONE" || repr == "None")
+        return Expansion::E_UNSPECIFIED;
+    else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
+                repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
+        return Expansion::E_TRAN;
+    else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
+                repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
+        return Expansion::E_LONG;
+    else
+        throw XMLBadAttrException(reader, "symmetry", repr, "symmetric field component name (maybe you need to specify the geometry first)");
+}
 
 void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
 {
@@ -83,23 +97,10 @@ void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
             k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
-//             if (reader.hasAttribute("symmetry")) {
-//                 std::string repr = reader.requireAttribute("symmetry");
-//                 ExpansionPW2D::Component val;
-//                 AxisNames* axes = nullptr;
-//                 if (geometry) axes = &geometry->axisNames;
-//                 if (repr == "none" || repr == "NONE" || repr == "None")
-//                     val = ExpansionPW3D::E_UNSPECIFIED;
-//                 else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
-//                          repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
-//                     val = ExpansionPW3D::E_TRAN;
-//                 else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
-//                          repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
-//                     val = ExpansionPW3D::E_LONG;
-//                 else
-//                     throw XMLBadAttrException(reader, "symmetry", repr, "symmetric field component name (maybe you need to specify the geometry first)");
-//                 setSymmetry(val);
-//             }
+            std::string sym_tran, sym_long;
+            readComaAttr(reader, "size", sym_long, sym_tran, true);
+            if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
+            if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else if (param == "outer") {

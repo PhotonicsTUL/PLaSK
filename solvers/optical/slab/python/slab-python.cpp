@@ -43,7 +43,7 @@ static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) 
 template <typename SolverT>
 static const std::vector<OrderedAxis>& SlabSolver_getLayerSets(const SolverT& self) { return self.getLayersPoints(); }
 
-struct PythonComponentConventer2D {
+struct PythonComponentConventer {
 
     // Determine if obj can be converted into an Aligner
     static void* convertible(PyObject* obj) {
@@ -52,77 +52,41 @@ struct PythonComponentConventer2D {
     }
 
     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<ExpansionPW2D::Component>*)data)->storage.bytes;
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<Expansion::Component>*)data)->storage.bytes;
         AxisNames* axes = getCurrentAxes();
-        ExpansionPW2D::Component val;
+        Expansion::Component val;
         if (obj == Py_None) {
-            val = ExpansionPW2D::E_UNSPECIFIED;
+            val = Expansion::E_UNSPECIFIED;
         } else {
             try {
                 std::string repr = py::extract<std::string>(obj);
                 if (repr == "none" || repr == "NONE" || repr == "None")
-                    val = ExpansionPW2D::E_UNSPECIFIED;
+                    val = Expansion::E_UNSPECIFIED;
                 else if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
                          repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong())
-                    val = ExpansionPW2D::E_TRAN;
+                    val = Expansion::E_TRAN;
                 else if (repr == "Elong" || repr == "El" || repr == "E"+axes->getNameForLong() ||
                          repr == "Htran" || repr == "Ht" || repr == "H"+axes->getNameForTran())
-                    val = ExpansionPW2D::E_LONG;
+                    val = Expansion::E_LONG;
                 else
                     throw py::error_already_set();
             } catch (py::error_already_set) {
                 throw ValueError("Wrong component specification.");
             }
         }
-        new(storage) ExpansionPW2D::Component(val);
+        new(storage) Expansion::Component(val);
         data->convertible = storage;
     }
 
-    static PyObject* convert(ExpansionPW2D::Component val) {
+    static PyObject* convert(Expansion::Component val) {
         AxisNames* axes = getCurrentAxes();
         switch (val) {
-            case ExpansionPW2D::E_TRAN: return py::incref(py::object("E"+axes->getNameForTran()).ptr());
-            case ExpansionPW2D::E_LONG: return py::incref(py::object("E"+axes->getNameForLong()).ptr());
+            case Expansion::E_TRAN: return py::incref(py::object("E"+axes->getNameForTran()).ptr());
+            case Expansion::E_LONG: return py::incref(py::object("E"+axes->getNameForLong()).ptr());
             default: return py::incref(Py_None);
         }
     }
 };
-
-/*struct PythonFourierReflection3DWhatConverter {
-
-    static void* convertible(PyObject* obj) {
-        return
-#           if PY_VERSION_HEX >= 0x03000000
-            (PyUnicode_Check(obj))
-#           else
-            (PyString_Check(obj))
-#           endif
-            ? obj : 0;
-    }
-
-    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
-    {
-        std::string key = boost::python::extract<std::string>(obj);
-        boost::algorithm::to_lower(key);
-
-        auto axes = getCurrentAxes();
-
-        void* const storage = ((boost::python::converter::rvalue_from_python_storage<FourierReflection3D::What>*)data)->storage.bytes;
-
-        if (key == "wavelength" || key == "lam" || key == "lambda")
-            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_WAVELENGTH);
-        if (key == "k0")
-            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_K0);
-        else if (key == "klong" || key == "kl" || key == "k"+axes->getNameForLong())
-            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_KLONG);
-        else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
-            new (storage) FourierReflection3D::What(FourierReflection3D::WHAT_KTRAN);
-        else
-            throw TypeError("I don't know what you want to search for");
-
-        data->convertible = storage;
-    }
-};*/
 
 struct PmlWrapper {
 
@@ -386,9 +350,6 @@ struct FourierReflection3D_LongTranWrapper {
     }
 };
 
-
-
-
 template <typename T>
 struct FourierReflection3D_LongTranSetter {
     T FourierReflection3D::* field_long;
@@ -438,6 +399,72 @@ FourierReflection3D_LongTranWrapper<size_t> FourierReflection3D_getRefine(Fourie
 FourierReflection3D_LongTranWrapper<PML> FourierReflection3D_getPml(FourierReflection3D* self) {
     return FourierReflection3D_LongTranWrapper<PML>(self, &self->pml_long, &self->pml_tran);
 }
+
+struct FourierReflection3D_SymmetryLongTranWrapper {
+    FourierReflection3D* self;
+
+    FourierReflection3D_SymmetryLongTranWrapper(FourierReflection3D* self): self(self) {}
+
+    Expansion::Component __getitem__(int i) {
+        if (i < 0) i = 2 - i;
+        switch (i) {
+            case 0: return self->getSymmetryLong();
+            case 1: return self->getSymmetryTran();
+            default: throw IndexError("index out of range");
+        }
+    }
+
+    void __setitem__(int i, Expansion::Component value) {
+        if (i < 0) i = 2 - i;
+        switch (i) {
+            case 0: self->setSymmetryLong(value); return;
+            case 1: self->setSymmetryTran(value); return;
+            default: throw IndexError("index out of range");
+        }
+    }
+
+    Expansion::Component __getattr__(const std::string& name) {
+        AxisNames* axes = getCurrentAxes();
+        if (name == "long" || name == "l" || name == axes->getNameForLong()) return self->getSymmetryLong();
+        if (name == "tran" || name == "t" || name == axes->getNameForTran()) return self->getSymmetryTran();
+        throw AttributeError("object has no attribute '%1%'", name);
+    }
+
+    void __setattr__(const std::string& name, Expansion::Component value) {
+        AxisNames* axes = getCurrentAxes();
+        if (name == "long" || name == "l" || name == axes->getNameForLong()) self->setSymmetryLong(value);
+        else if (name == "tran" || name == "t" || name == axes->getNameForLong()) self->setSymmetryTran(value);
+        else throw AttributeError("object has no attribute '%1%'", name);
+    }
+
+    std::string __str__() {
+        return "(" + std::string(py::extract<std::string>(py::str(py::object(self->getSymmetryLong())))) + ", "
+                   + std::string(py::extract<std::string>(py::str(py::object(self->getSymmetryTran())))) + ")";
+    }
+
+    static void register_() {
+        py::class_<FourierReflection3D_SymmetryLongTranWrapper>("Symmetries", "Access wrapper for parameter along long/tran axis", py::no_init)
+            .def("__getitem__", &FourierReflection3D_SymmetryLongTranWrapper::__getitem__)
+            .def("__setitem__", &FourierReflection3D_SymmetryLongTranWrapper::__setitem__)
+            .def("__getattr__", &FourierReflection3D_SymmetryLongTranWrapper::__getattr__)
+            .def("__setattr__", &FourierReflection3D_SymmetryLongTranWrapper::__setattr__)
+            .def("__str__", &FourierReflection3D_SymmetryLongTranWrapper::__str__)
+        ;
+    }
+
+    static FourierReflection3D_SymmetryLongTranWrapper getter(FourierReflection3D* self) {
+        return FourierReflection3D_SymmetryLongTranWrapper(self);
+    }
+
+    static void setter(FourierReflection3D& self, py::object values) {
+        try { if (py::len(values) != 2) throw py::error_already_set(); }
+        catch (py::error_already_set) { throw TypeError("You may only assign a sequence of two values"); }
+        self.setSymmetryLong(py::extract<Expansion::Component>(values[0]));
+        self.setSymmetryTran(py::extract<Expansion::Component>(values[1]));
+    }
+};
+
+
 
 dcomplex FourierReflection3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
@@ -548,9 +575,9 @@ BOOST_PYTHON_MODULE(slab)
 {
     plask_import_array();
 
-    py::to_python_converter<ExpansionPW2D::Component, PythonComponentConventer2D>();
-    py::converter::registry::push_back(&PythonComponentConventer2D::convertible, &PythonComponentConventer2D::construct,
-                                       py::type_id<ExpansionPW2D::Component>());
+    py::to_python_converter<Expansion::Component, PythonComponentConventer>();
+    py::converter::registry::push_back(&PythonComponentConventer::convertible, &PythonComponentConventer::construct,
+                                       py::type_id<Expansion::Component>());
 
     // py::converter::registry::push_back(&PythonFourierReflection3DWhatConverter::convertible, &PythonFourierReflection3DWhatConverter::construct,
     //                                    py::type_id<FourierReflection3D::What>());
@@ -704,6 +731,17 @@ BOOST_PYTHON_MODULE(slab)
                                               py::default_call_policies(),
                                               boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
                             "Number of refinement points for refractive index averaging in longitudinal and transverse directions.");
+        solver.add_property("pmls",
+                            py::make_function(FourierReflection3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
+                            py::make_function(FourierReflection3D_LongTranSetter<PML>(&FourierReflection3D::pml_long, &FourierReflection3D::pml_tran),
+                                              py::default_call_policies(),
+                                              boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
+                            "Longitudinal and transverse edge Perfectly Matched Layers boundary conditions.\n\n"
+                            PML_ATTRS_DOC);
+        solver.add_property("symmetry",
+                            py::make_function(&FourierReflection3D_SymmetryLongTranWrapper::getter, py::with_custodian_and_ward_postcall<0,1>()),
+                            &FourierReflection3D_SymmetryLongTranWrapper::setter,
+                            "Longitudinal and transverse mode symmetries.\n");
         solver.def("determinant", py::raw_function(FourierReflection3D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
@@ -747,14 +785,6 @@ BOOST_PYTHON_MODULE(slab)
 //                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
 //                    "        wavelength, as they may change due to the dispersion.\n"
 //                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
-        solver.add_property("pmls",
-                            py::make_function(FourierReflection3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
-                            py::make_function(FourierReflection3D_LongTranSetter<PML>(&FourierReflection3D::pml_long, &FourierReflection3D::pml_tran),
-                                              py::default_call_policies(),
-                                              boost::mpl::vector3<void, FourierReflection3D&, py::object>()),
-                            "Longitudinal and transverse edge Perfectly Matched Layers boundary conditions.\n\n"
-                            PML_ATTRS_DOC);
-        RO_FIELD(modes, "Computed modes.");
 //         solver.def("reflected", &FourierReflection2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
 //                    "Access to the reflected field.\n\n"
 //                    "Args:\n"
@@ -765,7 +795,7 @@ BOOST_PYTHON_MODULE(slab)
 //                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                    "        present.\n"
 //                    , (py::arg("lam"), "polarization", "side"));
-
+        RO_FIELD(modes, "Computed modes.");
         py::scope scope = solver;
 
         register_vector_of<FourierReflection3D::Mode>("Modes");
@@ -782,7 +812,7 @@ BOOST_PYTHON_MODULE(slab)
 
         FourierReflection3D_LongTranWrapper<size_t>::register_("Sizes");
         FourierReflection3D_LongTranWrapper<PML>::register_("PMLs");
-
+        FourierReflection3D_SymmetryLongTranWrapper::register_();
     }
 
 }

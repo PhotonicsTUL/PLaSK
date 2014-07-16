@@ -72,7 +72,6 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 
     /// Longitudinal PMLs
     PML pml_long;
-
     /// Transverse PMLs
     PML pml_tran;
 
@@ -113,30 +112,76 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
         invalidate();
     }
 
-//
-//     /// Return current mode symmetry
-//     ExpansionPW3D::Component getSymmetry() const { return expansion.symmetry; }
-//     /// Set new mode symmetry
-//     void setSymmetry(ExpansionPW3D::Component symmetry) {
-//         if (geometry && !geometry->isSymmetric(Geometry3DCartesian::DIRECTION_TRAN))
-//             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
-//         if (expansion.initialized) {
-//             if (expansion.symmetric && symmetry == ExpansionPW3D::E_UNSPECIFIED)
-//                 throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
-//             if (!expansion.symmetric && symmetry != ExpansionPW3D::E_UNSPECIFIED)
-//                 throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
-//         }
-//         fields_determined = DETERMINED_NOTHING;
-//         expansion.symmetry = symmetry;
-//     }
-//
-//     /// Set transverse wavevector
-//     void setKtran(dcomplex k)  {
-//         if (expansion.initialized && (expansion.symmetric && k != 0.))
-//             throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
-//         if (k != ktran) fields_determined = DETERMINED_NOTHING;
-//         ktran = k;
-//     }
+
+    /// Return current mode symmetry
+    Expansion::Component getSymmetryLong() const { return expansion.symmetry_long; }
+    /// Set new mode symmetry
+    void setSymmetryLong(Expansion::Component symmetry) {
+        if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
+            throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
+        if (klong != 0.) {
+            this->writelog(LOG_WARNING, "Resetting klong to 0.");
+            klong = 0.;
+        }
+        if (expansion.initialized) {
+            if (expansion.symmetric_long && symmetry == Expansion::E_UNSPECIFIED)
+                throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
+            if (!expansion.symmetric_long && symmetry != Expansion::E_UNSPECIFIED)
+                throw Exception("%1%: Cannot add longitudinal mode symmetry now -- invalidate the solver first", getId());
+        }
+        fields_determined = DETERMINED_NOTHING;
+        expansion.symmetry_long = symmetry;
+    }
+
+    /// Return current mode symmetry
+    Expansion::Component getSymmetryTran() const { return expansion.symmetry_tran; }
+    /// Set new mode symmetry
+    void setSymmetryTran(Expansion::Component symmetry) {
+        if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
+            throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
+        if (ktran != 0.) {
+            this->writelog(LOG_WARNING, "Resetting ktran to 0.");
+            ktran = 0.;
+        }
+        if (expansion.initialized) {
+            if (expansion.symmetric_tran && symmetry == Expansion::E_UNSPECIFIED)
+                throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
+            if (!expansion.symmetric_tran && symmetry != Expansion::E_UNSPECIFIED)
+                throw Exception("%1%: Cannot add transverse mode symmetry now -- invalidate the solver first", getId());
+        }
+        fields_determined = DETERMINED_NOTHING;
+        expansion.symmetry_tran = symmetry;
+    }
+
+    /// Set longitudinal wavevector
+    void setKlong(dcomplex k)  {
+        if (k != 0.) {
+            if (expansion.symmetric_long) {
+                if (expansion.initialized)
+                    throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
+                else
+                    this->writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
+            }
+            expansion.symmetry_long = Expansion::E_UNSPECIFIED;
+        }
+        if (k != ktran) fields_determined = DETERMINED_NOTHING;
+        ktran = k;
+    }
+
+    /// Set transverse wavevector
+    void setKtran(dcomplex k)  {
+        if (k != 0.) {
+            if (expansion.symmetric_tran) {
+                if (expansion.initialized)
+                    throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
+                else
+                    this->writelog(LOG_WARNING, "Resetting transverse mode symmetry");
+            }
+            expansion.symmetry_tran = Expansion::E_UNSPECIFIED;
+        }
+        if (k != ktran) fields_determined = DETERMINED_NOTHING;
+        ktran = k;
+    }
 
     /// Get mesh at which material parameters are sampled along longitudinal axis
     RegularAxis getLongMesh() const { return expansion.long_mesh; }

@@ -93,6 +93,10 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
     void setSymmetry(ExpansionPW2D::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
+        if (ktran != 0.) {
+            this->writelog(LOG_WARNING, "Resetting ktran to 0.");
+            ktran = 0.;
+        }
         if (expansion.initialized) {
             if (expansion.symmetric && symmetry == ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
@@ -105,8 +109,15 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
-        if (expansion.initialized && (expansion.symmetric && k != 0.))
-            throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
+        if (k != 0.) {
+            if (expansion.symmetric) {
+                if (expansion.initialized)
+                    throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
+                else
+                    this->writelog(LOG_WARNING, "Resetting mode symmetry");
+            }
+            expansion.symmetric = Expansion::E_UNSPECIFIED;
+        }
         if (k != ktran) fields_determined = DETERMINED_NOTHING;
         ktran = k;
     }

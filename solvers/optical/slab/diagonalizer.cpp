@@ -97,23 +97,22 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (RH(i,i) == 0.) RH(i,i) = SMALL;
         }
 
-// std::cerr << "PLaSK\nRE:\n";
-// for (unsigned r = 0; r != N; ++r) {
-//     for (unsigned c = 0; c != N; ++c)
-//         std::cerr << format("%7.1f ", real(RE(r,c)));
-//     std::cerr << "\n";
-// }
-// std::cerr << "RH:\n";
-// for (unsigned r = 0; r != N; ++r) {
-//     for (unsigned c = 0; c != N; ++c)
-//         std::cerr << format("%7.1f ", real(RH(r,c)));
-//     std::cerr << "\n";
-// }
+        // std::cerr << "PLaSK\nRE:\n";
+        // for (unsigned r = 0; r != N; ++r) {
+        //     for (unsigned c = 0; c != N; ++c)
+        //         std::cerr << format("%7.1f ", real(RE(r,c)));
+        //     std::cerr << "\n";
+        // }
+        // std::cerr << "RH:\n";
+        // for (unsigned r = 0; r != N; ++r) {
+        //     for (unsigned c = 0; c != N; ++c)
+        //         std::cerr << format("%7.1f ", real(RH(r,c)));
+        //     std::cerr << "\n";
+        // }
 
         if (src->diagonalQE(layer)) {
 
             // We are lucky - the QH matrix is diagonal so we can make it fast and easy
-            //logger(LOG_SHOWDIAGONALIZATION) << "    diagonalizer: using the uniform layer " << layer << "\n";
 
             // So we compute the diagonal elements of QH = RE*RH
             for (int ie = 0, ih = 0; ie < N; ie++, ih += N) {
@@ -121,6 +120,10 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
                 for (int jh = 0, je = 0; jh < N; jh++, je += N)
                     gamma[layer][ie] += RH[ie+je] * RE[ih+jh];
             }
+
+// std::cerr << "Gamma2: ";
+// for (unsigned r = 0; r != N; ++r) std::cerr << format("%7.1f ", real(gamma[layer][r]));
+// std::cerr << "\n";
 
             // Eigenvector matrix is simply a unity matrix
             std::fill_n(Te[layer].data(), N*N, 0.);
@@ -134,20 +137,12 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // TODO: rewrite it to more low-level and more optimized computations
             mult_matrix_by_matrix(RH, RE, QE);  // QE = RH * RE
 
-            // std::cerr << "\n";
-            // for (int i = 0; i < matrixSize(); ++i) {
-            //     for (int j = 0; j < matrixSize(); ++j) {
-            //         if (abs(RE(i,j)) < 1e-13) RE(i,j) = 0;
-            //         std::cerr << format("%7.3f", real(RE(i,j))) << " ";
-            //     }
-            //     std::cerr << "    #   ";
-            //     for (int j = 0; j < matrixSize(); ++j) {
-            //         if (abs(RH(i,j)) < 1e-13) RH(i,j) = 0;
-            //         std::cerr << format("%7.3f", real(RH(i,j))) << " ";
-            //     }
+            // std::cerr << "PLaSK\nQE:\n";
+            // for (unsigned r = 0; r != N; ++r) {
+            //     for (unsigned c = 0; c != N; ++c)
+            //         std::cerr << format("%7.1f ", real(QE(r,c)));
             //     std::cerr << "\n";
             // }
-            // std::cerr << "\n";
 
             // This is probably expensive but necessary check to avoid hangs
             if (QE.isnan()) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: NaN in Q matrix");
@@ -167,7 +162,6 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
                 Te1[layer][i] = 1.;
             invmult(Th[layer], Te1[layer]);
         }
-
 
         // Make Gamma of Gamma^2
         cdiagonal& gam = gamma[layer];

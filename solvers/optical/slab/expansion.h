@@ -9,8 +9,15 @@ namespace plask { namespace solvers { namespace slab {
 
 struct PLASK_SOLVER_API Expansion {
 
+    /// Specified component in polarization or symmetry
+    enum Component {
+        E_TRAN = 0,         ///< E_tran and H_long exist or are symmetric and E_long and H_tran anti-symmetric
+        E_UNSPECIFIED = 1,  ///< All components exist or no symmetry
+        E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
+    };
+
     struct FieldParams {
-        /// Indentification of the field obtained by the getField
+        /// Identification of the field obtained by the getField
         enum Which {
             E,                      ///< Electric field
             H                       ///< Magnetic field

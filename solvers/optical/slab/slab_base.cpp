@@ -7,7 +7,7 @@ namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
-    detlog("", "modal", "k0", "det"),
+    detlog("", "modal", "unspecified", "det"),
     interface(1),
     outdist(0.1),
     smooth(0.),

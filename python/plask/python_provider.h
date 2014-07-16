@@ -319,6 +319,7 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
         [function](_ExtraParams... params) -> ProvidedType {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             return py::extract<ProvidedType>(function(params...));
         }
     ) {}
@@ -333,9 +334,11 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 
     PythonProviderFor(const py::object& function):  ProviderFor<typename ProviderT::PropertyTag>::Delegate(
         [function](size_t n, _ExtraParams... params) -> ProvidedType {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             return py::extract<ProvidedType>(function(n, params...));
         },
         [function]() -> size_t {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             return py::extract<size_t>(function.attr("__len__")());
         }
     ) {}
@@ -353,6 +356,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate(
         [function](const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
             py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
             py::object result = function(omesh, params..., method);
@@ -375,6 +379,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
     PythonProviderFor(const py::object& function): ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate (
         [function](size_t n, const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh, _ExtraParams... params, InterpolationMethod method) -> ProvidedType
         {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
             py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
             py::object result = function(n, omesh, params..., method);
@@ -386,6 +391,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
             }
         },
         [function]() -> size_t {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             return py::extract<size_t>(function.attr("__len__")());
         }
     ) {}
