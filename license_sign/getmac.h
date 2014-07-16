@@ -14,7 +14,7 @@
 
 //http://stackoverflow.com/questions/16858782/how-to-obtain-almost-unique-system-identifier-in-a-cross-platform-way
 //http://msdn.microsoft.com/en-us/library/windows/desktop/aa366062%28v=vs.85%29.aspx
-std::vector<std::array<unsigned char, 6>> getMacs() {
+inline std::vector<std::array<unsigned char, 6>> getMacs() {
     std::vector<std::array<unsigned char, 6>> result;
 
     IP_ADAPTER_INFO AdapterInfo[32];
@@ -46,7 +46,7 @@ std::vector<std::array<unsigned char, 6>> getMacs() {
 #include <netinet/in.h>
 #include <string.h>
 
-std::vector<std::array<unsigned char, 6>> getMacs() {
+inline std::vector<std::array<unsigned char, 6>> getMacs() {
     std::vector<std::array<unsigned char, 6>> result;
 
     //Code comes from:
@@ -87,7 +87,7 @@ std::vector<std::array<unsigned char, 6>> getMacs() {
 
 #endif  // Linux code
 
-std::string macToString(const std::array<unsigned char, 6>& mac) {
+inline std::string macToString(const std::array<unsigned char, 6>& mac) {
     std::string res;
     res.reserve(2*6 + 5);
     for (unsigned char c: mac) {
