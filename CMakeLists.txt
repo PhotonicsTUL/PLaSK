@@ -232,7 +232,7 @@ add_library(libplask SHARED ${plask_src} ${plask_headers})
 #add_library(libplask SHARED ${plask_src})
 target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY}) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
-    target_link_libraries(libplask kernel32)
+    target_link_libraries(libplask kernel32 iphlpapi)
     install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core
                              ARCHIVE DESTINATION lib COMPONENT dev)
 else()
