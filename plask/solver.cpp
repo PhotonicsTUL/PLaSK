@@ -1,8 +1,9 @@
 #include "solver.h"
 #include "utils/string.h"
 
-namespace plask {
+#include "license/verify.h"
 
+namespace plask {
 
 void Solver::loadConfiguration(XMLReader& reader, Manager& manager) {
     reader.requireTagEnd();
@@ -13,6 +14,9 @@ void Solver::parseStandardConfiguration(XMLReader& source, Manager& manager, con
 }
 
 bool Solver::initCalculation() {
+    #ifdef LICENSE_CHECKING
+        if (!verified) { license_verifier.verify(); verified = true; }
+    #endif
     if (!initialized) {
         writelog(LOG_INFO, "Initializing solver");
         onInitialize();

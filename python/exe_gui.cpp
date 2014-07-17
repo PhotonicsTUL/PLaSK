@@ -137,13 +137,6 @@ int main(int argc, const char *argv[])
         return 102;
     }
 
-    try {
-        //plask::verifyLicense();
-    } catch (plask::Exception& e) {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, e.what());
-        return 103;
-    }
-
     // Set the Python logger
     plask::default_logger = plask::python::makePythonLogger();
 

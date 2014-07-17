@@ -168,13 +168,6 @@ int main(int argc, const char *argv[])
         return 0;
     }
 
-    try {
-        //plask::verifyLicense();
-    } catch (plask::Exception& e) {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, e.what());
-        return 103;
-    }
-
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     SetDllDirectory(plask::exePath().c_str());
     DWORD procIDs[2];

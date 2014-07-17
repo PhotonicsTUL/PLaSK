@@ -22,7 +22,7 @@ namespace plask {
 inline static bool processLicense(XMLReader& src, XMLWriter* dst, std::function<void (XMLReader& src)> content_cb = [] (XMLReader&) {}) {
     boost::optional<std::string> read_signature;
     std::string calculated_signature;
-    std::string to_sign = "PLASK LICENSE DATA AH64C20D\n";
+    std::string to_sign = "CxoAMhusG8KNnwuBELW432yR\n";
     std::deque<XMLElement> writtenPath;    //unused if dst is nullptr
     while (src.next())
         switch (src.getNodeType()) {

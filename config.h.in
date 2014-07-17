@@ -37,7 +37,8 @@
 #endif
 #endif
 
-
+// License check
+#cmakedefine LICENSE_CHECKING
 
 //
 // The following block is the standard way of creating macros which make exporting
