@@ -4,7 +4,7 @@
 #include <ctime>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#   include <windows.h>
+#   include <shlobj.h>
 #endif
 
 #include <plask/config.h>
@@ -31,8 +31,9 @@ bool LicenseVerifier::try_load_license(const std::string& fname) {
 LicenseVerifier::LicenseVerifier() {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define V "\\"
-    char* home[MAX_PATH];
-    SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, path);
+    char home[MAX_PATH];
+    SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, home);            // Depreciated
+    //SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, home);        // Vista+
     try_load_license(std::string(home) + "\\plask_license.xml")  ||
     try_load_license(std::string(home) + "\\plask\\license.xml")  ||
 #else
