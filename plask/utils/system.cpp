@@ -33,6 +33,7 @@ std::string exePathAndName() {
 static std::string dirUp(const std::string& dir) {
     std::string::size_type last_sep = dir.find_last_of(FILE_PATH_SEPARATOR);
     return last_sep == std::string::npos ? dir : dir.substr(0, last_sep);
+    //boost::filesystem::absolute(dir).parent_path().string()
 }
 
 std::string exePath() {

@@ -64,7 +64,7 @@ class PLASK_API LicenseVerifier {
         if (content == "")
             throw Exception("No valid license found");
 
-        XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content)));
+        XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content, std::ios_base::binary)));
 
         boost::optional<std::string> expiry;
         if (!processLicense(r, nullptr,

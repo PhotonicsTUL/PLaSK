@@ -61,10 +61,12 @@ static py::object initPlask(int argc, const char* argv[])
     solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
     path.insert(0, plask_path);
     path.insert(1, solvers_path);
-    if (argc > 0)
+    /*if (argc > 0) //why so strange?
         path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
     else
-        path.insert(0, "");
+        path.insert(0, "");*/
+    path.insert(0, plask::exePath() /* + plask::FILE_PATH_SEPARATOR*/);
+
     sys.attr("path") = path;
 
     py::object _plask = py::import("_plask");
