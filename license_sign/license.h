@@ -1,6 +1,8 @@
 #ifndef PLASK_LICENSE_SIGN__LICENSE_H
 #define PLASK_LICENSE_SIGN__LICENSE_H
 
+// This file should not be included in any plask .h file because it can be not distributed to solvers' developers.
+
 #include "../plask/exceptions.h"
 #include "../plask/utils/xml.h"
 
