@@ -72,26 +72,29 @@ inline void printStack(void)
  HANDLE hProcess;
 
  hProcess = GetCurrentProcess();
- SymInitialize(hProcess, NULL, TRUE);
- //SymSetOptions(SymGetOptions() & ~SYMOPT_UNDNAME);	//does not work
+ //SymSetOptions( SYMOPT_DEFERRED_LOADS | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_UNDNAME );
+ SymSetOptions(SymGetOptions() & ~SYMOPT_UNDNAME);	//allow for names demangle
+ if (!SymInitialize(hProcess, NULL, TRUE)) return;
  frames = CaptureStackBackTrace( 0, 60, stack, NULL );
- symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
+ char buffer[ sizeof(SYMBOL_INFO) + 256 * sizeof(char) ] = { 0 };
+ symbol = (SYMBOL_INFO *) buffer;
  symbol->MaxNameLen = 255;
  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
  for(i = 0;i < frames; i++) {
-   SymFromAddr(hProcess, (DWORD_PTR) (stack[i]), 0, symbol);
-   //TODO http://msdn.microsoft.com/en-us/library/windows/desktop/ms680578%28v=vs.85%29.aspx
-#ifdef __GNUC__
-   int demangl_status;  //0 for success
-   const char *realname = abi::__cxa_demangle(symbol->Name, 0, 0, &demangl_status);
-   printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], demangl_status == 0 ? realname : symbol->Name, symbol->Address);
-   free((void*)realname);
-#else
-   printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
-#endif
+   if (SymFromAddr(hProcess, (DWORD64) (stack[i]), 0, symbol)) {
+       //TODO http://msdn.microsoft.com/en-us/library/windows/desktop/ms680578%28v=vs.85%29.aspx
+    #ifdef __GNUC__
+       int demangl_status;  //0 for success
+       const char *realname = abi::__cxa_demangle(symbol->Name, 0, 0, &demangl_status);
+       printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], demangl_status == 0 ? realname : symbol->Name, symbol->Address);
+       free((void*)realname);
+    #else
+       printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
+    #endif
+    } else
+        printf("%u: %p UNKNOWN\n", frames - i - 1, stack[i]);
  }
-
- free(symbol);
+ SymCleanup(hProcess);
 }
 
 #endif // WIN_PRINTSTACK_HPP
