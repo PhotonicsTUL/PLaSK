@@ -6,8 +6,8 @@
 {%- block classes %}
 {%- if classes and classes != ['dtype'] %}
 
-Classes
--------
+Subclasses
+----------
 
 .. autosummary::
    :nosignatures:
