@@ -20,7 +20,6 @@ using namespace plask::solvers::effective;
     "   ~optical.effective.RootParams.tolx\n"
 
 #define SEARCH_ARGS_DOC \
-    "Args:\n" \
     "    start (complex): Start of the search range (0 means automatic).\n" \
     "    end (complex): End of the search range (0 means automatic).\n" \
     "    resteps (integer): Number of steps on the real axis during the search.\n" \
@@ -220,6 +219,7 @@ BOOST_PYTHON_MODULE(effective)
         METHOD(search_vneff, searchVNeffs,
                "Find the effective indices in the vertical direction within the specified range\n"
                "using global method.\n\n"
+               "Args:\n"
                SEARCH_ARGS_DOC"\n"
                "Returns:\n"
                "    list of floats: List of the found effective indices in the vertical\n"
@@ -235,6 +235,7 @@ BOOST_PYTHON_MODULE(effective)
                    (arg("neff"), arg("symmetry")=py::object()));
         solver.def("find_modes", &EffectiveIndex2DSolver_findModes,
                    "Find the modes within the specified range using global method.\n\n"
+                   "Args:\n"
                    SEARCH_ARGS_DOC"\n"
                    "Returns:\n"
                    "    list of integers: List of the indices in the :attr:`modes` list of the found\n"
@@ -338,6 +339,8 @@ BOOST_PYTHON_MODULE(effective)
                    (arg("lam"), arg("m")=0));
         METHOD(find_modes, findModes,
                "Find the modes within the specified range using global method.\n\n"
+               "Args:\n"
+               "    m (integer): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
                SEARCH_ARGS_DOC"\n"
                "Returns:\n"
                "    list of integers: List of the indices in the :attr:`modes` list of the found\n"
