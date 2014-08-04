@@ -335,7 +335,7 @@ BOOST_PYTHON_MODULE(effective)
                    "    m (integer): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
                    "Returns:\n"
                    "    integer: Index in the :attr:`modes` list of the found mode.\n",
-                   "lam", arg("m")=0);
+                   (arg("lam"), arg("m")=0));
         METHOD(find_modes, findModes,
                "Find the modes within the specified range using global method.\n\n"
                SEARCH_ARGS_DOC"\n"
