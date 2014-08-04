@@ -196,6 +196,9 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
                 cls_name = parts[-2]
                 obj_name = '.'.join(parts[-2:])
                 ns['class'] = cls_name
+            elif isinstance(parent, type):
+                mod_name = parent.__module__
+                obj_name = name[len(mod_name)+1:]
             else:
                 mod_name, obj_name = '.'.join(parts[:-1]), parts[-1]
 

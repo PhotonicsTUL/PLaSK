@@ -1,10 +1,7 @@
 `{{ objname }}` Class
 ===============================================================================
 
-.. inheritance-diagram:: {{ fullname }}
-   :parts: 1
-
-.. autoclass:: {{ fullname }}
+.. autoclass:: {{ module }}.{{ objname }}
 
 {%- block classes %}
 {%- if classes and classes != ['dtype'] %}
@@ -17,7 +14,7 @@ Classes
    :toctree: {{ objname }}
    :template: class.rst
 {% for item in classes %}
-   ~{{ fullname }}.{{ item }}
+   ~{{ module }}.{{ objname }}.{{ item }}
 {%- endfor %}
 
 {%- endif %}
@@ -31,7 +28,7 @@ Methods
 
 .. autosummary::
 {% for item in methods %}
-   ~{{ fullname }}.{{ item }}
+   ~{{ module }}.{{ objname }}.{{ item }}
 {%- endfor %}
 
 {%- endif %}
@@ -45,7 +42,7 @@ Attributes
 
 .. autosummary::
 {% for item in attributes %}
-   ~{{ fullname }}.{{ item }}
+   ~{{ module }}.{{ objname }}.{{ item }}
 {%- endfor %}
 
 {%- endif %}
@@ -82,7 +79,7 @@ Descriptions
 
 {%- for item in methods %}
 
-.. automethod:: {{ fullname }}.{{ item }}
+.. automethod:: {{ module }}.{{ objname }}.{{ item }}
 
 {%- endfor %}
 
@@ -97,7 +94,7 @@ Descriptions
 {%- for item in attributes %}
 {%- if not item.startswith('_') %}
 
-.. autoattribute:: {{ fullname }}.{{ item }}
+.. autoattribute:: {{ module }}.{{ objname }}.{{ item }}
 
 {%- endif %}
 {%- endfor %}
@@ -114,7 +111,7 @@ Descriptions
 .. rubric:: Static Attribute Details
 
 {% if 'dtype' in static_attributes -%}
-.. attribute:: {{ fullname }}.dtype
+.. attribute:: {{ module }}.{{ objname }}.dtype
 
    Value type.
 
