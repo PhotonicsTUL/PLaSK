@@ -60,4 +60,3 @@ Descriptions
 .. autofunction::   plot_geometry
 .. autofunction::   plot_mesh
 .. autofunction::   plot_boundary
-.. autofunction::   plot_material_param

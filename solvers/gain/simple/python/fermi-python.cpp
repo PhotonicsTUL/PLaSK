@@ -106,7 +106,6 @@ BOOST_PYTHON_MODULE(simple)
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCartesian>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCartesian>),
-                   "set_levels(**kwargs)\n\n"
                    "Determine quasi-Fermi levels and carriers levels inside QW.\n"
                   );
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
@@ -134,7 +133,6 @@ BOOST_PYTHON_MODULE(simple)
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCylindrical>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCylindrical>),
-                   "set_levels(**kwargs)\n\n"
                    "Determine quasi-Fermi levels and carriers levels inside QW.\n"
                   );
         solver.def_readwrite("strained", &__Class__::if_strain, "Consider strain in QW? (True or False)");
@@ -148,7 +146,7 @@ BOOST_PYTHON_MODULE(simple)
         // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
+        solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCylindrical>, (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;

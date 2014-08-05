@@ -1,4 +1,4 @@
-.. _sec-xpl-geometry-types
+.. _sec-xpl-geometry-types:
 
 Geometry types
 --------------

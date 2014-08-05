@@ -98,7 +98,7 @@ void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
             std::string sym_tran, sym_long;
-            readComaAttr(reader, "size", sym_long, sym_tran, true);
+            readComaAttr(reader, "symmetry", sym_long, sym_tran, true);
             if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
             if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
         } else if (param == "root") {

@@ -258,9 +258,7 @@ Optical solvers
          :attr wavelength: Light wavelength. (float [nm])
          :attr k-tran: Transverse wave-vector component. (float [1/µm])
          :attr k-long: Longitudinal wave-vector component. (float [1/µm])
-
-         .. comment::
-            :attr symmetry: Mode symmetry. Give a symmetric field component here (e.g. ``Etran``, ``Hx``).
+         :attr symmetry: Mode symmetry. Give a symmetric field component here (e.g. ``Etran``, ``Hx``).
 
       .. xml:tag:: <root> [in FourierReflection3D optical solver]
 
