@@ -121,9 +121,9 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
                     gamma[layer][ie] += RH[ie+je] * RE[ih+jh];
             }
 
-// std::cerr << "Gamma2: ";
-// for (unsigned r = 0; r != N; ++r) std::cerr << format("%7.1f ", real(gamma[layer][r]));
-// std::cerr << "\n";
+            // std::cerr << "Gamma2: ";
+            // for (unsigned r = 0; r != N; ++r) std::cerr << format("%7.1f ", real(gamma[layer][r]));
+            // std::cerr << "\n";
 
             // Eigenvector matrix is simply a unity matrix
             std::fill_n(Te[layer].data(), N*N, 0.);

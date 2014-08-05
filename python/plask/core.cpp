@@ -111,7 +111,7 @@ inline static void register_config()
                       "================ ================ ================\n\n"
 
                       "The choice of the axes should depend on your structure. In Cartesian coordinates\n"
-                      "you probablye prefer `xyz` or `zxy`. In cylindrical ones the most natural choice\n"
+                      "you probably prefer `xyz` or `zxy`. In cylindrical ones the most natural choice\n"
                       "is `prz`. However, it is important to realize that any names can be chosen in\n"
                       "any geometry and they are fully independent from it.\n"
                      )
@@ -126,11 +126,11 @@ inline static void register_config()
 
                       "        :ansi:    Use ANSI codes for coloring. Works best in UNIX-like systems\n"
                       "                  (Linux, OSX) or with GUI launchers.\n"
-                      "        :windows: Use Windows API for coloring. Availale only on Windows.\n"
-                      "        :none:    Do not perform coloring at all. Recomended when redirecting\n"
+                      "        :windows: Use Windows API for coloring. Available only on Windows.\n"
+                      "        :none:    Do not perform coloring at all. Recommended when redirecting\n"
                       "                  output to a file.\n\n"
 
-                      "        On its start PLaSK tries to automatically determin the best value for\n"
+                      "        On its start PLaSK tries to automatically determine the best value for\n"
                       "        this option, so usually you will not need to change it.\n\n"
 
                       "**level**\n"
@@ -139,7 +139,7 @@ inline static void register_config()
                       "        :CRITICAL_ERROR: Critical errors that result in program interruption.\n"
                       "        :ERROR:          Minor errors that do not break the whole program flow.\n"
                       "        :ERROR_DETAIL:   Details of the errors with more information on them.\n"
-                      "        :WARNING:        Important warnings that you investiagate.\n"
+                      "        :WARNING:        Important warnings that you should investigate.\n"
                       "        :INFO:           General information of the executed operations.\n"
                       "        :RESULT:         Some intermediate computations results.\n"
                       "        :DATA:           Some data used for tracking the computations.\n"
@@ -151,7 +151,7 @@ inline static void register_config()
                       "        always set the logging level at least to 'WARNING'.\n\n"
 
                       "**output**\n"
-                      "        Stream to which the log messages are prited. Can be either **stderr**\n"
+                      "        Stream to which the log messages are printed. Can be either **stderr**\n"
                       "        (which is the default) or **stdout** (turned on for interactive mode).\n\n"
 
                       "Usually you should only want to change the :attr:`config.log.level` value.\n"

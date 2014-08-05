@@ -425,14 +425,14 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             lcmesh->reset(back+dx, front-dx, nNl);
         } else {
             lcmesh->reset(back, front, nNl+1);
-            for (size_t l = 0, last = nl*nNt; l != nNl; ++l) params[last+l] = params[l];
+            for (size_t t = 0, end = nl*nt, shift = nl-1; t != end; t += nl) params[shift+t] = params[t];
         }
         if (symmetric_tran) {
-            double dx = 0.5 * (right-left) / nNt;
-            tcmesh->reset(left+dx, right-dx, nNt);
+            double dy = 0.5 * (right-left) / nNt;
+            tcmesh->reset(left+dy, right-dy, nNt);
         } else {
             tcmesh->reset(left, right, nNt+1);
-            for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
+            for (size_t l = 0, last = nl*(nt-1); l != nl; ++l) params[last+l] = params[l];
         }
         for (Tensor3<dcomplex>& eps: params) {
             eps.c22 = 1. / eps.c22;
@@ -458,6 +458,9 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
          // +1: Ex+, Ey-, Hx-, Hy+
          //  0: no symmetry
          // -1: Ex-, Ey+, Hx+, Hy-
+
+    assert(!(symx && klong != 0.));
+    assert(!(symy && ktran != 0.));
 
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);

@@ -164,8 +164,8 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
             }
             expansion.symmetry_long = Expansion::E_UNSPECIFIED;
         }
-        if (k != ktran) fields_determined = DETERMINED_NOTHING;
-        ktran = k;
+        if (k != klong) fields_determined = DETERMINED_NOTHING;
+        klong = k;
     }
 
     /// Set transverse wavevector
