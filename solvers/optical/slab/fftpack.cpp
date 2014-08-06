@@ -136,7 +136,7 @@ Forward2D::Forward2D(): wsave1(nullptr), wsave2(nullptr) {}
 
 Forward2D::Forward2D(Forward2D&& old):
     lot(old.lot), n1(old.n1), n2(old.n2),
-    strid(old.strid), istrid(old.istrid),
+    strid(old.strid), strid2(old.strid2),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     wsave1(old.wsave1), wsave2(old.wsave2) {
     old.wsave1 = nullptr; if (old.wsave2 != old.wsave1) old.wsave2 = nullptr;
@@ -144,7 +144,7 @@ Forward2D::Forward2D(Forward2D&& old):
 
 Forward2D& Forward2D::operator=(Forward2D&& old) {
     lot = old.lot; n1 = old.n1; n2 = old.n2;
-    strid = old.strid; istrid = old.istrid;
+    strid = old.strid; strid2 = old.strid2;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
     aligned_free(wsave1); if (wsave2 != wsave1) aligned_free(wsave2);
     wsave1 = old.wsave1; wsave2 = old.wsave2;
@@ -152,8 +152,8 @@ Forward2D& Forward2D::operator=(Forward2D&& old) {
     return *this;
 }
 
-Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int istrid):
-    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), istrid(istrid?istrid:n1), symmetry1(symmetry1), symmetry2(symmetry2),
+Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int ld):
+    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), strid2((strid?strid:lot)*(ld?ld:n1)), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -186,25 +186,27 @@ void Forward2D::execute(dcomplex* data) {
         // n1 is changing faster than n2
         if (symmetry1 == SYMMETRY_NONE) {
             for (int i = 0; i != n2; ++i)
-                cfftmf_(lot, 1, n1, strid, data+strid*istrid*i, strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                cfftmf_(lot, 1, n1, strid, data+strid2*i, strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
         } else {
-            for (int i = 0; i != n2; ++i)
-                cosqmb_(2*lot, 1, n1, 2*strid, (double*)data+2*strid*istrid*i, 2*strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
             double factor = 1./n1;
-            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+            for (int i = 0; i != n2; ++i) {
+                cosqmb_(2*lot, 1, n1, 2*strid, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                for (int j = 0, shift = strid2*i, N = strid*n1; j < N; j += strid)
+                    for (int l = 0; l < lot; ++l)
+                        data[shift+j+l] *= factor;
+            }
         }
         if (symmetry2 == SYMMETRY_NONE) {
             for (int i = 0; i != n1; ++i)
-                cfftmf_(lot, 1, n2, strid*istrid, data+strid*i, strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                cfftmf_(lot, 1, n2, strid2, data+strid*i, strid+strid2*(n2-1), wsave2, lensav(n2), work, 2*lot*n2, ier);
         } else {
-            for (int i = 0; i != n1; ++i)
-                cosqmb_(2*lot, 1, n2, 2*strid*istrid, (double*)data+2*strid*i, 2*strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
             double factor = 1./n2;
-            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+            for (int i = 0; i != n1; ++i) {
+                cosqmb_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid*i, 2*(strid+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                for (int j = 0, shift = strid*i, N = n2*strid2; j < N; j += strid2)
+                    for (int l = 0; l < lot; ++l)
+                        data[shift+j+l] *= factor;
+            }
         }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Forward2D::execute: %1%", msg);
@@ -222,7 +224,7 @@ Backward2D::Backward2D(): wsave1(nullptr), wsave2(nullptr) {}
 
 Backward2D::Backward2D(Backward2D&& old):
     lot(old.lot), n1(old.n1), n2(old.n2),
-    strid(old.strid), istrid(old.istrid),
+    strid(old.strid), strid2(old.strid2),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     wsave1(old.wsave1), wsave2(old.wsave2) {
     old.wsave1 = nullptr; if (old.wsave2 != old.wsave1) old.wsave2 = nullptr;
@@ -230,7 +232,7 @@ Backward2D::Backward2D(Backward2D&& old):
 
 Backward2D& Backward2D::operator=(Backward2D&& old) {
     lot = old.lot; n1 = old.n1; n2 = old.n2;
-    strid = old.strid; istrid = old.istrid;
+    strid = old.strid; strid2 = old.strid2;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
     aligned_free(wsave1); if (wsave2 != wsave1) aligned_free(wsave2);
     wsave1 = old.wsave1; wsave2 = old.wsave2;
@@ -238,8 +240,8 @@ Backward2D& Backward2D::operator=(Backward2D&& old) {
     return *this;
 }
 
-Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int istrid):
-    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), istrid(istrid?istrid:n1), symmetry1(symmetry1), symmetry2(symmetry2),
+Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int ld):
+    lot(lot), n1(n1), n2(n2), strid(strid?strid:lot), strid2((strid?strid:lot)*(ld?ld:n1)), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -272,39 +274,43 @@ void Backward2D::execute(dcomplex* data) {
         // n1 is changing faster than n2
         if (symmetry1 == SYMMETRY_NONE) {
             for (int i = 0; i != n2; ++i)
-                cfftmb_(lot, 1, n1, strid, data+strid*istrid*i, strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                cfftmb_(lot, 1, n1, strid, data+strid2*i, strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
         } else if (symmetry1 == SYMMETRY_EVEN) {
-            for (int i = 0; i != n2; ++i)
-                cosqmf_(2*lot, 1, n1, 2*strid, (double*)data+2*strid*istrid*i, 2*strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
             double factor = n1;
-            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+            for (int i = 0; i != n2; ++i) {
+                cosqmf_(2*lot, 1, n1, 2*strid, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                for (int j = 0, shift = strid2*i, N = strid*n1; j < N; j += strid)
+                    for (int l = 0; l < lot; ++l)
+                        data[j+l+shift] *= factor;
+            }
         } else { // (symmetry1 == SYMMETRY_ODD)
-            for (int i = 0; i != n2; ++i)
-                sinqmf_(2*lot, 1, n1, 2*strid, (double*)data+2*strid*istrid*i, 2*strid*istrid, wsave1, lensav(n1), work, 2*lot*n1, ier);
             double factor = n1;
-            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+            for (int i = 0; i != n2; ++i) {
+                sinqmf_(2*lot, 1, n1, 2*strid, (double*)data+2*strid2*i, 2*strid2, wsave1, lensav(n1), work, 2*lot*n1, ier);
+                for (int j = 0, shift = strid2*i, N = strid*n1; j < N; j += strid)
+                    for (int l = 0; l < lot; ++l)
+                        data[j+l+shift] *= factor;
+            }
         }
         if (symmetry2 == SYMMETRY_NONE) {
             for (int i = 0; i != n1; ++i)
-                cfftmb_(lot, 1, n2, strid*istrid, data+strid*i, strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                cfftmb_(lot, 1, n2, strid2, data+strid*i, strid+strid2*(n2-1), wsave2, lensav(n2), work, 2*lot*n2, ier);
         } else if (symmetry2 == SYMMETRY_EVEN) {
-            for (int i = 0; i != n1; ++i)
-                cosqmf_(2*lot, 1, n2, 2*strid*istrid, (double*)data+2*strid*i, 2*strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
             double factor = n2;
-            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+            for (int i = 0; i != n1; ++i) {
+                cosqmf_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid*i, 2*(strid+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                for (int j = 0, shift = strid*i, N = n2*strid2; j < N; j += strid2)
+                    for (int l = 0; l < lot; ++l)
+                        data[shift+j+l] *= factor;
+            }
         } else { // (symmetry2 == SYMMETRY_ODD)
-            for (int i = 0; i != n1; ++i)
-                sinqmf_(2*lot, 1, n2, 2*strid*istrid, (double*)data+2*strid*i, 2*strid*(istrid*(n2-1)+1), wsave2, lensav(n2), work, 2*lot*n2, ier);
             double factor = n2;
-            for (int i = 0, N = strid*n1*n2; i < N; i += strid)
-                for (int j = 0; j < lot; ++j)
-                    data[i+j] *= factor;
+            for (int i = 0; i != n1; ++i) {
+                sinqmf_(2*lot, 1, n2, 2*strid2, (double*)data+2*strid*i, 2*(strid+strid2*(n2-1)), wsave2, lensav(n2), work, 2*lot*n2, ier);
+                for (int j = 0, shift = strid*i, N = n2*strid2; j < N; j += strid2)
+                    for (int l = 0; l < lot; ++l)
+                        data[shift+j+l] *= factor;
+            }
         }
     } catch (const std::string& msg) {
         throw CriticalException("FFT::Backward2D::execute: %1%", msg);

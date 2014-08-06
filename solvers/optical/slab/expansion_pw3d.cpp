@@ -421,17 +421,17 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             .execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> lcmesh = make_shared<RegularAxis>(), tcmesh = make_shared<RegularAxis>();
         if (symmetric_long) {
-            double dx = 0.5 * (front-back) / nNl;
-            lcmesh->reset(back+dx, front-dx, nNl);
+            double dx = 0.5 * (front-back) / nl;
+            lcmesh->reset(back+dx, front-dx, nl);
         } else {
-            lcmesh->reset(back, front, nNl+1);
+            lcmesh->reset(back, front, nl);
             for (size_t t = 0, end = nl*nt, shift = nl-1; t != end; t += nl) params[shift+t] = params[t];
         }
         if (symmetric_tran) {
-            double dy = 0.5 * (right-left) / nNt;
-            tcmesh->reset(left+dy, right-dy, nNt);
+            double dy = 0.5 * (right-left) / nt;
+            tcmesh->reset(left+dy, right-dy, nt);
         } else {
-            tcmesh->reset(left, right, nNt+1);
+            tcmesh->reset(left, right, nt);
             for (size_t l = 0, last = nl*(nt-1); l != nl; ++l) params[last+l] = params[l];
         }
         for (Tensor3<dcomplex>& eps: params) {
