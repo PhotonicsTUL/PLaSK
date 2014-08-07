@@ -1,9 +1,6 @@
 `{{ objname }}` Class
 ===============================================================================
 
-.. inheritance-diagram:: {{ fullname }}
-   :parts: 1
-
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ fullname }}

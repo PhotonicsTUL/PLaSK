@@ -195,6 +195,7 @@ class EffectiveFrequency(unittest.TestCase):
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
         self.assertAlmostEqual( self.solver.modes[m].lam, 979.702, 3 )
+        self.assertAlmostEqual( self.solver.modes[m].loss, 2.72, 2 )
 
     def testThreshold(self):
         try:

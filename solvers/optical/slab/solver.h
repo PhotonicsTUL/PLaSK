@@ -3,7 +3,7 @@
 
 #include <plask/plask.hpp>
 #include "rootdigger.h"
-#include "diagonalizer.h"
+#include "transfer.h"
 
 #undef interface
 
@@ -20,15 +20,9 @@ struct PML {
 };
 
 /**
- * Base class for all slab solvers
+ * Common base with layer details independent on the geomety
  */
-template <typename GeometryT>
-struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
-
-  protected:
-
-    /// Determinant logger
-    Data2DLog<dcomplex,dcomplex> detlog;
+struct SlabBase {
 
     /// Layer boundaries
     OrderedAxis vbounds;
@@ -45,8 +39,67 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
     /// Position of the matching interface
     size_t interface;
 
-    /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
-    std::unique_ptr<Diagonalizer> diagonalizer;
+    dcomplex k0,                                ///< Normalized frequency [1/µm]
+             klong,                             ///< Longitudinal wavevector [1/µm]
+             ktran;                             ///< Transverse wavevector [1/µm]
+
+    /// Force re-computation of material coefficients
+    bool recompute_coefficients;
+
+    SlabBase(): interface(1), k0(NAN), klong(0.), ktran(0.), recompute_coefficients(true) {}
+
+    /**
+     * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
+     * The bottom infinite layer has always negative coordinate.
+     * \param[in,out] h vertical coordinate
+     * \return layer number (in the stack)
+     */
+    size_t getLayerFor(double& h) const {
+        size_t n = std::upper_bound(vbounds.begin(), vbounds.end(), h) - vbounds.begin();
+        if (n == 0) h -= vbounds[0];
+        else h -= vbounds[n-1];
+        return n;
+    }
+
+    /// Get stack
+    /// \return layers stack
+    const std::vector<std::size_t>& getStack() const { return stack; }
+
+    /// Get list of vertical positions of layers in each set
+    /// \return layer sets
+    const std::vector<OrderedAxis>& getLayersPoints() const { return lverts; }
+
+    /// Get list of vertical positions of layers in one set
+    /// \param n set number
+    /// \return layer sets
+    const OrderedAxis& getLayerPoints(size_t n) const { return lverts[n]; }
+
+    /// Recompute expansion coefficients
+    virtual void computeCoefficients() = 0;
+
+};
+
+/**
+ * Base class for all slab solvers
+ */
+template <typename GeometryT>
+class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase {
+
+    /// Compute layer boundaries
+    void setup_vbounds();
+
+    /// Reset structure if input is changed
+    void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
+        this->recompute_coefficients = true;
+    }
+
+  protected:
+
+    /// Determinant logger
+    Data2DLog<dcomplex,dcomplex> detlog;
+
+    /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
+    std::unique_ptr<Transfer> transfer;
 
     void onInitialize() {
         setupLayers();
@@ -54,11 +107,8 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
 
     void onGeometryChange(const Geometry::Event& evt) {
         this->invalidate();
-        if (!vbounds.empty()) prepareLayers(); // update layers
+        if (!vbounds.empty()) setup_vbounds(); // update layers
     }
-
-    /// Compute layer boundaries
-    void prepareLayers();
 
     /// Detect layer sets and set them up
     void setupLayers();
@@ -88,17 +138,14 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
 
   public:
 
-    /// Distance outside outer borders where material is sampled
+    /// Distance outside outer borders where the material is sampled
     double outdist;
-
-    /// Smoothing coefficient
-    double smooth;
 
     /// Parameters for main rootdigger
     RootDigger::Params root;
 
-    /// Force recomputation of material coefficients
-    bool recompute_coefficients;
+    /// Smoothing coefficient
+    double smooth;
 
     /// Receiver for the temperature
     ReceiverFor<Temperature, GeometryT> inTemperature;
@@ -120,6 +167,8 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
 
     SlabSolver(const std::string& name="");
 
+    ~SlabSolver();
+
     /**
      * Get the position of the matching interface.
      * \return index of the vertical mesh, where interface is set
@@ -131,7 +180,7 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
      * \param index index of the vertical mesh, where interface is set
      */
     inline void setInterface(size_t index) {
-        if (vbounds.empty()) prepareLayers();
+        if (vbounds.empty()) setup_vbounds();
         if (index == 0 || index > vbounds.size())
             throw BadInput(this->getId(), "Cannot set interface to %1% (min: 1, max: %2%)", index, vbounds.size());
         double pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
@@ -144,7 +193,7 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
      * \param pos vertical position close to the point where interface will be set
      */
     inline void setInterfaceAt(double pos) {
-        if (vbounds.empty()) prepareLayers();
+        if (vbounds.empty()) setup_vbounds();
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin() + 1; // -1e-12 to compensate for truncation errors
         if (interface > vbounds.size()) interface = vbounds.size();
         pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
@@ -157,7 +206,7 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
      * \param path path specifying object in the geometry
      */
     void setInterfaceOn(const shared_ptr<GeometryObject>& object, const PathHints* path=nullptr) {
-        if (vbounds.empty()) prepareLayers();
+        if (vbounds.empty()) setup_vbounds();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-1e-12) - vbounds.begin() + 1;
@@ -181,38 +230,7 @@ struct PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT> {
             throw BadInput(this->getId(), "Wrong interface position %1% (min: 1, max: %2%)", interface, stack.size()-1);
     }
 
-    /**
-     * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
-     * The bottom infinite layer has always negative coordinate.
-     * \param[in,out] h vertical coordinate
-     * \return layer number (in the stack)
-     */
-    size_t getLayerFor(double& h) const {
-        size_t n = std::upper_bound(vbounds.begin(), vbounds.end(), h) - vbounds.begin();
-        if (n == 0) h -= vbounds[0];
-        else h -= vbounds[n-1];
-        return n;
-    }
-
-    /// Get stack
-    /// \return layers stack
-    const std::vector<std::size_t>& getStack() const { return stack; }
-
-    /// Get list of vertical positions of layers in each set
-    /// \return layer sets
-    const std::vector<OrderedAxis>& getLayersPoints() const { return lverts; }
-
-    /// Get list of vertical positions of layers in one set
-    /// \param n set number
-    /// \return layer sets
-    const OrderedAxis& getLayerPoints(size_t n) const { return lverts[n]; }
-
   protected:
-
-    /**
-     * Recompute expansion coefficients
-     */
-    virtual void computeCoefficients() = 0;
 
     /**
      * Return number of determined modes

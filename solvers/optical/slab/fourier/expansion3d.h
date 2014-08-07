@@ -3,12 +3,12 @@
 
 #include <plask/plask.hpp>
 
-#include "expansion.h"
+#include "../expansion.h"
 #include "fft.h"
 
 namespace plask { namespace solvers { namespace slab {
 
-struct FourierReflection3D;
+struct FourierSolver3D;
 
 struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
@@ -48,7 +48,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
      * Create new expansion
      * \param solver solver which performs calculations
      */
-    ExpansionPW3D(FourierReflection3D* solver);
+    ExpansionPW3D(FourierSolver3D* solver);
 
     /**
      * Init expansion
@@ -57,7 +57,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     void init();
 
     /// Free allocated memory
-    void free();
+    void reset();
 
     /// Compute all expansion coefficients
     void computeMaterialCoefficients() {

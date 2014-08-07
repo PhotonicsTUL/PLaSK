@@ -2,30 +2,23 @@
 #define PLASK__SOLVER_SLAB_REFLECTIONBASE_H
 
 #include "matrices.h"
-#include "diagonalizer.h"
-#include "slab_base.h"
+#include "transfer.h"
+#include "solver.h"
+
 
 namespace plask { namespace solvers { namespace slab {
 
 /**
  * Base class for all solvers using reflection matrix method.
  */
-template <typename GeometryT>
-struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
+struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
-    /// Struct containng data for computing field in a layer
+    /// Struct containing data for computing field in a layer
     struct LayerFields {
         cvector F, B;
     };
 
   protected:
-
-    /// Indicates what has been determined
-    enum Determined {
-        DETERMINED_NOTHING = 0, ///< Nothing has been determined
-        DETERMINED_RESONANT,    ///< Resonant field has been determined
-        DETERMINED_REFLECTED    ///< Reflected field has been determined
-    };
 
     cmatrix interface_field_matrix;             ///< Determined field at the interface
     dcomplex* interface_field;                  ///< Pointer to the interface field data
@@ -38,17 +31,10 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
     int lwork;                                  ///< temporary space
     dcomplex* work;                             ///< temporary space
 
-    dcomplex k0,                                ///< Normalized frequency [1/µm]
-             klong,                             ///< Longitudinal wavevector [1/µm]
-             ktran;                             ///< Transverse wavevector [1/µm]
-
     cmatrix P;                                  ///< current reflection matrix
     bool allP;                                  ///< do we need to keep all the P matrices?
 
-    Determined fields_determined;               ///< Are the diagonalized fields determined for all layers?
     std::vector<LayerFields> fields;            ///< Vector of fields computed for each layer
-
-    bool emitting;                              ///< \c True if the structure is emitting vertically.
 
   private:
 
@@ -56,65 +42,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
     int* ipiv;                                  ///< pivot vector
     std::vector<cmatrix> memP;                  ///< reflection matrices for each layer
 
-    void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
-        this->recompute_coefficients = true;
-    }
-
   public:
-
-    ~ReflectionSolver();
-
-    /// Get current wavelength
-    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
-    /// Set current wavelength
-    void setWavelength(dcomplex lambda, bool recompute=true) {
-        dcomplex k = 2e3*M_PI / lambda;
-        if (k != k0) {
-            fields_determined = DETERMINED_NOTHING;
-            k0 = k;
-            this->recompute_coefficients |= recompute;
-        }
-    }
-
-    /// Get current k0
-    dcomplex getK0() const { return k0; }
-    /// Set current k0
-    void setK0(dcomplex k, bool recompute=true) {
-        if (k != k0) {
-            fields_determined = DETERMINED_NOTHING;
-            k0 = k;
-            if (k0 == 0.) k0 = 1e-12;
-            this->recompute_coefficients |= recompute;
-        }
-    }
-
-    /// Get longitudinal wavevector
-    dcomplex getKlong() const { return klong; }
-    /// Set longitudinal wavevector
-    void setKlong(dcomplex k)  {
-        if (k != klong) fields_determined = DETERMINED_NOTHING;
-        klong = k;
-    }
-
-    /// Get transverse wavevector
-    dcomplex getKtran() const { return ktran; }
-    /// Set transverse wavevector
-    void setKtran(dcomplex k)  {
-        if (k != ktran) fields_determined = DETERMINED_NOTHING;
-        ktran = k;
-    }
-
-    /// Get discontinuity matrix determinant for the current parameters
-    dcomplex getDeterminant() {
-        this->initCalculation();
-        return determinant();
-    }
-
-    /// Direction specification for reflection calculations
-    enum IncidentDirection {
-        INCIDENCE_TOP,      ///< Incident light propagating from top (downwards)
-        INCIDENCE_BOTTOM    ///< Incident light propagating from bottom (upwards)
-    };
 
     /**
      * Get vector of reflection coefficients
@@ -152,38 +80,20 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      */
     cvector getFieldVectorH(double z, int n);
 
-    /// Get \c emitting attribute
-    bool getEmitting() const { return emitting; }
-    /// Set \c emitting attribute
-    void setEmitting(bool value) {
-        emitting = value;
-        this->invalidate();
-    }
+    ReflectionTransfer(Diagonalizer* diagonalizer);
+
+    ~ReflectionTransfer();
 
   protected:
-
-    ReflectionSolver(const std::string& name): SlabSolver<GeometryT>(name),
-        interface_field(nullptr), evals(nullptr), rwork(nullptr), work(nullptr),
-        k0(NAN), klong(0.), ktran(0.),
-        emitting(true), ipiv(nullptr) {
-        this->inTemperature.changedConnectMethod(this, &ReflectionSolver::onInputChanged);
-        this->inGain.changedConnectMethod(this, &ReflectionSolver::onInputChanged);
-    }
-
-    /// Initialize memory for calculations
-    void init();
-
-    /// Cleanup memory
-    void cleanup();
 
     /// Init diagonalization
     void initDiagonalization() {
     // Get new coefficients if needed
-        if (this->recompute_coefficients) {
-            this->computeCoefficients();
-            this->recompute_coefficients = false;
+        if (solver->recompute_coefficients) {
+            solver->computeCoefficients();
+            solver->recompute_coefficients = false;
         }
-        this->diagonalizer->initDiagonalization(k0, klong, ktran);
+        this->diagonalizer->initDiagonalization(solver->k0, solver->klong, solver->ktran);
     }
 
     /// Compute discontinuity matrix determinant for the current parameters
@@ -191,8 +101,8 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
 
     /// Get admittance (A) and discontinuity (M) matrices for the whole structure
     void getFinalMatrix() {
-        getAM(0, this->interface-1, false);
-        getAM(this->stack.size()-1, this->interface, true);
+        getAM(0, solver->interface-1, false);
+        getAM(solver->stack.size()-1, solver->interface, true);
     }
 
     /**
@@ -235,29 +145,29 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
 
     /**
      * Compute magnetic field at the given mesh.
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
 
     /**
-     * Compute light intensity.
+     * Compute light magnitude.
      * \param power mode power
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method);
+    DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
 
     /**
      * Get electric field at the given mesh for resonant mode.
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldE(dst_mesh, method);
     }
@@ -267,18 +177,18 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldH(dst_mesh, method);
     }
 
     /**
-     * Get light intensity for resonant mode.
+     * Get light magnitude for resonant mode.
      * \param power mode power
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getFieldIntensity(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
+    DataVector<double> getFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldMagnitude(power, dst_mesh, method);
     }
@@ -290,7 +200,7 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldE(dst_mesh, method);
     }
@@ -302,19 +212,19 @@ struct PLASK_SOLVER_API ReflectionSolver: public SlabSolver<GeometryT> {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldH(dst_mesh, method);
     }
 
     /**
-     * Get light intensity for reflected light.
+     * Get light magnitude for reflected light.
      * \param incident incident field vector
      * \param side incidence side
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldIntensity(const cvector& incident, IncidentDirection side, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method) {
+    DataVector<double> getReflectedFieldMagnitude(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldMagnitude(1., dst_mesh, method);
     }

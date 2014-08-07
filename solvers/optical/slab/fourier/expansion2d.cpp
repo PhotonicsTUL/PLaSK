@@ -1,12 +1,12 @@
-#include "expansion_pw2d.h"
-#include "fourier_reflection_2d.h"
-#include "mesh_adapter.h"
+#include "expansion2d.h"
+#include "solver2d.h"
+#include "../meshadapter.h"
 
-#define SOLVER static_cast<FourierReflection2D*>(solver)
+#define SOLVER static_cast<FourierSolver2D*>(solver)
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver), initialized(false),
+ExpansionPW2D::ExpansionPW2D(FourierSolver2D* solver): Expansion(solver), initialized(false),
     symmetry(E_UNSPECIFIED), polarization(E_UNSPECIFIED) {}
 
 size_t ExpansionPW2D::lcount() const {
@@ -119,7 +119,7 @@ void ExpansionPW2D::init()
     initialized = true;
 }
 
-void ExpansionPW2D::free() {
+void ExpansionPW2D::reset() {
     coeffs.clear();
     initialized = false;
 }

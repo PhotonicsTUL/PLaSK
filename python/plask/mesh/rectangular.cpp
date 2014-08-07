@@ -417,6 +417,7 @@ namespace detail {
                 .def("__iter__", &ThisT::__iter__, py::with_custodian_and_ward_postcall<0,1>())
                 .def("__str__", &ThisT::__str__)
             ;
+            py::delattr(py::scope(), "Div");
 
             py::scope scope2 = cls;
             py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)

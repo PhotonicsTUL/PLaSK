@@ -4,11 +4,42 @@
 #include <type_traits>  // std::is_same
 
 #include "python_globals.h"
-#include "python_property_desc.h"
+
+#include <boost/python/args.hpp>
 
 #include <plask/utils/stl.h>
 #include <plask/provider/providerfor.h>
 #include <plask/mesh/rectangular.h>
+
+namespace plask { namespace python {
+
+    template <typename PropertyT> struct PropertyArgsSingleValue {
+        static py::detail::keywords<1> value() {
+            return py::arg("self");
+        }
+    };
+
+    template <typename PropertyT> struct PropertyArgsMultiValue {
+        static py::detail::keywords<2> value() {
+            return py::arg("self"), py::arg("n");
+        }
+    };
+
+    template <typename PropertyT> struct PropertyArgsField {
+        static py::detail::keywords<3> value() {
+            return py::arg("self"), py::arg("mesh"), py::arg("interpolation")=INTERPOLATION_DEFAULT;
+        }
+    };
+
+    template <typename PropertyT> struct PropertyArgsMultiField {
+        static py::detail::keywords<4> value() {
+            return py::arg("self"), py::arg("n"), py::arg("mesh"), py::arg("interpolation")=INTERPOLATION_DEFAULT;
+        }
+    };
+
+}} // namespace plask::python
+
+#include "python_property_desc.h"
 
 namespace plask { namespace python {
 
@@ -138,6 +169,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterReceiverBase<ReceiverT>
     {
+        typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
 
         static void assign(ReceiverT& self, const py::object& obj) {
@@ -152,7 +184,7 @@ namespace detail {
         static ValueT __call__(ReceiverT& self, const ExtraParams&... params) { return self(params...); }
 
         RegisterReceiverImpl() {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider");
+            this->receiver_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the connected provider");
         }
     };
 
@@ -160,6 +192,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterReceiverBase<ReceiverT>
     {
+        typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
 
         static void assign(ReceiverT& self, const py::object& obj) {
@@ -177,8 +210,8 @@ namespace detail {
         static ValueT __call__0(ReceiverT& self, const ExtraParams&... params) { return self(0, params...); }
 
         RegisterReceiverImpl() {
-            this->receiver_class.def("__call__", &__call__0, "Get value from the connected provider");
-            this->receiver_class.def("__call__", &__call__n, "Get value from the connected provider");
+            this->receiver_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the connected provider");
+            this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
         }
     };
@@ -189,6 +222,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterReceiverBase<ReceiverT>
     {
+        typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
@@ -212,7 +246,7 @@ namespace detail {
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
-            this->receiver_class.def("__call__", &__call__, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->receiver_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(), "Get value from the connected provider");
         }
 
       private:
@@ -230,6 +264,7 @@ namespace detail {
     struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterReceiverBase<ReceiverT>
     {
+        typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
         typedef DataVectorWrap<const ValueT, DIMS> DataT;
@@ -271,8 +306,8 @@ namespace detail {
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
-            this->receiver_class.def("__call__", &__call__n, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
-            this->receiver_class.def("__call__", &__call__0, "Get value from the connected provider", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->receiver_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), "Get value from the connected provider");
+            this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), "Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, "Get number of values from connected provider");
         }
 
@@ -569,10 +604,11 @@ namespace detail {
     struct RegisterProviderImpl<ProviderT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterProviderBase<ProviderT>
     {
+        typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static ValueT __call__(ProviderT& self, const ExtraParams&... params) { return self(params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the provider.");
         }
     };
 
@@ -580,6 +616,7 @@ namespace detail {
     struct RegisterProviderImpl<ProviderT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...> > :
     public RegisterProviderBase<ProviderT>
     {
+        typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::PropertyTag::ValueType ValueT;
         static ValueT __call__n(ProviderT& self, int n, const ExtraParams&... params) {
             if (n < 0) n = self.size() + n;
@@ -589,8 +626,8 @@ namespace detail {
         }
         static ValueT __call__0(ProviderT& self, const ExtraParams&... params) { return self(0, params...); }
         RegisterProviderImpl() {
-            this->provider_class.def("__call__", &__call__n, "Get value from the provider.");
-            this->provider_class.def("__call__", &__call__0, "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(), "Get value from the provider.");
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
         }
     };
@@ -600,6 +637,7 @@ namespace detail {
     public RegisterProviderBase<ProviderT>
     {
         static const int DIMS = ProviderT::SpaceType::DIM;
+        typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::ValueType ValueT;
 
         static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
@@ -607,7 +645,7 @@ namespace detail {
             return DataVectorWrap<const ValueT,DIMS>(self(mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->provider_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(), "Get value from the provider.");
         }
     };
 
@@ -616,6 +654,7 @@ namespace detail {
     public RegisterProviderBase<ProviderT>
     {
         static const int DIMS = ProviderT::SpaceType::DIM;
+        typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::ValueType ValueT;
 
         static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, int n, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
@@ -630,8 +669,8 @@ namespace detail {
             return DataVectorWrap<const ValueT,DIMS>(self(0, mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
-            this->provider_class.def("__call__", &__call__n, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
-            this->provider_class.def("__call__", &__call__0, "Get value from the provider.", py::arg("interpolation")=INTERPOLATION_DEFAULT);
+            this->provider_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), "Get value from the provider.");
+            this->provider_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), "Get value from the provider.");
             this->provider_class.def("__len__", &ProviderT::size, "Get number of provided values.");
         }
     };

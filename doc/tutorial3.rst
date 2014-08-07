@@ -3,20 +3,9 @@
 Finding the threshold current of a gallium-arsenide VCSEL
 ---------------------------------------------------------
 
-.. comment::
-
-   putting all the above together
-
-   manual refinements of divide mesh generator
-
-   diffusion, gain
-
-   real-time structure modifications
-
-
 In this tutorial we will perform a full thermo-electro-optical modelling of a VCSEL structure to find it's threshold current.
 
-Analysed structure
+Analyzed structure
 ^^^^^^^^^^^^^^^^^^
 
 We will run our simulations on a structure similar to the one introduced in previous tutorial. We will have to expand it's geometry by adding a heatsink with a temperature boundary condition, contacts with voltage boundary conditions and specify doping levels in the structure. For simplicity, the VCSEL will remain a single mesa structure, however, we will specify its radius in the ``<defines>`` section of the XPL file under a name ``mesaRadius`` to refer to it later:
@@ -29,7 +18,7 @@ We will run our simulations on a structure similar to the one introduced in prev
      <define name="mesaRadius" value="10."/>
      <define name="aperture" value="{mesaRadius-6.}"/>
    </defines>
-   
+
    <materials>
    </materials>
 
@@ -315,13 +304,13 @@ in order to find it's minima:
 
  det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & np.r_[det_vals[:-1] \
             < det_vals[1:], False] & np.r_[det_vals[:] < 1]
-							 
+
 to finally use the rightmost minimum (the fundamental mode has the highest wavelength) as the starting point for the calculations:
 
 .. code-block:: python
 
  mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
- 
+
 It is highly recommended to perform an analysis of the determinant function for every simulated structure and various driving conditions. As an example, we can add a determinant plotting block in our function, but it is advised to be omitted in the final algorithm, however:
 
 .. code-block:: python
@@ -329,7 +318,7 @@ It is highly recommended to perform an analysis of the determinant function for 
  plot(det_lams,det_vals)
  gca().set_yscale('log')
  show()
- 
+
 Outside the function we set the reference wavelength ``lam0`` and tell the optical solver to look for the solution at the optical axis of the laser by setting it's ``vat`` parameter to 0.
 Finally we run our function to find the threshold voltage between 0.5 and 2.0 V and print the result to the log:
 

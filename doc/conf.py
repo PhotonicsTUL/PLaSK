@@ -30,8 +30,7 @@ import plask
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
-              'sphinx.ext.autosummary', 'sphinx.ext.inheritance_diagram',
-              'sphinx_domain_xml', 'sphinx_autodoc_cpp']
+              'sphinx.ext.autosummary', 'sphinx_domain_xml', 'sphinx_autodoc_cpp']
 
 
 # Use Napoleon if available for pretty docstrings formatting

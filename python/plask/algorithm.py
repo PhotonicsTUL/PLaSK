@@ -174,8 +174,7 @@ class ThermoElectric(object):
             mesh_color (str or ``None``): Matplotlib color specification for
                 the mesh. If ``None``, the mesh is not plotted.
 
-
-            **kwargs: Keyword arguments passed to the plot function.
+            \*\*kwargs: Keyword arguments passed to the plot function.
 
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
@@ -202,7 +201,7 @@ class ThermoElectric(object):
             mesh_color (str or ``None``): Matplotlib color specification for
                 the mesh. If ``None``, the mesh is not plotted.
 
-            **kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
+            \*\*kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
 
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
@@ -226,7 +225,7 @@ class ThermoElectric(object):
             at (float): Horizontal position of the axis at which the voltage
                         is plotted.
 
-            **kwargs: Keyword arguments passed to the plot function.
+            \*\*kwargs: Keyword arguments passed to the plot function.
         '''
         mesh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([at]), self.electrical.mesh.axis1)
         field = self.electrical.outVoltage(mesh)
@@ -246,7 +245,7 @@ class ThermoElectric(object):
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
 
-            **kwargs: Keyword arguments passed to the plot function.
+            \*\*kwargs: Keyword arguments passed to the plot function.
         '''
         # A little magic to get junction position first
         points = self.electrical.mesh.get_midpoints()

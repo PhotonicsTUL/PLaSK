@@ -68,7 +68,7 @@ static void from_import_all(const char* name, py::dict& dest)
 }
 
 //******************************************************************************
-// Initialize the binary modules and load the package from disc
+// Initialize the binary modules and load the package from disk
 static py::object initPlask(int argc, const char* argv[])
 {
     // Initialize the plask module
@@ -89,12 +89,17 @@ static py::object initPlask(int argc, const char* argv[])
     solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
     path.insert(0, plask_path);
     path.insert(1, solvers_path);
-
-    /*if (argc > 0) //why so strange?
-        path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
+    if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
+        try {
+            path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
+        } catch (std::runtime_error) { // can be thrown if there is wrong locale set
+            std::string file(argv[0]);
+            size_t pos = file.rfind(plask::FILE_PATH_SEPARATOR);
+            if (pos == std::string::npos) pos = 0;
+            path.insert(0, file.substr(0, pos));
+        }
     else
-        path.insert(0, "");*/
-    path.insert(0, plask::exePath() /* + plask::FILE_PATH_SEPARATOR*/);
+        path.insert(0, "");
 
     sys.attr("path") = path;
 

@@ -1,9 +1,9 @@
-#include "fourier_reflection_3d.h"
-#include "expansion_pw3d.h"
+#include "solver3d.h"
+#include "expansion3d.h"
 
 namespace plask { namespace solvers { namespace slab {
 
-FourierReflection3D::FourierReflection3D(const std::string& name): ReflectionSolver<Geometry3D>(name),
+FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D>(name),
     size_long(12), size_tran(12),
     expansion(this),
     refine_long(16), refine_tran(16)//,
@@ -41,7 +41,7 @@ static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& l
     }
 }
 
-static inline Expansion::Component readSymmetry(const FourierReflection3D* solver, const XMLReader& reader, const std::string& repr) {
+static inline Expansion::Component readSymmetry(const FourierSolver3D* solver, const XMLReader& reader, const std::string& repr) {
     AxisNames* axes = nullptr;
     if (solver->getGeometry()) axes = &solver->getGeometry()->axisNames;
     if (repr == "none" || repr == "NONE" || repr == "None")
@@ -56,7 +56,7 @@ static inline Expansion::Component readSymmetry(const FourierReflection3D* solve
         throw XMLBadAttrException(reader, "symmetry", repr, "symmetric field component name (maybe you need to specify the geometry first)");
 }
 
-void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
+void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
@@ -98,7 +98,7 @@ void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
             std::string sym_tran, sym_long;
-            readComaAttr(reader, "size", sym_long, sym_tran, true);
+            readComaAttr(reader, "symmetry", sym_long, sym_tran, true);
             if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
             if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
         } else if (param == "root") {
@@ -113,43 +113,44 @@ void FourierReflection3D::loadConfiguration(XMLReader& reader, Manager& manager)
 
 
 
-void FourierReflection3D::onInitialize()
+void FourierSolver3D::onInitialize()
 {
-    setupLayers();
+    this->writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
+                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    this->setupLayers();
+    this->ensureInterface();
     expansion.init();
-    diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
-    init();
+    this->transfer.reset(new ReflectionTransfer(this, expansion));    //TODO add other transfer types
+    this->recompute_coefficients = true;
 }
 
 
-void FourierReflection3D::onInvalidate()
+void FourierSolver3D::onInvalidate()
 {
-    cleanup();
     modes.clear();
-    expansion.free();
-    diagonalizer.reset();
-    fields.clear();
+    expansion.reset();
+    transfer.reset();
 }
 
 
-size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex start)
+size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 {
     initCalculation();
     std::unique_ptr<RootDigger> root;
     switch (what) {
-        case FourierReflection3D::WHAT_WAVELENGTH:
+        case FourierSolver3D::WHAT_WAVELENGTH:
             detlog.axis_arg_name = "lam";
             root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return this->determinant(); });
             break;
-        case FourierReflection3D::WHAT_K0:
+        case FourierSolver3D::WHAT_K0:
             detlog.axis_arg_name = "k0";
             root = getRootDigger([this](const dcomplex& x) { this->k0 = x; return this->determinant(); });
             break;
-        case FourierReflection3D::WHAT_KLONG:
+        case FourierSolver3D::WHAT_KLONG:
             detlog.axis_arg_name = "klong";
             root = getRootDigger([this](const dcomplex& x) { this->klong = x; return this->determinant(); });
             break;
-        case FourierReflection3D::WHAT_KTRAN:
+        case FourierSolver3D::WHAT_KTRAN:
             detlog.axis_arg_name = "ktran";
             root = getRootDigger([this](const dcomplex& x) { this->klong = x; return this->determinant(); });
             break;
@@ -159,7 +160,7 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 }
 
 
-// cvector FourierReflection3D::getReflectedAmplitudes(ExpansionPW3D::Component polarization,
+// cvector FourierSolver3D::getReflectedAmplitudes(ExpansionPW3D::Component polarization,
 //                                                     IncidentDirection incidence, size_t* savidx)
 // {
 //     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
@@ -170,7 +171,7 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 // }
 //
 //
-// cvector FourierReflection3D::getTransmittedAmplitudes(ExpansionPW3D::Component polarization,
+// cvector FourierSolver3D::getTransmittedAmplitudes(ExpansionPW3D::Component polarization,
 //                                                       IncidentDirection incidence, size_t* savidx)
 // {
 //     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
@@ -181,7 +182,7 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 // }
 //
 //
-// double FourierReflection3D::getReflection(ExpansionPW3D::Component polarization, IncidentDirection incidence)
+// double FourierSolver3D::getReflection(ExpansionPW3D::Component polarization, IncidentDirection incidence)
 // {
 //     size_t idx;
 //     cvector reflected = getReflectedAmplitudes(polarization, incidence, &idx).claim();
@@ -195,7 +196,7 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 //         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
 //                               (incidence == INCIDENCE_BOTTOM)? "Bottom" : "Top");
 //
-//     auto gamma = diagonalizer->Gamma(l);
+//     auto gamma = transfer->diagonalizer->Gamma(l);
 //     dcomplex gamma0 = gamma[idx];
 //     dcomplex igamma0 = 1. / gamma0;
 //     if (!expansion.separated) {
@@ -220,7 +221,7 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 // }
 //
 //
-// double FourierReflection3D::getTransmission(ExpansionPW3D::Component polarization, IncidentDirection incidence)
+// double FourierSolver3D::getTransmission(ExpansionPW3D::Component polarization, IncidentDirection incidence)
 // {
 //     size_t idx;
 //     cvector transmitted = getTransmittedAmplitudes(polarization, incidence, &idx).claim();
@@ -238,8 +239,8 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 //         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
 //                  (incidence == INCIDENCE_TOP)? "Top" : "Bottom");
 //
-//     auto gamma = diagonalizer->Gamma(lt);
-//     dcomplex igamma0 = 1. / diagonalizer->Gamma(li)[idx];
+//     auto gamma = transfer->diagonalizer->Gamma(lt);
+//     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
 //     dcomplex gamma0 = gamma[idx] * gamma[idx] * igamma0;
 //     if (!expansion.separated) {
 //         int N = getSize() + 1;
@@ -262,9 +263,9 @@ size_t FourierReflection3D::findMode(FourierReflection3D::What what, dcomplex st
 // }
 //
 //
-const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
+const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("FourierReflection3D::getE");
+    throw NotImplemented("FourierSolver3D::getE");
 //     if (modes.size() <= num) throw NoValue(LightE::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -276,9 +277,9 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getE(size_t num, sh
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
+const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("FourierReflection3D::getH");
+    throw NotImplemented("FourierSolver3D::getH");
 //     if (modes.size() <= num) throw NoValue(LightH::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -290,9 +291,9 @@ const DataVector<const Vec<3,dcomplex>> FourierReflection3D::getH(size_t num, sh
 }
 
 
-const DataVector<const double> FourierReflection3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
+const DataVector<const double> FourierSolver3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("FourierReflection3D::getIntensity");
+    throw NotImplemented("FourierSolver3D::getIntensity");
 //     if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
 //     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
 //         k0 = modes[num].k0;
@@ -300,7 +301,7 @@ const DataVector<const double> FourierReflection3D::getIntensity(size_t num, sha
 //         ktran = modes[num].ktran;
 //         fields_determined = DETERMINED_NOTHING;
 //     }
-//     return getFieldIntensity(modes[num].power, dst_mesh, method);
+//     return getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 //
 //

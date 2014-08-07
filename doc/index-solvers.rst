@@ -10,10 +10,10 @@ Thermal model
 Electrical model
 ================
 
-.. _sec-Solver-electrical-beta:
+.. _sec-solver-electrical-shockley:
 
-Phenomenological junction :math:`\beta` model
-=============================================
+Phenomenological junction model based on Shockley equation
+----------------------------------------------------------
 
 Gain model
 ==========

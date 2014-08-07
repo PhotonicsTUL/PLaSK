@@ -40,7 +40,6 @@ Functions
    plot_geometry
    plot_mesh
    plot_boundary
-   plot_material_param
 
 
 Descriptions
@@ -61,4 +60,3 @@ Descriptions
 .. autofunction::   plot_geometry
 .. autofunction::   plot_mesh
 .. autofunction::   plot_boundary
-.. autofunction::   plot_material_param

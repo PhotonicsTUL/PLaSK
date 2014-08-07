@@ -3,29 +3,24 @@
 #endif
 #include <boost/thread/mutex.hpp>
 
-#include "reflection_base.h"
+#include "reflection.h"
+#include "solver.h"
 #include "fortran.h"
-#include "mesh_adapter.h"
+#include "meshadapter.h"
 
 #define ee A
 #define hh P
 
 namespace plask { namespace solvers { namespace slab {
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::init()
+ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
-    this->ensureInterface();
-
     // Reserve space for matrix multiplications...
-    int N0 = this->diagonalizer->source()->matrixSize();
-    int N = this->diagonalizer->matrixSize();
+    int N0 = diagonalizer->source()->matrixSize();
+    int N = diagonalizer->matrixSize();
     M = cmatrix(N0, N0);
 
     // ...and eigenvalues determination
-    assert(evals == nullptr);
-    assert(rwork == nullptr);
-    assert(work == nullptr);
     evals = aligned_new_array<dcomplex>(N0);
     rwork = aligned_new_array<double>(2*N0);
     lwork = N0*N0;
@@ -35,9 +30,6 @@ void ReflectionSolver<GeometryT>::init()
     fields_determined = DETERMINED_NOTHING;
     interface_field = nullptr;
 
-    this->writelog(LOG_DETAIL, "Initializing reflection-matrix solver (%1% layers in the stack, interface after %2% layer%3%)",
-                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
-
     P = cmatrix(N,N);
     phas = cdiagonal(N);
     A = cmatrix(N,N);       // A is also temporary matrix
@@ -45,18 +37,13 @@ void ReflectionSolver<GeometryT>::init()
     assert(ipiv == nullptr);
     ipiv = aligned_new_array<int>(N);
     allP = false;
-
-    this->recompute_coefficients = true;
 }
 
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::cleanup() {
-    fields.clear();
-    memP.clear();
-    if (this->diagonalizer) {
-        int N0 = this->diagonalizer->source()->matrixSize();
-        int N = this->diagonalizer->matrixSize();
+ReflectionTransfer::~ReflectionTransfer() {
+    if (diagonalizer) {
+        int N0 = diagonalizer->source()->matrixSize();
+        int N = diagonalizer->matrixSize();
         aligned_delete_array<dcomplex>(N0, evals); evals = nullptr;
         aligned_delete_array<double>(2*N0, rwork); rwork = nullptr;
         aligned_delete_array<dcomplex>(lwork, work); work = nullptr;
@@ -65,17 +52,8 @@ void ReflectionSolver<GeometryT>::cleanup() {
 }
 
 
-template <typename GeometryT>
-ReflectionSolver<GeometryT>::~ReflectionSolver()
-{
-    cleanup();
-    this->inTemperature.changedDisconnectMethod(this, &ReflectionSolver::onInputChanged);
-    this->inGain.changedDisconnectMethod(this, &ReflectionSolver::onInputChanged);
-}
 
-
-template <typename GeometryT>
-dcomplex ReflectionSolver<GeometryT>::determinant()
+dcomplex ReflectionTransfer::determinant()
 {
     // We change the matrices M and A so we will have to find the new fields
     fields_determined = DETERMINED_NOTHING;
@@ -91,13 +69,13 @@ dcomplex ReflectionSolver<GeometryT>::determinant()
     int NN = N*N;
     for (int i = 0; i < NN; i++) {
         if (isnan(real(M[i])) || isnan(imag(M[i])))
-            throw ComputationError(this->getId(), "NaN in discontinuity matrix");
+            throw ComputationError(solver->getId(), "NaN in discontinuity matrix");
     }
 
     // Find the eigenvalues of M using LAPACK
     dcomplex nth; int info;
     zgeev('N', 'N', N, M.data(), N, evals, &nth, 1, &nth, 1, work, lwork, rwork, info);
-    if (info != 0) throw ComputationError(this->getId(), "eigenvalue determination failed");
+    if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
 
     //TODO add some consideration for degenerate modes
     // Find the smallest eigenvalue
@@ -120,20 +98,19 @@ dcomplex ReflectionSolver<GeometryT>::determinant()
 }
 
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::getAM(size_t start, size_t end, bool add, double mfac)
+void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 {
     // Get matrices sizes
-    int N0 = this->diagonalizer->source()->matrixSize();
-    int N = this->diagonalizer->matrixSize(); // <= N0
+    int N0 = diagonalizer->source()->matrixSize();
+    int N = diagonalizer->matrixSize(); // <= N0
     int NN = N*N;
     cmatrix wrk(N, N0, work);    // matrix object for the workspace
 
     findReflection(start, end);
 
-    cdiagonal gamma = this->diagonalizer->Gamma(this->stack[end]);
+    cdiagonal gamma = diagonalizer->Gamma(solver->stack[end]);
 
-    double H = (end == 0 || end == this->vbounds.size())? 0. : abs(this->vbounds[end] - this->vbounds[end-1]);
+    double H = (end == 0 || end == solver->vbounds.size())? 0. : abs(solver->vbounds[end] - solver->vbounds[end-1]);
     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
 
     mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);     // P = phas * P * phas
@@ -153,23 +130,22 @@ void ReflectionSolver<GeometryT>::getAM(size_t start, size_t end, bool add, doub
     }
 
     // M for the half of the structure
-    mult_matrix_by_matrix(A, this->diagonalizer->invTE(this->stack[end]), wrk);    // wrk = A * invTE[end]
+    mult_matrix_by_matrix(A, diagonalizer->invTE(solver->stack[end]), wrk);    // wrk = A * invTE[end]
 
-    zgemm('N','N', N0, N0, N, mfac, this->diagonalizer->TH(this->stack[end]).data(), N0,
+    zgemm('N','N', N0, N0, N, mfac, diagonalizer->TH(solver->stack[end]).data(), N0,
           work, N, add?1.:0., M.data(), N0);                                 // M = mfac * TH[end] * wrk
 }
 
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::findReflection(int start, int end)
+void ReflectionTransfer::findReflection(int start, int end)
 {
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
     const int inc = (start < end) ? 1 : -1;
 
-    int N0 = this->diagonalizer->source()->matrixSize();
-    int N = this->diagonalizer->matrixSize();
+    int N0 = diagonalizer->source()->matrixSize();
+    int N = diagonalizer->matrixSize();
     int NN = N*N;
 
     cmatrix wrk(N, N0, work);    // matrix object for the workspace
@@ -183,16 +159,16 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
     std::exception_ptr error;
 
     #ifdef OPENMP_FOUND
-        std::vector<boost::mutex> layer_locks(this->diagonalizer->lcount);
+        std::vector<boost::mutex> layer_locks(diagonalizer->lcount);
         for (boost::mutex& mutex: layer_locks) mutex.lock();
     #endif
 
     #pragma omp parallel
     {
         #pragma omp for schedule(dynamic,1) nowait
-        for (int l = 0; l < this->diagonalizer->lcount; ++l) {
+        for (int l = 0; l < diagonalizer->lcount; ++l) {
             try {
-                if (!error) this->diagonalizer->diagonalizeLayer(l);
+                if (!error) diagonalizer->diagonalizeLayer(l);
                 #ifdef OPENMP_FOUND
                 layer_locks[l].unlock();
                 #endif
@@ -205,14 +181,14 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
         if (!error) try {
             for (int n = start; n != end; n += inc) {
                 #ifdef OPENMP_FOUND
-                layer_locks[this->stack[n]].lock(); layer_locks[this->stack[n]].unlock();
+                layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
                 #endif
-                gamma = this->diagonalizer->Gamma(this->stack[n]);
+                gamma = diagonalizer->Gamma(solver->stack[n]);
                 assert(!gamma.isnan());
 
-                double H = (n == start)? 0. : (this->vbounds[n] - this->vbounds[n-1]);
+                double H = (n == start)? 0. : (solver->vbounds[n] - solver->vbounds[n-1]);
 
-                if (!emitting || n != start) {
+                if (n != start) {
                     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
                 } else {
                     for (int i = 0; i < N; i++) {
@@ -226,29 +202,29 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
 
                 // ee = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
-                assert(!this->diagonalizer->TE(this->stack[n]).isnan());
-                assert(!this->diagonalizer->invTE(this->stack[n]).isnan());
+                assert(!diagonalizer->TE(solver->stack[n]).isnan());
+                assert(!diagonalizer->invTE(solver->stack[n]).isnan());
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P.orig + I
-                mult_matrix_by_matrix(this->diagonalizer->TE(this->stack[n]), P, wrk);            // wrk = TE[n] * P
+                mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);            // wrk = TE[n] * P
                 #ifdef OPENMP_FOUND
-                layer_locks[this->stack[n+inc]].lock(); layer_locks[this->stack[n+inc]].unlock();
+                layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
                 #endif
-                mult_matrix_by_matrix(this->diagonalizer->invTE(this->stack[n+inc]), wrk, ee);    // ee = invTE[n+1] * wrk (= A)
+                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, ee);    // ee = invTE[n+1] * wrk (= A)
 
                 // hh = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
-                assert(!this->diagonalizer->TH(this->stack[n]).isnan());
-                assert(!this->diagonalizer->invTH(this->stack[n]).isnan());
+                assert(!diagonalizer->TH(solver->stack[n]).isnan());
+                assert(!diagonalizer->invTH(solver->stack[n]).isnan());
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
 
                 // multiply rows of P by -1 where necessary for properly outgoing wave
-                if (emitting && n == start) {
+                if (n == start) {
                     for (int i = 0; i < N; i++)
                         if (real(gamma[i]) < -SMALL)
                             for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
                 }
 
-                mult_matrix_by_matrix(this->diagonalizer->TH(this->stack[n]), P, wrk);            // wrk = TH[n] * P
-                mult_matrix_by_matrix(this->diagonalizer->invTH(this->stack[n+inc]), wrk, hh);    // hh = invTH[n+1] * wrk (= P)
+                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);            // wrk = TH[n] * P
+                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, hh);    // hh = invTH[n+1] * wrk (= P)
 
                 // ee := ee-hh, hh := ee+hh
                 for (int i = 0; i < NN; i++) {
@@ -264,11 +240,11 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
                 // P = P * inv(A)
                 int info;
                 zgetrf(N, N, A.data(), N, ipiv, info);                                      // A = LU(A)         (= A)
-                if (info > 0) throw ComputationError(this->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
+                if (info > 0) throw ComputationError(solver->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
                 assert(info == 0);
                 ztrsm('R', 'U', 'N', 'N', N, N, 1., A.data(), N, P.data(), N);              // P = P * U^{-1}    (= P)
                 ztrsm('R', 'L', 'N', 'U', N, N, 1., A.data(), N, P.data(), N);              // P = P * L^{-1}
-                if (P.isnan()) throw ComputationError(this->getId(), "findReflection: NaN in reflection matrix");
+                if (P.isnan()) throw ComputationError(solver->getId(), "findReflection: NaN in reflection matrix");
                 // reorder columns (there is no such function in LAPACK)
                 for (int j = N-1; j >= 0; j--) {
                     int jp = ipiv[j]-1;
@@ -285,48 +261,44 @@ void ReflectionSolver<GeometryT>::findReflection(int start, int end)
 }
 
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::storeP(size_t n) {
+void ReflectionTransfer::storeP(size_t n) {
     if (allP) {
-        int N = this->diagonalizer->matrixSize();
-        if (memP.size() != this->stack.size()) {
+        int N = diagonalizer->matrixSize();
+        if (memP.size() != solver->stack.size()) {
             // Allocate the storage for admittance matrices
-            memP.resize(this->stack.size());
-            for (int i = 0; i < this->stack.size(); i++) memP[i] = cmatrix(N,N);
+            memP.resize(solver->stack.size());
+            for (int i = 0; i < solver->stack.size(); i++) memP[i] = cmatrix(N,N);
         }
         memcpy(memP[n].data(), P.data(), N*N*sizeof(dcomplex));
     }
 }
 
 
-template <typename GeometryT>
-cvector ReflectionSolver<GeometryT>::getReflectionVector(const cvector& incident, IncidentDirection side)
+cvector ReflectionTransfer::getReflectionVector(const cvector& incident, IncidentDirection side)
 {
     int last, first;
 
     initDiagonalization();
     switch (side) {
         case INCIDENCE_TOP:
-            last = 0; first = this->stack.size()-1; break;
+            last = 0; first = solver->stack.size()-1; break;
         case INCIDENCE_BOTTOM:
-            last = this->stack.size()-1; first = 0; break;
+            last = solver->stack.size()-1; first = 0; break;
     }
     findReflection(last, first);
     return P * incident;
 }
 
 
-template <typename GeometryT>
-cvector ReflectionSolver<GeometryT>::getTransmissionVector(const cvector& incident, IncidentDirection side)
+cvector ReflectionTransfer::getTransmissionVector(const cvector& incident, IncidentDirection side)
 {
     determineReflectedFields(incident, side);
-    size_t n = (side == INCIDENCE_BOTTOM)? this->stack.size()-1 : 0;
-    return this->diagonalizer->TE(this->stack[n]) * fields[n].B;
+    size_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
+    return diagonalizer->TE(solver->stack[n]) * fields[n].B;
 }
 
 
-template <typename GeometryT>
-cvector ReflectionSolver<GeometryT>::getInterfaceVector()
+cvector ReflectionTransfer::getInterfaceVector()
 {
     int N = M.rows();
 
@@ -345,7 +317,7 @@ cvector ReflectionSolver<GeometryT>::getInterfaceVector()
         // Find the eigenvalues of M using LAPACK
         dcomplex nth; int info;
         zgeev('N', 'V', N, M.data(), N, evals, &nth, 1, interface_field_matrix.data(), N, work, lwork, rwork, info);
-        if (info != 0) throw ComputationError(this->getId(), "getInterfaceVector: zgeev failed");
+        if (info != 0) throw ComputationError(solver->getId(), "getInterfaceVector: zgeev failed");
 
         // Find the number of the smallest eigenvalue
         double mag, min_mag = 1e32;
@@ -356,8 +328,8 @@ cvector ReflectionSolver<GeometryT>::getInterfaceVector()
         }
 
         // Error handling
-        if (min_mag > this->root.tolf_max * this->root.tolf_max)
-            throw BadInput(this->getId(), "getInterfaceVector: determinant not sufficiently close to 0");
+        if (min_mag > solver->root.tolf_max * solver->root.tolf_max)
+            throw BadInput(solver->getId(), "getInterfaceVector: determinant not sufficiently close to 0");
 
         // Chose the eigenvector corresponding to the smallest eigenvalue
         interface_field = interface_field_matrix.data() + n*N;
@@ -371,20 +343,19 @@ cvector ReflectionSolver<GeometryT>::getInterfaceVector()
 }
 
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::determineFields()
+void ReflectionTransfer::determineFields()
 {
     if (fields_determined == DETERMINED_RESONANT) return;
 
-    this->writelog(LOG_DETAIL, "Determining optical fields");
+    solver->writelog(LOG_DETAIL, "Determining optical fields");
 
-    int N = this->diagonalizer->matrixSize();
-    int N0 = this->diagonalizer->source()->matrixSize();
+    int N = diagonalizer->matrixSize();
+    int N0 = diagonalizer->source()->matrixSize();
     int NN = N*N;
 
     cdiagonal gamma;
 
-    size_t count = this->stack.size();
+    size_t count = solver->stack.size();
 
     // Assign the space for the field vectors
     fields.resize(count);
@@ -394,25 +365,25 @@ void ReflectionSolver<GeometryT>::determineFields()
     cvector E = getInterfaceVector();
     cvector tmp(work, N);
 
-    for (int pass = 0; pass < 1 || (pass < 2 && this->interface != count); pass++)
+    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)
     {
         // each pass for below and above the interface
 
         int start, end, inc;
         switch (pass)
         {
-            case 0: start = this->interface-1; end = 0;       inc = -1; break;
-            case 1: start = this->interface;   end = count-1; inc = +1; break;
+            case 0: start = solver->interface-1; end = 0;       inc = -1; break;
+            case 1: start = solver->interface;   end = count-1; inc = +1; break;
         }
 
         fields[start].F = cvector(N);
         fields[start].B = cvector(N);
 
         // compute B-field for the layer next to the interface
-        int curr = this->stack[start];
+        int curr = solver->stack[start];
 
-        gamma = this->diagonalizer->Gamma(curr);
-        double H = (start == 0 || start == count-1)? 0. : (this->vbounds[start] - this->vbounds[start-1]);
+        gamma = diagonalizer->Gamma(curr);
+        double H = (start == 0 || start == count-1)? 0. : (solver->vbounds[start] - solver->vbounds[start-1]);
         for (int i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
@@ -421,7 +392,7 @@ void ReflectionSolver<GeometryT>::determineFields()
         mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P := phas * P * phas
         for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P := P + I
 
-        mult_matrix_by_vector(this->diagonalizer->invTE(curr), E, fields[start].B);       // B := invTE * E
+        mult_matrix_by_vector(diagonalizer->invTE(curr), E, fields[start].B);       // B := invTE * E
         invmult(P, fields[start].B);                                                // B := inv(P) * B
         for (int i = 0; i < N; i++) fields[start].B[i] *= phas[i];                  // B := phas * B
 
@@ -441,27 +412,27 @@ void ReflectionSolver<GeometryT>::determineFields()
             cvector& F2 = fields[n+inc].F;
             cvector& B2 = fields[n+inc].B;
 
-            curr = this->stack[n];
-            int next = this->stack[n+inc];
+            curr = solver->stack[n];
+            int next = solver->stack[n+inc];
 
-            gamma = this->diagonalizer->Gamma(next);
+            gamma = diagonalizer->Gamma(next);
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];              // F2 := F1 - B1
-            mult_matrix_by_vector(this->diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
-            mult_matrix_by_vector(this->diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
+            mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
+            mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
             // multiply rows of invTH by -1 where necessary for the outer layer
-            if (n+inc == end && emitting) {
+            if (n+inc == end) {
                 for (int i = 0; i < N; i++)
                     if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
             }
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];              // F2 := F1 + B1
-            mult_matrix_by_vector(this->diagonalizer->TE(curr), F2, tmp);         // tmp := TE * F2
-            zgemm('N','N', N, 1, N0, 1., this->diagonalizer->invTE(next).data(), N,
+            mult_matrix_by_vector(diagonalizer->TE(curr), F2, tmp);         // tmp := TE * F2
+            zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
                   tmp.data(), N0, -1., B2.data(), N);                       // B2 := invTE * tmp - B2
 
-            H = (n+inc == end)? 0. : (this->vbounds[n+inc] - this->vbounds[n+inc-1]);
-            if (n+inc != end || !emitting) {
+            H = (n+inc == end)? 0. : (solver->vbounds[n+inc] - solver->vbounds[n+inc-1]);
+            if (n+inc != end) {
                 for (int i = 0; i < N; i++)
                     B2[i] *= 0.5 * exp(-I*gamma[i]*H);                      // B2 := 1/2 * phas * B2
             } else {
@@ -477,26 +448,23 @@ void ReflectionSolver<GeometryT>::determineFields()
         for (int i = 0; i < N; ++i) fields[end].F[i] = 0.; // in the outer layer there is no incoming field
 
         // In the outer layers replace F and B where necessary for consistent gamma handling
-        if (emitting) {
-            cvector& F2 = fields[end].F;
-            cvector& B2 = fields[end].B;
-            for (int i = 0; i < N; i++)
-                if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
-        }
+        cvector& F2 = fields[end].F;
+        cvector& B2 = fields[end].B;
+        for (int i = 0; i < N; i++)
+            if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
     }
 
     allP = false;
     fields_determined = DETERMINED_RESONANT;
 }
 
-template <typename GeometryT>
-void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incident, IncidentDirection side)
+void ReflectionTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
 {
     if (fields_determined == DETERMINED_REFLECTED) return;
 
-    this->writelog(LOG_DETAIL, "Determining reflected optical fields");
+    solver->writelog(LOG_DETAIL, "Determining reflected optical fields");
 
-    size_t count = this->stack.size();
+    size_t count = solver->stack.size();
 
     // Assign the space for the field vectors
     fields.resize(count);
@@ -515,15 +483,15 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
     findReflection(end, start);
 
     // Temporary and initial data
-    int N = this->diagonalizer->matrixSize();
-    int N0 = this->diagonalizer->source()->matrixSize();
+    int N = diagonalizer->matrixSize();
+    int N0 = diagonalizer->source()->matrixSize();
     cvector tmp(work, N);
     cdiagonal gamma;
 
-    int curr = this->stack[start];
+    int curr = solver->stack[start];
     double H;
 
-    fields[start].B = this->diagonalizer->invTE(curr) * incident; // diagonalized incident E-field
+    fields[start].B = diagonalizer->invTE(curr) * incident; // diagonalized incident E-field
     fields[start].F = cvector(N);
 
     for (int n = start; n != end; n += inc)
@@ -542,14 +510,14 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         cvector& F2 = fields[n+inc].F;
         cvector& B2 = fields[n+inc].B;
 
-        curr = this->stack[n];
-        int next = this->stack[n+inc];
+        curr = solver->stack[n];
+        int next = solver->stack[n+inc];
 
-        gamma = this->diagonalizer->Gamma(next);
+        gamma = diagonalizer->Gamma(next);
 
         for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];              // F2 := F1 - B1
-        mult_matrix_by_vector(this->diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
-        mult_matrix_by_vector(this->diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
+        mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
+        mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
         // multiply rows of invTH by -1 where necessary for the outer layer
         if (n+inc == end) {
             for (int i = 0; i < N; i++)
@@ -557,11 +525,11 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
         }
 
         for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];              // F2 := F1 + B1
-        mult_matrix_by_vector(this->diagonalizer->TE(curr), F2, tmp);         // tmp := TE * F2
-        zgemm('N','N', N, 1, N0, 1., this->diagonalizer->invTE(next).data(), N,
+        mult_matrix_by_vector(diagonalizer->TE(curr), F2, tmp);         // tmp := TE * F2
+        zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
               tmp.data(), N0, -1., B2.data(), N);                       // B2 := invTE * tmp - B2
 
-        H = (n+inc != end)? this->vbounds[n+inc] - this->vbounds[n+inc-1] : 0.;
+        H = (n+inc != end)? solver->vbounds[n+inc] - solver->vbounds[n+inc-1] : 0.;
         if (n+inc != end) {
             for (int i = 0; i < N; i++)
                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                      // B2 := 1/2 * phas * B2
@@ -579,7 +547,7 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
 
     // In the outer layers replace F and B where necessary for consistent gamma handling
     for (int n = 0; n < count; n += count-1) {
-        gamma = this->diagonalizer->Gamma(this->stack[n]);
+        gamma = diagonalizer->Gamma(solver->stack[n]);
         for (int i = 0; i < N; i++) {
             if (real(gamma[i]) < -SMALL)
                 std::swap(fields[n].F, fields[n].B);
@@ -589,14 +557,14 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
     // Replace F and B before the interface for consistency in getFieldVectorE and getFieldVectorH
     switch (side)
     {
-        case INCIDENCE_TOP:    start = this->interface; end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = this->interface; break;
+        case INCIDENCE_TOP:    start = solver->interface; end = count; break;
+        case INCIDENCE_BOTTOM: start = 0; end = solver->interface; break;
     }
     for (int n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
-        gamma = this->diagonalizer->Gamma(this->stack[n]);
-        H = (n < count-1)? this->vbounds[n] - this->vbounds[n-1] : 0.;
+        gamma = diagonalizer->Gamma(solver->stack[n]);
+        H = (n < count-1)? solver->vbounds[n] - solver->vbounds[n-1] : 0.;
         for (int i = 0; i < N; i++) {
                 dcomplex phas = exp(-I*gamma[i]*H);
                 dcomplex t = B2[i] / phas;
@@ -610,21 +578,20 @@ void ReflectionSolver<GeometryT>::determineReflectedFields(const cvector& incide
 }
 
 
-template <typename GeometryT>
-cvector ReflectionSolver<GeometryT>::getFieldVectorE(double z, int n)
+cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
 
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
-    if (n >= this->interface) {
+    if (n >= solver->interface) {
         z = - z;
-        if (n != 0 && n != this->vbounds.size())
-            z += this->vbounds[n] - this->vbounds[n-1];
+        if (n != 0 && n != solver->vbounds.size())
+            z += solver->vbounds[n] - solver->vbounds[n-1];
     }
 
-    cdiagonal gamma = this->diagonalizer->Gamma(this->stack[n]);
+    cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
     int N = gamma.size();
     cvector E(N);
@@ -634,25 +601,24 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorE(double z, int n)
         E[i] = FF[i] * exp(phi) + BB[i] * exp(-phi);
     }
 
-    return this->diagonalizer->TE(this->stack[n]) * E;
+    return diagonalizer->TE(solver->stack[n]) * E;
 }
 
 
-template <typename GeometryT>
-cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
+cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
 
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
-    if (n >= this->interface) {
+    if (n >= solver->interface) {
         z = - z;
-        if (n != 0 && n != this->vbounds.size())
-            z += this->vbounds[n] - this->vbounds[n-1];
+        if (n != 0 && n != solver->vbounds.size())
+            z += solver->vbounds[n] - solver->vbounds[n-1];
     }
 
-    cdiagonal gamma = this->diagonalizer->Gamma(this->stack[n]);
+    cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
     int N = gamma.size();
     cvector H(N);
@@ -662,61 +628,57 @@ cvector ReflectionSolver<GeometryT>::getFieldVectorH(double z, int n)
         H[i] = FF[i] * exp(phi) - BB[i] * exp(-phi);
     }
 
-    if (emitting && (n == 0 || n == this->vbounds.size())) {
+    if (n == 0 || n == solver->vbounds.size()) {
         // In the outer layers multiply H by -1 where necessary for propagating wave
         for (int i = 0; i < N; i++)
             if (real(gamma[i]) < -SMALL) H[i] = - H[i];
     }
 
-    return this->diagonalizer->TH(this->stack[n]) * H;
+    return diagonalizer->TH(solver->stack[n]) * H;
 }
 
 
-
-template <typename GeometryT>
-DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldE(const shared_ptr<const MeshD<GeometryT::DIM> > &dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method)
 {
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
-    auto levels = makeLevelsAdapter<GeometryT::DIM>(dst_mesh);
-    this->diagonalizer->source()->initField(Expansion::FieldParams::E, k0, klong, ktran, method);
+    auto levels = makeLevelsAdapter<dim>(dst_mesh);
+    diagonalizer->source()->initField(Expansion::FieldParams::E, k0, klong, ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
-        size_t n = this->getLayerFor(z);
+        size_t n = solver->getLayerFor(z);
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
-        if (n >= this->interface) for (auto& h: H) h = -h;
-        size_t layer = this->stack[n];
-        auto dest = this->diagonalizer->source()->getField(layer, level, E, H);
-        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
+        if (n >= solver->interface) for (auto& h: H) h = -h;
+        size_t layer = solver->stack[n];
+        shared_ptr<Mesh> lmesh = level->mesh();
+        auto dest = diagonalizer->source()->getField(layer, lmesh, E, H);
+        for (size_t i = 0; i != lmesh->size(); ++i) destination[level->index(i)] = dest[i];
     }
-    this->diagonalizer->source()->cleanupField();
+    diagonalizer->source()->cleanupField();
     return destination;
 }
 
-
-template <typename GeometryT>
-DataVector<Vec<3,dcomplex>> ReflectionSolver<GeometryT>::computeFieldH(const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method)
 {
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
-    auto levels = makeLevelsAdapter<GeometryT::DIM>(dst_mesh);
-    this->diagonalizer->source()->initField(Expansion::FieldParams::H, k0, klong, ktran, method);
+    auto levels = makeLevelsAdapter<dim>(dst_mesh);
+    diagonalizer->source()->initField(Expansion::FieldParams::H, k0, klong, ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
-        size_t n = this->getLayerFor(z);
+        size_t n = solver->getLayerFor(z);
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
-        if (n >= this->interface) for (auto& h: H) h = -h;
-        size_t layer = this->stack[n];
-        auto dest = this->diagonalizer->source()->getField(layer, level, E, H);
-        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
+        if (n >= solver->interface) for (auto& h: H) h = -h;
+        size_t layer = solver->stack[n];
+        shared_ptr<Mesh> lmesh = level->mesh();
+        auto dest = diagonalizer->source()->getField(layer, lmesh, E, H);
+        for (size_t i = 0; i != lmesh->size(); ++i) destination[level->index(i)] = dest[i];
     }
-    this->diagonalizer->source()->cleanupField();
+    diagonalizer->source()->cleanupField();
     return destination;
 }
 
-
-template <typename GeometryT>
-DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double power, const shared_ptr<const MeshD<GeometryT::DIM>>& dst_mesh, InterpolationMethod method)
+DataVector<double> ReflectionTransfer::computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method)
 {
     auto E = computeFieldE(dst_mesh, method);
     DataVector<double> result(E.size());
@@ -730,9 +692,9 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // cvector ReflectionSolver::getBackwardFieldVectorE(double z, int n)
 // {
 //     if (!fields_determined)
-//         throw ComputationError(this->getId(), getBackwardFieldVectorE: Fields not determined);
+//         throw ComputationError(solver->getId(), getBackwardFieldVectorE: Fields not determined);
 //
-//     cdiagonal gamma = this->diagonalizer->Gamma(this->stack[n]);
+//     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 //     int N = gamma.size();
 //
 //     cvector FF = fields[n].F.copy();
@@ -741,14 +703,14 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //
 //     cvector E(N);
 //
-//     z = this->stack[n].height - z;
+//     z = solver->stack[n].height - z;
 //
 //     for (int i = 0; i < N; i++) {
 //         dcomplex phi = - I * gamma[i] * z;
 //         E[i] = FF[i] * exp(phi);
 //     }
 //
-//     return this->diagonalizer->TE(this->stack[n]) * E;
+//     return diagonalizer->TE(solver->stack[n]) * E;
 // }
 //
 // //**************************************************************************
@@ -756,9 +718,9 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // cvector ReflectionSolver::getForwardFieldVectorE(double z, int n)
 // {
 //     if (!fields_determined)
-//         throw ComputationError(this->getId(), getForwardFieldVectorE: Fields not determined);
+//         throw ComputationError(solver->getId(), getForwardFieldVectorE: Fields not determined);
 //
-//     cdiagonal gamma = this->diagonalizer->Gamma(this->stack[n]);
+//     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 //     int N = gamma.size();
 //
 //     cvector BB = fields[n].B.copy();
@@ -767,14 +729,14 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //
 //     cvector E(N);
 //
-//     z = this->stack[n].height - z;
+//     z = solver->stack[n].height - z;
 //
 //     for (int i = 0; i < N; i++) {
 //         dcomplex phi = - I * gamma[i] * z;
 //         E[i] = BB[i] * exp(-phi);
 //     }
 //
-//     return this->diagonalizer->TE(this->stack[n]) * E;
+//     return diagonalizer->TE(solver->stack[n]) * E;
 // }
 //
 // //--------------------------------------------------------------------------
@@ -782,9 +744,9 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // cvector ReflectionSolver::getBackwardFieldVectorH(double z, int n)
 // {
 //     if (!fields_determined)
-//         throw ComputationError(this->getId(), getBackwardFieldVectorH: Fields not determined);
+//         throw ComputationError(solver->getId(), getBackwardFieldVectorH: Fields not determined);
 //
-//     cdiagonal gamma = this->diagonalizer->Gamma(this->stack[n]);
+//     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 //     int N = gamma.size();
 //
 //     cvector FF = fields[n].F.copy();
@@ -793,14 +755,14 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //
 //     cvector H(N);
 //
-//     z = this->stack[n].height - z;
+//     z = solver->stack[n].height - z;
 //
 //     for (int i = 0; i < N; i++) {
 //         dcomplex phi = - I * gamma[i] * z;
 //         H[i] = FF[i] * exp(phi);
 //     }
 //
-//     return this->diagonalizer->TH(this->stack[n]) * H;
+//     return diagonalizer->TH(solver->stack[n]) * H;
 // }
 //
 //
@@ -809,9 +771,9 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // cvector ReflectionSolver::getForwardFieldVectorH(double z, int n)
 // {
 //     if (!fields_determined)
-//         throw ComputationError(this->getId(), getForwardFieldVectorH: Fields not determined);
+//         throw ComputationError(solver->getId(), getForwardFieldVectorH: Fields not determined);
 //
-//     cdiagonal gamma = this->diagonalizer->Gamma(this->stack[n]);
+//     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 //     int N = gamma.size();
 //
 //     cvector BB = fields[n].B.copy();
@@ -820,14 +782,14 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //
 //     cvector H(N);
 //
-//     z = this->stack[n].height - z;
+//     z = solver->stack[n].height - z;
 //
 //     for (int i = 0; i < N; i++) {
 //         dcomplex phi = - I * gamma[i] * z;
 //         H[i] = - BB[i] * exp(-phi);
 //     }
 //
-//     return this->diagonalizer->TH(this->stack[n]) * H;
+//     return diagonalizer->TH(solver->stack[n]) * H;
 // }
 //
 //
@@ -837,14 +799,14 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // double ReflectionSolver::backwardEIntegral(int n)
 // {
 //     if (!fields_determined)
-//         throw ComputationError(this->getId(), backwardFieldIntegral: Fields not determined);
+//         throw ComputationError(solver->getId(), backwardFieldIntegral: Fields not determined);
 //
-//     int layer = this->stack[n];
+//     int layer = solver->stack[n];
 //
-//     cdiagonal gamma = this->diagonalizer->Gamma(layer);
-//     int N = this->diagonalizer->matrixSize();
-//     int N0 = this->diagonalizer->source()->matrixSize();
-//     double H = this->stack[n].height;
+//     cdiagonal gamma = diagonalizer->Gamma(layer);
+//     int N = diagonalizer->matrixSize();
+//     int N0 = diagonalizer->source()->matrixSize();
+//     double H = solver->stack[n].height;
 //
 //     cvector E(N0), F;
 //
@@ -858,7 +820,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //             if (real(gamma[i]) < -SMALL) F[i] = fields[n].F[i];
 //     }
 //
-//     mult_matrix_by_vector(this->diagonalizer->TE(layer), F, E);
+//     mult_matrix_by_vector(diagonalizer->TE(layer), F, E);
 //
 //     double integral = 0.;
 //
@@ -874,14 +836,14 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // double ReflectionSolver::forwardEIntegral(int n)
 // {
 //     if (!fields_determined)
-//         throw ComputationError(this->getId(), forwardFieldIntegral: Fields not determined);
+//         throw ComputationError(solver->getId(), forwardFieldIntegral: Fields not determined);
 //
-//     int layer = this->stack[n];
+//     int layer = solver->stack[n];
 //
-//     cdiagonal gamma = this->diagonalizer->Gamma(layer);
-//     int N = this->diagonalizer->matrixSize();
-//     int N0 = this->diagonalizer->source()->matrixSize();
-//     double H = this->stack[n].height;
+//     cdiagonal gamma = diagonalizer->Gamma(layer);
+//     int N = diagonalizer->matrixSize();
+//     int N0 = diagonalizer->source()->matrixSize();
+//     double H = solver->stack[n].height;
 //
 //     cvector E(N0), B;
 //
@@ -895,7 +857,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //             if (real(gamma[i]) < -SMALL) B[i] = fields[n].B[i];
 //     }
 //
-//     mult_matrix_by_vector(this->diagonalizer->TE(layer), B, E);
+//     mult_matrix_by_vector(diagonalizer->TE(layer), B, E);
 //
 //     double integral = 0.;
 //
@@ -920,7 +882,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //     for (int i = 0; i < zsize; i++) {
 //         double z = Z[i];
 //         int n = layer_of_z(z);
-//         int layer = this->stack[n];
+//         int layer = solver->stack[n];
 //         dcomplex *field = outVectorField3D + 3 * i*xysize;
 //         cvector E, H;
 //         if (n >= interface || (interface==count && Z[i]>0)) {
@@ -931,7 +893,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //             E = getBackwardFieldVectorE(z, n);
 //             H = getBackwardFieldVectorH(z, n);
 //         }
-//         this->diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
+//         diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
 //     }
 // }
 //
@@ -945,7 +907,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //     for (int i = 0; i < zsize; i++) {
 //         double z = Z[i];
 //         int n = layer_of_z(z);
-//         int layer = this->stack[n];
+//         int layer = solver->stack[n];
 //         dcomplex *field = outVectorField3D + 3 * i*xysize;
 //         cvector E, H;
 //         if (n >= interface || (interface==count && Z[i]>0)) {
@@ -956,7 +918,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //             E = getBackwardFieldVectorE(z, n);
 //             H = getBackwardFieldVectorH(z, n);
 //         }
-//         this->diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
+//         diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
 //     }
 // }
 //
@@ -972,7 +934,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //     for (int i = 0; i < zsize; i++) {
 //         double z = Z[i];
 //         int n = layer_of_z(z);
-//         int layer = this->stack[n];
+//         int layer = solver->stack[n];
 //         dcomplex *field = outVectorField3D + 3 * i*xysize;
 //         cvector E, H;
 //         if (n >= interface || (interface==count && Z[i]>0)) {
@@ -983,7 +945,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //             E = getForwardFieldVectorE(z, n);
 //             H = getForwardFieldVectorH(z, n);
 //         }
-//         this->diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
+//         diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, field);
 //     }
 // }
 //
@@ -997,7 +959,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //     for (int i = 0; i < zsize; i++) {
 //         double z = Z[i];
 //         int n = layer_of_z(z);
-//         int layer = this->stack[n];
+//         int layer = solver->stack[n];
 //         dcomplex *field = outVectorField3D + 3 * i*xysize;
 //         cvector E, H;
 //         if (n >= interface || (interface==count && Z[i]>0)) {
@@ -1008,7 +970,7 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 //             E = getForwardFieldVectorE(z, n);
 //             H = getForwardFieldVectorH(z, n);
 //         }
-//         this->diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
+//         diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, field);
 //     }
 // }
 //
@@ -1024,44 +986,40 @@ DataVector<double> ReflectionSolver<GeometryT>::computeFieldMagnitude(double pow
 // void SlabSolverBase::interfaceFieldE(const std::vector<double> X, const std::vector<double> Y,
 //                                     dcomplex* outVectorField2D)
 // {
-//     int layer = this->stack[interface-1];
+//     int layer = solver->stack[interface-1];
 //
-//     int N = this->diagonalizer->matrixSize();
-//     int N0 = this->diagonalizer->source()->matrixSize();
+//     int N = diagonalizer->matrixSize();
+//     int N0 = diagonalizer->source()->matrixSize();
 //
 //     cvector tmp1(N), E, tmp2(N), H(N0);
 //     E = getInterfaceVector(K0, Kx, Ky);
 //
 //     // H = TH * A * invTE * E
-//     mult_matrix_by_vector(this->diagonalizer->invTE(this->stack[interface-1]), E, tmp1);
+//     mult_matrix_by_vector(diagonalizer->invTE(solver->stack[interface-1]), E, tmp1);
 //     mult_matrix_by_vector(A, tmp1, tmp2);
-//     mult_matrix_by_vector(this->diagonalizer->TH(this->stack[interface-1]), tmp2, H);
+//     mult_matrix_by_vector(diagonalizer->TH(solver->stack[interface-1]), tmp2, H);
 //
-//     this->diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, outVectorField2D);
+//     diagonalizer->source()->fieldE(layer, X, Y, K0, Kx, Ky, E, H, outVectorField2D);
 // }
 //
 // // Return the magnetic field components on a given grid
 // void SlabSolverBase::interfaceFieldH(const std::vector<double> X, const std::vector<double> Y,
 //                                     dcomplex* outVectorField2D)
 // {
-//     int layer = this->stack[interface-1];
+//     int layer = solver->stack[interface-1];
 //
-//     int N = this->diagonalizer->matrixSize();
-//     int N0 = this->diagonalizer->source()->matrixSize();
+//     int N = diagonalizer->matrixSize();
+//     int N0 = diagonalizer->source()->matrixSize();
 //
 //     cvector tmp1(N), E, tmp2(N), H(N0);
 //     E = getInterfaceVector(K0, Kx, Ky);
 //
 //     // H = TH * A * invTE * E
-//     mult_matrix_by_vector(this->diagonalizer->invTE(this->stack[interface-1]), E, tmp1);
+//     mult_matrix_by_vector(diagonalizer->invTE(solver->stack[interface-1]), E, tmp1);
 //     mult_matrix_by_vector(A, tmp1, tmp2);
-//     mult_matrix_by_vector(this->diagonalizer->TH(this->stack[interface-1]), tmp2, H);
+//     mult_matrix_by_vector(diagonalizer->TH(solver->stack[interface-1]), tmp2, H);
 //
-//     this->diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, outVectorField2D);
+//     diagonalizer->source()->fieldH(layer, X, Y, K0, Kx, Ky, E, H, outVectorField2D);
 // }
-
-template struct PLASK_SOLVER_API ReflectionSolver<Geometry2DCartesian>;
-template struct PLASK_SOLVER_API ReflectionSolver<Geometry2DCylindrical>;
-template struct PLASK_SOLVER_API ReflectionSolver<Geometry3D>;
 
 }}} // namespace plask::solvers::slab

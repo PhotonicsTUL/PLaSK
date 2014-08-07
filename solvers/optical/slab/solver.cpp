@@ -1,5 +1,5 @@
-#include "slab_base.h"
-#include "mesh_adapter.h"
+#include "solver.h"
+#include "meshadapter.h"
 #include "muller.h"
 #include "broyden.h"
 
@@ -8,17 +8,25 @@ namespace plask { namespace solvers { namespace slab {
 template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
     detlog("", "modal", "unspecified", "det"),
-    interface(1),
     outdist(0.1),
     smooth(0.),
-    recompute_coefficients(true),
     outRefractiveIndex(this, &SlabSolver<GeometryT>::getRefractiveIndexProfile),
     outLightMagnitude(this, &SlabSolver<GeometryT>::getIntensity, &SlabSolver<GeometryT>::nummodes),
     outElectricField(this, &SlabSolver<GeometryT>::getE, &SlabSolver<GeometryT>::nummodes),
     outMagneticField(this, &SlabSolver<GeometryT>::getH, &SlabSolver<GeometryT>::nummodes)
 {
+    this->inTemperature.changedConnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
+    this->inGain.changedConnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
     inTemperature = 300.; // temperature receiver has some sensible value
 }
+
+template <typename GeometryT>
+SlabSolver<GeometryT>::~SlabSolver()
+{
+    this->inTemperature.changedDisconnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
+    this->inGain.changedDisconnectMethod(this, &SlabSolver<GeometryT>::onInputChanged);
+}
+
 
 template <typename GeometryT>
 std::unique_ptr<RootDigger> SlabSolver<GeometryT>::getRootDigger(const RootDigger::function_type& func) {
@@ -31,7 +39,7 @@ std::unique_ptr<RootDigger> SlabSolver<GeometryT>::getRootDigger(const RootDigge
 
 
 template <typename GeometryT>
-void SlabSolver<GeometryT>::prepareLayers()
+void SlabSolver<GeometryT>::setup_vbounds()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = *RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->vert();
@@ -39,7 +47,7 @@ void SlabSolver<GeometryT>::prepareLayers()
 }
 
 template <>
-void SlabSolver<Geometry3D>::prepareLayers()
+void SlabSolver<Geometry3D>::setup_vbounds()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     vbounds = *RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->vert();
@@ -51,7 +59,7 @@ void SlabSolver<GeometryT>::setupLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
-    if (vbounds.empty()) prepareLayers();
+    if (vbounds.empty()) setup_vbounds();
 
     auto points = make_rectilinear_mesh(RectilinearMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->getMidpointsMesh());
 
@@ -115,7 +123,7 @@ void SlabSolver<GeometryT>::setupLayers()
 template <>
 void SlabSolver<Geometry3D>::setupLayers()
 {
-    if (vbounds.empty()) prepareLayers();
+    if (vbounds.empty()) setup_vbounds();
 
     auto points = make_rectilinear_mesh(RectilinearMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->getMidpointsMesh());
 
@@ -196,7 +204,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
 
     //TODO maybe there is a more efficient way to implement this
     DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
-    auto levels = makeLevelsAdapter<GeometryT::DIM>(dst_mesh);
+    auto levels = makeLevelsAdapter(dst_mesh);
 
     //std::map<size_t, LazyData<const Tensor3<dcomplex>>> cache;
     //while (auto level = levels->yield()) {
@@ -205,7 +213,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
     //    size_t l = stack[n];
     //    LazyData<Tensor3<dcomplex>> data = cache.find(l);
     //    if (data == cache.end()) {
-    //        data = diagonalizer->source()->getMaterialNR(l, level, interp);
+    //        data = transfer->diagonalizer->source()->getMaterialNR(l, level, interp);
     //        cache[l] = data;
     //    }
     //    for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
@@ -214,17 +222,18 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
         double h = level->vpos();
         size_t n = getLayerFor(h);
         size_t l = stack[n];
-        auto data = diagonalizer->source()->getMaterialNR(l, level, interp);
-        for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
+        auto lmsh = level->mesh();
+        auto data = transfer->diagonalizer->source()->getMaterialNR(l, lmsh, interp);
+        for (size_t i = 0; i != lmsh->size(); ++i) result[level->index(i)] = data[i];
     }
 
     return result;
 }
 
 
-template struct PLASK_SOLVER_API SlabSolver<Geometry2DCartesian>;
-template struct PLASK_SOLVER_API SlabSolver<Geometry2DCylindrical>;
-template struct PLASK_SOLVER_API SlabSolver<Geometry3D>;
+template class PLASK_SOLVER_API SlabSolver<Geometry2DCartesian>;
+template class PLASK_SOLVER_API SlabSolver<Geometry2DCylindrical>;
+template class PLASK_SOLVER_API SlabSolver<Geometry3D>;
 
 // FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
 

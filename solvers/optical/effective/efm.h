@@ -80,6 +80,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geome
             size_t ir = solver->mesh->axis0->findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
             dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir] - solver->freqv(lam)));
             if (real(x) < 0.) x = -x;
+            if (imag(x) > SMALL) x = -x;
             if (ir == solver->rsize-1) {
                 Jr = Ji = 0.;
             } else {

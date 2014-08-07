@@ -4,11 +4,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_sf_fermi_dirac.h>
-#include <gsl/gsl_min.h>
-
 #include <plask/plask.hpp>
 using namespace plask;
 

@@ -1,20 +1,20 @@
-#include "fourier_reflection_2d.h"
-#include "expansion_pw2d.h"
+#include "solver2d.h"
+#include "expansion2d.h"
 
 namespace plask { namespace solvers { namespace slab {
 
-FourierReflection2D::FourierReflection2D(const std::string& name): ReflectionSolver<Geometry2DCartesian>(name),
+FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<Geometry2DCartesian>(name),
     size(12),
     expansion(this),
     refine(32),
-    outNeff(this, &FourierReflection2D::getEffectiveIndex, &FourierReflection2D::nummodes)
+    outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
 {
     detlog.global_prefix = this->getId();
     smooth = 0.00025;
 }
 
 
-void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
+void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
@@ -102,26 +102,27 @@ void FourierReflection2D::loadConfiguration(XMLReader& reader, Manager& manager)
 
 
 
-void FourierReflection2D::onInitialize()
+void FourierSolver2D::onInitialize()
 {
-    setupLayers();
+    this->writelog(LOG_DETAIL, "Initializing Fourier2D solver (%1% layers in the stack, interface after %2% layer%3%)",
+                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    this->setupLayers();
+    this->ensureInterface();
     expansion.init();
-    diagonalizer.reset(new SimpleDiagonalizer(&expansion));    //TODO add other diagonalizer types
-    init();
+    this->transfer.reset(new ReflectionTransfer(this, expansion));    //TODO add other transfer types
+    this->recompute_coefficients = true;
 }
 
 
-void FourierReflection2D::onInvalidate()
+void FourierSolver2D::onInvalidate()
 {
-    cleanup();
     modes.clear();
-    expansion.free();
-    diagonalizer.reset();
-    fields.clear();
+    expansion.reset();
+    transfer.reset();
 }
 
 
-size_t FourierReflection2D::findMode(dcomplex neff)
+size_t FourierSolver2D::findMode(dcomplex neff)
 {
     if (expansion.polarization != ExpansionPW2D::E_UNSPECIFIED)
         throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
@@ -137,7 +138,7 @@ size_t FourierReflection2D::findMode(dcomplex neff)
 }
 
 
-cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
+cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
                                                     IncidentDirection incidence, size_t* savidx)
 {
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
@@ -148,7 +149,7 @@ cvector FourierReflection2D::getReflectedAmplitudes(ExpansionPW2D::Component pol
 }
 
 
-cvector FourierReflection2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
+cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
                                                       IncidentDirection incidence, size_t* savidx)
 {
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
@@ -159,7 +160,7 @@ cvector FourierReflection2D::getTransmittedAmplitudes(ExpansionPW2D::Component p
 }
 
 
-double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization, IncidentDirection incidence)
+double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, IncidentDirection incidence)
 {
     size_t idx;
     cvector reflected = getReflectedAmplitudes(polarization, incidence, &idx).claim();
@@ -173,7 +174,7 @@ double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization,
         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
                               (incidence == INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
-    auto gamma = diagonalizer->Gamma(l);
+    auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
     dcomplex igamma0 = 1. / gamma0;
     if (!expansion.separated) {
@@ -198,7 +199,7 @@ double FourierReflection2D::getReflection(ExpansionPW2D::Component polarization,
 }
 
 
-double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarization, IncidentDirection incidence)
+double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, IncidentDirection incidence)
 {
     size_t idx;
     cvector transmitted = getTransmittedAmplitudes(polarization, incidence, &idx).claim();
@@ -216,8 +217,8 @@ double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarizatio
         writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
                  (incidence == INCIDENCE_TOP)? "Top" : "Bottom");
 
-    auto gamma = diagonalizer->Gamma(lt);
-    dcomplex igamma0 = 1. / diagonalizer->Gamma(li)[idx];
+    auto gamma = transfer->diagonalizer->Gamma(lt);
+    dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
     dcomplex gamma0 = gamma[idx] * gamma[idx] * igamma0;
     if (!expansion.separated) {
         int N = getSize() + 1;
@@ -240,42 +241,42 @@ double FourierReflection2D::getTransmission(ExpansionPW2D::Component polarizatio
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (modes.size() <= num) throw NoValue(LightE::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
         ktran = modes[num].ktran;
-        fields_determined = DETERMINED_NOTHING;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return getFieldE(dst_mesh, method);
+    return transfer->getFieldE(dst_mesh, method);
 }
 
 
-const DataVector<const Vec<3,dcomplex>> FourierReflection2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (modes.size() <= num) throw NoValue(LightH::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
         ktran = modes[num].ktran;
-        fields_determined = DETERMINED_NOTHING;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return getFieldH(dst_mesh, method);
+    return transfer->getFieldH(dst_mesh, method);
 }
 
 
-const DataVector<const double> FourierReflection2D::getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+const DataVector<const double> FourierSolver2D::getIntensity(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
         ktran = modes[num].ktran;
-        fields_determined = DETERMINED_NOTHING;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     }
-    return getFieldIntensity(modes[num].power, dst_mesh, method);
+    return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 
 

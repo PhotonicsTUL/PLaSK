@@ -594,9 +594,11 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
 
         dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
         if (real(x1) < 0.) x1 = -x1;
+        if (imag(x1) > SMALL) x1 = -x1;
 
         dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
         if (real(x2) < 0.) x2 = -x2;
+        if (imag(x2) > SMALL) x2 = -x2;
 
         // Compute Bessel functions and their derivatives
         dcomplex J1[2], H1[2];

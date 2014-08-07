@@ -29,7 +29,7 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         int nthr = min(omp_get_max_threads(), lcount);
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
-        src->solver->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr ==1)?"x":"ces");
+        src->solver->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr==1)?"x":"ces");
         for (size_t i = 0; i != nthr; ++i) {
             tmpmx[i] = cmatrix(N, N);
             omp_init_lock(tmplx+i);
@@ -121,9 +121,9 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
                     gamma[layer][ie] += RH[ie+je] * RE[ih+jh];
             }
 
-// std::cerr << "Gamma2: ";
-// for (unsigned r = 0; r != N; ++r) std::cerr << format("%7.1f ", real(gamma[layer][r]));
-// std::cerr << "\n";
+            // std::cerr << "Gamma2: ";
+            // for (unsigned r = 0; r != N; ++r) std::cerr << format("%7.1f ", real(gamma[layer][r]));
+            // std::cerr << "\n";
 
             // Eigenvector matrix is simply a unity matrix
             std::fill_n(Te[layer].data(), N*N, 0.);

@@ -1,12 +1,12 @@
-#include "expansion_pw3d.h"
-#include "fourier_reflection_3d.h"
-#include "mesh_adapter.h"
+#include "expansion3d.h"
+#include "solver3d.h"
+#include "../meshadapter.h"
 
-#define SOLVER static_cast<FourierReflection3D*>(solver)
+#define SOLVER static_cast<FourierSolver3D*>(solver)
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW3D::ExpansionPW3D(FourierReflection3D* solver): Expansion(solver), initialized(false),
+ExpansionPW3D::ExpansionPW3D(FourierSolver3D* solver): Expansion(solver), initialized(false),
     symmetry_long(E_UNSPECIFIED), symmetry_tran(E_UNSPECIFIED) {}
 
 size_t ExpansionPW3D::lcount() const {
@@ -188,7 +188,7 @@ void ExpansionPW3D::init()
     initialized = true;
 }
 
-void ExpansionPW3D::free() {
+void ExpansionPW3D::reset() {
     coeffs.clear();
     initialized = false;
 }
@@ -421,18 +421,18 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             .execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> lcmesh = make_shared<RegularAxis>(), tcmesh = make_shared<RegularAxis>();
         if (symmetric_long) {
-            double dx = 0.5 * (front-back) / nNl;
-            lcmesh->reset(back+dx, front-dx, nNl);
+            double dx = 0.5 * (front-back) / nl;
+            lcmesh->reset(back+dx, front-dx, nl);
         } else {
-            lcmesh->reset(back, front, nNl+1);
-            for (size_t l = 0, last = nl*nNt; l != nNl; ++l) params[last+l] = params[l];
+            lcmesh->reset(back, front, nl);
+            for (size_t t = 0, end = nl*nt, shift = nl-1; t != end; t += nl) params[shift+t] = params[t];
         }
         if (symmetric_tran) {
-            double dx = 0.5 * (right-left) / nNt;
-            tcmesh->reset(left+dx, right-dx, nNt);
+            double dy = 0.5 * (right-left) / nt;
+            tcmesh->reset(left+dy, right-dy, nt);
         } else {
-            tcmesh->reset(left, right, nNt+1);
-            for (size_t t = 0, end = nl*nt; t != end; t += nl) params[nNl+t] = params[t];
+            tcmesh->reset(left, right, nt);
+            for (size_t l = 0, last = nl*(nt-1); l != nl; ++l) params[last+l] = params[l];
         }
         for (Tensor3<dcomplex>& eps: params) {
             eps.c22 = 1. / eps.c22;
@@ -458,6 +458,9 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
          // +1: Ex+, Ey-, Hx-, Hy+
          //  0: no symmetry
          // -1: Ex-, Ey+, Hx+, Hy-
+
+    assert(!(symx && klong != 0.));
+    assert(!(symy && ktran != 0.));
 
     double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
            Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
