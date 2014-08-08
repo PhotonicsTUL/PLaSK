@@ -265,43 +265,42 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 //
 const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("FourierSolver3D::getE");
-//     if (modes.size() <= num) throw NoValue(LightE::NAME);
-//     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-//         k0 = modes[num].k0;
-//         klong = modes[num].klong;
-//         ktran = modes[num].ktran;
-//         fields_determined = DETERMINED_NOTHING;
-//     }
-//     return getFieldE(dst_mesh, method);
+    if (modes.size() <= num) throw NoValue(LightE::NAME);
+    assert(transfer);
+    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+        k0 = modes[num].k0;
+        klong = modes[num].klong;
+        ktran = modes[num].ktran;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    return transfer->getFieldE(dst_mesh, method);
 }
 
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("FourierSolver3D::getH");
-//     if (modes.size() <= num) throw NoValue(LightH::NAME);
-//     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-//         k0 = modes[num].k0;
-//         klong = modes[num].klong;
-//         ktran = modes[num].ktran;
-//         fields_determined = DETERMINED_NOTHING;
-//     }
-//     return getFieldH(dst_mesh, method);
+    if (modes.size() <= num) throw NoValue(LightH::NAME);
+    assert(transfer);
+    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+        k0 = modes[num].k0;
+        klong = modes[num].klong;
+        ktran = modes[num].ktran;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    return transfer->getFieldH(dst_mesh, method);
 }
 
 
 const DataVector<const double> FourierSolver3D::getIntensity(size_t num, shared_ptr<const MeshD<3> > dst_mesh, InterpolationMethod method)
 {
-    throw NotImplemented("FourierSolver3D::getIntensity");
-//     if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
-//     if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
-//         k0 = modes[num].k0;
-//         klong = modes[num].klong;
-//         ktran = modes[num].ktran;
-//         fields_determined = DETERMINED_NOTHING;
-//     }
-//     return getFieldMagnitude(modes[num].power, dst_mesh, method);
+    if (modes.size() <= num) throw NoValue(LightMagnitude::NAME);
+    if (modes[num].k0 != k0 || modes[num].klong != klong || modes[num].ktran != ktran) {
+        k0 = modes[num].k0;
+        klong = modes[num].klong;
+        ktran = modes[num].ktran;
+        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    }
+    return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 //
 //

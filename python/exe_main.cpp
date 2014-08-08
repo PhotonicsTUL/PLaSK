@@ -426,12 +426,12 @@ int main(int argc, const char *argv[])
         }   // try
         // when PRINT_STACKTRACE_ON_EXCEPTION is defined, we will not catch most exceptions
         // in order to handle it by terminate handler and print a call stack
-#       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (std::invalid_argument& err) {
                 plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
                 endPlask();
                 return -1;
             }
+#       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
                 plask::writelog(plask::LOG_CRITICAL_ERROR, "%1%: XMLError: %2%", argv[1], err.what());
                 endPlask();

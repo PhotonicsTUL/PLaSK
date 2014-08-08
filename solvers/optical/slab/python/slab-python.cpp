@@ -164,7 +164,16 @@ void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam)
 template <typename SolverT>
 void Solver_setK0(SolverT& self, dcomplex k0) { self.setWavelength(k0); }
 
+template <typename SolverT>
+PmlWrapper Solver_vPML(SolverT* self) {
+    return PmlWrapper(self, &self->vpml);
+}
 
+template <typename SolverT>
+void Solver_setvPML(SolverT* self, const PmlWrapper& value) {
+    self->vpml = *value.pml;
+    self->invalidate();
+}
 
 py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
     if (!self.mirrors) return py::object();
@@ -557,6 +566,16 @@ inline void export_base(Class solver) {
                          "mode.\n\n"
                          ROOTDIGGER_ATTRS_DOC
                         );
+    solver.add_property("vpml", py::make_function(&Solver_vPML<Solver>, py::with_custodian_and_ward_postcall<0,1>()),
+                        &Solver_setvPML<Solver>,
+                        "Vertical Perfectly Matched Layers boundary conditions.\n\n"
+                        ".. rubric:: Attributes\n\n"
+                        ".. autosummary::\n\n"
+                        "   ~optical.slab.PML.factor\n"
+                        "   ~optical.slab.PML.dist\n"
+                        "   ~optical.slab.PML.size\n\n"
+                        "Attribute ``shape`` is ignored for vertical PML (it is always 0).\n"
+                       );
 }
 
 BOOST_PYTHON_MODULE(slab)

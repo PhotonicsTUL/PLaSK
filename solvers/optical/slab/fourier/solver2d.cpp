@@ -244,8 +244,8 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    assert(transfer);
     if (modes.size() <= num) throw NoValue(LightE::NAME);
+    assert(transfer);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;
@@ -258,8 +258,8 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
-    assert(transfer);
     if (modes.size() <= num) throw NoValue(LightH::NAME);
+    assert(transfer);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
         klong = modes[num].beta;

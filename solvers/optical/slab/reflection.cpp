@@ -105,11 +105,12 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     int NN = N*N;
     cmatrix wrk(N, N0, work);    // matrix object for the workspace
 
-    findReflection(start, end);
+    findReflection(start, end, false);
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[end]);
 
-    double H = (end == 0 || end == solver->vbounds.size())? 0. : abs(solver->vbounds[end] - solver->vbounds[end-1]);
+    double H = (end == 0 || end == solver->vbounds.size())?
+               0 : abs(solver->vbounds[end] - solver->vbounds[end-1]);
     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
 
     mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);     // P = phas * P * phas
@@ -136,7 +137,7 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 }
 
 
-void ReflectionTransfer::findReflection(int start, int end)
+void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 {
     // Should be called from 0 to interface-1
     // and from count-1 to interface
@@ -153,7 +154,6 @@ void ReflectionTransfer::findReflection(int start, int end)
 
     // in the beginning the P matrix is zero
     memset(P.data(), 0, NN*sizeof(dcomplex));
-    storeP(start);
 
     std::exception_ptr error;
 
@@ -178,23 +178,45 @@ void ReflectionTransfer::findReflection(int start, int end)
 
         #pragma omp single
         if (!error) try {
+
+            // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
+            if (!emitting) {
+                // F(0) + B(0) = 0 ==> P(0) = -I
+                for (size_t i = 0; i != N; ++i) P(i,i) = -1.;
+
+                #ifdef OPENMP_FOUND
+                    layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
+                #endif
+                gamma = diagonalizer->Gamma(solver->stack[start]);
+
+                // Aply PML
+                dcomplex h = solver->vpml.size * solver->vpml.factor;
+                for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*h);
+                mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
+
+                // Shift matrix by `pmlshift`
+                for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.shift);
+                mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
+            }
+
+            storeP(start);
+
             for (int n = start; n != end; n += inc) {
                 #ifdef OPENMP_FOUND
-                layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
+                    layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
                 #endif
                 gamma = diagonalizer->Gamma(solver->stack[n]);
                 assert(!gamma.isnan());
 
-                double H = (n == start)? 0. : (solver->vbounds[n] - solver->vbounds[n-1]);
-
-                if (n != start) {
-                    for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
-                } else {
+                double H = (n == start)? 0. : solver->vbounds[n] - solver->vbounds[n-1];
+                if (emitting && n == start) {
                     for (int i = 0; i < N; i++) {
                         dcomplex g = gamma[i];
                         if (real(g) < -SMALL) g = -g;
                         phas[i] = exp(-I*g*H);
                     }
+                } else {
+                    for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
                 }
                 assert(!P.isnan());
                 assert(!phas.isnan());
@@ -204,11 +226,11 @@ void ReflectionTransfer::findReflection(int start, int end)
                 assert(!diagonalizer->TE(solver->stack[n]).isnan());
                 assert(!diagonalizer->invTE(solver->stack[n]).isnan());
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P.orig + I
-                mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);            // wrk = TE[n] * P
+                mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);          // wrk = TE[n] * P
                 #ifdef OPENMP_FOUND
                 layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
                 #endif
-                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, ee);    // ee = invTE[n+1] * wrk (= A)
+                mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, ee);  // ee = invTE[n+1] * wrk (= A)
 
                 // hh = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
                 assert(!diagonalizer->TH(solver->stack[n]).isnan());
@@ -216,14 +238,14 @@ void ReflectionTransfer::findReflection(int start, int end)
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
 
                 // multiply rows of P by -1 where necessary for properly outgoing wave
-                if (n == start) {
+                if (emitting && n == start) {
                     for (int i = 0; i < N; i++)
                         if (real(gamma[i]) < -SMALL)
                             for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
                 }
 
-                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);            // wrk = TH[n] * P
-                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, hh);    // hh = invTH[n+1] * wrk (= P)
+                mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n]), P, wrk);          // wrk = TH[n] * P
+                mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n+inc]), wrk, hh);  // hh = invTH[n+1] * wrk (= P)
 
                 // ee := ee-hh, hh := ee+hh
                 for (int i = 0; i < NN; i++) {
@@ -231,10 +253,6 @@ void ReflectionTransfer::findReflection(int start, int end)
                     A[i] = e - h;
                     P[i] = e + h;
                 }
-
-                // There might appear a problem if the last layer and the one next to the last are the same.
-                // It may happen that e ~ h and then A matrix is close to singular. This will yield unreliable results.
-                // To avoid this never ever put two identical layers next to each other
 
                 // P = P * inv(A)
                 int info;
@@ -284,7 +302,7 @@ cvector ReflectionTransfer::getReflectionVector(const cvector& incident, Inciden
         case INCIDENCE_BOTTOM:
             last = solver->stack.size()-1; first = 0; break;
     }
-    findReflection(last, first);
+    findReflection(last, first, true);
     return P * incident;
 }
 
@@ -382,7 +400,8 @@ void ReflectionTransfer::determineFields()
         int curr = solver->stack[start];
 
         gamma = diagonalizer->Gamma(curr);
-        double H = (start == 0 || start == count-1)? 0. : (solver->vbounds[start] - solver->vbounds[start-1]);
+
+        double H = (start == 0 || start == count-1)? 0 : (solver->vbounds[start] - solver->vbounds[start-1]);
         for (int i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
@@ -419,38 +438,38 @@ void ReflectionTransfer::determineFields()
             for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];              // F2 := F1 - B1
             mult_matrix_by_vector(diagonalizer->TH(curr), F2, tmp);         // tmp := TH * F2
             mult_matrix_by_vector(diagonalizer->invTH(next), tmp, B2);      // B2 := invTH * tmp
-            // multiply rows of invTH by -1 where necessary for the outer layer
-            if (n+inc == end) {
-                for (int i = 0; i < N; i++)
-                    if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
-            }
+
+//            // multiply rows of invTH by -1 where necessary for the outer layer
+//            if (n+inc == end) {
+//                for (int i = 0; i < N; i++)
+//                    if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
+//            }
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];              // F2 := F1 + B1
             mult_matrix_by_vector(diagonalizer->TE(curr), F2, tmp);         // tmp := TE * F2
             zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
                   tmp.data(), N0, -1., B2.data(), N);                       // B2 := invTE * tmp - B2
 
-            H = (n+inc == end)? 0. : (solver->vbounds[n+inc] - solver->vbounds[n+inc-1]);
-            if (n+inc != end) {
+            H = (n+inc == end)? 0 : (solver->vbounds[n+inc] - solver->vbounds[n+inc-1]);
+//            if (n+inc != end) {
                 for (int i = 0; i < N; i++)
                     B2[i] *= 0.5 * exp(-I*gamma[i]*H);                      // B2 := 1/2 * phas * B2
-            } else {
-                for (int i = 0; i < N; i++) {
-                    dcomplex g = gamma[i];
-                    if (real(g) < -SMALL) g = -g;
-                    B2[i] *= 0.5 * exp(-I*g*H);                             // B2 := 1/2 * phas * B2
-                }
-            }
+//            } else {
+//                for (int i = 0; i < N; i++) {
+//                    dcomplex g = gamma[i];
+//                    if (real(g) < -SMALL) g = -g;
+//                    B2[i] *= 0.5 * exp(-I*g*H);                             // B2 := 1/2 * phas * B2
+//                }
+//            }
         }
 
-        // mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
-        for (int i = 0; i < N; ++i) fields[end].F[i] = 0.; // in the outer layer there is no incoming field
-
-        // In the outer layers replace F and B where necessary for consistent gamma handling
-        cvector& F2 = fields[end].F;
-        cvector& B2 = fields[end].B;
-        for (int i = 0; i < N; i++)
-            if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
+         mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
+//        for (int i = 0; i < N; ++i) fields[end].F[i] = 0.; // in the outer layer there is no incoming field
+//        // In the outer layers replace F and B where necessary for consistent gamma handling
+//        cvector& F2 = fields[end].F;
+//        cvector& B2 = fields[end].B;
+//        for (int i = 0; i < N; i++)
+//            if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
     }
 
     allP = false;
@@ -479,7 +498,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 
     // Compute reflection matrices
     initDiagonalization();
-    findReflection(end, start);
+    findReflection(end, start, true);
 
     // Temporary and initial data
     int N = diagonalizer->matrixSize();
@@ -637,14 +656,19 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 }
 
 
-DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method, bool emitting)
 {
+    double zlim = solver->vpml.shift + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
     diagonalizer->source()->initField(Expansion::FieldParams::E, solver->k0, solver->klong, solver->ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);
+        if (!emitting) {
+            if (n == 0 && z < -zlim) z = -zlim;
+            else if (n == solver->stack.size()-1 && z > zlim) z = zlim;
+        }
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
         if (n >= solver->interface) for (auto& h: H) h = -h;
@@ -656,14 +680,19 @@ DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<c
     return destination;
 }
 
-DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method)
+DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool emitting)
 {
+    double zlim = solver->vpml.shift + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
     diagonalizer->source()->initField(Expansion::FieldParams::H, solver->k0, solver->klong, solver->ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);
+        if (!emitting) {
+            if (n == 0 && z < -zlim) z = -zlim;
+            else if (n == solver->stack.size()-1 && z > zlim) z = zlim;
+        }
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
         if (n >= solver->interface) for (auto& h: H) h = -h;
@@ -675,9 +704,9 @@ DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldH(const shared_ptr<c
     return destination;
 }
 
-DataVector<double> ReflectionTransfer::computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method)
+DataVector<double> ReflectionTransfer::computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool emitting)
 {
-    auto E = computeFieldE(dst_mesh, method);
+    auto E = computeFieldE(dst_mesh, method, emitting);
     DataVector<double> result(E.size());
     for (size_t i = 0; i != E.size(); ++i) {
         result[i] = power * abs2(E[i]);

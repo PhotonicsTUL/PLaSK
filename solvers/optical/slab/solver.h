@@ -76,6 +76,9 @@ struct SlabBase {
              klong,                             ///< Longitudinal wavevector [1/µm]
              ktran;                             ///< Transverse wavevector [1/µm]
 
+    /// Parameters for vertical PMLs (if used)
+    PML vpml;
+
     /// Parameters for main rootdigger
     RootDigger::Params root;
 
@@ -86,6 +89,7 @@ struct SlabBase {
         detlog("", "modal", "unspecified", "det"),
         interface(1),
         k0(NAN), klong(0.), ktran(0.),
+        vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_coefficients(true) {}
 
     /// Get current wavelength
@@ -129,7 +133,7 @@ struct SlabBase {
     }
 
     /**
-     * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
+     * Get layer number for vertical coordinate. Alter this coordinate to the layer local one.
      * The bottom infinite layer has always negative coordinate.
      * \param[in,out] h vertical coordinate
      * \return layer number (in the stack)

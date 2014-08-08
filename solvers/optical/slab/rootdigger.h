@@ -30,7 +30,7 @@ struct RootDigger {
         dcomplex initial_dist;  ///< Distance between initial points
 
         Params():
-            method(ROOT_MULLER),
+            method(ROOT_BROYDEN),
             tolx(1e-6),
             tolf_min(1e-7),
             tolf_max(1e-5),

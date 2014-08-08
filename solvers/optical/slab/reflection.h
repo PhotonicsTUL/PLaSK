@@ -92,8 +92,9 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      * Find reflection matrix for the part of the structure
      * \param start starting layer
      * \param end last layer (reflection matrix is computed for this layer)
+     * \param emitting should the reflection matrix in the first layer be 0?
      */
-    void findReflection(int start, int end);
+    void findReflection(int start, int end, bool emitting);
 
     /**
      * Store P matrix if we want it for field compuation
@@ -118,52 +119,55 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      * Compute electric field at the given mesh.
      * \param dst_mesh target mesh
      * \param method interpolation method
+     * \param emitting is the field emitting?
      */
-    DataVector<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool emitting);
 
     /**
      * Compute magnetic field at the given mesh.
      * \param dst_mesh target mesh
      * \param method interpolation method
+     * \param emitting is the field emitting?
      */
-    DataVector<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
+    DataVector<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool emitting);
 
     /**
      * Compute light magnitude.
      * \param power mode power
      * \param dst_mesh destination mesh
      * \param method interpolation method
+     * \param emitting is the field emitting?
      */
-    DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
+    DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool emitting);
 
     DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
-        return computeFieldE(dst_mesh, method);
+        return computeFieldE(dst_mesh, method, false);
     }
 
     DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
-        return computeFieldH(dst_mesh, method);
+        return computeFieldH(dst_mesh, method, false);
     }
 
     DataVector<double> getFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
-        return computeFieldMagnitude(power, dst_mesh, method);
+        return computeFieldMagnitude(power, dst_mesh, method, false);
     }
 
     DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldE(dst_mesh, method);
+        return computeFieldE(dst_mesh, method, true);
     }
 
     DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldH(dst_mesh, method);
+        return computeFieldH(dst_mesh, method, true);
     }
 
     DataVector<double> getReflectedFieldMagnitude(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
-        return computeFieldMagnitude(1., dst_mesh, method);
+        return computeFieldMagnitude(1., dst_mesh, method, true);
     }
 };
 
