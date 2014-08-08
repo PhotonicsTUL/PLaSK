@@ -29,7 +29,7 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         int nthr = min(omp_get_max_threads(), lcount);
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
-        src->solver->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr ==1)?"x":"ces");
+        src->solver->writelog(LOG_DEBUG, "Creating %1% temporary matri%2% for diagonalizer", nthr, (nthr==1)?"x":"ces");
         for (size_t i = 0; i != nthr; ++i) {
             tmpmx[i] = cmatrix(N, N);
             omp_init_lock(tmplx+i);

@@ -1,12 +1,12 @@
-#include "expansion_pw2d.h"
-#include "fourier_reflection_2d.h"
-#include "mesh_adapter.h"
+#include "expansion2d.h"
+#include "solver2d.h"
+#include "../meshadapter.h"
 
-#define SOLVER static_cast<FourierReflection2D*>(solver)
+#define SOLVER static_cast<FourierSolver2D*>(solver)
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW2D::ExpansionPW2D(FourierReflection2D* solver): Expansion(solver), initialized(false),
+ExpansionPW2D::ExpansionPW2D(FourierSolver2D* solver): Expansion(solver), initialized(false),
     symmetry(E_UNSPECIFIED), polarization(E_UNSPECIFIED) {}
 
 size_t ExpansionPW2D::lcount() const {
@@ -119,7 +119,7 @@ void ExpansionPW2D::init()
     initialized = true;
 }
 
-void ExpansionPW2D::free() {
+void ExpansionPW2D::reset() {
     coeffs.clear();
     initialized = false;
 }
@@ -235,10 +235,10 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
 }
 
 
-LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_ptr<const Mesh> &mesh, InterpolationMethod interp)
+LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_ptr<const LevelsAdapter::Level> &level, InterpolationMethod interp)
 {
-    assert(dynamic_pointer_cast<const typename LevelsAdapter<2>::Mesh>(mesh));
-    auto dest_mesh = static_pointer_cast<const typename LevelsAdapter<2>::Mesh>(mesh);
+    assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
+    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level-> mesh());
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         if (!symmetric) {
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
@@ -279,7 +279,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             eps.c22 = 1. / eps.c22;
             eps.sqrt_inplace();
         }
-        auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(dest_mesh->vpos(), dest_mesh->vpos(), 1));
+        auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
         const bool ignore_symmetry[2] = { !symmetric, false };
         return interpolate(src_mesh, params, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
 
@@ -416,7 +416,7 @@ void ExpansionPW2D::cleanupField()
 
 // TODO fields must be carefully verified
 
-DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<const Mesh>& dst_mesh, const cvector& E, const cvector& H)
+DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
 
@@ -425,9 +425,9 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
 
     int order = SOLVER->getSize();
     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-    assert(dynamic_pointer_cast<const typename LevelsAdapter<2>::Mesh>(dst_mesh));
-    shared_ptr<const MeshD<2>> dest_mesh = static_pointer_cast<const MeshD<2>>(dst_mesh);
-    double vpos = static_pointer_cast<const typename LevelsAdapter<2>::Mesh>(dst_mesh)->vpos();
+    assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
+    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level-> mesh());
+    double vpos = level->vpos();
 
     int dt = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0;
     int dl = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0;

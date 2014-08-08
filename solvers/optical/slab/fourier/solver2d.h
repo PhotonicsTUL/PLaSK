@@ -3,20 +3,21 @@
 
 #include <plask/plask.hpp>
 
-#include "reflection_base.h"
-#include "expansion_pw2d.h"
+#include "../solver.h"
+#include "../reflection.h"
+#include "expansion2d.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DCartesian> {
+struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> {
 
-    std::string getClassName() const { return "optical.FourierReflection2D"; }
+    std::string getClassName() const { return "optical.Fourier2D"; }
 
     struct Mode {
-        FourierReflection2D* solver;                            ///< Solver this mode belongs to
+        FourierSolver2D* solver;                            ///< Solver this mode belongs to
         ExpansionPW2D::Component symmetry;                      ///< Mode horizontal symmetry
         ExpansionPW2D::Component polarization;                  ///< Mode polarization
         dcomplex k0;                                            ///< Stored mode frequency
@@ -24,7 +25,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
         double power;                                           ///< Mode power [mW]
 
-        Mode(FourierReflection2D* solver): solver(solver), power(1.) {}
+        Mode(FourierSolver2D* solver): solver(solver), power(1.) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
@@ -67,7 +68,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::Delegate outNeff;
 
-    FourierReflection2D(const std::string& name="");
+    FourierSolver2D(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
 
@@ -94,7 +95,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
         if (ktran != 0.) {
-            this->writelog(LOG_WARNING, "Resetting ktran to 0.");
+            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
         }
         if (expansion.initialized) {
@@ -103,7 +104,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
             if (!expansion.symmetric && symmetry != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
         }
-        fields_determined = DETERMINED_NOTHING;
+        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry = symmetry;
     }
 
@@ -114,11 +115,11 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
                 else
-                    this->writelog(LOG_WARNING, "Resetting mode symmetry");
+                    Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
             }
             expansion.symmetric = Expansion::E_UNSPECIFIED;
         }
-        if (k != ktran) fields_determined = DETERMINED_NOTHING;
+        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         ktran = k;
     }
 
@@ -208,7 +209,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
      * \param incidence incidence side
      * \param savidx pointer to which optionally save nonzero incident index
      */
-    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
+    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence, size_t* savidx=nullptr);
 
     /**
      * Get amplitudes of transmitted diffraction orders
@@ -216,21 +217,21 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
      * \param incidence incidence side
      * \param savidx pointer to which optionally save nonzero incident index
      */
-    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
+    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence, size_t* savidx=nullptr);
 
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    double getReflection(ExpansionPW2D::Component polarization, IncidentDirection incidence);
+    double getReflection(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    double getTransmission(ExpansionPW2D::Component polarization, IncidentDirection incidence);
+    double getTransmission(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
      * Get electric field at the given mesh for reflected light.
@@ -239,10 +240,12 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW2D::Component polarization, IncidentDirection incident,
-                                                   shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW2D::Component polarization,
+                                                   Transfer::IncidentDirection incident,
+                                                   shared_ptr<const MeshD<2>> dst_mesh,
+                                                   InterpolationMethod method) {
         initCalculation();
-        return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
+        return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
 
     /**
@@ -252,10 +255,12 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW2D::Component polarization, IncidentDirection incident,
-                                                   shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW2D::Component polarization,
+                                                   Transfer::IncidentDirection incident,
+                                                   shared_ptr<const MeshD<2>> dst_mesh,
+                                                   InterpolationMethod method) {
         initCalculation();
-        return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
+        return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
 
     /**
@@ -265,10 +270,12 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldIntensity(ExpansionPW2D::Component polarization, IncidentDirection incident,
-                                                  shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+    DataVector<double> getReflectedFieldMagnitude(ExpansionPW2D::Component polarization,
+                                                  Transfer::IncidentDirection incident,
+                                                  shared_ptr<const MeshD<2>> dst_mesh,
+                                                  InterpolationMethod method) {
         initCalculation();
-        return ReflectionSolver<Geometry2DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
+        return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }
 
 
@@ -364,7 +371,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
          * \param polarization polarization of the perpendicularly incident light
          * \param side incidence side
          */
-        Reflected(FourierReflection2D* parent, double wavelength, ExpansionPW2D::Component polarization, FourierReflection2D::IncidentDirection side):
+        Reflected(FourierSolver2D* parent, double wavelength, ExpansionPW2D::Component polarization, Transfer::IncidentDirection side):
             outElectricField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
@@ -373,7 +380,7 @@ struct PLASK_SOLVER_API FourierReflection2D: public ReflectionSolver<Geometry2DC
                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
             outLightMagnitude([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
                 parent->setWavelength(wavelength);
-                return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
+                return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
         {}
     };
 };

@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.slab import FourierReflection2D
+from optical.slab import Fourier2D
 
 plask.config.axes = 'xy'
 
@@ -19,7 +19,7 @@ class Core(material.Material):
 class Reflection2D_Test(unittest.TestCase):
 
     def setUp(self):
-        self.solver = FourierReflection2D("fourier2d")
+        self.solver = Fourier2D("fourier2d")
         rect = geometry.Rectangle(0.5, 0.25, Core())
         air = geometry.Rectangle(1.5, 0.50, "air")
         stack = geometry.Stack2D()

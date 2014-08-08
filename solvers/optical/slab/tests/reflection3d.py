@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.slab import FourierReflection3D, PML
+from optical.slab import Fourier3D, PML
 
 
 @material.simple
@@ -25,7 +25,7 @@ class Averaging_Test(unittest.TestCase):
         align.add(background, back=0., left=0.)
         align.add(obj, back=0., left=0.)
         geom = geometry.Cartesian3D(align, back='periodic', front='periodic', left='periodic', right='periodic')
-        self.solver = FourierReflection3D()
+        self.solver = Fourier3D()
         self.solver.geometry = geom
         self.solver.wavelength = 1000.
         self.solver.smooth = 0.
@@ -94,7 +94,7 @@ class Solver_Test(unittest.TestCase):
         config.axes = 'xyz'
         background = geometry.Cuboid(1.0, 1.0, 0.2, None)
         geom = geometry.Cartesian3D(background, back='periodic', front='periodic', left='periodic', right='periodic')
-        self.solver = FourierReflection3D()
+        self.solver = Fourier3D()
         self.solver.geometry = geom
 
 

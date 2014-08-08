@@ -3,13 +3,13 @@
 
 #include <plask/plask.hpp>
 
-#include "expansion.h"
-#include "mesh_adapter.h"
+#include "../expansion.h"
+#include "../meshadapter.h"
 #include "fft.h"
 
 namespace plask { namespace solvers { namespace slab {
 
-struct FourierReflection2D;
+struct FourierSolver2D;
 
 struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
@@ -40,7 +40,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
      * Create new expansion
      * \param solver solver which performs calculations
      */
-    ExpansionPW2D(FourierReflection2D* solver);
+    ExpansionPW2D(FourierSolver2D* solver);
 
     /**
      * Init expansion
@@ -49,7 +49,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void init();
 
     /// Free allocated memory
-    void free();
+    void reset();
 
     /// Compute all expansion coefficients
     void computeMaterialCoefficients() {
@@ -73,9 +73,12 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     void cleanupField() override;
 
-    DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H) override;
+    DataVector<const Vec<3,dcomplex>> getField(size_t l,
+                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                               const cvector& E, const cvector& H) override;
 
-    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t l, const shared_ptr<const Mesh> &mesh,
+    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t l,
+                                              const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
   private:

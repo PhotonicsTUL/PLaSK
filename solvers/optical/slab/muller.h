@@ -2,7 +2,7 @@
 #define PLASK__OPTICAL_SLAB_MULLER_H
 
 #include "rootdigger.h"
-
+#include "solver.h"
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -18,7 +18,7 @@ class RootMuller: public RootDigger {
   public:
 
     // Constructor
-    RootMuller(Solver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
+    RootMuller(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
                const Params& pars): RootDigger(solver, val_fun, log_value, pars) {}
 
 

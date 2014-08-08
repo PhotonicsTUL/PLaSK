@@ -1,12 +1,12 @@
-#include "expansion_pw3d.h"
-#include "fourier_reflection_3d.h"
-#include "mesh_adapter.h"
+#include "expansion3d.h"
+#include "solver3d.h"
+#include "../meshadapter.h"
 
-#define SOLVER static_cast<FourierReflection3D*>(solver)
+#define SOLVER static_cast<FourierSolver3D*>(solver)
 
 namespace plask { namespace solvers { namespace slab {
 
-ExpansionPW3D::ExpansionPW3D(FourierReflection3D* solver): Expansion(solver), initialized(false),
+ExpansionPW3D::ExpansionPW3D(FourierSolver3D* solver): Expansion(solver), initialized(false),
     symmetry_long(E_UNSPECIFIED), symmetry_tran(E_UNSPECIFIED) {}
 
 size_t ExpansionPW3D::lcount() const {
@@ -101,7 +101,7 @@ void ExpansionPW3D::init()
         tran_mesh = RegularAxis(left + dx, right - dx, Mt);     // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
     }
 
-    SOLVER->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
+    solver->writelog(LOG_DETAIL, "Creating expansion%4% with %1%x%2% plane-waves (matrix size: %3%)", Nl, Nt, matrixSize(),
                      (!symmetric_long && !symmetric_tran)? "" :
                      (symmetric_long && symmetric_tran)? " symmetric in longitudinal and transverse directions" :
                      (!symmetric_long && symmetric_tran)? " symmetric in transverse direction" : " symmetric in longitudinal direction"
@@ -113,7 +113,7 @@ void ExpansionPW3D::init()
     mag_long.reset(nNl, Tensor2<dcomplex>(0.));
     mag_tran.reset(nNt, Tensor2<dcomplex>(0.));
     if (!periodic_long || !periodic_tran) {
-        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
+        solver->writelog(LOG_DETAIL, "Adding side PMLs (total structure dimensions: %1%um x %2%um)", Ll, Lt);
     }
     if (periodic_long) {
         mag_long[0].c00 = 1.; mag_long[0].c11 = 1.; // constant 1
@@ -188,7 +188,7 @@ void ExpansionPW3D::init()
     initialized = true;
 }
 
-void ExpansionPW3D::free() {
+void ExpansionPW3D::reset() {
     coeffs.clear();
     initialized = false;
 }
@@ -218,7 +218,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     size_t nN = nNl * nNt;
     const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
 
-    SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+    solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
 
     auto mesh = make_shared<RectangularMesh<3>>
                            (make_shared<RegularAxis>(long_mesh),
@@ -380,10 +380,10 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
 }
 
 
-LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const shared_ptr<const Mesh> &mesh, InterpolationMethod interp)
+LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const shared_ptr<const typename LevelsAdapter::Level> &level, InterpolationMethod interp)
 {
-    assert(dynamic_pointer_cast<const typename LevelsAdapter<3>::Mesh>(mesh));
-    auto dest_mesh = static_pointer_cast<const typename LevelsAdapter<3>::Mesh>(mesh);
+    assert(dynamic_pointer_cast<const MeshD<3>>(level->mesh()));
+    auto dest_mesh = static_pointer_cast<const MeshD<3>>(level->mesh());
 
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,lay,dest_mesh](size_t i)->Tensor3<dcomplex>{
@@ -439,7 +439,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             eps.sqrt_inplace();
         }
         auto src_mesh = make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
-                            make_shared<RegularAxis>(dest_mesh->vpos(), dest_mesh->vpos(), 1), RectangularMesh<3>::ORDER_210);
+                            make_shared<RegularAxis>(level->vpos(), level->vpos(), 1), RectangularMesh<3>::ORDER_210);
         const bool ignore_symmetry[3] = { !symmetric_long, !symmetric_tran, false };
         return interpolate(src_mesh, params, make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
     }
@@ -536,7 +536,7 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 //
 // // TODO fields must be carefully verified
 
-DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H)
+DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
     throw NotImplemented("ExpansionPW3D::getField");
 //     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
@@ -546,9 +546,9 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
 //
 //     int order = SOLVER->getSize();
 //     double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
-//     assert(dynamic_cast<const LevelMeshAdapter<2>*>(&dst_mesh));
-//     const MeshD<2>& dest_mesh = static_cast<const MeshD<2>&>(dst_mesh);
-//     double vpos = static_cast<const LevelMeshAdapter<2>&>(dst_mesh).vpos();
+//    assert(dynamic_pointer_cast<const MeshD<3>>(level->mesh()));
+//    auto dest_mesh = static_pointer_cast<const MeshD<3>>(level->mesh());
+//     double vpos = static_cast<const LevelLevelsAdapter<2>&>(dst_mesh).vpos();
 //
 //     int dt = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0;
 //     int dl = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0;

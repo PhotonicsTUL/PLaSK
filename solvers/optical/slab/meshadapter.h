@@ -11,10 +11,9 @@ namespace plask { namespace solvers { namespace slab {
 
 
 /// Simple adapter that allows to process single level in the mesh
-template <int dim>
 struct LevelsAdapter
 {
-    struct Mesh: public MeshD<dim> {
+    struct Level {
         /**
          * Unscramble indices
          * \param i index in the adapter
@@ -26,33 +25,55 @@ struct LevelsAdapter
          * Get level vertical position
          */
         virtual double vpos() const = 0;
+
+        /**
+         * Get mesh size
+         */
+        virtual size_t size() const = 0;
+
+        /**
+         * Get the mesh for this level
+         */
+        virtual shared_ptr<const Mesh> mesh() const = 0;
     };
 
-    virtual shared_ptr<Mesh> yield() = 0;
+    virtual shared_ptr<Level> yield() = 0;
 };
 
 
 /// Generic implementation of the level adapter
 template <int dim>
-struct LevelsAdapterGeneric: public LevelsAdapter<dim>
+struct LevelsAdapterGeneric: public LevelsAdapter
 {
-    struct Level: public LevelsAdapter<dim>::Mesh {
+    struct GenericLevel;
+
+    struct Mesh: public MeshD<dim> {
+      protected:
+        const GenericLevel* level;
+      public:
+        Mesh(const GenericLevel* level): level(level) {}
+        // Overrides
+        std::size_t size() const override { return level->matching.size(); }
+        plask::Vec<dim> at(std::size_t i) const override { return (*level->src)[level->matching[i]]; }
+    };
+
+    struct GenericLevel: public LevelsAdapter::Level {
       protected:
         std::vector<size_t> matching;       ///< Indices of matching points
         shared_ptr<const MeshD<dim>> src;   ///< Original mesh
         double vert;                        ///< Interesting level
+        friend struct LevelsAdapterGeneric<dim>::Mesh;
       public:
-        /// Create mesh adapter
-        Level(shared_ptr<const MeshD<dim>> src, double level): src(src), vert(level) {
+        GenericLevel(shared_ptr<const MeshD<dim>> src, double level): src(src), vert(level) {
             for (auto it = src->begin(); it != src->end(); ++it) {
                 if ((*it)[dim-1] == level) matching.push_back(it.index);
             }
         }
         // Overrides
+        size_t index(size_t i) const override;
+        double vpos() const override;
         std::size_t size() const override { return matching.size(); }
-        plask::Vec<dim> at(std::size_t i) const override { return (*src)[matching[i]]; }
-        size_t index(size_t i) const override { return matching[i]; }
-        double vpos() const override { return vert; }
+        shared_ptr<const plask::Mesh> mesh() const { return make_shared<const Mesh>(this); }
     };
 
     /// Original mesh
@@ -71,28 +92,42 @@ struct LevelsAdapterGeneric: public LevelsAdapter<dim>
         iter = levels.begin();
     }
 
-    shared_ptr<typename LevelsAdapter<dim>::Mesh> yield() override {
-        if (iter == levels.end()) return shared_ptr<typename LevelsAdapter<dim>::Mesh>();
-        return make_shared<Level>(src, *(iter++));
+    shared_ptr<typename LevelsAdapter::Level> yield() override {
+        if (iter == levels.end()) return shared_ptr<typename LevelsAdapter::Level>();
+        return make_shared<GenericLevel>(src, *(iter++));
     }
 };
 
 /// More efficient Rectangular implementation of the level adapter
 template <int dim>
-struct LevelsAdapterRectangular: public LevelsAdapter<dim>
+struct LevelsAdapterRectangular: public LevelsAdapter
 {
-    struct Level: public LevelsAdapter<dim>::Mesh {
+    struct RectangularLevel;
+
+    struct Mesh: public MeshD<dim> {
       protected:
-        shared_ptr<const RectangularMesh<dim>> src; ///< Original mesh
-        size_t vert;                        ///< Interesting level
+        const RectangularLevel* level;
       public:
         /// Create mesh adapter
-        Level(shared_ptr<const RectangularMesh<dim>> src, size_t vert): src(src), vert(vert) {}
+        Mesh(const RectangularLevel* level): level(level) {}
         // Overrides
         std::size_t size() const override;
         plask::Vec<dim> at(std::size_t i) const override;
+    };
+
+    struct RectangularLevel: public LevelsAdapter::Level {
+      protected:
+        shared_ptr<const RectangularMesh<dim>> src; ///< Original mesh
+        size_t vert;                        ///< Interesting level
+        friend struct LevelsAdapterRectangular<dim>::Mesh;
+      public:
+        /// Create mesh adapter
+        RectangularLevel(shared_ptr<const RectangularMesh<dim>> src, size_t vert): src(src), vert(vert) {}
+        // Overrides
         size_t index(size_t i) const override;
         double vpos() const override;
+        std::size_t size() const override;
+        shared_ptr<const plask::Mesh> mesh() const override { return make_shared<const Mesh>(this); }
     };
 
     /// Original mesh
@@ -103,7 +138,7 @@ struct LevelsAdapterRectangular: public LevelsAdapter<dim>
 
     LevelsAdapterRectangular(shared_ptr<const RectangularMesh<dim>> src): src(src), idx(0) {}
 
-    shared_ptr<typename LevelsAdapter<dim>::Mesh> yield() override;
+    shared_ptr<typename LevelsAdapter::Level> yield() override;
 };
 
 
@@ -111,15 +146,7 @@ struct LevelsAdapterRectangular: public LevelsAdapter<dim>
  * Adapter factory. Choose the best class based on the mesh type
  * \param src source mesh
  */
-template <int dim>
-std::unique_ptr<LevelsAdapter<dim>> makeLevelsAdapter(const shared_ptr<const MeshD<dim>>& src)
-{
-    typedef std::unique_ptr<LevelsAdapter<dim>> ReturnT;
-
-    if (auto mesh = dynamic_pointer_cast<const RectangularMesh<dim>>(src))
-        return ReturnT(new LevelsAdapterRectangular<dim>(mesh));
-    return ReturnT(new LevelsAdapterGeneric<dim>(src));
-}
+std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& src);
 
 
 }}} // namespace plask::solvers::slab

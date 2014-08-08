@@ -14,7 +14,7 @@
     BOOST_CHECK_SMALL(total_error, distance(begin(aa), ae) * tolerance); \
 }
 
-#include "../fft.h"
+#include "../fourier/fft.h"
 using namespace plask;
 using namespace plask::solvers::slab;
 

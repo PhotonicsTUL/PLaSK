@@ -3,17 +3,18 @@
 
 #include <plask/plask.hpp>
 
-#include "reflection_base.h"
-#include "expansion_pw3d.h"
+#include "../solver.h"
+#include "../reflection.h"
+#include "expansion3d.h"
 
 namespace plask { namespace solvers { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 3D geometry.
  */
-struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D> {
+struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
-    std::string getClassName() const { return "optical.FourierReflection3D"; }
+    std::string getClassName() const { return "optical.Fourier3D"; }
 
     /// Indication of parameter to search
     enum What {
@@ -24,7 +25,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
     };
 
     struct Mode {
-        FourierReflection3D* solver;                            ///< Solver this mode belongs to
+        FourierSolver3D* solver;                            ///< Solver this mode belongs to
         ExpansionPW3D::Component symmetry_long;                 ///< Mode symmetry in long direction
         ExpansionPW3D::Component symmetry_tran;                 ///< Mode symmetry in tran direction
         dcomplex k0;                                            ///< Stored mode frequency
@@ -32,7 +33,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
         double power;                                           ///< Mode power [mW]
 
-        Mode(FourierReflection3D* solver): solver(solver), power(1.) {}
+        Mode(FourierSolver3D* solver): solver(solver), power(1.) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
@@ -75,7 +76,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
     /// Transverse PMLs
     PML pml_tran;
 
-    FourierReflection3D(const std::string& name="");
+    FourierSolver3D(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager);
 
@@ -120,7 +121,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
         if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
         if (klong != 0.) {
-            this->writelog(LOG_WARNING, "Resetting klong to 0.");
+            Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
             klong = 0.;
         }
         if (expansion.initialized) {
@@ -129,7 +130,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
             if (!expansion.symmetric_long && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add longitudinal mode symmetry now -- invalidate the solver first", getId());
         }
-        fields_determined = DETERMINED_NOTHING;
+        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry_long = symmetry;
     }
 
@@ -140,7 +141,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
         if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
         if (ktran != 0.) {
-            this->writelog(LOG_WARNING, "Resetting ktran to 0.");
+            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
         }
         if (expansion.initialized) {
@@ -149,7 +150,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
             if (!expansion.symmetric_tran && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add transverse mode symmetry now -- invalidate the solver first", getId());
         }
-        fields_determined = DETERMINED_NOTHING;
+        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry_tran = symmetry;
     }
 
@@ -160,11 +161,11 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
                 else
-                    this->writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
+                    Solver::writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
             }
             expansion.symmetry_long = Expansion::E_UNSPECIFIED;
         }
-        if (k != klong) fields_determined = DETERMINED_NOTHING;
+        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         klong = k;
     }
 
@@ -175,11 +176,11 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
                 else
-                    this->writelog(LOG_WARNING, "Resetting transverse mode symmetry");
+                    Solver::writelog(LOG_WARNING, "Resetting transverse mode symmetry");
             }
             expansion.symmetry_tran = Expansion::E_UNSPECIFIED;
         }
-        if (k != ktran) fields_determined = DETERMINED_NOTHING;
+        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         ktran = k;
     }
 
@@ -314,10 +315,10 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 //      * \param dst_mesh destination mesh
 //      * \param method interpolation method
 //      */
-//     DataVector<double> getReflectedFieldIntensity(ExpansionPW3D::Component polarization, IncidentDirection incident,
+//     DataVector<double> getReflectedFieldMagnitude(ExpansionPW3D::Component polarization, IncidentDirection incident,
 //                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
 //         initCalculation();
-//         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldIntensity(incidentVector(polarization), incident, dst_mesh, method);
+//         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
 //     }
 //
 //
@@ -379,7 +380,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 //          * \param polarization polarization of the perpendicularly incident light
 //          * \param side incidence side
 //          */
-//         Reflected(FourierReflection3D* parent, double wavelength, ExpansionPW3D::Component polarization, FourierReflection3D::IncidentDirection side):
+//         Reflected(FourierSolver3D* parent, double wavelength, ExpansionPW3D::Component polarization, FourierSolver3D::IncidentDirection side):
 //             outElectricField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
 //                 parent->setWavelength(wavelength);
 //                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
@@ -388,7 +389,7 @@ struct PLASK_SOLVER_API FourierReflection3D: public ReflectionSolver<Geometry3D>
 //                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
 //             outLightMagnitude([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
 //                 parent->setWavelength(wavelength);
-//                 return parent->getReflectedFieldIntensity(polarization, side, dst_mesh, method); }, size)
+//                 return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
 //         {}
 //     };
 };

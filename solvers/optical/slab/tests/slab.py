@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from optical.slab import FourierReflection2D
+from optical.slab import Fourier2D
 
 
 class LayerSet_Test(unittest.TestCase):
@@ -58,7 +58,7 @@ class LayerSet_Test(unittest.TestCase):
               </cartesian2d>
             </geometry>
             <solvers>
-              <optical name="pwrt" solver="FourierReflection2D">
+              <optical name="pwrt" solver="Fourier2D">
                 <geometry ref="vcsel"/>
               </optical>
             </solvers>
