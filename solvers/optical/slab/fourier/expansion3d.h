@@ -91,10 +91,12 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 //
 //     void cleanupField() override;
 //
-    DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh>& dst_mesh, const cvector& E, const cvector& H) override;
+    DataVector<const Vec<3,dcomplex>> getField(size_t l,
+                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                               const cvector& E, const cvector& H) override;
 
     LazyData<Tensor3<dcomplex>> getMaterialNR(size_t lay,
-                                              const shared_ptr<const Mesh> &mesh,
+                                              const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp) override;
 
 //   private:

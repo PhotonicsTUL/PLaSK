@@ -44,43 +44,17 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
   public:
 
-    /**
-     * Get vector of reflection coefficients
-     * \param incident incident field profile
-     * \param side incident light side
-     */
     cvector getReflectionVector(const cvector& incident, IncidentDirection direction);
 
-    /**
-     * Get vector of transmission coefficients
-     * \param incident incident field profile
-     * \param side incident light side
-     */
     cvector getTransmissionVector(const cvector& incident, IncidentDirection side);
 
-    /**
-     * Get current expansion coefficients at the matching interface
-     * \return vector of current expansion coefficients at the interface
-     */
     cvector getInterfaceVector();
 
-    /**
-     * Compute electric field coefficients for given \a z
-     * \param z position within the layer
-     * \param n layer number
-     * \return electric field coefficients
-     */
     cvector getFieldVectorE(double z, int n);
 
-    /**
-     * Compute magnetic field coefficients for given \a z
-     * \param z position within the layer
-     * \param n layer number
-     * \return magnetic field coefficients
-     */
     cvector getFieldVectorH(double z, int n);
 
-    ReflectionTransfer(Diagonalizer* diagonalizer);
+    ReflectionTransfer(SlabBase* solver, Expansion& expansion);
 
     ~ReflectionTransfer();
 
@@ -162,68 +136,31 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      */
     DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method);
 
-    /**
-     * Get electric field at the given mesh for resonant mode.
-     * \param dst_mesh target mesh
-     * \param method interpolation method
-     */
     DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldE(dst_mesh, method);
     }
 
-    /**
-     * Get magnetic field at the given mesh for resonant mode.
-     * \param dst_mesh target mesh
-     * \param method interpolation method
-     */
     DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldH(dst_mesh, method);
     }
 
-    /**
-     * Get light magnitude for resonant mode.
-     * \param power mode power
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     DataVector<double> getFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineFields();
         return computeFieldMagnitude(power, dst_mesh, method);
     }
 
-    /**
-     * Get electric field at the given mesh for reflected light.
-     * \param incident incident field vector
-     * \param side incidence side
-     * \param dst_mesh target mesh
-     * \param method interpolation method
-     */
     DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldE(dst_mesh, method);
     }
 
-    /**
-     * Get magnetic field at the given mesh for reflected light.
-     * \param incident incident field vector
-     * \param side incidence side
-     * \param dst_mesh target mesh
-     * \param method interpolation method
-     */
     DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldH(dst_mesh, method);
     }
 
-    /**
-     * Get light magnitude for reflected light.
-     * \param incident incident field vector
-     * \param side incidence side
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     DataVector<double> getReflectedFieldMagnitude(const cvector& incident, IncidentDirection side, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldMagnitude(1., dst_mesh, method);

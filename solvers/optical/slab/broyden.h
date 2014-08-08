@@ -2,6 +2,7 @@
 #define PLASK__OPTICAL_SLAB_BROYDEN_H
 
 #include "rootdigger.h"
+#include "solver.h"
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -29,7 +30,7 @@ class RootBroyden: public RootDigger {
   public:
 
     // Constructor
-    RootBroyden(Solver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
+    RootBroyden(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
                const Params& pars): RootDigger(solver, val_fun, log_value, pars) {}
 
                dcomplex find(dcomplex start) const;

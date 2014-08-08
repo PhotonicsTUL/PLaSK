@@ -19,6 +19,10 @@ template<> shared_ptr<LevelsAdapter::Level> LevelsAdapterRectangular<3>::yield()
     return make_shared<LevelsAdapterRectangular<3>::RectangularLevel>(src, idx++);
 }
 
+template<> std::size_t LevelsAdapterRectangular<2>::RectangularLevel::size() const {
+    return src->axis0->size();
+}
+
 template<> std::size_t LevelsAdapterRectangular<2>::Mesh::size() const {
     return level->src->axis0->size();
 }
@@ -35,6 +39,10 @@ template<> double LevelsAdapterRectangular<2>::RectangularLevel::vpos() const {
     return src->axis1->at(vert);
 }
 
+template<> std::size_t LevelsAdapterRectangular<3>::RectangularLevel::size() const {
+    return src->axis0->size() * src->axis1->size();
+}
+
 template<> std::size_t LevelsAdapterRectangular<3>::Mesh::size() const {
     return level->src->axis0->size() * level->src->axis1->size();
 }
@@ -49,6 +57,22 @@ template<> size_t LevelsAdapterRectangular<3>::RectangularLevel::index(size_t i)
 
 template<> double LevelsAdapterRectangular<3>::RectangularLevel::vpos() const {
     return src->axis2->at(vert);
+}
+
+
+std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& src)
+{
+    typedef std::unique_ptr<LevelsAdapter> ReturnT;
+
+    if (auto mesh = dynamic_pointer_cast<const RectangularMesh<2>>(src))
+        return ReturnT(new LevelsAdapterRectangular<2>(mesh));
+    else if (auto mesh = dynamic_pointer_cast<const RectangularMesh<3>>(src))
+        return ReturnT(new LevelsAdapterRectangular<3>(mesh));
+    else if (auto mesh = dynamic_pointer_cast<const MeshD<2>>(src))
+        return ReturnT(new LevelsAdapterGeneric<2>(mesh));
+    else if (auto mesh = dynamic_pointer_cast<const MeshD<3>>(src))
+        return ReturnT(new LevelsAdapterGeneric<3>(mesh));
+    assert(false);
 }
 
 template struct LevelsAdapterGeneric<2>;

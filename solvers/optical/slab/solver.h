@@ -24,6 +24,39 @@ struct PML {
  */
 struct SlabBase {
 
+  protected:
+
+    /// Determinant logger
+    Data2DLog<dcomplex,dcomplex> detlog;
+
+    /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
+    std::unique_ptr<Transfer> transfer;
+
+    /// Create and return rootdigger of a desired type
+    std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
+
+    /**
+     * Read root digger configuration
+     * \param reader XML reader
+     */
+    void readRootDiggerConfig(XMLReader& reader) {
+        root.tolx = reader.getAttribute<double>("tolx", root.tolx);
+        root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
+        root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
+        root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
+        root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
+        root.alpha = reader.getAttribute<double>("alpha", root.alpha);
+        root.lambda_min = reader.getAttribute<double>("lambda", root.lambda_min);
+        root.initial_dist = reader.getAttribute<dcomplex>("initial-range", root.initial_dist);
+        root.method = reader.enumAttribute<RootDigger::Method>("method")
+            .value("broyden", RootDigger::ROOT_BROYDEN)
+            .value("muller", RootDigger::ROOT_MULLER)
+            .get(root.method);
+        reader.requireTagEnd();
+    }
+
+  public:
+
     /// Layer boundaries
     OrderedAxis vbounds;
 
@@ -43,10 +76,57 @@ struct SlabBase {
              klong,                             ///< Longitudinal wavevector [1/µm]
              ktran;                             ///< Transverse wavevector [1/µm]
 
+    /// Parameters for main rootdigger
+    RootDigger::Params root;
+
     /// Force re-computation of material coefficients
     bool recompute_coefficients;
 
-    SlabBase(): interface(1), k0(NAN), klong(0.), ktran(0.), recompute_coefficients(true) {}
+    SlabBase():
+        detlog("", "modal", "unspecified", "det"),
+        interface(1),
+        k0(NAN), klong(0.), ktran(0.),
+        recompute_coefficients(true) {}
+
+    /// Get current wavelength
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+    /// Set current wavelength
+    void setWavelength(dcomplex lambda, bool recompute=true) {
+        dcomplex k = 2e3*M_PI / lambda;
+        if (k != k0) {
+            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+            k0 = k;
+            this->recompute_coefficients |= recompute;
+        }
+    }
+
+    /// Get current k0
+    dcomplex getK0() const { return k0; }
+    /// Set current k0
+    void setK0(dcomplex k, bool recompute=true) {
+        if (k != k0) {
+            if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+            k0 = k;
+            if (k0 == 0.) k0 = 1e-12;
+            this->recompute_coefficients |= recompute;
+        }
+    }
+
+    /// Get longitudinal wavevector
+    dcomplex getKlong() const { return klong; }
+    /// Set longitudinal wavevector
+    void setKlong(dcomplex k)  {
+        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        klong = k;
+    }
+
+    /// Get transverse wavevector
+    dcomplex getKtran() const { return ktran; }
+    /// Set transverse wavevector
+    void setKtran(dcomplex k)  {
+        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        ktran = k;
+    }
 
     /**
      * Get layer number for vertical coordinate. Alter this coordintate to the layer local one.
@@ -60,6 +140,9 @@ struct SlabBase {
         else h -= vbounds[n-1];
         return n;
     }
+
+    /// Get solver id
+    virtual std::string getId() const = 0;
 
     /// Get stack
     /// \return layers stack
@@ -95,12 +178,6 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
 
   protected:
 
-    /// Determinant logger
-    Data2DLog<dcomplex,dcomplex> detlog;
-
-    /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
-    std::unique_ptr<Transfer> transfer;
-
     void onInitialize() {
         setupLayers();
     }
@@ -113,36 +190,10 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     /// Detect layer sets and set them up
     void setupLayers();
 
-    /// Create and return rootdigger of a desired type
-    std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
-
-    /**
-     * Read root digger configuration
-     * \param reader XML reader
-     */
-    void readRootDiggerConfig(XMLReader& reader) {
-        root.tolx = reader.getAttribute<double>("tolx", root.tolx);
-        root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
-        root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
-        root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
-        root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
-        root.alpha = reader.getAttribute<double>("alpha", root.alpha);
-        root.lambda_min = reader.getAttribute<double>("lambda", root.lambda_min);
-        root.initial_dist = reader.getAttribute<dcomplex>("initial-range", root.initial_dist);
-        root.method = reader.enumAttribute<RootDigger::Method>("method")
-            .value("broyden", RootDigger::ROOT_BROYDEN)
-            .value("muller", RootDigger::ROOT_MULLER)
-            .get(root.method);
-        reader.requireTagEnd();
-    }
-
   public:
 
     /// Distance outside outer borders where the material is sampled
     double outdist;
-
-    /// Parameters for main rootdigger
-    RootDigger::Params root;
 
     /// Smoothing coefficient
     double smooth;
@@ -169,6 +220,8 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
 
     ~SlabSolver();
 
+    virtual std::string getId() const { return Solver::getId(); }
+
     /**
      * Get the position of the matching interface.
      * \return index of the vertical mesh, where interface is set
@@ -184,7 +237,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
         if (index == 0 || index > vbounds.size())
             throw BadInput(this->getId(), "Cannot set interface to %1% (min: 1, max: %2%)", index, vbounds.size());
         double pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, index);
+        Solver::writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, index);
         interface = index;
     }
 
@@ -197,7 +250,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-1e-12) - vbounds.begin() + 1; // -1e-12 to compensate for truncation errors
         if (interface > vbounds.size()) interface = vbounds.size();
         pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, interface);
+        Solver::writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, interface);
     }
 
     /**
@@ -212,7 +265,7 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
         interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-1e-12) - vbounds.begin() + 1;
         if (interface > vbounds.size()) interface = vbounds.size();
         double pos = vbounds[interface-1]; if (abs(pos) < 1e12) pos = 0.;
-        this->writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, interface);
+        Solver::writelog(LOG_DEBUG, "Setting interface at position %g (mesh index: %d)", pos, interface);
     }
 
     /**
@@ -228,6 +281,12 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     void ensureInterface() {
         if (interface == 0 || interface >= stack.size())
             throw BadInput(this->getId(), "Wrong interface position %1% (min: 1, max: %2%)", interface, stack.size()-1);
+    }
+
+    /// Get discontinuity matrix determinant for the current parameters
+    dcomplex getDeterminant() {
+        this->initCalculation();
+        return transfer->determinant();
     }
 
   protected:

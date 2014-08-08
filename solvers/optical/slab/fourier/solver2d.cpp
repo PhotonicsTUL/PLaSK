@@ -104,7 +104,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
 
 void FourierSolver2D::onInitialize()
 {
-    this->writelog(LOG_DETAIL, "Initializing Fourier2D solver (%1% layers in the stack, interface after %2% layer%3%)",
+    Solver::writelog(LOG_DETAIL, "Initializing Fourier2D solver (%1% layers in the stack, interface after %2% layer%3%)",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     this->setupLayers();
     this->ensureInterface();
@@ -131,7 +131,10 @@ size_t FourierSolver2D::findMode(dcomplex neff)
     initCalculation();
     detlog.axis_arg_name = "neff";
     auto root = getRootDigger(
-        [this](const dcomplex& x) { this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0; return this->determinant(); }
+        [this](const dcomplex& x) {
+            this->klong = dcomplex(real(x), imag(x)-getMirrorLosses(x)) * this->k0;
+            return transfer->determinant();
+        }
     );
     klong =  k0 * root->find(neff);
     return insertMode();
@@ -139,28 +142,26 @@ size_t FourierSolver2D::findMode(dcomplex neff)
 
 
 cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
-                                                    IncidentDirection incidence, size_t* savidx)
+                                                Transfer::IncidentDirection incidence, size_t* savidx)
 {
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
-    emitting = true;
-    fields_determined = DETERMINED_NOTHING;
+    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
-    return getReflectionVector(incidentVector(polarization, savidx), incidence);
+    return transfer->getReflectionVector(incidentVector(polarization, savidx), incidence);
 }
 
 
 cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
-                                                      IncidentDirection incidence, size_t* savidx)
+                                                  Transfer::IncidentDirection incidence, size_t* savidx)
 {
     if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
-    emitting = true;
-    fields_determined = DETERMINED_NOTHING;
+    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
     initCalculation();
-    return getTransmissionVector(incidentVector(polarization, savidx), incidence);
+    return transfer->getTransmissionVector(incidentVector(polarization, savidx), incidence);
 }
 
 
-double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, IncidentDirection incidence)
+double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence)
 {
     size_t idx;
     cvector reflected = getReflectedAmplitudes(polarization, incidence, &idx).claim();
@@ -168,11 +169,11 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Inc
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
 
-    size_t n = (incidence == INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
     if (!expansion.diagonalQE(l))
-        writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
-                              (incidence == INCIDENCE_BOTTOM)? "Bottom" : "Top");
+        Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
+                                      (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
@@ -199,7 +200,7 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Inc
 }
 
 
-double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, IncidentDirection incidence)
+double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence)
 {
     size_t idx;
     cvector transmitted = getTransmittedAmplitudes(polarization, incidence, &idx).claim();
@@ -207,15 +208,15 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, I
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
 
-    size_t ni = (incidence == INCIDENCE_TOP)? stack.size()-1 : 0;
+    size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
     if (!expansion.diagonalQE(lt))
-        writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
-                 (incidence == INCIDENCE_TOP)? "Bottom" : "Top");
+        Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
+                                      (incidence == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
     if (!expansion.diagonalQE(li))
-        writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
-                 (incidence == INCIDENCE_TOP)? "Top" : "Bottom");
+        Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
+                                     (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
 
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
@@ -243,6 +244,7 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, I
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    assert(transfer);
     if (modes.size() <= num) throw NoValue(LightE::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;
@@ -256,6 +258,7 @@ const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared
 
 const DataVector<const Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
+    assert(transfer);
     if (modes.size() <= num) throw NoValue(LightH::NAME);
     if (modes[num].k0 != k0 || modes[num].beta != klong || modes[num].ktran != ktran) {
         k0 = modes[num].k0;

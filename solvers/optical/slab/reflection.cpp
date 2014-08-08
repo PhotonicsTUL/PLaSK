@@ -34,7 +34,6 @@ ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): 
     phas = cdiagonal(N);
     A = cmatrix(N,N);       // A is also temporary matrix
 
-    assert(ipiv == nullptr);
     ipiv = aligned_new_array<int>(N);
     allP = false;
 }
@@ -347,7 +346,7 @@ void ReflectionTransfer::determineFields()
 {
     if (fields_determined == DETERMINED_RESONANT) return;
 
-    solver->writelog(LOG_DETAIL, "Determining optical fields");
+    writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
 
     int N = diagonalizer->matrixSize();
     int N0 = diagonalizer->source()->matrixSize();
@@ -462,7 +461,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 {
     if (fields_determined == DETERMINED_REFLECTED) return;
 
-    solver->writelog(LOG_DETAIL, "Determining reflected optical fields");
+    writelog(LOG_DETAIL, solver->getId() + ": Determining reflected optical fields");
 
     size_t count = solver->stack.size();
 
@@ -641,8 +640,8 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<const Mesh> &dst_mesh, InterpolationMethod method)
 {
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
-    auto levels = makeLevelsAdapter<dim>(dst_mesh);
-    diagonalizer->source()->initField(Expansion::FieldParams::E, k0, klong, ktran, method);
+    auto levels = makeLevelsAdapter(dst_mesh);
+    diagonalizer->source()->initField(Expansion::FieldParams::E, solver->k0, solver->klong, solver->ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);
@@ -650,9 +649,8 @@ DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<c
         cvector H = getFieldVectorH(z, n);
         if (n >= solver->interface) for (auto& h: H) h = -h;
         size_t layer = solver->stack[n];
-        shared_ptr<Mesh> lmesh = level->mesh();
-        auto dest = diagonalizer->source()->getField(layer, lmesh, E, H);
-        for (size_t i = 0; i != lmesh->size(); ++i) destination[level->index(i)] = dest[i];
+        auto dest = diagonalizer->source()->getField(layer, level, E, H);
+        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
     diagonalizer->source()->cleanupField();
     return destination;
@@ -661,8 +659,8 @@ DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldE(const shared_ptr<c
 DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method)
 {
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
-    auto levels = makeLevelsAdapter<dim>(dst_mesh);
-    diagonalizer->source()->initField(Expansion::FieldParams::H, k0, klong, ktran, method);
+    auto levels = makeLevelsAdapter(dst_mesh);
+    diagonalizer->source()->initField(Expansion::FieldParams::H, solver->k0, solver->klong, solver->ktran, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);
@@ -670,9 +668,8 @@ DataVector<Vec<3,dcomplex>> ReflectionTransfer::computeFieldH(const shared_ptr<c
         cvector H = getFieldVectorH(z, n);
         if (n >= solver->interface) for (auto& h: H) h = -h;
         size_t layer = solver->stack[n];
-        shared_ptr<Mesh> lmesh = level->mesh();
-        auto dest = diagonalizer->source()->getField(layer, lmesh, E, H);
-        for (size_t i = 0; i != lmesh->size(); ++i) destination[level->index(i)] = dest[i];
+        auto dest = diagonalizer->source()->getField(layer, level, E, H);
+        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
     }
     diagonalizer->source()->cleanupField();
     return destination;

@@ -224,7 +224,7 @@ dcomplex FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
 py::object FourierSolver2D_computeReflectivity(FourierSolver2D* self,
                                                    py::object wavelength,
                                                    ExpansionPW2D::Component polarization,
-                                                   FourierSolver2D::IncidentDirection incidence,
+                                                   Transfer::IncidentDirection incidence,
                                                    bool dispersive
                                                   )
 {
@@ -237,7 +237,7 @@ py::object FourierSolver2D_computeReflectivity(FourierSolver2D* self,
 py::object FourierSolver2D_computeTransmitticity(FourierSolver2D* self,
                                                      py::object wavelength,
                                                      ExpansionPW2D::Component polarization,
-                                                     FourierSolver2D::IncidentDirection incidence,
+                                                     Transfer::IncidentDirection incidence,
                                                      bool dispersive
                                                     )
 {
@@ -259,7 +259,7 @@ void FourierSolver2D_setPML(FourierSolver2D* self, const PmlWrapper& value) {
 shared_ptr<FourierSolver2D::Reflected> FourierSolver2D_getReflected(FourierSolver2D* parent,
                                                                 double wavelength,
                                                                 ExpansionPW2D::Component polarization,
-                                                                FourierSolver2D::IncidentDirection side)
+                                                                Transfer::IncidentDirection side)
 {
     return make_shared<FourierSolver2D::Reflected>(parent, wavelength, polarization, side);
 }
@@ -548,21 +548,15 @@ inline void export_base(Class solver) {
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outElectricField", &Solver::outElectricField, "");
     solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
+    solver.add_property("wavelength", &Solver::getWavelength, &Solver_setWavelength<Solver>, "Wavelength of the light [nm].");
+    solver.add_property("k0", &Solver::getK0, &Solver_setK0<Solver>, "Normalized frequency of the light [1/µm].");
+    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light [1/µm].");
+    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light [1/µm].");
     solver.def_readwrite("root", &Solver::root,
                          "Configuration of the root searching algorithm for horizontal component of the\n"
                          "mode.\n\n"
                          ROOTDIGGER_ATTRS_DOC
                         );
-}
-
-template <typename Class>
-inline void export_fourier_base(Class solver) {
-    export_base(solver);
-    typedef typename Class::wrapped_type Solver;
-    solver.add_property("wavelength", &Solver::getWavelength, &Solver_setWavelength<Solver>, "Wavelength of the light [nm].");
-    solver.add_property("k0", &Solver::getK0, &Solver_setK0<Solver>, "Normalized frequency of the light [1/µm].");
-    solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light [1/µm].");
-    solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light [1/µm].");
 }
 
 BOOST_PYTHON_MODULE(slab)
@@ -613,7 +607,7 @@ BOOST_PYTHON_MODULE(slab)
         "Optical Solver using Fourier expansion in 2D.\n\n"
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in two-dimensional Cartesian space.")
-        export_fourier_base(solver);
+        export_base(solver);
         PROVIDER(outNeff, "Effective index of the last computed mode.");
         METHOD(find_mode, findMode,
                "Compute the mode near the specified effective index.\n\n"
@@ -717,7 +711,7 @@ BOOST_PYTHON_MODULE(slab)
         "Optical Solver using Fourier expansion in 3D.\n\n"
         "It calculates optical modes and optical field distribution using Fourier slab method\n"
         "and reflection transfer in three-dimensional Cartesian space.")
-        export_fourier_base(solver);
+        export_base(solver);
         solver.add_property("size",
                             py::make_function(FourierSolver3D_getSize, py::with_custodian_and_ward_postcall<0,1>()),
                             py::make_function(FourierSolver3D_LongTranSetter<size_t>(&FourierSolver3D::size_long, &FourierSolver3D::size_tran),

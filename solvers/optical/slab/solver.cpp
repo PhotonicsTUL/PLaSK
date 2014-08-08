@@ -7,7 +7,6 @@ namespace plask { namespace solvers { namespace slab {
 
 template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),
-    detlog("", "modal", "unspecified", "det"),
     outdist(0.1),
     smooth(0.),
     outRefractiveIndex(this, &SlabSolver<GeometryT>::getRefractiveIndexProfile),
@@ -28,12 +27,11 @@ SlabSolver<GeometryT>::~SlabSolver()
 }
 
 
-template <typename GeometryT>
-std::unique_ptr<RootDigger> SlabSolver<GeometryT>::getRootDigger(const RootDigger::function_type& func) {
+std::unique_ptr<RootDigger> SlabBase::getRootDigger(const RootDigger::function_type& func) {
     typedef std::unique_ptr<RootDigger> Res;
     if (root.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*this, func, detlog, root));
     else if (root.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*this, func, detlog, root));
-    throw BadInput(this->getId(), "Wrong root finding method");
+    throw BadInput(getId(), "Wrong root finding method");
     return Res();
 }
 
@@ -117,7 +115,7 @@ void SlabSolver<GeometryT>::setupLayers()
         }
     }
 
-    this->writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
+    Solver::writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
 
 template <>
@@ -187,7 +185,7 @@ void SlabSolver<Geometry3D>::setupLayers()
 
     assert(vbounds.size() == stack.size()-1);
 
-    this->writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
+    Solver::writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
 }
 
 
@@ -222,9 +220,8 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<GeometryT>::getRefractiveIndexPro
         double h = level->vpos();
         size_t n = getLayerFor(h);
         size_t l = stack[n];
-        auto lmsh = level->mesh();
-        auto data = transfer->diagonalizer->source()->getMaterialNR(l, lmsh, interp);
-        for (size_t i = 0; i != lmsh->size(); ++i) result[level->index(i)] = data[i];
+        auto data = transfer->diagonalizer->source()->getMaterialNR(l, level, interp);
+        for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
     }
 
     return result;

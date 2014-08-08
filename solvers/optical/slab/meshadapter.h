@@ -26,6 +26,14 @@ struct LevelsAdapter
          */
         virtual double vpos() const = 0;
 
+        /**
+         * Get mesh size
+         */
+        virtual size_t size() const = 0;
+
+        /**
+         * Get the mesh for this level
+         */
         virtual shared_ptr<const Mesh> mesh() const = 0;
     };
 
@@ -64,6 +72,7 @@ struct LevelsAdapterGeneric: public LevelsAdapter
         // Overrides
         size_t index(size_t i) const override;
         double vpos() const override;
+        std::size_t size() const override { return matching.size(); }
         shared_ptr<const plask::Mesh> mesh() const { return make_shared<const Mesh>(this); }
     };
 
@@ -117,6 +126,7 @@ struct LevelsAdapterRectangular: public LevelsAdapter
         // Overrides
         size_t index(size_t i) const override;
         double vpos() const override;
+        std::size_t size() const override;
         shared_ptr<const plask::Mesh> mesh() const override { return make_shared<const Mesh>(this); }
     };
 
@@ -136,20 +146,7 @@ struct LevelsAdapterRectangular: public LevelsAdapter
  * Adapter factory. Choose the best class based on the mesh type
  * \param src source mesh
  */
-std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& src)
-{
-    typedef std::unique_ptr<LevelsAdapter> ReturnT;
-
-    if (auto mesh = dynamic_pointer_cast<const RectangularMesh<2>>(src))
-        return ReturnT(new LevelsAdapterRectangular<2>(mesh));
-    else if (auto mesh = dynamic_pointer_cast<const RectangularMesh<3>>(src))
-        return ReturnT(new LevelsAdapterRectangular<3>(mesh));
-    else if (auto mesh = dynamic_pointer_cast<const MeshD<2>>(src))
-        return ReturnT(new LevelsAdapterGeneric<2>(mesh));
-    else if (auto mesh = dynamic_pointer_cast<const MeshD<3>>(src))
-        return ReturnT(new LevelsAdapterGeneric<3>(mesh));
-    assert(false);
-}
+std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& src);
 
 
 }}} // namespace plask::solvers::slab

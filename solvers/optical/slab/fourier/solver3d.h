@@ -121,7 +121,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
         if (klong != 0.) {
-            this->writelog(LOG_WARNING, "Resetting klong to 0.");
+            Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
             klong = 0.;
         }
         if (expansion.initialized) {
@@ -130,7 +130,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
             if (!expansion.symmetric_long && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add longitudinal mode symmetry now -- invalidate the solver first", getId());
         }
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry_long = symmetry;
     }
 
@@ -141,7 +141,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
         if (ktran != 0.) {
-            this->writelog(LOG_WARNING, "Resetting ktran to 0.");
+            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
         }
         if (expansion.initialized) {
@@ -150,7 +150,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
             if (!expansion.symmetric_tran && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add transverse mode symmetry now -- invalidate the solver first", getId());
         }
-        transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry_tran = symmetry;
     }
 
@@ -161,11 +161,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
                 else
-                    this->writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
+                    Solver::writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
             }
             expansion.symmetry_long = Expansion::E_UNSPECIFIED;
         }
-        if (k != klong) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         klong = k;
     }
 
@@ -176,11 +176,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
                 else
-                    this->writelog(LOG_WARNING, "Resetting transverse mode symmetry");
+                    Solver::writelog(LOG_WARNING, "Resetting transverse mode symmetry");
             }
             expansion.symmetry_tran = Expansion::E_UNSPECIFIED;
         }
-        if (k != ktran) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         ktran = k;
     }
 

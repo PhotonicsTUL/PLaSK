@@ -4,6 +4,7 @@
 #include <plask/plask.hpp>
 
 #include "matrices.h"
+#include "meshadapter.h"
 
 namespace plask { namespace solvers { namespace slab {
 
@@ -71,7 +72,7 @@ struct PLASK_SOLVER_API Expansion {
      * \return computed refractive indices
      */
     virtual LazyData<Tensor3<dcomplex>> getMaterialNR(size_t lay,
-                                                      const shared_ptr<const Mesh> &mesh,
+                                                      const shared_ptr<const typename LevelsAdapter::Level> &level,
                                                       InterpolationMethod interp) = 0;
     /**
      * Prepare for computatiations of the fields
@@ -101,12 +102,15 @@ struct PLASK_SOLVER_API Expansion {
     /**
      * Compute electric og magnetic field on \c dst_mesh at certain level
      * \param l layer number
-     * \param dst_mesh destination mesh
+     * \param level destination level
      * \param E,H electric and magnetic field coefficientscients
      * \return field distribution at \c dst_mesh
      * \return field distribution at \c dst_mesh
      */
-    virtual DataVector<const Vec<3,dcomplex>> getField(size_t l, const shared_ptr<const Mesh> &dst_mesh, const cvector& E, const cvector& H) = 0;
+    virtual DataVector<const Vec<3,dcomplex>> getField(size_t l,
+                                                       const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                                       const cvector& E,
+                                                       const cvector& H) = 0;
 };
 
 

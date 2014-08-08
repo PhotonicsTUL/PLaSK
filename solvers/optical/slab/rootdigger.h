@@ -6,6 +6,8 @@
 
 namespace plask { namespace solvers { namespace slab {
 
+struct SlabBase;
+
 struct RootDigger {
 
     typedef std::function<dcomplex(dcomplex)> function_type;
@@ -42,7 +44,7 @@ struct RootDigger {
   protected:
 
     // Solver
-    Solver& solver;
+    SlabBase& solver;
 
     // Solver method computing the value to zero
     function_type val_function;
@@ -56,7 +58,7 @@ struct RootDigger {
     Params params;
 
     // Constructor
-    RootDigger(Solver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
+    RootDigger(SlabBase& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
                const Params& pars) :
         solver(solver),
         val_function(val_fun),

@@ -115,7 +115,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
 
 void FourierSolver3D::onInitialize()
 {
-    this->writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
+    Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
                                this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     this->setupLayers();
     this->ensureInterface();
@@ -140,19 +140,19 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     switch (what) {
         case FourierSolver3D::WHAT_WAVELENGTH:
             detlog.axis_arg_name = "lam";
-            root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return this->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { this->k0 = 2e3*M_PI / x; return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_K0:
             detlog.axis_arg_name = "k0";
-            root = getRootDigger([this](const dcomplex& x) { this->k0 = x; return this->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { this->k0 = x; return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_KLONG:
             detlog.axis_arg_name = "klong";
-            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return this->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
             break;
         case FourierSolver3D::WHAT_KTRAN:
             detlog.axis_arg_name = "ktran";
-            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return this->determinant(); });
+            root = getRootDigger([this](const dcomplex& x) { this->klong = x; return transfer->determinant(); });
             break;
     }
     root->find(start);
