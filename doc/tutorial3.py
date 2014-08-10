@@ -6,7 +6,7 @@ loadxpl(filename)
 
 config.axes = 'rz'
 
-def lossVsVoltage(voltage):
+def loss_on_voltage(voltage):
 	ELECTRICAL.invalidate()
 	ELECTRICAL.voltage_boundary[0].value = voltage
 	verr = ELECTRICAL.compute(1)
@@ -17,60 +17,65 @@ def lossVsVoltage(voltage):
 		terr = THERMAL.compute(1)
 		iters+=1
 	DIFFUSION.compute_threshold()
-	det_lams = linspace(OPTICAL.lam0-2,OPTICAL.lam0+2,401)+0.2j*(voltage-0.5)/1.5
+	det_lams = linspace(OPTICAL.lam0-2, OPTICAL.lam0+2, 401)+0.2j*(voltage-0.5)/1.5
 	det_vals = abs(OPTICAL.get_determinant(det_lams, m=0))
-	det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & np.r_[det_vals[:-1] < det_vals[1:], False] & np.r_[det_vals[:] < 1]
+	det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \
+	           np.r_[det_vals[:-1] < det_vals[1:], False] & \
+	           np.r_[det_vals[:] < 1]
 	mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
 	mode_loss = OPTICAL.outLoss(mode_number)
-	print_log(LOG_INFO, 'voltage = {0}, current = {1}, wavelength = {2}, losses = {3}'.format(voltage,ELECTRICAL.get_total_current(),OPTICAL.outWavelength(mode_number),mode_loss))
+	print_log(LOG_RESULT,
+	    'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
+	    .format(voltage, ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
 	return mode_loss
 	
 	
-OPTICAL.lam0=981.5
-OPTICAL.vat=0
+OPTICAL.lam0 = 981.5
+OPTICAL.vat = 0
 
-
-threshold_voltage = scipy.optimize.brentq(lossVsVoltage,0.5,2., xtol=0.01)
-lossVsVoltage(threshold_voltage)
+threshold_voltage = scipy.optimize.brentq(loss_on_voltage, 0.5, 2., xtol=0.01)
+loss_on_voltage(threshold_voltage)
 threshold_current = abs(ELECTRICAL.get_total_current())
-print_log(LOG_WARNING, "threshold_voltage = " + str(threshold_voltage) + ", threshold_current = " + str(threshold_current))
+print_log(LOG_WARNING, "Vth = {:.3f}V    Ith = {:.3f}mA"
+                       .format(threshold_voltage, threshold_current))
 
 geometry_width = GEO.GeoO.bbox.upper[0]
 geometry_height = GEO.GeoO.bbox.upper[1]
 RR = linspace(-geometry_width, geometry_width, 200)
 ZZ = linspace(0, geometry_height, 500)
-IntensityMesh = mesh.Rectangular2D(RR, ZZ)
+intensity_mesh = mesh.Rectangular2D(RR, ZZ)
 
-IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, IntensityMesh)
+IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, intensity_mesh)
 figure()
 plot_field(IntensityField, 100)
 plot_geometry(GEO.GeoO, mirror=True, color="w")
 gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.format(GEO["aperture"].dr))
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
-xticks(append(xticks()[0],[-GEO["aperture"].dr,GEO["aperture"].dr]))
+xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
 xlabel(u"r [\xb5m]")
 ylabel(u"z [\xb5m]")
 
 
 new_aperture = 3.
 GEO["aperture"].dr = new_aperture
-GEO["oxide"].dr = DEF["mesaRadius"]-new_aperture
+GEO["oxide"].dr = DEF["mesaRadius"] - new_aperture
 
 OPTICAL.lam0=982.
-threshold_voltage = scipy.optimize.brentq(lossVsVoltage,0.5,2., xtol=0.01)
-lossVsVoltage(threshold_voltage)
+threshold_voltage = scipy.optimize.brentq(loss_on_voltage, 0.5, 2., xtol=0.01)
+loss_on_voltage(threshold_voltage)
 threshold_current = abs(ELECTRICAL.get_total_current())
-print_log(LOG_WARNING, "threshold_voltage = " + str(threshold_voltage) + ", threshold_current = " + str(threshold_current))
+print_log(LOG_WARNING, "Vth = {:.3f}V    Ith = {:.3f}mA"
+                       .format(threshold_voltage, threshold_current))
 
-IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, IntensityMesh)
+IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, intensity_mesh)
 figure()
 plot_field(IntensityField, 100)
 plot_geometry(GEO.GeoO, mirror=True, color="w")
 gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.format(GEO["aperture"].dr))
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
-xticks(append(xticks()[0],[-GEO["aperture"].dr,GEO["aperture"].dr]))
+xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
 xlabel(u"r [\xb5m]")
 ylabel(u"z [\xb5m]")
 show()
