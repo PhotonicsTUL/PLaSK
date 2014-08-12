@@ -13,6 +13,7 @@ add_library(PEparser STATIC
     file.cpp file.hpp
     pe.cpp pe.hpp
     pe_symtab.cpp pe_symtab.hpp
+    symbols.cpp symbols.hpp
     )
 
 endif(WIN32)
