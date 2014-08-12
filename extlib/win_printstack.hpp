@@ -13,6 +13,8 @@
 #include <cxxabi.h> //abi::__cxa_demangle
 #endif
 
+#include "PEparser/symbols.hpp"
+
 inline int backtrace(void **buffer, int size)
 {
  USHORT frames;
@@ -91,8 +93,13 @@ inline void printStack(void)
     #else
        printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
     #endif
-    } else
+    } else {
+       const char* fun_name; const char* module_name;
+       if (mingw_lookup(stack[i], fun_name, module_name)) {
+            printf("%u: %p %s %s\n", frames - i - 1, stack[i], fun_name, module_name);
+       } else
         printf("%u: %p UNKNOWN\n", frames - i - 1, stack[i]);
+   }
  }
  SymCleanup(hProcess);
 }
