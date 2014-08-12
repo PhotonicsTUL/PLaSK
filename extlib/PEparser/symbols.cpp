@@ -5,7 +5,6 @@
 
 #include "pe_symtab.hpp"
 #include "file.hpp"
-#include "ms_symdb.hpp"
 #include "spin_mutex.hpp"
 
 #include <cassert>
