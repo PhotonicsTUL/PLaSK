@@ -184,7 +184,8 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 if(PRINT_STACKTRACE_ON_EXCEPTION)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	if(WIN32)
-		set(PRINT_STACKTRACE_LIBRARY "dbghelp")
+		add_subdirectory(extlib/PEparser)	# PE parser (for proper stack printing under windows mingw)
+		set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
 	else(WIN32)
 		find_package(DW)
 		if(DW_FOUND)
@@ -226,7 +227,6 @@ endif()
 # CAMOS
 add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
-
 
 # ---------- PLaSK library --------------------------------------------
 
