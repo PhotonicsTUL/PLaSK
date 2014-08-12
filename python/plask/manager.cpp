@@ -339,11 +339,12 @@ void PythonManager::removeSpaces(unsigned xmlline) {
     if (beg == line->begin() || line == endline) return;
     std::string result;
     line = firstline;
-    for (size_t lineno = 1; line != endline; ++line, ++lineno) { // Indent all lines
+    for (size_t lineno = 1; line != endline; ++line, ++lineno) { // indent all lines
         size_t pos = 0;
         for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
             if (*beg == ' ') ++pos;
             else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
+            else if (*beg == '#') { break; } // allow unidentation for comments
             else {
                 ptrdiff_t d = std::distance(line->begin(), beg);
                 throw XMLException(format("XML line %1%: Current script line indentation (%2% space%3%) is less than the indentation of the first script line (%4% space%5%)",

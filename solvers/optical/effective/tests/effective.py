@@ -194,8 +194,7 @@ class EffectiveFrequency(unittest.TestCase):
         m = self.solver.find_mode(980.)
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
-        self.assertAlmostEqual( self.solver.modes[m].lam, 979.702, 3 )
-        self.assertAlmostEqual( self.solver.modes[m].loss, 2.72, 2 )
+        self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )
 
     def testThreshold(self):
         try:
@@ -206,7 +205,7 @@ class EffectiveFrequency(unittest.TestCase):
             def fun(g):
                 self.profile[self.manager.geometry['active']] = g
                 m = self.solver.find_mode(980.)
-                return self.solver.modes[m].loss
+                return imag(self.solver.modes[m].lam)
             threshold = brentq(fun, 0., 2000., xtol=1e-6)
             self.assertAlmostEqual( threshold, 1181.7, 1 )
 

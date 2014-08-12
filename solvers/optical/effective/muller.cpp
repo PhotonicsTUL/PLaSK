@@ -13,14 +13,14 @@ dcomplex RootMuller::operator()(dcomplex first, dcomplex second) const
 
     double xtol2 = params.tolx * params.tolx;
     double fmin2 = params.tolf_min * params.tolf_min;
-    double fmax2 = params.tolf_min * params.tolf_min;
-    
+    double fmax2 = params.tolf_max * params.tolf_max;
+
     dcomplex x2 = first, x1 = second, x0 = 0.5 * (first + second);
-    
+
     dcomplex f2 = val_function(x2); log_value(x2, f2);
     dcomplex f1 = val_function(x1); log_value(x1, f1);
     dcomplex f0 = val_function(x0); log_value.count(x0, f0);
-    
+
     for (unsigned i = 0; i < params.maxiter; ++i) {
         if (isnan(real(f0)) || isnan(imag(f0)))
             throw ComputationError(solver.getId(), "Computed value is NaN");

@@ -151,10 +151,6 @@ size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, p
     }
 }
 
-double EffectiveFrequencyCylSolver_Mode_Wavelength(const EffectiveFrequencyCylSolver::Mode& mode) {
-    return real(mode.lam);
-}
-
 double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSolver::Mode& mode) {
     return imag(2e4 * 2e3*M_PI / mode.lam);
 }
@@ -333,14 +329,14 @@ BOOST_PYTHON_MODULE(effective)
                    "Compute the mode near the specified wavelength.\n\n"
                    "Args:\n"
                    "    lam (complex): Initial wavelength to for root finging algorithm.\n"
-                   "    m (integer): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
+                   "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
                    "Returns:\n"
                    "    integer: Index in the :attr:`modes` list of the found mode.\n",
                    (arg("lam"), arg("m")=0));
         METHOD(find_modes, findModes,
                "Find the modes within the specified range using global method.\n\n"
                "Args:\n"
-               "    m (integer): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
+               "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n"
                SEARCH_ARGS_DOC"\n"
                "Returns:\n"
                "    list of integers: List of the indices in the :attr:`modes` list of the found\n"
@@ -359,7 +355,8 @@ BOOST_PYTHON_MODULE(effective)
                    "Get modal determinant.\n\n"
                    "Args:\n"
                    "    lam (complex of numeric array of complex): wavelength to compute the\n"
-                   "    determinant at.\n\n"
+                   "                                               determinant at.\n"
+                   "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n\n",
                    "Returns:\n"
                    "    complex or list of complex: Determinant at the effective index *neff* or\n"
                    "    an array matching its size.\n",
@@ -370,7 +367,7 @@ BOOST_PYTHON_MODULE(effective)
                    "Args:\n"
                    "    lam (float of complex): Mode wavelength.\n"
                    "    loss (float): Mode losses. Allowed only if *lam* is a float.\n"
-                   "    m (integer): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n",
+                   "    m (int): Angular mode number (O for LP0x, 1 for LP1x, etc.).\n",
                    (py::arg("lam"), "loss", py::arg("m")=0));
         solver.def("get_total_absorption", (double (EffectiveFrequencyCylSolver::*)(size_t))&EffectiveFrequencyCylSolver::getTotalAbsorption,
                "Get total energy absorbed from a mode in unit time.\n\n"
@@ -413,9 +410,8 @@ BOOST_PYTHON_MODULE(effective)
 
         py::class_<EffectiveFrequencyCylSolver::Mode>("Mode", "Detailed information about the mode.", py::no_init)
             .def_readonly("m", &EffectiveFrequencyCylSolver::Mode::m, "LP_mn mode parameter describing angular dependence.")
-            .add_property("lam", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
-            .add_property("wavelength", &EffectiveFrequencyCylSolver_Mode_Wavelength, "Mode wavelength [nm].")
-            .add_property("loss", &EffectiveFrequencyCylSolver_Mode_ModalLoss, "Mode loss [1/cm].")
+            .def_readonly("lam", &EffectiveFrequencyCylSolver::Mode::lam, "Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
+            .def_readonly("wavelength", &EffectiveFrequencyCylSolver::Mode::lam, "Mode wavelength [nm].")
             .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode.")
         ;
 

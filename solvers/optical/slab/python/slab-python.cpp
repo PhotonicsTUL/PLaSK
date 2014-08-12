@@ -202,7 +202,7 @@ void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) {
 
 dcomplex FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
 
     AxisNames* axes = getCurrentAxes();
@@ -221,7 +221,7 @@ dcomplex FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
         else if (*i == "dispersive")
             dispersive = py::extract<bool>(kwargs[*i]);
         else
-            throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
+            throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
     if (lambda) self->setWavelength(*lambda, dispersive);
     if (neff) self->setKlong(*neff * self->getK0());
@@ -477,7 +477,7 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
 
 dcomplex FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
     AxisNames* axes = getCurrentAxes();
@@ -496,7 +496,7 @@ dcomplex FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
         else if (*i == "dispersive")
             dispersive = py::extract<bool>(kwargs[*i]);
         else
-            throw TypeError("determinant() got unexpected keyword argument '%1%'", *i);
+            throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
 
     if (wavelength) self->setWavelength(*wavelength, dispersive);
@@ -507,11 +507,11 @@ dcomplex FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
 size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
-        throw TypeError("determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
+        throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
     if (py::len(kwargs) != 1)
-        throw TypeError("determinant() takes exactly one keyword argument (%1% given)", py::len(kwargs));
+        throw TypeError("get_determinant() takes exactly one keyword argument (%1% given)", py::len(kwargs));
     std::string key = py::extract<std::string>(kwargs.keys()[0]);
     dcomplex value = py::extract<dcomplex>(kwargs[key]);
     AxisNames* axes = getCurrentAxes();
@@ -526,7 +526,7 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     else if (key == "ktran" || key == "kt" || key == "k"+axes->getNameForTran())
         what = FourierSolver3D::WHAT_KTRAN;
     else
-        throw TypeError("determinant() got unexpected keyword argument '%1%'", key);
+        throw TypeError("get_determinant() got unexpected keyword argument '%1%'", key);
 
     return self->findMode(what, value);
 }
@@ -637,7 +637,7 @@ BOOST_PYTHON_MODULE(slab)
         RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
         RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
         RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
-        solver.def("determinant", py::raw_function(FourierSolver2D_getDeterminant),
+        solver.def("get_determinant", py::raw_function(FourierSolver2D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
                    "Args:\n"
@@ -754,7 +754,7 @@ BOOST_PYTHON_MODULE(slab)
                             py::make_function(&FourierSolver3D_SymmetryLongTranWrapper::getter, py::with_custodian_and_ward_postcall<0,1>()),
                             &FourierSolver3D_SymmetryLongTranWrapper::setter,
                             "Longitudinal and transverse mode symmetries.\n");
-        solver.def("determinant", py::raw_function(FourierSolver3D_getDeterminant),
+        solver.def("get_determinant", py::raw_function(FourierSolver3D_getDeterminant),
                    "Compute discontinuity matrix determinant.\n\n"
                    "Arguments can be given through keywords only.\n\n"
                    "Args:\n"

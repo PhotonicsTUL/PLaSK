@@ -192,10 +192,12 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 // Aply PML
                 dcomplex h = solver->vpml.size * solver->vpml.factor;
                 for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*h);
+                assert(!phas.isnan());
                 mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
 
                 // Shift matrix by `pmlshift`
                 for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.shift);
+                assert(!phas.isnan());
                 mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
             }
 
@@ -208,17 +210,12 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 gamma = diagonalizer->Gamma(solver->stack[n]);
                 assert(!gamma.isnan());
 
-                double H = (n == start)? 0. : solver->vbounds[n] - solver->vbounds[n-1];
-                if (emitting && n == start) {
-                    for (int i = 0; i < N; i++) {
-                        dcomplex g = gamma[i];
-                        if (real(g) < -SMALL) g = -g;
-                        phas[i] = exp(-I*g*H);
-                    }
-                } else {
+                assert(!P.isnan());
+
+                if (n != start) {
+                    double H = solver->vbounds[n] - solver->vbounds[n-1];
                     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
                 }
-                assert(!P.isnan());
                 assert(!phas.isnan());
                 mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
 

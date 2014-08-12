@@ -637,7 +637,6 @@ dcomplex EffectiveFrequencyCylSolver::detS(const dcomplex& lam, plask::solvers::
     }
 
     // In the innermost area there must not be any infinity, so H = 0.
-    //return rfields[0].H / rfields[0].J; // to stress the difference between J and H
     return mode.rfields[0].H;
 }
 

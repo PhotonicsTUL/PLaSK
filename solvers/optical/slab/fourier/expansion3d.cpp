@@ -271,7 +271,7 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
                         auto roles = geometry->getRolesAt(vec(long_mesh[l], tran_mesh[t], matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
                             double g = 0.; // average gain in all vertical points
-                            for (size_t v = mesh->index(l, t, 0) * axis2.size(), end = mesh->index(l, t, axis2.size())+1; v != end; ++v) g += gain[v];
+                            for (size_t v = mesh->index(l, t, 0), end = mesh->index(l, t, axis2.size()); v < end; ++v) g += gain[v];
                             double ni = lambda * g/axis2.size() * (0.25e-7/M_PI);
                             cell[j].c00.imag(ni);
                             cell[j].c11.imag(ni);
