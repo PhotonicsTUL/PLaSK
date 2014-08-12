@@ -80,7 +80,7 @@ inline void printStack(void)
  symbol = (SYMBOL_INFO *) buffer;
  symbol->MaxNameLen = 255;
  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
- for(i = 0;i < frames; i++) {
+ for(i = 0; i < frames; i++) {
    if (SymFromAddr(hProcess, (DWORD64) (stack[i]), 0, symbol)) {
        //TODO http://msdn.microsoft.com/en-us/library/windows/desktop/ms680578%28v=vs.85%29.aspx
     #ifdef __GNUC__

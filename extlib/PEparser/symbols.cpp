@@ -104,7 +104,6 @@ namespace dbg
 
         module_list_cleanup clean_modules_list_on_exit; // keep leak detection tools happy.
 
-
         // Find or create a node associated with the specified module.
         // May return 0 on allocation failure.
         const module_node *get_node(HMODULE module)
@@ -125,47 +124,24 @@ namespace dbg
 
     } // anonymous
 
-    struct symdb::impl : ms_symdb { };
-
-    symdb::symdb() :
-        p(new (std::nothrow) impl)
+    bool mingw_lookup(const void *program_counter, const char*& fun_name, const char*& module_name)
     {
-    }
+        MEMORY_BASIC_INFORMATION mbinfo;
+        std::memset(&mbinfo, 0, sizeof mbinfo);
 
-    symdb::~symdb()
-    {
-        delete p;
-    }
+        // Use VirtualQuery to find the address at which the module containing the program_counter was loaded.
+        if (VirtualQuery(program_counter, &mbinfo, static_cast<DWORD>(sizeof mbinfo)) == sizeof mbinfo) {
 
-    bool symdb::lookup_function(const void *program_counter, symsink &sink) const
-    {
-        if (p)
-        {
-            // Try using Microsoft's symbol lookup mechanism first, as the module
-            // might be have been built with MSVC.
-
-            if (p->try_lookup_function(program_counter, sink))
-                return true;
-
-            MEMORY_BASIC_INFORMATION mbinfo;
-            std::memset(&mbinfo, 0, sizeof mbinfo);
-
-            // Use VirtualQuery to find the address at which the module containing the program_counter
-            // was loaded.
-
-            if (VirtualQuery(program_counter, &mbinfo, static_cast<DWORD>(sizeof mbinfo)) == sizeof mbinfo)
-            {
                 const module_node *node = get_node(static_cast<HMODULE>(mbinfo.AllocationBase));;
 
                 if (node)
                 {
-                    sink.on_function(program_counter, node->function_spanning(program_counter), node->name());
+                    fun_name = node->function_spanning(program_counter);
+                    module_name = node->name();
                     return true;
                 }
-            }
         }
 
-        sink.on_function(program_counter, 0, 0);
         return false;
     }
 
