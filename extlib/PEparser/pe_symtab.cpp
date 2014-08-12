@@ -6,8 +6,6 @@
 #include "pe_symtab.hpp"
 #include "pe.hpp"
 
-#include "dbg/static_assert.hpp"
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -108,7 +106,7 @@ namespace dbg
         {
             Target ret;
 
-            DBG_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
+            assert(sizeof(Target) == sizeof(Source));
             std::memcpy(&ret, &source, sizeof(Source));
 
             return ret;
