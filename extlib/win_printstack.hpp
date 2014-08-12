@@ -95,7 +95,7 @@ inline void printStack(void)
     #endif
     } else {
        const char* fun_name; const char* module_name;
-       if (mingw_lookup(stack[i], fun_name, module_name)) {
+       if (dbg::mingw_lookup(stack[i], fun_name, module_name)) {
             printf("%u: %p %s %s\n", frames - i - 1, stack[i], fun_name, module_name);
        } else
         printf("%u: %p UNKNOWN\n", frames - i - 1, stack[i]);
