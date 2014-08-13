@@ -24,6 +24,7 @@ namespace plask {
 PLASK_API LicenseVerifier license_verifier;
 #endif
 
+// code mostly from http://stackoverflow.com/questions/19482378/how-to-parse-and-validate-a-date-in-stdstring-in-c
 std::time_t LicenseVerifier::extractDate(const std::string &s) {
     std::istringstream is(s);
     char delimiter;
@@ -71,17 +72,17 @@ LicenseVerifier::LicenseVerifier() {
     SHGetFolderPath(NULL, CSIDL_PROFILE, NULL, 0, home);            // Depreciated
     //SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, home);        // Vista+
     try_load_license(std::string(home) + "\\plask_license.xml")  ||
-            try_load_license(std::string(home) + "\\plask\\license.xml")  ||
+    try_load_license(std::string(home) + "\\plask\\license.xml")  ||
 #else
 #   define V "/"
     char* home = getenv("HOME");
     try_load_license(std::string(home) + "/.plask_license.xml")  ||
-            try_load_license(std::string(home) + "/.plask/license.xml")  ||
-            try_load_license("/etc/plask_license.xml")  ||
-            try_load_license("/etc/plask/license.xml")  ||
+    try_load_license(std::string(home) + "/.plask/license.xml")  ||
+    try_load_license("/etc/plask_license.xml")  ||
+    try_load_license("/etc/plask/license.xml")  ||
 #endif
-            try_load_license(prefixPath() + V "plask_license.xml") ||
-            try_load_license(prefixPath() + V "etc" V "license.xml");
+    try_load_license(prefixPath() + V "plask_license.xml") ||
+    try_load_license(prefixPath() + V "etc" V "license.xml");
 }
 
 void LicenseVerifier::verify() {

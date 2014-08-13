@@ -15,7 +15,9 @@ namespace plask {
 /**
  * Check if license has valid signature or append signature to license XML.
  *
- * Throw exception if there are duplicated signature tags or @p src is ill-formated.
+ * It only inteprete @c signature tag, content of other tags can be interpreted by @p content_cb.
+ *
+ * Throw exception if there are duplicated @c signature tag, @p src is ill-formated or @p content_cb throws exception.
  * @param src source license XML
  * @param dst optional destination license XML, if given all content of @p src, completed with proper signature tag, will be added to it
  * @param content_cb callback called for each content node (with @p src argument), do nothing by default

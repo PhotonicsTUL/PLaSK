@@ -9,24 +9,34 @@
 namespace plask {
 
 /**
- * License verifier
- * It checks for checksums and also validates expiration date.
- * Throw exception if verification fail.
+ * License verifier.
+ *
+ * It checks for checksums, validates expiration date and mac addresses.
+ *
+ * Expiration date is read from @c expiry tag. This tag should occur exactly once and its content should be in format DD/MM/YYYY (any non-digit character can be used instead of '/').
+ *
+ * Mac address is in @c mac tag. This tag can be placed in license file zero or more times and its content should be in format HH:HH:HH:HH:HH:HH.
+ * Each time it is checked if computer has ethernet interface with given mac.
  */
 class PLASK_API LicenseVerifier {
 
     std::string filename, content;
 
-    // function expects the string in format dd/mm/yyyy:
-    // case from http://stackoverflow.com/questions/19482378/how-to-parse-and-validate-a-date-in-stdstring-in-c
+    /// Parse date from the string in format DD/MM/YYYY.
     static std::time_t extractDate(const std::string& s);
 
+    /**
+     * Try load license file (but not verify it). If success, fill @a filename and @a content members.
+     * @param fname name of license file to load
+     * @return @c true only after successful loading
+     */
     bool try_load_license(const std::string& fname);
 
   public:
 
     LicenseVerifier();
 
+    /// Verify license. Throw exception if verification fail.
     void verify();
 };
 
