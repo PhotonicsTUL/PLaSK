@@ -71,6 +71,7 @@ endif()
 add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
 add_python_test(solvers/optical/slab/refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection2d.py)
 add_python_test(solvers/optical/slab/refl3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection3d.py)
+add_python_test(solvers/optical/slab/grating ${CMAKE_CURRENT_SOURCE_DIR}/tests/grating.py)
 
 
 # Uncomment and edit the line below if you need to link some external libraries

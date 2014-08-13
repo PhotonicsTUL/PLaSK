@@ -55,7 +55,7 @@ Possible <mesh> contents for different types
 
 .. xml:tag:: <mesh type="rectilinear1d"> [rectilinear1d]
 
-   Deprecated alias to :xml:tag:`<mesh> [ordered]`.
+   Deprecated alias to ordered :xml:tag:`<mesh> [ordered]`.
 
 
 
@@ -75,7 +75,7 @@ Possible <mesh> contents for different types
 
 .. xml:tag:: <mesh type="regular1d"> [regular1d]
 
-   Deprecated alias to :xml:tag:`<mesh> [regular]`.
+   Deprecated alias to ordered :xml:tag:`<mesh> [regular]`.
 
 
 
@@ -89,7 +89,7 @@ Possible <mesh> contents for different types
 
          Specification of the horizontal axis.
 
-         :attr type: Type of axis: ``rectilinear`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``rectilinear``).
+         :attr type: Type of axis: ``ordered`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``ordered``).
          :attr start: Position of the first point on the axis. (float [µm])
          :attr stop: Position of the last point on the axis. (float [µm])
          :attr num: Number of the equally distributed points along the axis. (integer)
@@ -123,7 +123,7 @@ Possible <mesh> contents for different types
 
          Specification of the longitudinal axis.
 
-         :attr type: Type of axis: ``rectilinear`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``rectilinear``).
+         :attr type: Type of axis: ``ordered`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``ordered``).
          :attr start: Position of the first point on the axis. (float [µm])
          :attr stop: Position of the last point on the axis. (float [µm])
          :attr num: Number of the equally distributed points along the axis. (integer)

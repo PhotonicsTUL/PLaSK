@@ -114,21 +114,21 @@ Optical solvers
 
 
 
-.. xml:tag:: <optical solver="FourierReflection2D"> [FourierReflection2D]
+.. xml:tag:: <optical solver="Fourier2D"> [Fourier2D]
 
-   Corresponding Python class: :py:class:`optical.slab.FourierReflection2D`.
+   Corresponding Python class: :py:class:`optical.slab.Fourier2D`.
 
    Scalar optical solver based on the effective index method.
 
    .. xml:contents::
 
-      .. xml:tag:: <geometry/> [in FourierReflection2D optical solver]
+      .. xml:tag:: <geometry/> [in Fourier2D optical solver]
 
          Geometry for use by this solver.
 
          :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-      .. xml:tag:: <expansion> [in FourierReflection2D optical solver]
+      .. xml:tag:: <expansion> [in Fourier2D optical solver]
 
          Details on Fourier expansion used in computations
 
@@ -136,7 +136,7 @@ Optical solvers
          :attr refine: Number of refinement points for refractive index averaging. (integer)
          :attr smooth: Smoothing parameter for material boundaries (increases convergence). (float)
 
-      .. xml:tag:: <interface> [in FourierReflection2D optical solver]
+      .. xml:tag:: <interface> [in Fourier2D optical solver]
 
          Matching interface position in the stack.
 
@@ -147,7 +147,7 @@ Optical solvers
 
          Attributes ``index``, ``position``, or ``object``/``path`` pair are mutually exclusive.
 
-      .. xml:tag:: <pml> [in FourierReflection2D optical solver]
+      .. xml:tag:: <pml> [in Fourier2D optical solver]
 
          Side absorbing perfectly matched layer boundary conditions parameters.
 
@@ -156,7 +156,7 @@ Optical solvers
          :attr shift: PML shift from the structure. (float [µm])
          :attr size: PML size. (float [µm])
 
-      .. xml:tag:: <mode> [in FourierReflection2D optical solver]
+      .. xml:tag:: <mode> [in Fourier2D optical solver]
 
          Mode properties.
 
@@ -166,7 +166,7 @@ Optical solvers
          :attr symmetry: Mode symmetry. Give a symmetric field component here (e.g. ``Etran``, ``Hx``).
          :attr polarization: Mode polarization. Give an existing field component here (e.g. ``Etran``, ``Hx``).
 
-      .. xml:tag:: <root> [in FourierReflection2D optical solver]
+      .. xml:tag:: <root> [in Fourier2D optical solver]
 
          Parameters of the global root-finding algorithm.
 
@@ -180,14 +180,14 @@ Optical solvers
          :attr lambda: Minimum decrease ratio of one step (Broyden method only). (float [a.u.])
          :attr initial-range: Initial range size (Muller method only).  (complex [a.u.])
 
-      .. xml:tag:: <mirrors> [in FourierReflection2D optical solver]
+      .. xml:tag:: <mirrors> [in Fourier2D optical solver]
 
          Mirror losses.
 
          :attr required R1: Reflectivity of the first mirror. (float [-])
          :attr required R2: Reflectivity of the second mirror. (float [-])
 
-      .. xml:tag:: <outer> [in FourierReflection2D optical solver]
+      .. xml:tag:: <outer> [in Fourier2D optical solver]
 
          Configuration of handling area outside of the computational domain.
 
@@ -195,21 +195,21 @@ Optical solvers
 
 
 
-.. xml:tag:: <optical solver="FourierReflection3D"> [FourierReflection3D]
+.. xml:tag:: <optical solver="Fourier3D"> [Fourier3D]
 
-   Corresponding Python class: :py:class:`optical.slab.FourierReflection3D`.
+   Corresponding Python class: :py:class:`optical.slab.Fourier3D`.
 
    Scalar optical solver based on the effective index method.
 
    .. xml:contents::
 
-      .. xml:tag:: <geometry/> [in FourierReflection3D optical solver]
+      .. xml:tag:: <geometry/> [in Fourier3D optical solver]
 
          Geometry for use by this solver.
 
          :attr required ref: Name of the geometry defined in the :xml:tag:`<geometry>` section.
 
-      .. xml:tag:: <expansion> [in FourierReflection3D optical solver]
+      .. xml:tag:: <expansion> [in Fourier3D optical solver]
 
          Details on Fourier expansion used in computations
 
@@ -221,7 +221,7 @@ Optical solvers
          :attr refine-tran: Number of refinement points for refractive index averaging along transverse axis. You cannot use this attribute together with :attr:`refine`. (integer)
          :attr smooth: Smoothing parameter for material boundaries (increases convergence). (float)
 
-      .. xml:tag:: <interface> [in FourierReflection3D optical solver]
+      .. xml:tag:: <interface> [in Fourier3D optical solver]
 
          Matching interface position in the stack.
 
@@ -232,7 +232,7 @@ Optical solvers
 
          Attributes ``index``, ``position``, or ``object``/``path`` pair are mutually exclusive.
 
-      .. xml:tag:: <pmls> [in FourierReflection3D optical solver]
+      .. xml:tag:: <pmls> [in Fourier3D optical solver]
 
          Side absorbing perfectly matched layer boundary conditions parameters. Adding attributes to this tag sets PML parameters for both longitudinal and transverse boundary.
 
@@ -243,15 +243,15 @@ Optical solvers
 
          .. xml:contents::
 
-            .. xml:tag:: <long> [in FourierReflection3D optical solver <pmls>]
+            .. xml:tag:: <long> [in Fourier3D optical solver <pmls>]
 
                Set parameters of PMLs in longitudinal direction. The attributes are the same as above.
 
-            .. xml:tag:: <tran> [in FourierReflection3D optical solver <pmls>]
+            .. xml:tag:: <tran> [in Fourier3D optical solver <pmls>]
 
                Set parameters of PMLs in transverse direction. The attributes are the same as above.
 
-      .. xml:tag:: <mode> [in FourierReflection3D optical solver]
+      .. xml:tag:: <mode> [in Fourier3D optical solver]
 
          Mode properties.
 
@@ -260,7 +260,7 @@ Optical solvers
          :attr k-long: Longitudinal wave-vector component. (float [1/µm])
          :attr symmetry: Mode symmetry. Give a symmetric field component here (e.g. ``Etran``, ``Hx``).
 
-      .. xml:tag:: <root> [in FourierReflection3D optical solver]
+      .. xml:tag:: <root> [in Fourier3D optical solver]
 
          Parameters of the global root-finding algorithm.
 
@@ -274,7 +274,7 @@ Optical solvers
          :attr lambda: Minimum decrease ratio of one step (Broyden method only). (float [a.u.])
          :attr initial-range: Initial range size (Muller method only).  (complex [a.u.])
 
-      .. xml:tag:: <outer> [in FourierReflection3D optical solver]
+      .. xml:tag:: <outer> [in Fourier3D optical solver]
 
          Configuration of handling area outside of the computational domain.
 
