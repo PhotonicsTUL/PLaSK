@@ -15,22 +15,50 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base cla
     ;
 }
 
-
+template <int dim>
+void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omaterial) {
+    try {
+        shared_ptr<Material> material = py::extract<shared_ptr<Material>>(omaterial);
+        self->setMaterial(material);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        if (py::len(omaterial) != 2)
+            throw TypeError("Argument is not a proper material");
+        std::string mat1 = py::extract<std::string>(omaterial[0]);
+        std::string mat2 = py::extract<std::string>(omaterial[1]);
+        self->setMaterialTopBottomComposition(MaterialsDB::getDefault().getFactory(mat2, mat1));
+    }
+}
 
 // Rectangle constructor wraps
-static shared_ptr<Rectangle> Rectangle_constructor_wh(double w, double h, shared_ptr<Material> material) {
-    return make_shared<Rectangle>(Vec<2,double>(w,h), material);
+static shared_ptr<Rectangle> Rectangle_constructor_wh(double w, double h, const py::object& material) {
+    auto result = make_shared<Rectangle>(Vec<2,double>(w,h));
+    setLeafMaterial<2>(result, material);
+    return result;
 }
-static shared_ptr<Rectangle> Rectangle_constructor_vec(const Vec<2,double>& size, shared_ptr<Material> material) {
-    return make_shared<Rectangle>(size, material);
+static shared_ptr<Rectangle> Rectangle_constructor_vec(const Vec<2,double>& size, const py::object& material) {
+    auto result = make_shared<Rectangle>(size);
+    setLeafMaterial<2>(result, material);
+    return result;
 }
 
 // Cuboid constructor wraps
-static shared_ptr<Cuboid> Cuboid_constructor_dwh(double d, double w, double h, shared_ptr<Material> material) {
-    return make_shared<Cuboid>(Vec<3,double>(d,w,h), material);
+static shared_ptr<Cuboid> Cuboid_constructor_dwh(double d, double w, double h, const py::object& material) {
+    auto result =  make_shared<Cuboid>(Vec<3,double>(d,w,h));
+    setLeafMaterial<3>(result, material);
+    return result;
 }
-static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, shared_ptr<Material> material) {
-    return make_shared<Cuboid>(size, material);
+static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, const py::object& material) {
+    auto result =  make_shared<Cuboid>(size);
+    setLeafMaterial<3>(result, material);
+    return result;
+}
+
+// Cylinder constructor wraps
+static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, const py::object& material) {
+    auto result =  make_shared<Cylinder>(radius, height);
+    setLeafMaterial<3>(result, material);
+    return result;
 }
 
 // Access to attributes
@@ -85,7 +113,7 @@ void register_geometry_leafs()
         "Args:\n"
         "    width (float): Rectangle width.\n"
         "    height (float): Rectangle height.\n"
-        "    material (Material): Cylinder material.\n"
+        "    material (Material): Rectangle material.\n"
         "    dims (plask.vector): 2D vector representing dimensions of the rectangle.\n",
         py::no_init
         ); block2D
@@ -108,7 +136,7 @@ void register_geometry_leafs()
         "    depth (float): Cuboid depth.\n"
         "    width (float): Cuboid width.\n"
         "    height (float): Cuboid height.\n"
-        "    material (Material): Cylinder material.\n"
+        "    material (Material): Cuboid material.\n"
         "    dims (plask.vector): 3D vector representing dimensions of the cuboid.\n",
         py::no_init
         ); block3D
@@ -131,8 +159,9 @@ void register_geometry_leafs()
         "    radius (float): Cylinder radius.\n"
         "    height (float): Cylinder height.\n"
         "    material (Material): Cylinder material.\n",
-        py::init<double, double, const shared_ptr<Material>&>((py::arg("radius"), "height", "material"))
+        py::no_init
         )
+        .def("__init__", py::make_constructor(&Cylinder_constructor, py::default_call_policies(), (py::arg("radius"), "height", "material")))
         .add_property("radius", py::make_getter(&Cylinder::radius), &Cylinder::setRadius, "Radius of the cylinder.")
         .add_property("height", py::make_getter(&Cylinder::height), &Cylinder::setHeight, "Height of the cylinder.")
     ;

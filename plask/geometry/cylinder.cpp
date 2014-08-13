@@ -25,8 +25,8 @@ void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
             .attr("radius", radius).attr("height", height);
 }
 
-bool Cylinder::singleMaterialInBB(Primitive<3>::Direction direction) const {
-    return direction == Primitive<3>::DIRECTION_VERT && materialProvider->singleMaterialInBB(direction);
+bool Cylinder::isUniform(Primitive<3>::Direction direction) const {
+    return direction == Primitive<3>::DIRECTION_VERT && materialProvider->isUniform(direction);
 }
 
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {

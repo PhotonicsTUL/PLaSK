@@ -59,7 +59,7 @@ struct PLASK_API Cylinder: public GeometryObjectLeaf<3> {
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
-    bool singleMaterialInBB(Primitive<3>::Direction direction) const override;
+    bool isUniform(Primitive<3>::Direction direction) const override;
 
 };
 

@@ -46,7 +46,7 @@ protected:
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const = 0;
 
-        virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const = 0;
+        virtual bool isUniform(Primitive<3>::Direction direction) const = 0;
 
         virtual ~MaterialProvider() {}
     };
@@ -74,7 +74,7 @@ protected:
             return material;
         }
 
-        virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const { return true; }
+        virtual bool isUniform(Primitive<3>::Direction direction) const { return true; }
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
@@ -102,7 +102,7 @@ protected:
             return (*materialFactory)(0.5);
         }
 
-        virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const { return direction != Primitive<3>::DIRECTION_VERT; }
+        virtual bool isUniform(Primitive<3>::Direction direction) const { return direction != Primitive<3>::DIRECTION_VERT; }
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
     };
@@ -132,7 +132,7 @@ public:
      */
     GeometryObjectLeaf<dim>(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): materialProvider(new MixedCompositionMaterial(materialTopBottom)) {}
 
-    bool singleMaterialInBB(Primitive<3>::Direction direction) const override;
+    bool isUniform(Primitive<3>::Direction direction) const override;
 
     /**
      * Get representative material of this leaf (typically material which is returned in center of object).

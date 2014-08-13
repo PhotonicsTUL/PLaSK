@@ -115,6 +115,36 @@ namespace detail {
 }
 
 /**
+ * Converter for Python string to material using default database.
+ * Allows to create geometry objects as \c rectange(2,1,"GaAs")
+ */
+struct MaterialFromPythonString {
+
+    MaterialFromPythonString() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<shared_ptr<Material>>());
+    }
+
+    // Determine if obj can be converted into Material
+    static void* convertible(PyObject* obj) {
+        if (!PyString_Check(obj)) return 0;
+        return obj;
+    }
+
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        std::string value = PyString_AsString(obj);
+
+        // Grab pointer to memory into which to construct the new Material
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<Material>>*)data)->storage.bytes;
+
+        new(storage) shared_ptr<Material>(MaterialsDB::getDefault().get(value));
+
+        // Stash the memory chunk pointer for later use by boost.python
+        data->convertible = storage;
+    }
+};
+
+
+/**
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
@@ -599,35 +629,6 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     return DB->get(composition, dopant, doping_type, concentration);
 }
 
-/**
- * Converter for Python string to material using default database.
- * Allows to create geometry objects as \c rectange(2,1,"GaAs")
- */
-struct Material_from_Python_string {
-
-    Material_from_Python_string() {
-        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<shared_ptr<Material>>());
-    }
-
-    // Determine if obj can be converted into Material
-    static void* convertible(PyObject* obj) {
-        if (!PyString_Check(obj)) return 0;
-        return obj;
-    }
-
-    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        std::string value = PyString_AsString(obj);
-
-        // Grab pointer to memory into which to construct the new Material
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<Material>>*)data)->storage.bytes;
-
-        new(storage) shared_ptr<Material>(MaterialsDB::getDefault().get(value));
-
-        // Stash the memory chunk pointer for later use by boost.python
-        data->convertible = storage;
-    }
-};
-
 
 py::dict Material__completeComposition(py::dict src, std::string name) {
     py::list keys = src.keys();
@@ -854,7 +855,7 @@ void initMaterials() {
         .def("NR", &Material::NR, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.), "Get complex refractive index tensor Nr")
     ;
 
-    Material_from_Python_string();
+    MaterialFromPythonString();
     register_exception<NoSuchMaterial>(PyExc_ValueError);
     register_exception<MaterialMethodNotApplicable>(PyExc_TypeError);
 

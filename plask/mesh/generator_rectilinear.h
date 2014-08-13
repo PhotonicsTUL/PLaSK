@@ -12,25 +12,19 @@ namespace plask {
  * \param geometry given geometry
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double min_ply = 0.01, long max_points = 10, bool extend_to_zero = false);
+PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero = false);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double min_ply = 0.01, long max_points = 10);
+PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
 
 /**
  * Generator of basic 2D geometry grid
  */
 class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
-
-    /// Minimum ply after split single, non-solid layer.
-    double min_ply;
-
-    /// Maximum points to split single, non-solid layer (more important than min_ply).
-    long max_points;
 
     /// Should we add line at horizontal zero
     bool extend_to_zero;
@@ -42,11 +36,8 @@ class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
     /**
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
-     * \param min_ply minimum ply after split single, non-solid layer
-     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    OrderedMesh1DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
-        : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
+    OrderedMesh1DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -57,12 +48,6 @@ class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
  */
 class PLASK_API RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 
-    /// Minimum ply after split single, non-solid layer.
-    double min_ply;
-
-    /// Maximum points to split single, non-solid layer (more important than min_ply).
-    long max_points;
-
     /// Should we add line at horizontal zero
     bool extend_to_zero;
 
@@ -71,11 +56,8 @@ class PLASK_API RectilinearMesh2DSimpleGenerator: public MeshGeneratorD<2> {
     /**
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
-     * \param min_ply minimum ply after split single, non-solid layer
-     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false, double min_ply = 0.01, long max_points = 10)
-        : min_ply(min_ply), max_points(max_points), extend_to_zero(extend_to_zero) {}
+    RectilinearMesh2DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -87,22 +69,14 @@ class PLASK_API RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 
     shared_ptr<MeshGeneratorD<1>> horizontal_generator;
 
-    /// Minimum ply after split single, non-solid layer.
-    double min_ply;
-
-    /// Maximum points to split single, non-solid layer (more important than min_ply).
-    long max_points;
-
   public:
 
     /**
      * Create generator
      * \param extend_to_zero indicates whether there always must be a line at tran = 0
-     * \param min_ply minimum ply after split single, non-solid layer
-     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source, double min_ply = 0.01, long max_points = 10):
-        horizontal_generator(source), min_ply(min_ply), max_points(max_points) {}
+    RectilinearMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source):
+        horizontal_generator(source) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -114,21 +88,12 @@ class PLASK_API RectilinearMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
  */
 struct PLASK_API RectilinearMesh3DSimpleGenerator: public MeshGeneratorD<3> {
 
-    /// Minimum ply after split single, non-solid layer.
-    double min_ply;
-
-    /// Maximum points to split single, non-solid layer (more important than min_ply).
-    long max_points;
-
 public:
 
     /**
      * Create generator
-     * \param min_ply minimum ply after splitting single, non-solid layer
-     * \param max_points maximum points to split single, non-solid layer (more important than min_ply)
      */
-    RectilinearMesh3DSimpleGenerator(double min_ply = 0.01, long max_points = 10)
-        : min_ply(min_ply), max_points(max_points) {}
+    RectilinearMesh3DSimpleGenerator() {}
 
     virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };

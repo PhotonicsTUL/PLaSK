@@ -69,7 +69,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      */
     class PLASK_API Event: public EventWithSourceAndFlags<GeometryObject> {
 
-        const GeometryObject& _oryginalSource;
+        const GeometryObject& _originalSource;
 
     public:
 
@@ -146,14 +146,14 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * Get oryginal source of event which can differ from source if event was delegated.
          * @return oryginal source of event
          */
-        const GeometryObject& oryginalSource() const { return _oryginalSource; }
+        const GeometryObject& oryginalSource() const { return _originalSource; }
 
         /**
          * Construct event.
          * @param source source and oryginal source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _oryginalSource(source) {}
+        explicit Event(GeometryObject& source, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _originalSource(source) {}
 
         /**
          * Construct event.
@@ -161,7 +161,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @param oryginalSource oryginal source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject& source, const GeometryObject& oryginalSource, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _oryginalSource(oryginalSource) {}
+        explicit Event(GeometryObject& source, const GeometryObject& oryginalSource, unsigned char flags = 0): EventWithSourceAndFlags<GeometryObject>(source, flags), _originalSource(oryginalSource) {}
 
     };
 
@@ -489,6 +489,12 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
 
     };
 
+    /// Maximum division if the object is not uniform
+    unsigned long max_points;
+
+    /// Minimum distance between division lines if the object is not uniform
+    double min_ply;
+
     /// Roles/tags
     std::set<std::string> roles;
 
@@ -536,15 +542,19 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
      * @param to_copy object to copy
      */
-    GeometryObject(const GeometryObject& to_copy) {}
+    GeometryObject(const GeometryObject& to_copy): max_points(to_copy.max_points), min_ply(to_copy.min_ply) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't change changes observer.
      * @param to_copy object to copy
      */
-    GeometryObject& operator=(const GeometryObject& to_copy) { return *this; }
+    GeometryObject& operator=(const GeometryObject& to_copy) {
+        max_points = to_copy.max_points;
+        min_ply = to_copy.min_ply;
+        return *this;
+    }
 
-    GeometryObject() = default;
+    GeometryObject(): max_points(10), min_ply(0.005) {}
 
     /**
      * Virtual destructor. Inform all change listeners.
@@ -644,7 +654,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param direction direction
      * @return @c true only if object is solid in its bouding-box in given @p direction
      */
-    virtual bool singleMaterialInBB(Primitive<3>::Direction direction) const { return false; }
+    virtual bool isUniform(Primitive<3>::Direction direction) const { return false; }
 
     /**
      * Check if this object belongs to class (has tag) with name @p role_name.

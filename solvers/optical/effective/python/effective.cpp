@@ -141,6 +141,26 @@ std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& sel
     return self.findModes(neff1, neff2, parseSymmetry(symmetry), resteps, imsteps, eps);
 }
 
+std::string EffectiveIndex2DSolver_Mode_str(const EffectiveIndex2DSolver::Mode& self) {
+    std::string sym;
+    switch (self.symmetry) {
+        case EffectiveIndex2DSolver::SYMMETRY_POSITIVE: sym = "'positive'"; break;
+        case EffectiveIndex2DSolver::SYMMETRY_NEGATIVE: sym = "'negative'"; break;
+        default: sym = "None";
+    }
+    return format("<neff = %.2f%+.2g, symmetry = %s, power = %.1g mW>", real(self.neff), imag(self.neff), sym, self.power);
+}
+std::string EffectiveIndex2DSolver_Mode_repr(const EffectiveIndex2DSolver::Mode& self) {
+    std::string sym;
+    switch (self.symmetry) {
+        case EffectiveIndex2DSolver::SYMMETRY_POSITIVE: sym = "'positive'"; break;
+        case EffectiveIndex2DSolver::SYMMETRY_NEGATIVE: sym = "'negative'"; break;
+        default: sym = "None";
+    }
+    return format("EffectiveIndex2D.Mode(neff=%1%, symmetry=%2%, power=%3%)", str(self.neff), sym, self.power);
+}
+
+
 size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, py::object lam, int m) {
     py::extract<dcomplex> lam_as_complex(lam);
     if (lam_as_complex.check())
@@ -181,6 +201,13 @@ py::object EffectiveFrequencyCylSolver_getStripeR(const EffectiveFrequencyCylSol
 void EffectiveFrequencyCylSolver_setStripeR(EffectiveFrequencyCylSolver& self, py::object r) {
     if (r == py::object()) self.useAllStripes();
     else self.setStripeR(py::extract<double>(r));
+}
+
+std::string EffectiveFrequencyCylSolver_Mode_str(const EffectiveFrequencyCylSolver::Mode& self) {
+    return format("<m = %d, lam = (%.2f%+.2g) nm, power = %.1g mW>", self.m, real(self.lam), imag(self.lam), self.power);
+}
+std::string EffectiveFrequencyCylSolver_Mode_repr(const EffectiveFrequencyCylSolver::Mode& self) {
+    return format("EffectiveFrequencyCyl.Mode(m=%1%, lam=%2%, power=%3%)", self.m, str(self.lam), self.power);
 }
 
 /**
@@ -296,6 +323,8 @@ BOOST_PYTHON_MODULE(effective)
             .def_readonly("neff", &EffectiveIndex2DSolver::Mode::neff, "Mode effective index.")
             .add_property("symmetry", &EffectiveIndex2DSolver_getSymmetry, "Mode symmetry ('positive', 'negative', or None).")
             .def_readwrite("power", &EffectiveIndex2DSolver::Mode::power, "Total power emitted into the mode [mW].")
+            .def("__str__", &EffectiveIndex2DSolver_Mode_str)
+            .def("__repr__", &EffectiveIndex2DSolver_Mode_repr)
         ;
 
         py_enum<EffectiveIndex2DSolver::Emission>()
@@ -413,6 +442,8 @@ BOOST_PYTHON_MODULE(effective)
             .def_readonly("lam", &EffectiveFrequencyCylSolver::Mode::lam, "Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
             .def_readonly("wavelength", &EffectiveFrequencyCylSolver::Mode::lam, "Mode wavelength [nm].")
             .def_readwrite("power", &EffectiveFrequencyCylSolver::Mode::power, "Total power emitted into the mode.")
+            .def("__str__", &EffectiveFrequencyCylSolver_Mode_str)
+            .def("__repr__", &EffectiveFrequencyCylSolver_Mode_repr)
         ;
 
         py_enum<EffectiveFrequencyCylSolver::Emission>()

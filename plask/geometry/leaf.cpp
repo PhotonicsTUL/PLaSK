@@ -20,7 +20,7 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
     if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
         this->setMaterialFast(src.getMaterial(*matstr));
     else
-        this->setMaterialTopBottomComposition(src.getMixedCompositionFactory(
+        this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(
                     src.source.requireAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR),
                     src.source.requireAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR)
                     ));
@@ -28,8 +28,8 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
 }
 
 template <int dim>
-bool GeometryObjectLeaf<dim>::singleMaterialInBB(Primitive<3>::Direction direction) const {
-    return materialProvider->singleMaterialInBB(direction);
+bool GeometryObjectLeaf<dim>::isUniform(Primitive<3>::Direction direction) const {
+    return materialProvider->isUniform(direction);
 }
 
 template <int dim>

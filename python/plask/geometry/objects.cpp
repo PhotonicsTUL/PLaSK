@@ -540,6 +540,26 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectD, "GeometryObject", "Base class for 
     ;
 }
 
+struct GeometryObjectSteps {
+
+    shared_ptr<GeometryObject> obj;
+
+    GeometryObjectSteps(const shared_ptr<GeometryObject>& obj): obj(obj) {}
+
+    double get_ply() const { return obj->min_ply; }
+    void set_ply(double val) { obj->min_ply = abs(val); }
+
+    unsigned get_max_points() const { return obj->max_points; }
+    void set_max_points(unsigned val) { obj->max_points = val; }
+
+    std::string str() { return format("<dist=%1%, num=%2%>", obj->min_ply, obj->max_points);  }
+
+    static GeometryObjectSteps get(const shared_ptr<GeometryObject>& obj) { return GeometryObjectSteps(obj); }
+
+    static void set(const shared_ptr<GeometryObject>& obj, unsigned num) { obj->max_points = num; }
+
+};
+
 void register_geometry_object()
 {
     export_set<std::string>("string_set");
@@ -552,9 +572,18 @@ void register_geometry_object()
     //     .value("CONTAINER", GeometryObject::TYPE_CONTAINER)
     // ;
 
+    py::class_<GeometryObjectSteps>("GeometryObjectDiv", py::no_init)
+        .add_property("dist", &GeometryObjectSteps::get_ply, &GeometryObjectSteps::set_ply, "Minimum step mesh element size.")
+        .add_property("num", &GeometryObjectSteps::get_max_points, &GeometryObjectSteps::set_max_points, "Maximum number of the steps.")
+        .def("__str__", &GeometryObjectSteps::str)
+        .def("__repr__", &GeometryObjectSteps::str)
+    ;
+    py::delattr(py::scope(), "GeometryObjectDiv");
+
     py::class_<GeometryObject, shared_ptr<GeometryObject>, boost::noncopyable>("GeometryObject",
         "Base class for all geometry objects.", py::no_init)
         // .add_property("type", &GeometryObject::getType)
+        .add_property("steps", &GeometryObjectSteps::get, &GeometryObjectSteps::set, "Step info for mesh generation for non-uniform objects.")
         .def("validate", &GeometryObject::validate, "Check if the object is complete and ready for calculations.")
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
