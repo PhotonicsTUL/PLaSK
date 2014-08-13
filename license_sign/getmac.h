@@ -1,6 +1,8 @@
 #ifndef PLASK_GETMAC_H
 #define PLASK_GETMAC_H
 
+// This file should not be included in any plask .h file because it can be not distributed to solvers' developers.
+
 #include <vector>
 #include <string>
 #include <array>

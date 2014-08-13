@@ -15,7 +15,7 @@ namespace plask {
 /**
  * Check if license has valid signature or append signature to license XML.
  *
- * It only inteprete @c signature tag, content of other tags can be interpreted by @p content_cb.
+ * Only inteprete @c signature tag (and only if it has level 1 - is child of root), content of other tags can be interpreted by @p content_cb.
  *
  * Throw exception if there are duplicated @c signature tag, @p src is ill-formated or @p content_cb throws exception.
  * @param src source license XML

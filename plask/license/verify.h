@@ -11,7 +11,7 @@ namespace plask {
 /**
  * License verifier.
  *
- * It checks for checksums, validates expiration date and mac addresses.
+ * It checks for checksums (see processLicense function), validates expiration date and mac addresses.
  *
  * Expiration date is read from @c expiry tag. This tag should occur exactly once and its content should be in format DD/MM/YYYY (any non-digit character can be used instead of '/').
  *
