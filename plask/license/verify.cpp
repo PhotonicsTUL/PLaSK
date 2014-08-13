@@ -5,6 +5,7 @@
 
 // This should not be included in any plask .h file because it can be not distributed to solvers' developers:
 #include "../../license_sign/license.h"
+#include "../../license_sign/getmac.h"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <shlobj.h>
@@ -13,6 +14,9 @@
 #include <plask/config.h>
 #include <plask/log/log.h>
 #include "verify.h"
+
+#define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
+#define PLASK_LICENSE_MAC_TAG_NAME "mac"
 
 namespace plask {
 
@@ -68,14 +72,14 @@ LicenseVerifier::LicenseVerifier() {
     //SHGetKnownFolderPath(FOLDERID_Profile, 0, NULL, home);        // Vista+
     try_load_license(std::string(home) + "\\plask_license.xml")  ||
             try_load_license(std::string(home) + "\\plask\\license.xml")  ||
-        #else
+#else
 #   define V "/"
     char* home = getenv("HOME");
     try_load_license(std::string(home) + "/.plask_license.xml")  ||
             try_load_license(std::string(home) + "/.plask/license.xml")  ||
             try_load_license("/etc/plask_license.xml")  ||
             try_load_license("/etc/plask/license.xml")  ||
-        #endif
+#endif
             try_load_license(prefixPath() + V "plask_license.xml") ||
             try_load_license(prefixPath() + V "etc" V "license.xml");
 }
@@ -89,9 +93,15 @@ void LicenseVerifier::verify() {
     boost::optional<std::string> expiry;
     if (!processLicense(r, nullptr,
                    [&] (XMLReader& src) {
+                        boost::optional<std::vector<mac_address_t>> macs;
                         if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) {
                             if (expiry) src.throwException("duplicated <" PLASK_LICENSE_EXPIRY_TAG_NAME "> tag in license file");
                             expiry = src.getTextContent();
+                        } else
+                        if (src.getNodeName() == PLASK_LICENSE_MAC_TAG_NAME) {
+                            if (!macs) macs = getMacs();
+                            if (std::find(macs->begin(), macs->end(), macFromString(src.getTextContent())) == macs->end())
+                                src.throwException("License error: Hardware verification error.");
                         }
                     }
         ))

@@ -3,15 +3,20 @@
 #include <sstream>
 #include <fstream>
 
-//#include "getmac.h"
+#include "getmac.h"
+
+void print_macs() {
+    std::cout << std::endl << "Note: Detected mac adresses:" << std::endl;
+    for (auto& m: plask::getMacs()) std::cout << ' ' << plask::macToString(m) << std::endl;
+}
 
 int main(int argc, char *argv[]) {
-    //for (auto& m: getMacs()) std::cout << ' ' << macToString(m) << std::endl;
 
     try {
 
         if (argc != 2) {
             std::cout << "Usage: " << argv[0] << " file_to_sign.xml" << std::endl;
+            print_macs();
             return 1;
         }
 
@@ -33,5 +38,6 @@ int main(int argc, char *argv[]) {
         return 2;
     }
 
+    print_macs();
     return 0;
 }

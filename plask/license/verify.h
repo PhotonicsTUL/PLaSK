@@ -6,9 +6,6 @@
 
 #include "../utils/xml.h"
 
-#define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
-#define PLASK_LICENSE_MAC_HWID_NAME "hwid"
-
 namespace plask {
 
 /**

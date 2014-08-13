@@ -5,6 +5,12 @@
 #include <string>
 #include <array>
 
+namespace plask {
+
+typedef std::array<unsigned char, 6> mac_address_t;
+
+}   // namespace plask
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
 #define WIN32_LEAN_AND_MEAN
@@ -12,10 +18,12 @@
 #include <intrin.h>
 #include <iphlpapi.h>
 
+namespace plask {
+
 //http://stackoverflow.com/questions/16858782/how-to-obtain-almost-unique-system-identifier-in-a-cross-platform-way
 //http://msdn.microsoft.com/en-us/library/windows/desktop/aa366062%28v=vs.85%29.aspx
-inline std::vector<std::array<unsigned char, 6>> getMacs() {
-    std::vector<std::array<unsigned char, 6>> result;
+inline std::vector<mac_address_t> getMacs() {
+    std::vector<mac_address_t> result;
 
     IP_ADAPTER_INFO AdapterInfo[32];
     DWORD dwBufLen = sizeof( AdapterInfo );
@@ -36,6 +44,7 @@ inline std::vector<std::array<unsigned char, 6>> getMacs() {
     return result;
 }
 
+}   // namespace plask
 
 #else   // Linux code
 //TODO, MACOS: http://oroboro.com/unique-machine-fingerprint/
@@ -46,8 +55,10 @@ inline std::vector<std::array<unsigned char, 6>> getMacs() {
 #include <netinet/in.h>
 #include <string.h>
 
-inline std::vector<std::array<unsigned char, 6>> getMacs() {
-    std::vector<std::array<unsigned char, 6>> result;
+namespace plask {
+
+inline std::vector<mac_address_t> getMacs() {
+    std::vector<mac_address_t> result;
 
     //Code comes from:
     //http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program
@@ -63,6 +74,8 @@ inline std::vector<std::array<unsigned char, 6>> getMacs() {
     ifc.ifc_buf = buf;
     if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) {
         //handle error
+        close( sock );
+        return result;
     }
 
     struct ifreq* it = ifc.ifc_req;
@@ -78,16 +91,20 @@ inline std::vector<std::array<unsigned char, 6>> getMacs() {
                 }
             }
         }
-       // else {  handle error }
+       // else {  handle error } - just skip
     }
     close( sock );
 
     return result;
 }
 
+}   // namespace plask
+
 #endif  // Linux code
 
-inline std::string macToString(const std::array<unsigned char, 6>& mac) {
+namespace plask {
+
+inline std::string macToString(const mac_address_t& mac) {
     std::string res;
     res.reserve(2*6 + 5);
     for (unsigned char c: mac) {
@@ -97,6 +114,33 @@ inline std::string macToString(const std::array<unsigned char, 6>& mac) {
         if (res.size() != 2*6 + 5) res += ':';
     }
     return res;
+}
+
+inline unsigned char fromHex(char c, const std::string& mac_str) {
+    if ('0' <= c && c <= '9') return c - '0';
+    if ('A' <= c && c <= 'F') return c - 'A' + 10;
+    if ('a' <= c && c <= 'f') return c - 'a' + 10;
+    throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address. It includes invalid character where hex digit is expected.");
+}
+
+inline mac_address_t macFromString(const std::string& mac_str) {
+    mac_address_t res;
+    int parsed = 0;
+    for (std::size_t i = 0; i < mac_str.size(); ++i) {
+        const char c = mac_str[i];
+        if (std::isspace(c)) continue;
+        if (parsed == 6) throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address.");
+        if (c == ':') continue;
+        res[parsed] = fromHex(c, mac_str);
+        ++i;
+        if (i == mac_str.size()) throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address (unexpected end).");
+        res[parsed] = (res[parsed] << 4) | fromHex(mac_str[i], mac_str);
+        ++parsed;
+    }
+    if (parsed != 6) throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address (unexpected end).");
+    return res;
+}
+
 }
 
 
