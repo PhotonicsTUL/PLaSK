@@ -5,7 +5,7 @@ from .grid import Grid
 
 
 class AxisConf(object):
-    """Store axis configuration of RectilinearMesh"""
+    """Store axis configuration of rectilinear mesh"""
 
     def __init__(self, start=None, stop=None, num=None, points=None, type=None):
         self.start = start
@@ -14,7 +14,7 @@ class AxisConf(object):
         self.points = points
         self.type = type
 
-    def fillXMLElement(self, axisElement):
+    def fill_XMLElement(self, axisElement):
         for attr in ['start', 'stop', 'num', 'type']:
             a = getattr(self, attr, None)
             if a is not None: axisElement.attrib[attr] = a
@@ -26,7 +26,7 @@ class AxisConf(object):
         #if self.points: axisElement.text = ", ".join(self.points)
         #if self.points: axisElement.attrib['points'] = self.points
 
-    def set_XML_element(self, axis_element):
+    def set_from_XML(self, axis_element):
         if axis_element is None or len(axis_element) == 0: return
         with AttributeReader(axis_element) as a:
             for attr in ['start', 'stop', 'num', 'type']:
@@ -41,7 +41,7 @@ class AxisConf(object):
 
 
 class RectangularMesh(Grid):
-    """Model of RectangularMesh (2D, or 3D - see self.dim)"""
+    """Model of 2D and 3D rectangularMesh"""
 
     @staticmethod
     def from_XML(grids_model, element):
@@ -61,9 +61,13 @@ class RectangularMesh(Grid):
     def get_XML_element(self):
         res = super(RectangularMesh, self).get_XML_element()
         for i in range(0, self.dim):
-            self.axis[i].fillXMLElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
+            self.axis[i].fill_XMLElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
         return res;
 
     def set_XML_element(self, element):
         for i in range(0, self.dim):
-            self.axis[i].set_XML_element(element.find(RectangularMesh.axis_tag_name(i)))
+            self.axis[i].set_from_XML(element.find(RectangularMesh.axis_tag_name(i)))
+
+    def get_controller(self, document):
+        from ...controller.grids.mesh_rectilinear import RectangularMeshConroller
+        return RectangularMeshConroller(document=document, model=self)

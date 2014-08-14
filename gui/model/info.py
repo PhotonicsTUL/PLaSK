@@ -100,7 +100,7 @@ class InfoSource(object):
 
     def __init__(self, info_cb=None):
         """
-            :param info_cb: call when list of error has been changed with parameters: section name, list of errors
+            :param info_cb: call when list of errors has been changed with parameters: section name, list of errors
         """
         object.__init__(self)
         self.__info__ = []    #model Infos: Errors, Warnings and Informations

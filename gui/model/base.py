@@ -1,4 +1,5 @@
 # coding: utf8
+from astroid.rebuilder import _lineno_parent
 
 import os
 from lxml import etree as ElementTree
@@ -46,12 +47,13 @@ class ExternalSource(object):
 class TreeFragmentModel(InfoSource):
     """Base class for fragment of tree (with change signal and info)"""
 
-    def __init__(self, info_cb=None):
+    def __init__(self, parent=None, info_cb=None):
         """
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
         InfoSource.__init__(self, info_cb)
         self.changed = Signal()
+        self.parent = parent
 
     def fire_changed(self, refresh_info=True):
         """
@@ -61,11 +63,19 @@ class TreeFragmentModel(InfoSource):
         if refresh_info: self.markInfoInvalid()
         self.changed(self)
         if refresh_info: self.fireInfoChanged()
+        if self.parent is not None: self.parent.fire_changed(refresh_info)
 
     def get_text(self):
         return print_interior(self.get_XML_element())
         #return ElementTree.tostring(self.get_XML_element())
 
+    def is_read_only(self):
+        """
+            Check if model is read only.
+            It just return parent.is_read_only(), which is valid implementation from internal section models (SectionModel overwrite it).
+            :return: true if model is read-only (typically: has been read from external source)
+        """
+        return self.parent.is_read_only()
 
 class SectionModel(TreeFragmentModel):
 
@@ -74,7 +84,7 @@ class SectionModel(TreeFragmentModel):
             :param str name: name of section
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
-        super(SectionModel, self).__init__(info_cb)
+        super(SectionModel, self).__init__(info_cb=info_cb)
         self.name = name
         self.externalSource = None
 
@@ -85,9 +95,6 @@ class SectionModel(TreeFragmentModel):
                                         # .encode('utf-8') wymagane (tylko) przez lxml
 
     def is_read_only(self):
-        """
-            :return: true if model is read-only (typically: has been read from external source)
-        """
         return self.externalSource is not None
 
     def get_file_XML_element(self):
@@ -146,6 +153,7 @@ class SectionModel(TreeFragmentModel):
         return ""
 
 class SectionModelTreeBased(SectionModel):
+    """Model of section which just hold XML ElementTree Element"""
 
     def __init__(self, name):
         SectionModel.__init__(self, name)

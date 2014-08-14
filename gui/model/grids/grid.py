@@ -2,11 +2,12 @@
 from lxml import etree as ElementTree
 from xml.sax.saxutils import quoteattr
 
+from ...model.base import TreeFragmentModel
 from ...utils.xml import print_interior, XML_parser
 from ..info import InfoSource
 
 
-class Grid(InfoSource): # or (TreeFragmentModel)??
+class Grid(TreeFragmentModel):
     """Base class for models of grids (meshes or generators)"""
 
     @staticmethod
@@ -17,8 +18,7 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
             return ElementTree.Element("mesh", {"name": name, "type": type})
 
     def __init__(self, grids_model, name=None, type=None, method=None):
-        object.__init__(self)
-        self.model = grids_model
+        super(Grid, self).__init__(parent=grids_model)
         if name is not None: self.name = name
         if type is not None: self.type = type
         if method is not None: self.__method__ = method
@@ -59,9 +59,6 @@ class Grid(InfoSource): # or (TreeFragmentModel)??
             return "%s generator (%s)" % (display_name(self.type), display_name(self.method))
         else:
             return "%s mesh" % display_name(self.type)
-
-    def is_read_only(self):
-        return self.model.is_read_only()
 
     def get_controller(self, document):
         from ...controller.source import SourceEditController

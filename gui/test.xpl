@@ -11,7 +11,7 @@
     <Me>123</Me>
   </material>
   <material name="y" base="semiconductor">
-    <A>4</A>
+    <A>6</A>
   </material>
 </materials>
 
@@ -45,12 +45,20 @@
       -->
     </refinements>
   </generator>
+  <mesh name="z" type="rectangular2d">
+    <axis0></axis0>
+    <axis1></axis1>
+  </mesh>
   <mesh name="diffusion" type="regular1d">
-    <axis start="0" stop="10" num="2000"/>
+    <axis start="0" stop="1" num="2000"/>
   </mesh>
   <generator name="optical" type="rectilinear2d" method="divide">
     <prediv by0="10" by1="1"/>
   </generator>
+  <mesh name="aa" type="rectangular2d">
+    <axis0></axis0>
+    <axis1></axis1>
+  </mesh>
 </grids>
 
 <solvers>

@@ -15,4 +15,4 @@ class PyEdit(pyqtfrontend.PyCode):
     def setPrefix(self, prefix):
         self.prefix = prefix
         if len(self.prefix) > 0 and self.prefix[-1] != '\n':
-            self.prefix += '\n';
+            self.prefix += '\n'

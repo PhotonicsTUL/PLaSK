@@ -30,8 +30,14 @@ class XPLDocument(object):
             GUIAndSourceController(ConnectsController(self)),   # connects
             ScriptController(self)   # script
         ]
+        for c in self.controllers:
+            c.model.changed.connect(self._on_model_change)
         #self.tree = ElementTree()
         self.set_changed(False)
+
+    def _on_model_change(self, model):
+        """Slot called by model 'changed' signals when user edits any section model"""
+        self.set_changed()
 
     def load_from_file(self, filename):
         tree = ElementTree.parse(filename, XML_parser)

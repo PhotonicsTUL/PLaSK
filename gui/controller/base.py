@@ -22,16 +22,11 @@ class Controller(object):
         
     def on_edit_enter(self):
         """Called when editor is entered and will be visible."""
-        self.model.changed.connect(self._document_changed)
+        pass
 
     def on_edit_exit(self):
         """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
-        self.model.changed.disconnect(self._document_changed)
         self.save_data_in_model()
         self.document.window.set_section_actions()
-
-    def _document_changed(self, model):
-        """Slot called by model 'changed' signals whgen user edits it"""
-        self.document.set_changed()
 
     # def get_editor(self) - to be done in subclasses
