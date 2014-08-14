@@ -47,7 +47,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     int NN = N*N;
 
     // Some temporary variables
-    cdiagonal gamma, y1, y2;
+    cdiagonal gamma, y1, y2(N);
 
     std::exception_ptr error;
 
