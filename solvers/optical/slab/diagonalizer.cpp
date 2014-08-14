@@ -129,7 +129,7 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             std::fill_n(Te[layer].data(), N*N, 0.);
             std::fill_n(Te1[layer].data(), N*N, 0.);
             for (int i = 0; i < N; i++) {
-                    Te[layer](i,i) = Te1[layer](i,i) = 1.;
+                Te[layer](i,i) = Te1[layer](i,i) = 1.;
             }
 
         } else {

@@ -120,15 +120,15 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     void setSymmetryLong(Expansion::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
-        if (klong != 0.) {
-            Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
-            klong = 0.;
-        }
         if (expansion.initialized) {
             if (expansion.symmetric_long && symmetry == Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
             if (!expansion.symmetric_long && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add longitudinal mode symmetry now -- invalidate the solver first", getId());
+        }
+        if (klong != 0.) {
+            Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
+            klong = 0.;
         }
         if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry_long = symmetry;
@@ -140,15 +140,15 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     void setSymmetryTran(Expansion::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
-        if (ktran != 0.) {
-            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
-            ktran = 0.;
-        }
         if (expansion.initialized) {
             if (expansion.symmetric_tran && symmetry == Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
             if (!expansion.symmetric_tran && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add transverse mode symmetry now -- invalidate the solver first", getId());
+        }
+        if (ktran != 0.) {
+            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
+            ktran = 0.;
         }
         if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry_tran = symmetry;

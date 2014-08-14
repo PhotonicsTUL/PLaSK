@@ -2,8 +2,20 @@
 #include "meshadapter.h"
 #include "muller.h"
 #include "broyden.h"
+#include "reflection.h"
+#include "admittance.h"
 
 namespace plask { namespace solvers { namespace slab {
+
+void SlabBase::initTransfer(Expansion& expansion) {
+    switch (transfer_method) {
+        case Transfer::REFLECTION:
+            this->transfer.reset(new ReflectionTransfer(this, expansion)); return;
+        case Transfer::ADMITTANCE:
+            this->transfer.reset(new AdmittanceTransfer(this, expansion)); return;
+    }
+}
+
 
 template <typename GeometryT>
 SlabSolver<GeometryT>::SlabSolver(const std::string& name): SolverOver<GeometryT>(name),

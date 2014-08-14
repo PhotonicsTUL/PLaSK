@@ -18,12 +18,12 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     struct Mode {
         FourierSolver2D* solver;                            ///< Solver this mode belongs to
-        ExpansionPW2D::Component symmetry;                      ///< Mode horizontal symmetry
-        ExpansionPW2D::Component polarization;                  ///< Mode polarization
-        dcomplex k0;                                            ///< Stored mode frequency
-        dcomplex beta;                                          ///< Stored mode effective index
-        dcomplex ktran;                                         ///< Stored mode transverse wavevector
-        double power;                                           ///< Mode power [mW]
+        ExpansionPW2D::Component symmetry;                  ///< Mode horizontal symmetry
+        ExpansionPW2D::Component polarization;              ///< Mode polarization
+        dcomplex k0;                                        ///< Stored mode frequency
+        dcomplex beta;                                      ///< Stored mode effective index
+        dcomplex ktran;                                     ///< Stored mode transverse wavevector
+        double power;                                       ///< Mode power [mW]
 
         Mode(FourierSolver2D* solver): solver(solver), power(1.) {}
 
@@ -94,15 +94,15 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     void setSymmetry(ExpansionPW2D::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
-        if (ktran != 0.) {
-            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
-            ktran = 0.;
-        }
         if (expansion.initialized) {
             if (expansion.symmetric && symmetry == ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
             if (!expansion.symmetric && symmetry != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
+        }
+        if (ktran != 0.) {
+            Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
+            ktran = 0.;
         }
         if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         expansion.symmetry = symmetry;

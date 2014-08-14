@@ -562,8 +562,7 @@ inline void export_base(Class solver) {
     solver.add_property("klong", &Solver::getKlong, &Solver::setKlong, "Longitudinal propagation constant of the light [1/µm].");
     solver.add_property("ktran", &Solver::getKtran, &Solver::setKtran, "Transverse propagation constant of the light [1/µm].");
     solver.def_readwrite("root", &Solver::root,
-                         "Configuration of the root searching algorithm for horizontal component of the\n"
-                         "mode.\n\n"
+                         "Configuration of the root searching algorithm.\n\n"
                          ROOTDIGGER_ATTRS_DOC
                         );
     solver.add_property("vpml", py::make_function(&Solver_vPML<Solver>, py::with_custodian_and_ward_postcall<0,1>()),
@@ -575,6 +574,14 @@ inline void export_base(Class solver) {
                         "   ~optical.slab.PML.dist\n"
                         "   ~optical.slab.PML.size\n\n"
                         "Attribute ``shape`` is ignored for vertical PML (it is always 0).\n"
+                       );
+    solver.add_property("transfer", &Solver::getTransferMethod, &Solver::setTransferMethod,
+                        "Preferred transfer method.\n\n"
+                        "Can take on of the following values:\n\n"
+                        "============ ==========================\n"
+                        "*reflection* Reflection Transfer Method\n"
+                        "*`admittance* Admittance Transfer Method\n"
+                        "============ ==========================\n"
                        );
 }
 
@@ -598,6 +605,11 @@ BOOST_PYTHON_MODULE(slab)
         .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
         .def("__str__", &PmlWrapper::__str__)
         .def("__repr__", &PmlWrapper::__repr__)
+    ;
+
+    py_enum<Transfer::Method>()
+        .value("REFLECTION", Transfer::REFLECTION)
+        .value("ADMITTANCE", Transfer::ADMITTANCE)
     ;
 
     py_enum<RootDigger::Method>()

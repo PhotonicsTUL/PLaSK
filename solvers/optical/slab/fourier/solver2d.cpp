@@ -109,7 +109,7 @@ void FourierSolver2D::onInitialize()
     this->setupLayers();
     this->ensureInterface();
     expansion.init();
-    this->transfer.reset(new ReflectionTransfer(this, expansion));    //TODO add other transfer types
+    initTransfer(expansion);
     this->recompute_coefficients = true;
 }
 

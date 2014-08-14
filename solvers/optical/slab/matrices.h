@@ -236,6 +236,7 @@ typedef Matrix<dcomplex> cmatrix;
 
 // Column vector and diagonal matrix
 typedef DataVector<dcomplex> cvector;
+typedef DataVector<const dcomplex> const_cvector;
 typedef MatrixDiagonal<dcomplex> cdiagonal;
 
 //**************************************************************************
@@ -311,7 +312,7 @@ inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
 
 
 // BLAS wrappers for multiplications without allocating additional storage
-inline void mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvector& dst) {
+inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvector& dst) {
     int m, n;
     if ((n = A.cols()) != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     if ((m = A.rows()) != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");

@@ -35,6 +35,9 @@ struct SlabBase {
     /// Create and return rootdigger of a desired type
     std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func);
 
+    /// Selected transfer method
+    Transfer::Method transfer_method;
+
     /**
      * Read root digger configuration
      * \param reader XML reader
@@ -54,6 +57,8 @@ struct SlabBase {
             .get(root.method);
         reader.requireTagEnd();
     }
+
+    void initTransfer(Expansion& expansion);
 
   public:
 
@@ -87,6 +92,7 @@ struct SlabBase {
 
     SlabBase():
         detlog("", "modal", "unspecified", "det"),
+        transfer_method(Transfer::REFLECTION),
         interface(1),
         k0(NAN), klong(0.), ktran(0.),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
@@ -94,6 +100,7 @@ struct SlabBase {
 
     /// Get current wavelength
     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+
     /// Set current wavelength
     void setWavelength(dcomplex lambda, bool recompute=true) {
         dcomplex k = 2e3*M_PI / lambda;
@@ -106,6 +113,7 @@ struct SlabBase {
 
     /// Get current k0
     dcomplex getK0() const { return k0; }
+
     /// Set current k0
     void setK0(dcomplex k, bool recompute=true) {
         if (k != k0) {
@@ -118,6 +126,7 @@ struct SlabBase {
 
     /// Get longitudinal wavevector
     dcomplex getKlong() const { return klong; }
+
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
         if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
@@ -126,6 +135,7 @@ struct SlabBase {
 
     /// Get transverse wavevector
     dcomplex getKtran() const { return ktran; }
+
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
@@ -223,6 +233,15 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     SlabSolver(const std::string& name="");
 
     ~SlabSolver();
+
+    /// Get currently selected transfer method
+    Transfer::Method getTransferMethod() const { return transfer_method; }
+
+    /// Set new transfer method
+    void setTransferMethod(Transfer::Method method) {
+        if (method != transfer_method) this->invalidate();
+        transfer_method = method;
+    }
 
     virtual std::string getId() const { return Solver::getId(); }
 

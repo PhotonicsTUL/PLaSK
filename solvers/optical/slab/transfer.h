@@ -27,26 +27,51 @@ struct PLASK_SOLVER_API Transfer {
         DETERMINED_REFLECTED    ///< Reflected field has been determined
     };
 
+    /// Available transfer types
+    enum Method {
+        REFLECTION,    ///< Reflection transfer
+        ADMITTANCE     ///< Admittance transfer
+    };
+
+  protected:
+
+    cmatrix interface_field_matrix;             ///< Determined field at the interface
+    dcomplex* interface_field;                  ///< Pointer to the interface field data
+
+    cmatrix M;                                  ///< The final matrix which must fulfill M * E = 0
+
+    cmatrix temp;                               ///< Temporary matrix
+
+    dcomplex* evals;                            ///< Found eigenvalues of matrix M
+    double* rwork;                              ///< Temporary space
+    int lwork;                                  ///< Temporary space
+    dcomplex* work;                             ///< Temporary space
+
     /// Solver containing this transfer
     SlabBase* solver;
+
+    /// Init diagonalization
+    void initDiagonalization();
+
+  public:
 
     /// Diagonalizer used to compute matrix of eigenvalues and eigenvectors
     std::unique_ptr<Diagonalizer> diagonalizer;
 
-    Determined fields_determined;               ///< Are the diagonalized fields determined for all layers?
+    /// Are the diagonalized fields determined for all layers?
+    Determined fields_determined;
+
     /**
      * Create transfer object and initialize memory
      * \param solver solver counting this transfer
      * \param expansion expansion for diagonalizer
      */
-    Transfer(SlabBase* solver, Expansion& expansion):
-        solver(solver),
-        diagonalizer(new SimpleDiagonalizer(&expansion)),   //TODO add other diagonalizer types
-        fields_determined(DETERMINED_NOTHING)
-    {}
+    Transfer(SlabBase* solver, Expansion& expansion);
+
+    virtual ~Transfer();
 
     /// Compute discontinuity matrix determinant for the current parameters
-    virtual dcomplex determinant() = 0;
+    dcomplex determinant();
 
     /**
      * Get vector of reflection coefficients
@@ -62,11 +87,23 @@ struct PLASK_SOLVER_API Transfer {
      */
     virtual cvector getTransmissionVector(const cvector& incident, IncidentDirection side) = 0;
 
+  protected:
+
+    /// Get the discontinuity matrix for the whole structure
+    virtual void getFinalMatrix() = 0;
+
     /**
-     * Get current expansion coefficients at the matching interface
-     * \return vector of current expansion coefficients at the interface
+     * Determine coefficients in each layer necessary for fields calculations.
      */
-    virtual cvector getInterfaceVector() = 0;
+    virtual void determineFields() = 0;
+
+    /**
+     * Determine coefficients in each layer necessary for fields calculations.
+     * This method is called for reflected fields.
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    virtual void determineReflectedFields(const cvector& incident, IncidentDirection side) = 0;
 
     /**
      * Compute electric field coefficients for given \a z
@@ -85,20 +122,64 @@ struct PLASK_SOLVER_API Transfer {
     virtual cvector getFieldVectorH(double z, int n) = 0;
 
     /**
+     * Get current expansion coefficients at the matching interface
+     * \return vector of current expansion coefficients at the interface
+     */
+    const_cvector getInterfaceVector();
+
+    /**
+     * Compute electric field at the given mesh.
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     * \param reflected is this method called from reflected calculations?
+     */
+    DataVector<Vec<3,dcomplex>> computeFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected);
+
+    /**
+     * Compute magnetic field at the given mesh.
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     * \param reflected is this method called from reflected calculations?
+     */
+    DataVector<Vec<3,dcomplex>> computeFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected);
+
+    /**
+     * Compute light magnitude.
+     * \param power mode power
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     * \param reflected is the field emitting?
+     */
+    DataVector<double> computeFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method, bool reflected) {
+        auto E = computeFieldE(dst_mesh, method, reflected);
+        DataVector<double> result(E.size());
+        for (size_t i = 0; i != E.size(); ++i) {
+            result[i] = power * abs2(E[i]);
+        }
+        return result;
+    }
+
+  public:
+
+    /**
      * Get electric field at the given mesh for resonant mode.
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    virtual DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const Mesh>& dst_mesh,
-                                                  InterpolationMethod method) = 0;
+    DataVector<Vec<3,dcomplex>> getFieldE(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+        determineFields();
+        return computeFieldE(dst_mesh, method, false);
+    }
 
     /**
      * Get magnetic field at the given mesh for resonant mode.
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    virtual DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const Mesh>& dst_mesh,
-                                                  InterpolationMethod method) = 0;
+    DataVector<Vec<3,dcomplex>> getFieldH(const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+        determineFields();
+        return computeFieldH(dst_mesh, method, false);
+    }
 
     /**
      * Get light magnitude for resonant mode.
@@ -106,9 +187,10 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual DataVector<double> getFieldMagnitude(double power,
-                                                 const shared_ptr<const Mesh>& dst_mesh,
-                                                 InterpolationMethod method) = 0;
+    DataVector<double> getFieldMagnitude(double power, const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+        determineFields();
+        return computeFieldMagnitude(power, dst_mesh, method, false);
+    }
 
     /**
      * Get electric field at the given mesh for reflected light.
@@ -117,10 +199,11 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    virtual DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident,
-                                                           IncidentDirection side,
-                                                           const shared_ptr<const Mesh>& dst_mesh,
-                                                           InterpolationMethod method) = 0;
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side,
+                                                   const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+        determineReflectedFields(incident, side);
+        return computeFieldE(dst_mesh, method, true);
+    }
 
     /**
      * Get magnetic field at the given mesh for reflected light.
@@ -129,10 +212,11 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    virtual DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident,
-                                                           IncidentDirection side,
-                                                           const shared_ptr<const Mesh>& dst_mesh,
-                                                           InterpolationMethod method) = 0;
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side,
+                                                   const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+        determineReflectedFields(incident, side);
+        return computeFieldH(dst_mesh, method, true);
+    }
 
     /**
      * Get light magnitude for reflected light.
@@ -141,10 +225,11 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual DataVector<double> getReflectedFieldMagnitude(const cvector& incident,
-                                                          IncidentDirection side,
-                                                          const shared_ptr<const Mesh>& dst_mesh,
-                                                          InterpolationMethod method) = 0;
+    DataVector<double> getReflectedFieldMagnitude(const cvector& incident, IncidentDirection side,
+                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
+        determineReflectedFields(incident, side);
+        return computeFieldMagnitude(1., dst_mesh, method, true);
+    }
 };
 
 
