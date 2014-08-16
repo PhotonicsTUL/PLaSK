@@ -72,13 +72,12 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
 
         #pragma omp single
         if (!error) try {
-            #ifdef OPENMP_FOUND
-                layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
-            #endif
-
             // Now iteratively we find matrices Y[i]
 
             // PML layer
+            #ifdef OPENMP_FOUND
+                layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
+            #endif
             gamma = diagonalizer->Gamma(solver->stack[start]);
             std::fill_n(y2.data(), N, dcomplex(1.));                    // we use y2 for tracking sign changes
             for (int i = 0; i < N; i++) {
@@ -96,7 +95,6 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
             get_y1(gamma, H, y1);
             get_y2(gamma, H, y2);
             for (int i = 0; i < N; i++) Y(i,i) = y1[i] - Y(i,i);        // off-diagonal elements of Y are 0
-            std::fill_n(Y.data(), NN, dcomplex(0.));
             for (int i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / Y(i,i) - y1[i]; // Y = y2 * inv(Y) * y2 - y1
 
             // save the Y matrix for 1-st layer

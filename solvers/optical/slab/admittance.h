@@ -84,6 +84,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
     /// Determine the y1 efficiently
     inline void get_y1(const cdiagonal& gamma, double d, cdiagonal& y1) const {
         int N = gamma.size();
+        assert(y1.size() == N);
         for (int i = 0; i < N; i++) {
             dcomplex t = tanh(I*gamma[i]*d);
             if (isinf(real(t)) || isinf(imag(t))) y1[i] = 0.;
@@ -95,6 +96,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
     /// Determine the y2 efficiently
     inline void get_y2(const cdiagonal& gamma, double d, cdiagonal& y2) const {
         int N = gamma.size();
+        assert(y2.size() == N);
         for (int i = 0; i < N; i++) {
             dcomplex s = sinh(I*gamma[i]*d);
             if (isinf(real(s)) || isinf(imag(s))) y2[i] = 0.;
