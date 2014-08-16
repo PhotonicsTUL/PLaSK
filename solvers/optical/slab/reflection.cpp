@@ -110,8 +110,6 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
             // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
             if (!emitting) {
-                // F(0) + B(0) = 0 ==> P(0) = -I
-                for (size_t i = 0; i != N; ++i) P(i,i) = -1.;
 
                 #ifdef OPENMP_FOUND
                     layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
@@ -119,10 +117,17 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 gamma = diagonalizer->Gamma(solver->stack[start]);
 
                 // Aply PML
-                dcomplex h = solver->vpml.size * solver->vpml.factor;
-                for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*h);
-                assert(!phas.isnan());
-                mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
+                // F(0) + B(0) = 0 ==> P(0) = -I
+                for (int i = 0; i < N; i++) {
+                    int s = 1;
+                    dcomplex g = gamma[i] * solver->vpml.factor;
+                    if (real(g) < -SMALL) { g = -g; s = -s; }
+                    if (imag(g) > SMALL) { g = -g; s = -s; }
+                    dcomplex p = - exp(-2.*I*g*solver->vpml.size);
+                    if (s == 1) P(i,i) = p; // P = phas * (-I) * phas
+                    else P(i,i) = 1./p;     // P = inv(phas * (-I) * phas)
+                }
+                assert(!P.isnan());
 
                 // Shift matrix by `pmlshift`
                 for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.shift);
@@ -144,9 +149,9 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 if (n != start) {
                     double H = solver->vbounds[n] - solver->vbounds[n-1];
                     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
+                    assert(!phas.isnan());
+                    mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
                 }
-                assert(!phas.isnan());
-                mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
 
                 // temp = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
                 assert(!diagonalizer->TE(solver->stack[n]).isnan());

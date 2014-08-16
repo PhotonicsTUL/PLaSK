@@ -82,31 +82,25 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
     }
 
     /// Determine the y1 efficiently
-    inline cdiagonal get_y1(const cdiagonal& gamma, double d) const {
+    inline void get_y1(const cdiagonal& gamma, double d, cdiagonal& y1) const {
         int N = gamma.size();
-        cdiagonal y1(N);
-
         for (int i = 0; i < N; i++) {
             dcomplex t = tanh(I*gamma[i]*d);
             if (isinf(real(t)) || isinf(imag(t))) y1[i] = 0.;
             else if (t == 0.) throw ComputationError(solver->getId(), "y1 has some infinite value");
             else y1[i] = 1. / t;
         }
-        return y1;
     }
 
     /// Determine the y2 efficiently
-    inline cdiagonal get_y2(const cdiagonal& gamma, double d) const {
+    inline void get_y2(const cdiagonal& gamma, double d, cdiagonal& y2) const {
         int N = gamma.size();
-        cdiagonal y2(N);
-
         for (int i = 0; i < N; i++) {
             dcomplex s = sinh(I*gamma[i]*d);
             if (isinf(real(s)) || isinf(imag(s))) y2[i] = 0.;
             else if (s == 0.) throw ComputationError(solver->getId(), "y2 has some infinite value");
             else y2[i] = - 1. / s;
         }
-        return y2;
     }
 
 };

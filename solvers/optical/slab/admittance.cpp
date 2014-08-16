@@ -47,7 +47,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     int NN = N*N;
 
     // Some temporary variables
-    cdiagonal gamma, y1, y2(N);
+    cdiagonal gamma, y1(N), y2(N);
 
     std::exception_ptr error;
 
@@ -79,35 +79,30 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
             // Now iteratively we find matrices Y[i]
 
             // PML layer
-            double H = solver->vpml.size;
             gamma = diagonalizer->Gamma(solver->stack[start]);
             std::fill_n(y2.data(), N, dcomplex(1.));                    // we use y2 for tracking sign changes
             for (int i = 0; i < N; i++) {
-                gamma[i] *= solver->vpml.factor;
-                if (real(gamma[i]) < -SMALL) { gamma[i] = -gamma[i]; y2[i] = -y2[i]; }
-                if (imag(gamma[i]) > SMALL) { gamma[i] = -gamma[i]; y2[i] = -y2[i]; }
+                y1[i] = gamma[i] * solver->vpml.factor;
+                if (real(y1[i]) < -SMALL) { y1[i] = -y1[i]; y2[i] = -y2[i]; }
+                if (imag(y1[i]) > SMALL) { y1[i] = -y1[i]; y2[i] = -y2[i]; }
             }
-            y1 = get_y1(gamma, H);
-            std::fill_n(temp.data(), NN, dcomplex(0.));
-            for (int i = 0; i < N; i++) temp(i,i) = - y1[i] * y2[i];
+            get_y1(y1, solver->vpml.size, y1);
+            std::fill_n(Y.data(), NN, dcomplex(0.));
+            for (int i = 0; i < N; i++) Y(i,i) = - y1[i] * y2[i];
 
             // First layer
-            H = solver->vpml.shift;
+            double H = solver->vpml.shift;
             gamma = diagonalizer->Gamma(solver->stack[start]);
-            y1 = get_y1(gamma, H);
-            y2 = get_y2(gamma, H);
-            for (int i = 0; i < N; i++) temp(i,i) = y1[i] - temp(i, i); // off-diagonal elements of temp are 0
+            get_y1(gamma, H, y1);
+            get_y2(gamma, H, y2);
+            for (int i = 0; i < N; i++) Y(i,i) = y1[i] - Y(i,i);        // off-diagonal elements of Y are 0
             std::fill_n(Y.data(), NN, dcomplex(0.));
-            for (int i = 0; i < N; i++) Y(i,i) = y2[i];
-            invmult(temp, Y);                                           // Y = inv(temp) * y2
-            for (int j = 0; j < N; j++)
-                for (int i = 0; i < N; i++) Y(i,j) *= y2[i];            // Y = y2 * Y
-            for (int i = 0; i < N; i++) Y(i,i) -= y1[i];
+            for (int i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / Y(i,i) - y1[i]; // Y = y2 * inv(Y) * y2 - y1
 
             // save the Y matrix for 1-st layer
             storeY(start);
 
-            // Declare temporary matrix on 'work' array
+            // Declare temporary matrixH) on 'work' array
             cmatrix wrk(N, N, work);
 
             for (int n = start+inc; n != end; n += inc)
@@ -119,8 +114,8 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
                 gamma = diagonalizer->Gamma(solver->stack[n]);
 
                 H = solver->vbounds[n] - solver->vbounds[n-1];
-                y1 = get_y1(gamma, H);
-                y2 = get_y2(gamma, H);
+                get_y1(gamma, H, y1);
+                get_y2(gamma, H, y2);
 
                 // The main equation
                 // Y[n] = y2 * tE * inv(y1*tE - tH*Y[n-1]) * y2  -  y1
