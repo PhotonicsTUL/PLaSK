@@ -74,6 +74,7 @@ class LayerSet_Test(unittest.TestCase):
         self.assertEqual( self.solver.interface, 61 )
 
     def testLayers(self):
+        self.solver.interface = 1
         try: self.solver.get_determinant() # only to trigger solver initialization
         except ComputationError: pass
         layers = [ ' '.join(set([ "%s/%s" % (self.mat(2,z), self.mat(7,z)) for z in l ])) for l in self.solver.layer_sets ]

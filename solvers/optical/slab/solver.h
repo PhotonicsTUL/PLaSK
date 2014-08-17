@@ -93,7 +93,7 @@ struct SlabBase {
     SlabBase():
         detlog("", "modal", "unspecified", "det"),
         transfer_method(Transfer::REFLECTION),
-        interface(1),
+        interface(size_t(-1)),
         k0(NAN), klong(0.), ktran(0.),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_coefficients(true) {}
@@ -302,6 +302,8 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
 
     /// Throw exception if the interface position is unsuitable for eigenmode computations
     void ensureInterface() {
+        if (interface == size_t(-1))
+            throw BadInput(this->getId(), "No interface position set");
         if (interface == 0 || interface >= stack.size())
             throw BadInput(this->getId(), "Wrong interface position %1% (min: 1, max: %2%)", interface, stack.size()-1);
     }

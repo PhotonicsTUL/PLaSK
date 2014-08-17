@@ -27,6 +27,7 @@ class Averaging_Test(unittest.TestCase):
         geom = geometry.Cartesian3D(align, back='periodic', front='periodic', left='periodic', right='periodic')
         self.solver = Fourier3D()
         self.solver.geometry = geom
+        self.solver.interface = 1
         self.solver.wavelength = 1000.
         self.solver.smooth = 0.
         self.solver.size = 11, 11        # number of material coefficients in each direction 4*11+1 = 45
@@ -96,7 +97,7 @@ class Solver_Test(unittest.TestCase):
         geom = geometry.Cartesian3D(background, back='periodic', front='periodic', left='periodic', right='periodic')
         self.solver = Fourier3D()
         self.solver.geometry = geom
-
+        self.solver.interface = 1
 
     def testWrappers(self):
         self.solver.size = 2, 3

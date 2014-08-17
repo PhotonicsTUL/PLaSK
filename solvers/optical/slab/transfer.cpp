@@ -29,7 +29,6 @@ Transfer::Transfer(SlabBase* solver, Expansion& expansion):
 Transfer::~Transfer()
 {
     int N0 = diagonalizer->source()->matrixSize();
-    int N = diagonalizer->matrixSize();
     aligned_delete_array<dcomplex>(N0, evals); evals = nullptr;
     aligned_delete_array<double>(2*N0, rwork); rwork = nullptr;
     aligned_delete_array<dcomplex>(lwork, work); work = nullptr;

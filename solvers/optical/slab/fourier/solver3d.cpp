@@ -112,13 +112,12 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
 }
 
 
-
 void FourierSolver3D::onInitialize()
 {
-    Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
-                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     this->setupLayers();
     this->ensureInterface();
+    Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver (%1% layers in the stack, interface after %2% layer%3%)",
+                               this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     expansion.init();
     initTransfer(expansion);
     this->recompute_coefficients = true;
