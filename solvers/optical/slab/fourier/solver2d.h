@@ -25,7 +25,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         dcomplex ktran;                                     ///< Stored mode transverse wavevector
         double power;                                       ///< Mode power [mW]
 
-        Mode(FourierSolver2D* solver): solver(solver), power(1.) {}
+        Mode(FourierSolver2D* solver): solver(solver), power(1e-9) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
@@ -244,6 +244,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                                                    Transfer::IncidentDirection incident,
                                                    shared_ptr<const MeshD<2>> dst_mesh,
                                                    InterpolationMethod method) {
+        if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
         return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -259,6 +260,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                                                    Transfer::IncidentDirection incident,
                                                    shared_ptr<const MeshD<2>> dst_mesh,
                                                    InterpolationMethod method) {
+        if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
         return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
     }
@@ -274,6 +276,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                                                   Transfer::IncidentDirection incident,
                                                   shared_ptr<const MeshD<2>> dst_mesh,
                                                   InterpolationMethod method) {
+        if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
         initCalculation();
         return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
     }

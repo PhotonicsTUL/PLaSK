@@ -288,9 +288,8 @@ py::object FourierSolver2D_Mode__getattr__(const FourierSolver2D::Mode& mode, co
 
 template <typename Mode>
 dcomplex getModeWavelength(const Mode& mode) {
-    return 2e3 / mode.k0;
+    return 2e3 * M_PI / mode.k0;
 }
-
 
 py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, const std::string name) {
     auto axes = getCurrentAxes();
@@ -300,6 +299,94 @@ py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, co
     return py::object();
 }
 
+
+std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
+    AxisNames* axes = getCurrentAxes();
+    std::string pol;
+    switch (self.polarization) {
+        case Expansion::E_TRAN: pol = "E" + axes->getNameForTran(); break;
+        case Expansion::E_LONG: pol = "E" + axes->getNameForLong(); break;
+        default: pol = "none";
+    }
+    std::string sym;
+    switch (self.symmetry) {
+        case Expansion::E_TRAN: sym = "E" + axes->getNameForTran(); break;
+        case Expansion::E_LONG: sym = "E" + axes->getNameForLong(); break;
+        default: sym = "none";
+    }
+    dcomplex neff = self.beta / self.k0;
+    return format("<lam = %.2f nm, neff = %.2f%+.2g, ktran = %s / um, polarization = %s, symmetry = %s, power = %.1g mW>",
+                  real(2e3*M_PI / self.k0),
+                  real(neff),imag(neff),
+                  (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
+                  pol,
+                  sym,
+                  self.power
+                 );
+}
+std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
+    AxisNames* axes = getCurrentAxes();
+    std::string pol;
+    switch (self.polarization) {
+        case Expansion::E_TRAN: pol = "'E" + axes->getNameForTran() + "'"; break;
+        case Expansion::E_LONG: pol = "'E" + axes->getNameForLong() + "'"; break;
+        default: pol = "None";
+    }
+    std::string sym;
+    switch (self.symmetry) {
+        case Expansion::E_TRAN: sym = "'E" + axes->getNameForTran() + "'"; break;
+        case Expansion::E_LONG: sym = "'E" + axes->getNameForLong() + "'"; break;
+        default: sym = "None";
+    }
+    dcomplex neff = self.beta / self.k0;
+    return format("<lam = %.2f nm, neff = %.2f%+.2g, ktran = %s / um, polarization = %s, symmetry = %s, power = %.1g mW>",
+                  real(2e3*M_PI / self.k0),
+                  real(neff),imag(neff),
+                  (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
+                  pol,
+                  sym,
+                  self.power
+                 );
+    return format("Fourier2D.Mode(lam=%1%, neff=%2%, ktran=%3%, polarization=%4%, symmetry=%5%, power=%6%)",
+                  str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
+}
+
+
+std::string FourierSolver3D_Mode_symmetry(const FourierSolver3D::Mode& self) {
+    AxisNames* axes = getCurrentAxes();
+    std::string syml, symt;
+    switch (self.symmetry_long) {
+        case Expansion::E_TRAN: syml = "E" + axes->getNameForTran(); break;
+        case Expansion::E_LONG: syml = "E" + axes->getNameForLong(); break;
+        default: syml = "none";
+    }
+    switch (self.symmetry_tran) {
+        case Expansion::E_TRAN: symt = "E" + axes->getNameForTran(); break;
+        case Expansion::E_LONG: symt = "E" + axes->getNameForLong(); break;
+        default: symt = "none";
+    }
+    return syml + "," + symt;
+}
+
+std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
+    dcomplex lam = 2e3*M_PI / self.k0;
+    return format("<lam = (%.2f%+.2g)j nm, klong = %s / um, ktran = %s / um, symmetry = (%s), power = %.1g mW>",
+                  real(lam), imag(lam),
+                  (imag(self.klong) == 0.)? format("%.3g",real(self.klong)) : format("%.3g%+.3g",real(self.klong),imag(self.klong)),
+                  (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
+                  FourierSolver3D_Mode_symmetry(self),
+                  self.power
+                 );
+}
+std::string FourierSolver3D_Mode_repr(const FourierSolver3D::Mode& self) {
+    return format("Fourier3D.Mode(lam=%1%, klong=%2%, ktran=%3%, symmetry=(%4%), power=%5%)",
+                  str(2e3*M_PI / self.k0),
+                  str(self.klong),
+                  str(self.ktran),
+                  FourierSolver3D_Mode_symmetry(self),
+                  self.power
+                 );
+}
 
 
 template <typename T>
@@ -715,6 +802,8 @@ BOOST_PYTHON_MODULE(slab)
             .add_property("neff", &FourierSolver2D_Mode_Neff, "Mode longitudinal effective index [-].")
             .def_readonly("ktran", &FourierSolver2D::Mode::ktran, "Mode transverse wavevector [1/µm].")
             .def_readwrite("power", &FourierSolver2D::Mode::power, "Total power emitted into the mode.")
+            .def("__str__", &FourierSolver2D_Mode_str)
+            .def("__repr__", &FourierSolver2D_Mode_repr)
             .def("__getattr__", &FourierSolver2D_Mode__getattr__)
         ;
 
@@ -803,7 +892,8 @@ BOOST_PYTHON_MODULE(slab)
 //                    "    lam (float or array of floats): Incident light wavelength.\n"
 //                    "    polarization: Specification of the incident light polarization.\n"
 //                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-//                    "        of the non-vanishing electric field component.\n"
+
+        //                    "        of the non-vanishing electric field component.\n"
 //                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                    "        present.\n"
 //                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
@@ -824,13 +914,15 @@ BOOST_PYTHON_MODULE(slab)
 
         register_vector_of<FourierSolver3D::Mode>("Modes");
         py::class_<FourierSolver3D::Mode>("Mode", "Detailed information about the mode.", py::no_init)
-//TODO             .def_readonly("symmetry", &FourierSolver3D::Mode::symmetry, "Mode horizontal symmetry.")
+            .add_property("symmetry", &FourierSolver3D_Mode_symmetry, "Mode horizontal symmetry.")
             .add_property("lam", &getModeWavelength<FourierSolver3D::Mode>, "Mode wavelength [nm].")
             .add_property("wavelength", &getModeWavelength<FourierSolver3D::Mode>, "Mode wavelength [nm].")
             .def_readonly("k0", &FourierSolver3D::Mode::k0, "Mode normalized frequency [1/µm].")
             .def_readonly("klong", &FourierSolver3D::Mode::klong, "Mode longitudinal wavevector [1/µm].")
             .def_readonly("ktran", &FourierSolver3D::Mode::ktran, "Mode transverse wavevector [1/µm].")
             .def_readwrite("power", &FourierSolver3D::Mode::power, "Total power emitted into the mode.")
+            .def("__str__", &FourierSolver3D_Mode_str)
+            .def("__repr__", &FourierSolver3D_Mode_repr)
             .def("__getattr__", &FourierSolver3D_Mode__getattr__)
         ;
 

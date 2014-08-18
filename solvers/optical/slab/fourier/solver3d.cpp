@@ -83,6 +83,18 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 throw XMLUnexpectedAttrException(reader, "path");
             }
             reader.requireTagEnd();
+        } else if (param == "vpml") {
+            vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
+            vpml.size = reader.getAttribute<double>("size", vpml.size);
+            vpml.shift = reader.getAttribute<double>("shift", vpml.shift);
+            vpml.order = reader.getAttribute<double>("order", vpml.order);
+            reader.requireTagEnd();
+        } else if (param == "transfer") {
+            transfer_method = reader.enumAttribute<Transfer::Method>("method")
+                .value("reflection", Transfer::REFLECTION)
+                .value("reflection", Transfer::ADMITTANCE)
+                .get(transfer_method);
+            reader.requireTagEnd();
         } else if (param == "pmls") {
             pml_long = pml_tran = readPML(reader);
             while (reader.requireTagOrEnd()) {

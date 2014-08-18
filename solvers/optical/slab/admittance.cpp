@@ -174,10 +174,107 @@ void AdmittanceTransfer::determineFields()
 
     int NN = N*N;
 
-    cdiagonal gamma;
+    // Assign all the required space
+    cdiagonal gamma, y1(N), y2(N);
 
-    // [...]
-    throw NotImplemented("AdmittanceTransfer::determineFields");
+    // Assign the space for the field vectors
+    fields.resize(count);
+
+    // Temporary vector for storing fields in the real domain
+    cvector tv(N0);
+
+    // Obtain the physical fields at the last layer
+    auto E = getInterfaceVector();
+
+    // Declare temporary matrix on 'work' array
+    cmatrix wrk(N, N, work);
+
+    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)
+    {
+        // each pass for below and above the interface
+
+        int start, end, inc;
+        switch (pass)
+        {
+            case 0: start = solver->interface-1; end = -1;    inc =  1; break;
+            case 1: start = solver->interface;   end = count; inc = -1; break;
+        }
+
+        // Ed[start] = invTE[start] E
+        fields[start].Ed = cvector(N);
+        mult_matrix_by_vector(diagonalizer->invTE(solver->stack[start]), E, fields[start].Ed);
+
+        for (int n = start; n != end; n -= inc)
+        {
+
+            int curr = solver->stack[n];
+
+            double H = (n == 0 || n == count-1)? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
+            gamma = diagonalizer->Gamma(curr);
+            get_y1(gamma, H, y1);
+            get_y2(gamma, H, y2);
+
+            // wrk = Y[n] + y1
+            cmatrix Y = getY(n);
+            for (int i = 0; i < NN; i++) wrk[i] = Y[i];
+            for (int i = 0; i < N; i++) wrk (i,i) += y1[i];
+
+            // E0[n] = wrk * Ed[n]
+            fields[n].E0 = cvector(N);
+            mult_matrix_by_vector(wrk, fields[n].Ed, fields[n].E0);
+
+            // E0[n] = - inv(y2) * E0[0]
+            for (int i = 0; i < N; i++) {
+                if (abs(y2[i]) < SMALL)         // Actually we cannot really compute E0 in this case.
+                    fields[n].E0[i] = 0.;       // So let's cheat a little, as the field cannot
+                else                            // increase to the boundaries.
+                    fields[n].E0[i] /= - y2[i];
+            }
+
+            if (n != end+inc)
+            {
+                int prev = solver->stack[n-inc];
+
+                // Ed[n-inc] = invTE[n-inc] * TE[n] * E0[n]
+                fields[n-inc].Ed = cvector(N);
+                mult_matrix_by_vector(diagonalizer->TE(curr), fields[n].E0, tv);
+                mult_matrix_by_vector(diagonalizer->invTE(prev), tv, fields[n-inc].Ed);
+            }
+            else
+            {
+                fields[n].H0 = cvector(N);
+                for (int i = 0; i < N; i++)
+                    //fields[end+inc].H0[i] = y2[i] * fields[end+inc].Ed[i];
+                    fields[end+inc].H0[i] = double(inc) *
+                                                 (y1[i] * fields[end+inc].E0[i] + y2[i] * fields[end+inc].Ed[i]);
+            }
+
+            // Now compute the magnetic fields
+
+            // Hd[n] = Y[n] * Ed[n]
+            fields[n].Hd = cvector(N);
+            mult_matrix_by_vector(Y, fields[n].Ed, fields[n].Hd);
+
+            if (n != start)
+            {
+                int next = solver->stack[n+inc];
+
+                // H0[n+inc] = invTH[n+inc] * TH[n] * Hd[n]
+                fields[n+inc].H0 = cvector(N);
+                mult_matrix_by_vector(diagonalizer->TH(curr), fields[n].Hd, tv);
+                mult_matrix_by_vector(diagonalizer->invTH(next), tv, fields[n+inc].H0);
+            }
+
+            // The alternative method is to find the H0 from the following equation:
+            // H0 = y1 * E0 + y2 * Ed
+            // for (int i = 0; i < N; i++)
+            //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
+            // However in some cases this can make the magnetic field discontinous
+        }
+    }
+
+    // Now fill the Y matrix with the one from interface(necessary for interfaceField*)
+    memcpy(Y.data(), getY(solver->interface-1).data(), NN*sizeof(dcomplex));
 
     needAllY = false;
     fields_determined = DETERMINED_RESONANT;
@@ -187,13 +284,79 @@ void AdmittanceTransfer::determineFields()
 
 cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
 {
-    throw NotImplemented("AdmittanceTransfer::getFieldVectorE");
+    cvector E0 = fields[n].E0;
+    cvector Ed = fields[n].Ed;
+
+    cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
+    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
+    z = d - z;
+
+    int N = gamma.size();
+    cvector E(N);
+
+    for (int i = 0; i < N; i++) {
+        dcomplex g = gamma[i];
+        //E[i] = (sin(g*(d-z)) * E0[i] + sin(g*z) * Ed[i]) / sin(g*d);
+
+        double a = abs(exp(2.*I*g*d));
+        if (isinf(a) || a < SMALL) {
+            dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
+            dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
+            if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
+            if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
+            dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
+            dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
+            if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
+            if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
+            E[i] = (d0p-d0n) * E0[i] + (ddp-ddn) * Ed[i];
+        } else {
+            E[i] = (sinh(I*g*(d-z)) * E0[i] + sinh(I*g*z) * Ed[i]) / sinh(I*g*d);
+        }
+    }
+
+    cvector result(diagonalizer->source()->matrixSize());
+    // result = diagonalizer->TE(n) * E;
+    mult_matrix_by_vector(diagonalizer->TE(solver->stack[n]), E, result);
+    return result;
 }
 
 
 cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
 {
-    throw NotImplemented("AdmittanceTransfer::getFieldVectorH");
+    cvector H0 = fields[n].H0;
+    cvector Hd = fields[n].Hd;
+
+    cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
+    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];
+    z = d - z;
+
+    int N = gamma.size();
+    cvector H(N);
+
+    for (int i = 0; i < N; i++) {
+        dcomplex g = gamma[i];
+        //H[i] = (sin(g*(d-z)) * H0[i] + sin(g*z) * Hd[i]) / sin(g*d);
+
+        double a = abs(exp(2.*I*g*d));
+        if (isinf(a) || a < SMALL) {
+            dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
+            dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
+            if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
+            if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
+            dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
+            dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
+            if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
+            if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
+            H[i] = (d0p-d0n) * H0[i] + (ddp-ddn) * Hd[i];
+        } else {
+            H[i] = (sinh(I*g*(d-z)) * H0[i] + sinh(I*g*z) * Hd[i]) / sinh(I*g*d);
+        }
+    }
+
+    cvector result(diagonalizer->source()->matrixSize());
+    // result = diagonalizer->TH(n) * H;
+    mult_matrix_by_vector(diagonalizer->TH(solver->stack[n]), H, result);
+    return result;
 }
 
 }}} // namespace plask::solvers::slab

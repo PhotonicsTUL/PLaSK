@@ -87,10 +87,10 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     void getMatrices(size_t l, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH) override;
 
-//     void prepareField() override;
-//
-//     void cleanupField() override;
-//
+    void prepareField() override;
+
+    void cleanupField() override;
+
     DataVector<const Vec<3,dcomplex>> getField(size_t l,
                                                const shared_ptr<const typename LevelsAdapter::Level>& level,
                                                const cvector& E, const cvector& H) override;
@@ -99,10 +99,10 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp) override;
 
-//   private:
-//
-//     DataVector<Vec<3,dcomplex>> field;
-//     FFT::Backward1D fft_x, fft_yz;
+  private:
+
+    DataVector<Vec<3,dcomplex>> field;
+    FFT::Backward2D fft_x, fft_yz;
 
   protected:
 

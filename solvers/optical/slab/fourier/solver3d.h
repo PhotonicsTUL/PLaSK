@@ -33,7 +33,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
         double power;                                           ///< Mode power [mW]
 
-        Mode(FourierSolver3D* solver): solver(solver), power(1.) {}
+        Mode(FourierSolver3D* solver): solver(solver), power(1e-9) {}
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)

@@ -519,22 +519,32 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 }
 
 
-// void ExpansionPW3D::prepareField()
-// {
-//     field.reset(N + (symmetric? 0 : 1));
-//     Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
-//     fft_x = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_ODD, 3);
-//     fft_yz = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_ODD : FFT::SYMMETRY_EVEN, 3);
-// }
+void ExpansionPW3D::prepareField()
+{
+//     size_t NN;
+//     Component syml, symt;
+//     if (symmetric_long) {
+//         NN = Nl;
+//         field.reset(N);
+//         Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
+//         fft_x = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_ODD, 3);
+//         fft_yz = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_ODD : FFT::SYMMETRY_EVEN, 3);
+//     } else {
+//         field.reset(N + 1);
+//         fft_x = FFT::Backward1D(3, N, FFT::SYMMETRY_NONE);
+//     }
+//     field.reset(NN);
 //
-// void ExpansionPW3D::cleanupField()
-// {
+}
+
+void ExpansionPW3D::cleanupField()
+{
 //     field.reset();
 //     fft_x = FFT::Backward1D();
 //     fft_yz = FFT::Backward1D();
-// }
-//
-// // TODO fields must be carefully verified
+}
+
+// TODO fields must be carefully verified
 
 DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shared_ptr<const typename LevelsAdapter::Level> &level, const cvector& E, const cvector& H)
 {
