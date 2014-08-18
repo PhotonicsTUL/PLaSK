@@ -315,7 +315,7 @@ std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
         default: sym = "none";
     }
     dcomplex neff = self.beta / self.k0;
-    return format("<lam = %.2f nm, neff = %.2f%+.2g, ktran = %s / um, polarization = %s, symmetry = %s, power = %.1g mW>",
+    return format("<lam: %.2fnm, neff: %.3f%+.3g, ktran: %s/um, polarization: %s, symmetry: %s, power: %.2g mW>",
                   real(2e3*M_PI / self.k0),
                   real(neff),imag(neff),
                   (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
@@ -338,15 +338,6 @@ std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) {
         case Expansion::E_LONG: sym = "'E" + axes->getNameForLong() + "'"; break;
         default: sym = "None";
     }
-    dcomplex neff = self.beta / self.k0;
-    return format("<lam = %.2f nm, neff = %.2f%+.2g, ktran = %s / um, polarization = %s, symmetry = %s, power = %.1g mW>",
-                  real(2e3*M_PI / self.k0),
-                  real(neff),imag(neff),
-                  (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),
-                  pol,
-                  sym,
-                  self.power
-                 );
     return format("Fourier2D.Mode(lam=%1%, neff=%2%, ktran=%3%, polarization=%4%, symmetry=%5%, power=%6%)",
                   str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
 }
@@ -370,7 +361,7 @@ std::string FourierSolver3D_Mode_symmetry(const FourierSolver3D::Mode& self) {
 
 std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
     dcomplex lam = 2e3*M_PI / self.k0;
-    return format("<lam = (%.2f%+.2g)j nm, klong = %s / um, ktran = %s / um, symmetry = (%s), power = %.1g mW>",
+    return format("<lam: (%.3f%+.3gj)nm, klong: %s/um, ktran: %s/um, symmetry: (%s), power: %.2gmW>",
                   real(lam), imag(lam),
                   (imag(self.klong) == 0.)? format("%.3g",real(self.klong)) : format("%.3g%+.3g",real(self.klong),imag(self.klong)),
                   (imag(self.ktran) == 0.)? format("%.3g",real(self.ktran)) : format("%.3g%+.3g",real(self.ktran),imag(self.ktran)),

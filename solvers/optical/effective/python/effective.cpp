@@ -148,7 +148,7 @@ std::string EffectiveIndex2DSolver_Mode_str(const EffectiveIndex2DSolver::Mode& 
         case EffectiveIndex2DSolver::SYMMETRY_NEGATIVE: sym = "negative"; break;
         default: sym = "none";
     }
-    return format("<neff = %.2f%+.2gj, symmetry = %s, power = %.1g mW>", real(self.neff), imag(self.neff), sym, self.power);
+    return format("<neff: %.3f%+.3gj, symmetry: %s, power: %.2gmW>", real(self.neff), imag(self.neff), sym, self.power);
 }
 std::string EffectiveIndex2DSolver_Mode_repr(const EffectiveIndex2DSolver::Mode& self) {
     std::string sym;
@@ -204,7 +204,7 @@ void EffectiveFrequencyCylSolver_setStripeR(EffectiveFrequencyCylSolver& self, p
 }
 
 std::string EffectiveFrequencyCylSolver_Mode_str(const EffectiveFrequencyCylSolver::Mode& self) {
-    return format("<m = %d, lam = (%.2f%+.2gj) nm, power = %.1g mW>", self.m, real(self.lam), imag(self.lam), self.power);
+    return format("<m: %d, lam: (%.3f%+.3gj)nm, power: %.2gmW>", self.m, real(self.lam), imag(self.lam), self.power);
 }
 std::string EffectiveFrequencyCylSolver_Mode_repr(const EffectiveFrequencyCylSolver::Mode& self) {
     return format("EffectiveFrequencyCyl.Mode(m=%1%, lam=%2%, power=%3%)", self.m, str(self.lam), self.power);

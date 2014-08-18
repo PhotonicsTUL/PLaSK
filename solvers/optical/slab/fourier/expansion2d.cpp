@@ -471,24 +471,25 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
         } else {
             for (int i = symmetric? 0 : -order; i <= order; ++i) {
                 if (iE(i) != 0 || !dt) field[iE(i)-dt].tran() = E[iEx(i)];
-                if (iE(i) != 0 || !dl) field[iE(i)-dl].lon() = - E[iEz(i)];
-
-                field[iE(i)-dl].vert() = - iepsyy(l, i) * beta * H[iHx(i)];
-                if (symmetric) {
-                    if (sym == E_LONG) {
-                        for (int j = -order; j <= order; ++j)
-                            field[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(abs(j))];
+                if (iE(i) != 0 || !dl) {
+                    field[iE(i)-dl].lon() = - E[iEz(i)];
+                    field[iE(i)-dl].vert() = - iepsyy(l, i) * beta * H[iHx(i)];
+                    if (symmetric) {
+                        if (sym == E_LONG) {
+                            for (int j = -order; j <= order; ++j)
+                                field[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(abs(j))];
+                        } else {
+                            for (int j = 0; j <= order; ++j)
+                                field[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(j)];
+                            for (int j = -order; j < 0; ++j)
+                                field[iE(i)-dl].vert() -= iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(-j)];
+                        }
                     } else {
-                        for (int j = 0; j <= order; ++j)
-                            field[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(j)];
-                        for (int j = -order; j < 0; ++j)
-                            field[iE(i)-dl].vert() -= iepsyy(l, abs(i-j)) * b*double(j) * H[iHz(-j)];
+                        for (int j = -order; j <= order; ++j)
+                            field[iE(i)-dl].vert() += iepsyy(l, i-j) * (b*double(j)-kx) * H[iHz(j)];
                     }
-                } else {
-                    for (int j = -order; j <= order; ++j)
-                        field[iE(i)-dl].vert() += iepsyy(l, i-j) * (b*double(j)-kx) * H[iHz(j)];
+                    field[iE(i)-dl].vert() /= field_params.k0;
                 }
-                field[iE(i)-dl].vert() /= field_params.k0;
             }
         }
     } else { // field_params.which == FieldParams::H

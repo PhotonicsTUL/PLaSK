@@ -168,6 +168,8 @@ void AdmittanceTransfer::determineFields()
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
 
+    needAllY = true;
+
     int N = diagonalizer->matrixSize();
     int N0 = diagonalizer->source()->matrixSize();
     size_t count = solver->stack.size();
