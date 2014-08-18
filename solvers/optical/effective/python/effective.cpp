@@ -275,7 +275,7 @@ BOOST_PYTHON_MODULE(effective)
                "Args:\n"
                "    num (int): number of the mode.\n\n"
                "Returns:\n"
-               "    Total absorbed energy\n",
+               "    Total absorbed energy [mW].\n",
                py::arg("num")=0);
         RW_PROPERTY(vat, getStripeX, setStripeX, "Horizontal position of the main stripe (with dominant mode).");
         RW_FIELD(vneff, "Effective index in the vertical direction.");
@@ -403,14 +403,14 @@ BOOST_PYTHON_MODULE(effective)
                "Args:\n"
                "    num (int): number of the mode.\n\n"
                "Returns:\n"
-               "    Total absorbed energy\n",
+               "    Total absorbed energy [mW].\n",
                py::arg("num")=0);
         solver.def("get_gain_integral", (double (EffectiveFrequencyCylSolver::*)(size_t))&EffectiveFrequencyCylSolver::getGainIntegral,
                "Get total energy generated in the gain region to a mode in unit time.\n\n"
                "Args:\n"
                "    num (int): number of the mode.\n\n"
                "Returns:\n"
-               "    Total absorbed energy\n",
+               "    Total generated energy [mW].\n",
                py::arg("num")=0);
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");

@@ -22,7 +22,7 @@ class Shockley2D_Test(unittest.TestCase):
 
     def setUp(self):
         rect = geometry.Rectangle(1000., 300., Conductor())
-        junc = geometry.Rectangle(1000., 0.02, 'air')
+        junc = geometry.Rectangle(1000., 0.02, 'GaAs')
         junc.role = 'active'
         stack = geometry.Stack2D()
         stack.append(rect)
@@ -44,9 +44,11 @@ class Shockley2D_Test(unittest.TestCase):
         self.solver.compute()
         correct_current = 1e-3 * self.solver.js * (exp(self.solver.beta) - 1)
         self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
-        capacitance = eps0 * 1000.**2 / 0.02 # pF
-        self.assertAlmostEqual( self.solver.get_capacitance(), capacitance, 4 )
-        
+        capacitance = eps0 * material.GaAs().eps() * 1000.**2 / 0.02 # pF
+        self.assertAlmostEqual( self.solver.get_capacitance(), capacitance, 2 )
+        heat = correct_current * 1.
+        self.assertAlmostEqual( self.solver.get_total_heat(), heat, 3 )
+
 
     def testConductivity(self):
         msh = self.solver.mesh.get_midpoints()
@@ -60,7 +62,7 @@ class ShockleyCyl_Test(unittest.TestCase):
 
     def setUp(self):
         rect = geometry.Rectangle(1000., 300., Conductor())
-        junc = geometry.Rectangle(1000., 0.02, None)
+        junc = geometry.Rectangle(1000., 0.02, "GaAs")
         junc.role = 'active'
         stack = geometry.Stack2D()
         stack.append(rect)
@@ -82,8 +84,10 @@ class ShockleyCyl_Test(unittest.TestCase):
         self.solver.compute(1000)
         correct_current = 1e-3 * pi * self.solver.js * (exp(self.solver.beta) - 1)
         self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
-        capacitance = eps0 * pi*1000.**2 / 0.02 # pF
-        self.assertAlmostEqual( self.solver.get_capacitance(), capacitance, 4 )
+        capacitance = eps0 * material.GaAs().eps() * pi*1000.**2 / 0.02 # pF
+        self.assertAlmostEqual( self.solver.get_capacitance(), capacitance, 2 )
+        heat = correct_current * 1.
+        self.assertAlmostEqual( self.solver.get_total_heat(), heat, 3 )
 
     def testConductivity(self):
         msh = self.solver.mesh.get_midpoints()

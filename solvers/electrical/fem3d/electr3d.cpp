@@ -734,4 +734,17 @@ double FiniteElementMethodElectrical3DSolver::getCapacitance() {
     return 2e12 * getTotalEnergy() / (U*U); // 1e12 F -> pF
 }
 
+
+double FiniteElementMethodElectrical3DSolver::getTotalHeat() {
+    double W = 0.;
+    if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
+    for (auto el: this->mesh->elements) {
+        double d0 = el.getUpper0() - el.getLower0();
+        double d1 = el.getUpper1() - el.getLower1();
+        double d2 = el.getUpper2() - el.getLower2();
+        W += 1e-15 * d0 * d1 * d2 * heat[el.getIndex()]; // 1e-15 µm³ -> m³, W -> mW
+    }
+    return W;
+}
+
 }}} // namespace plask::solvers::electrical

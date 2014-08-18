@@ -112,6 +112,11 @@ inline static void register_electrical_solver(const char* name, const char* geon
            "    obtain the stored energy :math:`W` and compute the capacitance as:\n"
            "    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
     );
+    METHOD(get_total_heat, getTotalHeat,
+           "Get the total heat produced by the current flowing in the structure.\n\n"
+           "Return:\n"
+           "    Total produced heat [mW].\n"
+    );
 }
 
 /**

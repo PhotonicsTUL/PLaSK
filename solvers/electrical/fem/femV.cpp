@@ -758,6 +758,32 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getCapacitance() {
 }
 
 
+template <>
+double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalHeat() {
+    double W = 0.;
+    if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
+    for (auto e: this->mesh->elements) {
+        double width = e.getUpper0() - e.getLower0();
+        double height = e.getUpper1() - e.getLower1();
+        W += width * height * heats[e.getIndex()];
+    }
+    return geometry->getExtrusion()->getLength() * 1e-15 * W; // 1e-15 µm³ -> m³, W -> mW
+}
+
+template <>
+double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalHeat() {
+    double W = 0.;
+    if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
+    for (auto e: this->mesh->elements) {
+        double width = e.getUpper0() - e.getLower0();
+        double height = e.getUpper1() - e.getLower1();
+        double r = e.getMidpoint().rad_r();
+        W += width * height * r * heats[e.getIndex()];
+    }
+    return 2e-15*M_PI * W; // 1e-15 µm³ -> m³, W -> mW
+}
+
+
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Shockley2D"; }
 template<> std::string FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ShockleyCyl"; }
 
