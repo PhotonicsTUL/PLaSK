@@ -315,8 +315,8 @@ void EffectiveFrequencyCylSolver::updateCache()
                 } else { // we ignore the material absorption as it should be considered in the gain already
                     need_gain = true;
                     if (!have_gain) {
-                        gain1 = inGain(midmesh, lam1).claim();
-                        gain2 = inGain(midmesh, lam2).claim();
+                        gain1 = inGain(midmesh, lam1);
+                        gain2 = inGain(midmesh, lam2);
                         have_gain = true;
                     }
                     double g = 0.5 * (gain1[idx] + gain2[idx]);

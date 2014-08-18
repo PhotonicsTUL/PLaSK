@@ -373,7 +373,7 @@ void EffectiveIndex2DSolver::updateCache()
                     need_gain = true;
                     if (!have_gain) {
                         gain = inGain(midmesh, w);
-                        have_gain = false;
+                        have_gain = true;
                     }
                     double g = gain[idx];
                     nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
