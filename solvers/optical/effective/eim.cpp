@@ -397,12 +397,12 @@ void EffectiveIndex2DSolver::stageOne()
         if (stripe < xbegin) stripe = xbegin;
         else if (stripe >= xend) stripe = xend-1;
         writelog(LOG_DETAIL, "Computing effective index for vertical stripe %1% (polarization %2%)", stripe-xbegin, (polarization==TE)?"TE":"TM");
-// #ifndef NDEBUG
-//         {
-//             std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[stripe][j]);
-//             writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
-//         }
-// #endif
+#ifndef NDEBUG
+        {
+            std::stringstream nrs; for (ptrdiff_t j = yend-1; j >= ptrdiff_t(ybegin); --j) nrs << ", " << str(nrCache[stripe][j]);
+            writelog(LOG_DEBUG, "Nr[%1%] = [%2% ]", stripe-xbegin, nrs.str().substr(1));
+        }
+#endif
         Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
         RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
         if (vneff == 0.) {

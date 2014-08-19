@@ -172,7 +172,7 @@ def _get_component(comp, total):
                 values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])
                 comp = max(values.index(comp), 3)
             except ValueError:
-                comp = max(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
+                comp = min(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
         else:
             if comp in ('long', 'tran', 'vert'):
                 comp = comp[0]
