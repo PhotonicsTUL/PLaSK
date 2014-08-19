@@ -220,7 +220,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     else:
         raise NotImplementedError("Mesh type not supported")
 
-    if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
+    if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap is a cmap instance, not a string
         kwargs = kwargs.copy()
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
