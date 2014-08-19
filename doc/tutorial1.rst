@@ -358,18 +358,13 @@ Now, we can obtain the current density from the receiver of solver ``electr``::
 
     current = electr.outCurrentDensity(junction_mesh)
 
-Now current can be considered as a one-dimesional array. However, it contains all the components of the current density vector, while we want to plot only the vertical component, which is perpendicular to the junction. So we may use Python so called list comprehension construct to transform one list into another::
-
-    curry = [ abs(j.y) for j in current ]
-
-The above line means: make list consisting of absolute values of ``j.y``, where ``j`` becomes consequently each element of the array current and store the resulting list in variable curry. Now, we can make a new figure and plot current density versus *x*-axis::
+We can plot it to the new figure using :func:`plot_profile <plask.pylab.plot_profile>` function::
 
     figure()
-    plot(junction_mesh.axis0, curry)
-    xlabel(u"$x$ [\xb5m]")
+    plot_profile(-current, comp='y')
     ylabel("current density [kA/cm$^2$]")
 
-junction.axis0 gives the list of points in the horizontal axis of the two-dimensional mesh i.e. axis *x*. The last two lines add labels to the plot axes (see, you can use both basic LaTeX and Unicode codes for special characters: ``\xb5`` means ‘µ’).
+Note that we had to specify the vector component to plot, using the ``comp`` argument. Also we negate the current, as normally it flows downwards, which would result in the upside-down plot. It is important to note that :func:`plot_profile <plask.pylab.plot_profile>` function works only if the field has been obtained on a rectangular mesh with exactly one axis having different size than 1 (otherwise it would be unable to detect along which axis to plot the profile). It automatically puts this axis name as the horizontal label. So we need only to specify the ``ylabel``. (you can use basic LaTeX for advanced text formatting).
 
 Ensure that the commands to create the last figure are before ``show()``. Save your file (for your reference :ref:`the whole script is shown in listing <lis-Listing-of-tutorial1-script>`) and run it wih PLaSK. You should see three figures now. Zoom them to your liking and save the images, successfully finishing this tutorial.
 
@@ -399,10 +394,9 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
         pos = GEO["main"].get_object_positions(GEO["junction"])[0]
         junction_mesh = mesh.Rectangular2D(linspace(-150., 150., 1000), [pos.y])
         current = electr.outCurrentDensity(junction_mesh)
-        curry = [ abs(j.y) for j in current ]
+
         figure()
-        plot(junction_mesh.axis0, curry)
-        xlabel(u"$x$ [\xb5m]")
+        plot_profile(-current, comp='y')
         ylabel("current density [kA/cm$^2$]")
 
         show()

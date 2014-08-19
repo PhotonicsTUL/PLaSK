@@ -70,11 +70,9 @@ plot_mesh(electr.mesh)
 pos = GEO["main"].get_object_positions(GEO["junction"])[0]
 junction_mesh = mesh.Rectangular2D(linspace(-150., 150., 1000), [pos.y])
 current = electr.outCurrentDensity(junction_mesh)
-curry = [ abs(j.y) for j in current ]
 
 figure()
-plot(junction_mesh.axis0, curry)
-xlabel(u"$x$ [\xb5m]")
+plot_profile(-current, comp='y')
 ylabel("current density [kA/cm$^2$]")
 
 show()

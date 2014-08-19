@@ -337,6 +337,11 @@ static DataVectorWrap<T,dim> DataVectorWrap__div__(const DataVectorWrap<T,dim>& 
 //     vec /= a;
 // }
 
+// template <typename T, int dim>
+// static DataVectorWrap<T,dim> DataVectorWrap__abs__(const DataVectorWrap<T,dim>& vec) {
+//     return DataVectorWrap<T,dim>(abs(vec), vec.mesh);
+// }
+
 template <typename T, int dim>
 static bool DataVectorWrap__eq__(const DataVectorWrap<T,dim>& vec1, const DataVectorWrap<T,dim>& vec2) {
     if (vec1.mesh != vec2.mesh) return false;
@@ -389,6 +394,8 @@ void register_data_vector() {
         .def("__rmul__", &DataVectorWrap__mul__<const T,dim>)
         .def("__div__", &DataVectorWrap__div__<const T,dim>)
         .def("__truediv__", &DataVectorWrap__div__<const T,dim>)
+        .def("__neg__", &DataVectorWrap__neg__<const T,dim>)
+        // .def("__abs__", &DataVectorWrap__abs__<const T,dim>)
         // .def("__iadd__", &DataVectorWrap__iadd__<const T,dim>)
         // .def("__isub__", &DataVectorWrap__isub__<const T,dim>)
         // .def("__imul__", &DataVectorWrap__imul__<const T,dim>)

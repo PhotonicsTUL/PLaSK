@@ -9,10 +9,6 @@ Additional functions defined here are:
 
 TODO
 
-
-Below there follows the documentation of Matplotlib pylab:
-
-----------------------------------------------------------------------
 '''
 
 import matplotlib
@@ -168,14 +164,34 @@ def _get_2d_axes(plane):
     return axes
 
 
-def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, factor=1.0, **kwargs):
+def _get_component(comp, total):
+    if type(comp) == str:
+        if total == 4: # tensor
+            try:
+                a = plask.config.axes
+                values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])
+                comp = max(values.index(comp), 3)
+            except ValueError:
+                comp = max(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
+        else:
+            if comp in ('long', 'tran', 'vert'):
+                comp = comp[0]
+            try:
+                if plask.config.axes == 'long,tran,vert':
+                    raise ValueError
+                comp = plask.config.axes.index(comp)
+            except ValueError:
+                comp = 'ltv'.index(comp)
+    if total == 2:
+        comp = max(comp-1, 0)
+    return comp
+
+
+def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=None, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
 
     data = field.array
-
-    if type(comp) == str:
-        comp = plask.config.axes.index(comp)
 
     if isinstance(field.mesh, plask.mesh.Rectangular2D):
         ax = 0, 1
@@ -183,8 +199,9 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         yaxis = field.mesh.axis1
         if len(data.shape) == 3:
             if comp is None:
-                raise TypeError("specify vector component to plot")
+                raise TypeError("Specify vector component to plot")
             else:
+                comp = _get_component(comp, data.shape[2])
                 data = data[:,:,comp]
         data = data.transpose()
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
@@ -192,22 +209,23 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:
             if comp is None:
-                raise TypeError("specify vector component to plot")
+                raise TypeError("Specify vector component to plot")
             else:
+                comp = _get_component(comp, data.shape[3])
                 data = data[:,:,:,comp]
         if ax[0] < ax[1]:
             data = data.reshape((len(xaxis), len(yaxis))).transpose()
         else:
             data = data.reshape((len(yaxis), len(xaxis)))
     else:
-        raise NotImplementedError("mesh type not supported")
+        raise NotImplementedError("Mesh type not supported")
 
     if 'cmap' in kwargs and type(kwargs['cmap']) == str: # contourf requires that cmap were cmap instance, not a string
         kwargs = kwargs.copy()
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
 
     if fill:
-        result = contourf(xaxis, yaxis, data*factor, levels, antialiased=antialiased, **kwargs)
+        result = contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
             result = contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)
@@ -221,6 +239,53 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
 
     return result
+
+
+def plot_profile(field, comp=None, **kwargs):
+    '''Plot scalar real fields as two-dimensional color map'''
+    #TODO documentation
+
+    data = field.array
+
+    if isinstance(field.mesh, plask.mesh.Rectangular2D):
+        if len(field.mesh.axis0) != 1 and len(field.mesh.axis1) == 1:
+            ax = 1
+            axis = field.mesh.axis0
+        elif len(field.mesh.axis0) == 1 and len(field.mesh.axis1) != 1:
+            ax = 2
+            axis = field.mesh.axis1
+        else:
+            raise ValueError("Exactly one mesh dimension must be different than 1")
+        if len(data.shape) == 3:
+            if comp is None:
+                raise TypeError("Specify vector component to plot")
+            else:
+                comp = _get_component(comp, data.shape[2])
+                data = data[:,:,comp]
+    elif isinstance(field.mesh, plask.mesh.Rectangular3D):
+        if len(field.mesh.axis0) != 1 and len(field.mesh.axis1) == 1 and len(field.mesh.axis2) == 1:
+            ax = 0
+            axis = field.mesh.axis0
+        elif len(field.mesh.axis0) == 1 and len(field.mesh.axis1) != 1 and len(field.mesh.axis2) == 1:
+            ax = 1
+            axis = field.mesh.axis1
+        elif len(field.mesh.axis0) == 1 and len(field.mesh.axis1) == 1 and len(field.mesh.axis2) != 1:
+            ax = 2
+            axis = field.mesh.axis2
+        else:
+            raise ValueError("Exactly one mesh dimension must be different than 1")
+        if len(data.shape) == 4:
+            if comp is None:
+                raise TypeError("Specify vector component to plot")
+            else:
+                comp = _get_component(comp, data.shape[3])
+                data = data[:,:,:,comp]
+    else:
+        raise NotImplementedError("Mesh type not supported")
+
+    xlabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+
+    return plot(axis, data.ravel(), **kwargs)
 
 
 def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
