@@ -36,7 +36,7 @@ class MultiEditorController(object):
         """
             Try to change current controller.
             :param int new_index: index of new current controller
-            :return: true only when controller was changed (bool)
+            :return: true only when controller has been changed (bool)
         """
         if self.get_current_index() == new_index: return False
         if not exception_to_msg(lambda: self.currect_controller.on_edit_exit(),

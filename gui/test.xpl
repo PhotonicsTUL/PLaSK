@@ -56,7 +56,7 @@
     <prediv by0="10" by1="1"/>
   </generator>
   <mesh name="aa" type="rectangular2d">
-    <axis0></axis0>
+    <axis0 start="1">1 2 3</axis0>
     <axis1></axis1>
   </mesh>
 </grids>

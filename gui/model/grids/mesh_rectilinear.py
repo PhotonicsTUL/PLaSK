@@ -12,7 +12,7 @@ class AxisConf(object):
         self.stop = stop
         self.num = num
         self.points = points
-        self.type = type
+        self.type = None if type == '' else type
 
     def fill_XMLElement(self, axisElement):
         for attr in ['start', 'stop', 'num', 'type']:
@@ -27,12 +27,12 @@ class AxisConf(object):
         #if self.points: axisElement.attrib['points'] = self.points
 
     def set_from_XML(self, axis_element):
-        if axis_element is None or len(axis_element) == 0: return
+        if axis_element is None: return
         with AttributeReader(axis_element) as a:
             for attr in ['start', 'stop', 'num', 'type']:
                 setattr(self, attr, a.get(attr, None))
         self.points = axis_element.text
-        #self.points = [float(x) for x in axis_element.text.split(',')]
+        #self.points = [float(x) for x in axis_element.text.split(',')] #can have {...}
 
 
 #RectangularMesh1D(Grid)
@@ -62,7 +62,7 @@ class RectangularMesh(Grid):
         res = super(RectangularMesh, self).get_XML_element()
         for i in range(0, self.dim):
             self.axis[i].fill_XMLElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
-        return res;
+        return res
 
     def set_XML_element(self, element):
         for i in range(0, self.dim):

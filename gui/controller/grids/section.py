@@ -66,6 +66,18 @@ class GridsController(Controller):
     def get_editor(self):
         return self.splitter
 
+    def save_data_in_model(self):
+        if self.current_controller is not None:
+            self.current_controller.save_data_in_model()
+
+    def on_edit_enter(self):
+        if self.current_controller is not None:
+            self.current_controller.on_edit_enter()
+
+    def on_edit_exit(self):
+        if self.current_controller is not None:
+            self.current_controller.on_edit_exit()
+
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
     #    if not self.model.isReadOnly():

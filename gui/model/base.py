@@ -1,6 +1,4 @@
 # coding: utf8
-from astroid.rebuilder import _lineno_parent
-
 import os
 from lxml import etree as ElementTree
 

@@ -23,26 +23,25 @@ class AttributeReader(object):
     def __init__(self, element):
         super(AttributeReader, self).__init__()
         self.element = element
-        self.attrib = element.attrib
         self.read = set()
         
     def get(self, key, default=None):
         self.read.add(key)
-        return self.attrib.get(key, default)
+        return self.element.attrib.get(key, default)
     
     def __len__(self):
-        return len(self.attrib)
+        return len(self.element.attrib)
         
     def __getitem__(self, key):
         self.read.add(key)
-        return self.attrib[key]
+        return self.element.attrib[key]
     
     def mark_read(self, *keys):
         for k in keys: self.read.add(k)
         
     def require_all_read(self):
         """Raise ValueError if not all attributes have been read from XML tag."""
-        not_read = set(self.attrib.keys) - self.read
+        not_read = set(self.element.attrib.keys()) - self.read
         if not_read:
             raise ValueError("XML tag <%s> has unexpected attributes: %s", (self.element.tag, ", ".join(not_read)))
 
