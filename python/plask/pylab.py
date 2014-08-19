@@ -170,7 +170,7 @@ def _get_component(comp, total):
             try:
                 a = plask.config.axes
                 values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])
-                comp = max(values.index(comp), 3)
+                comp = min(values.index(comp), 3)
             except ValueError:
                 comp = min(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
         else:
