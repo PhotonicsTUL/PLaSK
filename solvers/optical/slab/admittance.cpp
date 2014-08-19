@@ -12,7 +12,7 @@ namespace plask { namespace solvers { namespace slab {
 
 AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
-    writelog(LOG_DETAIL, "Initializing ADMITTANCE transfer");
+    writelog(LOG_DETAIL, "Initializing admittance transfer");
     // Reserve space for matrix multiplications...
     int N = diagonalizer->matrixSize();
     Y = cmatrix(N,N);
@@ -164,6 +164,8 @@ void AdmittanceTransfer::storeY(size_t n)
 
 void AdmittanceTransfer::determineFields()
 {
+    //FIXME vertical fields are niehalo
+
     if (fields_determined == DETERMINED_RESONANT) return;
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
@@ -208,7 +210,6 @@ void AdmittanceTransfer::determineFields()
 
         for (int n = start; n != end; n -= inc)
         {
-
             int curr = solver->stack[n];
 
             double H = (n == 0 || n == count-1)? solver->vpml.shift : solver->vbounds[n] - solver->vbounds[n-1];

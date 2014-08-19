@@ -653,14 +653,14 @@ inline void export_base(Class solver) {
                         "   ~optical.slab.PML.size\n\n"
                         "Attribute ``shape`` is ignored for vertical PML (it is always 0).\n"
                        );
-    solver.add_property("transfer", &Solver::getTransferMethod, &Solver::setTransferMethod,
-                        "Preferred transfer method.\n\n"
-                        "Can take on of the following values:\n\n"
-                        "============ ==========================\n"
-                        "*reflection* Reflection Transfer Method\n"
-                        "*`admittance* Admittance Transfer Method\n"
-                        "============ ==========================\n"
-                       );
+    //solver.add_property("transfer", &Solver::getTransferMethod, &Solver::setTransferMethod,
+    //                    "Preferred transfer method.\n\n"
+    //                    "Can take on of the following values:\n\n"
+    //                    "============ ==========================\n"
+    //                    "*reflection* Reflection Transfer Method\n"
+    //                    "*`admittance* Admittance Transfer Method\n"
+    //                    "============ ==========================\n"
+    //                   );
 }
 
 BOOST_PYTHON_MODULE(slab)

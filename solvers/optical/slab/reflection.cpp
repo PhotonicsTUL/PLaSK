@@ -12,7 +12,7 @@ namespace plask { namespace solvers { namespace slab {
 
 ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
-    writelog(LOG_DETAIL, "Initializing REFLECTION transfer");
+    writelog(LOG_DETAIL, "Initializing reflection transfer");
     int N = diagonalizer->matrixSize();
     P = cmatrix(N,N);
     phas = cdiagonal(N);

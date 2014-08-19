@@ -453,12 +453,10 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                         if (symmetric) {
                             if (symmetry == E_TRAN) { // symmetry == H_LONG
                                 for (int j = -order; j <= order; ++j)
-                                    field[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iH(abs(j))];
+                                    field[iE(i)-dl].vert() += iepsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
                             } else { // symmetry == H_TRAN
-                                for (int j = 0; j <= order; ++j)
-                                    field[iE(i)-dl].vert() += iepsyy(l, abs(i-j)) * b*double(j) * H[iH(j)];
-                                for (int j = -order; j < 0; ++j)
-                                    field[iE(i)-dl].vert() -= iepsyy(l, abs(i-j)) * b*double(j) * H[iH(-j)];
+                                for (int j = 1; j <= order; ++j)
+                                    field[iE(i)-dl].vert() += (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
@@ -478,11 +476,11 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                         if (symmetry == E_TRAN) { // symmetry = H_LONG
                             field[iE(i)-dl].vert() = 0.; // Hx[0] == 0
                             for (int j = 1; j <= order; ++j)
-                                field[iE(i)-dl].vert() -= (iepsyy(l, abs(i-j)) - iepsyy(l, abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                                field[iE(i)-dl].vert() -= (iepsyy(l,abs(i-j)) - iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                         } else { // symmetry = H_TRAN
-                            field[iE(i)-dl].vert() = - iepsyy(l, abs(i)) * beta * H[iHx(0)];
+                            field[iE(i)-dl].vert() = - iepsyy(l,abs(i)) * beta * H[iHx(0)];
                             for (int j = 1; j <= order; ++j)
-                                field[iE(i)-dl].vert() -= (iepsyy(l, abs(i-j)) + iepsyy(l, abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                                field[iE(i)-dl].vert() -= (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                         }
                     } else {
                         field[iE(i)-dl].vert() = 0.;
@@ -494,62 +492,61 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             }
         }
     } else { // field_params.which == FieldParams::H
-//         if (separated) {
-//             if (polarization == E_TRAN) {  // polarization == H_LONG
-//                 for (int i = symmetric? 0 : -order; i <= order; ++i) {
-//                     field[iH(i)].tran() = field[iH(i)].vert() = 0.;
-//                     if (iH(i) != 0 || !dt) field[iH(i)- dt].lon() = H[iH(i)];
-//                 }
-//             } else {  // polarization == H_TRAN
-//                 for (int i = symmetric? 0 : -order; i <= order; ++i) {
-//                     field[iH(i)].lon() = 0.;
-//                     if (iH(i) != 0 || !dl) {
-//                         field[iH(i)-dl].tran() = H[iH(i)];
-//                         field[iH(i)-dl].vert() = 0.; // beta is equal to 0
-//                         if (symmetric) {
-//                             if (symmetry == E_LONG) {
-//                                 for (int j = -order; j <= order; ++j)
-//                                     field[iH(i)-dl].vert() -= imuyy(l, abs(i-j)) * b*double(j) * E[iE(abs(j))];
-//                             } else { // symmetry == E_TRAN
-//                                 for (int j = 0; j <= order; ++j)
-//                                     field[iH(i)-dl].vert() -= imuyy(l, abs(i-j)) * b*double(j) * E[iE(j)];
-//                                 for (int j = -order; j < 0; ++j)
-//                                     field[iH(i)-dl].vert() -= imuyy(l, abs(i-j)) * b*double(j) * E[iE(-j)];
-//                             }
-//                         } else {
-//                             for (int j = -order; j <= order; ++j)
-//                                 field[iH(i)-dl].vert() -= imuyy(l, i-j) * (b*double(j)-kx) * E[iH(j)];
-//                         }
-//                         field[iE(i)-dl].vert() /= field_params.k0;
-//                     }
-//                 }
-//             }
-//         } else {
-//             for (int i = symmetric? 0 : -order; i <= order; ++i) {
-//                 if (iH(i) != 0 || !dt)
-//                     field[iH(i)-dt].tran() = H[iHx(i)];
-//                 if (iH(i) != 0 || !dl) {
-//                     field[iH(i)-dl].lon() = H[iHz(i)];
-//                     field[iH(i)-dl].vert() = - imuyy(l, i) * beta * H[iEx(i)];
-//                     if (symmetric) {
-//                         if (sym == E_LONG) {
-//                             for (int j = -order; j <= order; ++j)
-//                                 field[iE(i)-dl].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(abs(j))];
-//                         } else {
-//                             for (int j = 0; j <= order; ++j)
-//                                 field[iE(i)-dl].vert() += imuyy(l, abs(i-j)) * b*double(j) * H[iEz(j)];
-//                             for (int j = -order; j < 0; ++j)
-//                                 field[iE(i)-dl].vert() -= imuyy(l, abs(i-j)) * b*double(j) * H[iEz(-j)];
-//                         }
-//                     } else {
-//                         for (int j = -order; j <= order; ++j)
-//                             field[iE(i)-dl].vert() += imuyy(l, i-j) * (b*double(j)-kx) * H[iEz(j)];
-//                     }
-//                     field[iH(i)].vert() /= field_params.k0;
-//                 }
-//             }
-//         }
-    }
+        if (separated) {
+            if (polarization == E_TRAN) {  // polarization == H_LONG
+                for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                    field[iH(i)].tran() = field[iH(i)].vert() = 0.;
+                    if (iH(i) != 0 || !dt) field[iH(i)- dt].lon() = H[iH(i)];
+                }
+            } else {  // polarization == H_TRAN
+                for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                    field[iH(i)].lon() = 0.;
+                    if (iH(i) != 0 || !dl) {
+                        field[iH(i)-dl].tran() = H[iH(i)];
+                        field[iH(i)-dl].vert() = 0.; // beta is equal to 0
+                        if (symmetric) {
+                            if (symmetry == E_LONG) {
+                                for (int j = -order; j <= order; ++j)
+                                    field[iH(i)-dl].vert() -= imuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
+                            } else { // symmetry == E_TRAN
+                                for (int j = 1; j <= order; ++j)
+                                    field[iH(i)-dl].vert() -= (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
+                            }
+                        } else {
+                            for (int j = -order; j <= order; ++j)
+                                field[iH(i)-dl].vert() -= imuyy(l, i-j) * (b*double(j)-kx) * E[iE(j)];
+                        }
+                        field[iH(i)-dl].vert() /= field_params.k0;
+                    }
+                }
+            }
+        } else {
+            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                if (iH(i) != 0 || !dt)
+                    field[iH(i)-dt].tran() = H[iHx(i)];
+                if (iH(i) != 0 || !dl) {
+                    field[iH(i)-dl].lon() = H[iHz(i)];
+                    field[iH(i)-dl].vert() = 0.;
+                    if (symmetric) {
+                        if (symmetry == E_LONG) {
+                            field[iE(i)-dl].vert() = 0.; // Ex[0] = 0
+                            for (int j = 1; j <= order; ++j)
+                                field[iE(i)-dl].vert() += (imuyy(l,abs(i-j)) - imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                        } else { // symmetry == E_TRAN
+                            field[iE(i)-dl].vert() = imuyy(l,abs(i)) * beta * E[iEx(0)];
+                            for (int j = 1; j <= order; ++j)
+                                field[iE(i)-dl].vert() += (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                        }
+                    } else {
+                        field[iH(i)-dl].vert() = 0.;
+                        for (int j = -order; j <= order; ++j)
+                            field[iE(i)-dl].vert() += imuyy(l, i-j) * (beta * E[iEx(j)] - (b*double(j)-kx) * E[iEz(j)]);
+                    }
+                    field[iH(i)].vert() /= field_params.k0;
+                }
+            }
+        }
+   }
 
     if (dt) { field[field.size()-1].tran() = 0.; }
     if (dl) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }

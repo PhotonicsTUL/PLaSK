@@ -47,12 +47,12 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.shift = reader.getAttribute<double>("shift", vpml.shift);
             vpml.order = reader.getAttribute<double>("order", vpml.order);
             reader.requireTagEnd();
-        } else if (param == "transfer") {
-            transfer_method = reader.enumAttribute<Transfer::Method>("method")
-                .value("reflection", Transfer::REFLECTION)
-                .value("reflection", Transfer::ADMITTANCE)
-                .get(transfer_method);
-            reader.requireTagEnd();
+        //} else if (param == "transfer") {
+        //    transfer_method = reader.enumAttribute<Transfer::Method>("method")
+        //        .value("reflection", Transfer::REFLECTION)
+        //        .value("reflection", Transfer::ADMITTANCE)
+        //        .get(transfer_method);
+        //    reader.requireTagEnd();
         } else if (param == "pml") {
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
