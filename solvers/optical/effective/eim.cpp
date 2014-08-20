@@ -10,6 +10,7 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     log_value(dataLog<dcomplex, dcomplex>("Neff", "Neff", "det")),
     stripex(0.),
     polarization(TE),
+    recompute_neffs(true),
     emission(FRONT),
     vneff(0.),
     outdist(0.1),
@@ -280,12 +281,13 @@ void EffectiveIndex2DSolver::onInvalidate()
     modes.clear();
     outNeff.fireChanged();
     outLightMagnitude.fireChanged();
+    recompute_neffs = true;
 }
 
 /********* Here are the computations *********/
 
 
-bool EffectiveIndex2DSolver::updateCache()
+void EffectiveIndex2DSolver::updateCache()
 {
     bool fresh = !initCalculation();
 
@@ -347,15 +349,16 @@ bool EffectiveIndex2DSolver::updateCache()
                 }
             }
         }
-        return true;
+        recompute_neffs = true;
     }
-    return false;
 }
 
 
 void EffectiveIndex2DSolver::stageOne()
 {
-    if (updateCache()) {
+    updateCache();
+
+    if (recompute_neffs) {
 
         // Compute effective index of the main stripe
         size_t stripe = mesh->tran()->findIndex(stripex);
@@ -405,6 +408,7 @@ void EffectiveIndex2DSolver::stageOne()
             if (imag(n) > imax) imax = imag(n);
         }
         writelog(LOG_DETAIL, "Effective index should be between %1% and %2%", str(dcomplex(rmin,imin)), str(dcomplex(rmax,imax)));
+        recompute_neffs = false;
     }
 }
 

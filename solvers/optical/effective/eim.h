@@ -95,7 +95,6 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
         }
     };
 
-
   protected:
 
     friend struct RootDigger;
@@ -123,6 +122,8 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
     double stripex;             ///< Position of the main stripe
 
     Polarization polarization;  ///< Chosen light polarization
+
+    bool recompute_neffs;       ///< Should stripe indices be recomputed
 
   public:
 
@@ -344,7 +345,7 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
      * Update refractive index cache
      * \return \c true if the chache has been changed
      */
-    bool updateCache();
+    void updateCache();
 
     /**
      * Fist stage of computations
