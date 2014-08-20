@@ -65,7 +65,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
         QtCore.QAbstractListModel.__init__(self, parent, *args)
         self.__setModel__(model)
 
-    def infoChanged(self, model):
+    def infoChanged(self, model, *args, **kwargs):
         """Read info from model, inform observers."""
         self.layoutAboutToBeChanged.emit()
         self.entries = model.info

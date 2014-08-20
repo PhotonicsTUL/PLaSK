@@ -53,15 +53,16 @@ class TreeFragmentModel(InfoSource):
         self.changed = Signal()
         self.parent = parent
 
-    def fire_changed(self, refresh_info=True):
+    def fire_changed(self, refresh_info=True, *args, **kwargs):
         """
             Inform listeners that this section was changed.
             :param bool refresh_info: only if True, info of this section will be refresh
         """
         if refresh_info: self.markInfoInvalid()
-        self.changed(self)
+        if 'src' not in kwargs: kwargs['src'] = self
+        self.changed(self, *args, **kwargs)
         if refresh_info: self.fireInfoChanged()
-        if self.parent is not None: self.parent.fire_changed(refresh_info)
+        if self.parent is not None: self.parent.fire_changed(refresh_info, *args, **kwargs)
 
     def get_text(self):
         return print_interior(self.get_XML_element())

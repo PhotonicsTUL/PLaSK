@@ -241,7 +241,7 @@ class MaterialPlot(QtGui.QWidget):
 
         self.setLayout(vbox)
 
-    def update_materials(self, *args):
+    def update_materials(self, *args, **kwargs):
         text = self.material.currentText()
         material_list = [e.name for e in self.model.entries]
         sep = len(material_list)

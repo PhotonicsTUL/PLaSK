@@ -35,7 +35,7 @@ class XPLDocument(object):
         #self.tree = ElementTree()
         self.set_changed(False)
 
-    def _on_model_change(self, model):
+    def _on_model_change(self, model, *args, **kwargs):
         """Slot called by model 'changed' signals when user edits any section model"""
         self.set_changed()
 

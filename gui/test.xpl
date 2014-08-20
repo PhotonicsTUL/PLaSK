@@ -32,29 +32,6 @@
 </geometry>
 
 <grids>
-  <generator name="default" type="rectilinear2d" method="divide">
-    <postdiv by0="4" by1="2"/>
-    <refinements>
-      <!--
-      <axis0 object="TJ" at="2.50"/>
-      <axis0 object="TJ" at="2.95"/>
-      <axis0 object="TJ" at="2.99"/>
-      <axis0 object="laser" at="4.00"/>
-      <axis1 object="top-InP" at="0.1508"/>
-      <axis1 object="bot-InP" at="0.0200"/>
-      -->
-    </refinements>
-  </generator>
-  <mesh name="z" type="rectangular2d">
-    <axis0></axis0>
-    <axis1></axis1>
-  </mesh>
-  <mesh name="diffusion" type="regular1d">
-    <axis start="0" stop="1" num="2000"/>
-  </mesh>
-  <generator name="optical" type="rectilinear2d" method="divide">
-    <prediv by0="10" by1="1"/>
-  </generator>
   <mesh name="aa" type="rectangular2d">
     <axis0 start="1">1 2 3</axis0>
     <axis1></axis1>

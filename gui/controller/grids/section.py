@@ -71,8 +71,9 @@ class GridsController(Controller):
             self.current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        if self.current_controller is not None:
-            self.current_controller.on_edit_enter()
+        #if self.current_controller is not None:
+        #    self.current_controller.on_edit_enter()
+        self.grids_table.selectionModel().clear()   #model could completly changed
 
     def on_edit_exit(self):
         if self.current_controller is not None:

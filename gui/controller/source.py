@@ -28,7 +28,7 @@ class SourceEditController(Controller):
     def get_editor(self):
         return self.get_source_editor()
 
-    def refresh_editor(self, *ignore):
+    def refresh_editor(self, *args, **kwargs):
         if self.visible:
             self.get_source_editor().setPlainText(self.model.get_text())
             self.fresh = True
