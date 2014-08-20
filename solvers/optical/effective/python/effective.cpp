@@ -14,7 +14,12 @@ using namespace plask::solvers::effective;
 #define ROOTDIGGER_ATTRS_DOC \
     ".. rubric:: Attributes\n\n" \
     ".. autosummary::\n\n" \
+    "   ~optical.effective.RootParams.alpha\n" \
+    "   ~optical.effective.RootParams.lambda\n" \
+    "   ~optical.effective.RootParams.initial_range\n" \
     "   ~optical.effective.RootParams.maxiter\n" \
+    "   ~optical.effective.RootParams.maxstep\n" \
+    "   ~optical.effective.RootParams.method\n" \
     "   ~optical.effective.RootParams.tolf_max\n" \
     "   ~optical.effective.RootParams.tolf_min\n" \
     "   ~optical.effective.RootParams.tolx\n"
@@ -127,14 +132,8 @@ void EffectiveIndex2DSolver_setMirrors(EffectiveIndex2DSolver& self, py::object 
     }
 }
 
-size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, py::object neff, py::object symmetry) {
-    py::extract<dcomplex> neff_as_complex(neff);
-    if (neff_as_complex.check())
-        return self.findMode(neff_as_complex, parseSymmetry(symmetry));
-    else {
-        if (py::len(neff) != 2) throw TypeError("'neff' must be either complex or sequence of two complex");
-        return self.findMode(py::extract<dcomplex>(neff[0]), py::extract<dcomplex>(neff[1]), parseSymmetry(symmetry));
-    }
+static size_t EffectiveIndex2DSolver_findMode(EffectiveIndex2DSolver& self, py::object neff, py::object symmetry) {
+    return self.findMode(py::extract<dcomplex>(neff), parseSymmetry(symmetry));
 }
 
 std::vector<size_t> EffectiveIndex2DSolver_findModes(EffectiveIndex2DSolver& self, dcomplex neff1, dcomplex neff2, py::object symmetry, size_t resteps, size_t imsteps, dcomplex eps) {
@@ -161,14 +160,8 @@ std::string EffectiveIndex2DSolver_Mode_repr(const EffectiveIndex2DSolver::Mode&
 }
 
 
-size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, py::object lam, int m) {
-    py::extract<dcomplex> lam_as_complex(lam);
-    if (lam_as_complex.check())
-        return self.findMode(lam_as_complex, m);
-    else {
-        if (py::len(lam) != 2) throw TypeError("'lam' must be either complex or sequence of two complex");
-        return self.findMode(py::extract<dcomplex>(lam[0]), py::extract<dcomplex>(lam[1]), m);
-    }
+static size_t EffectiveFrequencyCylSolver_findMode(EffectiveFrequencyCylSolver& self, py::object lam, int m) {
+    return self.findMode(py::extract<dcomplex>(lam), m);
 }
 
 double EffectiveFrequencyCylSolver_Mode_ModalLoss(const EffectiveFrequencyCylSolver::Mode& mode) {
@@ -452,18 +445,20 @@ BOOST_PYTHON_MODULE(effective)
         ;
     }
 
-    py::class_<RootMuller::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
-        .def_readwrite("tolx", &RootMuller::Params::tolx, "Absolute tolerance on the argument.")
-        .def_readwrite("tolf_min", &RootMuller::Params::tolf_min, "Sufficient tolerance on the function value.")
-        .def_readwrite("tolf_max", &RootMuller::Params::tolf_max, "Required tolerance on the function value.")
-        .def_readwrite("maxiter", &RootMuller::Params::maxiter, "Maximum number of iterations.")
+    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
+        .def_readwrite("method", &RootDigger::Params::method, "Root finding method ('muller' or 'broyden')")
+        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
+        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
+        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
+        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
+        .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
+        .def_readwrite("lambda", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller method only).")
     ;
 
-    // py::class_<RootBroyden::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
-    //     .def_readwrite("tolx", &RootBroyden::Params::tolx, "Absolute tolerance on the argument.")
-    //     .def_readwrite("tolf_min", &RootBroyden::Params::tolf_min, "Sufficient tolerance on the function value.")
-    //     .def_readwrite("tolf_max", &RootBroyden::Params::tolf_max, "Required tolerance on the function value.")
-    //     .def_readwrite("maxstep", &RootBroyden::Params::maxstep, "Maximum step in one iteration.")
-    //     .def_readwrite("maxiter", &RootBroyden::Params::maxiter, "Maximum number of iterations.")
-    // ;
+    py_enum<RootDigger::Method>()
+        .value("MULLER", RootDigger::ROOT_MULLER)
+        .value("BROYDEN", RootDigger::ROOT_BROYDEN)
+    ;
 }

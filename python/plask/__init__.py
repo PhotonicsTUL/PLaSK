@@ -412,8 +412,8 @@ def Regular2D(axis0, axis1, order='01'):
     """Obsolete, use mesh.Rectangular2D(Regular(axis0), Regular(axis1), order) instead."""
     print_log(LOG_WARNING, "mesh.Regular2D is obsolete, "
                            "use mesh.Rectangular2D(Regular(axis0), Regular(axis1), order) instead")
-    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
-    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
+    if isinstance(axis0, tuple): axis0 = mesh.Regular(*axis0)
+    if isinstance(axis1, tuple): axis1 = mesh.Regular(*axis1)
     return mesh.Rectangular2D(axis0, axis1, order)
 mesh.Regular2D = Regular2D
 del Regular2D
@@ -422,9 +422,9 @@ def Regular3D(axis0, axis1, axis2, order='012'):
     """Obsolete, use mesh.Rectangular3D(Regular(axis0), Regular(axis1), Regular(axis2), order) instead."""
     print_log(LOG_WARNING, "mesh.Regular3D is obsolete, "
                            "use mesh.Rectangular3D(Regular(axis0), Regular(axis1), Regular(axis2), order) instead")
-    if isinstance(axis0, tuple): axis0 = Regular(*axis0)
-    if isinstance(axis1, tuple): axis1 = Regular(*axis1)
-    if isinstance(axis2, tuple): axis2 = Regular(*axis2)
+    if isinstance(axis0, tuple): axis0 = mesh.Regular(*axis0)
+    if isinstance(axis1, tuple): axis1 = mesh.Regular(*axis1)
+    if isinstance(axis2, tuple): axis2 = mesh.Regular(*axis2)
     return mesh.Rectangular3D(axis0, axis1, axis2, order)
 mesh.Regular3D = Regular3D
 del Regular3D

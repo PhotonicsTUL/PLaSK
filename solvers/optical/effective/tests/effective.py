@@ -37,8 +37,10 @@ class EffectiveIndex(unittest.TestCase):
         self.solver.wavelength = 1000.
         self.solver.polarization = "TE"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.1465, 3 )
+        self.solver.root.method = 'muller'
+        self.solver.stripe_root.method = 'muller'
         self.solver.polarization = "TM"
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode([1.10,1.12], '+')].neff, 1.111, 3)
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.11, '+')].neff, 1.111, 3)
 
     def testMesh(self):
         mesh = self.solver.mesh
@@ -75,6 +77,7 @@ class EffectiveIndexLaser(unittest.TestCase):
         except ImportError:
             pass
         else:
+            self.solver.stripe_root.method = 'muller'
             def fun(g):
                 self.profile[self.rect2] = g
                 m = self.solver.find_mode(1.15)

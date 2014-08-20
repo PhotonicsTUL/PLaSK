@@ -5,7 +5,7 @@
 
 #include <plask/plask.hpp>
 
-#include "muller.h"
+#include "rootdigger.h"
 #include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
@@ -98,7 +98,7 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
 
   protected:
 
-    friend struct RootMuller;
+    friend struct RootDigger;
 
     size_t xbegin,  ///< First element of horizontal mesh to consider
            xend,    ///< Last element of horizontal mesh to consider
@@ -120,9 +120,6 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
     /// Computed effective epsilons for each stripe
     std::vector<dcomplex,aligned_allocator<dcomplex>> epsilons;
 
-    /// Should stripe indices be recomputed
-    bool recompute_neffs;
-
     double stripex;             ///< Position of the main stripe
 
     Polarization polarization;  ///< Chosen light polarization
@@ -139,10 +136,10 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
     boost::optional<std::pair<double,double>> mirrors;
 
     /// Parameters for main rootdigger
-    RootMuller::Params root;
+    RootDigger::Params root;
 
     /// Parameters for sripe rootdigger
-    RootMuller::Params stripe_root;
+    RootDigger::Params stripe_root;
 
     /// Computed modes
     std::vector<Mode> modes;
@@ -190,10 +187,7 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
      */
     void setStripeX(double x) {
         stripex = x;
-        recompute_neffs = true;
-        vneff = 0.;
-        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
-        modes.clear();
+        invalidate();
     }
 
     /// \return current polarization
@@ -205,25 +199,19 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
      */
     void setPolarization(Polarization polar) {
         polarization = polar;
-        recompute_neffs = true;
-        vneff = 0.;
-        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
-        modes.clear();
+        invalidate();
     }
 
     /// \return current wavelength
     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
 
     /**
-     * Set new polarization
-     * \param polar new polarization
+     * Set new wavelength
+     * \param wavelength new wavelength
      */
     void setWavelength(dcomplex wavelength) {
         k0 = 2e3*M_PI / wavelength;
-        recompute_neffs = true;
-        vneff = 0.;
-        if (!modes.empty()) writelog(LOG_DETAIL, "Clearing the computed modes");
-        modes.clear();
+        invalidate();
     }
 
     /**
@@ -268,15 +256,6 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
     size_t findMode(dcomplex neff, Symmetry symmetry=SYMMETRY_DEFAULT);
 
     /**
-     * Find the mode between the specified effective indices.
-     * \param neff1 initial effective index to search the mode from
-     * \param neff1 initial effective index to search the mode to
-     * \param symmetry mode symmetry
-     * \return index of found mode
-     */
-    size_t findMode(dcomplex neff1, dcomplex neff2, Symmetry symmetry=SYMMETRY_DEFAULT);
-
-    /**
      * Find the modes within the specified range
      * \param neff1 one corner of the range to browse
      * \param neff2 another corner of the range to browse
@@ -293,8 +272,11 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
      * \param neff effective index to use
      */
     dcomplex getVertDeterminant(dcomplex neff) {
-        initCalculation();
-        return detS1(neff, nrCache[mesh->tran()->findIndex(stripex)]);
+        updateCache();
+        size_t stripe = mesh->tran()->findIndex(stripex);
+        if (stripe < xbegin) stripe = xbegin;
+        else if (stripe >= xend) stripe = xend-1;
+        return detS1(neff, nrCache[stripe]);
     }
 
     /**
@@ -328,7 +310,7 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
 
     /// Slot called when gain has changed
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        recompute_neffs = true;
+        invalidate();
     }
 
     /// Initialize the solver
@@ -360,8 +342,9 @@ struct PLASK_SOLVER_API EffectiveIndex2DSolver: public SolverWithMesh<Geometry2D
 
     /**
      * Update refractive index cache
+     * \return \c true if the chache has been changed
      */
-    void updateCache();
+    bool updateCache();
 
     /**
      * Fist stage of computations

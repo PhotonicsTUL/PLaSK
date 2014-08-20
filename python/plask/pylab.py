@@ -241,7 +241,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
     return result
 
 
-def plot_profile(field, comp=None, **kwargs):
+def plot_profile(field, comp=None, swap_axes=False, **kwargs):
     '''Plot scalar real fields as two-dimensional color map'''
     #TODO documentation
 
@@ -283,9 +283,12 @@ def plot_profile(field, comp=None, **kwargs):
     else:
         raise NotImplementedError("Mesh type not supported")
 
-    xlabel(u"${}$ [µm]".format(plask.config.axes[ax]))
-
-    return plot(axis, data.ravel(), **kwargs)
+    if swap_axes:
+        ylabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+        return plot(data.ravel(), axis, **kwargs)
+    else:
+        xlabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+        return plot(axis, data.ravel(), **kwargs)
 
 
 def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):

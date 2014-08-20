@@ -3,14 +3,11 @@
 
 using plask::dcomplex;
 
-#define DNEFF 1e-9
-
 namespace plask { namespace solvers { namespace effective {
 
 EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>>(name),
     log_value(dataLog<dcomplex, dcomplex>("Neff", "Neff", "det")),
-    recompute_neffs(true),
     stripex(0.),
     polarization(TE),
     emission(FRONT),
@@ -27,10 +24,12 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     root.tolf_min = 1.0e-8;
     root.tolf_max = 1.0e-6;
     root.maxiter = 500;
+    root.method = RootDigger::ROOT_BROYDEN;
     stripe_root.tolx = 1.0e-8;
     stripe_root.tolf_min = 1.0e-8;
     stripe_root.tolf_max = 1.0e-6;
     stripe_root.maxiter = 500;
+    stripe_root.method = RootDigger::ROOT_BROYDEN;
     inTemperature.changedConnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
     inGain.changedConnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
 }
@@ -46,36 +45,14 @@ void EffectiveIndex2DSolver::loadConfiguration(XMLReader& reader, Manager& manag
                 else if (*pol == "TM") polarization = TM;
                 else throw BadInput(getId(), "Wrong polarization specification '%1%' in XML", *pol);
             }
-            // auto sym = reader.getAttribute("symmetry");
-            // if (sym) {
-            //     if (*sym == "0" || *sym == "none" ) {
-            //         symmetry = SYMMETRY_NONE;
-            //     }
-            //     else if (*sym == "positive" || *sym == "pos" || *sym == "symmeric" || *sym == "+" || *sym == "+1") {
-            //         symmetry = SYMMETRY_POSITIVE;
-            //     }
-            //     else if (*sym == "negative" || *sym == "neg" || *sym == "anti-symmeric" || *sym == "antisymmeric" || *sym == "-" || *sym == "-1") {
-            //         symmetry = SYMMETRY_NEGATIVE;
-            //     } else throw BadInput(getId(), "Wrong symmetry specification '%1%' in XML", *sym);
-            // }
             k0 = 2e3*M_PI / reader.getAttribute<double>("wavelength",  real(2e3*M_PI / k0));
             stripex = reader.getAttribute<double>("vat", stripex);
             vneff = reader.getAttribute<dcomplex>("vneff", vneff);
             reader.requireTagEnd();
         } else if (param == "root") {
-            root.tolx = reader.getAttribute<double>("tolx", root.tolx);
-            root.tolf_min = reader.getAttribute<double>("tolf-min", root.tolf_min);
-            root.tolf_max = reader.getAttribute<double>("tolf-max", root.tolf_max);
-            // root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
-            root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
-            reader.requireTagEnd();
+            RootDigger::readRootDiggerConfig(reader, root);
         } else if (param == "stripe-root") {
-            stripe_root.tolx = reader.getAttribute<double>("tolx", stripe_root.tolx);
-            stripe_root.tolf_min = reader.getAttribute<double>("tolf-min", stripe_root.tolf_min);
-            stripe_root.tolf_max = reader.getAttribute<double>("tolf-max", stripe_root.tolf_max);
-            // stripe_root.maxstep = reader.getAttribute<double>("maxstep", stripe_root.maxstep);
-            stripe_root.maxiter = reader.getAttribute<int>("maxiter", stripe_root.maxiter);
-            reader.requireTagEnd();
+            RootDigger::readRootDiggerConfig(reader, stripe_root);
         } else if (param == "mirrors") {
             double R1 = reader.requireAttribute<double>("R1");
             double R2 = reader.requireAttribute<double>("R2");
@@ -178,17 +155,7 @@ size_t EffectiveIndex2DSolver::findMode(dcomplex neff, Symmetry symmetry)
     writelog(LOG_INFO, "Searching for the mode starting from Neff = %1%", str(neff));
     stageOne();
     Mode mode(this, symmetry);
-    mode.neff = RootMuller(*this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)(neff-DNEFF, neff+DNEFF);
-    return insertMode(mode);
-}
-
-
-size_t EffectiveIndex2DSolver::findMode(dcomplex neff1, dcomplex neff2, Symmetry symmetry)
-{
-    writelog(LOG_INFO, "Searching for the mode between Neffs %1% and %2%", str(neff1), str(neff2));
-    stageOne();
-    Mode mode(this, symmetry);
-    mode.neff = RootMuller(*this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)(neff1, neff2);
+    mode.neff = RootDigger::get(this, [this,&mode](const dcomplex& x){return this->detS(x,mode);}, log_value, root)->find(neff);
     return insertMode(mode);
 }
 
@@ -236,12 +203,12 @@ std::vector<size_t> EffectiveIndex2DSolver::findModes(dcomplex neff1, dcomplex n
 
     if (results.size() != 0) {
         Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
-        RootMuller refine(*this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
+        auto refine = RootDigger::get(this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
         std::string msg = "Found modes at: ";
         for (auto zz: results) {
             dcomplex z;
             try {
-                z = refine(zz.first, zz.second);
+                z = refine->find(0.5*(zz.first+zz.second));
             } catch (ComputationError) {
                 continue;
             }
@@ -304,7 +271,6 @@ void EffectiveIndex2DSolver::onInitialize()
     yfields.resize(yend);
 
     need_gain = false;
-    recompute_neffs = true;
 }
 
 
@@ -319,11 +285,11 @@ void EffectiveIndex2DSolver::onInvalidate()
 /********* Here are the computations *********/
 
 
-void EffectiveIndex2DSolver::updateCache()
+bool EffectiveIndex2DSolver::updateCache()
 {
     bool fresh = !initCalculation();
 
-    if (fresh || inTemperature.changed() || (need_gain && inGain.changed()) || recompute_neffs) {
+    if (fresh || inTemperature.changed() || (need_gain && inGain.changed())) {
         // we need to update something
 
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
@@ -381,16 +347,15 @@ void EffectiveIndex2DSolver::updateCache()
                 }
             }
         }
-        recompute_neffs = true;
+        return true;
     }
+    return false;
 }
 
 
 void EffectiveIndex2DSolver::stageOne()
 {
-    updateCache();
-
-    if (recompute_neffs) {
+    if (updateCache()) {
 
         // Compute effective index of the main stripe
         size_t stripe = mesh->tran()->findIndex(stripex);
@@ -404,13 +369,13 @@ void EffectiveIndex2DSolver::stageOne()
         }
 #endif
         Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[%1%]", stripe-xbegin), "neff", "det");
-        RootMuller rootdigger(*this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
+        auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
         if (vneff == 0.) {
             dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
                                               [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
             vneff = 0.999 * real(maxn);
         }
-        vneff = rootdigger(vneff-DNEFF, vneff+DNEFF);
+        vneff = rootdigger->find(vneff);
 
         // Compute field weights
         computeWeights(stripe);
@@ -431,8 +396,6 @@ void EffectiveIndex2DSolver::stageOne()
             writelog(LOG_DEBUG, "horizontal neffs = [%1% ]", nrs.str().substr(1));
         }
 #endif
-        recompute_neffs = false;
-
         double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
         for (size_t i = xbegin; i < xend; ++i) {
             dcomplex n = sqrt(epsilons[i]);
@@ -492,14 +455,14 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         }
     }
 
-    if (save) yfields[yend-1].B = 0.;
-// #ifndef NDEBUG
-//         {
-//             std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i)
-//                 nrs << "), (" << str(yfields[i].F) << ":" << str(yfields[i].B);
-//             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
-//         }
-// #endif
+    if (save) {
+        yfields[yend-1].B = 0.;
+#ifndef NDEBUG
+        std::stringstream nrs; for (size_t i = ybegin; i < yend; ++i)
+            nrs << "), (" << str(yfields[i].F) << ":" << str(yfields[i].B);
+        writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
+#endif
+    }
 
     return s1*s4 - s2*s3;
 }

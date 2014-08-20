@@ -541,6 +541,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
     return result;
 }
 
+static const shared_ptr<OrderedAxis> zero_axis(new OrderedAxis({0.}));
 
 /// Base for lazy data implementation
 template <typename GeometryT>
@@ -583,21 +584,23 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     FermiGainSolver<GeometryT>* solver;                 ///< Solver
     std::vector<shared_ptr<RectangularAxis>> regpoints; ///< Points in each active region
     std::vector<LazyData<double>> data;                 ///< Computed interpolations in each active region
-    shared_ptr<const MeshD<2>> dst_mesh;                ///< Destination mesh
+    shared_ptr<const MeshD<2>> dest_mesh;               ///< Destination mesh
 
     DataBase(FermiGainSolver<GeometryT>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
-        solver(solver), dst_mesh(dst_mesh)
+        solver(solver), dest_mesh(make_shared<WrappedMesh<2>>(dst_mesh, solver->geometry))
     {
         // Create horizontal points lists
         if (solver->mesh) {
             regpoints.assign(solver->regions.size(), solver->mesh);
         } else if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh)) {
             regpoints.reserve(solver->regions.size());
+            WrappedMesh<2> wrapped(make_shared<RectangularMesh<2>>(rect_mesh->axis0, zero_axis), solver->geometry);
             for (size_t r = 0; r != solver->regions.size(); ++r) {
                 std::set<double> pts;
                 auto box = solver->regions[r].getBoundingBox();
                 double y = 0.5 * (box.lower.c1 + box.upper.c1);
-                for (auto x: *rect_mesh->axis0) {
+                for (auto point: wrapped) {
+                    double x = point.c0;
                     if (solver->regions[r].contains(vec(x,y))) pts.insert(x);
                 }
                 auto msh = make_shared<OrderedAxis>();
@@ -608,7 +611,7 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
             regpoints.reserve(solver->regions.size());
             for (size_t r = 0; r != solver->regions.size(); ++r) {
                 std::set<double> pts;
-                for (auto point: *dst_mesh) {
+                for (auto point: *dest_mesh) {
                     if (solver->regions[r].contains(point)) pts.insert(point.c0);
                 }
                 auto msh = make_shared<OrderedAxis>();
@@ -622,7 +625,6 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
     {
         // Compute gains on mesh for each active region
         data.resize(solver->regions.size());
-        shared_ptr<OrderedAxis> zero(new OrderedAxis({0}));
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
         {
             DataVector<double> values(regpoints[reg]->size());
@@ -642,18 +644,18 @@ struct FermiGainSolver<GeometryT>::DataBase: public LazyDataImpl<double>
                 }
             }
             if (error) std::rethrow_exception(error);
-            data[reg] = interpolate(make_shared<RectangularMesh<2>>(regpoints[reg], zero),
-                                    values, dst_mesh, interp);
+            data[reg] = interpolate(make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis),
+                                    values, dest_mesh, interp);
         }
     }
 
     virtual double getValue(double wavelength, double temp, double conc, const ActiveRegionInfo& region) = 0;
 
-    size_t size() const override { return dst_mesh->size(); }
+    size_t size() const override { return dest_mesh->size(); }
 
     double at(size_t i) const override {
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
-            if (solver->regions[reg].inQW(dst_mesh->at(i)))
+            if (solver->regions[reg].inQW(dest_mesh->at(i)))
                 return data[reg][i];
         return 0.;
     }

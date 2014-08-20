@@ -6,7 +6,7 @@
 #include <plask/plask.hpp>
 #include <camos/camos.h>
 
-#include "muller.h"
+#include "rootdigger.h"
 #include "bisection.h"
 
 namespace plask { namespace solvers { namespace effective {
@@ -111,7 +111,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geome
 
   protected:
 
-    friend struct RootMuller;
+    friend struct RootDigger;
 
     /// Logger for char_val
     Data2DLog<dcomplex,dcomplex> log_value;
@@ -198,8 +198,8 @@ struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geome
     double outdist;
 
     // Parameters for rootdigger
-    RootMuller::Params root;        ///< Parameters for horizontal root digger
-    RootMuller::Params stripe_root; ///< Parameters for vertical root diggers
+    RootDigger::Params root;        ///< Parameters for horizontal root digger
+    RootDigger::Params stripe_root; ///< Parameters for vertical root diggers
 
     /// Allowed relative power integral precision
     double perr;
@@ -293,18 +293,6 @@ struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geome
      * \return index of the found mode
      */
     size_t findMode(dcomplex lambda, int m=0);
-
-    /**
-     * Find the mode between the specified effective wavelengths.
-     *
-     * This method remembers the determined mode, for retrieval of the field profiles.
-     *
-     * \param lambda1 first boundary wavelength close to the solution
-     * \param lambda2 second boundary wavelength close to the solution
-     * \param m number of the LP_mn mode describing angular dependence
-     * \return index of the found mode
-     */
-    size_t findMode(dcomplex lambda1, dcomplex lamda2, int m=0);
 
     /**
      * Find the modes within the specified range
