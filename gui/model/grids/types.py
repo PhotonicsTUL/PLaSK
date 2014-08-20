@@ -1,9 +1,9 @@
 from .grid import GridTreeBased
-from .mesh_rectilinear import RectangularMesh
+from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
 
 MESHES_TYPES = {
-    'ordered': GridTreeBased.from_XML,
-    'regular': GridTreeBased.from_XML,
+    'ordered': RectangularMesh1D.from_XML,
+    'regular': RectangularMesh1D.from_XML,
     'rectangular2d': RectangularMesh.from_XML,
     'rectangular3d': RectangularMesh.from_XML,
 }

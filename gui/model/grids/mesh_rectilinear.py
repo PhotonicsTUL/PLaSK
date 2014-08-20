@@ -38,10 +38,39 @@ class AxisConf(object):
 #RectangularMesh1D(Grid)
 #if mesh_type in ('ordered', 'regular'):
 
+class RectangularMesh1D(Grid):
+    """Model of 1D rectangular mesh (ordered or regular)"""
+
+    @staticmethod
+    def from_XML(grids_model, element):
+        e = RectangularMesh1D(grids_model, element.attrib['name'], element.attrib['type'])
+        e.set_XML_element(element)
+        return e
+
+    def __init__(self, grids_model, name, type):
+        super(RectangularMesh1D, self).__init__(grids_model, name, type)
+        self.axis = AxisConf()
+
+    @property
+    def is_regular(self):
+        return self.type == 'regular'
+
+    def get_XML_element(self):
+        res = super(RectangularMesh1D, self).get_XML_element()
+        self.axis.fill_XMLElement(SubElement(res, 'axis'))
+        return res
+
+    def set_XML_element(self, element):
+        self.axis.set_from_XML(element.find('axis'))
+
+    def get_controller(self, document):
+        from ...controller.grids.mesh_rectilinear import RectangularMesh1DConroller
+        return RectangularMesh1DConroller(document=document, model=self)
+
 
 
 class RectangularMesh(Grid):
-    """Model of 2D and 3D rectangularMesh"""
+    """Model of 2D and 3D rectangular mesh"""
 
     @staticmethod
     def from_XML(grids_model, element):

@@ -1,5 +1,6 @@
 from ..base import Controller
 from ...qt import QtGui
+from utils.str import empty_to_none
 
 
 class AxisEdit(QtGui.QGroupBox):
@@ -40,12 +41,12 @@ class AxisEdit(QtGui.QGroupBox):
                 axis_model.type = None
             else:
                 axis_model.type = self.type.currentText()
-        axis_model.start = self.start.text()
-        axis_model.stop = self.stop.text()
-        axis_model.num = self.num.text()
+        axis_model.start = empty_to_none(self.start.text())
+        axis_model.stop = empty_to_none(self.stop.text())
+        axis_model.num = empty_to_none(self.num.text())
         if self.are_points_editable():
             #axis_model.type = self.type.get
-            axis_model.points = self.points.toPlainText()
+            axis_model.points = empty_to_none(self.points.toPlainText())
         else:
             axis_model.points = ''
 
@@ -58,7 +59,26 @@ class AxisEdit(QtGui.QGroupBox):
                 self.type.setEditText(t)
         for attr_name in ['start', 'stop', 'num', 'points']:
             a = getattr(axis_model, attr_name)
-            getattr(self, attr_name).setText('' if a is None else a)
+            widget = getattr(self, attr_name, False)
+            if widget: widget.setText('' if a is None else a)
+
+
+class RectangularMesh1DConroller(Controller):
+    """1D rectangular mesh (ordered or regular) controller"""
+    def __init__(self, document, model):
+        super(RectangularMesh1DConroller, self).__init__(document=document, model=model)
+        self.editor = AxisEdit(None, allow_type_select=False, accept_non_regular=not model.is_regular)
+
+    def save_data_in_model(self):
+        self.editor.to_model(self.model.axis)
+        self.model.fire_changed()
+
+    def on_edit_enter(self):
+        self.editor.from_model(self.model.axis)
+
+    def get_editor(self):
+        return self.editor
+
 
 class RectangularMeshConroller(Controller):
     """2D and 3D rectangular mesh controller"""
