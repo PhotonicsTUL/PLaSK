@@ -2,6 +2,7 @@
 
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/cylinder.h>
+#include <plask/geometry/triangle.h>
 
 namespace plask { namespace python {
 
@@ -51,6 +52,12 @@ static shared_ptr<Cuboid> Cuboid_constructor_dwh(double d, double w, double h, c
 static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, const py::object& material) {
     auto result =  make_shared<Cuboid>(size);
     setLeafMaterial<3>(result, material);
+    return result;
+}
+
+static shared_ptr<Triangle> Triangle_constructor_vec(const Vec<2, double>& p0, const Vec<2,double>& p1, const py::object& material) {
+    auto result = make_shared<Triangle>(p0, p1);
+    setLeafMaterial<2>(result, material);
     return result;
 }
 
@@ -106,7 +113,7 @@ void register_geometry_leafs()
     init_GeometryObjectLeaf<3>();
 
     py::class_<Rectangle, shared_ptr<Rectangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> block2D("Rectangle",
-        "Rectangular block filled with one material (2D geometry object).\n\n"
+        "Rectangular block (2D geometry object).\n\n"
         "Rectangle(width, height, material)\n"
         "Rectangle(dims, material)\n\n"
         "Create a rectangle.\n\n"
@@ -128,7 +135,7 @@ void register_geometry_leafs()
     scope.attr("Block2D") = block2D;
 
     py::class_<Cuboid, shared_ptr<Cuboid>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> block3D("Cuboid",
-        "Cuboidal block filled with one material (3D geometry object).\n\n"
+        "Cuboidal block (3D geometry object).\n\n"
         "Cuboid(depth, width, height, material)\n"
         "Cuboid(dims, material)\n\n"
         "Create a cuboid.\n\n"
@@ -150,6 +157,25 @@ void register_geometry_leafs()
         .def("__setattr__", &Block__setattr__<3>)
     ;
     scope.attr("Block3D") = block3D;
+
+    py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
+        "Triangle (2D geometry object).\n\n"
+        "Triangle(p0, p1, material)\n"
+        "Create a triangle with corners at points p0, p1 and (0, 0).\n\n"
+        "Args:\n"
+        "    p0 (plask.vector): Coordinate of the triangle corner.\n"
+        "    p1 (plask.vector): Coordinate of the triangle corner.\n"
+        "    material (Material): Triangle material.\n",
+        py::no_init
+        ); triangle
+        .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("p0"), py::arg("p1"), py::arg("material"))))
+        /*.add_property("dims", py::make_getter(&Block<2>::size, py::return_value_policy<py::return_by_value>()), (void(Block<2>::*)(const Vec<2>&))&Block<2>::setSize, "Dimensions of the rectangle.")
+        .add_property("width", &Block__getdim<2,0>, &Block__setdim<2,0>, "Width of the rectangle.")
+        .add_property("height", &Block__getdim<2,1>, &Block__setdim<2,1>, "Height of the rectangle.")
+        .def("__getattr__", &Block__getattr__<2>)
+        .def("__setattr__", &Block__setattr__<2>)*/
+    ;
+    scope.attr("Triangle") = triangle;
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
         "Vertical cylinder filled with one material (3D geometry object).\n\n"

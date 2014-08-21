@@ -201,6 +201,7 @@ Good base classes for geometries objects are, for example:
 */
 
 #include "leaf.h"
+#include "triangle.h"
 #include "transform.h"
 #include "container.h"
 #include "translation_container.h"
