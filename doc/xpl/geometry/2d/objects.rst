@@ -15,7 +15,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the block (see also ``material-bottom``).
    :attr required d{X}: where **{X}** is the transverse axis name: Horizontal dimension of the rectangle. (float [µm])
-   :attr required d{Y}: where **{Y}** is the transverse axis name: Vertical dimension of the rectangle. (float [µm])
+   :attr required d{Y}: where **{Y}** is the vertical axis name: Vertical dimension of the rectangle. (float [µm])
    :attr width: Alias for ``d{X}``.
    :attr height: Alias for ``d{Y}``.
 
@@ -24,3 +24,19 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
 .. xml:tag:: <rectangle/>
 
    Alias for :xml:tag:`<block2d/>`.
+
+.. xml:tag:: <triangle/>
+
+   Corresponding Python class: :py:class:`plask.geometry.Triangle`.
+   
+   Triangle with one corner at point (0, 0).
+   
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr role: Object role. Important for some solvers.
+   :attr material: Definition of the block material (for solid blocks).
+   :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the block (see also ``material-bottom``).
+   :attr required {X}0: where **{X}** is the transverse axis name: Coordinate of first triangle corner. (float [µm])
+   :attr required {Y}0: where **{Y}** is the vertical axis name: Coordinate of first triangle corner. (float [µm])
+   :attr required {X}1: where **{X}** is the transverse axis name: Coordinate of second triangle corner. (float [µm])
+   :attr required {Y}1: where **{Y}** is the vertical axis name: Coordinate of second triangle corner. (float [µm])
