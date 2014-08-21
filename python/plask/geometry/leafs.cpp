@@ -93,6 +93,29 @@ static void Block__setattr__(py::object self, const std::string& name, const py:
     self.attr("__class__").attr("__base__").attr("__setattr__")(self, name, value);
 }
 
+static double Triangle__getattr__(const Triangle& self, const std::string& name) {
+    if (name.back() == '0' || name.back() == '1') {
+        size_t axis = current_axes[name.substr(0, name.size()-1)] -1;
+        if (axis < 2) return (name.back() == '0') ? self.p0[axis] : self.p1[axis];
+    }
+    throw AttributeError("'Triangle' object has no attribute '%1%'", name);
+}
+
+static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {
+    const bool zero = (name.back() == '0');
+    if (zero || name.back() == '1') {
+        size_t axis = current_axes[name.substr(0, name.size()-1)] -1;
+        if (axis < 2) {
+            Triangle& t = py::extract<Triangle&>(self);
+            Vec<2, double> v = zero ? t.p0 : t.p1;
+            v[axis] = py::extract<double>(value);
+            if (zero) t.setP0(v); else t.setP1(v);
+            return;
+        }
+    }
+    self.attr("__class__").attr("__base__").attr("__setattr__")(self, name, value);
+}
+
 template <int dim, int axis>
 static double Block__getdim(const Block<dim>& self) {
     return self.size[axis];
@@ -169,11 +192,10 @@ void register_geometry_leafs()
         py::no_init
         ); triangle
         .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("p0"), py::arg("p1"), py::arg("material"))))
-        /*.add_property("dims", py::make_getter(&Block<2>::size, py::return_value_policy<py::return_by_value>()), (void(Block<2>::*)(const Vec<2>&))&Block<2>::setSize, "Dimensions of the rectangle.")
-        .add_property("width", &Block__getdim<2,0>, &Block__setdim<2,0>, "Width of the rectangle.")
-        .add_property("height", &Block__getdim<2,1>, &Block__setdim<2,1>, "Height of the rectangle.")
-        .def("__getattr__", &Block__getattr__<2>)
-        .def("__setattr__", &Block__setattr__<2>)*/
+        .add_property("p0", py::make_getter(&Triangle::p0, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP0, "Coordinates of the first vertex of the triangle.")
+        .add_property("p1", py::make_getter(&Triangle::p1, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP1, "Coordinates of the second vertex of the triangle.")
+        .def("__getattr__", &Triangle__getattr__)
+        .def("__setattr__", &Triangle__setattr__)
     ;
     scope.attr("Triangle") = triangle;
 
