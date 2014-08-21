@@ -90,13 +90,6 @@ shared_ptr<const GeometryObject> GeometryObjectLeaf<dim>::changedVersion(const G
 template struct PLASK_API GeometryObjectLeaf<2>;
 template struct PLASK_API GeometryObjectLeaf<3>;
 
-// Initialization common for all leafs
-template <typename LeafType>
-inline void setupLeaf(GeometryReader& reader, LeafType& leaf) {
-    leaf.readMaterial(reader);
-    reader.source.requireTagEnd();
-}
-
 // Read alternative attributes
 inline static double readAlternativeAttrs(GeometryReader& reader, const std::string& attr1, const std::string& attr2) {
     auto value1 = reader.source.getAttribute<double>(attr1);
@@ -114,7 +107,8 @@ template <typename BlockType>
 inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
     block.size.tran() = readAlternativeAttrs(reader, "d"+reader.getAxisTranName(), "width");
     block.size.vert() = readAlternativeAttrs(reader, "d"+reader.getAxisVertName(), "height");
-    setupLeaf(reader, block);
+    block.readMaterial(reader);
+    reader.source.requireTagEnd();
 }
 
 shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
@@ -133,16 +127,16 @@ shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
 template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     materialProvider->writeXML(dest_xml_object, axes)
-                    .attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForVert(), size.vert());
+                    .attr("d"+axes.getNameForTran(), size.tran())
+                    .attr("d"+axes.getNameForVert(), size.vert());
 }
 
 template <>
 void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     materialProvider->writeXML(dest_xml_object, axes)
-                    .attr(axes.getNameForLong(), size.lon())
-                    .attr(axes.getNameForTran(), size.tran())
-                    .attr(axes.getNameForVert(), size.vert());
+                    .attr("d"+axes.getNameForLong(), size.lon())
+                    .attr("d"+axes.getNameForTran(), size.tran())
+                    .attr("d"+axes.getNameForVert(), size.vert());
 }
 
 template <int dim>

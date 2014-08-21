@@ -219,8 +219,6 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectLeaf<3>)
 Represent figure which, depends from @p dim is:
 - for dim = 2 - rectangle,
 - for dim = 3 - cuboid.
-
-Block is filled with one material.
 @tparam dim number of dimensions
 @ingroup GEOMETRY_OBJ
 */
@@ -237,7 +235,7 @@ struct PLASK_API Block: public GeometryObjectLeaf<dim> {
                 ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D) :
                 ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
 
-    virtual std::string getTypeName() const;
+    virtual std::string getTypeName() const override;
 
     /**
      * Size and upper corner of block. Lower corner is zeroed vector.
