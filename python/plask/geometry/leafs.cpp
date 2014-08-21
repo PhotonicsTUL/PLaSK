@@ -161,10 +161,10 @@ void register_geometry_leafs()
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
         "Triangle (2D geometry object).\n\n"
         "Triangle(p0, p1, material)\n"
-        "Create a triangle with corners at points p0, p1 and (0, 0).\n\n"
+        "Create a triangle with vertexes at points p0, p1 and (0, 0).\n\n"
         "Args:\n"
-        "    p0 (plask.vector): Coordinate of the triangle corner.\n"
-        "    p1 (plask.vector): Coordinate of the triangle corner.\n"
+        "    p0 (plask.vector): Coordinate of the first triangle vertex.\n"
+        "    p1 (plask.vector): Coordinate of the second triangle vertex.\n"
         "    material (Material): Triangle material.\n",
         py::no_init
         ); triangle
