@@ -118,7 +118,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     Expansion::Component getSymmetryLong() const { return expansion.symmetry_long; }
     /// Set new mode symmetry
     void setSymmetryLong(Expansion::Component symmetry) {
-        if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
+        if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
         if (expansion.initialized) {
             if (expansion.symmetric_long && symmetry == Expansion::E_UNSPECIFIED)
@@ -138,7 +138,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     Expansion::Component getSymmetryTran() const { return expansion.symmetry_tran; }
     /// Set new mode symmetry
     void setSymmetryTran(Expansion::Component symmetry) {
-        if (geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
+        if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
         if (expansion.initialized) {
             if (expansion.symmetric_tran && symmetry == Expansion::E_UNSPECIFIED)

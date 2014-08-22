@@ -150,18 +150,18 @@ void ExpansionPW3D::init()
     if (periodic_tran) {
         mag_tran[0].c00 = 1.; mag_tran[0].c11 = 1.; // constant 1
     } else {
-        double pb = back + SOLVER->pml_tran.size, pf = front - SOLVER->pml_tran.size;
+        double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
         if (symmetric_tran) pil = 0;
-        else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pb) - tran_mesh.begin();
-        pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pf) - tran_mesh.begin();
+        else pil = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pl) - tran_mesh.begin();
+        pir = std::lower_bound(tran_mesh.begin(), tran_mesh.end(), pr) - tran_mesh.begin();
         for (size_t i = 0; i != nNt; ++i) {
             for (size_t j = reft*i, end = reft*(i+1); j != end; ++j) {
                 dcomplex s = 1.;
                 if (j < pil) {
-                    double h = (pb - tran_mesh[j]) / SOLVER->pml_tran.size;
+                    double h = (pl - tran_mesh[j]) / SOLVER->pml_tran.size;
                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                 } else if (j > pir) {
-                    double h = (tran_mesh[j] - pf) / SOLVER->pml_tran.size;
+                    double h = (tran_mesh[j] - pr) / SOLVER->pml_tran.size;
                     s = 1. + (SOLVER->pml_tran.factor-1.)*pow(h, SOLVER->pml_tran.order);
                 }
                 mag_tran[i] += Tensor2<dcomplex>(s, 1./s);
