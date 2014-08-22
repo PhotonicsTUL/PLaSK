@@ -539,7 +539,7 @@ void ExpansionPW3D::prepareField()
 
 void ExpansionPW3D::cleanupField()
 {
-//     field.reset();
+    field.reset();
 //     fft_x = FFT::Backward1D();
 //     fft_yz = FFT::Backward1D();
 }
@@ -577,9 +577,9 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
             for (int il = symmetric_long? 0 : -ordl; il <= ordl; ++il) {
                 // How expensive is checking conditions in each loop?
                 // Fuck it, the code is much more clear this way.
-                size_t iex = Nl * (((it<0)?it+Nt:it) - dxt) + ((il<0)?il+Nl:il) - dxl;
-                size_t iey = Nl * (((it<0)?it+Nt:it) - dyt) + ((il<0)?il+Nl:il) - dyl;
-                size_t iez = Nl * (((it<0)?it+Nt:it) - dxt) + ((il<0)?il+Nl:il) - dyl;
+                size_t iex = Nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
+                size_t iey = Nl * (((it<0)?Nt+it:it) - dyt) + ((il<0)?Nl+il:il) - dyl;
+                size_t iez = Nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dyl;
                 if (!(it == 0 && dxt) && !(il == 0 && dxl))
                     field[iex].lon() = E[iEx(il,it)];
                 if (!(it == 0 && dyt) && !(il == 0 && dyl))
@@ -606,7 +606,8 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
 
     if (field_params.method == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
-        double Ll = front - back, Lt = right - left;
+        double Ll = (symmetric_long? 2. : 1.) * (front - back),
+               Lt = (symmetric_tran? 2. : 1.) * (right - left);
         dcomplex bl = 2.*M_PI * I / Ll, bt = 2.*M_PI * I / Lt;
         dcomplex ikx = I * kx, iky = I * ky;
         result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
@@ -615,23 +616,24 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
             size_t iit;
             if (it < 0) {
                 if (symmetric_tran) {
-                    if (symt == E_LONG) fty = -1;
-                    else ftx = -1;
-                    iit = Nl * (Nt - it);
+                    if (symt == E_LONG) fty = -1.;
+                    else ftx = -1.;
+                    iit = Nl * (-it);
                 } else {
-                    iit = Nl * (Nt + it);
+                    iit = Nl * (Nt+it);
                 }
             } else {
                 iit = Nl * it;
             }
+            dcomplex gt = bt*double(it) - iky;
             for (int il = -ordl; il <= ordl; ++il) {
                 double flx = 1., fly = 1.;
                 size_t iil;
                 if (il < 0) {
                     if (symmetric_long) {
-                        if (syml == E_LONG) fly = -1;
-                        else flx = -1;
-                        iil = Nl - il;
+                        if (syml == E_LONG) fly = -1.;
+                        else flx = -1.;
+                        iil = -il;
                     } else {
                         iil = Nl + il;
                     }
@@ -642,16 +644,16 @@ DataVector<const Vec<3, dcomplex> > ExpansionPW3D::getField(size_t l, const shar
                 coeff.c0 *= ftx * flx;
                 coeff.c1 *= fty * fly;
                 coeff.c2 *= ftx * fly;
-                for (size_t p = 0; p != dest_mesh->size(); ++p) {
-                    result[p] += coeff * exp(
-                        (bl*double(il)-ikx) * (dest_mesh->at(p).c0-back) +
-                        (bt*double(it)-iky) * (dest_mesh->at(p).c1-left)
-                    );
+                dcomplex gl = bl*double(il) - ikx;
+                for (size_t ip = 0; ip != dest_mesh->size(); ++ip) {
+                    auto p = dest_mesh->at(ip);
+                    result[ip] += coeff * exp(gl * (p.c0-back) + gt * (p.c1-left));
                 }
             }
         }
         return result;
     } else {
+        throw NotImplemented("ExpansionPW3D::getField for non-Fourier interpolation");
 //        if (symmetric) {
 //            fft_x.execute(&(field.data()->tran()));
 //            fft_yz.execute(&(field.data()->lon()));

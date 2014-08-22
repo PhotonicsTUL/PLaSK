@@ -560,8 +560,9 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
             for (int k = -order; k <= order; ++k) {
                 size_t j = (k>=0)? k : k + N;
+                dcomplex G = B * double(k) - ikx;
                 for (size_t i = 0; i != dest_mesh->size(); ++i) {
-                    result[i] += field[j] * exp((B * double(k) - ikx) * (dest_mesh->at(i)[0]-left));
+                    result[i] += field[j] * exp(G * (dest_mesh->at(i)[0]-left));
                 }
             }
         } else {

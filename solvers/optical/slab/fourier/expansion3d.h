@@ -159,6 +159,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t iEx(int l, int t) {
         if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
         if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        assert(0 <= l && l < Nl);
+        assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l);
     }
 
@@ -166,6 +168,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t iEy(int l, int t) {
         if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
         if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        assert(0 <= l && l < Nl);
+        assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l) + 1;
     }
 
@@ -173,6 +177,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t iHx(int l, int t) {
         if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
         if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        assert(0 <= l && l < Nl);
+        assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l) + 1;
     }
 
@@ -180,6 +186,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t iHy(int l, int t) {
         if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
         if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        assert(0 <= l && l < Nl);
+        assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l);
     }
 };

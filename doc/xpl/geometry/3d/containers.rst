@@ -5,7 +5,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
 .. xml:tag:: <align3d> (or <align>)
 
-   Corresponding Python classes: :py:class:`plask.geometry.AlignContainerLong3D`, :py:class:`plask.geometry.AlignContainerTran3D`, :py:class:`plask.geometry.AlignContainerVert3D`.
+   Corresponding Python classes: :py:class:`plask.geometry.AlignLong3D`, :py:class:`plask.geometry.AlignTran3D`, :py:class:`plask.geometry.AlignVert3D`.
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
@@ -54,7 +54,7 @@ Containers are objects that contain multiple other geometry objects as their ite
 
 .. xml:tag:: <container3d> (or <container>)
 
-   Corresponding Python class: :py:class:`plask.geometry.TranslationContainer3D`.
+   Corresponding Python class: :py:class:`plask.geometry.Container3D`.
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 

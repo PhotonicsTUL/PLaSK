@@ -45,6 +45,10 @@ struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
+    bool isUniform(Primitive<3>::Direction direction) const override {
+        return false;
+    };
+
     DVec p0, p1;
 
     /**

@@ -80,7 +80,7 @@ py::object makeAlignContainer3D(py::tuple args, py::dict kwargs)
     if (!aligner_vert.isNull())
         return py::object(make_shared<AlignContainer<3,VERT>>(aligner_vert));
 
-    throw TypeError("AlignContainer3D() got an unexpected keyword argument '%1%'", std::string(py::extract<std::string>(kwargs.keys()[0])));
+    throw TypeError("Align3D() got an unexpected keyword argument '%1%'", std::string(py::extract<std::string>(kwargs.keys()[0])));
 }
 
 template <int dim, typename Primitive<dim>::Direction direction>
@@ -89,9 +89,9 @@ static void register_geometry_aligncontainer(const std::string& suffix)
     typedef AlignContainer<dim,direction> AlignContainerT;
 
     py::class_<AlignContainerT, shared_ptr<AlignContainerT>, py::bases<GeometryObjectContainer<dim>>, boost::noncopyable>
-        (("AlignContainer"+suffix).c_str(),
+        (("Align"+suffix).c_str(),
         format("Container that aligns its content along axis%1%\n\n"
-        "AlignContainer%2%(**kwargs)\n"
+        "Align%2%(**kwargs)\n"
         "    Create the container, with its alignment specified in kwargs.\n\n"
         "See geometry.AlignContainer3D().\n", current_axes[3-dim+int(direction)], suffix).c_str(),
         py::no_init)
@@ -112,11 +112,11 @@ void register_geometry_aligncontainers()
     register_geometry_aligncontainer<3, Primitive<3>::DIRECTION_TRAN>("Tran3D");
     register_geometry_aligncontainer<3, Primitive<3>::DIRECTION_VERT>("Vert3D");
 
-    py::def("AlignContainer2D", py::raw_function(&makeAlignContainer2D));
-    py::scope().attr("AlignContainer2D").attr("__doc__") = "Create container that aligns its content along one axis (2D version)";
+    py::def("Align2D", py::raw_function(&makeAlignContainer2D));
+    py::scope().attr("Align2D").attr("__doc__") = "Create container that aligns its content along one axis (2D version)";
 
-    py::def("AlignContainer3D", py::raw_function(&makeAlignContainer3D));
-    py::scope().attr("AlignContainer3D").attr("__doc__") = "Create container that aligns its content along one axis (3D version)";
+    py::def("Align3D", py::raw_function(&makeAlignContainer3D));
+    py::scope().attr("Align3D").attr("__doc__") = "Create container that aligns its content along one axis (3D version)";
 }
 
 

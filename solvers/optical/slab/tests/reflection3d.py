@@ -21,7 +21,7 @@ class Averaging_Test(unittest.TestCase):
     def setUp(self):
         background = geometry.Cuboid(1.0, 1.0, 0.2, None)
         obj = geometry.Cuboid(0.5, 0.5, 0.2, Mat())
-        align = geometry.AlignContainerVert3D(bottom=0.)
+        align = geometry.AlignVert3D(bottom=0.)
         align.add(background, back=0., left=0.)
         align.add(obj, back=0., left=0.)
         geom = geometry.Cartesian3D(align, back='periodic', front='periodic', left='periodic', right='periodic')

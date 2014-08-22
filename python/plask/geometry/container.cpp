@@ -119,9 +119,9 @@ void register_geometry_container()
     init_GeometryObjectContainer<3>();
 
     py::class_<TranslationContainer<2>, shared_ptr<TranslationContainer<2>>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>
-    ("TranslationContainer2D",
+    ("Container2D",
      "Container in which every child has an associated translation vector\n\n"
-     "TranslationContainer2D()\n    Create a new container"
+     "Container2D()\n    Create a new container"
     )
         .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<2>>), "Add new object to the container with provided alignment")
         .def("append", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
@@ -131,9 +131,9 @@ void register_geometry_container()
        ;
 
     py::class_<TranslationContainer<3>, shared_ptr<TranslationContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>
-    ("TranslationContainer3D",
+    ("Container3D",
      "Container in which every child has an associated translation vector\n\n"
-     "TranslationContainer3D()\n    Create a new container"
+     "Container3D()\n    Create a new container"
     )
         .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<3>>), "Add new object to the container with provided alignment")
         .def("append", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,

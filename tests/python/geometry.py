@@ -147,7 +147,7 @@ class Containers(unittest.TestCase):
 
     def testRemoval(self):
         '''Test if removing objects from container works. In addition test prepending objects'''
-        container = plask.geometry.TranslationContainer2D()
+        container = plask.geometry.Container2D()
         h = container.append(self.block1, 0,0) # be removed by hint
         container.append(self.block2, 10,0)
         container.append(self.block1, 10,0) # to be removed by index
@@ -233,4 +233,3 @@ class Borders(unittest.TestCase):
         self.assertEqual( space.get_material(-6., 1.), AlN )
         self.assertEqual( space.get_material(-7., 1.), AlN )
         self.assertEqual( space.get_material(-9., 1.), GaN )
-        

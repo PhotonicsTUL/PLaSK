@@ -3,7 +3,7 @@ Containers
 
 .. xml:tag:: <align2d> (or <align>)
 
-   Corresponding Python classes: :py:class:`plask.geometry.AlignContainerTran2D`, :py:class:`plask.geometry.AlignContainerVert2D`.
+   Corresponding Python classes: :py:class:`plask.geometry.AlignTran2D`, :py:class:`plask.geometry.AlignVert2D`.
 
    Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
 
@@ -44,7 +44,7 @@ Containers
 
 .. xml:tag:: <container2d> (or <container>)
 
-   Corresponding Python class: :py:class:`plask.geometry.TranslationContainer2D`.
+   Corresponding Python class: :py:class:`plask.geometry.Container2D`.
 
    Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 

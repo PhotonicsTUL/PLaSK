@@ -206,6 +206,8 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         data = data.transpose()
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
         ax = _get_2d_axes(plane)
+        if data.shape[3-sum(ax)] != 1:
+            raise ValueError("Field mesh must have dimension {} equal to 1".format(3-sum(ax)))
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in ax)
         if len(data.shape) == 4:
             if comp is None:
@@ -303,6 +305,8 @@ def plot_vectors(field, plane=None, angles='xy', scale_units='xy', **kwargs):
         data = field.array.transpose((1,0,2))
     elif isinstance(m, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
+        if data.shape[3-ix-iy] != 1:
+            raise ValueError("Field mesh must have dimension {} equal to 1".format(3-ix-iy))
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
         if ix < iy:
             data = field.array.reshape((len(xaxis), len(yaxis), field.array.shape[-1]))[:,:,[ix,iy]].transpose((1,0,2))
