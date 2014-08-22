@@ -189,9 +189,9 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Tra
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
     dcomplex igamma0 = 1. / gamma0;
-    if (!expansion.separated) {
+    if (!expansion.separated()) {
         int N = getSize() + 1;
-        for (int n = expansion.symmetric? 0 : 1-N; n != N; ++n) {
+        for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
             reflected[ix] = reflected[ix] * conj(reflected[ix]) *  gamma0 / gamma[ix];
             reflected[iz] = reflected[iz] * conj(reflected[iz]) * igamma0 * gamma[iz];
@@ -232,9 +232,9 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
     dcomplex gamma0 = gamma[idx] * gamma[idx] * igamma0;
-    if (!expansion.separated) {
+    if (!expansion.separated()) {
         int N = getSize() + 1;
-        for (int n = expansion.symmetric? 0 : 1-N; n != N; ++n) {
+        for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
             transmitted[ix] = transmitted[ix] * conj(transmitted[ix]) *  gamma0 / gamma[ix];
             transmitted[iz] = transmitted[iz] * conj(transmitted[iz]) * igamma0 * gamma[iz];

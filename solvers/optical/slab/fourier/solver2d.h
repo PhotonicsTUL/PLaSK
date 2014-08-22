@@ -29,8 +29,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(beta - other.beta) && is_zero(ktran - other.ktran)
-                && (!solver->expansion.symmetric || symmetry == other.symmetry)
-                && (!solver->expansion.separated || polarization == other.polarization)
+                && (!solver->expansion.symmetric() || symmetry == other.symmetry)
+                && (!solver->expansion.separated() || polarization == other.polarization)
             ;
         }
     };
@@ -95,9 +95,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
         if (expansion.initialized) {
-            if (expansion.symmetric && symmetry == ExpansionPW2D::E_UNSPECIFIED)
+            if (expansion.symmetric() && symmetry == ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric && symmetry != ExpansionPW2D::E_UNSPECIFIED)
+            if (!expansion.symmetric() && symmetry != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
         }
         if (ktran != 0.) {
@@ -111,13 +111,13 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != 0.) {
-            if (expansion.symmetric) {
+            if (expansion.symmetric()) {
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
                 else
                     Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
             }
-            expansion.symmetric = Expansion::E_UNSPECIFIED;
+            expansion.symmetry = Expansion::E_UNSPECIFIED;
         }
         if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         ktran = k;
@@ -128,9 +128,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     /// Set new mode polarization
     void setPolarization(ExpansionPW2D::Component polarization) {
         if (expansion.initialized) {
-            if (expansion.separated && polarization == ExpansionPW2D::E_UNSPECIFIED)
+            if (expansion.separated() && polarization == ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove polarizations separation now -- invalidate the solver first", getId());
-            if (!expansion.separated && polarization != ExpansionPW2D::E_UNSPECIFIED)
+            if (!expansion.separated() && polarization != ExpansionPW2D::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add polarizations separation now -- invalidate the solver first", getId());
         }
         expansion.polarization = polarization;
@@ -153,13 +153,13 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         size_t idx;
         if (polarization == ExpansionPW2D::E_UNSPECIFIED)
             throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
-        if (expansion.symmetric) {
+        if (expansion.symmetric()) {
             if (expansion.symmetry == ExpansionPW2D::E_UNSPECIFIED)
                 expansion.symmetry = polarization;
             else if (expansion.symmetry != polarization)
                 throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
         }
-        if (expansion.separated) {
+        if (expansion.separated()) {
             expansion.polarization = polarization;
             idx = expansion.iE(0);
         } else {
@@ -178,8 +178,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
     double sumAmplitutes(const cvector& amplitudes) {
         double result = 0.;
         int N = getSize();
-        if (expansion.separated) {
-            if (expansion.symmetric) {
+        if (expansion.separated()) {
+            if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)
                     result += real(amplitudes[expansion.iE(i)]);
                 result = 2.*result - real(amplitudes[expansion.iE(0)]);
@@ -188,7 +188,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
                     result += real(amplitudes[expansion.iE(i)]);
             }
         } else {
-            if (expansion.symmetric) {
+            if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)
                     result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
                 result = 2.*result - real(amplitudes[expansion.iEx(0)]) - real(amplitudes[expansion.iEz(0)]);

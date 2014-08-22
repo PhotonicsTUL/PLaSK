@@ -37,8 +37,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
         bool operator==(const Mode& other) const {
             return is_zero(k0 - other.k0) && is_zero(klong - other.klong) && is_zero(ktran - other.ktran)
-                && (!solver->expansion.symmetric_long || symmetry_long == other.symmetry_long)
-                && (!solver->expansion.symmetric_tran || symmetry_tran == other.symmetry_tran)
+                && (!solver->expansion.symmetric_long() || symmetry_long == other.symmetry_long)
+                && (!solver->expansion.symmetric_tran() || symmetry_tran == other.symmetry_tran)
             ;
         }
     };
@@ -121,9 +121,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
         if (expansion.initialized) {
-            if (expansion.symmetric_long && symmetry == Expansion::E_UNSPECIFIED)
+            if (expansion.symmetric_long() && symmetry == Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric_long && symmetry != Expansion::E_UNSPECIFIED)
+            if (!expansion.symmetric_long() && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add longitudinal mode symmetry now -- invalidate the solver first", getId());
         }
         if (klong != 0.) {
@@ -141,9 +141,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
         if (expansion.initialized) {
-            if (expansion.symmetric_tran && symmetry == Expansion::E_UNSPECIFIED)
+            if (expansion.symmetric_tran() && symmetry == Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric_tran && symmetry != Expansion::E_UNSPECIFIED)
+            if (!expansion.symmetric_tran() && symmetry != Expansion::E_UNSPECIFIED)
                 throw Exception("%1%: Cannot add transverse mode symmetry now -- invalidate the solver first", getId());
         }
         if (ktran != 0.) {
@@ -157,7 +157,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
         if (k != 0.) {
-            if (expansion.symmetric_long) {
+            if (expansion.symmetric_long()) {
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
                 else
@@ -172,7 +172,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
         if (k != 0.) {
-            if (expansion.symmetric_tran) {
+            if (expansion.symmetric_tran()) {
                 if (expansion.initialized)
                     throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
                 else

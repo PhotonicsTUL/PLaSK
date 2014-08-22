@@ -19,9 +19,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     size_t nN;                          ///< Number of of required coefficients for material parameters
     double left;                        ///< Left side of the sampled area
     double right;                       ///< Right side of the sampled area
-    bool symmetric;                     ///< Indicates if the expansion is a symmetric one
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
-    bool separated;                     ///< Indicates whether TE and TM modes can be separated
     bool initialized;                   ///< Expansion is initialized
 
     Component symmetry;                 ///< Indicates symmetry if `symmetric`
@@ -41,6 +39,12 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
      * \param solver solver which performs calculations
      */
     ExpansionPW2D(FourierSolver2D* solver);
+
+    /// Indicates if the expansion is a symmetric one
+    bool symmetric() const { return symmetry != E_UNSPECIFIED; }
+
+    /// Indicates whether TE and TM modes can be separated
+    bool separated() const { return polarization != E_UNSPECIFIED; }
 
     /**
      * Init expansion
@@ -65,7 +69,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
         return diagonals[l];
     }
 
-    size_t matrixSize() const override { return separated? N : 2*N; }
+    size_t matrixSize() const override { return separated()? N : 2*N; }
 
     void getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex kx, cmatrix& RE, cmatrix& RH) override;
 

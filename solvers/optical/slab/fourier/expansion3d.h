@@ -24,8 +24,6 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     double right;                       ///< Right side of the sampled area
     double back;                        ///< Back side of the sampled area
     double front;                       ///< Front side of the sampled area
-    bool symmetric_long,                ///< Indicates if the expansion is a symmetric one in longitudinal direction
-         symmetric_tran;                ///< Indicates if the expansion is a symmetric one in transverse direction
     bool periodic_long,                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in longitudinal direction
          periodic_tran;                 ///< Indicates if the geometry is periodic (otherwise use PMLs) in transverse direction
     bool initialized;                   ///< Expansion is initialized
@@ -49,6 +47,12 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
      * \param solver solver which performs calculations
      */
     ExpansionPW3D(FourierSolver3D* solver);
+
+    /// Indicates if the expansion is a symmetric one in longitudinal direction
+    bool symmetric_long() const { return symmetry_long != E_UNSPECIFIED; }
+
+    /// Indicates if the expansion is a symmetric one in transverse direction
+    bool symmetric_tran() const { return symmetry_tran != E_UNSPECIFIED; }
 
     /**
      * Init expansion
@@ -102,7 +106,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
   private:
 
     DataVector<Vec<3,dcomplex>> field;
-    FFT::Backward2D fft_x, fft_yz;
+    FFT::Backward2D fft_x, fft_y, fft_z;
 
   protected:
 
@@ -157,8 +161,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int l, int t) {
-        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
         assert(0 <= l && l < Nl);
         assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l);
@@ -166,8 +170,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ E_y \f$ index
     size_t iEy(int l, int t) {
-        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
         assert(0 <= l && l < Nl);
         assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l) + 1;
@@ -175,8 +179,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ H_x \f$ index
     size_t iHx(int l, int t) {
-        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
         assert(0 <= l && l < Nl);
         assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l) + 1;
@@ -184,8 +188,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ H_y \f$ index
     size_t iHy(int l, int t) {
-        if (l < 0) { if (symmetric_long) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran) t = -t; else t += Nt; }
+        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
         assert(0 <= l && l < Nl);
         assert(0 <= t && t < Nt);
         return 2 * (Nl*t + l);

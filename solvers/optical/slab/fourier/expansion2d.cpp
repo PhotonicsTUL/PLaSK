@@ -25,15 +25,8 @@ void ExpansionPW2D::init()
     size_t refine = SOLVER->refine, M;
     if (refine == 0) refine = 1;
 
-    symmetric = separated = false;
-    if (symmetry != E_UNSPECIFIED) {
-        if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
-            throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
-        symmetric = true;
-    }
-    if (polarization != E_UNSPECIFIED) {
-        separated = true;
-    }
+    if (symmetry != E_UNSPECIFIED && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
+        throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric() structure");
 
     if (geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN)) {
         if (right <= 0) {
@@ -41,18 +34,18 @@ void ExpansionPW2D::init()
             std::swap(left, right);
         }
         if (left != 0) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
-        if (!symmetric) left = -right;
+        if (!symmetric()) left = -right;
     }
 
     if (!periodic) {
         // Add PMLs
-        if (!symmetric) left -= SOLVER->pml.size + SOLVER->pml.shift;
+        if (!symmetric()) left -= SOLVER->pml.size + SOLVER->pml.shift;
         right += SOLVER->pml.size + SOLVER->pml.shift;
     }
 
     double L;
                                                             // N = 3  nN = 5  refine = 5  M = 25
-    if (!symmetric) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
+    if (!symmetric()) {                                       //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
         L = right - left;                                   //  ^ ^ ^ ^ ^
         N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * SOLVER->getSize() + 1;
@@ -69,9 +62,9 @@ void ExpansionPW2D::init()
     }
 
     SOLVER->writelog(LOG_DETAIL, "Creating%3%%4% expansion with %1% plane-waves (matrix size: %2%)",
-                     N, matrixSize(), symmetric?" symmetric":"", separated?" separated":"");
+                     N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
 
-    matFFT = FFT::Forward1D(4, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     mag.reset(nN, Tensor2<dcomplex>(0.));
@@ -81,7 +74,7 @@ void ExpansionPW2D::init()
         // Add PMLs
         SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: %1%um)", L);
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-        if (symmetric) pil = 0;
+        if (symmetric()) pil = 0;
         else pil = std::lower_bound(xmesh.begin(), xmesh.end(), pl) - xmesh.begin();
         pir = std::lower_bound(xmesh.begin(), xmesh.end(), pr) - xmesh.begin();
         std::fill(mag.begin(), mag.end(), Tensor2<dcomplex>(0.));
@@ -100,7 +93,7 @@ void ExpansionPW2D::init()
             mag[i] /= refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
+        FFT::Forward1D(2, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(mag.data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
@@ -171,8 +164,8 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
             double T = 0.; for (size_t v = j * axis1.size(), end = (j+1) * axis1.size(); v != end; ++v) T += temperature[v]; T /= axis1.size();
             Tensor3<dcomplex> nr = material->NR(lambda, T);
             if (nr.c01 != 0.) {
-                if (symmetric) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-                if (separated) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+                if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+                if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
             }
             if (have_gain) {
                 auto roles = geometry->getRolesAt(vec(xmesh[j],maty));
@@ -225,7 +218,7 @@ void ExpansionPW2D::layerMaterialCoefficients(size_t l)
         matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[l].data()));
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / ((right-left) * (symmetric? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = M_PI / ((right-left) * (symmetric()? 2 : 1)); bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
                 int k = i; if (k > nN/2) k -= nN;
                 coeffs[l][i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -240,7 +233,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level-> mesh());
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
-        if (!symmetric) {
+        if (!symmetric()) {
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
                 Tensor3<dcomplex> eps(0.);
                 for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
@@ -264,11 +257,11 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
         }
     } else {
 
-        DataVector<Tensor3<dcomplex>> params(symmetric? nN : nN+1);
+        DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(4, nN, symmetric? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
+        FFT::Backward1D(4, nN, symmetric()? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_NONE).execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> cmesh = make_shared<RegularAxis>();
-        if (symmetric) {
+        if (symmetric()) {
             double dx = 0.5 * (right-left) / nN;
             cmesh->reset(left + dx, right - dx, nN);
         } else {
@@ -280,7 +273,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             eps.sqrt_inplace();
         }
         auto src_mesh = make_shared<RectangularMesh<2>>(cmesh, make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
-        const bool ignore_symmetry[2] = { !symmetric, false };
+        const bool ignore_symmetry[2] = { !symmetric(), false };
         return interpolate(src_mesh, params, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry), interp).claim();
 
     }
@@ -294,13 +287,13 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
 
     int order = SOLVER->getSize();
     dcomplex f = 1. / k0, k02 = k0*k0;
-    double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
+    double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
 
     // Ez represents -Ez
 
-    if (separated) {
-        if (symmetric) {
-            // Separated symmetric
+    if (separated()) {
+        if (symmetric()) {
+            // Separated symmetric()
             std::fill_n(RE.data(), N*N, dcomplex(0.));
             std::fill_n(RH.data(), N*N, dcomplex(0.));
             if (polarization == E_LONG) {                   // Ez & Hx
@@ -327,7 +320,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 }
             }
         } else {
-            // Separated asymmetric
+            // Separated asymmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 for (int i = -order; i <= order; ++i) {
                     dcomplex gi = b * double(i) - kx;
@@ -349,8 +342,8 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
             }
         }
     } else {
-        if (symmetric) {
-            // Full symmetric
+        if (symmetric()) {
+            // Full symmetric()
             std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
             std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
             for (int i = 0; i <= order; ++i) {
@@ -375,7 +368,7 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
                 }
             }
         } else {
-            // Full asymmetric
+            // Full asymmetric()
             for (int i = -order; i <= order; ++i) {
                 dcomplex gi = b * double(i) - kx;
                 for (int j = -order; j <= order; ++j) {
@@ -401,14 +394,18 @@ void ExpansionPW2D::getMatrices(size_t l, dcomplex k0, dcomplex beta, dcomplex k
 
 void ExpansionPW2D::prepareField()
 {
-    if (symmetric) {
+    if (field_params.method == INTERPOLATION_DEFAULT) field_params.method = INTERPOLATION_SPLINE;
+    if (symmetric()) {
         field.reset(N);
         Component sym = (field_params.which == FieldParams::E)? symmetry : Component(2-symmetry);
-        fft_x = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_EVEN : FFT::SYMMETRY_ODD, 3);
-        fft_yz = FFT::Backward1D(1, N, (sym==E_TRAN)? FFT::SYMMETRY_ODD : FFT::SYMMETRY_EVEN, 3);
+        if (field_params.method != INTERPOLATION_FOURIER) {
+            fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym), 3);    // tran
+            fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(2-sym), 3); // long
+        }
     } else {
         field.reset(N + 1);
-        fft_x = FFT::Backward1D(3, N, FFT::SYMMETRY_NONE);
+        if (field_params.method != INTERPOLATION_FOURIER)
+            fft_x = FFT::Backward1D(3, N, FFT::SYMMETRY_NONE);
     }
 }
 
@@ -429,28 +426,28 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
     const dcomplex kx = field_params.ktran;
 
     int order = SOLVER->getSize();
-    double b = 2*M_PI / (right-left) * (symmetric? 0.5 : 1.0);
+    double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level-> mesh());
     double vpos = level->vpos();
 
-    int dx = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of tran component
-    int dz = (symmetric && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin expansion of long component
+    int dx = (symmetric() && field_params.method != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of tran component
+    int dz = (symmetric() && field_params.method != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin expansion of long component
 
     if (field_params.which == FieldParams::E) {
-        if (separated) {
+        if (separated()) {
             if (polarization == E_LONG) {
-                for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iE(i)].tran() = field[iE(i)].vert() = 0.;
                     if (iE(i) != 0 || !dx) field[iE(i)-dx].lon() = - E[iE(i)];
                 }
             } else { // polarization == E_TRAN
-                for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iE(i)].lon() = 0.;
                     if (iE(i) != 0 || !dz) {
                         field[iE(i)-dz].tran() = E[iE(i)];
                         field[iE(i)-dz].vert() = 0.; // beta is equal to 0
-                        if (symmetric) {
+                        if (symmetric()) {
                             if (symmetry == E_TRAN) { // symmetry == H_LONG
                                 for (int j = -order; j <= order; ++j)
                                     field[iE(i)-dz].vert() += iepsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
@@ -467,12 +464,12 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                 }
             }
         } else {
-            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                 if (iE(i) != 0 || !dx)
                     field[iE(i)-dx].tran() = E[iEx(i)];
                 if (iE(i) != 0 || !dz) {
                     field[iE(i)-dz].lon() = - E[iEz(i)];
-                    if (symmetric) {
+                    if (symmetric()) {
                         if (symmetry == E_TRAN) { // symmetry = H_LONG
                             field[iE(i)-dz].vert() = 0.; // Hx[0] == 0
                             for (int j = 1; j <= order; ++j)
@@ -492,19 +489,19 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             }
         }
     } else { // field_params.which == FieldParams::H
-        if (separated) {
+        if (separated()) {
             if (polarization == E_TRAN) {  // polarization == H_LONG
-                for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iH(i)].tran() = field[iH(i)].vert() = 0.;
                     if (iH(i) != 0 || !dx) field[iH(i)- dx].lon() = H[iH(i)];
                 }
             } else {  // polarization == H_TRAN
-                for (int i = symmetric? 0 : -order; i <= order; ++i) {
+                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iH(i)].lon() = 0.;
                     if (iH(i) != 0 || !dz) {
                         field[iH(i)-dz].tran() = H[iH(i)];
                         field[iH(i)-dz].vert() = 0.; // beta is equal to 0
-                        if (symmetric) {
+                        if (symmetric()) {
                             if (symmetry == E_LONG) {
                                 for (int j = -order; j <= order; ++j)
                                     field[iH(i)-dz].vert() -= imuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
@@ -521,13 +518,13 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                 }
             }
         } else {
-            for (int i = symmetric? 0 : -order; i <= order; ++i) {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                 if (iH(i) != 0 || !dx)
                     field[iH(i)-dx].tran() = H[iHx(i)];
                 if (iH(i) != 0 || !dz) {
                     field[iH(i)-dz].lon() = H[iHz(i)];
                     field[iH(i)-dz].vert() = 0.;
-                    if (symmetric) {
+                    if (symmetric()) {
                         if (symmetry == E_LONG) {
                             field[iE(i)-dz].vert() = 0.; // Ex[0] = 0
                             for (int j = 1; j <= order; ++j)
@@ -554,7 +551,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
     if (field_params.method == INTERPOLATION_FOURIER) {
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double L = right - left;
-        if (!symmetric) {
+        if (!symmetric()) {
             dcomplex B = 2*M_PI * I / L;
             dcomplex ikx = I * kx;
             result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
@@ -587,14 +584,15 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
         }
         return result;
     } else {
-        if (symmetric) {
+        if (symmetric()) {
             fft_x.execute(&(field.data()->tran()));
             fft_yz.execute(&(field.data()->lon()));
             fft_yz.execute(&(field.data()->vert()));
             double dx = 0.5 * (right-left) / N;
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-            auto result = interpolate(src_mesh, field, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry()),
-                                      getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
+            auto result = interpolate(src_mesh, field,
+                            make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry()),
+                            field_params.method, false).claim();
             double L = 2. * right;
             if (sym == E_TRAN)
                 for (size_t i = 0; i != dest_mesh->size(); ++i) {
@@ -612,8 +610,9 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             field[N] = field[0];
             auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
             const bool ignore_symmetry[2] = { true, false };
-            auto result = interpolate(src_mesh, field, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-                                      getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
+            auto result = interpolate(src_mesh, field,
+                            make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
+                            field_params.method, false).claim();
             dcomplex ikx = I * kx;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
                 result[i] *= exp(ikx * dest_mesh->at(i).c0);
