@@ -24,6 +24,7 @@ Modules
 
 import sys as _sys
 import os as _os
+import weakref as _weakref
 
 _any = any # this buit-in is overriden by numpy
 
@@ -265,7 +266,7 @@ class StepProfile(object):
         self._geometry = geometry
         self._default = default
         self.dtype = dtype if dtype is not None else type(default)
-        self.providers = {}
+        self.providers = _weakref.WeakValueDictionary()
 
     def __getitem__(self, key):
         present = [step for step in self.steps if key == step]
@@ -286,7 +287,7 @@ class StepProfile(object):
     def __getattr__(self, name):
         if name[:3] != 'out':
             super(StepProfile, self).__getattr__(name)
-        if (name in self.providers):
+        if name in self.providers:
             return self.providers[name]
         suffix = { geometry.Cartesian2D: '2D',
                    geometry.Cylindrical2D: 'Cyl',
@@ -321,16 +322,6 @@ class StepProfile(object):
     def geometry(self):
         '''Profile geometry. (read only)'''
         return self._geometry
-
-    def clear_providers(self):
-        '''Clear orphaned providers.
-
-           Remove all associated providers that are not used elsewhere.
-        '''
-        keys = list(self.providers.keys())
-        for key in keys:
-            if _sys.getrefcount(self.providers[key]) == 2:
-                del self.providers[key]
 
 ## ##  ## ##
 
