@@ -615,7 +615,7 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
                             field_params.method, false).claim();
             dcomplex ikx = I * kx;
             for (size_t i = 0; i != dest_mesh->size(); ++i)
-                result[i] *= exp(ikx * dest_mesh->at(i).c0);
+                result[i] *= exp(- ikx * dest_mesh->at(i).c0);
             return result;
         }
     }

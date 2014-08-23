@@ -515,19 +515,22 @@ void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomple
 void ExpansionPW3D::prepareField()
 {
     if (field_params.method == INTERPOLATION_DEFAULT) field_params.method = INTERPOLATION_SPLINE;
-    size_t N = (Nl+1) * (Nt+1);
-    if (field_params.method != INTERPOLATION_FOURIER) {
-        if (symmetric_long() || symmetric_tran()) {
-            Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(2-symmetry_long),
-                      symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(2-symmetry_tran);
+    if (symmetric_long() || symmetric_tran()) {
+        Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(2-symmetry_long),
+                  symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(2-symmetry_tran);
+        if (field_params.method != INTERPOLATION_FOURIER) {
             fft_x = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(2-syml), FFT::Symmetry(2-symt), 3, Nl+1);
             fft_y = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(symt), 3, Nl+1);
             fft_z = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(2-symt), 3, Nl+1);
-        } else {
-            fft_z = FFT::Backward2D(3, Nl, Nt, FFT::SYMMETRY_NONE, FFT::SYMMETRY_NONE, 3, Nl+1);
         }
+        size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl;
+        size_t nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
+        field.reset(nl*nt);
+    } else {
+        if (field_params.method != INTERPOLATION_FOURIER)
+            fft_z = FFT::Backward2D(3, Nl, Nt, FFT::SYMMETRY_NONE, FFT::SYMMETRY_NONE, 3, Nl+1);
+        field.reset((Nl+1)*(Nt+1));
     }
-    field.reset(N, Vec<3,dcomplex>(0.,0.,0.));
 }
 
 void ExpansionPW3D::cleanupField()
@@ -545,6 +548,9 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
     Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(2-symmetry_long);
     Component symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(2-symmetry_tran);
 
+    size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
+           nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
+
     const dcomplex kx = field_params.klong, ky = field_params.ktran;
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
@@ -560,9 +566,11 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
     if (field_params.method != INTERPOLATION_FOURIER) {
         if (symmetric_long()) {
             if (syml == E_TRAN) dxl = 1; else dyl = 1;
+            for (size_t t = 0, end = nl*nt; t != end; t += nl) field[nl-1+t] = Vec<3,dcomplex>(0.,0.,0.);
         }
         if (symmetric_tran()) {
             if (symt == E_TRAN) dxt = 1; else dyt = 1;
+            for (size_t l = 0, off = nl*(nt-1); l != Nl; ++l) field[off+l] = Vec<3,dcomplex>(0.,0.,0.);
         }
     }
 
@@ -571,9 +579,9 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
             for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                 // How expensive is checking conditions in each loop?
                 // Fuck it, the code is much more clear this way.
-                size_t iex = Nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
-                size_t iey = Nl * (((it<0)?Nt+it:it) - dyt) + ((il<0)?Nl+il:il) - dyl;
-                size_t iez = Nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dyl;
+                size_t iex = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
+                size_t iey = nl * (((it<0)?Nt+it:it) - dyt) + ((il<0)?Nl+il:il) - dyl;
+                size_t iez = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dyl;
                 if (!(it == 0 && dxt) && !(il == 0 && dxl))
                     field[iex].lon() = E[iEx(il,it)];
                 if (!(it == 0 && dyt) && !(il == 0 && dyl))
@@ -597,11 +605,9 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
     } else { // field_params.which == FieldParams::H
         for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
             for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
-                // How expensive is checking conditions in each loop?
-                // Fuck it, the code is much more clear this way.
-                size_t ihx = Nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
-                size_t ihy = Nl * (((it<0)?Nt+it:it) - dyt) + ((il<0)?Nl+il:il) - dyl;
-                size_t ihz = Nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dyl;
+                size_t ihx = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
+                size_t ihy = nl * (((it<0)?Nt+it:it) - dyt) + ((il<0)?Nl+il:il) - dyl;
+                size_t ihz = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dyl;
                 if (!(it == 0 && dxt) && !(il == 0 && dxl))
                     field[ihx].lon() = - H[iHx(il,it)];
                 if (!(it == 0 && dyt) && !(il == 0 && dyl))
@@ -638,12 +644,12 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
                 if (symmetric_tran()) {
                     if (symt == E_LONG) fty = -1.;
                     else ftx = -1.;
-                    iit = Nl * (-it);
+                    iit = nl * (-it);
                 } else {
-                    iit = Nl * (Nt+it);
+                    iit = nl * (Nt+it);
                 }
             } else {
-                iit = Nl * it;
+                iit = nl * it;
             }
             dcomplex gt = bt*double(it) - iky;
             for (int il = -ordl; il <= ordl; ++il) {
@@ -673,38 +679,85 @@ DataVector<const Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const share
         }
         return result;
     } else {
-        throw NotImplemented("ExpansionPW3D::getField for non-Fourier interpolation");
         if (symmetric_long() || symmetric_tran()) {
-//            fft_x.execute(&(field.data()->tran()));
-//            fft_yz.execute(&(field.data()->lon()));
-//            fft_yz.execute(&(field.data()->vert()));
-//            double dx = 0.5 * (right-left) / N;
-//            auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left+dx, right-dx, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-//            auto result = interpolate(src_mesh, field, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry()),
-//                                      getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
-//            double L = 2. * right;
-//            if (sym == E_TRAN)
-//                for (size_t i = 0; i != dest_mesh->size(); ++i) {
-//                    double x = std::fmod(dest_mesh->at(i)[0], L);
-//                    if ((-right <= x && x < 0) || x > right) { result[i].lon() = -result[i].lon(); result[i].vert() = -result[i].vert(); }
-//                }
-//            else
-//                for (size_t i = 0; i != dest_mesh->size(); ++i) {
-//                    double x = std::fmod(dest_mesh->at(i)[0], L);
-//                    if ((-right <= x && x < 0) || x > right) { result[i].tran() = -result[i].tran(); }
-//                }
-//            return result;
+            fft_x.execute(&(field.data()->lon()));
+            fft_y.execute(&(field.data()->tran()));
+            fft_z.execute(&(field.data()->vert()));
+            double dx, dy;
+            if (symmetric_tran()) {
+                dy = 0.5 * (right-left) / nt;
+            } else {
+                for (size_t l = 0, off = nl*Nt; l != Nl; ++l) field[off+l] = field[l];
+                dy = 0.;
+            }
+            if (symmetric_long()) {
+                dx = 0.5 * (front-back) / nl;
+            } else {
+                for (size_t t = 0, end = nl*nt; t != end; t += nl) field[Nl+t] = field[t];
+                dx = 0.;
+            }
+            auto src_mesh = make_shared<RectangularMesh<3>>(
+                make_shared<RegularAxis>(back+dx, front-dx, nl),
+                make_shared<RegularAxis>(left+dy, right-dy, nt),
+                make_shared<RegularAxis>(vpos, vpos, 1),
+                RectangularMesh<3>::ORDER_210
+            );
+            auto result = interpolate(src_mesh, field,
+                            make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry()),
+                            field_params.method, false).claim();
+            if (symmetric_long()) {
+                double Ll = 2. * front;
+                if (syml == E_TRAN)
+                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                        double x = std::fmod(dest_mesh->at(i)[0], Ll);
+                        if ((-front <= x && x < 0) || x > front) { result[i].lon() = -result[i].lon(); result[i].vert() = -result[i].vert(); }
+                    }
+                else
+                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                        double x = std::fmod(dest_mesh->at(i)[0], Ll);
+                        if ((-front <= x && x < 0) || x > front) { result[i].tran() = -result[i].tran(); }
+                    }
+            } else {
+                dcomplex ikx = I * kx;
+                for (size_t i = 0; i != dest_mesh->size(); ++i)
+                    result[i] *= exp(- ikx * dest_mesh->at(i).c0);
+            }
+            if (symmetric_tran()) {
+                double Lt = 2. * right;
+                if (symt == E_TRAN)
+                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                        double y = std::fmod(dest_mesh->at(i)[1], Lt);
+                        if ((-right <= y && y < 0) || y > right) { result[i].lon() = -result[i].lon(); result[i].vert() = -result[i].vert(); }
+                    }
+                else
+                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                        double y = std::fmod(dest_mesh->at(i)[1], Lt);
+                        if ((-right <= y && y < 0) || y > right) { result[i].tran() = -result[i].tran(); }
+                    }
+            } else {
+                dcomplex iky = I * ky;
+                for (size_t i = 0; i != dest_mesh->size(); ++i)
+                    result[i] *= exp(- iky * dest_mesh->at(i).c1);
+            }
+            return result;
         } else {
             fft_z.execute(reinterpret_cast<dcomplex*>(field.data()));
-//            field[N] = field[0];
-//            auto src_mesh = make_shared<RectangularMesh<2>>(make_shared<RegularAxis>(left, right, field.size()), make_shared<RegularAxis>(vpos, vpos, 1));
-//            const bool ignore_symmetry[2] = { true, false };
-//            auto result = interpolate(src_mesh, field, make_shared<const WrappedMesh<2>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
-//                                      getInterpolationMethod<INTERPOLATION_SPLINE>(field_params.method), false);
-//            dcomplex ikx = I * kx;
-//            for (size_t i = 0; i != dest_mesh->size(); ++i)
-//                result[i] *= exp(ikx * dest_mesh->at(i).c0);
-//            return result;
+            for (size_t l = 0, off = nl*Nt; l != Nl; ++l) field[off+l] = field[l];
+            for (size_t t = 0, end = nl*nt; t != end; t += nl) field[Nl+t] = field[t];
+            auto src_mesh = make_shared<RectangularMesh<3>>(
+                make_shared<RegularAxis>(back, front, nl),
+                make_shared<RegularAxis>(left, right, nt),
+                make_shared<RegularAxis>(vpos, vpos, 1),
+                RectangularMesh<3>::ORDER_210
+            );
+            const bool ignore_symmetry[3] = { true, true, false };
+            auto result = interpolate(src_mesh, field,
+                            make_shared<const WrappedMesh<3>>(dest_mesh, SOLVER->getGeometry(), ignore_symmetry),
+                            field_params.method, false).claim();
+            dcomplex ikx = I * kx, iky = I * ky;
+            for (size_t i = 0; i != dest_mesh->size(); ++i)
+                result[i] *= exp(- ikx * dest_mesh->at(i).c0 - iky * dest_mesh->at(i).c1);
+            return result;
         }
     }
 }

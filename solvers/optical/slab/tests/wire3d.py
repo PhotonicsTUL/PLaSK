@@ -20,10 +20,20 @@ depth = 1.0
 
 
 #sym = None
-sym = 'Ez'
-#sym = 'Ex'
+#sym = 'Ez'
+sym = 'Ex'
 
-solver.size = 0, 32
+#interp = 'fourier'
+interp = 'nearest'
+
+
+provider = solver.outElectricField
+#provider = solver.outMagneticField
+#provider = solver.outLightMagnitude
+comp = 2
+
+
+solver.size = 1, 32
 solver.smooth = 1e-3
 
 solver.vpml.dist = 1.00
@@ -35,11 +45,6 @@ solver.pmls.tran.size = 0.5
 solver.pmls.tran.factor = 1.-2j
 print solver.pmls.tran, solver.vpml
 
-
-provider = solver.outElectricField
-#provider = solver.outMagneticField
-#provider = solver.outLightMagnitude
-comp = 2
 
 start = {'Ez': 1.144, 'Ex': 1.115, None: 1.144}[sym]
 
@@ -96,8 +101,8 @@ h = h_top - stack.bbox.height / 2
 
 figure()
 msh = mesh.Rectangular3D(ZZ, XX, YY)
-field = solver.outLightMagnitude(mod, msh, 'fourier')
-#field = Data(sum(provider(mod, msh, 'fourier').array[0,:,:,:]**2, 2), msh)
+field = solver.outLightMagnitude(mod, msh, interp)
+#field = Data(sum(provider(mod, msh, interp).array[0,:,:,:]**2, 2), msh)
 im = plot_field(field, plane='xy')
 colorbar(im, use_gridspec=True)
 plot_geometry(solver.geometry, 'w', mirror=True, plane='xy')
@@ -108,7 +113,7 @@ tight_layout()
 
 figure()
 msh = mesh.Rectangular3D(ZZ, [0.], YY)
-field = provider(mod, msh, 'fourier').array[0,0,:,comp]
+field = provider(mod, msh, interp).array[0,0,:,comp]
 plot(field.real, YY, 'r')
 plot(field.imag, YY, 'b')
 #plot(abs(field), YY, 'r')
@@ -127,7 +132,7 @@ tight_layout()
 
 figure()
 msh = mesh.Rectangular3D(ZZ, XX, [h])
-field = provider(mod, msh, 'fourier').array[0,:,0,comp]
+field = provider(mod, msh, interp).array[0,:,0,comp]
 plot(XX, field.real, 'r')
 plot(XX, field.imag, 'b')
 #plot(XX, abs(field), 'r')
