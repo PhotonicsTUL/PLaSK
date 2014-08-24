@@ -200,24 +200,50 @@ void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) {
 }
 
 
-dcomplex FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
+py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
+
+    enum What {
+        WHAT_NOTHING = 0,
+        WHAT_WAVELENGTH,
+        WHAT_K0,
+        WHAT_NEFF,
+        WHAT_KTRAN
+    };
+    What what = WHAT_NOTHING;
+    py::object array;
 
     AxisNames* axes = getCurrentAxes();
     boost::optional<dcomplex> lambda, neff, ktran;
     bool dispersive = true;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam" || *i == "wavelength")
-            lambda.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "k0")
-            lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
+        if (*i == "lam" || *i == "wavelength") {
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_WAVELENGTH; array = kwargs[*i];
+            } else
+                lambda.reset(py::extract<dcomplex>(kwargs[*i]));
+        } else if (*i == "k0")
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_K0; array = kwargs[*i];
+            } else
+                lambda.reset(2e3*M_PI / dcomplex(py::extract<dcomplex>(kwargs[*i])));
         else if (*i == "neff")
-            neff.reset(py::extract<dcomplex>(kwargs[*i]));
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_NEFF; array = kwargs[*i];
+            } else
+                neff.reset(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
-            ktran.reset(py::extract<dcomplex>(kwargs[*i]));
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_KTRAN; array = kwargs[*i];
+            } else
+                ktran.reset(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "dispersive")
             dispersive = py::extract<bool>(kwargs[*i]);
         else
@@ -227,7 +253,25 @@ dcomplex FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (neff) self->setKlong(*neff * self->getK0());
     if (ktran) self->setKtran(*ktran);
 
-    return self->getDeterminant();
+    switch (what) {
+        case WHAT_NOTHING: return py::object(self->getDeterminant());
+        case WHAT_WAVELENGTH: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+            array
+        );
+        case WHAT_K0: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+            array
+        );
+        case WHAT_NEFF: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setKlong(x * self->getK0()); return self->getDeterminant(); },
+            array
+        );
+        case WHAT_KTRAN: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
+            array
+        );
+    }
 }
 
 template <typename SolverT>
@@ -556,34 +600,77 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
 
 
 
-dcomplex FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
+py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
         throw TypeError("get_determinant() takes exactly one non-keyword argument (%1% given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
+
+    enum What {
+        WHAT_NOTHING = 0,
+        WHAT_WAVELENGTH,
+        WHAT_K0,
+        WHAT_KLONG,
+        WHAT_KTRAN
+    };
+    What what = WHAT_NOTHING;
+    py::object array;
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
     bool dispersive = true;
     boost::optional<dcomplex> wavelength, k0;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam" || *i == "wavelength")
-            wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
-        else if (*i == "k0")
-            k0.reset(py::extract<dcomplex>(kwargs[*i]));
+        if (*i == "lam" || *i == "wavelength") {
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_WAVELENGTH; array = kwargs[*i];
+            } else
+                wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
+        } else if (*i == "k0")
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_K0; array = kwargs[*i];
+            } else
+                k0.reset(dcomplex(py::extract<dcomplex>(kwargs[*i])));
         else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong())
-            self->setKlong(py::extract<dcomplex>(kwargs[*i]));
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_KLONG; array = kwargs[*i];
+            } else
+                self->setKlong(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran())
-            self->setKtran(py::extract<dcomplex>(kwargs[*i]));
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (what) throw TypeError("Only one key may be an array");
+                what = WHAT_KTRAN; array = kwargs[*i];
+            } else
+                self->setKtran(py::extract<dcomplex>(kwargs[*i]));
         else if (*i == "dispersive")
             dispersive = py::extract<bool>(kwargs[*i]);
         else
             throw TypeError("get_determinant() got unexpected keyword argument '%1%'", *i);
     }
-
     if (wavelength) self->setWavelength(*wavelength, dispersive);
     if (k0) self->setK0(*k0, dispersive);
 
-    return self->getDeterminant();
+    switch (what) {
+        case WHAT_NOTHING: return py::object(self->getDeterminant());
+        case WHAT_WAVELENGTH: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+            array
+        );
+        case WHAT_K0: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+            array
+        );
+        case WHAT_KLONG: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setKlong(x); return self->getDeterminant(); },
+            array
+        );
+        case WHAT_KTRAN: return UFUNC<dcomplex>(
+            [self](dcomplex x) -> dcomplex { self->setKtran(x); return self->getDeterminant(); },
+            array
+        );
+    }
 }
 
 size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {

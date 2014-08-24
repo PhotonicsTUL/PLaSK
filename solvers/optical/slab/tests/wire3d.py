@@ -75,7 +75,7 @@ solver.wavelength = 1000.
 
 
 #nn = linspace(1.001, 1.299, 200)
-#dets = array([solver.get_determinant(klong=n*solver.k0) for n in nn])
+#dets = solver.get_determinant(klong=nn*solver.k0)
 #figure()
 #plot(nn, abs(dets), 'r', label='PLaSK')
 #xlabel('neff')
