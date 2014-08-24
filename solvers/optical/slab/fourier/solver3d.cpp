@@ -210,7 +210,8 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
 
     //TODO add reflection for non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(l);
-    dcomplex igamma0 = 1. / gamma[idx];
+    dcomplex gamma0 = gamma[idx];
+    dcomplex igamma0 = 1. / gamma0;
 
     double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -223,9 +224,9 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
             dcomplex Ex = reflected[ix], Ey = reflected[iy];
             double gx = l * bl, gy = t * bt;
-            dcomplex S = (k0*k0-gy*gy) * Ex*conj(Ex) + (k0*k0-gx*gx) * Ex*conj(Ey) +
+            dcomplex S = (gamma0*gamma0-gy*gy) * Ex*conj(Ex) + (gamma0*gamma0-gx*gx) * Ex*conj(Ey) +
                          gx * gy * (Ex * conj(Ey) + conj(Ex) * Ey);
-            result += real(igamma0 / sqrt(k0*k0 - gx*gx - gy*gy) * S);
+            result += real(igamma0 / sqrt(gamma0*gamma0 - gx*gx - gy*gy) * S);
         }
     }
 
@@ -257,7 +258,8 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     //TODO add reflection for non-perpendicular incidence
     // we multiply fields by all by gt / gi
     auto gamma = transfer->diagonalizer->Gamma(li);
-    dcomplex igamma0 = transfer->diagonalizer->Gamma(lt)[idx] / (gamma[idx] * gamma[idx]);
+    dcomplex gamma0 = transfer->diagonalizer->Gamma(lt)[idx];
+    dcomplex igamma0 = gamma0 / (gamma[idx] * gamma[idx]);
 
     double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -270,9 +272,9 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
             dcomplex Ex = transmitted[ix], Ey = transmitted[iy];
             double gx = l * bl, gy = t * bt;
-            dcomplex S = (k0*k0-gy*gy) * Ex*conj(Ex) + (k0*k0-gx*gx) * Ex*conj(Ey) +
+            dcomplex S = (gamma0*gamma0-gy*gy) * Ex*conj(Ex) + (gamma0*gamma0-gx*gx) * Ex*conj(Ey) +
                          gx * gy * (Ex * conj(Ey) + conj(Ex) * Ey);
-            result += real(igamma0 / sqrt(k0*k0 - gx*gx - gy*gy) * S);
+            result += real(igamma0 / sqrt(gamma0*gamma0 - gx*gx - gy*gy) * S);
         }
     }
 
