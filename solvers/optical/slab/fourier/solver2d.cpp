@@ -186,6 +186,10 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Tra
         Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
                                       (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
+    if (klong != 0. || ktran != 0.)
+        Solver::writelog(LOG_WARNING, "Reflection is computed correctly only for perpendicular incidence");
+
+    //TODO non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
     dcomplex igamma0 = 1. / gamma0;
@@ -205,8 +209,6 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Tra
                 reflected[i] = reflected[i] * conj(reflected[i]) *  gamma0 / gamma[i];
         }
     }
-
-
     return sumAmplitutes(reflected);
 }
 
@@ -219,6 +221,9 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
 
+    if (klong != 0. || ktran != 0.)
+        Solver::writelog(LOG_WARNING, "Transmission is computed correctly only for perpendicular incidence");
+
     size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
@@ -229,6 +234,7 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
         Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
 
+    //TODO non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
     dcomplex gamma0 = gamma[idx] * gamma[idx] * igamma0;
@@ -248,7 +254,6 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
                 transmitted[i] = transmitted[i] * conj(transmitted[i]) *  gamma0 / gamma[i];
         }
     }
-
     return sumAmplitutes(transmitted);
 }
 

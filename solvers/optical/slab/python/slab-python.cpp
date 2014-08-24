@@ -230,12 +230,13 @@ dcomplex FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     return self->getDeterminant();
 }
 
-py::object FourierSolver2D_computeReflectivity(FourierSolver2D* self,
-                                                   py::object wavelength,
-                                                   ExpansionPW2D::Component polarization,
-                                                   Transfer::IncidentDirection incidence,
-                                                   bool dispersive
-                                                  )
+template <typename SolverT>
+py::object FourierSolver_computeReflectivity(SolverT* self,
+                                             py::object wavelength,
+                                             ExpansionPW2D::Component polarization,
+                                             Transfer::IncidentDirection incidence,
+                                             bool dispersive
+                                            )
 {
     return UFUNC<double>([=](double lam)->double {
         self->setWavelength(lam, dispersive);
@@ -243,12 +244,13 @@ py::object FourierSolver2D_computeReflectivity(FourierSolver2D* self,
     }, wavelength);
 }
 
-py::object FourierSolver2D_computeTransmitticity(FourierSolver2D* self,
-                                                     py::object wavelength,
-                                                     ExpansionPW2D::Component polarization,
-                                                     Transfer::IncidentDirection incidence,
-                                                     bool dispersive
-                                                    )
+template <typename SolverT>
+py::object FourierSolver_computeTransmittivity(SolverT* self,
+                                               py::object wavelength,
+                                               ExpansionPW2D::Component polarization,
+                                               Transfer::IncidentDirection incidence,
+                                               bool dispersive
+                                              )
 {
     return UFUNC<double>([=](double lam)->double {
         self->setWavelength(lam, dispersive);
@@ -265,12 +267,13 @@ void FourierSolver2D_setPML(FourierSolver2D* self, const PmlWrapper& value) {
     self->invalidate();
 }
 
-shared_ptr<FourierSolver2D::Reflected> FourierSolver2D_getReflected(FourierSolver2D* parent,
-                                                                double wavelength,
-                                                                ExpansionPW2D::Component polarization,
-                                                                Transfer::IncidentDirection side)
+template <typename SolverT>
+shared_ptr<typename SolverT::Reflected> FourierSolver_getReflected(SolverT* parent,
+                                                                  double wavelength,
+                                                                  ExpansionPW2D::Component polarization,
+                                                                  Transfer::IncidentDirection side)
 {
-    return make_shared<FourierSolver2D::Reflected>(parent, wavelength, polarization, side);
+    return make_shared<typename SolverT::Reflected>(parent, wavelength, polarization, side);
 }
 
 dcomplex FourierSolver2D_Mode_Neff(const FourierSolver2D::Mode& mode) {
@@ -737,7 +740,7 @@ BOOST_PYTHON_MODULE(slab)
                    "    ktran (complex): Transverse wavevector.\n"
                    "    dispersive (bool): If ``False`` then material coefficients are not\n"
                    "                       recomputed even if the wavelength is changed.\n");
-        solver.def("compute_reflectivity", &FourierSolver2D_computeReflectivity,
+        solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
                    "    lam (float or array of floats): Incident light wavelength.\n"
@@ -749,7 +752,7 @@ BOOST_PYTHON_MODULE(slab)
                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
                    "        wavelength, as they may change due to the dispersion.\n"
                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
-        solver.def("compute_transmittivity", &FourierSolver2D_computeTransmitticity,
+        solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
                    "Args:\n"
                    "    lam (float or array of floats): Incident light wavelength.\n"
@@ -770,7 +773,7 @@ BOOST_PYTHON_MODULE(slab)
                             PML_ATTRS_DOC
                            );
         RO_FIELD(modes, "Computed modes.");
-        solver.def("reflected", &FourierSolver2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
+        solver.def("reflected", &FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
                    "Access to the reflected field.\n\n"
                    "Args:\n"
                    "    lam (float): Incident light wavelength.\n"
@@ -865,41 +868,40 @@ BOOST_PYTHON_MODULE(slab)
                    "    k0 (complex): Normalized frequency.\n"
                    "    klong (complex): Longitudinal wavevector.\n"
                    "    ktran (complex): Transverse wavevector.\n");
-//         solver.def("compute_reflectivity", &FourierSolver2D_computeReflectivity,
-//                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
-//                    "Args:\n"
-//                    "    lam (float or array of floats): Incident light wavelength.\n"
-//                    "    polarization: Specification of the incident light polarization.\n"
-//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                    "        name of the non-vanishing electric field component.\n"
-//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                    "        present.\n"
-//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-//                    "        wavelength, as they may change due to the dispersion.\n"
-//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
-//         solver.def("compute_transmittivity", &FourierSolver2D_computeTransmitticity,
-//                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
-//                    "Args:\n"
-//                    "    lam (float or array of floats): Incident light wavelength.\n"
-//                    "    polarization: Specification of the incident light polarization.\n"
-//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-
-        //                    "        of the non-vanishing electric field component.\n"
-//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                    "        present.\n"
-//                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
-//                    "        wavelength, as they may change due to the dispersion.\n"
-//                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
-//         solver.def("reflected", &FourierSolver2D_getReflected, py::with_custodian_and_ward_postcall<0,1>(),
-//                    "Access to the reflected field.\n\n"
-//                    "Args:\n"
-//                    "    lam (float): Incident light wavelength.\n"
-//                    "    polarization: Specification of the incident light polarization.\n"
-//                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-//                    "        of the non-vanishing electric field component.\n"
-//                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                    "        present.\n"
-//                    , (py::arg("lam"), "polarization", "side"));
+         solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver3D>,
+                    "Compute reflection coefficient on the perpendicular incidence [%].\n\n"
+                    "Args:\n"
+                    "    lam (float or array of floats): Incident light wavelength.\n"
+                    "    polarization: Specification of the incident light polarization.\n"
+                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                    "        name of the non-vanishing electric field component.\n"
+                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                    "        present.\n"
+                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+                    "        wavelength, as they may change due to the dispersion.\n"
+                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+         solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver3D>,
+                    "Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+                    "Args:\n"
+                    "    lam (float or array of floats): Incident light wavelength.\n"
+                    "    polarization: Specification of the incident light polarization.\n"
+                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+                    "        of the non-vanishing electric field component.\n"
+                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                    "        present.\n"
+                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
+                    "        wavelength, as they may change due to the dispersion.\n"
+                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+         solver.def("reflected", &FourierSolver_getReflected<FourierSolver3D>, py::with_custodian_and_ward_postcall<0,1>(),
+                    "Access to the reflected field.\n\n"
+                    "Args:\n"
+                    "    lam (float): Incident light wavelength.\n"
+                    "    polarization: Specification of the incident light polarization.\n"
+                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+                    "        of the non-vanishing electric field component.\n"
+                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                    "        present.\n"
+                    , (py::arg("lam"), "polarization", "side"));
         RO_FIELD(modes, "Computed modes.");
         py::scope scope = solver;
 
@@ -915,6 +917,26 @@ BOOST_PYTHON_MODULE(slab)
             .def("__str__", &FourierSolver3D_Mode_str)
             .def("__repr__", &FourierSolver3D_Mode_repr)
             .def("__getattr__", &FourierSolver3D_Mode__getattr__)
+        ;
+
+
+        py::class_<FourierSolver3D::Reflected, shared_ptr<FourierSolver3D::Reflected>, boost::noncopyable>("Reflected",
+            "Reflected mode proxy.\n\n"
+            "This class contains providers for the optical field for a reflected field"
+            "under the normal incidence.\n"
+            , py::no_init)
+            .def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*>
+                                              (&FourierSolver3D::Reflected::outElectricField),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightE", "3D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
+            )
+            .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*>
+                                              (&FourierSolver3D::Reflected::outMagneticField),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightH", "3D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
+            )
+            .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry3D> FourierSolver3D::Reflected::*>
+                                              (&FourierSolver3D::Reflected::outLightMagnitude),
+                format(docstring_attr_provider<FIELD_PROPERTY>(), "LightMagnitude", "3D", "light intensity", "W/m²", "", "", "", "outLightMagnitude").c_str()
+            )
         ;
 
         FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");

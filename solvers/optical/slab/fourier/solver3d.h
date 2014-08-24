@@ -26,8 +26,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     struct Mode {
         FourierSolver3D* solver;                            ///< Solver this mode belongs to
-        ExpansionPW3D::Component symmetry_long;                 ///< Mode symmetry in long direction
-        ExpansionPW3D::Component symmetry_tran;                 ///< Mode symmetry in tran direction
+        Expansion::Component symmetry_long;                 ///< Mode symmetry in long direction
+        Expansion::Component symmetry_tran;                 ///< Mode symmetry in tran direction
         dcomplex k0;                                            ///< Stored mode frequency
         dcomplex klong;                                         ///< Stored mode effective index
         dcomplex ktran;                                         ///< Stored mode transverse wavevector
@@ -190,138 +190,110 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     /// Get mesh at which material parameters are sampled along transverse axis
     RegularAxis getTranMesh() const { return expansion.tran_mesh; }
 
-//   private:
-//
-//     /**
-//      * Get incident field vector for given polarization.
-//      * \param polarization polarization of the perpendicularly incident light
-//      * \param savidx pointer to which optionally save nonzero incident index
-//      * \return incident field vector
-//      */
-//     cvector incidentVector(ExpansionPW3D::Component polarization, size_t* savidx=nullptr) {
-//         size_t idx;
-//         if (polarization == ExpansionPW3D::E_UNSPECIFIED)
-//             throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
-//         if (expansion.symmetric) {
-//             if (expansion.symmetry == ExpansionPW3D::E_UNSPECIFIED)
-//                 expansion.symmetry = polarization;
-//             else if (expansion.symmetry != polarization)
-//                 throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
-//         }
-//         if (expansion.separated) {
-//             expansion.polarization = polarization;
-//             idx = expansion.iE(0);
-//         } else {
-//             idx = (polarization == ExpansionPW3D::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
-//         }
-//         if (savidx) *savidx = idx;
-//         cvector incident(expansion.matrixSize(), 0.);
-//         incident[idx] = 1.;
-//         return incident;
-//     }
-//
-//     /**
-//      * Compute sum of amplitudes for reflection/transmission coefficient
-//      * \param amplitudes amplitudes to sum
-//      */
-//     double sumAmplitutes(const cvector& amplitudes) {
-//         double result = 0.;
-//         int N = getSize();
-//         if (expansion.separated) {
-//             if (expansion.symmetric) {
-//                 for (int i = 0; i <= N; ++i)
-//                     result += real(amplitudes[expansion.iE(i)]);
-//                 result = 2.*result - real(amplitudes[expansion.iE(0)]);
-//             } else {
-//                 for (int i = -N; i <= N; ++i)
-//                     result += real(amplitudes[expansion.iE(i)]);
-//             }
-//         } else {
-//             if (expansion.symmetric) {
-//                 for (int i = 0; i <= N; ++i)
-//                     result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
-//                 result = 2.*result - real(amplitudes[expansion.iEx(0)]) - real(amplitudes[expansion.iEz(0)]);
-//             } else {
-//                 for (int i = -N; i <= N; ++i) {
-//                     result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
-//                 }
-//             }
-//         }
-//         return result;
-//     }
-//
-//   public:
-//
-//     /**
-//      * Get amplitudes of reflected diffraction orders
-//      * \param polarization polarization of the perpendicularly incident light
-//      * \param incidence incidence side
-//      * \param savidx pointer to which optionally save nonzero incident index
-//      */
-//     cvector getReflectedAmplitudes(ExpansionPW3D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
-//
-//     /**
-//      * Get amplitudes of transmitted diffraction orders
-//      * \param polarization polarization of the perpendicularly incident light
-//      * \param incidence incidence side
-//      * \param savidx pointer to which optionally save nonzero incident index
-//      */
-//     cvector getTransmittedAmplitudes(ExpansionPW3D::Component polarization, IncidentDirection incidence, size_t* savidx=nullptr);
-//
-//     /**
-//      * Get reflection coefficient
-//      * \param polarization polarization of the perpendicularly incident light
-//      * \param incidence incidence side
-//      */
-//     double getReflection(ExpansionPW3D::Component polarization, IncidentDirection incidence);
-//
-//     /**
-//      * Get reflection coefficient
-//      * \param polarization polarization of the perpendicularly incident light
-//      * \param incidence incidence side
-//      */
-//     double getTransmission(ExpansionPW3D::Component polarization, IncidentDirection incidence);
-//
-//     /**
-//      * Get electric field at the given mesh for reflected light.
-//      * \param Ei incident field vector
-//      * \param incident incidence direction
-//      * \param dst_mesh target mesh
-//      * \param method interpolation method
-//      */
-//     DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW3D::Component polarization, IncidentDirection incident,
-//                                                    const MeshD<2>& dst_mesh, InterpolationMethod method) {
-//         initCalculation();
-//         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
-//     }
-//
-//     /**
-//      * Get magnetic field at the given mesh for reflected light.
-//      * \param Ei incident field vector
-//      * \param incident incidence direction
-//      * \param dst_mesh target mesh
-//      * \param method interpolation method
-//      */
-//     DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW3D::Component polarization, IncidentDirection incident,
-//                                                    const MeshD<2>& dst_mesh, InterpolationMethod method) {
-//         initCalculation();
-//         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
-//     }
-//
-//     /**
-//      * Get light intensity for reflected light.
-//      * \param Ei incident field vector
-//      * \param incident incidence direction
-//      * \param dst_mesh destination mesh
-//      * \param method interpolation method
-//      */
-//     DataVector<double> getReflectedFieldMagnitude(ExpansionPW3D::Component polarization, IncidentDirection incident,
-//                                                   const MeshD<2>& dst_mesh, InterpolationMethod method) {
-//         initCalculation();
-//         return ReflectionSolver<Geometry3DCartesian>::getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
-//     }
-//
-//
+  private:
+
+    /**
+     * Get incident field vector for given polarization.
+     * \param polarization polarization of the perpendicularly incident light
+     * \param savidx pointer to which optionally save nonzero incident index
+     * \return incident field vector
+     */
+    cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
+        if (polarization == ExpansionPW3D::E_UNSPECIFIED)
+            throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
+        if (expansion.symmetry_long != Expansion::Component(2-polarization))
+            throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
+        if (expansion.symmetry_tran != Expansion::Component(2-polarization))
+            throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
+        size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
+        if (savidx) *savidx = idx;
+        cvector incident(expansion.matrixSize(), 0.);
+        incident[idx] = 1.;
+        return incident;
+    }
+
+  public:
+
+    /**
+     * Get amplitudes of reflected diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     * \param savidx pointer to which optionally save nonzero incident index
+     */
+    cvector getReflectedAmplitudes(Expansion::Component polarization,
+                                   Transfer::IncidentDirection incidence,
+                                   size_t* savidx=nullptr);
+
+    /**
+     * Get amplitudes of transmitted diffraction orders
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     * \param savidx pointer to which optionally save nonzero incident index
+     */
+    cvector getTransmittedAmplitudes(Expansion::Component polarization,
+                                     Transfer::IncidentDirection incidence,
+                                     size_t* savidx=nullptr);
+
+    /**
+     * Get reflection coefficient
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     */
+    double getReflection(Expansion::Component polarization, Transfer::IncidentDirection incidence);
+
+    /**
+     * Get reflection coefficient
+     * \param polarization polarization of the perpendicularly incident light
+     * \param incidence incidence side
+     */
+    double getTransmission(Expansion::Component polarization, Transfer::IncidentDirection incidence);
+
+    /**
+     * Get electric field at the given mesh for reflected light.
+     * \param Ei incident field vector
+     * \param incident incidence direction
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
+                                                   Transfer::IncidentDirection incident,
+                                                   const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                   InterpolationMethod method) {
+        initCalculation();
+        return transfer->getReflectedFieldE(incidentVector(polarization), incident, dst_mesh, method);
+    }
+
+    /**
+     * Get magnetic field at the given mesh for reflected light.
+     * \param Ei incident field vector
+     * \param incident incidence direction
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
+                                                   Transfer::IncidentDirection incident,
+                                                   const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                   InterpolationMethod method) {
+        initCalculation();
+        return transfer->getReflectedFieldH(incidentVector(polarization), incident, dst_mesh, method);
+    }
+
+    /**
+     * Get light intensity for reflected light.
+     * \param Ei incident field vector
+     * \param incident incidence direction
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    DataVector<double> getReflectedFieldMagnitude(Expansion::Component polarization,
+                                                  Transfer::IncidentDirection incident,
+                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                  InterpolationMethod method) {
+        initCalculation();
+        return transfer->getReflectedFieldMagnitude(incidentVector(polarization), incident, dst_mesh, method);
+    }
+
+
   protected:
 
     /// Insert mode to the list or return the index of the exiting one
@@ -340,14 +312,14 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     size_t nummodes() const { return 1; }
 
-//     /**
-//      * Return mode effective index
-//      * \param n mode number
-//      */
-//     dcomplex getEffectiveIndex(size_t n) {
-//         if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
-//         return modes[n].klong / modes[n].k0;
-//     }
+     /**
+      * Return mode effective index
+      * \param n mode number
+      */
+     dcomplex getEffectiveIndex(size_t n) {
+         if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
+         return modes[n].klong / modes[n].k0;
+     }
 
     const DataVector<const Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
@@ -355,43 +327,43 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     const DataVector<const double> getIntensity(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
-//   public:
-//
-//     /**
-//      * Proxy class for accessing reflected fields
-//      */
-//     struct Reflected {
-//
-//         /// Provider of the optical electric field
-//         typename ProviderFor<LightE,Geometry3DCartesian>::Delegate outElectricField;
-//
-//         /// Provider of the optical magnetic field
-//         typename ProviderFor<LightH,Geometry3DCartesian>::Delegate outMagneticField;
-//
-//         /// Provider of the optical field intensity
-//         typename ProviderFor<LightMagnitude,Geometry3DCartesian>::Delegate outLightMagnitude;
-//
-//         /// Return one as the number of the modes
-//         static size_t size() { return 1; }
-//
-//         /**
-//          * Construct proxy.
-//          * \param wavelength incident light wavelength
-//          * \param polarization polarization of the perpendicularly incident light
-//          * \param side incidence side
-//          */
-//         Reflected(FourierSolver3D* parent, double wavelength, ExpansionPW3D::Component polarization, FourierSolver3D::IncidentDirection side):
-//             outElectricField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
-//                 parent->setWavelength(wavelength);
-//                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
-//             outMagneticField([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
-//                 parent->setWavelength(wavelength);
-//                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
-//             outLightMagnitude([=](size_t, const MeshD<2>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
-//                 parent->setWavelength(wavelength);
-//                 return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
-//         {}
-//     };
+   public:
+
+     /**
+      * Proxy class for accessing reflected fields
+      */
+     struct Reflected {
+
+         /// Provider of the optical electric field
+         typename ProviderFor<LightE,Geometry3D>::Delegate outElectricField;
+
+         /// Provider of the optical magnetic field
+         typename ProviderFor<LightH,Geometry3D>::Delegate outMagneticField;
+
+         /// Provider of the optical field intensity
+         typename ProviderFor<LightMagnitude,Geometry3D>::Delegate outLightMagnitude;
+
+         /// Return one as the number of the modes
+         static size_t size() { return 1; }
+
+         /**
+          * Construct proxy.
+          * \param wavelength incident light wavelength
+          * \param polarization polarization of the perpendicularly incident light
+          * \param side incidence side
+          */
+         Reflected(FourierSolver3D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
+             outElectricField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+                 parent->setWavelength(wavelength);
+                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),
+             outMagneticField([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
+                 parent->setWavelength(wavelength);
+                 return parent->getReflectedFieldH(polarization, side, dst_mesh, method); }, size),
+             outLightMagnitude([=](size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) -> DataVector<const double> {
+                 parent->setWavelength(wavelength);
+                 return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method); }, size)
+         {}
+     };
 };
 
 
