@@ -26,6 +26,9 @@ class Grid(TreeFragmentModel):
     def get_XML_element(self):
         return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
 
+    def set_XML_element(self, element):
+        self.name = element.attrib.get('name', None)
+
     @property
     def method(self):
         return getattr(self, '__method__', None)
@@ -48,9 +51,6 @@ class Grid(TreeFragmentModel):
                    quoteattr(self.type).encode('utf-8'), '>', text.encode('utf-8'), '</mesh>']
         #print ''.join(tab)
         self.set_XML_element(ElementTree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
-
-    def get_text(self):
-        return print_interior(self.get_XML_element())
 
     @property
     def type_and_kind_str(self):
@@ -94,9 +94,6 @@ class GridTreeBased(Grid):
     def get_XML_element(self):
         return self.element
 
-    def get_text(self):
-        return print_interior(self.get_XML_element())
-
     @property
     def method(self):
         return self.element.attrib.get('method', None)
@@ -112,3 +109,24 @@ class GridTreeBased(Grid):
     @property
     def type(self):
         return self.element.attrib.get('type', '')
+
+
+class GridWithoutConf(Grid):
+    """Model for all grids that does not require any configuration."""
+
+    @staticmethod
+    def from_XML(grids_model, element):
+        return GridWithoutConf(grids_model, element.attrib['name'], element.attrib['type'], element.attrib.get('method', None))
+
+    #def __init__(self, grids_model, name, type, method):
+    #    super(GridWithoutConf, self).__init__(grids_model, name, type, method)
+
+    #def get_XML_element(self):
+    #    return super(GridWithoutConf, self).get_XML_element()
+
+    #def set_XML_element(self, element):
+    #    super(GridWithoutConf, self).set_XML_element()
+
+    def get_controller(self, document):
+        from ...controller.base import NoConfController
+        return NoConfController(self.type_and_kind_str + ' has no configuration.')

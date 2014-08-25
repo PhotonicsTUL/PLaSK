@@ -1,4 +1,4 @@
-from .grid import GridTreeBased
+from .grid import GridTreeBased, GridWithoutConf
 from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
 
 MESHES_TYPES = {
@@ -11,15 +11,15 @@ MESHES_TYPES = {
 GENERATORS_TYPES = {
     'ordered': {
             'divide': GridTreeBased.from_XML,
-            'simple': GridTreeBased.from_XML,
+            'simple': GridWithoutConf.from_XML,
     },
     'rectangular2d': {
             'divide': GridTreeBased.from_XML,
-            'simple': GridTreeBased.from_XML,
+            'simple': GridWithoutConf.from_XML,
     },
     'rectangular3d': {
             'divide': GridTreeBased.from_XML,
-            'simple': GridTreeBased.from_XML,
+            'simple': GridWithoutConf.from_XML,
     },
 }
 

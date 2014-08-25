@@ -1,3 +1,5 @@
+from ..qt import QtGui, QtCore
+
 class Controller(object):
     """
         Base class for controllers.
@@ -10,7 +12,7 @@ class Controller(object):
     def __init__(self, document=None, model=None):
         """Optionally set document and/or model."""
         super(Controller, self).__init__()
-        if document: self.document = document
+        if document is not None: self.document = document
         if model is not None:
             self.model = model
 
@@ -27,6 +29,18 @@ class Controller(object):
     def on_edit_exit(self):
         """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
         self.save_data_in_model()
-        self.document.window.set_section_actions()
+        if hasattr(self, 'document'): self.document.window.set_section_actions()
 
     # def get_editor(self) - to be done in subclasses
+
+
+
+class NoConfController(Controller):
+    """Controller for all models that does not require any configuration."""
+    def __init__(self, text = 'Configuration is neither required nor available.'):
+        super(NoConfController, self).__init__()
+        self.label = QtGui.QLabel(text)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+
+    def get_editor(self):
+        return self.label
