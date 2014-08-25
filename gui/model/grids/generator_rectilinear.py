@@ -23,7 +23,7 @@ class RefinementConf(object):
 
     def set_from_XML(self, axis_element):
         if axis_element is None: return
-        self.axis_nr = axis_element.tag[-1]
+        self.axis_nr = int(axis_element.tag[-1])
         with AttributeReader(axis_element) as a:
             for attr in ['object', 'path', 'at', 'by', 'every']:
                 setattr(self, attr, a.get(attr, None))
