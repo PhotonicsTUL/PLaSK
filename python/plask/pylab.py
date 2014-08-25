@@ -473,6 +473,24 @@ def _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zor
 _geometry_plotters[plask.geometry.Block2D] = _add_path_Block
 _geometry_plotters[plask.geometry.Block3D] = _add_path_Block
 
+def _add_path_Triangle(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
+    p0 = trans.translation
+    p1 = trans.item.p0
+    p2 = trans.item.p1
+    patches.append(matplotlib.patches.Polygon(((p0[0], p0[1]), (p1[0], p1[1]), (p2[0], p2[1])),
+                                              closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+    if vmirror:
+        patches.append(matplotlib.patches.Polygon(((p0[0], -p0[1]), (p1[0], -p1[1]), (p2[0], p2[1])),
+                                                  closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+    if hmirror:
+        patches.append(matplotlib.patches.Polygon(((-p0[0], p0[1]), (-p1[0], p1[1]), (-p2[0], p2[1])),
+                                                  closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+        if vmirror:
+            patches.append(matplotlib.patches.Polygon(((-p0[0], -p0[1]), (-p1[0], -p1[1]), (-p2[0], -p2[1])),
+                                                      closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+
+_geometry_plotters[plask.geometry.Triangle] = _add_path_Triangle
+
 def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
     if ax != (0,1) and ax != (1,0):
         _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zorder)

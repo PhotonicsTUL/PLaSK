@@ -61,30 +61,12 @@ struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
     }
 
     /**
-     * Set coordinates of first vertex and inform observers about changes.
-     * @param vecCtrArg new coordinates to set (parameters to Vec<2> constructor)
-     */
-    template <typename ...VecCtrArg>
-    void setP0(VecCtrArg&&... vecCtrArg) {
-        this->setP0(DVec(std::forward<VecCtrArg>(vecCtrArg)...));
-    }
-
-    /**
      * Set coordinates of second vertex and inform observers about changes.
      * @param new_p0 new coordinates for p1
      */
     void setP1(const DVec& new_p1) {
         p1 = new_p1;
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
-    }
-
-    /**
-     * Set coordinates of second vertex and inform observers about changes.
-     * @param vecCtrArg new coordinates to set (parameters to Vec<2> constructor)
-     */
-    template <typename ...VecCtrArg>
-    void setP1(VecCtrArg&&... vecCtrArg) {
-        this->setP1(DVec(std::forward<VecCtrArg>(vecCtrArg)...));
     }
 };
 

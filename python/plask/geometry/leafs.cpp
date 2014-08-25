@@ -61,6 +61,12 @@ static shared_ptr<Triangle> Triangle_constructor_vec(const Vec<2, double>& p0, c
     return result;
 }
 
+static shared_ptr<Triangle> Triangle_constructor_pts(double x0, double y0, double x1, double y1, const py::object& material) {
+    auto result = make_shared<Triangle>(vec(x0,y0), vec(x1,y1));
+    setLeafMaterial<2>(result, material);
+    return result;
+}
+
 // Cylinder constructor wraps
 static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, const py::object& material) {
     auto result =  make_shared<Cylinder>(radius, height);
@@ -104,7 +110,7 @@ static double Triangle__getattr__(const Triangle& self, const std::string& name)
 static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {
     const bool zero = (name.back() == '0');
     if (zero || name.back() == '1') {
-        size_t axis = current_axes[name.substr(0, name.size()-1)] -1;
+        size_t axis = current_axes[name.substr(0, name.size()-1)] - 1;
         if (axis < 2) {
             Triangle& t = py::extract<Triangle&>(self);
             Vec<2, double> v = zero ? t.p0 : t.p1;
@@ -144,7 +150,7 @@ void register_geometry_leafs()
         "    width (float): Rectangle width.\n"
         "    height (float): Rectangle height.\n"
         "    material (Material): Rectangle material.\n"
-        "    dims (plask.vector): 2D vector representing dimensions of the rectangle.\n",
+        "    dims (plask.vec): 2D vector representing dimensions of the rectangle.\n",
         py::no_init
         ); block2D
         .def("__init__", py::make_constructor(&Rectangle_constructor_wh, py::default_call_policies(), (py::arg("width"), py::arg("height"), py::arg("material"))))
@@ -167,7 +173,7 @@ void register_geometry_leafs()
         "    width (float): Cuboid width.\n"
         "    height (float): Cuboid height.\n"
         "    material (Material): Cuboid material.\n"
-        "    dims (plask.vector): 3D vector representing dimensions of the cuboid.\n",
+        "    dims (plask.vec): 3D vector representing dimensions of the cuboid.\n",
         py::no_init
         ); block3D
         .def("__init__", py::make_constructor(&Cuboid_constructor_dwh, py::default_call_policies(), (py::arg("depth"), py::arg("width"), py::arg("height"), py::arg("material"))))
@@ -183,15 +189,19 @@ void register_geometry_leafs()
 
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
         "Triangle (2D geometry object).\n\n"
+        "Triangle(t0, v0, t1, v1, material)\n"
         "Triangle(p0, p1, material)\n"
         "Create a triangle with vertexes at points p0, p1 and (0, 0).\n\n"
         "Args:\n"
-        "    p0 (plask.vector): Coordinate of the first triangle vertex.\n"
-        "    p1 (plask.vector): Coordinate of the second triangle vertex.\n"
+        "    p0 (plask.vec): Coordinates of the first triangle vertex.\n"
+        "    p1 (plask.vec): Coordinates of the second triangle vertex.\n"
+        "    t0,v0 (double): Coordinates of the first triangle vertex.\n"
+        "    t1,v1 (double): Coordinates of the second triangle vertex.\n"
         "    material (Material): Triangle material.\n",
         py::no_init
         ); triangle
-        .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("p0"), py::arg("p1"), py::arg("material"))))
+        .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("p0"), "p1", "material")))
+        .def("__init__", py::make_constructor(&Triangle_constructor_pts, py::default_call_policies(), (py::arg("t0"), "v0", "t1", "v1", "material")))
         .add_property("p0", py::make_getter(&Triangle::p0, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP0, "Coordinates of the first vertex of the triangle.")
         .add_property("p1", py::make_getter(&Triangle::p1, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP1, "Coordinates of the second vertex of the triangle.")
         .def("__getattr__", &Triangle__getattr__)
