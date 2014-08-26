@@ -140,10 +140,10 @@ class RectilinearDivideGenerator(Grid):
             refinements_element = SubElement(res, 'refinements')
             for r in self.refinements.entries:
                 refinements_element.append(r.get_XML_element)
-        res.append(Element('warnings',
-                           attrib={'missing': str(self.warning_missing),
-                                   'multiple': str(self.warning_multiple),
-                                   'outside': str(self.warning_outside)}))
+        SubElement(res, 'warnings',
+                   attrib={'missing': str(self.warning_missing),
+                           'multiple': str(self.warning_multiple),
+                           'outside': str(self.warning_outside)})
         return res
 
     def __div_from_XML__(self, div_name, src):
