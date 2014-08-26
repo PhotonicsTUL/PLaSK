@@ -72,7 +72,7 @@ std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& s
         return ReturnT(new LevelsAdapterGeneric<2>(mesh));
     else if (auto mesh = dynamic_pointer_cast<const MeshD<3>>(src))
         return ReturnT(new LevelsAdapterGeneric<3>(mesh));
-    assert(false);
+    return ReturnT();
 }
 
 template struct LevelsAdapterGeneric<2>;

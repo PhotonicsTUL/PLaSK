@@ -272,6 +272,7 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
             array
         );
     }
+    return py::object();
 }
 
 template <typename SolverT>
@@ -671,6 +672,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             array
         );
     }
+    return py::object();
 }
 
 size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
