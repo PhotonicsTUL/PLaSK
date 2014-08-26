@@ -46,18 +46,18 @@ bool Triangle::contains(const Triangle::DVec &p) const {
 void Triangle::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const
 {
     materialProvider->writeXML(dest_xml_object, axes)
-                    .attr(axes.getNameForTran() + "0", p0.tran())
-                    .attr(axes.getNameForVert() + "0", p0.vert())
-                    .attr(axes.getNameForTran() + "1", p1.tran())
-                    .attr(axes.getNameForVert() + "1", p1.vert());
+                    .attr("a" + axes.getNameForTran(), p0.tran())
+                    .attr("a" + axes.getNameForVert(), p0.vert())
+                    .attr("b" + axes.getNameForTran(), p1.tran())
+                    .attr("b" + axes.getNameForVert(), p1.vert());
 }
 
 shared_ptr<GeometryObject> read_triangle(GeometryReader& reader) {
     shared_ptr< Triangle > triangle(new Triangle());
-    triangle->p0.tran() = reader.source.requireAttribute<double>(reader.getAxisTranName() + "0");
-    triangle->p0.vert() = reader.source.requireAttribute<double>(reader.getAxisVertName() + "0");
-    triangle->p1.tran() = reader.source.requireAttribute<double>(reader.getAxisTranName() + "1");
-    triangle->p1.vert() = reader.source.requireAttribute<double>(reader.getAxisVertName() + "1");
+    triangle->p0.tran() = reader.source.requireAttribute<double>("a" + reader.getAxisTranName());
+    triangle->p0.vert() = reader.source.requireAttribute<double>("a" + reader.getAxisVertName());
+    triangle->p1.tran() = reader.source.requireAttribute<double>("b" + reader.getAxisTranName());
+    triangle->p1.vert() = reader.source.requireAttribute<double>("b" + reader.getAxisVertName());
     triangle->readMaterial(reader);
     reader.source.requireTagEnd();
     return triangle;

@@ -475,8 +475,8 @@ _geometry_plotters[plask.geometry.Block3D] = _add_path_Block
 
 def _add_path_Triangle(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
     p0 = trans.translation
-    p1 = trans.item.p0
-    p2 = trans.item.p1
+    p1 = p0 + trans.item.a
+    p2 = p0 + trans.item.b
     patches.append(matplotlib.patches.Polygon(((p0[0], p0[1]), (p1[0], p1[1]), (p2[0], p2[1])),
                                               closed=True, ec=color, lw=width, fill=False, zorder=zorder))
     if vmirror:

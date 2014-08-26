@@ -100,17 +100,17 @@ static void Block__setattr__(py::object self, const std::string& name, const py:
 }
 
 static double Triangle__getattr__(const Triangle& self, const std::string& name) {
-    if (name.back() == '0' || name.back() == '1') {
-        size_t axis = current_axes[name.substr(0, name.size()-1)] -1;
-        if (axis < 2) return (name.back() == '0') ? self.p0[axis] : self.p1[axis];
+    if (name.front() == 'a' || name.front() == 'b') {
+        size_t axis = current_axes[name.substr(1, name.size())] - 1;
+        if (axis < 2) return (name.front() == 'a') ? self.p0[axis] : self.p1[axis];
     }
     throw AttributeError("'Triangle' object has no attribute '%1%'", name);
 }
 
 static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {
-    const bool zero = (name.back() == '0');
-    if (zero || name.back() == '1') {
-        size_t axis = current_axes[name.substr(0, name.size()-1)] - 1;
+    const bool zero = (name.front() == 'a');
+    if (zero || name.front() == 'b') {
+        size_t axis = current_axes[name.substr(1, name.size())] - 1;
         if (axis < 2) {
             Triangle& t = py::extract<Triangle&>(self);
             Vec<2, double> v = zero ? t.p0 : t.p1;
@@ -121,6 +121,13 @@ static void Triangle__setattr__(py::object self, const std::string& name, const 
     }
     self.attr("__class__").attr("__base__").attr("__setattr__")(self, name, value);
 }
+
+// This wrappers are necessary so the attributes show in documentation
+template <int i> static double Triangle_get_a(const Triangle& self) { return self.p0[i]; }
+template <int i> static double Triangle_get_b(const Triangle& self) { return self.p1[i]; }
+template <int i> static void Triangle_set_a(Triangle& self, double c) { auto v = self.p0; v[i] = c; self.setP0(v); }
+template <int i> static void Triangle_set_b(Triangle& self, double c) { auto v = self.p1; v[i] = c; self.setP1(v); }
+
 
 template <int dim, int axis>
 static double Block__getdim(const Block<dim>& self) {
@@ -189,25 +196,28 @@ void register_geometry_leafs()
 
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle("Triangle",
         "Triangle (2D geometry object).\n\n"
-        "Triangle(t0, v0, t1, v1, material)\n"
+        "Triangle(a0, a1, b0, b1, material)\n"
         "Triangle(p0, p1, material)\n"
-        "Create a triangle with vertexes at points p0, p1 and (0, 0).\n\n"
+        "Create a triangle with vertices at points *a*, *b* and (0, 0).\n\n"
         "Args:\n"
-        "    p0 (plask.vec): Coordinates of the first triangle vertex.\n"
-        "    p1 (plask.vec): Coordinates of the second triangle vertex.\n"
-        "    t0,v0 (double): Coordinates of the first triangle vertex.\n"
-        "    t1,v1 (double): Coordinates of the second triangle vertex.\n"
-        "    material (Material): Triangle material.\n",
+        "    plask.vec a: Local coordinates of the first triangle vertex.\n"
+        "    plask.vec b: Local coordinates of the second triangle vertex.\n"
+        "    double a0, a1: Local coordinates of the first triangle vertex.\n"
+        "    double b0, b1: Local coordinates of the second triangle vertex.\n"
+        "    Material material: Triangle material.\n",
         py::no_init
         ); triangle
-        .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("p0"), "p1", "material")))
-        .def("__init__", py::make_constructor(&Triangle_constructor_pts, py::default_call_policies(), (py::arg("t0"), "v0", "t1", "v1", "material")))
-        .add_property("p0", py::make_getter(&Triangle::p0, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP0, "Coordinates of the first vertex of the triangle.")
-        .add_property("p1", py::make_getter(&Triangle::p1, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP1, "Coordinates of the second vertex of the triangle.")
+        .def("__init__", py::make_constructor(&Triangle_constructor_vec, py::default_call_policies(), (py::arg("a"), "b", "material")))
+        .def("__init__", py::make_constructor(&Triangle_constructor_pts, py::default_call_policies(), (py::arg("a0"), "a1", "b0", "b1", "material")))
+        .add_property("a", py::make_getter(&Triangle::p0, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP0, "Coordinates of the first vertex.")
+        .add_property("b", py::make_getter(&Triangle::p1, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP1, "Coordinates of the second vertex.")
+        .add_property("a0", &Triangle_get_a<0>, &Triangle_set_a<0>, "Horizontal coordinate of the first vertex.\n\nInstead of 0 you can use transverse axis name.")
+        .add_property("a1", &Triangle_get_a<1>, &Triangle_set_a<1>, "Vertical coordinate of the first vertex.\n\nInstead of 1 you can use vertical axis name.")
+        .add_property("b0", &Triangle_get_b<0>, &Triangle_set_b<0>, "Horizontal coordinate of the second vertex.\n\nInstead of 0 you can use transverse axis name.")
+        .add_property("b1", &Triangle_get_b<1>, &Triangle_set_b<1>, "Vertical coordinate of the second vertex.\n\nInstead of 1 you can use vertical axis name.")
         .def("__getattr__", &Triangle__getattr__)
         .def("__setattr__", &Triangle__setattr__)
     ;
-    scope.attr("Triangle") = triangle;
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
         "Vertical cylinder filled with one material (3D geometry object).\n\n"
