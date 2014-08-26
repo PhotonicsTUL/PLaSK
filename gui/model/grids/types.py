@@ -1,5 +1,6 @@
 from .grid import GridTreeBased, GridWithoutConf
 from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
+from .generator_rectilinear import RectilinearDivideGenerator
 
 MESHES_TYPES = {
     'ordered': RectangularMesh1D.from_XML,
@@ -10,18 +11,18 @@ MESHES_TYPES = {
 
 GENERATORS_TYPES = {
     'ordered': {
-            'divide': GridTreeBased.from_XML,
+            'divide': RectilinearDivideGenerator.from_XML,
             'simple': GridWithoutConf.from_XML,
     },
     'rectangular2d': {
-            'divide': GridTreeBased.from_XML,
+            'divide': RectilinearDivideGenerator.from_XML,
             'simple': GridWithoutConf.from_XML,
     },
     'rectangular3d': {
-            'divide': GridTreeBased.from_XML,
+            'divide': RectilinearDivideGenerator.from_XML,
             'simple': GridWithoutConf.from_XML,
     },
-}
+}   # use GridTreeBased.from_XML for grids without special support
 
 DISPLAY_NAMES = {
     'rectilinear1d': "Rectilinear1D",
