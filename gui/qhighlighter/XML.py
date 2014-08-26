@@ -19,12 +19,12 @@ class XMLHighlighter(QtGui.QSyntaxHighlighter):
         xmlElementFormat = QtGui.QTextCharFormat()
         xmlElementFormat.setFontWeight(QtGui.QFont.Bold)
         xmlElementFormat.setForeground(QtCore.Qt.darkRed)
-        self.highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_]+(?=[\s/>])"), xmlElementFormat))
+        self.highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_-]+(?=[\s/>])"), xmlElementFormat))
 
         xmlAttributeFormat = QtGui.QTextCharFormat()
         #xmlAttributeFormat.setFontItalic(True)
         xmlAttributeFormat.setForeground(QtCore.Qt.darkGreen)
-        self.highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_]+(?=\\=)"), xmlAttributeFormat))
+        self.highlightingRules.append((QtCore.QRegExp("\\b[A-Za-z0-9_-]+(?=\\=)"), xmlAttributeFormat))
 
         self.valueFormat = QtGui.QTextCharFormat()
         self.valueFormat.setForeground(QtCore.Qt.blue)

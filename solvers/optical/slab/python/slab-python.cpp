@@ -750,7 +750,7 @@ inline void export_base(Class solver) {
     //                    "Can take on of the following values:\n\n"
     //                    "============ ==========================\n"
     //                    "*reflection* Reflection Transfer Method\n"
-    //                    "*`admittance* Admittance Transfer Method\n"
+    //                    "*admittance* Admittance Transfer Method\n"
     //                    "============ ==========================\n"
     //                   );
 }

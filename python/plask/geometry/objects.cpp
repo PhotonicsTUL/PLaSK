@@ -572,22 +572,35 @@ void register_geometry_object()
     //     .value("CONTAINER", GeometryObject::TYPE_CONTAINER)
     // ;
 
-    py::class_<GeometryObjectSteps>("GeometryObjectDiv", py::no_init)
-        .add_property("dist", &GeometryObjectSteps::get_ply, &GeometryObjectSteps::set_ply, "Minimum step mesh element size.")
-        .add_property("num", &GeometryObjectSteps::get_max_points, &GeometryObjectSteps::set_max_points, "Maximum number of the steps.")
-        .def("__str__", &GeometryObjectSteps::str)
-        .def("__repr__", &GeometryObjectSteps::str)
-    ;
-    py::delattr(py::scope(), "GeometryObjectDiv");
-
-    py::class_<GeometryObject, shared_ptr<GeometryObject>, boost::noncopyable>("GeometryObject",
-        "Base class for all geometry objects.", py::no_init)
+    py::class_<GeometryObject, shared_ptr<GeometryObject>, boost::noncopyable> geometry_object("GeometryObject",
+        "Base class for all geometry objects.", py::no_init); geometry_object
         // .add_property("type", &GeometryObject::getType)
-        .add_property("steps", &GeometryObjectSteps::get, &GeometryObjectSteps::set, "Step info for mesh generation for non-uniform objects.")
+        .add_property("steps", &GeometryObjectSteps::get, &GeometryObjectSteps::set,
+                      "Step info for mesh generation for non-uniform objects.\n\n"
+                      "This parameter is considered only for the non-uniform leafs in the geometry\n"
+                      "tree. It has two attributes that can be changed:\n\n"
+                      ".. autosummary::\n"
+                      "   ~plask.geometry.GeometryObject._Steps.num\n"
+                      "   ~plask.geometry.GeometryObject._Steps.dist\n\n"
+                      "The exact meaning of these attributes depend on the mesh generator, however in\n"
+                      "general they indicate how densely should the non-uniform object be subdivided.\n\n"
+                      "It is possible to assign simply an integer number to this parameter, in which\n"
+                      "case it changes its ``num`` attribute.\n"
+                     )
         .def("validate", &GeometryObject::validate, "Check if the object is complete and ready for calculations.")
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
     ;
+
+    {py::scope scope = geometry_object;
+    py::class_<GeometryObjectSteps>("_Steps", py::no_init)
+        .add_property("dist", &GeometryObjectSteps::get_ply, &GeometryObjectSteps::set_ply,
+                      "Minimum step size.")
+        .add_property("num", &GeometryObjectSteps::get_max_points, &GeometryObjectSteps::set_max_points,
+                      "Maximum number of the mesh steps the object is divided into.")
+        .def("__str__", &GeometryObjectSteps::str)
+        .def("__repr__", &GeometryObjectSteps::str)
+    ;}
 
     py::implicitly_convertible<shared_ptr<GeometryObject>, shared_ptr<const GeometryObject>>();
     py::implicitly_convertible<shared_ptr<GeometryObjectD<2>>, shared_ptr<const GeometryObjectD<2>>>();
@@ -597,7 +610,6 @@ void register_geometry_object()
 
     init_GeometryObjectD<2>();
     init_GeometryObjectD<3>();
-
 }
 
 
