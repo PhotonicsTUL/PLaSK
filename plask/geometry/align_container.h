@@ -75,15 +75,7 @@ public:
     {}
 
     /// Called by child.change signal, update heights call this change
-    void onChildChanged(const GeometryObject::Event& evt) {
-        if (evt.isResize()) {
-            auto child = const_cast<TranslationT&>(evt.source<TranslationT>());
-            auto chAligner = this->getAlignerFor(child);
-            if (!chAligner.isNull())
-                align::align(child, chAligner, aligner);
-        }
-        GeometryObjectContainer<dim>::onChildChanged(evt);
-    }
+    void onChildChanged(const GeometryObject::Event& evt) override;
 
     /**
      * Get aligner which is use to align object in alignDirection.

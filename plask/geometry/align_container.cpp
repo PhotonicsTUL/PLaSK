@@ -48,6 +48,17 @@ shared_ptr<GeometryObject> AlignContainer<dim, alignDirection>::changedVersionFo
 }
 
 template <int dim, typename Primitive<dim>::Direction alignDirection>
+void AlignContainer<dim, alignDirection>::onChildChanged(const GeometryObject::Event &evt) {
+    if (evt.isResize()) {
+        auto& child = const_cast<AlignContainer<dim, alignDirection>::TranslationT&>(evt.source<AlignContainer<dim, alignDirection>::TranslationT>());
+        auto chAligner = this->getAlignerFor(child);
+        if (!chAligner.isNull())
+            align::align(child, chAligner, aligner);
+    }
+    GeometryObjectContainer<dim>::onChildChanged(evt);
+}
+
+template <int dim, typename Primitive<dim>::Direction alignDirection>
 PathHints::Hint AlignContainer<dim, alignDirection>::addUnsafe(shared_ptr<AlignContainer<dim, alignDirection>::ChildType> el, ChildAligner aligner) {
     return this->_addUnsafe(newTranslation(el, aligner), aligner);
 }
