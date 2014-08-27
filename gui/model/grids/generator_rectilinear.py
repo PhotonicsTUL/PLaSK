@@ -104,7 +104,7 @@ class RectilinearDivideGenerator(Grid):
         return e
 
     def __init__(self, grids_model, name, type, gradual=False, prediv=None, postdiv=None, refinements=None,
-                 warning_missing=True, warning_multiple=True, warning_outside=True):
+                 warning_missing=None, warning_multiple=None, warning_outside=None):
         super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide')
         self.gradual = gradual
         self.prediv = prediv
@@ -128,7 +128,7 @@ class RectilinearDivideGenerator(Grid):
         else:
             for i in range(0, self.dim):
                 if div[i] is not None: div_element.attrib['by' + str(i)] = div[i]
-            if len(div_element.attrib) != 0:
+            if div_element.attrib:
                 dst.append(div_element)
 
     def get_XML_element(self):
@@ -140,10 +140,11 @@ class RectilinearDivideGenerator(Grid):
             refinements_element = SubElement(res, 'refinements')
             for r in self.refinements.entries:
                 refinements_element.append(r.get_XML_element)
-        SubElement(res, 'warnings',
-                   attrib={'missing': str(self.warning_missing),
-                           'multiple': str(self.warning_multiple),
-                           'outside': str(self.warning_outside)})
+        warnings_el = Element('warnings')
+        for w in ('missing', 'multiple', 'outside'):
+            v = getattr(self, 'warning_'+w, None)
+            if v is not None and v != '': warnings_el.attrib[w] = v
+        if warnings_el.attrib: res.append(warnings_el)
         return res
 
     def __div_from_XML__(self, div_name, src):
@@ -170,10 +171,14 @@ class RectilinearDivideGenerator(Grid):
                 self.refinements.entries.append(to_append)
         warnings_element = element.find('warnings')
         if warnings_element is None:
-            self.warning_outside = True
-            self.warning_multiple = True
-            self.warning_missing = True
+            self.warning_outside = None
+            self.warning_multiple = None
+            self.warning_missing = None
         else:
-            self.warning_outside = warnings_element.attrib.get('outside', True)
-            self.warning_multiple = warnings_element.attrib.get('multiple', True)
-            self.warning_missing = warnings_element.attrib.get('missing', True)
+            self.warning_outside = warnings_element.attrib.get('outside', None)
+            self.warning_multiple = warnings_element.attrib.get('multiple', None)
+            self.warning_missing = warnings_element.attrib.get('missing', None)
+
+    def get_controller(self, document):
+        from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorConroller
+        return RectilinearDivideGeneratorConroller(document=document, model=self)

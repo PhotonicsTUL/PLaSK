@@ -36,6 +36,7 @@
     <axis0 start="1">1 2 3</axis0>
     <axis1></axis1>
   </mesh>
+  <generator method="divide" name="" type="rectangular2d"/>
 </grids>
 
 <solvers>
