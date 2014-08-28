@@ -89,10 +89,10 @@ static void Block__setattr__(py::object self, const std::string& name, const py:
     if (name[0] == 'd') {
         size_t axis = current_axes[name.substr(1)] + dim-3;
         if (axis < dim) {
-            Block<dim>& block = py::extract<Block<dim>&>(self);
-            auto dims = block.size;
+            Block<dim>* block = py::extract<Block<dim>*>(self);
+            auto dims = block->size;
             dims[axis] = py::extract<double>(value);
-            block.setSize(dims);
+            block->setSize(dims);
             return;
         }
     }
@@ -101,7 +101,7 @@ static void Block__setattr__(py::object self, const std::string& name, const py:
 
 static double Triangle__getattr__(const Triangle& self, const std::string& name) {
     if (name.front() == 'a' || name.front() == 'b') {
-        size_t axis = current_axes[name.substr(1, name.size())] - 1;
+        size_t axis = current_axes[name.substr(1)] - 1;
         if (axis < 2) return (name.front() == 'a') ? self.p0[axis] : self.p1[axis];
     }
     throw AttributeError("'Triangle' object has no attribute '%1%'", name);
@@ -110,7 +110,7 @@ static double Triangle__getattr__(const Triangle& self, const std::string& name)
 static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {
     const bool zero = (name.front() == 'a');
     if (zero || name.front() == 'b') {
-        size_t axis = current_axes[name.substr(1, name.size())] - 1;
+        size_t axis = current_axes[name.substr(1)] - 1;
         if (axis < 2) {
             Triangle& t = py::extract<Triangle&>(self);
             Vec<2, double> v = zero ? t.p0 : t.p1;

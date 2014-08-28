@@ -318,18 +318,19 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
             if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
             else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
             else {
-                throw TypeError("wrong dtype (can be only double or complex)");
+                throw TypeError("wrong dtype (can be only float or complex)");
             }
         }
     }
 
     if (n == 0) { // Extract components from kwargs
 
-        n = py::len(kwargs);
+        n = nk;
         py::object comp[3];
 
         py::stl_input_iterator<std::string> begin(kwargs.keys()), end;
         for (auto key = begin; key != end; ++key) {
+            if (*key == "dtype") continue;
             py::object val = kwargs[*key];
             try {
                 if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
@@ -431,10 +432,10 @@ const static char* __doc__ =
 
     "    >>> config.axes = 'rz'\n"
     "    >>> vec(r=2, z=0, dtype=complex)\n"
-    "    plask.vec(2, 0)\n\n"
+    "    plask.vec((2+0j), (0+0j))\n\n"
 
     "To access vector components you may either use attribute names or numerical\n"
-    "indexing. The ordering and naming rules are the same as for the construction.\n"
+    "indexing. The ordering and naming rules are the same as for the construction.\n\n"
 
     "Examples:\n\n"
 
