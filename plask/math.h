@@ -253,6 +253,38 @@ std::complex<T> parse_complex(const std::string& str_to_parse) {
 
 extern template PLASK_API std::complex<double> parse_complex<double>(const std::string& str_to_parse);
 
+
+/**
+ * Allow to compute sum of doubles much more accurate than directly.
+ *
+ * It uses O(1) memory (stores 2 doubles) and all it's operation has O(1) time complexity.
+ *
+ * It use Kahan method
+ * http://en.wikipedia.org/wiki/Kahan_summation_algorithm
+ */
+class AccurateSum {
+
+    double s, c;    // c is a running compensation for lost low-order bits.
+
+public:
+
+    AccurateSum(double initial = 0.0): s(initial), c(0.0) {}
+
+    AccurateSum& operator=(double v);
+
+    AccurateSum(const AccurateSum& initial) = default;
+    AccurateSum& operator=(const AccurateSum& v) = default;
+
+    AccurateSum& operator+=(double v);
+    AccurateSum& operator-=(double v) { return *this += -v; }
+
+    operator double() const { return s; }
+
+    AccurateSum& operator+=(const AccurateSum& other);
+
+};
+
+
 } // namespace plask
 
 #endif // PLASK__NUMBERS_H

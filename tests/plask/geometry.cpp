@@ -88,10 +88,10 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
             stack->add(block_5_4, plask::align::tran(0.0));
         }   //3x(3+4)=21
         BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 6);
-        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, 21.0));
+        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, (4+3)*3));
         stack->removeAt(5); //remove one 5x4 block
         BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 5);
-        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, 21.0 - 4.0));
+        BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, (4+3)*3 - 4.0));
         stack->remove(block_5_3);   //remove all, 3, 5x3 blocks, on stack stay 2 5x4 blocks
         BOOST_CHECK_EQUAL(stack->getRealChildrenCount(), 2);
         BOOST_CHECK_EQUAL(stack->getBoundingBox(), plask::Box2D(0.0, 0.0, 5.0, 8.0));

@@ -62,9 +62,15 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     /**
      * @param height
-     * @return child which are on given @a height or @c nullptr
+     * @param sec_candidate[out] child which can be at given @a height
+     * @return child which can be at given @a height or @c nullptr (than sec_candidate is also not set)
      */
-    const shared_ptr<TranslationT> getChildForHeight(double height) const;
+    const shared_ptr<TranslationT> getChildForHeight(double height, shared_ptr<TranslationT>& sec_candidate) const;
+
+    const shared_ptr<TranslationT> getChildForHeight(double height) const {
+        shared_ptr<TranslationT> to_ignore;
+        return getChildForHeight(height, to_ignore);
+    }
 
     virtual bool contains(const DVec& p) const override;
 
@@ -131,7 +137,9 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
      * Update stack heights and translation in stack growing direction of all children, with indexes from @a first_child_index.
      * @param first_child_index index of first child for which stackHeights should be update
      */
-    void updateAllHeights(std::size_t first_child_index = 0);
+    void updateAllHeights(std::size_t first_child_index);
+
+    void updateAllHeights();
 
     /**
      * Resize stackHeights (to be compatibile with children vector) and refresh its value from given index.

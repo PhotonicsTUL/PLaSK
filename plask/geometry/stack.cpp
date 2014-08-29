@@ -38,26 +38,49 @@ std::size_t StackContainerBaseImpl<dim, growingDirection>::getInsertionIndexForH
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 const shared_ptr<typename StackContainerBaseImpl<dim, growingDirection>::TranslationT>
-StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height) const {
+StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(double height, shared_ptr<typename StackContainerBaseImpl<dim, growingDirection>::TranslationT>& sec_candidate) const {
     auto it = std::lower_bound(stackHeights.begin(), stackHeights.end(), height);
-    if (it == stackHeights.end()) return shared_ptr<TranslationT>();
-    if (it == stackHeights.begin()) {
-        if (height == stackHeights.front()) return children[0];
-        else return shared_ptr<TranslationT>();
+    //we have: *it >= height > *(it-1)
+    if (it == stackHeights.end()) { //height > stackHeights.back()
+        if (is_zero(height - stackHeights.back(), 16*SMALL) && !children.empty())
+            return children.back();
+        return shared_ptr<TranslationT>();
     }
-    return children[it-stackHeights.begin()-1];
+    if (it == stackHeights.begin()) {   //stackHeights.front() >= height
+        if (is_zero(stackHeights.front() - height, 16*SMALL)) //children.empty() now imposible - then it == stackHeights.end()
+            return children[0];
+        else
+            return shared_ptr<TranslationT>();
+    }
+    auto sh_index = it - stackHeights.begin();
+    if (sh_index > 1 && is_zero(height - stackHeights[sh_index-1], 16*SMALL))
+        sec_candidate = children[sh_index-2];
+    else
+        if (sh_index < stackHeights.size() && is_zero(stackHeights[sh_index+1] - height, 16*SMALL))
+            sec_candidate = children[sh_index];
+    return children[sh_index-1];
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 bool StackContainerBaseImpl<dim, growingDirection>::contains(const StackContainerBaseImpl::DVec &p) const {
-    const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection]);
-    return c ? c->contains(p) : false;
+    shared_ptr<TranslationT> sec_candidate;
+    const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection], sec_candidate);
+    if (!c) {
+        if (c->contains(p)) return true;
+        if (sec_candidate) return sec_candidate->contains(p);
+    }
+    return false;
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 shared_ptr<Material> StackContainerBaseImpl<dim, growingDirection>::getMaterial(const StackContainerBaseImpl::DVec &p) const {
-    const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection]);
-    return c ? c->getMaterial(p) : shared_ptr<Material>();
+    shared_ptr<TranslationT> sec_candidate;
+    const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection], sec_candidate);
+    if (c) {
+        if (auto material = c->getMaterial(p)) return material;
+        if (sec_candidate) return sec_candidate->getMaterial(p);
+    }
+    return shared_ptr<Material>();
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
@@ -77,6 +100,21 @@ template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::updateAllHeights(std::size_t first_child_index) {
     for ( ; first_child_index < children.size(); ++first_child_index)
         updateHeight(first_child_index);
+
+    updateAllHeights();     //!to use AccurateSum
+}
+
+template <int dim, typename Primitive<dim>::Direction growingDirection>
+void StackContainerBaseImpl<dim, growingDirection>::updateAllHeights() {
+    AccurateSum sum = stackHeights[0];
+    for (std::size_t child_index = 0; child_index < children.size(); ++child_index) {
+        auto elBoudingBox = children[child_index]->getChild()->getBoundingBox();
+        sum -= elBoudingBox.lower[growingDirection];
+        children[child_index]->translation[growingDirection] = sum;
+        sum += elBoudingBox.upper[growingDirection];
+        stackHeights[child_index+1] = sum;
+        //sum = stackHeights[child_index+1] = stackHeights[child_index] + elBoudingBox.upper[growingDirection];
+    }
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
@@ -135,6 +173,9 @@ PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& e
         children[i]->translation.vert() += delta;
     }
     stackHeights.back() += delta;
+
+    this->updateAllHeights(); //!to use AccurateSum
+
     this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
@@ -178,6 +219,9 @@ PathHints::Hint StackContainer<dim>::addUnsafe(const shared_ptr<StackContainer::
     children.push_back(trans_geom);
     stackHeights.push_back(next_height);
     this->aligners.push_back(aligner);
+
+    this->updateAllHeights(); //!to use AccurateSum
+
     this->fireChildrenInserted(children.size()-1, children.size());
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
@@ -271,6 +315,9 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
     connectOnChildChanged(*trans_geom);
     children.push_back(trans_geom);
     stackHeights.push_back(next_height);
+
+    this->updateAllHeights(); //!to use AccurateSum
+
     this->fireChildrenInserted(children.size()-1, children.size());
     return PathHints::Hint(shared_from_this(), trans_geom);
 }
@@ -287,6 +334,9 @@ PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, 
         children[i]->translation.tran() += delta;
     }
     stackHeights.back() += delta;
+
+    this->updateAllHeights(); //!to use AccurateSum
+
     this->fireChildrenInserted(pos, pos+1);
     return PathHints::Hint(shared_from_this(), trans_geom);
 }

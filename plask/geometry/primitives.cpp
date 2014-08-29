@@ -29,7 +29,7 @@ void Box2D::fix() {
 
 
 bool Box2D::contains(const Vec<2, double >& p) const {
-    return lower.c0/**/ <= p.c0 && p.c0 <= upper.c0 &&
+    return lower.c0 <= p.c0 && p.c0 <= upper.c0 &&
            lower.c1 <= p.c1 && p.c1 <= upper.c1;
 }
 
