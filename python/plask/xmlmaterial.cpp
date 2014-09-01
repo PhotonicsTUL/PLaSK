@@ -42,6 +42,8 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
      {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
+
+    bool isSimple() const override { return true; }
 };
 
 class PythonEvalMaterial : public Material

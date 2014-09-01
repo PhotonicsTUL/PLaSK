@@ -133,7 +133,8 @@ class RectilinearDivideGenerator(Grid):
 
     def get_XML_element(self):
         res = super(RectilinearDivideGenerator, self).get_XML_element()
-        if not self.gradual: SubElement(res, "no-gradual")
+        if self.gradual is not None:
+            SubElement(res, "gradual", attrib={'all': self.gradual})
         self.__append_div_XML_element__('prediv', res)
         self.__append_div_XML_element__('postdiv', res)
         if len(self.refinements.entries) > 0:
@@ -159,7 +160,11 @@ class RectilinearDivideGenerator(Grid):
                 setattr(self, div_name, tuple(div_element.attrib.get('by'+str(i)) for i in range(0, self.dim)))
 
     def set_XML_element(self, element):
-        self.gradual = element.find('no-gradual') is None
+        gradual_element = element.find('gradual')
+        if gradual_element is not None:
+            self.gradual = element.attrib.get('all', None)
+        else:
+            self.gradual = str(element.find('no-gradual') is None)   #deprecated
         self.__div_from_XML__('prediv', element)
         self.__div_from_XML__('postdiv', element)
         self.refinements.entries = []

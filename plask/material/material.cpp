@@ -50,6 +50,10 @@ std::string Material::str() const {
     return name();
 }
 
+bool Material::isSimple() const {
+    return MaterialsDB::isSimpleMaterialName(str());
+}
+
 double Material::A(double T) const { throwNotImplemented("A(double T)"); return 0; }
 
 double Material::absp(double wl, double T) const { return 0.; }

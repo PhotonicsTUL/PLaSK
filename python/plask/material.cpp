@@ -440,6 +440,8 @@ class PythonSimpleMaterialConstructor: public MaterialsDB::MaterialConstructor
         }
         return py::extract<shared_ptr<Material>>(material_class(*args, **kwargs));
     }
+
+    bool isSimple() const override { return true; }
 };
 
 /**
@@ -474,6 +476,8 @@ class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
 
         return py::extract<shared_ptr<Material>>(material);
     }
+
+    bool isSimple() const override { return false; }
 };
 
 

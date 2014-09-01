@@ -101,6 +101,11 @@ struct PLASK_API MaterialsDB {
          */
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType dopant_amount_type, double dopant_amount) const = 0;
 
+        /**
+         * @return @c true only if this contructor creates simple material (does not use composition)
+         */
+        virtual bool isSimple() const = 0;
+
         virtual ~MaterialConstructor() {}
     };
 
@@ -306,36 +311,52 @@ public:
 
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, true, true>: public MaterialConstructor {
+
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
             ensureCompositionIsNotEmpty(composition);
             return make_shared<MaterialType>(Material::completeComposition(composition), doping_amount_type, doping_amount);
         }
+
+        bool isSimple() const override { return false; }    // == ! requireComposition
     };
 
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, true, false>: public MaterialConstructor {
+
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType, double) const {
+
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType, double) const override {
             ensureCompositionIsNotEmpty(composition);
             return make_shared<MaterialType>(Material::completeComposition(composition));
         }
+
+        bool isSimple() const override { return false; }
     };
 
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, false, true>: public MaterialConstructor {
+
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+
+        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
             return make_shared<MaterialType>(doping_amount_type, doping_amount);
         }
+
+        bool isSimple() const override { return true; }
     };
 
     template <typename MaterialType>
     struct DelegateMaterialConstructor<MaterialType, false, false>: public MaterialConstructor {
+
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
-        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType, double) const {
+
+        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType, double) const override {
             return make_shared<MaterialType>();
         }
+
+        bool isSimple() const override { return true; }
     };
 
     /**

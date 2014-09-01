@@ -297,6 +297,12 @@ struct PLASK_API Material {
      */
     virtual std::string str() const;
 
+    /**
+     * Check if @c this material is simple.
+     * @return @c true only if @c this material is simple
+     */
+    bool isSimple() const;
+
     /// @return material kind
     virtual Kind kind() const = 0;
 
