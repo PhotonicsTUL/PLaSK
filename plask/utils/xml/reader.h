@@ -759,6 +759,15 @@ private:
     }
 
     /**
+     * Call requireNext() and next check if current element is text. Throw exception if it's not. Next require end of tag.
+     * \return read text casted (by lexical_cast) to givent type T
+     */
+    template <typename T>
+    inline T requireTextInCurrentTag() {
+        return parse<T>(requireTextInCurrentTag());
+    }
+
+    /**
      * Skip everything up to element with required type on required level.
      * @param required_level level on which required element should be
      * @param required_type type of required element

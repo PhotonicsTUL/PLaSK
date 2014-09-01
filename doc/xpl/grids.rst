@@ -162,9 +162,21 @@ Possible <generator> contents for different types and methods
 
    .. xml:contents::
 
+      .. xml:tag:: <gradual/> [in ordered, divide generator]
+
+         Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+         Gradual is enabled by default.
+
+         .. xml:contents::
+
+            Boolean value: ``true`` (default value) to enable gradual, ``false`` to disable.
+
       .. xml:tag:: <no-gradual/> [in ordered, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+         Deprecated alias to ``<gradual>false</gradual>``.
 
       .. xml:tag:: <prediv/> [in ordered, divide generator]
 
@@ -224,9 +236,21 @@ Possible <generator> contents for different types and methods
 
    .. xml:contents::
 
+      .. xml:tag:: <gradual/> [in rectangular2d, divide generator]
+
+         Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+         Gradual is enabled by default.
+
+         .. xml:contents::
+
+            Boolean value: ``true`` (default value) to enable gradual, ``false`` to disable.
+
       .. xml:tag:: <no-gradual/> [in rectangular2d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+         Deprecated alias to ``<gradual>false</gradual>``.
 
       .. xml:tag:: <prediv/> [in rectangular2d, divide generator]
 
@@ -295,9 +319,21 @@ Possible <generator> contents for different types and methods
 
    .. xml:contents::
 
+      .. xml:tag:: <gradual/> [in rectangular3d, divide generator]
+
+         Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+         Gradual is enabled by default.
+
+         .. xml:contents::
+
+            Boolean value: ``true`` (default value) to enable gradual, ``false`` to disable.
+
       .. xml:tag:: <no-gradual/> [in rectangular3d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
+
+         Deprecated alias to ``<gradual>false</gradual>``.
 
       .. xml:tag:: <prediv/> [in rectangular3d, divide generator]
 
