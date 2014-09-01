@@ -310,7 +310,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         if self.isWindowModified():
-            confirm = QtGui.QMessageBox.question(self, "Unsaved FIle",
+            confirm = QtGui.QMessageBox.question(self, "Unsaved File",
                                                  "File is not saved. Do you want to save it before closing the window?",
                                                  QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
             if confirm == QtGui.QMessageBox.Cancel or (confirm == QtGui.QMessageBox.Yes and not self.save()):
