@@ -168,15 +168,13 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         .. xml:contents::
-
-            Boolean value: ``true`` (default value) to enable gradual, ``false`` to disable.
+         :attr all: enable (if ``true``) or disable (if ``false``) gradual for all axes (boolean, ``true`` by default)
 
       .. xml:tag:: <no-gradual/> [in ordered, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-         Deprecated alias to ``<gradual>false</gradual>``.
+         Deprecated alias to ``<gradual all="false"/>``.
 
       .. xml:tag:: <prediv/> [in ordered, divide generator]
 
@@ -242,15 +240,13 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         .. xml:contents::
-
-            Boolean value: ``true`` (default value) to enable gradual, ``false`` to disable.
+         :attr all: enable (if ``true``) or disable (if ``false``) gradual for all axes (boolean, ``true`` by default)
 
       .. xml:tag:: <no-gradual/> [in rectangular2d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-         Deprecated alias to ``<gradual>false</gradual>``.
+         Deprecated alias to ``<gradual all="false"/>``.
 
       .. xml:tag:: <prediv/> [in rectangular2d, divide generator]
 
@@ -325,15 +321,13 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         .. xml:contents::
-
-            Boolean value: ``true`` (default value) to enable gradual, ``false`` to disable.
+         :attr all: enable (if ``true``) or disable (if ``false``) gradual for all axes (boolean, ``true`` by default)
 
       .. xml:tag:: <no-gradual/> [in rectangular3d, divide generator]
 
          Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
 
-         Deprecated alias to ``<gradual>false</gradual>``.
+         Deprecated alias to ``<gradual all="false"/>``.
 
       .. xml:tag:: <prediv/> [in rectangular3d, divide generator]
 
