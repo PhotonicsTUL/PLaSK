@@ -817,6 +817,7 @@ void initMaterials() {
         .def("__str__", &Material__str__)
         .def("__repr__", &Material__repr__)
         .def("__eq__", (bool(Material::*)(const Material&)const)&Material::operator==)
+        .def("is_simple", &Material::isSimple)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("e")=0, py::arg("point")='G'), "Get energy gap Eg [eV]")
