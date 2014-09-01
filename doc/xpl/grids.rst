@@ -168,7 +168,7 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         :attr all: enable (if ``true``) or disable (if ``false``) gradual for all axes (boolean, ``true`` by default)
+         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (boolean, ``yes`` by default)
 
       .. xml:tag:: <no-gradual/> [in ordered, divide generator]
 
@@ -240,7 +240,7 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         :attr all: enable (if ``true``) or disable (if ``false``) gradual for all axes (boolean, ``true`` by default)
+         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (boolean, ``yes`` by default)
 
       .. xml:tag:: <no-gradual/> [in rectangular2d, divide generator]
 
@@ -321,7 +321,7 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         :attr all: enable (if ``true``) or disable (if ``false``) gradual for all axes (boolean, ``true`` by default)
+         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (boolean, ``yes`` by default)
 
       .. xml:tag:: <no-gradual/> [in rectangular3d, divide generator]
 
