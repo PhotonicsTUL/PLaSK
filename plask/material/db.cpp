@@ -170,7 +170,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant
 shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     std::string name_with_components, dopant_name;
     std::tie(name_with_components, dopant_name) = splitString2(name_with_dopant, ':');
-    if (name_with_components.find('(') == std::string::npos) {  //simple case, without parsing composition
+    if (isSimpleMaterialName(name_with_components)) {  //simple case, without parsing composition
         std::string dbKey = name_with_components;
         appendDopant(dbKey, dopant_name);
         return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
@@ -184,7 +184,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
     Material::DopingAmountType doping_amount_type = Material::NO_DOPING;
     if (!doping_descr.empty())
         Material::parseDopant(doping_descr, dopant_name, doping_amount_type, doping_amount);
-    if (name_with_components.find('(') == std::string::npos) {  //simple case, without parsing composition
+    if (isSimpleMaterialName(name_with_components)) {  //simple case, without parsing composition
         std::string dbKey = name_with_components;
         appendDopant(dbKey, dopant_name);
         return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
@@ -200,7 +200,7 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
 shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1name_with_components, const std::string& material2name_with_components,
                                                  const std::string& dopant_name, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount) const
 {
-    if (material1name_with_components.find('(') == std::string::npos) {  // simple material, without parsing composition, still dopants can be mixed
+    if (isSimpleMaterialName(material1name_with_components)) {  // simple material, without parsing composition, still dopants can be mixed
         if (material1name_with_components != material2name_with_components)
             throw MaterialCantBeMixedException(material1name_with_components, material2name_with_components, dopant_name);
         if (dopAmountType == Material::NO_DOPING || m1DopAmount == m2DopAmount)
@@ -212,7 +212,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
                     );
     }
     //complex materials:
-    if (material2name_with_components.find('(') == std::string::npos)   // mix complex with simple?
+    if (isSimpleMaterialName(material2name_with_components))   // mix complex with simple?
         throw MaterialCantBeMixedException(material1name_with_components, material2name_with_components, dopant_name);
 
     return getFactory(Material::parseComposition(material1name_with_components),
@@ -277,6 +277,10 @@ void MaterialsDB::removeSimple(const std::string& name) {
 void MaterialsDB::removeComplex(const std::string& name) {
     constructors.erase(dbKey(name));
 }
+
+bool MaterialsDB::isNameWithDopant(const std::string &material) { return material.find(':') != std::string::npos; }
+
+bool MaterialsDB::isSimpleMaterialName(const std::string &material) { return material.find('(') == std::string::npos; }
 
 
 }  // namespace plask
