@@ -325,9 +325,10 @@ static shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reade
                 for (int i = 0; i < dim; ++i) result->post_divisions[i] = reader.getAttribute<size_t>(format("by%1%", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "gradual") {
-            result->setGradual(reader.requireTextInCurrentTag<bool>());
+            result->setGradual(reader.requireAttribute<bool>("all"));
+            reader.requireTagEnd();
         } else if (reader.getNodeName() == "no-gradual") {
-            writelog(LOG_WARNING, "Tag '<no-gradual>' is obsolete, type '<gradual>false</gradual>' instead");
+            writelog(LOG_WARNING, "Tag '<no-gradual>' is obsolete, type '<gradual all=\"false\"/>' instead");
             result->setGradual(false);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "warnings") {
