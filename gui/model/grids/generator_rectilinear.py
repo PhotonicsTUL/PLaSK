@@ -187,6 +187,24 @@ class RectilinearDivideGenerator(Grid):
             for w in RectilinearDivideGenerator.warnings:
                 setattr(self, 'warning_' + w, warnings_element.attrib.get(w, None))
 
+    def __set_div__(self, attr_name, div_tab):
+        if div_tab is None or div_tab.count(None) == self.dim:
+            setattr(self, attr_name, None)
+        else:
+            setattr(self, attr_name, div_tab)
+
+    def get_prediv(self, index):
+        return None if self.prediv is None else self.prediv[index]
+
+    def set_prediv(self, prediv_tab):
+        self.__set_div__('prediv', prediv_tab)
+
+    def get_postdiv(self, index):
+        return None if self.postdiv is None else self.postdiv[index]
+
+    def set_postdiv(self, postdiv_tab):
+        self.__set_div__('postdiv', postdiv_tab)
+
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorConroller
         return RectilinearDivideGeneratorConroller(document=document, model=self)
