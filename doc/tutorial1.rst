@@ -132,7 +132,7 @@ The other solver we use is ``electrical.Shockley2D``. Its configuration is very 
       <electrical solver="Shockley2D" name="electr">
         <geometry ref="main"/>
         <mesh ref="default"/>
-        <junction Shockley="19" js="1"/>
+        <junction beta="19" js="1"/>
         <voltage>
           <condition value="1.0">
             <place object="top-layer" side="top"/>
@@ -205,7 +205,7 @@ After you have specified the above connections, bi-directional data exchange bet
           <electrical solver="Shockley2D" name="electr">
         <geometry ref="main"/>
         <mesh ref="default"/>
-        <junction Shockley="19" js="1"/>
+        <junction beta="19" js="1"/>
         <voltage>
           <condition value="1.0">
             <place object="top-layer" side="top"/>
