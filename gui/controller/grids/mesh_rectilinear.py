@@ -57,7 +57,7 @@ class AxisEdit(QtGui.QGroupBox):
                 self.type.setCurrentIndex(0)
             else:
                 self.type.setEditText(t)
-        for attr_name in ['start', 'stop', 'num', 'points']:
+        for attr_name in ('start', 'stop', 'num', 'points'):
             a = getattr(axis_model, attr_name)
             widget = getattr(self, attr_name, False)
             if widget: widget.setText('' if a is None else a)

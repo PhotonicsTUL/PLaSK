@@ -97,6 +97,8 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
 class RectilinearDivideGenerator(Grid):
     """Model for all rectilinear generators (ordered, rectangular2d, rectangular3d)"""
 
+    warnings = ('missing', 'multiple', 'outside')
+
     @staticmethod
     def from_XML(grids_model, element):
         e = RectilinearDivideGenerator(grids_model, element.attrib['name'], element.attrib['type'])
@@ -142,7 +144,7 @@ class RectilinearDivideGenerator(Grid):
             for r in self.refinements.entries:
                 refinements_element.append(r.get_XML_element)
         warnings_el = Element('warnings')
-        for w in ('missing', 'multiple', 'outside'):
+        for w in RectilinearDivideGenerator.warnings:
             v = getattr(self, 'warning_'+w, None)
             if v is not None and v != '': warnings_el.attrib[w] = v
         if warnings_el.attrib: res.append(warnings_el)
@@ -164,7 +166,10 @@ class RectilinearDivideGenerator(Grid):
         if gradual_element is not None:
             self.gradual = element.attrib.get('all', None)
         else:
-            self.gradual = str(element.find('no-gradual') is None)   #deprecated
+            if element.find('no-gradual'):     #deprecated
+                self.gradual = 'no'
+            else:
+                self.gradual = None
         self.__div_from_XML__('prediv', element)
         self.__div_from_XML__('postdiv', element)
         self.refinements.entries = []
@@ -176,13 +181,11 @@ class RectilinearDivideGenerator(Grid):
                 self.refinements.entries.append(to_append)
         warnings_element = element.find('warnings')
         if warnings_element is None:
-            self.warning_outside = None
-            self.warning_multiple = None
-            self.warning_missing = None
+            for w in RectilinearDivideGenerator.warnings:
+                setattr(self, 'warning_' + w, None)
         else:
-            self.warning_outside = warnings_element.attrib.get('outside', None)
-            self.warning_multiple = warnings_element.attrib.get('multiple', None)
-            self.warning_missing = warnings_element.attrib.get('missing', None)
+            for w in RectilinearDivideGenerator.warnings:
+                setattr(self, 'warning_' + w, warnings_element.attrib.get(w, None))
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorConroller
