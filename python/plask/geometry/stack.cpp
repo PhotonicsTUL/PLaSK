@@ -140,21 +140,22 @@ void register_geometry_container_stack()
                       "Number of repeats of the stack content")
     ;
 
-    py::class_<MultiStackContainer<plask::StackContainer<3>>, shared_ptr<MultiStackContainer<plask::StackContainer<3>>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
+    py::class_<MultiStackContainer<plask::StackContainer<3>>, shared_ptr<MultiStackContainer<StackContainer<3>>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
         "Stack container which repeats its contents (3D version)\n\n"
         "MultiStack3D(repeat=1, shift=0, **kwargs)\n"
         "    Create new multi-stack with 'repeat' repetitions \n    and the first object at the 'shift' position (in container local coordinates)..\n\n"
         "    'kwargs' may contain default aligner specification.\n\n"
         "See geometry.Stack3D(...).\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<3>))
-        .add_property("repeat", &MultiStackContainer<plask::StackContainer<3>>::getRepeatCount, &MultiStackContainer<plask::StackContainer<3>>::setRepeatCount,
+        .add_property("repeat", &MultiStackContainer<plask::StackContainer<3>>::getRepeatCount, &MultiStackContainer<StackContainer<3>>::setRepeatCount,
                       "Number of repeats of the stack content")
     ;
 
     // Shelf (horizontal stack)
+
     py::class_<ShelfContainer2D, shared_ptr<ShelfContainer2D>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>("Shelf2D",
         "Container that organizes its children one next to another (like books on a bookshelf)\n\n"
-        "Shelf2D(shift=0)\n"
+        "SingleShelf2D(shift=0)\n"
         "    Create the shelf with the left side of the first object at the shift position (in container local coordinates).",
         py::init<double>((py::arg("shift")=0.)))
         .def("append", &ShelfContainer2D::push_back, (py::arg("item")), "Append new object to the container")
@@ -165,6 +166,17 @@ void register_geometry_container_stack()
         .add_property("flat", &ShelfContainer2D::isFlat, "True if all children has the same height (the top line is flat)")
     ;
     py::scope().attr("Shelf") = py::scope().attr("Shelf2D");
+
+    py::class_<MultiStackContainer<plask::ShelfContainer2D>, shared_ptr<MultiStackContainer<ShelfContainer2D>>, py::bases<ShelfContainer2D>, boost::noncopyable>("MultiShelf2D",
+        "Shelf container which repeats its contents\n\n"
+        "MultiShelf2D(repeat=1, shift=0)\n"
+        "    Create new multi-stack with 'repeat' repetitions \n    and the first object at the 'shift' position (in container local coordinates)..\n"
+        "See geometry.Shelf2D(...).\n", py::init<size_t, double>((py::arg("repeat")=1, py::arg("shift")=0.)))
+        .add_property("repeat", &MultiStackContainer<plask::ShelfContainer2D>::getRepeatCount, &MultiStackContainer<ShelfContainer2D>::setRepeatCount,
+                      "Number of repeats of the shelf content")
+    ;
+
+
 }
 
 

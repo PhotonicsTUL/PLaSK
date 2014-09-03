@@ -106,7 +106,7 @@ material.const = staticmethod
 
 def Stack2D(repeat=None, shift=0., **kwargs):
     '''Stack2D(repeat=None, shift=0)
-           Create the stack, optionally repeating it 'repeat' times and with the bottom side
+           Create a stack, optionally repeating it 'repeat' times and with the bottom side
            of the first object at the 'shift' position (in container local coordinates).
            'kwargs' may contain default aligner specification.
 
@@ -121,7 +121,7 @@ del Stack2D
 
 def Stack3D(repeat=None, shift=0., **kwargs):
     '''Stack3D(repeat=None, shift=0)
-           Create the stack, optionally repeating it 'repeat' times and with the bottom side
+           Create a stack, optionally repeating it 'repeat' times and with the bottom side
            of the first object at the 'shift' position (in container local coordinates).
            'kwargs' may contain default aligner specification.
 
@@ -134,6 +134,19 @@ def Stack3D(repeat=None, shift=0., **kwargs):
 geometry.Stack3D = Stack3D
 del Stack3D
 
+def Shelf(repeat=None, shift=0., **kwargs):
+    '''Shelf(repeat=None, shift=0)
+           Create a shelf, optionally repeating it 'repeat' times and with the bottom side
+           of the first object at the 'shift' position (in container local coordinates).
+
+           If 'repeat' is None, this function creates Shelf2D and MultiShelf2D otherwise.
+    '''
+    if repeat is None:
+        return geometry.Shelf2D(shift, **kwargs)
+    else:
+        return geometry.MultiShelf2D(repeat, shift, **kwargs)
+geometry.Shelf = Shelf
+del Shelf
 
 ## ## plask.manager ## ##
 
