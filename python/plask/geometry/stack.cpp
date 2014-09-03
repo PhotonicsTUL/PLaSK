@@ -68,7 +68,7 @@ shared_ptr<MultiStackContainer<plask::StackContainer<dim>>> MultiStack__init__(c
     size_t repeat;
     if (py::len(args) > 1) {
         if (kwargs.has_key("repeat"))
-            throw TypeError("__init__() got multiple values for keyword argument 'shift'");
+            throw TypeError("__init__() got multiple values for keyword argument 'repeat'");
         repeat = py::extract<size_t>(args[1]);
     } else if (kwargs.has_key("repeat")) {
         repeat = py::extract<size_t>(kwargs["repeat"]);

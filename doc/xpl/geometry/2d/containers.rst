@@ -76,12 +76,13 @@ Containers
 
 .. xml:tag:: <shelf2d> (or shelf)
 
-   Corresponding Python class: :py:class:`plask.geometry.Shelf2D`.
+   Corresponding Python class: :py:class:`plask.geometry.Shelf2D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiShelf2D` (if ``repeat``\ >1).
 
    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
+   :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic horizontal structures easily. Defaults to 1. (integer)
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
    :attr shift: Horizontal position of the shelf left edge in its local coordinates. Defaults to 0. (float [µm])
 
