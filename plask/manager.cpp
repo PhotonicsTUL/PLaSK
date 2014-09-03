@@ -301,9 +301,13 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
                     .get(maxLoglevel);
             }
         }
+
+        size_t next = 0;
+
         reader.requireTag();
 
         if (reader.getNodeName() == TAG_NAME_DEFINES) {
+            next = 1;
             if (section_filter(TAG_NAME_DEFINES)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadDefines(reader);
             } else
@@ -312,6 +316,7 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
         }
 
         if (reader.getNodeName() == TAG_NAME_MATERIALS) {
+            next = 2;
             if (section_filter(TAG_NAME_MATERIALS)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadMaterials(reader, materialsSource);
             } else
@@ -320,6 +325,7 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
         }
 
         if (reader.getNodeName() == TAG_NAME_GEOMETRY) {
+            next = 3;
             if (section_filter(TAG_NAME_GEOMETRY)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) {
                     GeometryReader greader(*this, reader, materialsSource);
@@ -331,6 +337,7 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
         }
 
         if (reader.getNodeName() == TAG_NAME_GRIDS) {
+            next = 4;
             if (section_filter(TAG_NAME_GRIDS)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadGrids(reader);
             } else
@@ -339,6 +346,7 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
         }
 
         if (reader.getNodeName() == TAG_NAME_SOLVERS) {
+            next = 5;
             if (section_filter(TAG_NAME_SOLVERS)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadSolvers(reader);
             } else
@@ -347,6 +355,7 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
         }
 
         if (reader.getNodeName() == TAG_NAME_CONNECTS) {
+            next = 6;
             if (section_filter(TAG_NAME_CONNECTS)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadConnects(reader);
             } else
@@ -355,12 +364,25 @@ void Manager::load(XMLReader& reader, shared_ptr<const MaterialsSource> material
         }
 
         if (reader.getNodeName() == TAG_NAME_SCRIPT) {
+            next = 7;
             if (section_filter(TAG_NAME_SCRIPT)) {
                 if (!tryLoadFromExternal(reader, materialsSource, load_from)) loadScript(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
         }
+
+        const char* tags[] = { TAG_NAME_DEFINES, TAG_NAME_MATERIALS, TAG_NAME_GEOMETRY, TAG_NAME_GRIDS,
+                               TAG_NAME_SOLVERS, TAG_NAME_CONNECTS, TAG_NAME_SCRIPT };
+        std::string msg;
+        for (; next != 7; ++next) {
+            msg += "<"; msg += tags[next]; msg += ">, ";
+        }
+        if (msg != "") msg += "or ";
+        msg += "</plask>";
+
+        throw XMLUnexpectedElementException(reader, msg);
+
     } catch (const XMLException&) {
         throw;
     } catch (const std::exception& err) {
