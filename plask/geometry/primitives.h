@@ -175,6 +175,13 @@ struct PLASK_API Box2D {
     void translateUp(const double trasnalation_in_up_dir) { lower.vert() += trasnalation_in_up_dir; upper.vert() += trasnalation_in_up_dir; }
 
     /**
+     * Translate this in @p dir_index direction by @p trasnalation_in_dir.
+     * @param dir_index direction index, 0 or 1
+     * @param trasnalation_in_dir translation in @p dir_index direction
+     */
+    void translateDir(unsigned dir_index, const double trasnalation_in_dir) { lower[dir_index] += trasnalation_in_dir; upper[dir_index] += trasnalation_in_dir; }
+
+    /**
      * Translate a point to be inside the box by shifting to the closest edge.
      * This method assumes that the box is fixed.
      * @param p given point
@@ -468,6 +475,13 @@ struct PLASK_API Box3D {
      * @param trasnalation_in_up_dir translation in up direction
      */
     void translateUp(const double trasnalation_in_up_dir) { lower.vert() += trasnalation_in_up_dir; upper.vert() += trasnalation_in_up_dir; }
+
+    /**
+     * Translate this in @p dir_index direction by @p trasnalation_in_dir.
+     * @param dir_index direction index, 0, 1 or 2
+     * @param trasnalation_in_dir translation in @p dir_index direction
+     */
+    void translateDir(unsigned dir_index, const double trasnalation_in_dir) { lower[dir_index] += trasnalation_in_dir; upper[dir_index] += trasnalation_in_dir; }
 
     /**
      * Make this box, the minimal one which include @c this and @p other box.

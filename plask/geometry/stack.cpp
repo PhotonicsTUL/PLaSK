@@ -367,7 +367,7 @@ bool MultiStackContainer<UpperClass>::reduceHeight(double& height) const {
 template <typename UpperClass>
 typename MultiStackContainer<UpperClass>::Box MultiStackContainer<UpperClass>::getBoundingBox() const {
     Box result = UpperClass::getBoundingBox();
-    result.upper.vert() += result.height() * (repeat_count-1);
+    result.upper[UpperClass::GROWING_DIR] += result.height() * (repeat_count-1);
     return result;
 }
 
@@ -400,7 +400,7 @@ void MultiStackContainer<UpperClass>::getBoundingBoxesToVec(const GeometryObject
         for (std::size_t i = old_size; i < new_size; ++i)
             dest.push_back(dest[i]);
         for (auto i = dest.end() - (new_size-old_size); i != dest.end(); ++i)
-            i->translateUp(stackHeight * r);
+            i->translateDir(UpperClass::GROWING_DIR, stackHeight * r);
     }
 }
 
@@ -431,7 +431,7 @@ void MultiStackContainer<UpperClass>::getPositionsToVec(const GeometryObject::Pr
     for (unsigned r = 1; r < repeat_count; ++r)
         for (std::size_t i = old_size; i < new_size; ++i) {
             dest.push_back(dest[i]);
-            dest.back().vert() += stackHeight * r;
+            dest.back()[UpperClass::GROWING_DIR] += stackHeight * r;
         }
 }
 
@@ -464,7 +464,7 @@ GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsTo(const Geomet
             for (std::size_t org_child_no = 0; org_child_no < size; ++org_child_no) {
                 auto& org_child = const_cast<Translation<UpperClass::DIM>&>(static_cast<const Translation<UpperClass::DIM>&>(*(result.children[org_child_no].object)));
                 shared_ptr<Translation<UpperClass::DIM>> new_child = org_child.copyShallow();
-                new_child->translation.vert() += stackHeight;
+                new_child->translation[UpperClass::GROWING_DIR] += stackHeight;
                 result.children.push_back(GeometryObject::Subtree(new_child, result.children[org_child_no].children));
             }
     }
@@ -474,21 +474,21 @@ GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsTo(const Geomet
 template <typename UpperClass>
 GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const MultiStackContainer::DVec &point, bool all) const {
     MultiStackContainer::DVec new_point = point;
-    reduceHeight(new_point.vert());
+    reduceHeight(new_point[UpperClass::GROWING_DIR]);
     return GeometryObjectContainer<UpperClass::DIM>::getPathsAt(new_point, all);
 }
 
 template <typename UpperClass>
 bool MultiStackContainer<UpperClass>::contains(const MultiStackContainer::DVec &p) const {
     DVec p_reduced = p;
-    if (!reduceHeight(p_reduced.vert())) return false;
+    if (!reduceHeight(p_reduced[UpperClass::GROWING_DIR])) return false;
     return UpperClass::contains(p_reduced);
 }
 
 template <typename UpperClass>
 shared_ptr<Material> MultiStackContainer<UpperClass>::getMaterial(const MultiStackContainer::DVec &p) const {
     DVec p_reduced = p;
-    if (!reduceHeight(p_reduced.vert())) return shared_ptr<Material>();
+    if (!reduceHeight(p_reduced[UpperClass::GROWING_DIR])) return shared_ptr<Material>();
     return UpperClass::getMaterial(p_reduced);
 }
 
@@ -497,37 +497,50 @@ shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::getChildNo(std::size
     if (child_no >= getChildrenCount()) throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount()-1);
     if (child_no < children.size()) return children[child_no];
     auto result = children[child_no % children.size()]->copyShallow();
-    result->translation.vert() += (child_no / children.size()) * (stackHeights.back() - stackHeights.front());
+    result->translation[UpperClass::GROWING_DIR] += (child_no / children.size()) * (stackHeights.back() - stackHeights.front());
     return result;
 }
 
 template <typename UpperClass>
 std::size_t MultiStackContainer<UpperClass>::getRealChildrenCount() const {
-    return StackContainer<UpperClass::DIM>::getChildrenCount();
+    return UpperClass::getChildrenCount();
 }
 
 template <typename UpperClass>
 shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::getRealChildNo(std::size_t child_no) const {
-    return StackContainer<UpperClass::DIM>::getChildNo(child_no);
+    return UpperClass::getChildNo(child_no);
 }
 
 template <typename UpperClass>
 void MultiStackContainer<UpperClass>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
-    StackContainer<UpperClass::DIM>::writeXMLAttr(dest_xml_object, axes);
+    UpperClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr(repeat_attr, repeat_count);
 }
 
+template <typename StackContainerT>
+static inline void addChild(StackContainerT& result, const StackContainerT& src, std::size_t child_no, typename std::vector<std::pair<shared_ptr<typename StackContainerT::ChildType>, Vec<3, double>>>& children_after_change) {
+    result.addUnsafe(children_after_change[child_no].first, src.getAlignerAt(child_no));
+}
+
+static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const MultiStackContainer<ShelfContainer2D>& src, std::size_t child_no, typename std::vector<std::pair<shared_ptr<typename ShelfContainer2D::ChildType>, Vec<3, double>>>& children_after_change) {
+    result.addUnsafe(children_after_change[child_no].first);
+}
+
 template <typename UpperClass>
-shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::changedVersionForChildren(
+                  std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change,
+                  Vec<3, double>* recomended_translation) const {
     shared_ptr< MultiStackContainer<UpperClass> > result = make_shared< MultiStackContainer<UpperClass> >(this->repeat_count, this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)
-            result->addUnsafe(children_after_change[child_no].first, this->getAlignerAt(child_no));
+            addChild(*result, *this, child_no, children_after_change);
+            //result->addUnsafe(children_after_change[child_no].first, this->getAlignerAt(child_no));
     return result;
 }
 
 template class PLASK_API MultiStackContainer<StackContainer<2>>;
 template class PLASK_API MultiStackContainer<StackContainer<3>>;
+template class PLASK_API MultiStackContainer<ShelfContainer2D>;
 
 /// Helper used by read_... stack functions.
 struct HeightReader {
@@ -586,7 +599,12 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
     //TODO migrate to gap which can update self
     shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> total_size_gap;  //gap which can change total size
     double required_total_size;  //required total size, valid only if total_size_gap is not nullptr
-    shared_ptr< ShelfContainer2D > result(new ShelfContainer2D(reader.source.getAttribute(baseH_attr, 0.0)));
+    const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
+    shared_ptr< ShelfContainer2D > result(
+                     reader.source.hasAttribute(repeat_attr) ?
+                     new MultiStackContainer<ShelfContainer2D>(reader.source.getAttribute(repeat_attr, 1), baseH) :
+                     new ShelfContainer2D(baseH)
+                     );
     bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, true);
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children(reader,
