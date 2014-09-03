@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     auto well = make_shared<Block<2>>(Vec<2>(10., 7.), materials.get("In(0.3)GaAs"));
     well->addRole("QW");
 
-    auto active1 = make_shared<MultiStackContainer<2>>(2);
+    auto active1 = make_shared<MultiStackContainer<plask::StackContainer<2>>>(2);
     active1->addRole("active");
     active1->push_front(barrier);
     active1->push_front(well);

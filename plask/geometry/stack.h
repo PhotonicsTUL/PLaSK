@@ -472,11 +472,10 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainer<3>)
  * N-stacks
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim>
-class PLASK_API MultiStackContainer: public StackContainer<dim> {
+template <typename UpperClass>
+class PLASK_API MultiStackContainer: public UpperClass {
 
-    ///Type of parent class of this.
-    typedef StackContainer<dim> UpperClass;
+    static const int DIM = UpperClass::DIM;
 
     /*
      * @param a, divider
@@ -491,8 +490,8 @@ class PLASK_API MultiStackContainer: public StackContainer<dim> {
     using UpperClass::stackHeights;
     using UpperClass::children;
 
-    typedef typename StackContainerBaseImpl<dim>::ChildType ChildType;
-    typedef typename StackContainerBaseImpl<dim>::TranslationT TranslationT;
+    typedef typename StackContainerBaseImpl<DIM>::ChildType ChildType;
+    typedef typename StackContainerBaseImpl<DIM>::TranslationT TranslationT;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename UpperClass::DVec DVec;
@@ -533,9 +532,9 @@ class PLASK_API MultiStackContainer: public StackContainer<dim> {
      * @param baseHeight height where the first object should start
      * @param aligner default stack aligner
      */
-    explicit MultiStackContainer(unsigned repeat_count=1, const double baseHeight=0.0,
-                                 const typename StackContainer<dim>::ChildAligner& aligner=StackContainer<dim>::DefaultAligner()):
-        UpperClass(baseHeight, aligner), repeat_count(repeat_count) {}
+    template <typename... UpperCtrArgs>
+    explicit MultiStackContainer(unsigned repeat_count=1, UpperCtrArgs&&... upperCtrArgs):
+        UpperClass(std::forward<UpperCtrArgs>(upperCtrArgs)...), repeat_count(repeat_count) {}
 
     //this is not used but, just for case redefine UpperClass::getChildForHeight
     /*const shared_ptr<TranslationT> getChildForHeight(double height) const {

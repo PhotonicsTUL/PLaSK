@@ -39,13 +39,13 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     well->addRole("QW");
     substrate->addRole("substrate");
 
-    auto active1 = make_shared<MultiStackContainer<2>>(); // info: (2) -> *2
+    auto active1 = make_shared<MultiStackContainer<StackContainer<2>>>(); // info: (2) -> *2
     active1->addRole("active");
     active1->push_front(barrier);
     active1->push_front(well);
     active1->push_front(barrier);
 
-    auto active2 = make_shared<MultiStackContainer<2>>();
+    auto active2 = make_shared<MultiStackContainer<StackContainer<2>>>();
     active2->addRole("active");
     active2->push_front(barrier);
     active2->push_front(well);

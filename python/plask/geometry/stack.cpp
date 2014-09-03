@@ -62,7 +62,7 @@ shared_ptr<StackContainer<dim>> Stack__init__(const py::tuple& args, py::dict kw
 }
 
 template <int dim>
-shared_ptr<MultiStackContainer<dim>> MultiStack__init__(const py::tuple& args, py::dict kwargs) {
+shared_ptr<MultiStackContainer<plask::StackContainer<dim>>> MultiStack__init__(const py::tuple& args, py::dict kwargs) {
     kwargs = kwargs.copy();
     double shift;
     size_t repeat;
@@ -86,9 +86,9 @@ shared_ptr<MultiStackContainer<dim>> MultiStack__init__(const py::tuple& args, p
         py::delitem(kwargs, py::str("shift"));
     }
     if (py::len(kwargs) == 0)
-        return make_shared<MultiStackContainer<dim>>(repeat, shift);
+        return make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift);
     else
-        return make_shared<MultiStackContainer<dim>>(repeat, shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
+        return make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
 }
 
 void register_geometry_container_stack()
@@ -129,25 +129,25 @@ void register_geometry_container_stack()
 
     // Multi-stack constainer
 
-    py::class_<MultiStackContainer<2>, shared_ptr<MultiStackContainer<2>>, py::bases<StackContainer<2>>, boost::noncopyable>("MultiStack2D",
+    py::class_<MultiStackContainer<plask::StackContainer<2>>, shared_ptr<MultiStackContainer<plask::StackContainer<2>>>, py::bases<StackContainer<2>>, boost::noncopyable>("MultiStack2D",
         "Stack container which repeats its contents (2D version)\n\n"
         "MultiStack2D(repeat=1, shift=0, **kwargs)\n"
         "    Create new multi-stack with 'repeat' repetitions \n    and the first object at the 'shift' position (in container local coordinates)..\n\n"
         "    'kwargs' may contain default aligner specification.\n\n"
         "See geometry.Stack2D(...).\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<2>))
-        .add_property("repeat", &MultiStackContainer<2>::getRepeatCount, &MultiStackContainer<2>::setRepeatCount,
+        .add_property("repeat", &MultiStackContainer<plask::StackContainer<2>>::getRepeatCount, &MultiStackContainer<plask::StackContainer<2>>::setRepeatCount,
                       "Number of repeats of the stack content")
     ;
 
-    py::class_<MultiStackContainer<3>, shared_ptr<MultiStackContainer<3>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
+    py::class_<MultiStackContainer<plask::StackContainer<3>>, shared_ptr<MultiStackContainer<plask::StackContainer<3>>>, py::bases<StackContainer<3>>, boost::noncopyable>("MultiStack3D",
         "Stack container which repeats its contents (3D version)\n\n"
         "MultiStack3D(repeat=1, shift=0, **kwargs)\n"
         "    Create new multi-stack with 'repeat' repetitions \n    and the first object at the 'shift' position (in container local coordinates)..\n\n"
         "    'kwargs' may contain default aligner specification.\n\n"
         "See geometry.Stack3D(...).\n", py::no_init)
         .def("__init__", raw_constructor(MultiStack__init__<3>))
-        .add_property("repeat", &MultiStackContainer<3>::getRepeatCount, &MultiStackContainer<3>::setRepeatCount,
+        .add_property("repeat", &MultiStackContainer<plask::StackContainer<3>>::getRepeatCount, &MultiStackContainer<plask::StackContainer<3>>::setRepeatCount,
                       "Number of repeats of the stack content")
     ;
 

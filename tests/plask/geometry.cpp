@@ -14,7 +14,7 @@ struct Leafs2D {
         block_5_4(new plask::Block<2>(plask::vec(5.0, 4.0), dumbMaterial)) {}
 };
 
-void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<2>> multistack, plask::PathHints& p) {
+void test_multi_stack(plask::shared_ptr<plask::MultiStackContainer<plask::StackContainer<2>>> multistack, plask::PathHints& p) {
     // 5 * 2 children = 10 objects, each have size 5x3, should be in [0, 10] - [5, 40]
     BOOST_CHECK_EQUAL(multistack->getBoundingBox(), plask::Box2D(plask::vec(0.0, 10.0), plask::vec(5.0, 40.0)));
     BOOST_CHECK(multistack->getMaterial(plask::vec(4.0, 39.0)) != nullptr);
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
     }
 
     BOOST_FIXTURE_TEST_CASE(multistack2D, Leafs2D) {
-        plask::shared_ptr<plask::MultiStackContainer<2>> multistack(new plask::MultiStackContainer<2>(5, 10.0));
+        plask::shared_ptr<plask::MultiStackContainer<plask::StackContainer<2>>> multistack(new plask::MultiStackContainer<plask::StackContainer<2>>(5, 10.0));
         multistack->add(block_5_3, plask::align::tran(0.0));
         plask::PathHints p; p += multistack->add(block_5_3, plask::align::tran(0.0));
         test_multi_stack(multistack, p);
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         //BOOST_CHECK_EQUAL(manager.objects.size(), 3);
         BOOST_CHECK(manager.getGeometryObject("block-5-3") != nullptr);
         BOOST_CHECK(manager.getGeometryObject("notexist") == nullptr);
-        test_multi_stack(manager.getGeometryObject<plask::MultiStackContainer<2>>("multistack"), manager.requirePathHints("p"));
+        test_multi_stack(manager.getGeometryObject<plask::MultiStackContainer<plask::StackContainer<2>>>("multistack"), manager.requirePathHints("p"));
     }
 
     BOOST_AUTO_TEST_CASE(path_from_vector) {
