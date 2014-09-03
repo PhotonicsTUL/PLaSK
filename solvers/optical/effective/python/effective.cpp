@@ -15,7 +15,7 @@ using namespace plask::solvers::effective;
     ".. rubric:: Attributes\n\n" \
     ".. autosummary::\n\n" \
     "   ~optical.effective.RootParams.alpha\n" \
-    "   ~optical.effective.RootParams.lambda\n" \
+    "   ~optical.effective.RootParams.lambd\n" \
     "   ~optical.effective.RootParams.initial_range\n" \
     "   ~optical.effective.RootParams.maxiter\n" \
     "   ~optical.effective.RootParams.maxstep\n" \
@@ -453,7 +453,7 @@ BOOST_PYTHON_MODULE(effective)
         .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
         .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
         .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
-        .def_readwrite("lambda", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("lambd", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
         .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller method only).")
     ;
 

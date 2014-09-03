@@ -82,13 +82,13 @@ struct PLASK_API MaterialsDB {
     struct PLASK_API MaterialConstructor {
 
         /**
-         * Full name (with eventualy dopant name) of material which this constructor can create.
+         * Full name (with optional dopant name) of material which this constructor can create.
          */
         std::string materialName;
 
         /**
          * MaterialConstructor constructor.
-         * @param materialName full name (with eventualy dopant name) of material which this constructor can create
+         * @param materialName full name (with optional dopant name) of material which this constructor can create
          */
         MaterialConstructor(const std::string& materialName): materialName(materialName) {}
 
@@ -298,7 +298,7 @@ public:
     /**
      * Specialization of this implements MaterialConstructor.
      *
-     * operator() delegates call to Material constructor, eventualy ignoring (depending from requireComposition and requireDopant) some arguments.
+     * operator() delegates call to Material constructor, optional ignoring (depending from requireComposition and requireDopant) some arguments.
      * @tparam MaterialType type of material
      * @tparam requireComposition if @c true ensure if comosition is not empty, material composition will be completed and passed to constructor,
      *                              if @c false composition will be ignored
@@ -595,7 +595,8 @@ private:
      * @see @ref Material::completeComposition
      */
     shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition,
-                             const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+                             const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING,
+                             double doping_amount = 0.0) const;
 
 
 };

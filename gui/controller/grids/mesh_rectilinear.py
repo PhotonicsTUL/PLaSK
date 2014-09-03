@@ -1,6 +1,6 @@
 from ..base import Controller
 from ...qt import QtGui
-from utils.str import empty_to_none
+from ...utils.str import empty_to_none
 
 
 class AxisEdit(QtGui.QGroupBox):

@@ -19,7 +19,7 @@ void RootDigger::readRootDiggerConfig(XMLReader& reader, Params& params) {
     params.maxstep = reader.getAttribute<double>("maxstep", params.maxstep);
     params.maxiter = reader.getAttribute<int>("maxiter", params.maxiter);
     params.alpha = reader.getAttribute<double>("alpha", params.alpha);
-    params.lambda_min = reader.getAttribute<double>("lambda", params.lambda_min);
+    params.lambda_min = reader.getAttribute<double>("lambd", params.lambda_min);
     params.initial_dist = reader.getAttribute<dcomplex>("initial-range", params.initial_dist);
     params.method = reader.enumAttribute<RootDigger::Method>("method")
         .value("broyden", RootDigger::ROOT_BROYDEN)

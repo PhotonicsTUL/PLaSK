@@ -535,7 +535,7 @@ class PLASK_API MultiStackContainer: public UpperClass {
      * @param aligner default stack aligner
      */
     template <typename... UpperCtrArgs>
-    explicit MultiStackContainer(unsigned repeat_count=1, UpperCtrArgs&&... upperCtrArgs):
+    explicit MultiStackContainer(unsigned repeat_count, UpperCtrArgs&&... upperCtrArgs):
         UpperClass(std::forward<UpperCtrArgs>(upperCtrArgs)...), repeat_count(repeat_count) {}
 
     //this is not used but, just for case redefine UpperClass::getChildForHeight

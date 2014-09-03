@@ -49,7 +49,7 @@ struct SlabBase {
         root.maxstep = reader.getAttribute<double>("maxstep", root.maxstep);
         root.maxiter = reader.getAttribute<int>("maxiter", root.maxiter);
         root.alpha = reader.getAttribute<double>("alpha", root.alpha);
-        root.lambda_min = reader.getAttribute<double>("lambda", root.lambda_min);
+        root.lambda_min = reader.getAttribute<double>("lambd", root.lambda_min);
         root.initial_dist = reader.getAttribute<dcomplex>("initial-range", root.initial_dist);
         root.method = reader.enumAttribute<RootDigger::Method>("method")
             .value("broyden", RootDigger::ROOT_BROYDEN)

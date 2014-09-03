@@ -33,10 +33,6 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         Nc, Nv, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR;
 
-    PythonEvalMaterialConstructor(const std::string& name) :
-        MaterialsDB::MaterialConstructor(name), base(""), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
-     {}
-
     PythonEvalMaterialConstructor(const std::string& name, const std::string& base) :
         MaterialsDB::MaterialConstructor(name), base(base), kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
      {}
@@ -216,8 +212,9 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
             base_obj = this->db->get(base);
         else
             base_obj = this->db->get(base, doping_amount_type, doping_amount);
+    } else {
+        base_obj = make_shared<EmptyMaterial>();
     }
-    else base_obj = make_shared<EmptyMaterial>();
     return make_shared<PythonEvalMaterial>(self.lock(), base_obj, composition, doping_amount_type, doping_amount);
 }
 
@@ -225,7 +222,8 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string material_name = reader.requireAttribute("name");
-    shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(material_name, reader.requireAttribute("base"));
+    std::string base_name = reader.requireAttribute("base");
+    shared_ptr<PythonEvalMaterialConstructor> constructor = make_shared<PythonEvalMaterialConstructor>(material_name, base_name);
 
     constructor->self = constructor;
     constructor->db = &materialsDB;

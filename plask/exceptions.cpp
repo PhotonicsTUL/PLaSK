@@ -5,7 +5,7 @@
 
 #ifdef PRINT_STACKTRACE_ON_EXCEPTION
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) //win32 support
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) // win32 support
 
 #include <win_printstack.hpp>
 #include <signal.h>     /* signal, raise, sig_atomic_t */

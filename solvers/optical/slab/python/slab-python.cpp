@@ -20,7 +20,7 @@ using namespace plask::solvers::slab;
     ".. rubric:: Attributes\n\n" \
     ".. autosummary::\n\n" \
     "   ~optical.slab.RootParams.alpha\n" \
-    "   ~optical.slab.RootParams.lambda\n" \
+    "   ~optical.slab.RootParams.lambd\n" \
     "   ~optical.slab.RootParams.initial_range\n" \
     "   ~optical.slab.RootParams.maxiter\n" \
     "   ~optical.slab.RootParams.maxstep\n" \
@@ -800,7 +800,7 @@ BOOST_PYTHON_MODULE(slab)
         .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
         .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
         .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
-        .def_readwrite("lambda", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("lambd", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
         .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller method only).")
     ;
 
