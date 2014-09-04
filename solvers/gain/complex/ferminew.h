@@ -71,6 +71,8 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
         double qwlen;                           ///< Single quantum well thickness [Å]
         double qwtotallen;                      ///< Total quantum wells thickness [Å]
         double totallen;                        ///< Total active region thickness [Å]
+        double bottomlen;                       ///< Bottom spacer thickness [Å]
+        double toplen;                          ///< Top spacer thickness [Å]
 
         /**
          * Summarize active region, check for appropriateness and compute some values
@@ -78,7 +80,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
          */
         void summarize(const FerminewGainSolver<GeometryType>* solver) {
             auto bbox = layers->getBoundingBox();
-            totallen = 1e4 * (bbox.upper[1] - bbox.lower[1]);  // 1e4: µm -> Å
+            totallen = 1e4 * (bbox.upper[1] - bbox.lower[1] - bottomlen - toplen);  // 1e4: µm -> Å
             size_t qwn = 0;
             qwtotallen = 0.;
             bool lastbarrier = true;
@@ -97,8 +99,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                     if (lastbarrier) ++qwn;
                     else solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
                     lastbarrier = false;
+                    writelog(LOG_DETAIL, "has role QW checked");
                 }
-                else if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier"))
+                else //if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier")) // TODO 4.09.2014
                 {
                     if (!materialBarrier)
                         materialBarrier = material;
@@ -112,6 +115,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                              !is_zero(material->VB(300) - materialBarrier->VB(300)))
                         throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());*/
                     lastbarrier = true;
+                    writelog(LOG_DETAIL, "has role barrier checked");
                 } // TODO something must be added here because of spacers placed next to external barriers
             }
             qwtotallen *= 1e4; // µm -> Å

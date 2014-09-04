@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     solver.detect_active_regions();
 
     BOOST_CHECK_EQUAL(solver.regions.size(), 2);
-    BOOST_CHECK_EQUAL(solver.regions[0].origin, Vec<2>(0., 500.000)); // info: 500.020-0.020, -0.020 -> - cladding
+    /*BOOST_CHECK_EQUAL(solver.regions[0].origin, Vec<2>(0., 500.000)); // info: 500.020-0.020, -0.020 -> - cladding
     //BOOST_CHECK_EQUAL(solver.regions[1].origin, Vec<2>(0., 500.038)); // info: 500.058-0.020, -0.020 -> - cladding
     BOOST_CHECK_CLOSE(solver.regions[1].origin[0], 0.0, 1e-5);
     BOOST_CHECK_CLOSE(solver.regions[1].origin[1], 500.038, 1e-5);
@@ -86,6 +86,9 @@ BOOST_AUTO_TEST_CASE(detect_active_region)
     qw.push_back(false);
     for (size_t i = 0; i < 5; ++i)
         BOOST_CHECK_EQUAL(solver.regions[1].isQW(i+1), qw[i]); // info: +1 -> + cladding
+*/
+
+
 
     // stary kod
 

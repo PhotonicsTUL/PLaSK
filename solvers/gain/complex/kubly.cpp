@@ -1882,7 +1882,7 @@ double dE_po_dl(size_t nr, chrop ch)
   double licznik = 
 }
 *****************************************************************************/
-obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, double DSO, double chropo)
+obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo)
 {
   przekr_max = 0.;
   pasmo_przew.push_back(elektron);
@@ -1904,7 +1904,10 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
   Egcc.push_back(0);
   Egcv = std::vector<double>(dziury.size(), Eg);
   int liczba_war = dziury[0]->kawalki.size() + 2;
-  DeltaSO.assign(liczba_war, DSO);
+  DeltaSO.clear();
+  for(int i = 0; i < liczba_war; ++i) // LUKASZ
+      DeltaSO.push_back(DSO[i]);
+  //DeltaSO.assign(liczba_war, DSO); // LUKASZ
   el_mac.reserve(liczba_war);
   for(int i = 0; i <= liczba_war - 1; i++)
     {

@@ -118,6 +118,9 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
     size_t ileft = 0, iright = points->axis0->size();
     bool in_active = false;
 
+    bool added_bottom_cladding = false;
+    bool added_top_cladding = false;
+
     for (size_t r = 0; r < points->axis1->size(); ++r)
     {
         bool had_active = false; // indicates if we had active region in this layer
@@ -180,28 +183,10 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                 {
                     if (!in_active)
                     {
-                        // LUKASZ: jestem w obszarze z rola "active" po raz pierwszy
-                        // LUKASZ: trzeba dodac warstwe, ktora jest tuz pod obszarem czynnym
-                        // LUKASZ: i trzeba to zrobic tylko raz
-
                         iright = c;
-                        /*if (layer_QW)
-                        { // quantum well is at the egde of the active region, add one row below it
-                            if (r == 0)
-                                throw Exception("%1%: Quantum-well at the edge of the structure.", this->getId());
-                            auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
-                            for (size_t cc = ileft; cc < iright; ++cc)
-                                if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                                    throw Exception("%1%: Material below quantum well not uniform.", this->getId());
-                            auto& region = regions.back();
-                            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-                            double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
-                            region.origin += Vec<2>(0., -h);
-                            region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
-                        }*/
 
                         // add layer below active region (cladding) LUKASZ
-                        auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+                        /*auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
                         for (size_t cc = ileft; cc < iright; ++cc)
                             if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
                                 throw Exception("%1%: Material below quantum well not uniform.", this->getId());
@@ -209,7 +194,8 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                         double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
                         double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                         region.origin += Vec<2>(0., -h);
-                        region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
+                        writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
+                        region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
                     }
                     else
                         throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
@@ -223,6 +209,23 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
         ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
         if (region)
         {
+            if (!added_bottom_cladding)
+            {
+                // add layer below active region (cladding) LUKASZ
+                auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+                for (size_t cc = ileft; cc < iright; ++cc)
+                    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
+                        throw Exception("%1%: Material below active region not uniform.", this->getId());
+                auto& region = regions.back();
+                double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+                double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+                region.origin += Vec<2>(0., -h);
+                writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
+                region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
+                region.bottomlen = h;
+                added_bottom_cladding = true;
+            }
+
             double h = mesh->axis1->at(r+1) - mesh->axis1->at(r);
             double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
             if (in_active)
@@ -240,32 +243,28 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                     auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
                     if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
+                    if (layer_QW) writelog(LOG_DETAIL, "Adding qw; h = %1%",h);
+                    else writelog(LOG_DETAIL, "Adding barrier; h = %1%",h);
                 }
             }
             else
             {
-                // LUKASZ: obszar czynny juz byl
-                // LUKASZ: jestem poza obszarem z rola "active"
-                // LUKASZ: trzeba dodac warstwe, ktora jest tuz nad obszarem czynnym
-                // LUKASZ: i trzeba to zrobic tylko raz
+                if (!added_top_cladding)
+                {
 
-                // add layer above active region (top cladding)
-                auto top_material = this->geometry->getMaterial(points->at(ileft,r));
-                for (size_t cc = ileft; cc < iright; ++cc)
-                    if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
-                        throw Exception("%1%: Material above quantum well not uniform.", this->getId());
-                region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
-
-                /*if (region->isQW(region->size()-1))
-                { // top layer of the active region is quantum well, add the next layer
+                    // add layer above active region (top cladding)
                     auto top_material = this->geometry->getMaterial(points->at(ileft,r));
                     for (size_t cc = ileft; cc < iright; ++cc)
                         if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
                             throw Exception("%1%: Material above quantum well not uniform.", this->getId());
                     region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
-                }*/
-                ileft = 0;
-                iright = points->axis0->size();
+                    writelog(LOG_DETAIL, "Adding top cladding; h = %1%",h);
+
+                    ileft = 0;
+                    iright = points->axis0->size();
+                    region->toplen = h;
+                    added_top_cladding = true;
+                }
             }
         }
     }
@@ -303,7 +302,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
     buildStructure(T, region);
 
     double tCladEg = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
-    double tQWDso = region.materialQW->Dso(T); // QW Dso (eV)
+    //double tQWDso = region.materialQW->Dso(T); // QW Dso (eV)
     double tQWTotH = region.qwtotallen*0.1; // total thickness of QWs (nm)
     double tQWnR = region.materialQW->nr(wavelength,T); // QW nR
 
@@ -314,7 +313,10 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         tHoles.push_back(&(*mpStrEvlh));
     if ((!mEc)&&((!mEvhh)||(!mEvlh)))
     {
-        plask::shared_ptr<QW::obszar_aktywny> aktyw(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tQWDso, roughness)); // roughness = 0.05 for example // TODO
+        std::vector<double> tDso; tDso.clear();
+        for (int i=0; i<region.size(); ++i) // LUKASZ 26.06
+            tDso.push_back(region.getLayerMaterial(i)->Dso(T));
+        plask::shared_ptr<QW::obszar_aktywny> aktyw(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tDso, roughness)); // roughness = 0.05 for example // TODO
         aktyw->zrob_macierze_przejsc();
         //writelog(LOG_INFO, "Do funkcji Adama idzie %1%, %2%, %3% i %4%", n, tQWTotH, T, tQWnR);
         //n = przelicz_nQW_na_npow(aktyw, n, tQWTotH, T, tQWnR); // ADAM
@@ -371,7 +373,7 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
 
     int tN = region.size(); // number of all layers int the active region (QW, barr, external)
 
-    //writelog(LOG_DETAIL, "number of all layers int the active region: %1%", tN);
+    writelog(LOG_DETAIL, "number of all layers int the active region: %1%", tN);
 
     double eClad1 = 0.; // TODO
     double eClad2 = 0.; // TODO
@@ -382,18 +384,20 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
 
     double tX = 0.;
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, region.getLayerMaterial(0)->Me(T,eClad1).c00, region.getLayerMaterial(0)->Me(T,eClad1).c11, tX, (region.getLayerMaterial(0)->CB(T,eClad1)-tDEc)); // left cladding
+    writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", 0, region.getLayerMaterial(0)->CB(T,0.)-tDEc);
     mpEc.push_back(mpLay);
     for (int i=1; i<tN-1; ++i)
     {
         double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
         double tH = region.getLayerBox(i).height()*1e4; // tH (A)
         mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)-tDEc)); // wells and barriers
-        //writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", i, region.getLayerMaterial(i)->CB(T,e)-tDEc);
+        writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", i, region.getLayerMaterial(i)->CB(T,e)-tDEc);
         mpEc.push_back(mpLay); tX += tH;
         if (region.getLayerMaterial(i)->CB(T,e) >= tDEc)
             tfStructOK = false;
     }
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Me(T,eClad2).c00, region.getLayerMaterial(tN-1)->Me(T,eClad2).c11, tX, (region.getLayerMaterial(tN-1)->CB(T,eClad2)-tDEc)); // right cladding
+    writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", tN-1, region.getLayerMaterial(tN-1)->CB(T,0.)-tDEc);
     mpEc.push_back(mpLay); // add delete somewhere! TODO
 
     if (tfStructOK)

@@ -231,7 +231,7 @@ class obszar_aktywny
 
 public:
 
-    obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, double DeltaSO, double chropo); // najprostszy konstruktor: jeden elektron i wspolna przerwa
+    obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DeltaSO, double chropo); // najprostszy konstruktor: jeden elektron i wspolna przerwa
 
     double min_przerwa_energetyczna();
     //  void policz_calki(const struktura * elektron, const struktura * dziura, A2D & macierz);
