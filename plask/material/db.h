@@ -107,6 +107,14 @@ struct PLASK_API MaterialsDB {
         virtual bool isSimple() const = 0;
 
         virtual ~MaterialConstructor() {}
+
+        static void ensureCompositionIsEmpty(const Material::Composition& composition) {
+            if (!composition.empty()) throw Exception("Unrequired composition given for material \"%1%\".");
+        }
+
+        static void ensureDopantIsNo(Material::DopingAmountType dopant_amount_type) {
+            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Unrequired dopant given for material \"%1%\".");
+        }
     };
 
     /**
@@ -327,8 +335,9 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType, double) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double) const override {
             ensureCompositionIsNotEmpty(composition);
+            ensureDopantIsNo(doping_amount_type);
             return make_shared<MaterialType>(Material::completeComposition(composition));
         }
 
@@ -340,7 +349,8 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
+            ensureCompositionIsEmpty(composition);
             return make_shared<MaterialType>(doping_amount_type, doping_amount);
         }
 
@@ -352,7 +362,9 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition&, Material::DopingAmountType, double) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double) const override {
+            ensureCompositionIsEmpty(composition);
+            ensureDopantIsNo(doping_amount_type);
             return make_shared<MaterialType>();
         }
 
@@ -401,6 +413,13 @@ public:
      * @throw MaterialParseException if can't parse @p name_with_components or @p doping_descr
      */
     shared_ptr<Material> get(const std::string& name_with_components, const std::string& doping_descr) const;
+
+    /**
+     * Get constructor of material.
+     * @param name_without_composition material name, without encoded parameters, in format composition[:dopant]
+     * @return constructor of material or nullptr if there is no such material in database
+     */
+    shared_ptr<const MaterialConstructor> getConstructor(const std::string& name_without_composition) const;
 
     /**
      * Create material object.

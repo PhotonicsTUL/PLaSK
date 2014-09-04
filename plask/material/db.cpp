@@ -43,57 +43,36 @@ Material::Composition plask::MaterialsDB::MixedCompositionOnlyFactory::mixedComp
     return result;
 }
 
-//Append to name dopant, if it is not empty
-void appendDopant(std::string& name, const std::string& dopant_name) {
+//Append to name dopant, if it is not empty, return name
+std::string& appendDopant(std::string& name, const std::string& dopant_name) {
     if (!dopant_name.empty()) {
         name += ':';
         name += dopant_name;
     }
+    return name;
 }
 
-std::string dbKey(const Material::Composition &composition, const std::string& dopant_name) {
+std::string complexDbKey(const Material::Composition &composition, const std::string& dopant_name) {
     std::string db_key;
     for (auto c: composition) db_key += c.first;
-    appendDopant(db_key, dopant_name);
-    return db_key;
+    return appendDopant(db_key, dopant_name);
 }
 
-std::string dbKey(std::vector<std::string> elNames, const std::string& dopant_name) {
+std::string complexDbKey(std::vector<std::string> elNames, const std::string& dopant_name) {
     std::string db_key;
     std::sort(elNames.begin(), elNames.end());
     for (std::string& c: elNames) db_key += c;
-    appendDopant(db_key, dopant_name);
-    return db_key;
+    return appendDopant(db_key, dopant_name);
 }
 
-std::string dbKey(const std::string& name, const std::string& dopant_name) {
-    return dbKey(Material::parseObjectsNames(name), dopant_name);
+std::string complexDbKey(const std::string& name, const std::string& dopant_name) {
+    return complexDbKey(Material::parseObjectsNames(name), dopant_name);
 }
 
-std::string dbKey(const std::string& fullComplexName) {
+std::string complexDbKey(const std::string& fullComplexName) {
     auto name_dopant = splitString2(fullComplexName, ':');
-    return dbKey(name_dopant.first, name_dopant.second);
+    return complexDbKey(name_dopant.first, name_dopant.second);
 }
-
-/*std::string dbKey(std::vector<std::string> elemenNames, const std::string& dopant_name = "") {
-    std::string result;
-    std::vector<std::string>::iterator grBegin = elemenNames.begin();
-    if (grBegin == elemenNames.end()) return "";    //exception??
-    int grNr = objectGroup(*grBegin);
-    for (std::vector<std::string>::iterator grEnd = grBegin + 1; grEnd != elemenNames.end(); ++grEnd) {
-        int endNr = objectGroup(*grEnd);
-        if (grNr != endNr) {
-            std::sort(grBegin, grEnd);
-            for (auto s_iter = grBegin; s_iter != grEnd; ++s_iter) result += *s_iter;
-            grNr = endNr;
-            grBegin = grEnd;
-        }
-    }
-    std::sort(grBegin, elemenNames.end());
-    for (auto s_iter = grBegin; s_iter != elemenNames.end(); ++s_iter) result += *s_iter;
-    appendDopant(result, dopant_name);
-    return result;
-}*/
 
 MaterialsDB& MaterialsDB::getDefault() {
     static MaterialsDB defaultDb;
@@ -129,9 +108,9 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     if (it == constructors.end()) {
         if (composition.empty()) {
             //check if material is complex, but user forget to provide composition:
-            std::string complexDbKey;
-            try { complexDbKey = dbKey(db_Key); } catch (std::exception& e) {}
-            if (constructors.find(complexDbKey) != constructors.end())  //material is complex
+            std::string complex_DbKey;
+            try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception& e) {}
+            if (constructors.find(complex_DbKey) != constructors.end())  //material is complex
                 throw MaterialParseException(format("composition is required to get \"%1%\" material.", db_Key));
             throw NoSuchMaterial(db_Key);
         }
@@ -145,11 +124,11 @@ shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material:
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Composition& composition, const std::string& dopant_name) const {
-    return getConstructor(dbKey(composition, dopant_name), composition, dopant_name);
+    return getConstructor(complexDbKey(composition, dopant_name), composition, dopant_name);
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    return get(dbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
+    return get(complexDbKey(composition, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
 }
 
 shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition,
@@ -190,6 +169,14 @@ shared_ptr< Material > MaterialsDB::get(const std::string& name_with_components,
         return get(dbKey, Material::Composition(), dopant_name, doping_amount_type, doping_amount);
     } else  //parse composition:
         return get(Material::parseComposition(name_with_components), dopant_name, doping_amount_type, doping_amount);
+}
+
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& name_without_composition) const {
+    auto it = constructors.find(name_without_composition);  //try get as simple
+    if (it != constructors.end()) return it->second;
+    it = constructors.find(complexDbKey(name_without_composition)); //try get as complex
+    if (it != constructors.end()) return it->second;
+    return nullptr;
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
@@ -267,7 +254,7 @@ void MaterialsDB::addSimple(shared_ptr<MaterialConstructor> constructor) {
 }*/
 
 void MaterialsDB::addComplex(shared_ptr<MaterialConstructor> constructor) {
-    constructors[dbKey(constructor->materialName)] = constructor;
+    constructors[complexDbKey(constructor->materialName)] = constructor;
 }
 
 void MaterialsDB::removeSimple(const std::string& name) {
@@ -275,7 +262,7 @@ void MaterialsDB::removeSimple(const std::string& name) {
 }
 
 void MaterialsDB::removeComplex(const std::string& name) {
-    constructors.erase(dbKey(name));
+    constructors.erase(complexDbKey(name));
 }
 
 bool MaterialsDB::isNameWithDopant(const std::string &material) { return material.find(':') != std::string::npos; }
