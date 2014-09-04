@@ -91,7 +91,7 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
         self.generator.fire_changed()
 
     def create_default_entry(self):
-        return RefinementConf()
+        return RefinementConf(axis=0)
 
 
 class RectilinearDivideGenerator(Grid):
@@ -142,7 +142,7 @@ class RectilinearDivideGenerator(Grid):
         if len(self.refinements.entries) > 0:
             refinements_element = SubElement(res, 'refinements')
             for r in self.refinements.entries:
-                refinements_element.append(r.get_XML_element)
+                refinements_element.append(r.get_XML_element())
         warnings_el = Element('warnings')
         for w in RectilinearDivideGenerator.warnings:
             v = getattr(self, 'warning_'+w, None)
