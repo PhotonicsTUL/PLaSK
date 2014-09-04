@@ -176,7 +176,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     if (it != constructors.end()) return it->second;
     it = constructors.find(complexDbKey(name_without_composition)); //try get as complex
     if (it != constructors.end()) return it->second;
-    return nullptr;
+    throw NoSuchMaterial(name_without_composition);
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {

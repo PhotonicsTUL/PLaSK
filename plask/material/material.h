@@ -95,7 +95,7 @@ struct PLASK_API Material {
 
   public:
 
-    /**
+    /*
      * Parameters of material, information about: name, composition and dopant.
      *
      * It stores all information which are represented by material string,
@@ -103,7 +103,7 @@ struct PLASK_API Material {
      *
      * Can be obtained either from string (see parse(std::string)) or material (see getParameters()).
      */
-    struct PLASK_API Parameters {
+    /*struct PLASK_API Parameters {
 
         /// short (without composition and doping amounts) name of material
         /// only for simple material(?)
@@ -119,12 +119,10 @@ struct PLASK_API Material {
 
         explicit Parameters(const std::string& name): name(name), dopantAmountType(NO_DOPING) {}
 
-
-
         bool isSimple() const { return composition.empty(); }
 
         bool hasDopant() const { return dopantAmountType != NO_DOPING; }
-    };
+    };*/
 
     /**
      * Helper class for easy constructing string representations of complex materials.

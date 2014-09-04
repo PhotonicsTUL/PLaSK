@@ -418,6 +418,7 @@ public:
      * Get constructor of material.
      * @param name_without_composition material name, without encoded parameters, in format composition[:dopant]
      * @return constructor of material or nullptr if there is no such material in database
+     * @throw NoSuchMaterial if database doesn't know material with name @p name_without_composition
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& name_without_composition) const;
 
@@ -585,19 +586,19 @@ public:
      */
     static bool isSimpleMaterialName(const std::string& material_name);
 
-private:
-
     /**
-     * Get material constructor object.
-     * @param composition objects composition, empty composition for simple materials
+     * Get complex material constructor object.
+     * @param composition objects composition
      * @param dopant_name name of dopant (if any)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& dopant_name = "") const;
 
+private:
+
     /**
      * Get material constructor object.
      * @param dbKey key in database
-     * @param composition objects composition, empty composition for simple materials, use for error mesages
+     * @param composition objects composition, empty composition for simple materials, used for error checking and mesages
      * @param dopant_name name of dopant (if any), use for error mesages
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, const std::string& dopant_name = "") const;
