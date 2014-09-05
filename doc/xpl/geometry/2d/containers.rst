@@ -24,7 +24,7 @@ Containers
 
    .. xml:contents::
 
-      The content of this element can be any number of other two-dimensional geometry *object* or ``<item>`` elements which are organized in the vertical stack, ordered from top to bottom.
+      The content of this element can be any number of other two-dimensional geometry *object* or ``<item>`` elements, which are aligned in the container according to its specification.
 
       *object*
 

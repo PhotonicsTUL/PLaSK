@@ -109,11 +109,11 @@ struct PLASK_API MaterialsDB {
         virtual ~MaterialConstructor() {}
 
         static void ensureCompositionIsEmpty(const Material::Composition& composition) {
-            if (!composition.empty()) throw Exception("Unrequired composition given for material \"%1%\".");
+            if (!composition.empty()) throw Exception("Redundant composition given for material \"%1%\".");
         }
 
         static void ensureDopantIsNo(Material::DopingAmountType dopant_amount_type) {
-            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Unrequired dopant given for material \"%1%\".");
+            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Redundant dopant given for material \"%1%\".");
         }
     };
 
@@ -306,7 +306,7 @@ public:
     /**
      * Specialization of this implements MaterialConstructor.
      *
-     * operator() delegates call to Material constructor, optional ignoring (depending from requireComposition and requireDopant) some arguments.
+     * operator() delegates call to Material constructor, optionally ignoring (depending from requireComposition and requireDopant) some arguments.
      * @tparam MaterialType type of material
      * @tparam requireComposition if @c true ensure if comosition is not empty, material composition will be completed and passed to constructor,
      *                              if @c false composition will be ignored
@@ -369,6 +369,40 @@ public:
         }
 
         bool isSimple() const override { return true; }
+    };
+
+    /**
+     * Material constructor that holds other constructor or complete material object based on the provided name.
+     */
+    class ProxyMaterialConstructor: public MaterialConstructor {
+        shared_ptr<Material> material;
+        shared_ptr<const MaterialsDB::MaterialConstructor> constructor;
+        Material::Composition composition;
+
+      public:
+        ProxyMaterialConstructor();
+
+        ProxyMaterialConstructor(const std::string& name, const MaterialsDB& db=MaterialsDB::getDefault());
+
+        ProxyMaterialConstructor(const shared_ptr<Material>& material);
+
+        virtual shared_ptr<Material> operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const override {
+            if (material) {
+                ensureCompositionIsEmpty(comp);
+                ensureDopantIsNo(dopt);
+                return material;
+            } else if (composition.empty()) {
+                return (*constructor)(comp, dopt, dop);
+            } else {
+                ensureCompositionIsEmpty(comp);
+                return (*constructor)(composition, dopt, dop);
+            }
+        }
+
+        bool isSimple() const override {
+            if (material || !composition.empty() || !constructor) return true;
+            return constructor->isSimple();
+        }
     };
 
     /**
@@ -617,7 +651,6 @@ private:
     shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition,
                              const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING,
                              double doping_amount = 0.0) const;
-
 
 };
 

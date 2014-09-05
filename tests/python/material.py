@@ -10,7 +10,7 @@ import plasktest as ptest
 
 class Material(unittest.TestCase):
 
-    @plask.material.complex
+    @plask.material.complex()
     class AlGaAs(plask.material.Material):
         def __init__(self, **kwargs):
             super(Material.AlGaAs, self).__init__()
@@ -24,7 +24,7 @@ class Material(unittest.TestCase):
         def absp(self, wl, T):
             return 0.
 
-    @plask.material.complex
+    @plask.material.complex()
     class AlGaAsDp(plask.material.Material):
         name = "AlGaAs:Dp"
         def __init__(self, *args, **kwargs):
@@ -43,7 +43,7 @@ class Material(unittest.TestCase):
         def NR(self, wl, T, n):
             return (3.5, 3.6, 3.7, 0.1)
 
-    @plask.material.simple
+    @plask.material.simple()
     class WithChar(plask.material.Material):
         def chi(self, T, e, p):
             print("WithChar: %s" % p)
@@ -116,18 +116,18 @@ class Material(unittest.TestCase):
         self.assertEqual( plask.material.db.get("MyMaterial").VB(1.0), 0.5 )
         self.assertEqual( ptest.material_name("MyMaterial", plask.material.db), "MyMaterial" )
         self.assertEqual( ptest.material_VB("MyMaterial", plask.material.db, 1.0), 0.5 )
-        self.assertEqual( ptest.call_chi(m, 'B'), 1.0)
-        self.assertEqual( m.VB(), 150.0)
-        self.assertEqual( m.chi(point='C'), 1.0)
+        self.assertEqual( ptest.call_chi(m, 'B'), 1.0 )
+        self.assertEqual( m.VB(), 150.0 )
+        self.assertEqual( m.chi(point='C'), 1.0 )
 
 
     def testMaterialWithBase(self):
         mm = plask.material.db.get("MyMaterial")
 
-        @plask.material.simple
+        @plask.material.simple(mm)
         class WithBase(plask.material.Material):
             def __init__(self):
-                super(WithBase, self).__init__(mm)
+                super(WithBase, self).__init__()
 
         m1 = WithBase()
         self.assertEqual( m1.name, "WithBase" )
@@ -141,6 +141,17 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.material_VB("WithBase", plask.material.db, 1.0), 0.5 )
 
 
+    def testMaterialWithComplexBase(self):
+        @plask.material.simple('AlGaAs:Si')
+        class WithBase2(plask.material.Material):
+            def __init__(self):
+                super(WithBase2, self).__init__(Al=0.2, dc=1e18)
+
+        m1 = WithBase2()
+        m2 = material.db('Al(0.2)GaAs:Si=1e18')
+        self.assertEqual( m1.cond(), m2.cond() )
+
+
     def testPassingMaterialsByName(self):
         mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").get_material(0,0)
         self.assertEqual( mat.name, "AlGaAs:Dp" )
@@ -150,7 +161,7 @@ class Material(unittest.TestCase):
 
 
     def testThermK(self):
-        @material.simple
+        @material.simple()
         class Therm(material.Material):
             def thermk(self, T, t): return T + t
 
@@ -160,20 +171,25 @@ class Material(unittest.TestCase):
 
     def testComparison(self):
 
-        @material.simple
-        class Mat(material.Material):
-            def __init__(self, base, val):
-                super(Mat, self).__init__(base)
+        @material.simple('GaAs')
+        class Mat1(material.Material):
+            def __init__(self, val):
+                super(Mat1, self).__init__()
                 self.val = val
-        m1 = Mat("GaAs", 1)
-        m2 = Mat("GaAs", 2)
-        m3 = Mat("AlAs", 1)
-        m4 = Mat("GaAs", 1)
+        @material.simple('AlAs')
+        class Mat2(material.Material):
+            def __init__(self, val):
+                super(Mat2, self).__init__()
+                self.val = val
+        m1 = Mat1(1)
+        m2 = Mat1(2)
+        m3 = Mat2(1)
+        m4 = Mat1(1)
         self.assertNotEqual(m1, m2)
         self.assertNotEqual(m1, m3)
         self.assertEqual(m1, m4)
 
-        @material.simple
+        @material.simple()
         class Nat(material.Material):
             def __init__(self, val):
                 super(Nat, self).__init__()

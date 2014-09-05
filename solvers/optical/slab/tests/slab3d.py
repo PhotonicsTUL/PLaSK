@@ -20,12 +20,12 @@ periodic = False
 
 
 
-@plask.material.simple
+@plask.material.simple()
 class Glass(plask.material.Material):
     def nr(self, w, T=300., n=0.):
         return 1.3
 
-@plask.material.simple
+@plask.material.simple()
 class Asym(plask.material.Material):
     def nr(self, w, T=300., n=0.):
         return 1.1

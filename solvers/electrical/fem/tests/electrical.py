@@ -10,7 +10,7 @@ from electrical.fem import Shockley2D, ShockleyCyl
 
 eps0 = 8.854187817e-6 # pF/µm
 
-@material.simple
+@material.simple()
 class Conductor(material.Material):
     def cond(self, T):
         return (1e+9, 1e+9)

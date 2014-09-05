@@ -19,16 +19,12 @@ extern py::dict xml_globals;
 
 struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
-    shared_ptr<Material> base_obj;  // base object (nullptr if base_ctr is not nullptr)
-    shared_ptr<const MaterialsDB::MaterialConstructor> base_ctr;  // base constructor (nullptr if base_obj is not nullptr)
-    Material::Composition baseMaterialComposition;  // composition passed to base_ctr, empty if base_ctr is nullptr, can be not completed
+    MaterialsDB::ProxyMaterialConstructor base;
 
     weak_ptr<PythonEvalMaterialConstructor> self;
-    bool base_has_defined_dopant;
 
     MaterialCache cache;
 
-    std::string base;
     Material::Kind kind;
     Material::ConductivityType condtype;
 
@@ -38,30 +34,10 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         thermk, dens, cp, nr, absp, Nr, NR;
 
     PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base) :
-        MaterialsDB::MaterialConstructor(name), base_has_defined_dopant(base.find("=") != std::string::npos),
+        MaterialsDB::MaterialConstructor(name),
+        base(base, db),
         kind(Material::NONE), condtype(Material::CONDUCTIVITY_UNDETERMINED)
-    {
-        // fill base_obj or base_ctr:
-        if (base != "") {
-            if (base.find("=") != std::string::npos)    //base material has defined dopant
-                base_obj = db.get(base);
-            else {  //doping amount is not given
-                if (base.find(":") != std::string::npos) {  //but dopant type is given
-                    if (base.find("(") != std::string::npos) {  //material is complex
-                        std::string name, dopant_name;
-                        std::tie(name, dopant_name) = splitString2(base, ':');
-                        baseMaterialComposition = Material::parseComposition(name);
-                        base_ctr = db.getConstructor(baseMaterialComposition, dopant_name);
-                    } else {    //material is simple
-                        base_ctr = db.getConstructor(base);
-                    }
-                } else  //dopant type is not given
-                    base_obj = db.get(base);
-            }
-        } else {
-            base_obj = make_shared<EmptyMaterial>();
-        }
-    }
+    {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const;
 
@@ -232,10 +208,7 @@ class PythonEvalMaterial : public Material
 };
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    if (base_ctr)
-        return make_shared<PythonEvalMaterial>(self.lock(), (*base_ctr)(baseMaterialComposition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
-    else
-        return make_shared<PythonEvalMaterial>(self.lock(), base_obj, composition, doping_amount_type, doping_amount);
+    return make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
 }
 
 void PythonEvalMaterialLoadFromXML(XMLReader& reader, MaterialsDB& materialsDB) {

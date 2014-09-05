@@ -7,7 +7,7 @@ config.log.level = 'detail'
 
 from optical.slab import Fourier3D
 
-@material.simple
+@material.simple()
 class Glass(material.Material):
     def Nr(self, wl, T, n): return 1.3
 

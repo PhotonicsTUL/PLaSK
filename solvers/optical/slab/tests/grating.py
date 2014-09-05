@@ -20,17 +20,17 @@ fill = 0.4
 N = 12
 
 
-@material.simple
+@material.simple()
 class Subs(material.Material):
     @staticmethod
     def nr(): return ns
 
-@material.simple
+@material.simple()
 class Hi(material.Material):
     @staticmethod
     def nr(): return nh
 
-@material.simple
+@material.simple()
 class Lo(material.Material):
     @staticmethod
     def nr(): return nl

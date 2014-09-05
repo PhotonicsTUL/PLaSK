@@ -148,13 +148,15 @@ void Material::throwNotApplicable(const std::string& method_name) const {
 
 template <typename NameValuePairIter>
 inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameValuePairIter end, int group_nr) {
+    static const char* const ROMANS[] = { "I", "II", "III", "IV", "V", "VI", "VII" };
+    assert(0 < group_nr && group_nr < 8);
     auto no_info = end;
     double sum = 0.0;
     unsigned n = 0;
     for (auto i = begin; i != end; ++i) {
         if (std::isnan(i->second)) {
             if (no_info != end)
-                throw plask::MaterialParseException("more than one object in group (%1% in periodic table) have no information about composition amount.", group_nr);
+                throw plask::MaterialParseException("more than one element in group %1% have no information about composition amount", ROMANS[group_nr-1]);
             else
                 no_info = i;
         } else {
@@ -163,12 +165,12 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
         }
     }
     if (n > 0 && sum - 1.0 > SMALL*n)
-        throw plask::MaterialParseException("sum of composition ammounts in group (%1% in periodic table) exceeds 1.", group_nr);
+        throw plask::MaterialParseException("the sum of composition amounts of group %1% elements exceeds 1", ROMANS[group_nr-1]);
     if (no_info != end) {
         no_info->second = 1.0 - sum;
     } else {
         if (!is_zero(sum - 1.0))
-             throw plask::MaterialParseException("sum of composition ammounts in group (%1% in periodic table) diffrent from 1.", group_nr);
+             throw plask::MaterialParseException("the sum of composition amounts (%2%) of group %1% elements differ from 1", ROMANS[group_nr-1], sum);
     }
 }
 
@@ -228,7 +230,7 @@ std::pair<std::string, double> Material::firstCompositionObject(const char*& beg
 
 
 Material::Composition Material::parseComposition(const char* begin, const char* end) {
-    const char* fullname = begin;   //for excpetions only
+    const char* fullname = begin;   // for exceptions only
     Material::Composition result;
     std::set<int> groups;
     int prev_g = -1;

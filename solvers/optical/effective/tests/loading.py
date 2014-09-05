@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-@material.simple
+@material.simple()
 class LowContrastMaterial(material.Material):
     def Nr(self, wl, T): return 1.3
 

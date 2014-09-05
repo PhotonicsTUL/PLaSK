@@ -9,7 +9,7 @@ from plask import material, geometry, mesh
 from optical.slab import Fourier3D, PML
 
 
-@material.simple
+@material.simple()
 class Mat(material.Material):
     @staticmethod
     def nr():

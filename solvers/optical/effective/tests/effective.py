@@ -8,11 +8,11 @@ from plask import *
 from plask import material, geometry, mesh
 from optical import effective
 
-@material.simple
+@material.simple()
 class Glass(material.Material):
     def Nr(self, wl, T=300., n=0.): return 1.3
 
-@material.simple
+@material.simple()
 class Cladding(material.Material):
     def Nr(self, wl, T=300., n=0.): return 1.28
 

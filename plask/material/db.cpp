@@ -74,6 +74,7 @@ std::string complexDbKey(const std::string& fullComplexName) {
     return complexDbKey(name_dopant.first, name_dopant.second);
 }
 
+
 MaterialsDB& MaterialsDB::getDefault() {
     static MaterialsDB defaultDb;
     return defaultDb;
@@ -102,6 +103,38 @@ void MaterialsDB::loadAllToDefault(const std::string& dir) {
 void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &composition) {
     if (composition.empty()) throw MaterialParseException("unknown composition.");
 }
+
+MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor():
+    MaterialsDB::MaterialConstructor(""), material(new EmptyMaterial)
+{}
+
+MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::string& name, const MaterialsDB& db):
+    MaterialsDB::MaterialConstructor(name)
+{
+    if (name != "") {
+        if (name.find("=") != std::string::npos)    // base material has defined dopant
+            material = db.get(name);
+        else {  //doping amount is not given
+            if (name.find(":") != std::string::npos) {  // but dopant type is given
+                if (name.find("(") != std::string::npos) {  // material is complex
+                    std::string base_name, dopant_name;
+                    std::tie(base_name, dopant_name) = splitString2(name, ':');
+                    composition = Material::parseComposition(name);
+                    constructor = db.getConstructor(composition, dopant_name);
+                } else { // material is simple or complex generic
+                    constructor = db.getConstructor(name);
+                }
+            } else // dopant type is not given
+                material = db.get(name);
+        }
+    } else {
+        material = make_shared<EmptyMaterial>();
+    }
+}
+
+MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const shared_ptr<Material>& material):
+    MaterialsDB::MaterialConstructor(material->name()), material(material)
+{}
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name) const {
     auto it = constructors.find(db_Key);

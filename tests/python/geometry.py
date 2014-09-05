@@ -9,7 +9,7 @@ import plask, plask.material, plask.geometry
 class SimpleGeometry(unittest.TestCase):
 
     def setUp(self):
-        @plask.material.simple
+        @plask.material.simple()
         class Dumb(plask.material.Material): pass
 
     def testPrimitives(self):
@@ -33,7 +33,7 @@ class SimpleGeometry(unittest.TestCase):
 class GeometryObjects(unittest.TestCase):
 
     def setUp(self):
-        @plask.material.simple
+        @plask.material.simple()
         class Mat(plask.material.Material):
             pass
         self.mat = Mat()

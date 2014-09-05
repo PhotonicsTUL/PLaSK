@@ -65,42 +65,52 @@ material.Air = lambda: material.air
 material.db.load_all()
 material.update_factories()
 
-def register_material(cls=None, name=None, is_complex=False, DB=None):
-    '''Register a custom Python material.'''
+class _simple(object):
+    '''
+    Decorator for custom simple material class.
 
-    # A trick allowing passing arguments to decorator
-    if cls is None:
-        return lambda M: register_material(M, name=name, DB=DB)
-    elif not issubclass(cls, material.Material):
-        raise TypeError("Wrong decorated class (must be a subclass of plask.material.Material")
+    Args:
+        base (str or material.Material): Base class specification.
+            It may be either a material object or a string with either
+            complete or incomplete specification of the material.
+            In either case you must initialize the base in the
+            constructor of your material.
+    '''
+    def __init__(self, base=None):
+        if isinstance(base, type):
+            raise TypeError("material.simple argument is a class (you probably forgot parenthes)")
+        self.base = base
+    def __call__(self, cls):
+        if 'name' not in cls.__dict__: cls.name = cls.__name__
+        material._register_material_simple(cls.name, cls, self.base)
+        return cls
+material.simple = _simple
+del _simple
 
-    if 'name' in cls.__dict__:
-        if name is not None:
-            raise ValueError("Name specified both in decorator parameter and class body")
-    elif name is not None:
-        cls.name = name
-    else:
-        cls.name = cls.__name__
+class _complex(object):
+    '''
+    Decorator for custom complex material class.
 
-    if DB is None:
-        DB = material.db
-
-    if is_complex:
-        material._register_material_complex(cls.name, cls, DB)
-    else:
-        material._register_material_simple(cls.name, cls, DB)
-
-    return cls
-
-material.register_material = register_material
-del register_material
-
-material.simple = lambda mat, **kwargs: material.register_material(mat, is_complex=False, **kwargs)
-material.simple.__doc__ = """Decorator for simple custom material class."""
-material.complex = lambda mat, **kwargs: material.register_material(mat, is_complex=True, **kwargs)
-material.complex.__doc__ = """Decorator for complex custom material class."""
+    Args:
+        base (str or material.Material): Base class specification.
+            It may be either a material object or a string with either
+            complete or incomplete specification of the material.
+            In either case you must initialize the base in the
+            constructor of your material.
+    '''
+    def __init__(self, base=None):
+        if isinstance(base, type):
+            raise TypeError("material.complex argument is a class (you probably forgot parenthes)")
+        self.base = base
+    def __call__(self, cls):
+        if 'name' not in cls.__dict__: cls.name = cls.__name__
+        material._register_material_complex(cls.name, cls, self.base)
+        return cls
+material.complex = _complex
+del _complex
 
 material.const = staticmethod
+
 
 ## ## plask.geometry ## ##
 

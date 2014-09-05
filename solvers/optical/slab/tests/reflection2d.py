@@ -10,7 +10,7 @@ from optical.slab import Fourier2D
 
 plask.config.axes = 'xy'
 
-@material.simple
+@material.simple()
 class Core(material.Material):
     @staticmethod
     def Nr(): return 3.5

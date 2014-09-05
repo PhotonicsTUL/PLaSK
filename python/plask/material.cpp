@@ -188,84 +188,7 @@ class PythonMaterial : public Material
         if (!base) base = shared_ptr<Material>(new EmptyMaterial);
     }
 
-    static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs) {
-        int len = py::len(args);
-        if (len > 2 || py::len(kwargs) != 0) {
-            throw TypeError("__init__ takes at most 2 arguments (%d given)", len);
-        }
-        PythonMaterial* ptr;
-        if (len == 2) {
-            shared_ptr<Material> base;
-            try {
-                base = MaterialsDB::getDefault().get(py::extract<std::string>(args[1]));
-            } catch (py::error_already_set) {
-                PyErr_Clear();
-                base = py::extract<shared_ptr<Material>>(args[1]);
-            }
-            ptr = new PythonMaterial(base);
-        } else {
-            ptr = new PythonMaterial();
-        }
-        auto sptr = shared_ptr<Material>(ptr);
-        py::object self(args[0]);
-        ptr->self = self.ptr();  // key line !!!
-        // Update cache
-        py::object cls = self.attr("__class__");
-        auto found = cacheMap.find(cls.ptr());
-        if (found != cacheMap.end())
-            ptr->cache = found->second.get();
-        else {
-            std::string cls_name = py::extract<std::string>(cls.attr("__name__"));
-            // MaterialCache* cache = cacheMap.emplace(cls.ptr(), std::unique_ptr<MaterialCache>(new MaterialCache)).first->second.get();
-            MaterialCache* cache = (cacheMap[cls.ptr()] = std::move(std::unique_ptr<MaterialCache>(new MaterialCache))).get();
-            ptr->cache = cache;
-            #define CHECK_CACHE(Type, fun, name, ...) \
-                if (PyObject_HasAttrString(self.ptr(), name) && PyFunction_Check(py::object(self.attr(name)).ptr())) { \
-                    cache->fun.reset(py::extract<Type>(self.attr(name)())); \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%1%'", cls_name); \
-                }
-            CHECK_CACHE(double, lattC, "lattC", 300., py::object())
-            CHECK_CACHE(double, Eg, "Eg", 300., 0., "G")
-            CHECK_CACHE(double, CB, "CB", 300., 0., "G")
-            CHECK_CACHE(double, VB, "VB", 300., 0., "H")
-            CHECK_CACHE(double, Dso, "Dso", 300., 0.)
-            CHECK_CACHE(double, Mso, "Mso", 300., 0.)
-            CHECK_CACHE(Tensor2<double>, Me, "Me", 300., 0.)
-            CHECK_CACHE(Tensor2<double>, Mhh, "Mhh", 300., 0.)
-            CHECK_CACHE(Tensor2<double>, Mlh, "Mlh", 300., 0.)
-            CHECK_CACHE(Tensor2<double>, Mh, "Mh", 300., 0.)
-            CHECK_CACHE(double, ac, "ac", 300.)
-            CHECK_CACHE(double, av, "av", 300.)
-            CHECK_CACHE(double, b, "b", 300.)
-            CHECK_CACHE(double, d, "d", 300.)
-            CHECK_CACHE(double, c11, "c11", 300.)
-            CHECK_CACHE(double, c12, "c12", 300.)
-            CHECK_CACHE(double, c44, "c44", 300.)
-            CHECK_CACHE(double, eps, "eps", 300.)
-            CHECK_CACHE(double, chi, "chi", 300., 0., "G")
-            CHECK_CACHE(double, Nc, "Nc", 300., 0., "G")
-            CHECK_CACHE(double, Nv, "Nv", 300., 0., "G")
-            CHECK_CACHE(double, Ni, "Ni", 300.)
-            CHECK_CACHE(double, Nf, "Nf", 300.)
-            CHECK_CACHE(double, EactD, "EactD", 300.)
-            CHECK_CACHE(double, EactA, "EactA", 300.)
-            CHECK_CACHE(Tensor2<double>, mob, "mob", 300.)
-            CHECK_CACHE(Tensor2<double>, cond, "cond", 300.)
-            CHECK_CACHE(double, A, "A", 300.)
-            CHECK_CACHE(double, B, "B", 300.)
-            CHECK_CACHE(double, C, "C", 300.)
-            CHECK_CACHE(double, D, "D", 300.)
-            CHECK_CACHE(Tensor2<double>, thermk, "thermk", 300., INFINITY)
-            CHECK_CACHE(double, dens, "dens", 300.)
-            CHECK_CACHE(double, cp, "cp", 300.)
-            CHECK_CACHE(double, nr, "nr", py::object(), 300., 0.)
-            CHECK_CACHE(double, absp, "absp", py::object(), 300.)
-            CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300., 0.)
-            CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", py::object(), 300., 0.)
-        }
-        return sptr;
-    }
-
+    static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs);
 
     // Here there are overridden methods from Material class
 
@@ -414,94 +337,247 @@ class PythonMaterial : public Material
 std::map<PyObject*, std::unique_ptr<MaterialCache>> PythonMaterial::cacheMap;
 
 /**
- * Object constructing custom simple Python material when read from XML file
- *
- * \param name plain material name
- *
- * Other parameters are ignored
+ * Base class for Python material constructors
  */
-class PythonSimpleMaterialConstructor: public MaterialsDB::MaterialConstructor
+struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
 {
     py::object material_class;
-    std::string dopant;
+    MaterialsDB::ProxyMaterialConstructor base_constructor;
+    const bool simple;
 
-  public:
-    PythonSimpleMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
-        MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
-
-    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const
+    PythonMaterialConstructor(const std::string& name, const py::object& cls, const py::object& base, bool simple):
+        MaterialsDB::MaterialConstructor(name), material_class(cls), simple(simple)
     {
-        py::tuple args;
-        py::dict kwargs;
-        // Doping information
-        if (doping_amount_type !=  Material::NO_DOPING) {
-            kwargs["dp"] = dopant;
-            kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
+        if (base == py::object()) return;
+
+        py::extract<std::string> base_str(base);
+        if (base_str.check()) {
+            base_constructor = MaterialsDB::ProxyMaterialConstructor(base_str);
+        } else {
+            base_constructor = MaterialsDB::ProxyMaterialConstructor(py::extract<shared_ptr<Material>>(base));
         }
-        return py::extract<shared_ptr<Material>>(material_class(*args, **kwargs));
     }
 
-    bool isSimple() const override { return true; }
-};
-
-/**
- * Object constructing custom complex Python material whene read from XML file
- *
- * \param name plain material name
- *
- * Other parameters are ignored
- */
-class PythonComplexMaterialConstructor : public MaterialsDB::MaterialConstructor
-{
-    py::object material_class;
-    std::string dopant;
-
-  public:
-    PythonComplexMaterialConstructor(const std::string& name, py::object material_class, std::string dope="") :
-        MaterialsDB::MaterialConstructor(name), material_class(material_class), dopant(dope) {}
-
-    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const
+    shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override
     {
+        py::tuple args;
         py::dict kwargs;
         // Composition
         for (auto c : composition) kwargs[c.first] = c.second;
         // Doping information
         if (doping_amount_type !=  Material::NO_DOPING) {
-            kwargs["dp"] = dopant;
             kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "dc" : "cc" ] = doping_amount;
         }
-
-        py::tuple args;
-        py::object material = material_class(*args, **kwargs);
-
-        return py::extract<shared_ptr<Material>>(material);
+        return py::extract<shared_ptr<Material>>(material_class(*args, **kwargs));
     }
 
-    bool isSimple() const override { return false; }
+    bool isSimple() const override { return simple; }
 };
-
-
 
 /**
  * Function registering custom simple material class to plask
  * \param name name of the material
  * \param material_class Python class object of the custom material
+ * \param base base material specification
  */
-void registerSimpleMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
+void registerSimpleMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
-    std::string dopant = splitString2(name, ':').second;
-    db.addSimple(make_shared<PythonSimpleMaterialConstructor>(name, material_class, dopant));
+    auto constructor = make_shared<PythonMaterialConstructor>(name, material_class, base, true);
+    MaterialsDB::getDefault().addSimple(constructor);
+    material_class.attr("_factory") = py::object(constructor);
 }
 
 /**
  * Function registering custom complex material class to plask
  * \param name name of the material
  * \param material_class Python class object of the custom material
+ * \param base base material specification
  */
-void registerComplexMaterial(const std::string& name, py::object material_class, MaterialsDB& db)
+void registerComplexMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
-    std::string dopant = splitString2(name, ':').second;
-    db.addComplex(make_shared<PythonComplexMaterialConstructor>(name, material_class, dopant));
+    auto constructor = make_shared<PythonMaterialConstructor>(name, material_class, base, false);
+    MaterialsDB::getDefault().addComplex(constructor);
+    material_class.attr("_factory") = py::object(constructor);
+}
+
+
+inline static void kwargs2MaterialComposition(const py::dict& kwargs, std::string& name,
+                                              std::string& dopant,
+                                              Material::DopingAmountType& doping_type,
+                                              double& doping_concentration,
+                                              Material::Composition& composition)
+{
+    // Get doping
+    std::tie(name, dopant) = splitString2(name, ':');
+    bool doping = dopant != "";
+    int doping_keys = 0;
+    try {
+        dopant = py::extract<std::string>(kwargs["dp"]);
+        doping = true;
+        ++doping_keys;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    doping_type = Material::NO_DOPING;
+    doping_concentration = 0;
+    py::object cobj;
+    bool has_dc = false;
+    try {
+        cobj = kwargs["dc"];
+        doping_type = Material::DOPANT_CONCENTRATION;
+        has_dc = true;
+        ++doping_keys;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    try {
+        cobj = kwargs["cc"];
+        doping_type = Material::CARRIER_CONCENTRATION;
+        ++doping_keys;
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+    }
+    if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
+        throw ValueError("doping and carrier concentrations specified simultanously");
+    }
+    if (doping) {
+        if (doping_type == Material::NO_DOPING) {
+            throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
+        } else {
+            doping_concentration = py::extract<double>(cobj);
+        }
+    } else {
+        if (doping_type != Material::NO_DOPING) {
+            throw ValueError("%s concentration given, but no dopant specified", has_dc?"doping":"carrier");
+        }
+    }
+
+    std::size_t sep = name.find(':');
+    if (sep != std::string::npos) {
+        if (doping) {
+            throw ValueError("doping specified in **kwargs, but name contains ':'");
+        } else {
+           Material::parseDopant(name.substr(sep+1), dopant, doping_type, doping_concentration);
+        }
+    }
+
+    py::list keys = kwargs.keys();
+
+    // Test if kwargs contains only doping information
+    if (py::len(keys) == doping_keys) {
+        if (dopant != "") {
+            name += ":"; name += dopant;
+        }
+        return;
+    }
+
+    // So, kwargs contains compostion
+    std::vector<std::string> objects = Material::parseObjectsNames(name);
+    py::object none;
+    // test if only correct objects are given
+    for (int i = 0; i < py::len(keys); ++i) {
+        std::string k = py::extract<std::string>(keys[i]);
+        if (k != "dp" && k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
+            throw TypeError("'%s' not allowed in material %s", k, name);
+        }
+    }
+    // make composition map
+    for (auto e: objects) {
+        py::object v;
+        try {
+            v = kwargs[e];
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
+        composition[e] = (v != none) ? py::extract<double>(v): std::numeric_limits<double>::quiet_NaN();
+    }
+}
+
+shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
+{
+    int len = py::len(args);
+
+    if (len > 1) {
+        throw TypeError("__init__ takes exactly 1 non-keyword arguments (%d given)", len);
+    }
+
+    py::object self(args[0]);
+    py::object cls = self.attr("__class__");
+
+    PythonMaterial* ptr;
+
+    if (PyObject_HasAttrString(cls.ptr(), "_factory")) {
+        shared_ptr<PythonMaterialConstructor> factory
+            = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
+        std::string dopant;
+        Material::DopingAmountType doping_type;
+        double doping_concentration;
+        Material::Composition composition;
+        kwargs2MaterialComposition(kwargs,
+                                   factory->base_constructor.materialName, dopant, doping_type,
+                                   doping_concentration, composition);
+        ptr = new PythonMaterial(factory->base_constructor(Material::completeComposition(composition),
+                                                           doping_type, doping_concentration));
+    } else {
+        ptr = new PythonMaterial();
+    }
+
+    ptr->self = self.ptr();  // key line !!!
+
+    // Update cache
+    auto found = cacheMap.find(cls.ptr());
+    if (found != cacheMap.end())
+        ptr->cache = found->second.get();
+    else {
+        std::string cls_name = py::extract<std::string>(cls.attr("__name__"));
+        // MaterialCache* cache = cacheMap.emplace(cls.ptr(), std::unique_ptr<MaterialCache>(new MaterialCache)).first->second.get();
+        MaterialCache* cache = (cacheMap[cls.ptr()] = std::move(std::unique_ptr<MaterialCache>(new MaterialCache))).get();
+        ptr->cache = cache;
+        #define CHECK_CACHE(Type, fun, name, ...) \
+            if (PyObject_HasAttrString(self.ptr(), name) && PyFunction_Check(py::object(self.attr(name)).ptr())) { \
+                cache->fun.reset(py::extract<Type>(self.attr(name)())); \
+                writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '%1%'", cls_name); \
+            }
+        CHECK_CACHE(double, lattC, "lattC", 300., py::object())
+        CHECK_CACHE(double, Eg, "Eg", 300., 0., "G")
+        CHECK_CACHE(double, CB, "CB", 300., 0., "G")
+        CHECK_CACHE(double, VB, "VB", 300., 0., "H")
+        CHECK_CACHE(double, Dso, "Dso", 300., 0.)
+        CHECK_CACHE(double, Mso, "Mso", 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Me, "Me", 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Mhh, "Mhh", 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Mlh, "Mlh", 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Mh, "Mh", 300., 0.)
+        CHECK_CACHE(double, ac, "ac", 300.)
+        CHECK_CACHE(double, av, "av", 300.)
+        CHECK_CACHE(double, b, "b", 300.)
+        CHECK_CACHE(double, d, "d", 300.)
+        CHECK_CACHE(double, c11, "c11", 300.)
+        CHECK_CACHE(double, c12, "c12", 300.)
+        CHECK_CACHE(double, c44, "c44", 300.)
+        CHECK_CACHE(double, eps, "eps", 300.)
+        CHECK_CACHE(double, chi, "chi", 300., 0., "G")
+        CHECK_CACHE(double, Nc, "Nc", 300., 0., "G")
+        CHECK_CACHE(double, Nv, "Nv", 300., 0., "G")
+        CHECK_CACHE(double, Ni, "Ni", 300.)
+        CHECK_CACHE(double, Nf, "Nf", 300.)
+        CHECK_CACHE(double, EactD, "EactD", 300.)
+        CHECK_CACHE(double, EactA, "EactA", 300.)
+        CHECK_CACHE(Tensor2<double>, mob, "mob", 300.)
+        CHECK_CACHE(Tensor2<double>, cond, "cond", 300.)
+        CHECK_CACHE(double, A, "A", 300.)
+        CHECK_CACHE(double, B, "B", 300.)
+        CHECK_CACHE(double, C, "C", 300.)
+        CHECK_CACHE(double, D, "D", 300.)
+        CHECK_CACHE(Tensor2<double>, thermk, "thermk", 300., INFINITY)
+        CHECK_CACHE(double, dens, "dens", 300.)
+        CHECK_CACHE(double, cp, "cp", 300.)
+        CHECK_CACHE(double, nr, "nr", py::object(), 300., 0.)
+        CHECK_CACHE(double, absp, "absp", py::object(), 300.)
+        CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300., 0.)
+        CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", py::object(), 300., 0.)
+    }
+    return shared_ptr<Material>(ptr);
 }
 
 /**
@@ -545,94 +621,16 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     if (py::len(kwargs) == 0) return DB->get(name);
 
     // Otherwise parse other args
-
-    // Get doping
-    bool doping = false;
-    std::string dopant = "";
-    int doping_keys = 0;
-    try {
-        dopant = py::extract<std::string>(kwargs["dp"]);
-        doping = true;
-        ++doping_keys;
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-    }
-    Material::DopingAmountType doping_type = Material::NO_DOPING;
-    double concentration = 0;
-    py::object cobj;
-    bool has_dc = false;
-    try {
-        cobj = kwargs["dc"];
-        doping_type = Material::DOPANT_CONCENTRATION;
-        has_dc = true;
-        ++doping_keys;
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-    }
-    try {
-        cobj = kwargs["cc"];
-        doping_type = Material::CARRIER_CONCENTRATION;
-        ++doping_keys;
-    } catch (py::error_already_set) {
-        PyErr_Clear();
-    }
-    if (doping_type == Material::CARRIER_CONCENTRATION && has_dc) {
-        throw ValueError("doping and carrier concentrations specified simultanously");
-    }
-    if (doping) {
-        if (doping_type == Material::NO_DOPING) {
-            throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
-        } else {
-            concentration = py::extract<double>(cobj);
-        }
-    } else {
-        if (doping_type != Material::NO_DOPING) {
-            throw ValueError("%s concentration given, but no dopant specified", has_dc?"doping":"carrier");
-        }
-    }
-
-    std::size_t sep = name.find(':');
-    if (sep != std::string::npos) {
-        if (doping) {
-            throw ValueError("doping specified in **kwargs, but name contains ':'");
-        } else {
-           Material::parseDopant(name.substr(sep+1), dopant, doping_type, concentration);
-        }
-    }
-
-    py::list keys = kwargs.keys();
-
-    // Test if kwargs contains only doping information
-    if (py::len(keys) == doping_keys) {
-        std::string full_name = name; full_name += ":"; full_name += dopant;
-        return DB->get(full_name, std::vector<double>(), doping_type, concentration);
-    }
-
-    // So, kwargs contains compostion
-    std::vector<std::string> objects = Material::parseObjectsNames(name);
-    py::object none;
-    // test if only correct objects are given
-    for (int i = 0; i < py::len(keys); ++i) {
-        std::string k = py::extract<std::string>(keys[i]);
-        if (k != "dp" && k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
-            throw TypeError("'%s' not allowed in material %s", k, name);
-        }
-    }
-    // make composition map
+    std::string dopant;
+    Material::DopingAmountType doping_type;
+    double doping_concentration;
     Material::Composition composition;
-    for (auto e: objects) {
-        py::object v;
-        try {
-            v = kwargs[e];
-        } catch (py::error_already_set) {
-            PyErr_Clear();
-        }
-        composition[e] = (v != none) ? py::extract<double>(v): std::numeric_limits<double>::quiet_NaN();
-    }
-
-    return DB->get(composition, dopant, doping_type, concentration);
+    kwargs2MaterialComposition(kwargs, name, dopant, doping_type, doping_concentration, composition);
+    if (composition.empty())
+        return DB->get(name, std::vector<double>(), doping_type, doping_concentration);
+    else
+        return DB->get(composition, dopant, doping_type, doping_concentration);
 }
-
 
 py::dict Material__completeComposition(py::dict src, std::string name) {
     py::list keys = src.keys();
@@ -792,7 +790,7 @@ void initMaterials() {
         .def("get", py::raw_function(&MaterialsDB_get),
              "Get material of given name and doping."
              )
-        .def("__getitem__", (shared_ptr<Material>(MaterialsDB::*)(const std::string&)const)&MaterialsDB::get)
+        .def("__call__", (shared_ptr<Material>(MaterialsDB::*)(const std::string&)const)&MaterialsDB::get)
         .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
@@ -888,10 +886,15 @@ void initMaterials() {
 
     detail::StringFromMaterial();
 
-    py::def("_register_material_simple", &registerSimpleMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
+    py::class_<PythonMaterialConstructor, shared_ptr<PythonMaterialConstructor>, boost::noncopyable>
+        ("_Constructor", py::no_init);
+
+    py::def("_register_material_simple", &registerSimpleMaterial,
+            (py::arg("name"), "material", "base"),
             "Register new simple material class to the database");
 
-    py::def("_register_material_complex", &registerComplexMaterial, (py::arg("name"), py::arg("material"), py::arg("database")=MaterialsDB::getDefault()),
+    py::def("_register_material_complex", &registerComplexMaterial,
+            (py::arg("name"), "material", "base"),
             "Register new complex material class to the database");
 
     // Material info
