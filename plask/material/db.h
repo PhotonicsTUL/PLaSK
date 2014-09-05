@@ -374,7 +374,7 @@ public:
     /**
      * Material constructor that holds other constructor or complete material object based on the provided name.
      */
-    class ProxyMaterialConstructor: public MaterialConstructor {
+    class PLASK_API ProxyMaterialConstructor: public MaterialConstructor {
         shared_ptr<Material> material;
         shared_ptr<const MaterialsDB::MaterialConstructor> constructor;
         Material::Composition composition;
