@@ -136,10 +136,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         expansion.polarization = polarization;
     }
 
-    /**
-     * Get mesh at which material parameters are sampled
-     */
-    RegularAxis getXmesh() const { return expansion.xmesh; }
+    /// Get info if the expansion is separated
+    bool separated() const { return expansion.separated(); }
 
   private:
 
@@ -207,31 +205,33 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * Get amplitudes of reflected diffraction orders
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
-     * \param savidx pointer to which optionally save nonzero incident index
      */
-    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence, size_t* savidx=nullptr);
+    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
      * Get amplitudes of transmitted diffraction orders
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
-     * \param savidx pointer to which optionally save nonzero incident index
      */
-    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence, size_t* savidx=nullptr);
+    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    double getReflection(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
+    double getReflection(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+        return sumAmplitutes(getReflectedAmplitudes(polarization, incidence));
+    }
 
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    double getTransmission(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
+    double getTransmission(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+        return sumAmplitutes(getTransmittedAmplitudes(polarization, incidence));
+    }
 
     /**
      * Get electric field at the given mesh for reflected light.

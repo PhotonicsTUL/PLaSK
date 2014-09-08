@@ -175,6 +175,7 @@ void Solver_setvPML(SolverT* self, const PmlWrapper& value) {
     self->invalidate();
 }
 
+
 py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
     if (!self.mirrors) return py::object();
     return py::make_tuple(self.mirrors->first, self.mirrors->second);
@@ -302,6 +303,30 @@ py::object FourierSolver_computeTransmittivity(SolverT* self,
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }
+
+
+static inline py::object arrayFromVec2D(cvector data, bool sep) {
+    int dim2 = sep? 1 : 2;
+    npy_intp dims[] = { data.size() / dim2, dim2 };
+    npy_intp strides[] = { dim2*sizeof(dcomplex), sizeof(dcomplex) };
+    PyObject* arr = PyArray_New(&PyArray_Type, dim2, dims, NPY_DOUBLE, strides, (void*)data.data(), 0, 0, NULL);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
+    DataVectorWrap<const dcomplex,2> wrap(data);
+    py::object odata(wrap); py::incref(odata.ptr());
+    PyArray_SetBaseObject((PyArrayObject*)arr, odata.ptr()); // Make sure the data vector stays alive as long as the array
+    return py::object(py::handle<>(arr));
+}
+
+py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+    self.setWavelength(lam);
+    return arrayFromVec2D(self.getReflectedAmplitudes(polarization, incidence), self.separated());
+}
+
+py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+    self.setWavelength(lam);
+    return arrayFromVec2D(self.getTransmittedAmplitudes(polarization, incidence), self.separated());
+}
+
 
 PmlWrapper FourierSolver2D_PML(FourierSolver2D* self) {
     return PmlWrapper(self, &self->pml);
@@ -853,6 +878,26 @@ BOOST_PYTHON_MODULE(slab)
                    "    dispersive (bool): If *True*, material parameters will be recomputed at each\n"
                    "        wavelength, as they may change due to the dispersion.\n"
                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
+        solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
+                   "Compute Fourier coefficients of the reflected field on the perpendicular incidence [%].\n\n"
+                   "Args:\n"
+                   "    lam (float): Incident light wavelength.\n"
+                   "    polarization: Specification of the incident light polarization.\n"
+                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                   "        name of the non-vanishing electric field component.\n"
+                   "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                   "        present.\n"
+                   , (py::arg("lam"), "polarization", "side"));
+        solver.def("compute_transmitted_orders", &FourierSolver2D_transmittedAmplitudes,
+                   "Compute Fourier coefficients of the reflected field on the perpendicular incidence [%].\n\n"
+                   "Args:\n"
+                   "    lam (float): Incident light wavelength.\n"
+                   "    polarization: Specification of the incident light polarization.\n"
+                   "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                   "        name of the non-vanishing electric field component.\n"
+                   "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                   "        present.\n"
+                   , (py::arg("lam"), "polarization", "side"));
         solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
                    "Mirror reflectivities. If None then they are automatically estimated from the\n"
                    "Fresnel equations.");

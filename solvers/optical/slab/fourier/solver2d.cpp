@@ -153,32 +153,19 @@ size_t FourierSolver2D::findMode(dcomplex neff)
 
 
 cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
-                                                Transfer::IncidentDirection incidence, size_t* savidx)
-{
-    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
-    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    initCalculation();
-    return transfer->getReflectionVector(incidentVector(polarization, savidx), incidence);
-}
-
-
-cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
-                                                  Transfer::IncidentDirection incidence, size_t* savidx)
-{
-    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
-    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-    initCalculation();
-    return transfer->getTransmissionVector(incidentVector(polarization, savidx), incidence);
-}
-
-
-double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence)
+                                                Transfer::IncidentDirection incidence)
 {
     size_t idx;
-    cvector reflected = getReflectedAmplitudes(polarization, incidence, &idx).claim();
+
+    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
+    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    initCalculation();
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
+
+    if (klong != 0. || ktran != 0.)
+        Solver::writelog(LOG_WARNING, "Reflection is computed correctly only for perpendicular incidence");
 
     size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
@@ -186,8 +173,7 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Tra
         Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
                                       (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
-    if (klong != 0. || ktran != 0.)
-        Solver::writelog(LOG_WARNING, "Reflection is computed correctly only for perpendicular incidence");
+    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
 
     //TODO non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(l);
@@ -209,14 +195,19 @@ double FourierSolver2D::getReflection(ExpansionPW2D::Component polarization, Tra
                 reflected[i] = reflected[i] * conj(reflected[i]) *  gamma0 / gamma[i];
         }
     }
-    return sumAmplitutes(reflected);
+
+    return reflected;
 }
 
 
-double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence)
+cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
+                                                  Transfer::IncidentDirection incidence)
 {
     size_t idx;
-    cvector transmitted = getTransmittedAmplitudes(polarization, incidence, &idx).claim();
+
+    if (!expansion.initialized && klong == 0.) expansion.polarization = polarization;
+    if (transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+    initCalculation();
 
     if (!expansion.periodic)
         throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
@@ -233,6 +224,8 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
     if (!expansion.diagonalQE(li))
         Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
+
+    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
 
     //TODO non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(lt);
@@ -254,7 +247,8 @@ double FourierSolver2D::getTransmission(ExpansionPW2D::Component polarization, T
                 transmitted[i] = transmitted[i] * conj(transmitted[i]) *  gamma0 / gamma[i];
         }
     }
-    return sumAmplitutes(transmitted);
+
+    return transmitted;
 }
 
 
