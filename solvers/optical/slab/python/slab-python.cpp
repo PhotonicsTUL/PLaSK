@@ -319,12 +319,14 @@ static inline py::object arrayFromVec2D(cvector data, bool sep) {
 
 py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
     self.setWavelength(lam);
-    return arrayFromVec2D(self.getReflectedAmplitudes(polarization, incidence), self.separated());
+    auto data = self.getReflectedAmplitudes(polarization, incidence);
+    return arrayFromVec2D(data, self.separated());
 }
 
 py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
     self.setWavelength(lam);
-    return arrayFromVec2D(self.getTransmittedAmplitudes(polarization, incidence), self.separated());
+    auto data = self.getTransmittedAmplitudes(polarization, incidence);
+    return arrayFromVec2D(data, self.separated());
 }
 
 

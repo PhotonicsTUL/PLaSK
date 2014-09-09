@@ -29,7 +29,7 @@ This section contains specification of custom materials that can be used togethe
          <materials>
            <material name="MyMaterial" base="Semiconductor">
              <nr>3.5 + 0.01*T</nr>
-             <absp const="yes">10.</absp>
+             <absp>10.</absp>
            </material>
          <materials>
 

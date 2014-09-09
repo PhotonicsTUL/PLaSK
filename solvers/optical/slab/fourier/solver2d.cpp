@@ -167,13 +167,13 @@ cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polariz
     if (klong != 0. || ktran != 0.)
         Solver::writelog(LOG_WARNING, "Reflection is computed correctly only for perpendicular incidence");
 
+    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
+
     size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
     if (!expansion.diagonalQE(l))
         Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute reflection coefficient",
                                       (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
-
-    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), incidence).claim();
 
     //TODO non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(l);
@@ -215,6 +215,8 @@ cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polar
     if (klong != 0. || ktran != 0.)
         Solver::writelog(LOG_WARNING, "Transmission is computed correctly only for perpendicular incidence");
 
+    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
+
     size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
@@ -224,8 +226,6 @@ cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polar
     if (!expansion.diagonalQE(li))
         Solver::writelog(LOG_WARNING, "%1% layer should be uniform to reliably compute transmission coefficient",
                                      (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
-
-    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), incidence).claim();
 
     //TODO non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(lt);
