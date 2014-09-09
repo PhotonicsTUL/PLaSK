@@ -10,6 +10,14 @@ class RefinementConf(object):
 
     attributes_names = ['object', 'path', 'at', 'by', 'every']
     all_attributes_names = ['axis'] + attributes_names
+    all_attributes_help = [
+        'Name of axis where refinement should be added.',
+        'Name of the geometry object to add additional division to. (required)',
+        'Path name, specifying particular instance of the object given in the object attribute.',
+        'If this is given, a single refinement line is placed at the position specified in it (in the local object coordinates).',
+        'If this is given, multiple refinement lines are placed dividing the object into a specified number of equal parts.',
+        'If this is given, multiple refinement lines are places at distance from each other specified by the value.'
+     ]
 
     def __init__(self, axis=None, object=None, path=None, at=None, by=None, every=None):
         self.axis = axis
@@ -62,6 +70,8 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
+        if role == QtCore.Qt.ToolTipRole:
+            return RefinementConf.all_attributes_help[index.column()]
 
     def set(self, col, row, value):
         self.entries[row].set_attr_by_index(col, value)

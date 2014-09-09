@@ -1,3 +1,4 @@
+# coding=UTF-8
 from ..base import Controller
 from ...qt import QtGui
 from ...utils.str import empty_to_none
@@ -13,19 +14,24 @@ class AxisEdit(QtGui.QGroupBox):
         if self.allow_type_select:
             self.type = QtGui.QComboBox()
             self.type.addItems(['(auto-detected)', 'ordered', 'regular'])
+            self.setToolTip('Type of axis. If auto-detected is selected, axis will be regular only if any of the start, stop or num attributes are specified (in other case it will be ordered).')
             form_layout.addRow("type", self.type)
         self.start = QtGui.QLineEdit()
+        self.start.setToolTip('Position of the first point on the axis. (float [µm])')
         form_layout.addRow("start", self.start)
         self.stop = QtGui.QLineEdit()
+        self.stop.setToolTip('Position of the last point on the axis. (float [µm])')
         form_layout.addRow("stop", self.stop)
         self.num = QtGui.QLineEdit()
+        self.num.setToolTip('Number of the equally distributed points along the axis. (integer)')
         form_layout.addRow("num", self.num)
         if allow_type_select or accept_non_regular:
             self.points = QtGui.QTextEdit()
+            self.points.setToolTip('Comma-separated list of the mesh points along this axis.')
             #self.points.setWordWrapMode(QtGui.QTextEdit.LineWrapMode)
             form_layout.addRow("points", self.points)
-        if allow_type_select:
-            self.points.setVisible(self.are_points_editable())
+            if allow_type_select:
+                self.points.setVisible(self.are_points_editable())
         self.setLayout(form_layout)
         if axis_model is not None: self.from_model(axis_model)
 

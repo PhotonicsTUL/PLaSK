@@ -8,12 +8,24 @@ from ...utils.str import empty_to_none
 class RectilinearDivideGeneratorConroller(Controller):
     """ordered and rectangular 2D and 3D divide generator controller"""
 
-    def __make_div_hbox__(self, container_to_add, label):
+    axes_names = [
+        [""], ["horizontal", "vertical"], ["longitudinal", "transverse", "vertical"]
+    ]
+
+    warning_help = {
+        'missing': 'Warn if any refinement references to non-existing object. Defaults to true.',
+        'multiple': 'Warn if any refinement references to multiple objects. Defaults to true.',
+        'outside': 'Warn if refining line lies outside of the specified object. Defaults to true.'
+    }
+
+    def __make_div_hbox__(self, container_to_add, label, tooltip):
         hbox_div = QtGui.QHBoxLayout()
         res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
         for i in range(0, self.model.dim):
-            hbox_div.addWidget(QtGui.QLabel('by '+str(i)+':'))
+            axis_name = RectilinearDivideGeneratorConroller.axes_names[self.model.dim-1][i]
+            hbox_div.addWidget(QtGui.QLabel('by {}{}:'.format(i, ' (' + axis_name + ')' if axis_name else '')))
             hbox_div.addWidget(res[i])
+            res[i].setToolTip(tooltip.format(' in {} direction'.format(axis_name) if axis_name else ''))
         container_to_add.addRow(label, hbox_div)
         return res
 
@@ -28,16 +40,18 @@ class RectilinearDivideGeneratorConroller(Controller):
         self.gradual = QtGui.QComboBox()    #not checkbox to allow put defines {}
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
+        self.gradual.setToolTip("Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two). Gradual is enabled by default.")
         form_layout.addRow("gradual", self.gradual)
 
-        self.prediv = self.__make_div_hbox__(form_layout, "prediv")
-        self.postdiv = self.__make_div_hbox__(form_layout, "postdiv")
+        self.prediv = self.__make_div_hbox__(form_layout, "prediv", "Set number of the initial divisions of each geometry object{}.")
+        self.postdiv = self.__make_div_hbox__(form_layout, "postdiv", "Set number of the final divisions of each geometry object{}.")
 
         warnings_layout = QtGui.QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
             cb  = QtGui.QComboBox()
-            cb.addItems(['', 'yes', 'no'])
+            cb.addItems(['', 'true', 'false'])
             cb.setEditable(True)
+            cb.setToolTip(RectilinearDivideGeneratorConroller.warning_help.get(w, ''))
             setattr(self, 'warning_'+w, cb)
             label = QtGui.QLabel(w+':')
             label.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)

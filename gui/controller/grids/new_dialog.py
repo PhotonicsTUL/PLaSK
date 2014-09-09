@@ -22,15 +22,18 @@ class NewGridDialog(QtGui.QDialog):
         kind.setLayout(hbox)
 
         self.name_edit = QtGui.QLineEdit()
+        self.name_edit.setToolTip('Name of the mesh or generator for reference in configuration of the solvers.')
 
         self.type_edit = QtGui.QComboBox()
         self.type_edit.setEditable(True)
         self.type_edit.setInsertPolicy(QtGui.QComboBox.NoInsert)
         self.type_edit.editTextChanged.connect(self.__type_changed__)
+        self.type_edit.setToolTip('Type of the mesh.')
 
         self.method_edit = QtGui.QComboBox()
         self.method_edit.setEditable(True)
         self.method_edit.setInsertPolicy(QtGui.QComboBox.NoInsert)
+        self.method_edit.setToolTip('Generation method i.e. the type of the generator.')
         #self.method_edit_label = QLabel("Method:")
 
         self.form_layout = QtGui.QFormLayout()

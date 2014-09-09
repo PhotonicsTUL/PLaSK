@@ -334,7 +334,7 @@ Possible <generator> contents for different types and methods
          Set number of the initial divisions of each geometry object.
 
          :attr by0: Number of parts each object is divided into along longitudinal axis.
-         :attr by1: Number of parts each object is divided into along trnasverse axis.
+         :attr by1: Number of parts each object is divided into along transverse axis.
          :attr by2: Number of parts each object is divided into along vertical axis.
          :attr by: Set values of ``by0``, ``by1`` and ``by2`` at once. It this attribute is specified, no other ones are allowed.
 
