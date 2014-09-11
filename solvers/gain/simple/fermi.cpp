@@ -346,6 +346,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_well_width(region.qwlen); //powinno byc - szerokosc pojedynczej studni
     gainModule.Set_waveguide_width(region.totallen);
     gainModule.Set_lifetime(lifetime);
+    gainModule.Set_momentum_matrix_element(matrixelem);
 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
@@ -442,6 +443,8 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         else if ( (qstrain>0.) && (bstrain>0.) )
             vdepth = qEvlh-bEvhh;
     }
+
+    if (!matrixelem) matrixelem = (1./gainModule.Get_electron_mass_transverse() - 1.)*(qEg+gainModule.Get_split_off())*qEg/(qEg+2.*gainModule.Get_split_off()/3.)/2.;
 
     gainModule.Set_bandgap(qEg);
     gainModule.Set_valence_depth(vdepth);
