@@ -439,13 +439,14 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             if (polarization == E_LONG) {
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iE(i)].tran() = field[iE(i)].vert() = 0.;
-                    if (iE(i) != 0 || !dx) field[iE(i)-dx].lon() = - E[iE(i)];
+                    if (iE(i) != 0 || !dz) field[iE(i)-dz].lon() = - E[iE(i)];
                 }
             } else { // polarization == E_TRAN
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iE(i)].lon() = 0.;
+                    if (iE(i) != 0 || !dx)
+                        field[iE(i)-dx].tran() = E[iE(i)];
                     if (iE(i) != 0 || !dz) {
-                        field[iE(i)-dz].tran() = E[iE(i)];
                         field[iE(i)-dz].vert() = 0.; // beta is equal to 0
                         if (symmetric()) {
                             if (symmetry == E_TRAN) { // symmetry == H_LONG
@@ -493,13 +494,14 @@ DataVector<const Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared
             if (polarization == E_TRAN) {  // polarization == H_LONG
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iH(i)].tran() = field[iH(i)].vert() = 0.;
-                    if (iH(i) != 0 || !dx) field[iH(i)- dx].lon() = H[iH(i)];
+                    if (iH(i) != 0 || !dz) field[iH(i)- dz].lon() = H[iH(i)];
                 }
             } else {  // polarization == H_TRAN
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iH(i)].lon() = 0.;
+                    if (iH(i) != 0 || !dx)
+                        field[iH(i)-dx].tran() = H[iH(i)];
                     if (iH(i) != 0 || !dz) {
-                        field[iH(i)-dz].tran() = H[iH(i)];
                         field[iH(i)-dz].vert() = 0.; // beta is equal to 0
                         if (symmetric()) {
                             if (symmetry == E_LONG) {

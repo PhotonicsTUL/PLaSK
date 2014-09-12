@@ -9,7 +9,7 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<Geometry3D
     refine_long(16), refine_tran(16)//,
 {
     detlog.global_prefix = this->getId();
-    smooth = 0.005;
+    smooth = 0.00025;
 }
 
 static inline PML readPML(XMLReader& reader) {
@@ -31,7 +31,7 @@ static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& l
         } else {
             auto values = splitString2(value, ',');
             long_field = boost::lexical_cast<T>(values.first);
-            tran_field = boost::lexical_cast<T>(values.first);
+            tran_field = boost::lexical_cast<T>(values.second);
         }
         if (reader.hasAttribute(attr+"-long")) throw XMLConflictingAttributesException(reader, attr, attr+"-long");
         if (reader.hasAttribute(attr+"-tran")) throw XMLConflictingAttributesException(reader, attr, attr+"-tran");

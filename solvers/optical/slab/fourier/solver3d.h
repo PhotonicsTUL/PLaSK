@@ -201,9 +201,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
         if (polarization == ExpansionPW3D::E_UNSPECIFIED)
             throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
-        if (expansion.symmetry_long != Expansion::Component(2-polarization))
+        if (expansion.symmetry_long == Expansion::Component(2-polarization))
             throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
-        if (expansion.symmetry_tran != Expansion::Component(2-polarization))
+        if (expansion.symmetry_tran == Expansion::Component(2-polarization))
             throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
         size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
         if (savidx) *savidx = idx;

@@ -182,7 +182,7 @@ static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {
     for (int i = 0; i < 3; ++i) {
         reader.requireTag();
         std::string node = reader.getNodeName();
-        if (node != "axis0" && node != "axis1" && node != "axis3") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1> or <axis2>");
+        if (node != "axis0" && node != "axis1" && node != "axis2") throw XMLUnexpectedElementException(reader, "<axis0>, <axis1> or <axis2>");
         dub_check(std::string("<mesh>"), node);
         boost::optional<std::string> type = reader.getAttribute("type");
         if (type) {
