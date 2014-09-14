@@ -304,12 +304,12 @@ py::object FourierSolver_computeTransmittivity(SolverT* self,
     }, wavelength);
 }
 
-
+template <NPY_TYPES type>
 static inline py::object arrayFromVec2D(cvector data, bool sep) {
     int dim2 = sep? 1 : 2;
     npy_intp dims[] = { data.size() / dim2, dim2 };
     npy_intp strides[] = { dim2*sizeof(dcomplex), sizeof(dcomplex) };
-    PyObject* arr = PyArray_New(&PyArray_Type, dim2, dims, NPY_DOUBLE, strides, (void*)data.data(), 0, 0, NULL);
+    PyObject* arr = PyArray_New(&PyArray_Type, dim2, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
     DataVectorWrap<const dcomplex,2> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
@@ -320,13 +320,13 @@ static inline py::object arrayFromVec2D(cvector data, bool sep) {
 py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
     self.setWavelength(lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
-    return arrayFromVec2D(data, self.separated());
+    return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
 py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
     self.setWavelength(lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
-    return arrayFromVec2D(data, self.separated());
+    return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
 
