@@ -192,16 +192,20 @@ class MaterialPlot(QtGui.QWidget):
         self.material.setEditable(True)
         self.material.setInsertPolicy(QtGui.QComboBox.NoInsert)
         self.material.setMinimumWidth(180)
+        #self.material.changed.connect(self.update_material)
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
         self.param.currentIndexChanged.connect(self.update_vars)
         toolbar1 = QtGui.QToolBar()
         toolbar1.addWidget(QtGui.QLabel("Material: "))
         toolbar1.addWidget(self.material)
-        toolbar1.addWidget(QtGui.QLabel("  Parameter: "))
-        toolbar1.addWidget(self.param)
         toolbar1.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        self.toolbar2 = QtGui.QToolBar()
+        toolbar2 = QtGui.QToolBar()
+        toolbar2.addWidget(QtGui.QLabel("Parameter: "))
+        toolbar2.addWidget(self.param)
+        toolbar2.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        self.par_toolbar = QtGui.QToolBar()
+        self.mat_toolbar = QtGui.QToolBar()
         self.arguments = {}
         self.update_vars()
 
@@ -212,11 +216,6 @@ class MaterialPlot(QtGui.QWidget):
         plot.setText("&Plot")
         plot.pressed.connect(self.update_plot)
         plot.setDefault(True)
-
-        hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(toolbar1)
-        hbox.addWidget(self.toolbar2)
-        hbox.addWidget(plot)
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
@@ -234,8 +233,17 @@ class MaterialPlot(QtGui.QWidget):
         self.error.setPalette(pal)
         self.error.acceptRichText()
 
+        hbox1 = QtGui.QHBoxLayout()
+        hbox2 = QtGui.QHBoxLayout()
+        hbox1.addWidget(toolbar1)
+        hbox1.addWidget(self.mat_toolbar)
+        hbox1.addWidget(plot)
+        hbox2.addWidget(toolbar2)
+        hbox2.addWidget(self.par_toolbar)
+
         vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(hbox)
+        vbox.addLayout(hbox1)
+        vbox.addLayout(hbox2)
         vbox.addWidget(self.error)
         vbox.addWidget(self.canvas)
 
@@ -256,25 +264,28 @@ class MaterialPlot(QtGui.QWidget):
         if args:
             self.material.setEditText(text)
 
+    def update_material(self):
+        pass
+
     def update_vars(self):
-        self.toolbar2.clear()
+        self.par_toolbar.clear()
         first = True
         old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
         self.arguments = {}
         for v in MATERIALS_PROPERTES[self.param.currentText()][2]:
             select = QtGui.QRadioButton()
             select.toggled.connect(self.update_arg)
-            self.toolbar2.addWidget(select)
+            self.par_toolbar.addWidget(select)
             select.setText("{}:".format(v[0]))
             select.descr = v[1]
             val1 = QtGui.QLineEdit()
-            self.toolbar2.addWidget(val1)
-            sep = self.toolbar2.addWidget(QtGui.QLabel("-"))
+            self.par_toolbar.addWidget(val1)
+            sep = self.par_toolbar.addWidget(QtGui.QLabel("-"))
             val2 = QtGui.QLineEdit()
             if select.text() in old:
                 val1.setText(old[select.text()][0])
                 val2.setText(old[select.text()][1])
-            act2 = self.toolbar2.addWidget(val2)
+            act2 = self.par_toolbar.addWidget(val2)
             self.arguments[select] = val1, val2, (sep, act2)
             if first:
                 select.setChecked(True)

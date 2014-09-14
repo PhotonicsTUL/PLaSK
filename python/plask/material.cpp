@@ -794,6 +794,12 @@ void initMaterials() {
         .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
+//        .def("is_simple", &MaterialsDB::isSimpleMaterialName, py::arg("name"),
+//             "Return ``True`` if the specified material is a simple one.\n\n"
+//             "Args:\n"
+//             "    name (str): material name without doping amount and composition.\n"
+//             "                (e.g. 'GaAs:Si', 'AlGaAs')."
+//            )
         .def("info", &getMaterialInfo, py::arg("name"),
              "Get information dictionary on built-in material.\n\n"
              "Args:\n"

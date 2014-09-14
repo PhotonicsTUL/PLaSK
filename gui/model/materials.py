@@ -237,7 +237,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
 class MaterialsModel(TableModel):
 
-    class Material: #(InfoSource)
+    class Material(object): #(InfoSource)
 
         def __init__(self, name, base=None, properties=None, comment=None):
             if properties is None: properties = []
