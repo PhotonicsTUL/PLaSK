@@ -2,7 +2,7 @@ from lxml.etree import Element, SubElement
 from ...qt import QtCore
 from ...model.table import TableModelEditMethods
 
-from ...utils.xml import AttributeReader
+from ...utils.xml import AttributeReader, require_no_children, UnorderedTagReader
 from .grid import Grid
 
 class RefinementConf(object):
@@ -36,6 +36,7 @@ class RefinementConf(object):
 
     def set_from_XML(self, axis_element):
         if axis_element is None: return
+        require_no_children(axis_element)
         self.axis = int(axis_element.tag[-1])
         with AttributeReader(axis_element) as a:
             for attr in RefinementConf.attributes_names:
@@ -165,37 +166,40 @@ class RectilinearDivideGenerator(Grid):
         if div_element is None:
             setattr(self, div_name, None)
         else:
-            by = div_element.attrib.get('by')
-            if by is not None:
-                setattr(self, div_name, tuple(by for _ in range(0, self.dim)))
-            else:
-                setattr(self, div_name, tuple(div_element.attrib.get('by'+str(i)) for i in range(0, self.dim)))
+            with AttributeReader(div_element) as a:
+                by = a.get('by')
+                if by is not None:
+                    setattr(self, div_name, tuple(by for _ in range(0, self.dim)))
+                else:
+                    setattr(self, div_name, tuple(a.get('by'+str(i)) for i in range(0, self.dim)))
 
     def set_XML_element(self, element):
-        gradual_element = element.find('gradual')
-        if gradual_element is not None:
-            self.gradual = element.attrib.get('all', None)
-        else:
-            if element.find('no-gradual'):     #deprecated
-                self.gradual = 'no'
+        with UnorderedTagReader(element) as r:
+            gradual_element = r.find('gradual')
+            if gradual_element is not None:
+                with AttributeReader(gradual_element) as a: self.gradual = a.get('all', None)
             else:
-                self.gradual = None
-        self.__div_from_XML__('prediv', element)
-        self.__div_from_XML__('postdiv', element)
-        self.refinements.entries = []
-        refinements_element = element.find('refinements')
-        if refinements_element is not None:
-            for ref_el in refinements_element:
-                to_append = RefinementConf()
-                to_append.set_from_XML(ref_el)
-                self.refinements.entries.append(to_append)
-        warnings_element = element.find('warnings')
-        if warnings_element is None:
-            for w in RectilinearDivideGenerator.warnings:
-                setattr(self, 'warning_' + w, None)
-        else:
-            for w in RectilinearDivideGenerator.warnings:
-                setattr(self, 'warning_' + w, warnings_element.attrib.get(w, None))
+                if r.find('no-gradual'):     #deprecated
+                    self.gradual = 'no'
+                else:
+                    self.gradual = None
+            self.__div_from_XML__('prediv', r)
+            self.__div_from_XML__('postdiv', r)
+            self.refinements.entries = []
+            refinements_element = r.find('refinements')
+            if refinements_element is not None:
+                for ref_el in refinements_element:
+                    to_append = RefinementConf()
+                    to_append.set_from_XML(ref_el)
+                    self.refinements.entries.append(to_append)
+            warnings_element = r.find('warnings')
+            if warnings_element is None:
+                for w in RectilinearDivideGenerator.warnings:
+                    setattr(self, 'warning_' + w, None)
+            else:
+                with AttributeReader(warnings_element) as a:
+                    for w in RectilinearDivideGenerator.warnings:
+                        setattr(self, 'warning_' + w, a.get(w, None))
 
     def __set_div__(self, attr_name, div_tab):
         if div_tab is None or div_tab.count(None) == self.dim:

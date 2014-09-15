@@ -214,3 +214,10 @@ class UnorderedTagReader(object):
 
 
 
+def require_no_children(element):
+    """Check if there are no children in element, raise error if there is any child."""
+    with OrderedTagReader(element) as ensure_no_child_reader: pass
+
+def require_no_attributes(element):
+    """Check if there are no attributes in element, raise error if there is any attribute."""
+    with AttributeReader(element) as ensure_no_attrib: pass

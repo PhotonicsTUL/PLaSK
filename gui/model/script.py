@@ -1,5 +1,5 @@
 from lxml import etree as ElementTree
-from ..utils.xml import OrderedTagReader, AttributeReader
+from ..utils.xml import require_no_children, require_no_attributes
 
 from .base import SectionModel
 
@@ -10,8 +10,8 @@ class ScriptModel(SectionModel):
         self.code = ''
 
     def set_XML_element(self, element):
-        with OrderedTagReader(element) as ensure_no_child_reader: pass  #this check if there are no children
-        with AttributeReader(element) as ensure_no_attrib: pass         #this check if there are no attributes
+        require_no_children(element)
+        require_no_attributes(element)
         self.set_text(element.text.lstrip('\n\r') if element is not None else '')
 
     # XML element that represents whole section

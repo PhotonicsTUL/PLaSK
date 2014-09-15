@@ -1,6 +1,6 @@
 from lxml.etree import ElementTree, SubElement
 
-from ...utils.xml import AttributeReader
+from ...utils.xml import AttributeReader, require_no_children
 from .grid import Grid
 
 
@@ -28,6 +28,7 @@ class AxisConf(object):
 
     def set_from_XML(self, axis_element):
         if axis_element is None: return
+        require_no_children(axis_element)
         with AttributeReader(axis_element) as a:
             for attr in ['start', 'stop', 'num', 'type']:
                 setattr(self, attr, a.get(attr, None))
