@@ -621,6 +621,14 @@ public:
     static bool isSimpleMaterialName(const std::string& material_name);
 
     /**
+     * Check if a material (given without patameters) is simple.
+     * @param name_without_composition material name, without encoded parameters, in format composition[:dopant]
+     * @return @c true only if the material is simple
+     * @throw NoSuchMaterial if database doesn't know the material with name @p name_without_composition
+     */
+    bool isSimple(const std::string& material_name) const;
+
+    /**
      * Get complex material constructor object.
      * @param composition objects composition
      * @param dopant_name name of dopant (if any)

@@ -1,4 +1,4 @@
-# coding=UTF-8
+# -*- coding: utf-8 -*-
 from ..base import Controller
 from ...qt import QtGui
 from ...utils.str import empty_to_none

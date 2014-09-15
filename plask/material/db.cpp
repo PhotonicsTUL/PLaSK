@@ -302,5 +302,6 @@ bool MaterialsDB::isNameWithDopant(const std::string &material) { return materia
 
 bool MaterialsDB::isSimpleMaterialName(const std::string &material) { return material.find('(') == std::string::npos; }
 
+bool MaterialsDB::isSimple(const std::string &material_name) const { return getConstructor(material_name)->isSimple(); }
 
 }  // namespace plask
