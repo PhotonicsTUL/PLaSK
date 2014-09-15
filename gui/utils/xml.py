@@ -43,7 +43,7 @@ class AttributeReader(object):
         """Raise ValueError if not all attributes have been read from XML tag."""
         not_read = set(self.element.attrib.keys()) - self.read
         if not_read:
-            raise ValueError("XML tag <%s> has unexpected attributes: %s", (self.element.tag, ", ".join(not_read)))
+            raise ValueError("XML tag <{}> has unexpected attributes: {}".format(self.element.tag, ", ".join(not_read)))
 
     def __enter__(self):
         return self
@@ -54,3 +54,149 @@ class AttributeReader(object):
             and not all attributes have been read from XML tag.
         """
         if exc_type is None and exc_value is None and traceback is None: self.require_all_read()
+
+
+class OrderedTagReader(object):
+    """Helper class to read children of XML element in required order.
+       It checks if all children has been read.
+
+       Usage::
+
+         with OrderedTagReader(parent_element) as r:
+                # use r.get(...) or r.require(...) to access children of parent_element
+    """
+
+    def __init__(self, parent_element, first_index = 0):
+        super(OrderedTagReader, self).__init__()
+        self.parent_element = parent_element
+        self.current_index = first_index
+
+    def __next_element__(self):
+        """:return: next element"""
+        return self.parent_element[self.current_index]
+
+    def __has_next__(self):
+        """:return: True if there is next element, False in other cases."""
+        return self.current_index != len(self.parent_element)
+
+    def __goto_next__(self):
+        """
+            Increment current_index if there is next element.
+            :return: Next element or None if there is no such element
+        """
+        if not self.__has_next__(): return None
+        res = self.__next_element__()
+        self.current_index += 1
+        return res
+
+    def require_end(self):
+        """Raise ValueError if self.parent_element still has unread children."""
+        if self.__has_next__():
+            raise ValueError("XML tag <{}> has unexpected child <{}>.".format(
+                self.parent_element.tag, self.__next_element__().tag))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+            It raise ValueError if any other exception haven't been raised
+            and self.parent_element still has unread children.
+        """
+        if exc_type is None and exc_value is None and traceback is None: self.require_end()
+
+    def get(self, expected_tag_name = None):
+        """
+            Get next child of wrapped self.parent_element.
+            :param str expected_tag_name: optional required name of returned tag
+            :return: Next child of wrapped self.parent_element or None if there is no more child or next child has name
+                    other than expected_tag_name
+        """
+        if expected_tag_name is None:
+            return self.__goto_next__()
+        else:
+            if self.__has_next__() and self.__next_element__().tag == expected_tag_name:
+                return self.__goto_next__()
+            else:
+                return None
+
+    def require(self, expected_tag_name = None):
+        """
+            Get next child of wrapped self.parent_element or raise ValueError if
+                there is no more child or next child has name other than expected_tag_name.
+            :param str expected_tag_name: optional required name of returned tag
+            :return: Next child of wrapped self.parent_element.
+        """
+        res = self.get(expected_tag_name)
+        if res is None:
+            if expected_tag_name is None:
+                raise ValueError('Unexpected end of <{}> tag.'.format(self.parent_element.tag))
+            else:
+                raise ValueError('<{}> tag does not have required <{}> child.'.format(
+                    self.parent_element.tag, expected_tag_name))
+        return res
+
+
+class UnorderedTagReader(object):
+    """Helper class to read children of XML element, if the children can be in any order.
+       It checks if all children has been read.
+
+       Usage::
+
+         with UnorderedTagReader(parent_element) as r:
+                # use r.get(...) or r.require(...) to access children of parent_element
+    """
+
+    def __init__(self, parent_element, first_index = 0):
+        super(UnorderedTagReader, self).__init__()
+        self.parent_element = parent_element
+        self.read = set()
+
+    def get(self, child_name):
+        """
+            Get child of wrapped self.parent_element.
+            :param str child_name: expected name of returned tag
+            :return: child of wrapped self.parent_element with name child_name
+                        or None if there is no child with expected name
+        """
+        self.read.add(child_name)
+        return self.parent_element.find(child_name)
+
+    find = get  #alias for compatibility with unwrapped ElementTree.Element
+
+    def require(self, child_name):
+        """
+            Get child of wrapped self.parent_element or raise ValueError if there is no child with expected name.
+            :param str child_name: expected name of returned tag
+            :return: child of wrapped self.parent_element with name child_name
+        """
+        res = self.get(child_name)
+        if res is None:
+            raise ValueError('<{}> tag does not have required <{}> child.'.format(
+                    self.parent_element.tag, child_name))
+        return res
+
+    def __len__(self):
+        return len(self.parent_element)
+
+    def mark_read(self, *children_names):
+        for k in children_names: self.read.add(k)
+
+    def require_all_read(self):
+        """Raise ValueError if not all children have been read from XML tag."""
+        not_read = set(e.tag for e in self.parent_element) - self.read
+        if not_read:
+            raise ValueError("XML tag <{}> has unexpected children: {}".format(self.parent_element.tag, ", ".join(not_read)))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+            It raise ValueError if any other exception haven't been raised
+            and not all attributes have been read from XML tag.
+        """
+        if exc_type is None and exc_value is None and traceback is None: self.require_all_read()
+
+
+

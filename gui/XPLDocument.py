@@ -8,7 +8,7 @@ from .controller.multi import GUIAndSourceController
 from .controller.connects import ConnectsController
 from .controller import materials
 from .controller.grids.section import GridsController
-from .utils.xml import XML_parser
+from .utils.xml import XML_parser, OrderedTagReader
 
 
 class XPLDocument(object):
@@ -41,12 +41,13 @@ class XPLDocument(object):
 
     def load_from_file(self, filename):
         tree = ElementTree.parse(filename, XML_parser)
-        for i in range(len(XPLDocument.SECTION_NAMES)):
-            element = tree.getroot().find(XPLDocument.SECTION_NAMES[i])
-            if element is not None:
-                self.model_by_index(i).set_file_XML_element(element, filename)
-            else:
-                self.model_by_index(i).clear()
+        with OrderedTagReader(tree.getroot()) as r:
+            for i in range(len(XPLDocument.SECTION_NAMES)):
+                element = r.get(XPLDocument.SECTION_NAMES[i])
+                if element is not None:
+                    self.model_by_index(i).set_file_XML_element(element, filename)
+                else:
+                    self.model_by_index(i).clear()
         self.set_changed(False)
 
     def save_to_file(self, filename):
