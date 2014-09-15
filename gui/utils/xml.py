@@ -136,6 +136,17 @@ class OrderedTagReader(object):
                     self.parent_element.tag, expected_tag_name))
         return res
 
+    def iter(self, expected_tag_name = None):
+        """
+            Iterator over the rest children.
+            :param str expected_tag_name: optional required name of returned tags
+            :return: yield the same as get(expected_tag_name) as long as this is not None
+        """
+        res = self.get(expected_tag_name)
+        while res is not None:
+            yield res
+            res = self.get(expected_tag_name)
+
 
 class UnorderedTagReader(object):
     """Helper class to read children of XML element, if the children can be in any order.
@@ -159,8 +170,9 @@ class UnorderedTagReader(object):
             :return: child of wrapped self.parent_element with name child_name
                         or None if there is no child with expected name
         """
-        self.read.add(child_name)
-        return self.parent_element.find(child_name)
+        res = self.parent_element.find(child_name)
+        if res is not None: self.read.add(child_name)
+        return res
 
     find = get  #alias for compatibility with unwrapped ElementTree.Element
 

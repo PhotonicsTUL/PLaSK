@@ -5,6 +5,7 @@ from lxml import etree as ElementTree
 from .table import TableModel
 from .info import Info
 #from guis import DefinesEditor
+from ..utils.xml import OrderedTagReader, AttributeReader
 
 
 class DefinesModel(TableModel):
@@ -25,12 +26,13 @@ class DefinesModel(TableModel):
         return -1
 
     def set_XML_element(self, element):
+        new_entries = []
+        with OrderedTagReader(element) as r:
+            for e in r.iter("define"):
+                with AttributeReader(e) as a:
+                    new_entries.append(DefinesModel.Entry(a.get("name", ""), a.get("value", "")))
         self.modelAboutToBeReset.emit()
-        if element is not None:
-            self.entries = [DefinesModel.Entry(c.attrib.get("name", ""), c.attrib.get("value", ""))
-                            for c in element.iter("define")]
-        else:
-            self.entries = []
+        self.entries = new_entries
         self.modelReset.emit()
         self.fire_changed()
 

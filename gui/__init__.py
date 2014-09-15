@@ -46,7 +46,7 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 self.document.load_from_file(filename)
             except IOError:
-                pass # TODO: add errors handling in the __new__ method
+                pass # TODO: add errors handling in the __new__ method, ValueError can be also raised
         self.model_is_new()
 
     def make_window_title(self):
