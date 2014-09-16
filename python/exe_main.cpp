@@ -366,11 +366,12 @@ int main(int argc, const char *argv[])
                 }
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();
-                globals["__manager__"] = py::object(manager);
-                plask::python::PythonManager_load(globals["__manager__"], py::str(filename), locals);
+                py::object omanager(manager);
+                globals["__manager__"] = omanager;
+                plask::python::PythonManager_load(omanager, py::str(filename), locals);
                 scriptline = manager->scriptline;
-                plask::python::PythonManager::export_dict(globals["__manager__"], globals);
-                py::delitem(manager->locals, py::str("self"));
+                globals.update(locals);
+                plask::python::PythonManager::export_dict(omanager, globals);
 
                 // Set default axes if all loaded geometries share the same
                 boost::optional<plask::AxisNames> axes;
@@ -387,12 +388,12 @@ int main(int argc, const char *argv[])
 #               if PY_VERSION_HEX >= 0x03000000
                     PyObject* code = Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
                     if (code)
-                        result = PyEval_EvalCode(code, globals.ptr(), manager->locals.ptr());
+                        result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
 #               else
                     PyCompilerFlags flags { CO_FUTURE_DIVISION };
                     PyObject* code = Py_CompileStringFlags(manager->script.c_str(), filename.c_str(), Py_file_input, &flags);
                     if (code)
-                        result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), manager->locals.ptr());
+                        result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
 #               endif
                 Py_XDECREF(code);
                 if (!result) py::throw_error_already_set();
