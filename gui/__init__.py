@@ -39,15 +39,25 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
         self.current_tab_index = -1
-        self.filename = filename
         self.init_ui()
         self.document = XPLDocument(self)
         if filename is not None:
-            try:
-                self.document.load_from_file(filename)
-            except IOError:
-                pass # TODO: add errors handling in the __new__ method, ValueError can be also raised
+            self.__try_load_from_file__(filename)
+        else:
+            self.filename = None
+        self.make_window_title()
         self.model_is_new()
+
+    def __try_load_from_file__(self, filename):
+        try:
+            self.document.load_from_file(filename)
+            self.filename = filename
+            self.make_window_title()
+            return True
+        except Exception as e:
+            QtGui.QMessageBox.critical(self, 'Error while loading XPL from file.',
+                                       'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
+            return False
 
     def make_window_title(self):
         if self.filename:
@@ -79,9 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         if type(filename) == tuple:
             filename = filename[0]
         if self.filename is None and not self.isWindowModified():
-            self.filename = filename
-            self.document.load_from_file(filename)
-            self.make_window_title()
+            self.__try_load_from_file__(filename)
         else:
             new_window = MainWindow(filename)
             new_window.resize(self.size())
@@ -303,8 +311,6 @@ class MainWindow(QtGui.QMainWindow):
             self.setFixedSize(screen.width()*0.8, screen.height()*0.9)
         else:
             self.setGeometry(geometry)
-
-        self.make_window_title()
 
         self.show()
 

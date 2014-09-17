@@ -222,7 +222,7 @@ class UnorderedTagReader(object):
         """Raise ValueError if not all children have been read from XML tag."""
         not_read = set(e.tag for e in self.parent_element) - self.read
         if not_read:
-            raise ValueError("XML tag <{}> has unexpected children: {}".format(self.parent_element.tag, ", ".join(not_read)))
+            raise ValueError("XML tag <{}> has unexpected child(ren): {}".format(self.parent_element.tag, ", ".join(not_read)))
 
     def __enter__(self):
         return self
