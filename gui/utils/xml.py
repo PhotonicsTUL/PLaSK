@@ -184,7 +184,7 @@ class UnorderedTagReader(object):
         tag_names = set()
         for child in parent_element:
             if child.tag in tag_names:
-                raise ValueError("Duplicated tags <{}> in <{}> are not allowed.", child.tag, parent_element.tag)
+                raise ValueError("Duplicated tags <{}> in <{}> are not allowed.".format(child.tag, parent_element.tag))
             tag_names.add(child.tag)
 
     def get(self, child_name):
