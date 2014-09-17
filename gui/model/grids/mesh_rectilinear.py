@@ -1,6 +1,6 @@
 from lxml.etree import ElementTree, SubElement
 
-from ...utils.xml import AttributeReader, require_no_children
+from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children, UnorderedTagReader
 from .grid import Grid
 
 
@@ -27,13 +27,15 @@ class AxisConf(object):
         #if self.points: axisElement.attrib['points'] = self.points
 
     def set_from_XML(self, axis_element):
-        if axis_element is None: return
-        require_no_children(axis_element)
-        with AttributeReader(axis_element) as a:
-            for attr in ['start', 'stop', 'num', 'type']:
-                setattr(self, attr, a.get(attr, None))
-        self.points = axis_element.text
-        #self.points = [float(x) for x in axis_element.text.split(',')] #can have {...}
+        if axis_element is None:
+            for attr in ['start', 'stop', 'num', 'type', 'points']: setattr(self, attr, None)
+        else:
+            require_no_children(axis_element)
+            with AttributeReader(axis_element) as a:
+                for attr in ['start', 'stop', 'num', 'type']:
+                    setattr(self, attr, a.get(attr, None))
+            self.points = axis_element.text
+            #self.points = [float(x) for x in axis_element.text.split(',')] #can have {...}
 
 
 #RectangularMesh1D(Grid)
@@ -62,7 +64,8 @@ class RectangularMesh1D(Grid):
         return res
 
     def set_XML_element(self, element):
-        self.axis.set_from_XML(element.find('axis'))
+        super(RectangularMesh1D, self).set_XML_element(element)
+        with OrderedTagReader(element) as r: self.axis.set_from_XML(r.find('axis'))
 
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMesh1DConroller
@@ -95,8 +98,10 @@ class RectangularMesh(Grid):
         return res
 
     def set_XML_element(self, element):
-        for i in range(0, self.dim):
-            self.axis[i].set_from_XML(element.find(RectangularMesh.axis_tag_name(i)))
+        super(RectangularMesh, self).set_XML_element(element)
+        with UnorderedTagReader(element) as r:
+            for i in range(0, self.dim):
+                self.axis[i].set_from_XML(r.find(RectangularMesh.axis_tag_name(i)))
 
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMeshConroller

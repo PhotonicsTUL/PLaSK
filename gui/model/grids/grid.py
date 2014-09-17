@@ -3,7 +3,7 @@ from lxml import etree as ElementTree
 from xml.sax.saxutils import quoteattr
 
 from ...model.base import TreeFragmentModel
-from ...utils.xml import print_interior, XML_parser
+from ...utils.xml import print_interior, XML_parser, AttributeReader
 from ..info import InfoSource
 
 
@@ -27,7 +27,10 @@ class Grid(TreeFragmentModel):
         return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
 
     def set_XML_element(self, element):
-        self.name = element.attrib.get('name', None)
+        with AttributeReader(element) as a:
+            self.name = a.get('name', None)
+            a.mark_read('type')
+            if self.is_generator: a.mark_read('method')
 
     @property
     def method(self):
@@ -89,6 +92,9 @@ class GridTreeBased(Grid):
 
     def set_XML_element(self, element):
         self.element = element
+        with AttributeReader(element) as a:
+            a.mark_read('name', 'type')
+            if self.is_generator: a.mark_read('method')
     #    self.fireChanged()    #TODO ???
 
     def get_XML_element(self):

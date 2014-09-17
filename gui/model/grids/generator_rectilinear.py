@@ -35,12 +35,15 @@ class RefinementConf(object):
         return res
 
     def set_from_XML(self, axis_element):
-        if axis_element is None: return
-        require_no_children(axis_element)
-        self.axis = int(axis_element.tag[-1])
-        with AttributeReader(axis_element) as a:
-            for attr in RefinementConf.attributes_names:
-                setattr(self, attr, a.get(attr, None))
+        if axis_element is None:
+            self.axis = 0
+            for attr in RefinementConf.attributes_names: setattr(self, attr, None)
+        else:
+            require_no_children(axis_element)
+            self.axis = int(axis_element.tag[-1])
+            with AttributeReader(axis_element) as a:
+                for attr in RefinementConf.attributes_names:
+                    setattr(self, attr, a.get(attr, None))
 
     def get_attr_by_index(self, index):
         return getattr(self, RefinementConf.all_attributes_names[index])
@@ -174,6 +177,7 @@ class RectilinearDivideGenerator(Grid):
                     setattr(self, div_name, tuple(a.get('by'+str(i)) for i in range(0, self.dim)))
 
     def set_XML_element(self, element):
+        super(RectilinearDivideGenerator, self).set_XML_element(element)
         with UnorderedTagReader(element) as r:
             gradual_element = r.find('gradual')
             if gradual_element is not None:

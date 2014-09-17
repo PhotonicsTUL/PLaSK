@@ -4,7 +4,7 @@ from lxml import etree as ElementTree
 
 from ..model.info import InfoSource
 from ..utils.signal import Signal
-from ..utils.xml import print_interior, XML_parser
+from ..utils.xml import print_interior, XML_parser, AttributeReader
 from .info import Info
 
 def getSectionXMLFromFile(section_name, filename, original_filename=None):
@@ -129,9 +129,10 @@ class SectionModel(TreeFragmentModel):
         self.reload_external_source(original_filename)
 
     def set_file_XML_element(self, element, filename=None):
-        if 'external' in element.attrib:
-            self.set_external_source(element.attrib['external'], filename)
-            return
+        with AttributeReader(element) as a:
+            if 'external' in a:
+                self.set_external_source(a['external'], filename)
+                return
         self.set_XML_element(element)
 
     def create_info(self):

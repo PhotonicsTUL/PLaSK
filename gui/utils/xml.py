@@ -24,8 +24,14 @@ class AttributeReader(object):
     
     def __init__(self, element):
         super(AttributeReader, self).__init__()
-        self.element = element
-        self.read = set()
+        if isinstance(element, AttributeReader):
+            self.element = element.element
+            self.read = element.read
+            self.is_sub_reader = True
+        else:
+            self.element = element
+            self.read = set()
+            self.is_sub_reader = False
         
     def get(self, key, default=None):
         self.read.add(key)
@@ -37,15 +43,25 @@ class AttributeReader(object):
     def __getitem__(self, key):
         self.read.add(key)
         return self.element.attrib[key]
+
+    def __contains__(self, key):
+        self.read.add(key)
+        return key in self.element.attrib
     
     def mark_read(self, *keys):
         for k in keys: self.read.add(k)
         
     def require_all_read(self):
         """Raise ValueError if not all attributes have been read from XML tag."""
+        if self.is_sub_reader: return
         not_read = set(self.element.attrib.keys()) - self.read
         if not_read:
             raise ValueError("XML tag <{}> has unexpected attributes: {}".format(self.element.tag, ", ".join(not_read)))
+
+    @property
+    def attrib(self):
+        """Thanks to this property, AttributeReader can pretend to be ElementTree.Element in many contexts."""
+        return self
 
     def __enter__(self):
         return self
