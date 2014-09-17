@@ -348,7 +348,7 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
     else:
         raise TypeError("plot_stream can be only used for data obtained for rectangular mesh with regular axes")
 
-    if 'linewidth' in kwargs: scale = None
+    if 'linewidth' in kwargs or 'lw' in kwargs: scale = None
 
     m0, m1 = meshgrid(array(xaxis), array(yaxis))
     if scale or color == 'norm':
@@ -400,7 +400,7 @@ def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None,
 
 # ### plot_mesh ###
 
-def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder=2):
+def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2):
     '''Plot two-dimensional rectilinear mesh.'''
     #TODO documentation
 
@@ -411,10 +411,10 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
         ix, iy = 0, 1
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
         for x in mesh.axis0:
-            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=width, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder))
         x_min = mesh.axis0[0]; x_max = mesh.axis0[-1]
         for y in mesh.axis1:
-            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
 
     elif isinstance(mesh, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
@@ -422,10 +422,10 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
 
         y_min = axis[1][0]; y_max = axis[1][-1]
         for x in axis[0]:
-            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=width, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder))
         x_min = axis[0][0]; x_max = axis[0][-1]
         for y in axis[1]:
-            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=width, zorder=zorder))
+            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
 
 
     for line in lines:
@@ -446,7 +446,7 @@ def plot_mesh(mesh, color='0.5', width=1.0, plane=None, set_limits=False, zorder
 
 _geometry_plotters = {}
 
-def _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
+def _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder):
     def add_path(bottom):
         lefts = []
         if hmirror:
@@ -460,7 +460,7 @@ def _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zor
         for left in lefts:
             patches.append(matplotlib.patches.Rectangle((left, bottom),
                                                         box.upper[ax[0]]-box.lower[ax[0]], box.upper[ax[1]]-box.lower[ax[1]],
-                                                        ec=color, lw=width, fill=False, zorder=zorder))
+                                                        ec=color, lw=lw, fill=False, zorder=zorder))
     if vmirror:
         if box.lower[ax[1]] == 0.:
             box.lower[ax[1]] = -box.upper[ax[1]]
@@ -473,27 +473,27 @@ def _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zor
 _geometry_plotters[plask.geometry.Block2D] = _add_path_Block
 _geometry_plotters[plask.geometry.Block3D] = _add_path_Block
 
-def _add_path_Triangle(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
+def _add_path_Triangle(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder):
     p0 = trans.translation
     p1 = p0 + trans.item.a
     p2 = p0 + trans.item.b
     patches.append(matplotlib.patches.Polygon(((p0[0], p0[1]), (p1[0], p1[1]), (p2[0], p2[1])),
-                                              closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+                                              closed=True, ec=color, lw=lw, fill=False, zorder=zorder))
     if vmirror:
         patches.append(matplotlib.patches.Polygon(((p0[0], -p0[1]), (p1[0], -p1[1]), (p2[0], p2[1])),
-                                                  closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+                                                  closed=True, ec=color, lw=lw, fill=False, zorder=zorder))
     if hmirror:
         patches.append(matplotlib.patches.Polygon(((-p0[0], p0[1]), (-p1[0], p1[1]), (-p2[0], p2[1])),
-                                                  closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+                                                  closed=True, ec=color, lw=lw, fill=False, zorder=zorder))
         if vmirror:
             patches.append(matplotlib.patches.Polygon(((-p0[0], -p0[1]), (-p1[0], -p1[1]), (-p2[0], -p2[1])),
-                                                      closed=True, ec=color, lw=width, fill=False, zorder=zorder))
+                                                      closed=True, ec=color, lw=lw, fill=False, zorder=zorder))
 
 _geometry_plotters[plask.geometry.Triangle] = _add_path_Triangle
 
-def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, width, zorder):
+def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder):
     if ax != (0,1) and ax != (1,0):
-        _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
+        _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder)
     else:
         tr = trans.translation
         if ax == (1,0): tr = plask.vec(tr[1], tr[0])
@@ -503,11 +503,11 @@ def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, width, 
         if hmirror and vmirror: vecs.append(plask.vec(-tr[0], -tr[1]))
         for vec in vecs:
             patches.append(matplotlib.patches.Circle(vec, trans.item.radius,
-                                                     ec=color, lw=width, fill=False, zorder=zorder))
+                                                     ec=color, lw=lw, fill=False, zorder=zorder))
 _geometry_plotters[plask.geometry.Cylinder] = _add_path_Cylinder
 
 
-def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
+def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
     '''Plot geometry.'''
     #TODO documentation
 
@@ -529,7 +529,7 @@ def plot_geometry(geometry, color='k', width=1.0, plane=None, set_limits=False, 
 
     for trans,box in zip(geometry.get_leafs_translations(), geometry.get_leafs_bboxes()):
         if box:
-            _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, width, zorder)
+            _geometry_plotters[type(trans.item)](patches, trans, box, ax, hmirror, vmirror, color, lw, zorder)
 
     for patch in patches:
         axes.add_patch(patch)

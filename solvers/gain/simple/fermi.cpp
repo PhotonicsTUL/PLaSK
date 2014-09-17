@@ -127,7 +127,7 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
         { // In the (possible) active region
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
-            bool active = tags.find("active") != tags.end();
+            bool active = false; for (const auto& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
             bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
             bool substrate = tags.find("substrate") != tags.end();
 

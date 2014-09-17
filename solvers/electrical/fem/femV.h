@@ -29,18 +29,27 @@ enum HeatMethod {
 template<typename Geometry2DType>
 struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
+    /// Details of active region
+    struct Active {
+        size_t left, right, bottom, top;
+        size_t offset;
+        double height;
+        Active() {}
+        Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h): left(l), right(r), bottom(b), top(t), offset(tot-l), height(h) {}
+    };
+
   protected:
 
-    int size;               ///< Number of columns in the main matrix
+    int size;                   ///< Number of columns in the main matrix
 
-    double js;              ///< p-n junction parameter [A/m^2]
-    double beta;            ///< p-n junction parameter [1/V]
-    double pcond;           ///< p-contact electrical conductivity [S/m]
-    double ncond;           ///< n-contact electrical conductivity [S/m]
+    std::vector<double> js;     ///< p-n junction parameter [A/m^2]
+    std::vector<double> beta;   ///< p-n junction parameter [1/V]
+    double pcond;               ///< p-contact electrical conductivity [S/m]
+    double ncond;               ///< n-contact electrical conductivity [S/m]
 
-    int loopno;             ///< Number of completed loops
-    double toterr;          ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
-    Vec<2,double> maxcur;   ///< Maximum current in the structure
+    int loopno;                 ///< Number of completed loops
+    double toterr;              ///< Maximum estimated error during all iterations (useful for single calculations managed by external python script)
+    Vec<2,double> maxcur;       ///< Maximum current in the structure
 
     DataVector<double> junction_conductivity;   ///< electrical conductivity for p-n junction in y-direction [S/m]
     double default_junction_conductivity;       ///< default electrical conductivity for p-n junction in y-direction [S/m]
@@ -50,10 +59,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     DataVector<Vec<2,double>> currents;         ///< Computed current densities
     DataVector<double> heats;                   ///< Computed and cached heat source densities
 
-    std::vector<size_t>
-        actlo,                  ///< Vertical index of the lower side of the active regions
-        acthi;                  ///< Vertical index of the higher side of the active regions
-    std::vector<double> actd;   ///< Active regions thickness
+    std::vector<Active> active;                 ///< Active regions information
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
@@ -110,10 +116,26 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     template <typename MatrixT>
     double doCompute(unsigned loops=1);
 
-    /// Return \c true if the specified point is at junction
-    bool isActive(const Vec<2>& point) const {
+    /** Return \c true if the specified point is at junction
+     * \param point point to test
+     * \returns number of active region + 1 (0 for none)
+     */
+    size_t isActive(const Vec<2>& point) const {
+        size_t no(0);
         auto roles = this->geometry->getRolesAt(point);
-        return roles.find("active") != roles.end() || roles.find("junction") != roles.end();
+        for (auto role: roles) {
+            size_t l = 0;
+            if (role.substr(0,6) == "active") l = 6;
+            else if (role.substr(0,8)  == "junction") l = 8;
+            else continue;
+            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+            if (role.size() == l)
+                no = 1;
+            else
+                try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
+                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '%1%'", role); }
+        }
+        return no;
     }
 
     /// Return \c true if the specified element is a junction
@@ -191,26 +213,44 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     double getErr() const { return toterr; }
 
     /// Return beta.
-    double getBeta() const { return beta; }
+    double getBeta(size_t n) const {
+        if (beta.size() <= n) throw Exception("%1%: no beta given for junction %2%", this->getId(), n);
+        return beta[n];
+    }
     /// Set new beta and invalidate the solver.
-    void setBeta(double beta)  {
-        this->beta = beta;
+    void setBeta(size_t n, double beta)  {
+        if (this->beta.size() <= n) {
+            this->beta.reserve(n+1); for (size_t s = this->beta.size(); s <= n; ++s) this->beta.push_back(NAN);
+        }
+        this->beta[n] = beta;
         this->invalidate();
     }
 
     /// Get junction thermal voltage.
-    double getVt() const { return 1. / beta; }
+    double getVt(size_t n) const {
+        if (beta.size() <= n) throw Exception("%1%: no Vt given for junction %2%", this->getId(), n);
+        return 1. / beta[n];
+    }
     /// Set new junction thermal voltage and invalidate the solver.
-    void setVt(double Vt) {
-        this->beta = 1. / Vt;
+    void setVt(size_t n, double Vt) {
+        if (beta.size() <= n) {
+            beta.reserve(n+1); for (size_t s = beta.size(); s <= n; ++s) beta.push_back(NAN);
+        }
+        this->beta[n] = 1. / Vt;
         this->invalidate();
     }
 
     /// Return js
-    double getJs() const { return js; }
+    double getJs(size_t n) const {
+        if (js.size() <= n) throw Exception("%1%: no js given for junction %2%", this->getId(), n);
+        return js[n];
+    }
     /// Set new js and invalidate the solver
-    void setJs(double js)  {
-        this->js = js;
+    void setJs(size_t n, double js)  {
+        if (this->js.size() <= n) {
+            this->js.reserve(n+1); for (size_t s = this->js.size(); s <= n; ++s) this->js.push_back(NAN);
+        }
+        this->js[n] = js;
         this->invalidate();
     }
 
@@ -232,14 +272,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         default_junction_conductivity = cond;
     }
     void setCondJunc(const DataVector<const double>& cond)  {
-        if (!this->mesh || cond.size() != (this->mesh->axis0->size()-1) * getActNo())
+        size_t condsize;
+        for (const auto& act: active) condsize += act.right - act.left;
+        condsize = max(condsize, size_t(1));
+        if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
     }
-
-    double getActLo(size_t n) const { return actlo[n]; }
-    double getActHi(size_t n) const { return acthi[n]; }
-    size_t getActNo() const { return actd.size(); }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager); // for solver configuration (see: *.xpl file with structures)
 

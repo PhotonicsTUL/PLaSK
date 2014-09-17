@@ -5,8 +5,6 @@ namespace plask { namespace solvers { namespace electrical {
 template<typename Geometry2DType>
 FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectrical2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
-    js(1.),
-    beta(20.),
     pcond(5.),
     ncond(50.),
     loopno(0),
@@ -22,6 +20,8 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectr
     iterlim(10000),
     logfreq(500)
 {
+    js.assign(1, 1.),
+    beta.assign(1, 20.),
     onInvalidate();
     inTemperature = 300.;
     junction_conductivity.reset(1, default_junction_conductivity);
@@ -55,8 +55,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
         }
 
         else if (param == "junction") {
-            js = source.getAttribute<double>("js", js);
-            beta = source.getAttribute<double>("beta", beta);
+            js[0] = source.getAttribute<double>("js", js[0]);
+            beta[0] = source.getAttribute<double>("beta", beta[0]);
             auto condjunc = source.getAttribute<double>("pnjcond");
             if (condjunc) setCondJunc(*condjunc);
             auto wavelength = source.getAttribute<double>("wavelength");
@@ -65,6 +65,19 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
                 .value("joules", HEAT_JOULES)
                 .value("wavelength", HEAT_BANDGAP)
                 .get(heatmet);
+            for (auto attr: source.getAttributes()) {
+                if (attr.first == "beta" || attr.first == "Vt" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
+                if (attr.first.substr(0,4) == "beta") {
+                    try { setBeta(boost::lexical_cast<size_t>(attr.first.substr(4)), boost::lexical_cast<double>(attr.second)); }
+                    catch (boost::bad_lexical_cast) { throw XMLException(source, "bad <junction> tag attribute '" + attr.first + "'"); }
+                }
+                else if (attr.first.substr(0,2) == "js") {
+                    try { setJs(boost::lexical_cast<size_t>(attr.first.substr(2)), boost::lexical_cast<double>(attr.second)); }
+                    catch (boost::bad_lexical_cast) { throw XMLException(source, "bad <junction> tag attribute '" + attr.first + "'"); }
+                }
+                else
+                    throw XMLUnexpectedAttrException(source, attr.first);
+            }
             source.requireTagEnd();
         }
 
@@ -96,66 +109,59 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    actlo.clear();
-    acthi.clear();
-    actd.clear();
-
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
 
-    size_t ileft = 0, iright = points->axis0->size();
-    bool in_active = false;
+    struct AR {
+        size_t left, right, bottom, top;
+        size_t rowl, rowr;
+        AR(): left(0), right(0), bottom(-1), top(-1), rowl(-1), rowr(0) {} // -1 === MAX_SIZE_T
+    };
+
+    std::vector<AR> regions;
 
     for (size_t r = 0; r < points->axis1->size(); ++r) {
-        bool had_active = false;
+        size_t prev = 0;
         for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
-            bool active = isActive(point);
+            size_t num = isActive(point);
 
-            if (c < ileft) {
-                if (active) throw Exception("%1%: Left edge of the active region not aligned.", this->getId());
-            } else if (c >= iright) {
-                if (active) throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
-            } else {
-                // Here we are inside potential active region
-                if (active) {
-                    if (!had_active) {
-                        if (!in_active) { // active region is starting set-up new region info
-                            ileft = c;
-                            actlo.push_back(r);
-                        }
-                    }
-                } else if (had_active) {
-                    if (!in_active) iright = c;
-                    else throw Exception("%1%: Right edge of the active region not aligned.", this->getId());
+            if (num) { // here we are inside the active region
+                regions.resize(max(regions.size(), num));
+                AR& reg = regions[num-1];
+                if (prev != num) { // this region starts in the current row
+                    if (reg.top < r) throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
+                    if (reg.bottom >= r) reg.bottom = r; // first row
+                    else if (reg.rowr <= c) throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
+                    reg.top = r + 1;
+                    reg.rowl = c; if (reg.left > reg.rowl) reg.left = reg.rowl;
                 }
-                had_active |= active;
             }
+            if (prev && prev != num) { // previous region ended
+                AR& reg = regions[prev-1];
+                if (reg.bottom < r && reg.rowl >= c) throw Exception("%1%: Junction %2% is disjoint", this->getId(), prev-1);
+                reg.rowr = c; if (reg.right < reg.rowr) reg.right = reg.rowr;
+            }
+            prev = num;
         }
-        in_active = had_active;
-
-        // Test if the active region has finished
-        if (!in_active && actlo.size() != acthi.size()) {
-            acthi.push_back(r);
-            actd.push_back(this->mesh->axis1->at(acthi.back()) - this->mesh->axis1->at(actlo.back()));
-            this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
-        }
+        if (prev) // junction reached the edge
+            regions[prev-1].rowr = regions[prev-1].right = points->axis0->size();
     }
 
-    // Test if the active region has finished
-    if (actlo.size() != acthi.size()) {
-        acthi.push_back(points->axis1->size());
-        actd.push_back(this->mesh->axis1->at(acthi.back()) - this->mesh->axis1->at(actlo.back()));
-        this->writelog(LOG_DETAIL, "Detected active layer %2% thickness = %1%nm", 1e3 * actd.back(), actd.size()-1);
+    size_t condsize = 0;
+    active.reserve(regions.size());
+    size_t i = 0;
+    for (auto& reg: regions) {
+        if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
+        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis1->at(reg.top) - this->mesh->axis1->at(reg.bottom));
+        condsize += reg.right - reg.left;
+        this->writelog(LOG_DETAIL, "Detected junction %1% thickness = %2%nm", i++, 1e3 * active.back().height);
+        this->writelog(LOG_DEBUG, "Junction %1% span: [%2%,%4%]-[%3%,%5%]", i-1, reg.left, reg.right, reg.bottom, reg.top);
     }
-
-    assert(acthi.size() == actlo.size());
-
-    size_t condsize = max(actlo.size() * (this->mesh->axis0->size()-1), size_t(1));
 
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
         for (auto cond: junction_conductivity) condy += cond;
-        junction_conductivity.reset(condsize, condy / junction_conductivity.size());
+        junction_conductivity.reset(max(condsize, size_t(1)), condy / junction_conductivity.size());
     }
 }
 
@@ -171,7 +177,9 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
     currents.reset(this->mesh->elements.size(), vec(0.,0.));
     conds.reset(this->mesh->elements.size());
     if (junction_conductivity.size() == 1) {
-        size_t condsize = max(actlo.size() * (this->mesh->axis0->size()-1), size_t(1));
+        size_t condsize;
+        for (const auto& act: active) condsize += act.right - act.left;
+        condsize = max(condsize, size_t(1));
         junction_conductivity.reset(condsize, junction_conductivity[0]);
     }
 }
@@ -274,17 +282,16 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
     // Update junction conductivities
     if (loopno != 0) {
         for (auto e: this->mesh->elements) {
-            if (isActive(e)) {
+            if (size_t nact = isActive(e)) {
                 size_t i = e.getIndex();
                 size_t left = this->mesh->index0(e.getLoLoIndex());
                 size_t right = this->mesh->index0(e.getUpLoIndex());
-                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(e.getLoLoIndex())) - acthi.begin();
-                assert(nact < acthi.size());
+                const Active& act = active[nact-1];
                 double jy = 0.5e6 * conds[i].c11 *
-                    abs( - potentials[this->mesh->index(left, actlo[nact])] - potentials[this->mesh->index(right, actlo[nact])]
-                         + potentials[this->mesh->index(left, acthi[nact])] + potentials[this->mesh->index(right, acthi[nact])]
-                    ) / actd[nact]; // [j] = A/m²
-                conds[i] = Tensor2<double>(0., 1e-6 * beta * jy * actd[nact] / log(jy / js + 1.));
+                    abs( - potentials[this->mesh->index(left, act.bottom)] - potentials[this->mesh->index(right, act.bottom)]
+                         + potentials[this->mesh->index(left, act.top)] + potentials[this->mesh->index(right, act.top)]
+                    ) / act.height; // [j] = A/m²
+                conds[i] = Tensor2<double>(0., 1e-6 * beta[nact-1] * jy * act.height / log(jy / js[nact-1] + 1.));
             }
         }
     }
@@ -365,10 +372,9 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
         Vec<2,double> midpoint = e.getMidpoint();
 
         auto roles = this->geometry->getRolesAt(midpoint);
-        if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-            size_t n = std::upper_bound(acthi.begin(), acthi.end(), e.getIndex1()) - acthi.begin();
-            assert(n < acthi.size());
-            conds[i] = Tensor2<double>(0., junction_conductivity[n * (this->mesh->axis0->size()-1) + e.getIndex0()]);
+        if (size_t actn = isActive(midpoint)) {
+            const auto& act = active[actn-1];
+            conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + e.getIndex0()]);
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
         } else if (roles.find("n-contact") != roles.end()) {
@@ -381,9 +387,11 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
 {
-    for (size_t n = 0; n < getActNo(); ++n)
-        for (size_t i = 0, j = (actlo[n]+acthi[n])/2; i != this->mesh->axis0->size()-1; ++i)
-            junction_conductivity[n * (this->mesh->axis0->size()-1) + i] = conds[this->mesh->elements(i,j).getIndex()].c11;
+    for (size_t n = 0; n < active.size(); ++n) {
+        const auto& act = active[n];
+        for (size_t i = act.left, r = (act.top + act.bottom)/2; i != act.right; ++i)
+            junction_conductivity[act.offset + i] = conds[this->mesh->elements(i,r).getIndex()].c11;
+    }
 }
 
 
@@ -424,8 +432,10 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
     loadConductivities();
 
-    bool noactive = (actd.size() == 0);
-    double minj = 100e-7 * js; // assume no significant heating below this current
+    bool noactive = (active.size() == 0);
+    double minj = js[0]; // assume no significant heating below this current
+    for (auto j: js) if (j < minj) minj = j;
+    minj *= 100e-7;
 
     do {
         setMatrix(A, potentials, vconst);    // corr holds RHS now
@@ -579,14 +589,12 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
             double dvy = 0.5e6 * (- potentials[loleftno] - potentials[lorghtno] + potentials[upleftno] + potentials[uprghtno])
                                 / (e.getUpper1() - e.getLower1()); // [grad(dV)] = V/m
             auto midpoint = e.getMidpoint();
-            auto roles = this->geometry->getRolesAt(midpoint);
-            if (roles.find("active") != roles.end() || roles.find("junction") != roles.end()) {
-                size_t nact = std::upper_bound(acthi.begin(), acthi.end(), this->mesh->index1(i)) - acthi.begin();
-                assert(nact < acthi.size());
-                double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * actd[nact]);
+            if (size_t nact = isActive(midpoint)) {
+                const auto& act = active[nact];
+                double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
                 double jy = conds[i].c11 * fabs(dvy); // [j] = A/m²
                 heats[i] = heatfact * jy ;
-            } else if (this->geometry->getMaterial(midpoint)->kind() == Material::NONE || roles.find("noheat") != roles.end())
+            } else if (this->geometry->getMaterial(midpoint)->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
             else
                 heats[i] = conds[i].c00 * dvx*dvx + conds[i].c11 * dvy*dvy;
@@ -629,9 +637,10 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
 template<typename Geometry2DType>
 double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 {
-    if (nact >= actlo.size()) throw BadInput(this->getId(), "Wrong active region number");
+    if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
+    const auto& act = active[nact];
     // Find the average of the active region
-    size_t level = (actlo[nact] + acthi[nact]) / 2;
+    size_t level = (act.bottom + act.top) / 2;
     return integrateCurrent(level, true);
 }
 
