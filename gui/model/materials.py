@@ -7,7 +7,7 @@ from collections import OrderedDict
 from ..utils.gui import DEFAULT_FONT
 from .table import TableModel, TableModelEditMethods
 from .info import Info
-from ..utils.xml import OrderedTagReader, AttributeReader
+from ..utils.xml import OrderedTagReader, AttributeReader, require_no_attributes, require_no_children
 
 MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s',
@@ -264,8 +264,9 @@ class MaterialsModel(TableModel):
                 with AttributeReader(mat) as mat_attrib:
                     properties = []
                     for prop in mat:
-                        with AttributeReader(prop) as prop_attrib:  #We deny any attributes
-                            properties.append((prop.tag, prop.text))
+                        require_no_children(prop)
+                        require_no_attributes(prop)
+                        properties.append((prop.tag, prop.text))
                     self.entries.append(
                         MaterialsModel.Material(mat_attrib.get("name", ""), mat_attrib.get("base", None), properties)
                     )

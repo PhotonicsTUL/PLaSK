@@ -168,6 +168,7 @@ class OrderedTagReader(object):
 
 class UnorderedTagReader(object):
     """Helper class to read children of XML element, if the children can be in any order.
+       Two or more children with the same name are not allowed.
        It checks if all children has been read.
 
        Usage::
@@ -180,6 +181,11 @@ class UnorderedTagReader(object):
         super(UnorderedTagReader, self).__init__()
         self.parent_element = parent_element
         self.read = set()
+        tag_names = set()
+        for child in parent_element:
+            if child.tag in tag_names:
+                raise ValueError("Duplicated tags <{}> in <{}> are not allowed.", child.tag, parent_element.tag)
+            tag_names.add(child.tag)
 
     def get(self, child_name):
         """
