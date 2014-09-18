@@ -3,6 +3,7 @@
 #include <plask/geometry/leaf.h>
 #include <plask/geometry/cylinder.h>
 #include <plask/geometry/triangle.h>
+#include <plask/geometry/circle.h>
 
 namespace plask { namespace python {
 
@@ -71,6 +72,14 @@ static shared_ptr<Triangle> Triangle_constructor_pts(double x0, double y0, doubl
 static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, const py::object& material) {
     auto result =  make_shared<Cylinder>(radius, height);
     setLeafMaterial<3>(result, material);
+    return result;
+}
+
+// Circle constructor wraps
+template <int dim>
+static shared_ptr<Circle<dim>> Circle_constructor(double radius, const py::object& material) {
+    auto result =  make_shared<Circle<dim>>(radius);
+    setLeafMaterial<dim>(result, material);
     return result;
 }
 
@@ -219,8 +228,34 @@ void register_geometry_leafs()
         .def("__setattr__", &Triangle__setattr__)
     ;
 
+    py::class_<Circle<2>, shared_ptr<Circle<2>>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> ("Circle",
+        "Circle (2D geometry object).\n\n"
+        "Circle(radius, material)\n\n"
+        "Create a circle.\n\n"
+        "Args:\n"
+        "    radius (float): Circle radius.\n"
+        "    material (Material): Circle material.\n",
+        py::no_init
+        )
+        .def("__init__", py::make_constructor(&Circle_constructor<2>, py::default_call_policies(), (py::arg("radius"), "material")))
+        .add_property("radius", py::make_getter(&Circle<2>::radius), &Circle<2>::setRadius, "Radius of the circle.")
+    ;
+
+    py::class_<Circle<3>, shared_ptr<Circle<3>>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Sphere",
+        "Sphere (3D geometry object).\n\n"
+        "Sphere(radius, material)\n\n"
+        "Create a sphere.\n\n"
+        "Args:\n"
+        "    radius (float): Sphere radius.\n"
+        "    material (Material): Sphere material.\n",
+        py::no_init
+        )
+        .def("__init__", py::make_constructor(&Circle_constructor<3>, py::default_call_policies(), (py::arg("radius"), "material")))
+        .add_property("radius", py::make_getter(&Circle<3>::radius), &Circle<3>::setRadius, "Radius of the circle.")
+    ;
+
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
-        "Vertical cylinder filled with one material (3D geometry object).\n\n"
+        "Vertical cylinder (3D geometry object).\n\n"
         "Cylinder(radius, height, material)\n\n"
         "Create a cylinder.\n\n"
         "Args:\n"
