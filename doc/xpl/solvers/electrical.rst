@@ -41,9 +41,9 @@ Electrical solvers
 
          Configuration of the effective model of p-n junction.
 
-         :attr js: Reverse bias current density. (float [A/m\ :sup:`2`])
-         :attr beta: Junction coefficient.
-         :attr pnjcond: Initial vertical conductivity of the junction. (float [S/m])
+         :attr js#: Reverse bias current density. *#* can be a junction number. If the number is omitted, 0 is assumed. (float [A/m\ :sup:`2`])
+         :attr beta#: Junction coefficient. *#* can be a junction number. If the number is omitted, 0 is assumed. (float [1/V])
+         :attr pnjcond: Initial vertical conductivity of the junctions. (float [S/m])
          :attr heat: Method of determination of the heat generated in the junction. (``joules`` or ``wavelength``)
          :attr wavelength: Emitted wavelength if ``heat`` is set to ``wavelength``.
 
