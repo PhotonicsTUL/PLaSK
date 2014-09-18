@@ -98,6 +98,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                     throw XMLBadAttrException(reader, "polarization", repr, "existing field component name (maybe you need to specify the geometry first)");
                 setPolarization(val);
             }
+            reader.requireTagEnd();
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else if (param == "mirrors") {

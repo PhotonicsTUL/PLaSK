@@ -114,6 +114,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             readComaAttr(reader, "symmetry", sym_long, sym_tran, true);
             if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
             if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
+            reader.requireTagEnd();
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else if (param == "outer") {
