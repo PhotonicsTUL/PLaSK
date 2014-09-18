@@ -491,6 +491,17 @@ def _add_path_Triangle(patches, trans, box, ax, hmirror, vmirror, color, lw, zor
 
 _geometry_plotters[plask.geometry.Triangle] = _add_path_Triangle
 
+def _add_path_Circle(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder):
+    tr = trans.translation
+    vecs = [ tr ]
+    if hmirror: vecs.append(plask.vec(-tr[0], tr[1]))
+    if vmirror: vecs.append(plask.vec(tr[0], -tr[1]))
+    if hmirror and vmirror: vecs.append(plask.vec(-tr[0], -tr[1]))
+    for vec in vecs:
+        patches.append(matplotlib.patches.Circle(vec, trans.item.radius, ec=color, lw=lw, fill=False, zorder=zorder))
+
+_geometry_plotters[plask.geometry.Circle] = _add_path_Circle
+
 def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder):
     if ax != (0,1) and ax != (1,0):
         _add_path_Block(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder)
@@ -505,6 +516,17 @@ def _add_path_Cylinder(patches, trans, box, ax, hmirror, vmirror, color, lw, zor
             patches.append(matplotlib.patches.Circle(vec, trans.item.radius,
                                                      ec=color, lw=lw, fill=False, zorder=zorder))
 _geometry_plotters[plask.geometry.Cylinder] = _add_path_Cylinder
+
+def _add_path_Sphere(patches, trans, box, ax, hmirror, vmirror, color, lw, zorder):
+    tr = trans.translation[ax[0]], trans.translation[ax[1]]
+    vecs = [ tr ]
+    if hmirror: vecs.append(plask.vec(-tr[0], tr[1]))
+    if vmirror: vecs.append(plask.vec(tr[0], -tr[1]))
+    if hmirror and vmirror: vecs.append(plask.vec(-tr[0], -tr[1]))
+    for vec in vecs:
+        patches.append(matplotlib.patches.Circle(vec, trans.item.radius, ec=color, lw=lw, fill=False, zorder=zorder))
+
+_geometry_plotters[plask.geometry.Sphere] = _add_path_Sphere
 
 
 def plot_geometry(geometry, color='k', lw=1.0, plane=None, set_limits=False, zorder=3, mirror=False):
