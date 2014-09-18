@@ -22,6 +22,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             refine = reader.getAttribute<size_t>("refine", refine);
             smooth = reader.getAttribute<double>("smooth", smooth);
+            group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
@@ -87,10 +88,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                 if (geometry) axes = &geometry->axisNames;
                 if (repr == "none" || repr == "NONE" || repr == "None")
                     val = ExpansionPW2D::E_UNSPECIFIED;
-                else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
+                else if (repr == "TE" || repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
                          repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
                     val = ExpansionPW2D::E_TRAN;
-                else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
+                else if (repr == "TM" || repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
                          repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
                     val = ExpansionPW2D::E_LONG;
                 else

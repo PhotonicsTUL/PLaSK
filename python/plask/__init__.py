@@ -289,7 +289,7 @@ class StepProfile(object):
         self.steps = {}
         self._geometry = geometry
         self._default = default
-        self.dtype = dtype if dtype is not None else type(default)
+        self.dtype = dtype if dtype is not None else float if type(default) is int else type(default)
         self.providers = _weakref.WeakValueDictionary()
 
     def __getitem__(self, key):

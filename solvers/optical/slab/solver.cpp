@@ -105,18 +105,20 @@ void SlabSolver<GeometryT>::setupLayers()
         }
 
         bool unique = true;
-        for (size_t i = 0; i != layers.size(); ++i) {
-            unique = false;
-            for (size_t j = 0; j != layers[i].size(); ++j) {
-                if (layers[i][j] != layer[j]) {
-                    unique = true;
+        if (group_layers) {
+            for (size_t i = 0; i != layers.size(); ++i) {
+                unique = false;
+                for (size_t j = 0; j != layers[i].size(); ++j) {
+                    if (layers[i][j] != layer[j]) {
+                        unique = true;
+                        break;
+                    }
+                }
+                if (!unique) {
+                    lverts[i].addPoint(v);
+                    stack.push_back(i);
                     break;
                 }
-            }
-            if (!unique) {
-                lverts[i].addPoint(v);
-                stack.push_back(i);
-                break;
             }
         }
         if (unique) {
@@ -127,7 +129,7 @@ void SlabSolver<GeometryT>::setupLayers()
         }
     }
 
-    Solver::writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
+    Solver::writelog(LOG_DETAIL, "Detected %1% %2%layers", lverts.size(), group_layers? "distinct " : "");
 }
 
 template <>
@@ -173,18 +175,20 @@ void SlabSolver<Geometry3D>::setupLayers()
         }
 
         bool unique = true;
-        for (size_t i = 0; i != layers.size(); ++i) {
-            unique = false;
-            for (size_t j = 0; j != layers[i].size(); ++j) {
-                if (layers[i][j] != layer[j]) {
-                    unique = true;
+        if (group_layers) {
+            for (size_t i = 0; i != layers.size(); ++i) {
+                unique = false;
+                for (size_t j = 0; j != layers[i].size(); ++j) {
+                    if (layers[i][j] != layer[j]) {
+                        unique = true;
+                        break;
+                    }
+                }
+                if (!unique) {
+                    lverts[i].addPoint(v);
+                    stack.push_back(i);
                     break;
                 }
-            }
-            if (!unique) {
-                lverts[i].addPoint(v);
-                stack.push_back(i);
-                break;
             }
         }
         if (unique) {
@@ -197,7 +201,7 @@ void SlabSolver<Geometry3D>::setupLayers()
 
     assert(vbounds.size() == stack.size()-1);
 
-    Solver::writelog(LOG_DETAIL, "Detected %1% distinct layers", lverts.size());
+    Solver::writelog(LOG_DETAIL, "Detected %1% %2%layers", lverts.size(), group_layers? "distinct " : "");
 }
 
 

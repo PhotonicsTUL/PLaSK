@@ -64,6 +64,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             readComaAttr(reader, "size", size_long, size_tran);
             readComaAttr(reader, "refine", refine_long, refine_tran);
             smooth = reader.getAttribute<double>("smooth", smooth);
+            group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {

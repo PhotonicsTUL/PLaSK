@@ -748,6 +748,9 @@ inline void export_base(Class solver) {
     solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
     solver.add_property("stack", py::make_function<>(&SlabSolver_getStack<Solver>, py::return_internal_reference<>()), "Stack of distinct layers.");
     solver.add_property("layer_sets", py::make_function<>(&SlabSolver_getLayerSets<Solver>, py::return_internal_reference<>()), "Vertical positions of layers in each layer set.");
+    solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
+                        "Layer grouping switch.\n\n"
+                        "If this property is ``True``, similar layers are grouped for efficiency.");
     solver.add_receiver("inTemperature", &Solver::inTemperature, "");
     solver.add_receiver("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");

@@ -370,7 +370,7 @@ int main(int argc, const char *argv[])
                 globals["__manager__"] = omanager;
                 plask::python::PythonManager_load(omanager, py::str(filename), locals);
                 scriptline = manager->scriptline;
-                globals.update(locals);
+                globals.update(manager->locals);
                 plask::python::PythonManager::export_dict(omanager, globals);
 
                 // Set default axes if all loaded geometries share the same

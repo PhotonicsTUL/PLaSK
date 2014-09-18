@@ -145,6 +145,7 @@ Optical solvers
          :attr size: Expansion size. (integer)
          :attr refine: Number of refinement points for refractive index averaging. (integer)
          :attr smooth: Smoothing parameter for material boundaries (increases convergence). (float)
+         :attr group-layers: Should similar layers be grouped for better performance. (true)
 
       .. xml:tag:: <interface> [in Fourier2D optical solver]
 
@@ -156,6 +157,14 @@ Optical solvers
          :attr path: Optional path name, specifying particular instance of the object given in the object attribute.
 
          Attributes ``index``, ``position``, or ``object``/``path`` pair are mutually exclusive.
+
+      .. xml:tag:: <vpml> [in Fourier2D optical solver]
+
+         Vertical absorbing perfectly matched layer boundary conditions parameters.
+
+         :attr factor: PML scaling factor. (complex)
+         :attr shift: PML shift from the structure. (float [µm])
+         :attr size: PML size. (float [µm])
 
       .. xml:tag:: <pml> [in Fourier2D optical solver]
 
@@ -230,6 +239,7 @@ Optical solvers
          :attr refine-long: Number of refinement points for refractive index averaging along longitudinal axis. You cannot use this attribute together with :attr:`refine`. (integer)
          :attr refine-tran: Number of refinement points for refractive index averaging along transverse axis. You cannot use this attribute together with :attr:`refine`. (integer)
          :attr smooth: Smoothing parameter for material boundaries (increases convergence). (float)
+         :attr group-layers: Should similar layers be grouped for better performance. (true)
 
       .. xml:tag:: <interface> [in Fourier3D optical solver]
 
@@ -241,6 +251,14 @@ Optical solvers
          :attr path: Optional path name, specifying particular instance of the object given in the object attribute.
 
          Attributes ``index``, ``position``, or ``object``/``path`` pair are mutually exclusive.
+
+      .. xml:tag:: <vpml> [in Fourier3D optical solver]
+
+         Vertical absorbing perfectly matched layer boundary conditions parameters.
+
+         :attr factor: PML scaling factor. (complex)
+         :attr shift: PML shift from the structure. (float [µm])
+         :attr size: PML size. (float [µm])
 
       .. xml:tag:: <pmls> [in Fourier3D optical solver]
 

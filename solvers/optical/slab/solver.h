@@ -90,13 +90,20 @@ struct SlabBase {
     /// Force re-computation of material coefficients
     bool recompute_coefficients;
 
+  protected:
+
+    /// Can layers be automatically grouped
+    bool group_layers;
+
+  public:
+
     SlabBase():
         detlog("", "modal", "unspecified", "det"),
         transfer_method(Transfer::REFLECTION),
         interface(size_t(-1)),
         k0(NAN), klong(0.), ktran(0.),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
-        recompute_coefficients(true) {}
+        recompute_coefficients(true), group_layers(true) {}
 
     /// Get current wavelength
     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
@@ -241,6 +248,16 @@ class PLASK_SOLVER_API SlabSolver: public SolverOver<GeometryT>, public SlabBase
     void setTransferMethod(Transfer::Method method) {
         if (method != transfer_method) this->invalidate();
         transfer_method = method;
+    }
+
+    /// Getter for group_layers
+    bool getGroupLayers() const { return group_layers; }
+    
+    /// Setter for group_layers
+    void setGroupLayers(bool value) {
+        bool changed = group_layers != value;
+        group_layers = value;
+        if (changed) this->invalidate();
     }
 
     virtual std::string getId() const { return Solver::getId(); }
