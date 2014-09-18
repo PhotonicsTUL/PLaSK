@@ -43,27 +43,16 @@ class MainWindow(QtGui.QMainWindow):
         self.document = XPLDocument(self)
         if filename is not None:
             self.__try_load_from_file__(filename)
-        else:
-            self.filename = None
-        self.make_window_title()
         self.model_is_new()
 
     def __try_load_from_file__(self, filename):
         try:
             self.document.load_from_file(filename)
-            self.filename = filename
-            self.make_window_title()
             return True
         except Exception as e:
             QtGui.QMessageBox.critical(self, 'Error while loading XPL from file.',
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
-
-    def make_window_title(self):
-        if self.filename:
-            self.setWindowTitle("{}[*] - PLaSK".format(self.filename))
-        else:
-            self.setWindowTitle("[*] PLaSK")
 
     def model_is_new(self):
         self.tabs.clear()
@@ -88,12 +77,15 @@ class MainWindow(QtGui.QMainWindow):
         if not filename: return;
         if type(filename) == tuple:
             filename = filename[0]
-        if self.filename is None and not self.isWindowModified():
+        if self.document.filename is None and not self.isWindowModified():
             self.__try_load_from_file__(filename)
         else:
             new_window = MainWindow(filename)
-            new_window.resize(self.size())
-            WINDOWS.add(new_window)
+            if new_window.document.filename is not None:
+                new_window.resize(self.size())
+                WINDOWS.add(new_window)
+            else:
+                new_window.close()
 
     def save(self):
         if self.filename is not None:
@@ -110,8 +102,6 @@ class MainWindow(QtGui.QMainWindow):
                                                      "PLaSK structure data  (*.xpl)")
         if type(filename) is tuple: filename = filename[0]
         if not filename: return False
-        self.filename = filename
-        self.make_window_title()
         self.document.save_to_file(filename)
         return True
 

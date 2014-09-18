@@ -15,7 +15,7 @@ class XPLDocument(object):
 
     SECTION_NAMES = ["defines", "materials", "geometry", "grids", "solvers", "connects", "script"]
 
-    def __init__(self, window):
+    def __init__(self, window, filename = None):
         self.window = window
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
@@ -32,12 +32,15 @@ class XPLDocument(object):
         ]
         for c in self.controllers:
             c.model.changed.connect(self._on_model_change)
-        #self.tree = ElementTree()
+        self.filename = None
         self.set_changed(False)
+        if filename: self.load_from_file(filename)
+        #self.tree = ElementTree()
+
 
     def _on_model_change(self, model, *args, **kwargs):
         """Slot called by model 'changed' signals when user edits any section model"""
-        self.set_changed()
+        self.set_changed(True)
 
     def load_from_file(self, filename):
         tree = ElementTree.parse(filename, XML_parser)
@@ -48,6 +51,7 @@ class XPLDocument(object):
                     self.model_by_index(i).set_file_XML_element(element, filename)
                 else:
                     self.model_by_index(i).clear()
+        self.filename = filename
         self.set_changed(False)
 
     def save_to_file(self, filename):
@@ -57,6 +61,7 @@ class XPLDocument(object):
                 f.write(ElementTree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True))
                 f.write('\n')
             f.write('</plask>')
+        self.filename = filename
         self.set_changed(False)
 
     def controller_by_index(self, index):
@@ -86,4 +91,8 @@ class XPLDocument(object):
 
     def set_changed(self, changed=True):
         """Set changed flags in the document window"""
+        if self.filename:
+            self.window.setWindowTitle("{}[*] - PLaSK".format(self.filename))
+        else:
+            self.window.setWindowTitle("[*] PLaSK")
         self.window.setWindowModified(changed)
