@@ -131,17 +131,16 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
             if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
             if (role.size() == l)
                 no = 1;
-            else
+            else {
                 try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
                 catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '%1%'", role); }
+            }
         }
         return no;
     }
 
     /// Return \c true if the specified element is a junction
-    bool isActive(const RectangularMesh<2>::Element& element) const {
-           return isActive(element.getMidpoint());
-    }
+    size_t isActive(const RectangularMesh<2>::Element& element) const { return isActive(element.getMidpoint()); }
 
   public:
 
@@ -248,7 +247,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     /// Set new js and invalidate the solver
     void setJs(size_t n, double js)  {
         if (this->js.size() <= n) {
-            this->js.reserve(n+1); for (size_t s = this->js.size(); s <= n; ++s) this->js.push_back(NAN);
+            this->js.reserve(n+1); for (size_t s = this->js.size(); s <= n; ++s) this->js.push_back(1.);
         }
         this->js[n] = js;
         this->invalidate();
@@ -266,11 +265,12 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         this->invalidate();
     }
 
-    DataVector<const double> getCondJunc() const { return junction_conductivity; }
+    double getDefaultCondJunc() const { return junction_conductivity; }
     void setCondJunc(double cond) {
         junction_conductivity.reset(max(junction_conductivity.size(), size_t(1)), cond);
         default_junction_conductivity = cond;
     }
+    DataVector<const double> getCondJunc() const { return junction_conductivity; }
     void setCondJunc(const DataVector<const double>& cond)  {
         size_t condsize;
         for (const auto& act: active) condsize += act.right - act.left;

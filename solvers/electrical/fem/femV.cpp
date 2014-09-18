@@ -21,7 +21,7 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectr
     logfreq(500)
 {
     js.assign(1, 1.),
-    beta.assign(1, 20.),
+    beta.assign(1, NAN),
     onInvalidate();
     inTemperature = 300.;
     junction_conductivity.reset(1, default_junction_conductivity);
@@ -291,7 +291,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
                     abs( - potentials[this->mesh->index(left, act.bottom)] - potentials[this->mesh->index(right, act.bottom)]
                          + potentials[this->mesh->index(left, act.top)] + potentials[this->mesh->index(right, act.top)]
                     ) / act.height; // [j] = A/m²
-                conds[i] = Tensor2<double>(0., 1e-6 * beta[nact-1] * jy * act.height / log(jy / js[nact-1] + 1.));
+                conds[i] = Tensor2<double>(0., 1e-6 * getBeta(nact-1) * jy * act.height / log(jy / getJs(nact-1) + 1.));
             }
         }
     }
