@@ -561,7 +561,7 @@ class GeometryGraphic(matplotlib.artist.Artist):
       self.geometry = geometry
 
    @classmethod
-   def __draw_obj__(to_draw, renderer, transform, clip_box):
+   def __draw_obj__(to_draw, renderer, gc, transform): #, clip_box
       if isinstance(to_draw, plask.geometry.Block2D):
          path = matplotlib.patches.Path(
             [
@@ -579,16 +579,20 @@ class GeometryGraphic(matplotlib.artist.Artist):
                 matplotlib.patches.Path.CLOSEPOLY,
             ]
          )
-         gc = renderer.new_gc()
-         if clip_box != None: path.clip_to_bbox(clip_box)
-         # moze gc.set_clip_rectangle
+         #gc = renderer.new_gc()
+         #if clip_box != None:
+         #   gc.set_clip_rectangle(matplotlib.transforms.TransformedBbox(matplotlib.transforms.Bbox(clip_box), self.get_transform()))
          renderer.draw_path(gc, path, transform)
       elif isinstance(to_draw, plask.geometry.GeometryObjectTransform):
-         pass
+         if isinstance(to_draw, plask.geometry.Translate2D):
+            new_tranform = matplotlib.transforms.Affine2D(None if transform is None else transform.get_matrix())
+            new_tranform.translate(to_draw.translation[0], to_draw.translation[1])
+            GeometryGraphic.__draw_obj__(to_draw.item, renderer, gc, new_tranform)
+         else:  #unknown tranform, TODO: draw rectangle?
+            pass
       else:
-         for c in to_draw: GeometryGraphic.__draw_obj__(to_draw, renderer, transform, clip_box)
+         for c in to_draw: GeometryGraphic.__draw_obj__(to_draw, renderer, gc, transform) #, clip_box
 
    def draw(self, renderer):
       if not self.get_visible():  return
-
-      renderer.draw_path(graphics_context, path, transform)
+      GeometryGraphic.__draw_obj__(self.geometry, renderer, renderer.new_gc(), self.get_transform())

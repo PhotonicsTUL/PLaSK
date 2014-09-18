@@ -52,6 +52,10 @@ void Triangle::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
                     .attr("b" + axes.getNameForVert(), p1.vert());
 }
 
+bool Triangle::isUniform(Primitive<3>::Direction direction) const {
+    return false;
+}
+
 shared_ptr<GeometryObject> read_triangle(GeometryReader& reader) {
     shared_ptr< Triangle > triangle(new Triangle());
     triangle->p0.tran() = reader.source.requireAttribute<double>("a" + reader.getAxisTranName());

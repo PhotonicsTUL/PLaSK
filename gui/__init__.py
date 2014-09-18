@@ -88,9 +88,9 @@ class MainWindow(QtGui.QMainWindow):
                 new_window.close()
 
     def save(self):
-        if self.filename is not None:
+        if self.document.filename is not None:
             if not self.before_save(): return False
-            self.document.save_to_file(self.filename)
+            self.document.save_to_file(self.document.filename)
             return True
         else:
             return self.save_as()

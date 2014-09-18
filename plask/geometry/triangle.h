@@ -1,5 +1,5 @@
-#ifndef TRIANGLE_H
-#define TRIANGLE_H
+#ifndef PLASK__GEOMETRY_TRIANGLE_H
+#define PLASK__GEOMETRY_TRIANGLE_H
 
 /** @file
 This file contains triangle (geometry object) class.
@@ -45,9 +45,7 @@ struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
 
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
-    bool isUniform(Primitive<3>::Direction direction) const override {
-        return false;
-    };
+    bool isUniform(Primitive<3>::Direction direction) const override;
 
     DVec p0, p1;
 
@@ -72,4 +70,4 @@ struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
 
 }   // namespace plask
 
-#endif // TRIANGLE_H
+#endif // PLASK__GEOMETRY_TRIANGLE_H
