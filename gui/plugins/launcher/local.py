@@ -234,7 +234,7 @@ class Launcher(object):
         if self.dirname:
             dirname = self.dirname
         else:
-            dirname = os.path.dirname(os.path.abspath(main_window.filename or 'dummy'))
+            dirname = os.path.dirname(os.path.abspath(main_window.document.filename or 'dummy'))
         dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open', QtGui.QIcon(':/folder-open.png')))
         dirbutton.pressed.connect(lambda: self.select_workdir(main_window.filename))
         dirlayout = QtGui.QHBoxLayout()
