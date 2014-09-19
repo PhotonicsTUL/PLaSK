@@ -201,7 +201,7 @@ py::object LoggingConfig::getLoggingColor() const {
     return py::object();
 }
 
-void LoggingConfig::setLoggingColor(std::string color) {
+PLASK_PYTHON_API void setLoggingColor(std::string color) {
     boost::to_lower(color);
     if (auto logger = dynamic_pointer_cast<PythonSysLogger>(default_logger)) {
         if (color == "ansi")
@@ -217,6 +217,10 @@ void LoggingConfig::setLoggingColor(std::string color) {
         return;
     }
     throw TypeError("Setting coloring for current logging system does not make sense.");
+}
+
+void LoggingConfig::setLoggingColor(std::string color) {
+    python::setLoggingColor(std::move(color));
 }
 
 py::object LoggingConfig::getLoggingDest() const {

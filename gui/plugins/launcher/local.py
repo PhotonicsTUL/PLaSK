@@ -128,24 +128,27 @@ class OutputWindow(QtGui.QMainWindow):
 
     def update_output(self):
         move = self.messages.verticalScrollBar().value() == self.messages.verticalScrollBar().maximum()
-        total_lines = len(self.lines)
-        lines = []
-        if self.printed_lines != total_lines:
-            for line in self.lines[self.printed_lines:total_lines]:
-                cat = line[19:26].rstrip()
-                if cat in ('red', '#800000') and not self.action_error.isChecked(): continue
-                if cat == 'brown' and not self.action_warning.isChecked(): continue
-                if cat == 'blue' and not self.action_info.isChecked(): continue
-                if cat == 'green' and not self.action_result.isChecked(): continue
-                if cat == '#006060' and not self.action_data.isChecked(): continue
-                if cat == 'black' and not self.action_detail.isChecked(): continue
-                if cat == 'gray' and not self.action_debug.isChecked(): continue
-                lines.append(line)
-            if lines:
-                self.messages.append("<br/>\n".join(lines))
-            self.printed_lines = total_lines
-            if move:
-                self.messages.moveCursor(QtGui.QTextCursor.End)
+        try:
+            self.launcher.mutex.lock()
+            total_lines = len(self.lines)
+            lines = []
+            if self.printed_lines != total_lines:
+                for cat, line in self.lines[self.printed_lines:total_lines]:
+                    if 'ERROR' in cat and not self.action_error.isChecked(): continue
+                    if cat == 'WARNING' and not self.action_warning.isChecked(): continue
+                    if cat == 'INFO' and not self.action_info.isChecked(): continue
+                    if cat == 'RESULT' and not self.action_result.isChecked(): continue
+                    if cat == 'DATA' and not self.action_data.isChecked(): continue
+                    if cat == 'DETAIL' and not self.action_detail.isChecked(): continue
+                    if cat == 'DEBUG' and not self.action_debug.isChecked(): continue
+                    lines.append(line)
+                if lines:
+                    self.messages.append("<br/>\n".join(lines))
+                self.printed_lines = total_lines
+        finally:
+            self.launcher.mutex.unlock()
+        if move:
+            self.messages.moveCursor(QtGui.QTextCursor.End)
 
     def halt_thread(self):
         confirm = QtGui.QMessageBox.question(self, "Halt Process",
@@ -178,7 +181,7 @@ class OutputWindow(QtGui.QMainWindow):
 
 class PlaskThread(QtCore.QThread):
 
-    def __init__(self, fname, dirname, lines, *args):
+    def __init__(self, fname, dirname, lines, mutex, *args):
         super(PlaskThread, self).__init__()
 
         try:
@@ -193,6 +196,7 @@ class PlaskThread(QtCore.QThread):
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         self.lines = lines
+        self.mutex = mutex
         self.terminated.connect(self.kill_process)
 
     def run(self):
@@ -212,7 +216,11 @@ class PlaskThread(QtCore.QThread):
             elif cat == "DEBUG         :": color = "gray   "
             else: color = "black; font-weight:bold"
             line = line.replace(' ', '&nbsp;')
-            self.lines.append('<span style="color:%s;">%s</span>' % (color, line))
+            try:
+                self.mutex.lock()
+                self.lines.append((cat[:-1].strip(), '<span style="color:{};">{}</span>'.format(color, line)))
+            finally:
+                self.mutex.unlock()
 
     def kill_process(self):
         self.proc.terminate()
@@ -236,7 +244,7 @@ class Launcher(object):
         else:
             dirname = os.path.dirname(os.path.abspath(main_window.document.filename or 'dummy'))
         dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open', QtGui.QIcon(':/folder-open.png')))
-        dirbutton.pressed.connect(lambda: self.select_workdir(main_window.filename))
+        dirbutton.pressed.connect(lambda: self.select_workdir(main_window.document.filename))
         dirlayout = QtGui.QHBoxLayout()
         self.diredit = QtGui.QLineEdit()
         self.diredit.setReadOnly(True)
@@ -283,7 +291,7 @@ class Launcher(object):
         if self.dirname:
             dirname = self.dirname
         else:
-            dirname = os.path.dirname(os.path.abspath(main_window.filename or 'dummy'))
+            dirname = os.path.dirname(os.path.abspath(main_window.document.filename or 'dummy'))
 
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
@@ -293,9 +301,10 @@ class Launcher(object):
             if confirm == QtGui.QMessageBox.No or not main_window.save():
                 return
 
-        window = OutputWindow(main_window.filename, self)
+        window = OutputWindow(main_window.document.filename, self)
         self.windows.add(window)
-        window.thread = PlaskThread(main_window.filename, dirname, window.lines, *args)
+        self.mutex = QtCore.QMutex()
+        window.thread = PlaskThread(main_window.document.filename, dirname, window.lines, self.mutex, *args)
         window.thread.finished.connect(window.thread_finished)
         window.halt_action.triggered.connect(window.halt_thread)
         window.thread.start()

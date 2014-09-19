@@ -272,7 +272,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     }
     DataVector<const double> getCondJunc() const { return junction_conductivity; }
     void setCondJunc(const DataVector<const double>& cond)  {
-        size_t condsize;
+        size_t condsize = 0;
         for (const auto& act: active) condsize += act.right - act.left;
         condsize = max(condsize, size_t(1));
         if (!this->mesh || cond.size() != condsize)

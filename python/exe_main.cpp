@@ -45,6 +45,8 @@ namespace plask { namespace python {
 
     PLASK_PYTHON_API shared_ptr<Logger> makePythonLogger();
 
+    PLASK_PYTHON_API void setLoggingColor(std::string color);
+
     extern PLASK_PYTHON_API AxisNames current_axes;
 }}
 
@@ -191,7 +193,7 @@ int main(int argc, const char *argv[])
     bool force_interactive = false;
     boost::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
-    bool python_logger = true;
+    bool color_log = true;
 
     std::deque<const char*> defs;
 
@@ -240,7 +242,7 @@ int main(int argc, const char *argv[])
         } else if (arg == "-u") {
             setbuf(stdout, NULL);
             setbuf(stderr, NULL);
-            python_logger = false;
+            color_log = false;
             --argc; ++argv;
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
         } else if (arg == "-w") {
@@ -271,7 +273,8 @@ int main(int argc, const char *argv[])
     }
 
     // Set the Python logger
-    if (python_logger) plask::default_logger = plask::python::makePythonLogger();
+    plask::default_logger = plask::python::makePythonLogger();
+    if (!color_log) plask::python::setLoggingColor("none");
     if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Test if we should run command specified in the command line, use the file or start an interactive mode

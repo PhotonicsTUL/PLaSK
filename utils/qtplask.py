@@ -349,19 +349,21 @@ class MainWindow(QtGui.QMainWindow):
         #self.outputs.append([])
         self.messages.append([])
         idx = len(self.messages)-1
+
+        thread = PlaskThread(fname, self.last_dir, self.messages[-1], *args)
+        thread.finished.connect(lambda: self.set_finished(idx))
+        self.threads.append(thread)
+
         self.tabBar.addTab("%s @ %s" % (os.path.basename(fname), strftime('%X')))
         button = QtGui.QPushButton(self)
         button.setFlat(True)
         button.setFixedSize(16, 14)
         button.setIcon(self.stopicon)
         button.setToolTip(self.tr("Abort computations"))
+        button.clicked.connect(thread.kill_process)
         self.tabBar.setTabButton(idx, QtGui.QTabBar.RightSide, button)
         self.tabBar.setCurrentIndex(idx)
 
-        thread = PlaskThread(fname, self.last_dir, self.messages[-1], *args)
-        thread.finished.connect(lambda: self.set_finished(idx))
-        self.threads.append(thread)
-        button.clicked.connect(thread.kill_process)
         thread.start()
 
     def set_finished(self, idx):
@@ -377,22 +379,27 @@ class MainWindow(QtGui.QMainWindow):
         n = self.tabBar.currentIndex()
         if n == -1: return
         move = self.messagesView.verticalScrollBar().value() == self.messagesView.verticalScrollBar().maximum()
-        total_lines = len(self.messages[n])
-        lines = []
-        if self.printed_lines != total_lines:
-            for line in self.messages[n][self.printed_lines:total_lines]:
-                cat = line[19:26].rstrip()
-                if cat in ('red', '#800000') and not self.actionError.isChecked(): continue
-                if cat == 'brown' and not self.actionWarning.isChecked(): continue
-                if cat == 'blue' and not self.actionInfo.isChecked(): continue
-                if cat == 'green' and not self.actionResult.isChecked(): continue
-                if cat == '#006060' and not self.actionData.isChecked(): continue
-                if cat == 'black' and not self.actionDetail.isChecked(): continue
-                if cat == 'gray' and not self.actionDebug.isChecked(): continue
-                lines.append(line)
-            if lines: self.messagesView.append("<br/>\n".join(lines))
-            self.printed_lines = total_lines
-            if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)
+        mutex = self.threads[n].mutex
+        try:
+            mutex.lock()
+            total_lines = len(self.messages[n])
+            lines = []
+            if self.printed_lines != total_lines:
+                for line in self.messages[n][self.printed_lines:total_lines]:
+                    cat = line[19:26].rstrip()
+                    if cat in ('red', '#800000') and not self.actionError.isChecked(): continue
+                    if cat == 'brown' and not self.actionWarning.isChecked(): continue
+                    if cat == 'blue' and not self.actionInfo.isChecked(): continue
+                    if cat == 'green' and not self.actionResult.isChecked(): continue
+                    if cat == '#006060' and not self.actionData.isChecked(): continue
+                    if cat == 'black' and not self.actionDetail.isChecked(): continue
+                    if cat == 'gray' and not self.actionDebug.isChecked(): continue
+                    lines.append(line)
+                if lines: self.messagesView.append("<br/>\n".join(lines))
+                self.printed_lines = total_lines
+        finally:
+            mutex.unlock()
+        if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)
 
     def quitting(self):
         config = QtCore.QSettings("plask", "qtplask")
@@ -432,6 +439,7 @@ class PlaskThread(QtCore.QThread):
                                          cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         self.lines = lines
+        self.mutex = QtCore.QMutex()
         self.terminated.connect(self.kill_process)
 
     def run(self):
@@ -451,7 +459,11 @@ class PlaskThread(QtCore.QThread):
             elif cat == "DEBUG         :": color = "gray   "
             else: color = "black; font-weight:bold"
             line = line.replace(' ', '&nbsp;')
-            self.lines.append('<span style="color:%s;">%s</span>' % (color, line))
+            try:
+                self.mutex.lock()
+                self.lines.append('<span style="color:%s;">%s</span>' % (color, line))
+            finally:
+                self.mutex.unlock()
 
     def kill_process(self):
         self.proc.terminate()

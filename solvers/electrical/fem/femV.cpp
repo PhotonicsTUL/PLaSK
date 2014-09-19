@@ -177,7 +177,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
     currents.reset(this->mesh->elements.size(), vec(0.,0.));
     conds.reset(this->mesh->elements.size());
     if (junction_conductivity.size() == 1) {
-        size_t condsize;
+        size_t condsize = 0;
         for (const auto& act: active) condsize += act.right - act.left;
         condsize = max(condsize, size_t(1));
         junction_conductivity.reset(condsize, junction_conductivity[0]);
