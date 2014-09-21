@@ -170,6 +170,7 @@ i_re = re.compile("<i>(.*?)</i>")
 sub_re = re.compile("<sub>(.*?)</sub>")
 sup_re = re.compile("<sup>(.*?)</sup>")
 
+elements_re = re.compile("[A-Z][a-z]+")
 
 def _html_to_tex(s):
     '''Poor man's HTML to MathText conversion'''
@@ -189,13 +190,13 @@ class MaterialPlot(QtGui.QWidget):
         self.model = model
 
         self.material = QtGui.QComboBox()
-        self.material.setEditable(True)
+        self.material.setEditable(False)
         self.material.setInsertPolicy(QtGui.QComboBox.NoInsert)
         self.material.setMinimumWidth(180)
-        #self.material.changed.connect(self.update_material)
+        self.material.currentIndexChanged.connect(self.material_changed)
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
-        self.param.currentIndexChanged.connect(self.update_vars)
+        self.param.currentIndexChanged.connect(self.property_changed)
         toolbar1 = QtGui.QToolBar()
         toolbar1.addWidget(QtGui.QLabel("Material: "))
         toolbar1.addWidget(self.material)
@@ -207,7 +208,7 @@ class MaterialPlot(QtGui.QWidget):
         self.par_toolbar = QtGui.QToolBar()
         self.mat_toolbar = QtGui.QToolBar()
         self.arguments = {}
-        self.update_vars()
+        self.property_changed()
 
         self.model.changed.connect(self.update_materials)
         self.update_materials()
@@ -216,6 +217,7 @@ class MaterialPlot(QtGui.QWidget):
         plot.setText("&Plot")
         plot.pressed.connect(self.update_plot)
         plot.setDefault(True)
+        plot.setSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
@@ -237,9 +239,10 @@ class MaterialPlot(QtGui.QWidget):
         hbox2 = QtGui.QHBoxLayout()
         hbox1.addWidget(toolbar1)
         hbox1.addWidget(self.mat_toolbar)
-        hbox1.addWidget(plot)
         hbox2.addWidget(toolbar2)
         hbox2.addWidget(self.par_toolbar)
+
+        hbox2.addWidget(plot)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox1)
@@ -264,51 +267,99 @@ class MaterialPlot(QtGui.QWidget):
         if args:
             self.material.setEditText(text)
 
-    def update_material(self):
-        pass
-
-    def update_vars(self):
-        self.par_toolbar.clear()
-        first = True
-        old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
-        self.arguments = {}
-        for v in MATERIALS_PROPERTES[self.param.currentText()][2]:
+    def set_toolbar(self, toolbar, values, old, what):
+        """
+        :param what: 0: comonent, 1: doping, 2: property argument
+        """
+        first = None
+        for v in values:
             select = QtGui.QRadioButton()
-            select.toggled.connect(self.update_arg)
-            self.par_toolbar.addWidget(select)
+            select.toggled.connect(self.selected_argument)
+            select.setAutoExclusive(False)
+            if first is None: first = select
+            toolbar.addWidget(select)
             select.setText("{}:".format(v[0]))
             select.descr = v[1]
             val1 = QtGui.QLineEdit()
-            self.par_toolbar.addWidget(val1)
-            sep = self.par_toolbar.addWidget(QtGui.QLabel("-"))
+            val1.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+            toolbar.addWidget(val1)
+            sep = toolbar.addWidget(QtGui.QLabel("-"))
+            sep.setVisible(False)
             val2 = QtGui.QLineEdit()
+            val2.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
             if select.text() in old:
                 val1.setText(old[select.text()][0])
                 val2.setText(old[select.text()][1])
-            act2 = self.par_toolbar.addWidget(val2)
-            self.arguments[select] = val1, val2, (sep, act2)
-            if first:
-                select.setChecked(True)
-                first = False
-            else:
-                sep.setVisible(False)
-                act2.setVisible(False)
+            act2 = toolbar.addWidget(val2)
+            act2.setVisible(False)
+            self.arguments[select] = val1, val2, (sep, act2), what
+        for arg in self.arguments:
+            if arg.isChecked(): return
+        if first is not None: first.setChecked(True)
 
-    def update_arg(self):
+    def parse_material(self, material):
+        if plask:
+            try:
+                simple = plask.material.db.is_simple(str(material))
+            except ValueError:
+                simple = True
+            except RuntimeError:
+                simple = True
+        else:
+            simple = True
+        if ':' in material:
+            name, doping = material.split(':')
+        else:
+            name = material
+            doping = None
+        return doping, name, simple
+
+    def material_changed(self):
+        old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
+        for child in self.mat_toolbar.children():
+            if child in self.arguments:
+                del self.arguments[child]
+        self.mat_toolbar.clear()
+        material = self.material.currentText()
+
+        doping, name, simple = self.parse_material(material)
+
+        if not simple:
+            elements = elements_re.findall(name)
+            self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), old, 0)
+
+        if doping is not None:
+            self.mat_toolbar.addSeparator()
+            self.set_toolbar(self.mat_toolbar, [(doping, "doping concentration [1/cm<sup>3</sup>]")], old, 1)
+
+    def property_changed(self):
+        old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
+        for child in self.par_toolbar.children():
+            if child in self.arguments:
+                del self.arguments[child]
+        self.par_toolbar.clear()
+        self.set_toolbar(self.par_toolbar, MATERIALS_PROPERTES[self.param.currentText()][2], old, 2)
+
+    def selected_argument(self):
         button = self.sender()
         checked = button.isChecked()
         for act in self.arguments[button][2]:
             act.setVisible(checked)
         if checked:
             self.arg_button = button
+            for other in self.arguments:
+                if other != button:
+                    other.setChecked(False)
 
-    def _parse_other_args(self, button):
-        for i in self.arguments.items():
-            val = i[1][0].text()
-            if i[0] is not button and val:
+    def _parse_other_args(self, button, cat):
+        for k,v in self.arguments.items():
+            if k is button or v[3] != cat:
+                continue
+            val = v[0].text()
+            if val:
                 try: val = float(val)
                 except ValueError: pass
-                yield str(i[0].text())[:-1], val
+                yield str(k.text())[:-1], val
 
     def update_plot(self):
         self.figure.clear()
@@ -324,33 +375,42 @@ class MaterialPlot(QtGui.QWidget):
         warnings.showwarning = showwarning
         try:
             try:
-                arg1, arg2 = (float(v.text()) for v in self.arguments[self.arg_button][:2])
+                start, end = (float(v.text()) for v in self.arguments[self.arg_button][:2])
             except ValueError:
                 raise ValueError("Wrong ranges '{}' - '{}'"
                                  .format(*(v.text() for v in self.arguments[self.arg_button][:2])))
-            other_args = dict(self._parse_other_args(self.arg_button))
-            args = plask.linspace(arg1, arg2, 1000)
-            argn = str(self.arg_button.text())[:-1]
-            matn = str(self.material.currentText())
-            while True:
-                material = [e for e in self.model.entries if e.name == matn]
+            plot_range = plask.linspace(start, end, 1001)
+            plot_cat = self.arguments[self.arg_button][3]
+            other_args = dict(self._parse_other_args(self.arg_button, 2))
+            other_elements = dict(self._parse_other_args(self.arg_button, 0))
+            other_elements.update(dict(('dc', v) for k,v in self._parse_other_args(self.arg_button, 1)))
+            arg_name = 'dc' if plot_cat == 1 else str(self.arg_button.text())[:-1]
+            material_name = str(self.material.currentText())
+            while True:  # loop for looking-up the base
+                material = [e for e in self.model.entries if e.name == material_name]
                 if material:
                     material = material[0]
                     mprop = [p for p in material.properties if p[0] == param]
                     if mprop:
                         expr = mprop[0][1]
                         code = compile(expr, '', 'eval')
-                        vals = [eval(code, numpy.__dict__, dict(((argn, a),), **other_args)) for a in args]
+                        vals = [eval(code, numpy.__dict__, dict(((arg_name, a),), **other_args))
+                                for a in plot_range]
                         break
                     else:
-                        matn = material.base
+                        material_name = material.base  # and we repeat the loop
                         material = None
                 else:
                     break
             if not material:
-                material = plask.material.db.get(matn)
-                vals = [material.__getattribute__(param)(**dict(((argn, a),), **other_args)) for a in args]
-            axes.plot(args, vals)
+                if plot_cat == 2:
+                    material = plask.material.db.get(material_name, **other_elements)
+                    vals = [material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
+                            for a in plot_range]
+                else:
+                    vals = [plask.material.db.get(material_name, **dict(((arg_name, a),), **other_elements)).
+                            __getattribute__(param)(**other_args) for a in plot_range]
+            axes.plot(plot_range, vals)
         except Exception as err:
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()

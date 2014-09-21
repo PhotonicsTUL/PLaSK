@@ -790,7 +790,7 @@ void initMaterials() {
         .def("get", py::raw_function(&MaterialsDB_get),
              "Get material of given name and doping."
              )
-        .def("__call__", (shared_ptr<Material>(MaterialsDB::*)(const std::string&)const)&MaterialsDB::get)
+        .def("__call__", py::raw_function(&MaterialsDB_get))
         .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
