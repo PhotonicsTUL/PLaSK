@@ -20,7 +20,7 @@ class SourceEditController(Controller):
         ed.setReadOnly(self.model.is_read_only())
         return ed
 
-    def __on_text_edit__(self):
+    def _on_text_edit(self):
         self.edited = True
         self.document.set_changed()
 
@@ -53,12 +53,12 @@ class SourceEditController(Controller):
         self.visible = True
         if not self.fresh: self.refresh_editor()
         if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
-        self.source_editor.textChanged.connect(self.__on_text_edit__)
+        self.source_editor.textChanged.connect(self._on_text_edit)
 
     # When the editor is turned off, model should be updated
     def on_edit_exit(self):
         try:
-            self.source_editor.textChanged.disconnect(self.__on_text_edit__)
+            self.source_editor.textChanged.disconnect(self._on_text_edit)
         except TypeError:
             pass
         self.save_data_in_model()

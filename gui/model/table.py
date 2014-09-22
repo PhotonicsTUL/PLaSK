@@ -44,7 +44,7 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.entries = []
-        self.__row_to_errors__ = None
+        self._row_to_errors = None
 
     @property
     def info_by_row(self):
@@ -52,16 +52,16 @@ class TableModel(QtCore.QAbstractTableModel, SectionModel, TableModelEditMethods
             Allow to fast access to Info which has rows attributes and for search by row.
             :return: dict: row number -> Info
         """
-        if self.__row_to_errors__ is None:
-            self.__row_to_errors__ = {}
+        if self._row_to_errors is None:
+            self._row_to_errors = {}
             for msg in self.info:
                 for r in getattr(msg, 'rows', []):
-                    self.__row_to_errors__.setdefault(r, []).append(msg)
-        return self.__row_to_errors__
+                    self._row_to_errors.setdefault(r, []).append(msg)
+        return self._row_to_errors
 
-    def markInfoInvalid(self):
-        self.__row_to_errors__ = None   # this need to be refreshed
-        super(TableModel, self).markInfoInvalid()
+    def mark_info_invalid(self):
+        self._row_to_errors = None   # this need to be refreshed
+        super(TableModel, self).mark_info_invalid()
 
     # QAbstractTableModel implementation
     def rowCount(self, parent=QtCore.QModelIndex()):

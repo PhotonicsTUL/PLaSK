@@ -13,7 +13,7 @@ class NewGridDialog(QtGui.QDialog):
         kind = QtGui.QGroupBox("Kind")
         self.kind_mesh = QtGui.QRadioButton("&Mesh")
         self.kind_generator = QtGui.QRadioButton("&Generator")
-        self.kind_generator.toggled.connect(self.__set_mode__)
+        self.kind_generator.toggled.connect(self._type_changed)
         self.kind_mesh.setChecked(True)
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.kind_mesh)
@@ -27,7 +27,7 @@ class NewGridDialog(QtGui.QDialog):
         self.type_edit = QtGui.QComboBox()
         self.type_edit.setEditable(True)
         self.type_edit.setInsertPolicy(QtGui.QComboBox.NoInsert)
-        self.type_edit.editTextChanged.connect(self.__type_changed__)
+        self.type_edit.editTextChanged.connect(self._type_changed)
         self.type_edit.setToolTip('Type of the mesh.')
 
         self.method_edit = QtGui.QComboBox()
@@ -52,9 +52,9 @@ class NewGridDialog(QtGui.QDialog):
         mainLayout.addWidget(self.buttonBox)
         self.setLayout(mainLayout)
 
-        self.__set_mode__(False)
+        self._set_mode(False)
 
-    def __set_mode__(self, is_generator):
+    def _set_mode(self, is_generator):
         self.method_edit.setVisible(is_generator)
         self.form_layout.labelForField(self.method_edit).setVisible(is_generator)
         #self.method_edit.setEnabled(is_generator)
@@ -65,9 +65,9 @@ class NewGridDialog(QtGui.QDialog):
         else:
             self.type_edit.setModel(QStringListModel(sorted(meshes_types())))
         self.type_edit.setEditText(text)
-        self.__type_changed__(text)
+        self._type_changed(text)
 
-    def __type_changed__(self, new_type):
+    def _type_changed(self, new_type):
         if not self.method_edit.isVisible(): return
         text = self.method_edit.currentText()
         self.method_edit.setModel(QStringListModel(sorted(generator_methods(xml_name(new_type)))))

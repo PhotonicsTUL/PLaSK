@@ -5,6 +5,7 @@ from ...model.table import TableModelEditMethods
 from ...utils.xml import AttributeReader, require_no_children, UnorderedTagReader
 from .grid import Grid
 
+
 class RefinementConf(object):
     """Store refinement configuration of rectilinear generator"""
 
@@ -134,7 +135,7 @@ class RectilinearDivideGenerator(Grid):
     def dim(self):
         return 1 if self.type == 'ordered' else int(self.type[-2])
 
-    def __append_div_XML_element__(self, div_name, dst):
+    def _append_div_XML_element(self, div_name, dst):
         div = getattr(self, div_name)
         if div is None: return
         div_element = Element(div_name)
@@ -151,8 +152,8 @@ class RectilinearDivideGenerator(Grid):
         res = super(RectilinearDivideGenerator, self).get_XML_element()
         if self.gradual is not None:
             SubElement(res, "gradual", attrib={'all': self.gradual})
-        self.__append_div_XML_element__('prediv', res)
-        self.__append_div_XML_element__('postdiv', res)
+        self._append_div_XML_element('prediv', res)
+        self._append_div_XML_element('postdiv', res)
         if len(self.refinements.entries) > 0:
             refinements_element = SubElement(res, 'refinements')
             for r in self.refinements.entries:
@@ -164,7 +165,7 @@ class RectilinearDivideGenerator(Grid):
         if warnings_el.attrib: res.append(warnings_el)
         return res
 
-    def __div_from_XML__(self, div_name, src):
+    def _div_from_XML(self, div_name, src):
         div_element = src.find(div_name)
         if div_element is None:
             setattr(self, div_name, None)
@@ -187,8 +188,8 @@ class RectilinearDivideGenerator(Grid):
                     self.gradual = 'no'
                 else:
                     self.gradual = None
-            self.__div_from_XML__('prediv', r)
-            self.__div_from_XML__('postdiv', r)
+            self._div_from_XML('prediv', r)
+            self._div_from_XML('postdiv', r)
             self.refinements.entries = []
             refinements_element = r.find('refinements')
             if refinements_element is not None:
@@ -205,7 +206,7 @@ class RectilinearDivideGenerator(Grid):
                     for w in RectilinearDivideGenerator.warnings:
                         setattr(self, 'warning_' + w, a.get(w, None))
 
-    def __set_div__(self, attr_name, div_tab):
+    def _set_div(self, attr_name, div_tab):
         if div_tab is None or div_tab.count(None) == self.dim:
             setattr(self, attr_name, None)
         else:
@@ -215,13 +216,13 @@ class RectilinearDivideGenerator(Grid):
         return None if self.prediv is None else self.prediv[index]
 
     def set_prediv(self, prediv_tab):
-        self.__set_div__('prediv', prediv_tab)
+        self._set_div('prediv', prediv_tab)
 
     def get_postdiv(self, index):
         return None if self.postdiv is None else self.postdiv[index]
 
     def set_postdiv(self, postdiv_tab):
-        self.__set_div__('postdiv', postdiv_tab)
+        self._set_div('postdiv', postdiv_tab)
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectilinear import RectilinearDivideGeneratorConroller

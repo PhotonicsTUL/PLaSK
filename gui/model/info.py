@@ -49,7 +49,7 @@ def infoLevelIcon(level):
 class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articles/using_qtreeview_with_qabstractitemmodel
     """Qt list model of info (warning, errors, etc.) of section model (None section model is allowed and than the list is empty)"""
 
-    def __setModel__(self, model):
+    def _set_model(self, model):
         if hasattr(self, 'model'):
             m = self.model()
             if m: m.infoChanged -= self.infoChanged
@@ -63,7 +63,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
 
     def __init__(self, model, parent=None, *args):
         QtCore.QAbstractListModel.__init__(self, parent, *args)
-        self.__setModel__(model)
+        self._set_model(model)
 
     def infoChanged(self, model, *args, **kwargs):
         """Read info from model, inform observers."""
@@ -72,7 +72,7 @@ class InfoTreeModel(QtCore.QAbstractListModel): #http://www.hardcoded.net/articl
         self.layoutChanged.emit()
 
     def setModel(self, model):
-        self.__setModel__(model)
+        self._set_model(model)
         if model is not None: self.infoChanged(model)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
@@ -103,18 +103,18 @@ class InfoSource(object):
             :param info_cb: call when list of errors has been changed with parameters: section name, list of errors
         """
         object.__init__(self)
-        self.__info__ = []    #model Infos: Errors, Warnings and Informations
+        self._info = []    #model Infos: Errors, Warnings and Informations
         self.infoChanged = Signal()
         if info_cb: self.infoChanged.connect(info_cb)
 
-    def markInfoInvalid(self):
+    def mark_info_invalid(self):
         """Invalidate the info and it indexes."""
-        self.__info__ = None
+        self._info = None
 
-    def fireInfoChanged(self):
+    def fire_info_changed(self):
         """
             Inform observers that info has been changed.
-            You must call markInfoInvalid and prepare data to build the info before call this.
+            You must call mark_info_invalid and prepare data to build the info before call this.
         """
         self.infoChanged(self)
 
@@ -129,12 +129,12 @@ class InfoSource(object):
         """
             Get array of Info objects on given level connected with this object.
         """
-        if self.__info__ is None:
-            self.__info__ = self.create_info()
+        if self._info is None:
+            self._info = self.create_info()
         if level is not None:
-            return filter(lambda m: m.level == level, self.__info__)
+            return filter(lambda m: m.level == level, self._info)
         else:
-            return self.__info__
+            return self._info
 
     @property
     def info(self):
@@ -144,5 +144,5 @@ class InfoSource(object):
         return InfoTreeModel(self)
 
     def refreshInfo(self):
-        self.__info__ = None
+        self._info = None
         self.infoChanged(self)

@@ -21,7 +21,7 @@ class Grid(TreeFragmentModel):
         super(Grid, self).__init__(parent=grids_model)
         if name is not None: self.name = name
         if type is not None: self.type = type
-        if method is not None: self.__method__ = method
+        if method is not None: self._method = method
 
     def get_XML_element(self):
         return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
@@ -34,7 +34,7 @@ class Grid(TreeFragmentModel):
 
     @property
     def method(self):
-        return getattr(self, '__method__', None)
+        return getattr(self, '_method', None)
 
     @property
     def is_generator(self):

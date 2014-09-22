@@ -89,29 +89,29 @@ class OrderedTagReader(object):
         self.parent_element = parent_element
         self.current_index = first_index
 
-    def __next_element__(self):
+    def _next_element(self):
         """:return: next element"""
         return self.parent_element[self.current_index]
 
-    def __has_next__(self):
+    def _has_next(self):
         """:return: True if there is next element, False in other cases."""
         return self.current_index != len(self.parent_element)
 
-    def __goto_next__(self):
+    def _goto_next(self):
         """
             Increment current_index if there is next element.
             :return: Next element or None if there is no such element
         """
-        if not self.__has_next__(): return None
-        res = self.__next_element__()
+        if not self._has_next(): return None
+        res = self._next_element()
         self.current_index += 1
         return res
 
     def require_end(self):
         """Raise ValueError if self.parent_element still has unread children."""
-        if self.__has_next__():
+        if self._has_next():
             raise ValueError("XML tag <{}> has unexpected child <{}>.".format(
-                self.parent_element.tag, self.__next_element__().tag))
+                self.parent_element.tag, self._next_element().tag))
 
     def __enter__(self):
         return self
@@ -131,10 +131,10 @@ class OrderedTagReader(object):
                     other than expected_tag_name
         """
         if expected_tag_name is None:
-            return self.__goto_next__()
+            return self._goto_next()
         else:
-            if self.__has_next__() and self.__next_element__().tag == expected_tag_name:
-                return self.__goto_next__()
+            if self._has_next() and self._next_element().tag == expected_tag_name:
+                return self._goto_next()
             else:
                 return None
 

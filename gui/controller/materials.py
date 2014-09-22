@@ -1,9 +1,11 @@
 import re
+import itertools
 
 from ..qt import QtCore, QtGui, qt
 from ..qt.QtGui import QSplitter
 
-from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp, MATERIALS_PROPERTES
+from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp, \
+                              MATERIALS_PROPERTES, ELEMENT_GROUPS
 from ..utils.gui import HTMLDelegate, table_last_col_fill
 from .base import Controller
 from .defines import DefinesCompletionDelegate
@@ -31,7 +33,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
     @staticmethod
     def _format_material(mat):
-        return _mat
+        return mat
 
     def __init__(self, defines_model, parent):
         DefinesCompletionDelegate.__init__(self, defines_model, parent)
@@ -297,7 +299,8 @@ class MaterialPlot(QtGui.QWidget):
             if arg.isChecked(): return
         if first is not None: first.setChecked(True)
 
-    def parse_material(self, material):
+    @staticmethod
+    def parse_material(material):
         if plask:
             try:
                 simple = plask.material.db.is_simple(str(material))
@@ -325,7 +328,9 @@ class MaterialPlot(QtGui.QWidget):
         doping, name, simple = self.parse_material(material)
 
         if not simple:
-            elements = elements_re.findall(name)
+            elements = tuple(itertools.chain(*(
+                [e for e in elements_re.findall(name) if e in g][:-1] for g in ELEMENT_GROUPS
+            )))
             self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), old, 0)
 
         if doping is not None:
@@ -365,14 +370,17 @@ class MaterialPlot(QtGui.QWidget):
         self.figure.clear()
         axes = self.figure.add_subplot(111)
         param = str(self.param.currentText())
+
         import warnings
         old_showwarning = warnings.showwarning
         warns = []
+
         def showwarning(message, category, filename, lineno, file=None, line=None):
             message = unicode(message)
             if message not in warns:
                 warns.append(message)
         warnings.showwarning = showwarning
+
         try:
             try:
                 start, end = (float(v.text()) for v in self.arguments[self.arg_button][:2])

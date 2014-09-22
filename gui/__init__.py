@@ -42,10 +42,10 @@ class MainWindow(QtGui.QMainWindow):
         self.init_ui()
         self.document = XPLDocument(self)
         if filename is not None:
-            self.__try_load_from_file__(filename)
+            self._try_load_from_file(filename)
         self.model_is_new()
 
-    def __try_load_from_file__(self, filename):
+    def _try_load_from_file(self, filename):
         try:
             self.document.load_from_file(filename)
             return True
@@ -78,7 +78,7 @@ class MainWindow(QtGui.QMainWindow):
         if type(filename) == tuple:
             filename = filename[0]
         if self.document.filename is None and not self.isWindowModified():
-            self.__try_load_from_file__(filename)
+            self._try_load_from_file(filename)
         else:
             new_window = MainWindow(filename)
             if new_window.document.filename is not None:

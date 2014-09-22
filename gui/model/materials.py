@@ -111,6 +111,8 @@ MATERIALS_PROPERTES = OrderedDict((
              (u'hole', u'hole type (\'H\' or \'L\') [-]')])),
 ))
 
+ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
+
 def materialHTMLHelp(property_name, with_unit=True, with_attr=False, font_size=None):
     prop_help, prop_unit, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None, None))
     res = ''
@@ -132,25 +134,25 @@ def materialUnit(property_name):
 
 class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
-    def __invalidate__(self):
+    def _invalidate(self):
         self.material = None
 
     def __init__(self, materials_model, material=None, parent=None, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.materialsModel = materials_model
-        self.__material = material
-        self.materialsModel.modelReset.connect(self.__invalidate__)
+        self._material = material
+        self.materialsModel.modelReset.connect(self._invalidate)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
-        if not self.__material or parent.isValid(): return 0
-        return len(self.__material.properties)
+        if not self._material or parent.isValid(): return 0
+        return len(self._material.properties)
 
     def columnCount(self, parent=QtCore.QModelIndex()):
         return 4    # 5 if comment supported
 
     def get(self, col, row):
-        n, v = self.__material.properties[row]
+        n, v = self._material.properties[row]
         if col == 2:
             return materialUnit(n)
         elif col == 3:
@@ -176,11 +178,11 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
             return QtGui.QBrush(QtGui.QPalette().color(QtGui.QPalette.Normal, QtGui.QPalette.Window))
 
     def set(self, col, row, value):
-        n, v = self.__material.properties[row]
+        n, v = self._material.properties[row]
         if col == 0:
-            self.__material.properties[row] = (value, v)
+            self._material.properties[row] = (value, v)
         elif col == 1:
-            self.__material.properties[row] = (n, value)
+            self._material.properties[row] = (n, value)
 
     def setData(self, index, value, role = QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
@@ -206,25 +208,25 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
     @property
     def material(self):
-        return self.__material
+        return self._material
 
     @material.setter
     def material(self, material):
         self.modelAboutToBeReset.emit()
-        self.__material = material
+        self._material = material
         self.modelReset.emit()
 
     def options_to_choose(self, index):
         """:return: list of available options to choose at given index or None"""
         if index.column() == 0: return MATERIALS_PROPERTES.keys()
         if index.column() == 1:
-            if self.__material.properties[index.row()][0] == 'condtype':
+            if self._material.properties[index.row()][0] == 'condtype':
                 return ['n', 'i', 'p', 'other']
         return None
 
     @property
     def entries(self):
-        return self.__material.properties
+        return self._material.properties
 
     def is_read_only(self):
         return self.material is None or self.materialsModel.is_read_only()

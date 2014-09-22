@@ -58,10 +58,10 @@ class TreeFragmentModel(InfoSource):
             Inform listeners that this section was changed.
             :param bool refresh_info: only if True, info of this section will be refresh
         """
-        if refresh_info: self.markInfoInvalid()
+        if refresh_info: self.mark_info_invalid()
         if 'src' not in kwargs: kwargs['src'] = self
         self.changed(self, *args, **kwargs)
-        if refresh_info: self.fireInfoChanged()
+        if refresh_info: self.fire_info_changed()
         if self.parent is not None: self.parent.fire_changed(refresh_info, *args, **kwargs)
 
     def get_text(self):
@@ -71,10 +71,12 @@ class TreeFragmentModel(InfoSource):
     def is_read_only(self):
         """
             Check if model is read only.
-            It just return parent.is_read_only(), which is valid implementation from internal section models (SectionModel overwrite it).
+            It just return parent.is_read_only(), which is valid implementation from internal section models
+            (SectionModel overwrite it).
             :return: true if model is read-only (typically: has been read from external source)
         """
         return self.parent.is_read_only()
+
 
 class SectionModel(TreeFragmentModel):
 

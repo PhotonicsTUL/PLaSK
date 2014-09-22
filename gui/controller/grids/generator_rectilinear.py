@@ -18,7 +18,7 @@ class RectilinearDivideGeneratorConroller(Controller):
         'outside': 'Warn if refining line lies outside of the specified object. Defaults to true.'
     }
 
-    def __make_div_hbox__(self, container_to_add, label, tooltip):
+    def _make_div_hbox(self, container_to_add, label, tooltip):
         hbox_div = QtGui.QHBoxLayout()
         res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
         for i in range(0, self.model.dim):
@@ -40,11 +40,14 @@ class RectilinearDivideGeneratorConroller(Controller):
         self.gradual = QtGui.QComboBox()    #not checkbox to allow put defines {}
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
-        self.gradual.setToolTip("Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two). Gradual is enabled by default.")
+        self.gradual.setToolTip("Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated"
+                                " mesh may differ more than by the factor of two). Gradual is enabled by default.")
         form_layout.addRow("gradual", self.gradual)
 
-        self.prediv = self.__make_div_hbox__(form_layout, "prediv", "Set number of the initial divisions of each geometry object{}.")
-        self.postdiv = self.__make_div_hbox__(form_layout, "postdiv", "Set number of the final divisions of each geometry object{}.")
+        self.prediv = self._make_div_hbox(form_layout, "prediv",
+                                          "Set number of the initial divisions of each geometry object{}.")
+        self.postdiv = self._make_div_hbox(form_layout, "postdiv",
+                                           "Set number of the final divisions of each geometry object{}.")
 
         warnings_layout = QtGui.QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
