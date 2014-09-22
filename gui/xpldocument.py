@@ -31,15 +31,18 @@ class XPLDocument(object):
             ScriptController(self)   # script
         ]
         for c in self.controllers:
-            c.model.changed.connect(self._on_model_change)
+            c.model.changed.connect(self.on_model_change)
         self.filename = None
         self.set_changed(False)
         if filename: self.load_from_file(filename)
         #self.tree = etree()
 
-    def _on_model_change(self, model, *args, **kwargs):
+    def on_model_change(self, model, *args, **kwargs):
         """Slot called by model 'changed' signals when user edits any section model"""
         self.set_changed(True)
+
+    def set_changed(self, changed=True):
+        self.window.set_changed(changed)
 
     def load_from_file(self, filename):
         tree = etree.parse(filename, XML_parser)
@@ -87,11 +90,3 @@ class XPLDocument(object):
             res += c.model.stubs()
             res += '\n'
         return res
-
-    def set_changed(self, changed=True):
-        """Set changed flags in the document window"""
-        if self.filename:
-            self.window.setWindowTitle("{}[*] - PLaSK".format(self.filename))
-        else:
-            self.window.setWindowTitle("[*] PLaSK")
-        self.window.setWindowModified(changed)

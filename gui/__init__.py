@@ -47,6 +47,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.document = XPLDocument(self)
         self.model_is_new()
+        self.set_changed(False)
 
     def _try_load_from_file(self, filename):
         if filename.endswith('.py'):
@@ -327,6 +328,17 @@ class MainWindow(QtGui.QMainWindow):
         geometry = self.geometry()
         CONFIG['session/geometry'] = geometry
         CONFIG.sync()
+
+    def set_changed(self, changed):
+        """Set changed flags in the document window"""
+        try:
+            if self.document.filename:
+                self.setWindowTitle("{}[*] - PLaSK".format(self.document.filename))
+            else:
+                self.setWindowTitle("[*] PLaSK")
+        except AttributeError:
+            self.setWindowTitle("[*] PLaSK")
+        self.setWindowModified(changed)
 
 
 def main():
