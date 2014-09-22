@@ -145,6 +145,8 @@ class OutputWindow(QtGui.QMainWindow):
                 if lines:
                     self.messages.append("<br/>\n".join(lines))
                 self.printed_lines = total_lines
+            else:
+                move = False
         finally:
             self.launcher.mutex.unlock()
         if move:

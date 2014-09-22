@@ -227,7 +227,7 @@ class ThermoElectric(object):
 
             \*\*kwargs: Keyword arguments passed to the plot function.
         '''
-        mesh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([at]), self.electrical.mesh.axis1)
+        mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
         field = self.electrical.outVoltage(mesh)
         plask.plot(mesh.axis1, field, **kwargs)
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-1]))
@@ -271,7 +271,7 @@ class ThermoElectric(object):
         ])
 
         for i, y in enumerate(act):
-            msh = plask.mesh.Rectangular2D(axis, plask.mesh.Rectilinear([y]))
+            msh = plask.mesh.Rectangular2D(axis, plask.mesh.Ordered([y]))
             curr = self.electrical.outCurrentDensity(msh, 'spline').array[:,0,1]
             s = sum(curr)
             plask.plot(msh.axis0, curr if s > 0 else -curr,
@@ -281,9 +281,8 @@ class ThermoElectric(object):
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))
         plask.ylabel(u"Current Density [kA/cm\xb2]")
         if bounds:
-            simplemesh = plask.mesh.Rectilinear2D.SimpleGenerator()(
-                             self.electrical.geometry.item
-                         )
+            simplemesh = plask.mesh.Rectangular2D.SimpleGenerator()\
+                (self.electrical.geometry.item)
             for x in simplemesh.axis0:
                 plask.axvline(x, ls=":", color="k")
         plask.gcf().canvas.set_window_title("Current Density")

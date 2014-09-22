@@ -397,6 +397,8 @@ class MainWindow(QtGui.QMainWindow):
                     lines.append(line)
                 if lines: self.messagesView.append("<br/>\n".join(lines))
                 self.printed_lines = total_lines
+            else:
+                move = False
         finally:
             mutex.unlock()
         if move: self.messagesView.moveCursor(QtGui.QTextCursor.End)

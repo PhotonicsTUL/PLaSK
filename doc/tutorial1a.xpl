@@ -17,7 +17,7 @@
 </geometry>
 
 <grids>
-  <generator type="rectangular2d" method="divide" name="default">
+  <generator method="divide" name="default" type="rectangular2d">
     <postdiv by="2"/>
   </generator>
 </grids>
@@ -35,15 +35,19 @@
     <mesh ref="default"/>
     <junction beta="19" js="1"/>
     <voltage>
-      <condition value="1.0"><place object="top-layer" side="top"/></condition>
-      <condition value="0.0"><place object="substrate" side="bottom"/></condition>
+      <condition value="1.0">
+        <place object="top-layer" side="top"/>
+      </condition>
+      <condition value="0.0">
+        <place object="substrate" side="bottom"/>
+      </condition>
     </voltage>
   </electrical>
 </solvers>
 
-<script>
+<script><![CDATA[
 
-task = algorithm.ThermoElectric(therm, electr)
+task = algorithm.ThermoElectric(therm, electr, connect=True)
 
 task.run()
 
@@ -71,6 +75,6 @@ tight_layout()
 
 show()
 
-</script>
+]]></script>
 
 </plask>
