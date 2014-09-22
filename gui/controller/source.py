@@ -61,6 +61,8 @@ class SourceEditController(Controller):
             self.source_editor.textChanged.disconnect(self._on_text_edit)
         except TypeError:
             pass
+        except AttributeError:
+            pass
         self.save_data_in_model()
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False

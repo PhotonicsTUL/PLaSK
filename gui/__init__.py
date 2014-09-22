@@ -50,16 +50,18 @@ class MainWindow(QtGui.QMainWindow):
 
     def _try_load_from_file(self, filename):
         if filename.endswith('.py'):
-            self.document = PyDocument(self)
+            document = PyDocument(self)
         else:
-            self.document = XPLDocument(self)
+            document = XPLDocument(self)
         try:
-            self.document.load_from_file(filename)
-            return True
+            document.load_from_file(filename)
         except Exception as e:
             QtGui.QMessageBox.critical(self, 'Error while loading XPL from file.',
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
+        else:
+            self.set_model(document)
+            return True
 
     def model_is_new(self):
         self.tabs.clear()

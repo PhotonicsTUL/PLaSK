@@ -15,6 +15,7 @@ def exception_to_msg(f, parent=None, err_title=None):
         f()
         return True
     except Exception as e:
+        raise
         QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
 
