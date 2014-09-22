@@ -1,4 +1,4 @@
-from lxml import etree as ElementTree
+from lxml import etree
 
 from .model.base import SectionModelTreeBased
 from .controller.source import SourceEditController
@@ -15,7 +15,7 @@ class XPLDocument(object):
 
     SECTION_NAMES = ["defines", "materials", "geometry", "grids", "solvers", "connects", "script"]
 
-    def __init__(self, window, filename = None):
+    def __init__(self, window, filename=None):
         self.window = window
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
@@ -35,15 +35,14 @@ class XPLDocument(object):
         self.filename = None
         self.set_changed(False)
         if filename: self.load_from_file(filename)
-        #self.tree = ElementTree()
-
+        #self.tree = etree()
 
     def _on_model_change(self, model, *args, **kwargs):
         """Slot called by model 'changed' signals when user edits any section model"""
         self.set_changed(True)
 
     def load_from_file(self, filename):
-        tree = ElementTree.parse(filename, XML_parser)
+        tree = etree.parse(filename, XML_parser)
         with OrderedTagReader(tree.getroot()) as r:
             for i in range(len(XPLDocument.SECTION_NAMES)):
                 element = r.get(XPLDocument.SECTION_NAMES[i])
@@ -58,7 +57,7 @@ class XPLDocument(object):
         with open(filename, 'w') as f:
             f.write('<plask>\n\n')
             for c in self.controllers:
-                f.write(ElementTree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True))
+                f.write(etree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True))
                 f.write('\n')
             f.write('</plask>')
         self.filename = filename

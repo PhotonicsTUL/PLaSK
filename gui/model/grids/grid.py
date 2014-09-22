@@ -1,5 +1,5 @@
 # Base classes for entries in grids model
-from lxml import etree as ElementTree
+from lxml import etree
 from xml.sax.saxutils import quoteattr
 
 from ...model.base import TreeFragmentModel
@@ -13,9 +13,9 @@ class Grid(TreeFragmentModel):
     @staticmethod
     def contruct_empty_XML_element(name, type, method=None):
         if method is not None:
-            return ElementTree.Element("generator", {"name": name, "type": type, "method": method})
+            return etree.Element("generator", {"name": name, "type": type, "method": method})
         else:
-            return ElementTree.Element("mesh", {"name": name, "type": type})
+            return etree.Element("mesh", {"name": name, "type": type})
 
     def __init__(self, grids_model, name=None, type=None, method=None):
         super(Grid, self).__init__(parent=grids_model)
@@ -53,7 +53,7 @@ class Grid(TreeFragmentModel):
             tab = ['<mesh name=', quoteattr(self.name).encode('utf-8'), ' type=',
                    quoteattr(self.type).encode('utf-8'), '>', text.encode('utf-8'), '</mesh>']
         #print ''.join(tab)
-        self.set_XML_element(ElementTree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_XML_element(etree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
 
     @property
     def type_and_kind_str(self):

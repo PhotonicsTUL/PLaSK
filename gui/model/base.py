@@ -1,6 +1,6 @@
 # coding: utf8
 import os
-from lxml import etree as ElementTree
+from lxml import etree
 
 from ..model.info import InfoSource
 from ..utils.signal import Signal
@@ -23,7 +23,7 @@ def getSectionXMLFromFile(section_name, filename, original_filename=None):
         else:
             filename = os.path.abspath(filename)
         while True:
-            el = ElementTree.parse(filename).getroot().find(section_name)
+            el = etree.parse(filename).getroot().find(section_name)
             if (el is None) or ('external' not in el.attrib): return el
             usednames.add(filename)
             filename = os.path.join(os.path.dirname(filename), el.attrib['external'])
@@ -66,7 +66,7 @@ class TreeFragmentModel(InfoSource):
 
     def get_text(self):
         return print_interior(self.get_XML_element())
-        #return ElementTree.tostring(self.get_XML_element())
+        #return etree.tostring(self.get_XML_element())
 
     def is_read_only(self):
         """
@@ -91,7 +91,7 @@ class SectionModel(TreeFragmentModel):
 
     def set_text(self, text):
         self.set_XML_element(
-            ElementTree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</',
+            etree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</',
                                         self.name.encode('utf-8'), '>'], parser=XML_parser))
                                         # .encode('utf-8') wymagane (tylko) przez lxml
 
@@ -104,7 +104,7 @@ class SectionModel(TreeFragmentModel):
             It represents the whole section and either contains data or points to external source (has external attribute).
         """
         if self.externalSource is not None:
-            return ElementTree.Element(self.name, {"external": self.externalSource.filename})
+            return etree.Element(self.name, {"external": self.externalSource.filename})
         else:
             return self.get_XML_element()
 
@@ -155,11 +155,11 @@ class SectionModel(TreeFragmentModel):
         return ""
 
 class SectionModelTreeBased(SectionModel):
-    """Model of section which just hold XML ElementTree Element"""
+    """Model of section which just hold XML etree Element"""
 
     def __init__(self, name):
         SectionModel.__init__(self, name)
-        self.element = ElementTree.Element(name)
+        self.element = etree.Element(name)
 
     def set_XML_element(self, element):
         self.element = element

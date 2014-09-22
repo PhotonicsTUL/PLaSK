@@ -1,6 +1,6 @@
 from ..qt import QtCore
 from collections import OrderedDict
-from lxml import etree as ElementTree
+from lxml import etree
 
 from .table import TableModel
 from .info import Info
@@ -38,10 +38,10 @@ class DefinesModel(TableModel):
 
     # XML element that represents whole section
     def get_XML_element(self):
-        res = ElementTree.Element(self.name)
+        res = etree.Element(self.name)
         for e in self.entries:
-            if e.comment: res.append(ElementTree.Comment(e.comment))
-            ElementTree.SubElement(res, "define", { "name": e.name, "value": e.value }) #.tail = '\n'
+            if e.comment: res.append(etree.Comment(e.comment))
+            etree.SubElement(res, "define", { "name": e.name, "value": e.value }) #.tail = '\n'
         return res
 
     def get(self, col, row):

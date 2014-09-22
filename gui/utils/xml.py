@@ -1,16 +1,16 @@
-from lxml import etree as ElementTree
+from lxml import etree
 
 # default, used XML parser
-#XML_parser = ElementTree.XMLParser(remove_blank_text=True, remove_comments=False, strip_cdata=False)
+#XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=False, strip_cdata=False)
 #TODO remove_comments set to False when all will be ready to support it
-XML_parser = ElementTree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False)
+XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False)
 
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""
     text = element.text.lstrip('\n') if element.text else ''
     for c in element:
-        text += ElementTree.tostring(c, pretty_print=True)
+        text += etree.tostring(c, pretty_print=True)
     return text
 
 
@@ -60,7 +60,7 @@ class AttributeReader(object):
 
     @property
     def attrib(self):
-        """Thanks to this property, AttributeReader can pretend to be ElementTree.Element in many contexts."""
+        """Thanks to this property, AttributeReader can pretend to be etree.Element in many contexts."""
         return self
 
     def __enter__(self):
@@ -198,7 +198,7 @@ class UnorderedTagReader(object):
         if res is not None: self.read.add(child_name)
         return res
 
-    find = get  #alias for compatibility with unwrapped ElementTree.Element
+    find = get  #alias for compatibility with unwrapped etree.Element
 
     def require(self, child_name):
         """
@@ -247,7 +247,7 @@ def require_no_attributes(element):
 
 def elements_equal(e1, e2):
     """
-        Check if two XML ElementTree elements are equal.
+        Check if two XML etree elements are equal.
         :return: True only if e1 and e2 are equal
     """
     return e1.tag == e2.tag and e1.text == e2.text and e1.tail == e2.tail and e1.attrib == e2.attrib and len(e1) == len(e2) and all(elements_equal(c1, c2) for c1, c2 in zip(e1, e2))

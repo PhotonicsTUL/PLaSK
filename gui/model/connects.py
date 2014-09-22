@@ -1,5 +1,5 @@
 from ..qt import QtCore
-from lxml import etree as ElementTree
+from lxml import etree
 
 from .table import TableModel
 from .info import Info
@@ -30,10 +30,10 @@ class ConnectsModel(TableModel):
 
     # XML element that represents whole section
     def get_XML_element(self):
-        res = ElementTree.Element(self.name)
+        res = etree.Element(self.name)
         for e in self.entries:
-            if e.comment: res.append(ElementTree.Comment(e.comment))
-            ElementTree.SubElement(res, "connect", { "out": e.output, "in": e.input })  #.tail = '\n'
+            if e.comment: res.append(etree.Comment(e.comment))
+            etree.SubElement(res, "connect", { "out": e.output, "in": e.input })  #.tail = '\n'
         return res
 
     def get(self, col, row):

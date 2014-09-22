@@ -12,7 +12,8 @@ from .qt import QtGui, QtCore
 
 from . import _resources
 
-from .XPLDocument import XPLDocument
+from .xpldocument import XPLDocument
+from .pydocument import PyDocument
 from .utils.gui import exception_to_msg
 from .model.info import InfoTreeModel, Info
 from .launch import launch_plask
@@ -43,9 +44,15 @@ class MainWindow(QtGui.QMainWindow):
         self.document = XPLDocument(self)
         if filename is not None:
             self._try_load_from_file(filename)
+        else:
+            self.document = XPLDocument(self)
         self.model_is_new()
 
     def _try_load_from_file(self, filename):
+        if filename.endswith('.py'):
+            self.document = PyDocument(self)
+        else:
+            self.document = XPLDocument(self)
         try:
             self.document.load_from_file(filename)
             return True
@@ -73,10 +80,12 @@ class MainWindow(QtGui.QMainWindow):
         WINDOWS.add(new_window)
 
     def open(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "", "PLaSK structure data (*.xpl)")
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "",
+                                                     "PLaSK file (*.xpl *.py);;"
+                                                     "PLaSK structure data (*.xpl);;"
+                                                     "Python script (*.py)")
         if not filename: return;
-        if type(filename) == tuple:
-            filename = filename[0]
+        if type(filename) == tuple: filename = filename[0]
         if self.document.filename is None and not self.isWindowModified():
             self._try_load_from_file(filename)
         else:
@@ -98,8 +107,8 @@ class MainWindow(QtGui.QMainWindow):
     def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.before_save(): return False
-        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.filename or "",
-                                                     "PLaSK structure data  (*.xpl)")
+        filter = "Python script (*.py)" if isinstance(self.document, PyDocument) else "PLaSK structure data  (*.xpl)"
+        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or "", filter)
         if type(filename) is tuple: filename = filename[0]
         if not filename: return False
         self.document.save_to_file(filename)

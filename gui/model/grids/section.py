@@ -1,4 +1,4 @@
-from lxml import etree as ElementTree
+from lxml import etree
 from ...qt import QtCore
 
 from ...controller.grids.new_dialog import construct_grid_using_dialog
@@ -22,7 +22,7 @@ class GridsModel(TableModel):
 
     # XML element that represents whole section
     def get_XML_element(self):
-        res = ElementTree.Element(self.name)
+        res = etree.Element(self.name)
         for e in self.entries: res.append(e.get_XML_element())
         return res
 
