@@ -147,9 +147,10 @@ PLASK_API bool forcedLoglevel = false;
 
 #endif
 
-PLASK_API shared_ptr<Logger> default_logger { new StderrLogger() };
+PLASK_API shared_ptr<Logger> default_logger;
 
 void writelog(LogLevel level, const std::string& msg) {
+    if (!default_logger) default_logger = shared_ptr<Logger>(new StderrLogger());
     if (level <= maxLoglevel && (!default_logger->silent || level <= LOG_WARNING)) {
         default_logger->writelog(level, msg);
     }

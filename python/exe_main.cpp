@@ -259,6 +259,11 @@ int main(int argc, const char *argv[])
         } else break;
     }
 
+    // Set the Python logger
+    plask::default_logger = plask::python::makePythonLogger();
+    if (!color_log) plask::python::setLoggingColor("none");
+    if (loglevel) plask::maxLoglevel = *loglevel;
+
     // Initalize python and load the plask module
     try {
         initPlask(argc-1, argv+1);
@@ -271,11 +276,6 @@ int main(int argc, const char *argv[])
         endPlask();
         return 102;
     }
-
-    // Set the Python logger
-    plask::default_logger = plask::python::makePythonLogger();
-    if (!color_log) plask::python::setLoggingColor("none");
-    if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Test if we should run command specified in the command line, use the file or start an interactive mode
     if (command) { // run command specified in the command line

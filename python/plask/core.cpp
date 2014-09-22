@@ -16,6 +16,8 @@ using namespace plask::python;
 // Declare some initialization functions
 namespace plask { namespace python {
 
+PLASK_PYTHON_API shared_ptr<Logger> makePythonLogger();
+
 void initMaterials();
 void initGeometry();
 
@@ -384,6 +386,9 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Properties
     register_standard_properties();
+
+    // Logging
+    if (!plask::default_logger) plask::default_logger = plask::python::makePythonLogger();
 
     plask::writelog(plask::LOG_INFO, PLASK_BANNER);
     plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
