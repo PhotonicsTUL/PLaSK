@@ -45,9 +45,9 @@ class SourceEditController(Controller):
             if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
             try:
                 self.model.set_text(self.get_source_editor().toPlainText())
+                self.edited = False
             finally:
                 if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
-                self.edited = False
 
     def on_edit_enter(self):
         self.visible = True

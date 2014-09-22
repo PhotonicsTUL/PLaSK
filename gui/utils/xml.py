@@ -243,3 +243,11 @@ def require_no_children(element):
 def require_no_attributes(element):
     """Check if there are no attributes in element, raise error if there is any attribute."""
     with AttributeReader(element) as ensure_no_attrib: pass
+
+
+def elements_equal(e1, e2):
+    """
+        Check if two XML ElementTree elements are equal.
+        :return: True only if e1 and e2 are equal
+    """
+    return e1.tag == e2.tag and e1.text == e2.text and e1.tail == e2.tail and e1.attrib == e2.attrib and len(e1) == len(e2) and all(elements_equal(c1, c2) for c1, c2 in zip(e1, e2))
