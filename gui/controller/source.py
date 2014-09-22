@@ -10,7 +10,7 @@ class SourceEditController(Controller):
         Controller.__init__(self, document, model)
         self.fresh = False
         self.visible = False
-        self.edited = False
+        self.edited = False # True only if text has been edited after last save_data_in_model
 
     def create_source_editor(self, parent=None):
         ed = QtGui.QTextEdit(parent)
@@ -18,7 +18,6 @@ class SourceEditController(Controller):
         self.highlighter = XMLHighlighter(ed.document())   # highlighter variable is required,
                                                            # in other case it is deleted and text is not highlighted
         ed.setReadOnly(self.model.is_read_only())
-        self.edited = False
         return ed
 
     def __on_text_edit__(self):
