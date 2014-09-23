@@ -1,5 +1,18 @@
 from ..qt import QtCore
 
+
+def parse_highlight(string):
+    """Parse syntax highlighting from config"""
+    result = {}
+    for item in string.split(','):
+        item = item.strip()
+        key, val = item.split('=')
+        if val.lower() in ('true', 'yes'): val = True
+        elif val.lower() in ('false', 'no'): val = False
+        result[key] = val
+    return result
+
+
 class Config(object):
     """Configuration wrapper"""
 

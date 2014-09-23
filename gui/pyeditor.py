@@ -1,10 +1,11 @@
 from .external import pyqtfrontend
 
+
 class PyEdit(pyqtfrontend.PyCode):
 
     def __init__(self, project_folder, textedit, filename=None, prefix=""):
         super(PyEdit, self).__init__(project_folder, textedit, filename)
-        self.setPrefix(prefix)
+        self.set_prefix(prefix)
 
     def source(self):
         src, pos = super(PyEdit, self).source()
@@ -12,7 +13,7 @@ class PyEdit(pyqtfrontend.PyCode):
         pos = pos + len(self.prefix)
         return src, pos
 
-    def setPrefix(self, prefix):
+    def set_prefix(self, prefix):
         self.prefix = prefix
         if len(self.prefix) > 0 and self.prefix[-1] != '\n':
             self.prefix += '\n'

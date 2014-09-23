@@ -1,8 +1,19 @@
 from ..qt import QtGui
 
-from ..qhighlighter.XML import XMLHighlighter
-from ..utils.gui import DEFAULT_FONT
 from .base import Controller
+from ..utils.config import CONFIG, parse_highlight
+from ..utils.gui import DEFAULT_FONT
+
+from ..external.highlighter import SyntaxHighlighter, load_syntax
+from ..external.highlighter.xml import syntax
+
+scheme = {
+    'syntax_comment': parse_highlight(CONFIG('syntax/xml_comment', 'color=green, italic=true')),
+    'syntax_tag': parse_highlight(CONFIG('syntax/xml_tag', 'color=maroon, bold=true')),
+    'syntax_attr': parse_highlight(CONFIG('syntax/xml_attr', 'color=#888800')),
+    'syntax_value': parse_highlight(CONFIG('syntax/xml_value', 'color=darkblue')),
+    'syntax_text': parse_highlight(CONFIG('syntax/xml_text', 'color=black')),
+}
 
 class SourceEditController(Controller):
 
@@ -15,8 +26,11 @@ class SourceEditController(Controller):
     def create_source_editor(self, parent=None):
         ed = QtGui.QTextEdit(parent)
         ed.setFont(DEFAULT_FONT)
-        self.highlighter = XMLHighlighter(ed.document())   # highlighter variable is required,
-                                                           # in other case it is deleted and text is not highlighted
+        # highlighter variable is required, in other case it is deleted and text is not highlighted
+        parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
+        self.highlighter = SyntaxHighlighter(ed.document(),
+                                             parts_scanner, code_scanner, formats,
+                                             default_font=DEFAULT_FONT)
         ed.setReadOnly(self.model.is_read_only())
         return ed
 

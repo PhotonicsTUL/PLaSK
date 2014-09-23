@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Partition-based syntax highlighter
+
+https://bitbucket.org/henning/syntaxhighlighter/
 """
 import re
 from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat

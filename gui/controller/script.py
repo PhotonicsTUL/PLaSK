@@ -1,41 +1,43 @@
+import sys
+
 from ..qt import QtGui
 
 from ..model.script import ScriptModel
 from ..utils.gui import DEFAULT_FONT
 from .source import SourceEditController
-from ..utils.config import CONFIG
+from ..utils.config import CONFIG, parse_highlight
 
 try:
     from ..pyeditor import PyEdit
-    hasPyCode = True
-except ImportError as e:
-    hasPyCode = False
-    #sys.path.append("./pycodelocal/syntaxhighlighter")
+except ImportError:
+    PyEdit = None
 
-try:
-    from ..external.highlighter import SyntaxHighlighter, load_syntax
+from ..external.highlighter import SyntaxHighlighter, load_syntax
+if sys.version_info >= (3, 0, 0):
+    from ..external.highlighter.python32 import syntax
+else:
     from ..external.highlighter.python27 import syntax
 
-    def _parse_config(string):
-        result = {}
-        for item in string.split(','):
-            item = item.strip()
-            key, val = item.split('=')
-            if val.lower() in ('true', 'yes'): val = True
-            elif val.lower() in ('false', 'no'): val = False
-            result[key] = val
-        return result
+from ..external.highlighter.plask import syntax as plask_syntax
 
-    scheme = {
-        "syntax_comment": _parse_config(CONFIG('syntax/python_comment', "color=green, italic=true")),
-        "syntax_string": _parse_config(CONFIG('syntax/python_string', "color=blue")),
-        "syntax_builtin": _parse_config(CONFIG('syntax/python_builtin', "color=red")),
-        "syntax_keyword": _parse_config(CONFIG('syntax/python_keyword', "color=black, bold=true")),
-        "syntax_number": _parse_config(CONFIG('syntax/python_number', "color=darkblue")),
-    }
-except ImportError:
-    SyntaxHighlighter = None
+syntax['formats'].update(plask_syntax['formats'])
+syntax['scanner'][None] = syntax['scanner'][None][:-1] + plask_syntax['scanner'] + [syntax['scanner'][None][-1]]
 
+scheme = {
+    'syntax_comment': parse_highlight(CONFIG('syntax/python_comment', 'color=green, italic=true')),
+    'syntax_string': parse_highlight(CONFIG('syntax/python_string', 'color=blue')),
+    'syntax_builtin': parse_highlight(CONFIG('syntax/python_builtin', 'color=maroon')),
+    'syntax_keyword': parse_highlight(CONFIG('syntax/python_keyword', 'color=black, bold=true')),
+    'syntax_number': parse_highlight(CONFIG('syntax/python_number', 'color=darkblue')),
+    'syntax_member': parse_highlight(CONFIG('syntax/python_member', 'color=#440044')),
+    'syntax_plask': parse_highlight(CONFIG('syntax/python_plask', 'color=#0088ff')),
+    'syntax_provider': parse_highlight(CONFIG('syntax/python_provider', 'color=#888800')),
+    'syntax_receiver': parse_highlight(CONFIG('syntax/python_receiver', 'color=#888800')),
+    'syntax_log': parse_highlight(CONFIG('syntax/python_log', 'color=blue')),
+    'syntax_solver': parse_highlight(CONFIG('syntax/python_solver', 'color=red')),
+    'syntax_loaded': parse_highlight(CONFIG('syntax/python_loaded', 'color=#ff8800')),
+    'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#880044')),
+}
 
 
 class ScriptController(SourceEditController):
@@ -47,15 +49,16 @@ class ScriptController(SourceEditController):
     def create_source_editor(self, parent=None):
         edit = QtGui.QPlainTextEdit(parent)
         edit.setFont(DEFAULT_FONT)
-        if hasPyCode:
+        if PyEdit:
             self.pyedit = PyEdit(".", edit)
-        if SyntaxHighlighter:
-            parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-            self.highlighter = SyntaxHighlighter(edit.document(), parts_scanner, code_scanner, formats, default_font=DEFAULT_FONT)
+        parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
+        self.highlighter = SyntaxHighlighter(edit.document(),
+                                             parts_scanner, code_scanner, formats,
+                                             default_font=DEFAULT_FONT)
         edit.setReadOnly(self.model.is_read_only())
         return edit
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
-        if hasPyCode:
+        if PyEdit:
             self.pyedit.prefix = self.document.stubs()
