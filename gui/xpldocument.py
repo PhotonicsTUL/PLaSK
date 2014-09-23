@@ -1,4 +1,5 @@
 from lxml import etree
+from controller.geometry.section import GeometryController
 
 from .model.base import SectionModelTreeBased
 from .controller.source import SourceEditController
@@ -19,12 +20,15 @@ class XPLDocument(object):
         self.window = window
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
+        #self.geometry = GUIAndSourceController(GeometryController(self))
+        self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
+
         # geometry
         self.grids = GUIAndSourceController(GridsController(self))
         self.controllers = [
             self.defines,
             self.materials,
-            SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2])),  # geometry
+            self.geometry,
             self.grids,
             SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  # solvers
             GUIAndSourceController(ConnectsController(self)),   # connects

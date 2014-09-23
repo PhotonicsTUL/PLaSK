@@ -7,8 +7,16 @@ class ETreeModel(QtCore.QAbstractItemModel):
     """
 
     def __init__(self, root, parent=None):
+        """
+        :param root: ElementTree or sth. that has element attribute which is ElementTree
+        :param parent: Qt parent
+        """
         super(ETreeModel, self).__init__(parent)
-        self.root = root
+        self._root = root
+
+    @property
+    def root(self):
+        return getattr(self._root, 'element', self._root)
 
     def columnCount(self, parent):
         return 1
@@ -39,11 +47,11 @@ class ETreeModel(QtCore.QAbstractItemModel):
             parentItem = self.root
         else:
             parentItem = parent.internalPointer()
-        childItem = parentItem.get(row, None)
-        if childItem:
-            return self.createIndex(row, column, childItem)
+        if row < len(parentItem):
+            return self.createIndex(row, column, parentItem[row])
         else:
             return QtCore.QModelIndex()
+
 
     def parent(self, index):
         if not index.isValid(): return QtCore.QModelIndex()
