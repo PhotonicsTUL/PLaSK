@@ -39,6 +39,8 @@ namespace plask { namespace python {
     shared_ptr<Logger> makePythonLogger();
 }}
 
+void showError(const std::string& msg, const std::string& cap="Error");
+
 //******************************************************************************
 // Initialize the binary modules and load the package from disk
 static py::object initPlask(int argc, const char* argv[])
@@ -94,19 +96,23 @@ static py::object initPlask(int argc, const char* argv[])
     return _plask;
 }
 
-
 //******************************************************************************
 int handlePythonException(unsigned startline=0, const char* scriptname=nullptr) {
-//     PyObject* value;
-//     PyObject* type;
-//     PyObject* original_traceback;
-//
-//     PyErr_Fetch(&type, &value, &original_traceback);
-//     PyErr_NormalizeException(&type, &value, &original_traceback);
-//
-//     py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
-//     return plask::python::printPythonException(type, py::object(value_h), original_traceback, startline, scriptname);
-    PyErr_Print();
+    PyObject* value;
+    PyObject* type;
+    PyObject* original_traceback;
+    PyErr_Fetch(&type, &value, &original_traceback);
+    PyErr_NormalizeException(&type, &value, &original_traceback);
+    py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
+    if (type == PyExc_SystemExit) {
+        int exitcode = 0;
+        if (PyInt_Check(value)) exitcode = (int)PyInt_AsLong(value);
+        PyErr_Clear();
+        return exitcode;
+    }
+    std::string msg = py::extract<std::string>(py::str(value_h));
+    std::string cap = py::extract<std::string>(py::object(type_h).attr("__name__"));
+    showError(msg, cap);
     return 1;
 }
 
@@ -122,13 +128,28 @@ void endPlask() {
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include <windows.h>
+#include <boost/tokenizer.hpp>
 #define BOOST_USE_WINDOWS_H
+
+void showError(const std::string& msg, const std::string& cap) {
+    MessageBox(NULL, msg.c_str(), ("PLaSK - " + cap).c_str(), MB_OK | MB_ICONERROR);
+}
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
 {
-    int argc = 1;
-    const char* argv[] = { "plaskgui" };
+    std::string command_line(cmdline);
+    boost::tokenizer<boost::escaped_list_separator<char>> tokenizer(command_line, boost::escaped_list_separator<char>('^', ' ', '"'));
+    std::deque<std::string> args(tokenizer.begin(), tokenizer.end());
+    args.push_front(plask::exePathAndName());
+    int argc = args.size();
+    const char* argv[argc];
+    const char** dst = argv; for(const auto& src: args) { *(dst++) = src.c_str(); }
 #else
+
+void showError(const std::string& msg, const std::string& cap) {
+    plask::writelog(plask::LOG_CRITICAL_ERROR, cap + ": " + msg);
+}
+
 int main(int argc, const char *argv[])
 {
 #endif
@@ -136,7 +157,7 @@ int main(int argc, const char *argv[])
     try {
         initPlask(argc, argv);
     } catch (plask::CriticalException) {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
+        showError("Cannot import plask builtin module.");
         endPlask();
         return 101;
     } catch (py::error_already_set) {
@@ -152,13 +173,12 @@ int main(int argc, const char *argv[])
     try {
         py::object gui = py::import("gui");
         gui.attr("main")();
-
     } catch (std::invalid_argument& err) {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+        showError(err.what(), "Invalid argument");
         endPlask();
         return -1;
     } catch (plask::Exception& err) {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+        showError(err.what());
         endPlask();
         return 3;
     } catch (py::error_already_set) {
@@ -166,7 +186,7 @@ int main(int argc, const char *argv[])
         endPlask();
         return exitcode;
     } catch (std::runtime_error& err) {
-        plask::writelog(plask::LOG_CRITICAL_ERROR, err.what());
+        showError(err.what());
         endPlask();
         return 3;
     }
