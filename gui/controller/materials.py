@@ -172,7 +172,7 @@ i_re = re.compile("<i>(.*?)</i>")
 sub_re = re.compile("<sub>(.*?)</sub>")
 sup_re = re.compile("<sup>(.*?)</sup>")
 
-elements_re = re.compile("[A-Z][a-z]+")
+elements_re = re.compile("[A-Z][a-z]*")
 
 def _html_to_tex(s):
     '''Poor man's HTML to MathText conversion'''
@@ -274,14 +274,17 @@ class MaterialPlot(QtGui.QWidget):
         :param what: 0: comonent, 1: doping, 2: property argument
         """
         first = None
-        for v in values:
+        for name,descr in values:
+            if name is None:
+                toolbar.addSeparator()
+                continue
             select = QtGui.QRadioButton()
             select.toggled.connect(self.selected_argument)
             select.setAutoExclusive(False)
             if first is None: first = select
             toolbar.addWidget(select)
-            select.setText("{}:".format(v[0]))
-            select.descr = v[1]
+            select.setText("{}:".format(name))
+            select.descr = descr
             val1 = QtGui.QLineEdit()
             val1.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
             toolbar.addWidget(val1)
@@ -325,17 +328,21 @@ class MaterialPlot(QtGui.QWidget):
         self.mat_toolbar.clear()
         material = self.material.currentText()
 
-        doping, name, simple = self.parse_material(material)
+        dope, name, simple = self.parse_material(material)
 
         if not simple:
-            elements = tuple(itertools.chain(*(
-                [e for e in elements_re.findall(name) if e in g][:-1] for g in ELEMENT_GROUPS
-            )))
+            elements = elements_re.findall(name)
+            groups = ([e for e in elements if e in g][:-1] for g in ELEMENT_GROUPS)
+            elements = tuple(itertools.chain(*(g + ([None] if g else []) for g in groups)))[:-1]
             self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), old, 0)
+        else:
+            elements = None
 
-        if doping is not None:
-            self.mat_toolbar.addSeparator()
-            self.set_toolbar(self.mat_toolbar, [(doping, "doping concentration [1/cm<sup>3</sup>]")], old, 1)
+        if dope is not None:
+            if elements:
+                self.mat_toolbar.addSeparator()
+            self.set_toolbar(self.mat_toolbar,
+                             [("["+dope+"]", dope + "doping concentration [1/cm<sup>3</sup>]")], old, 1)
 
     def property_changed(self):
         old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
