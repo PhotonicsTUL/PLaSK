@@ -1,7 +1,5 @@
 import sys
 
-from .pycode import PyCode
-
 try:
     from .pycode import PyCode
 except ImportError:
