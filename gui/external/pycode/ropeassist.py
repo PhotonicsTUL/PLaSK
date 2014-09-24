@@ -4,8 +4,6 @@ import os
 import inspect
 from zipimport import zipimporter
 
-import libs  # use internal rope (might be newer)
-
 import rope.base.libutils
 import rope.base.project
 import rope.contrib.codeassist
@@ -83,10 +81,10 @@ def completions(project, source_code, offset, filename="XXXunknownXXX.py"):
     :param source_code: source code string
     :param offset: absolute character offset
     :param filename: absolute or relative filename if exists
-    :return: list of completition items
+    :return: list of completion items
     """
     # TODO:
-    #  * include import completitions
+    #  * include import completions
     #  * offer name to override from base after "def " inside a class
     #  *
     project = _get_project(project)

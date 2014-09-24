@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 
-from ...qt import Qt
 from ...qt.QtCore import SIGNAL, QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, QThread
 from ...qt.QtGui import QToolTip, QTreeWidget, QTreeWidgetItem, QTextCursor, QFrame, QIcon, \
     QCompleter, QTableView, QAbstractItemView, QKeyEvent
