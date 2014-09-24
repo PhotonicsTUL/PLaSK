@@ -306,10 +306,10 @@ py::object FourierSolver_computeTransmittivity(SolverT* self,
 
 template <NPY_TYPES type>
 static inline py::object arrayFromVec2D(cvector data, bool sep) {
-    int dim2 = sep? 1 : 2;
-    npy_intp dims[] = { data.size() / dim2, dim2 };
-    npy_intp strides[] = { dim2*sizeof(dcomplex), sizeof(dcomplex) };
-    PyObject* arr = PyArray_New(&PyArray_Type, dim2, dims, type, strides, (void*)data.data(), 0, 0, NULL);
+    int strid = sep? 1 : 2;
+    npy_intp dims[] = { data.size() / strid };
+    npy_intp strides[] = { strid * sizeof(dcomplex) };
+    PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
     DataVectorWrap<const dcomplex,2> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());

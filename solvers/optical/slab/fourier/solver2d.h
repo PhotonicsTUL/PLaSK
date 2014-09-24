@@ -188,11 +188,11 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         } else {
             if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)
-                    result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
-                result = 2.*result - real(amplitudes[expansion.iEx(0)]) - real(amplitudes[expansion.iEz(0)]);
+                    result += real(amplitudes[expansion.iEx(i)]);
+                result = 2.*result - real(amplitudes[expansion.iEx(0)]);
             } else {
                 for (int i = -N; i <= N; ++i) {
-                    result += real(amplitudes[expansion.iEx(i)]) + real(amplitudes[expansion.iEz(i)]);
+                    result += real(amplitudes[expansion.iEx(i)]);
                 }
             }
         }

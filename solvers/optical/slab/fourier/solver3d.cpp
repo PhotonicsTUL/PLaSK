@@ -210,10 +210,9 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     if (klong != 0. || ktran != 0.)
         Solver::writelog(LOG_WARNING, "Reflection is computed correctly only for perpendicular incidence");
 
-    //TODO add reflection for non-perpendicular incidence
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
-    dcomplex igamma0 = 1. / gamma0;
+    dcomplex k02 = gamma0*gamma0 + klong*klong + ktran*ktran;
 
     double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -224,17 +223,16 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     for (int t = -ordt; t <= ordt; ++t) {
         for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
+            dcomplex gx = l * bl - klong, gy = t * bt - ktran, gz = gamma[ix];
+            assert(is_zero(gamma[ix] - gamma[iy]));
             dcomplex Ex = reflected[ix], Ey = reflected[iy];
-            double gx = l * bl, gy = t * bt;
-            dcomplex S = (gamma0*gamma0-gy*gy) * Ex*conj(Ex) + (gamma0*gamma0-gx*gx) * Ex*conj(Ey) +
-                         gx * gy * (Ex * conj(Ey) + conj(Ex) * Ey);
-            result += real(igamma0 / sqrt(gamma0*gamma0 - gx*gx - gy*gy) * S);
+            dcomplex S = (k02 - gy*gy) * Ex*conj(Ex) + (k02 - gx*gx) * Ey*conj(Ey) + gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
+            result += real((gx*klong + gy*ktran + gz*gamma0) / (k02 * gz*gz) * S);
         }
     }
 
     return result;
 }
-
 
 double FourierSolver3D::getTransmission(Expansion::Component polarization, Transfer::IncidentDirection incidence)
 {
@@ -257,11 +255,14 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     if (klong != 0. || ktran != 0.)
         Solver::writelog(LOG_WARNING, "Reflection is computed correctly only for perpendicular incidence");
 
-    //TODO add reflection for non-perpendicular incidence
     // we multiply fields by all by gt / gi
-    auto gamma = transfer->diagonalizer->Gamma(li);
+    auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex gamma0 = transfer->diagonalizer->Gamma(lt)[idx];
-    dcomplex igamma0 = gamma0 / (gamma[idx] * gamma[idx]);
+    dcomplex k0 = transfer->diagonalizer->Gamma(li)[idx];
+             k0 = sqrt(k0*k0 + klong*klong + ktran*ktran);
+    dcomplex g02 = gamma0*gamma0 + klong*klong + ktran*ktran;
+    dcomplex g0 = sqrt(g02);
+    dcomplex gk0 = k0 * g0;
 
     double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -272,11 +273,11 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     for (int t = -ordt; t <= ordt; ++t) {
         for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
+            dcomplex gx = l * bl - klong, gy = t * bt - ktran, gz = gamma[ix];
+            assert(is_zero(gamma[ix] - gamma[iy]));
             dcomplex Ex = transmitted[ix], Ey = transmitted[iy];
-            double gx = l * bl, gy = t * bt;
-            dcomplex S = (gamma0*gamma0-gy*gy) * Ex*conj(Ex) + (gamma0*gamma0-gx*gx) * Ex*conj(Ey) +
-                         gx * gy * (Ex * conj(Ey) + conj(Ex) * Ey);
-            result += real(igamma0 / sqrt(gamma0*gamma0 - gx*gx - gy*gy) * S);
+            dcomplex S = (g02 - gy*gy) * Ex*conj(Ex) + (g02 - gx*gx) * Ey*conj(Ey) + gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
+            result += real((gx*klong + gy*ktran + gz*gamma0) / (gk0 * gz*gz) * S);
         }
     }
 
