@@ -21,7 +21,7 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    .. xml:contents::
 
-       Any object from section :ref:`sec-xpl-Geometry-objects-2D`.
+       Any object from section :ref:`sec-xpl-Geometry-objects-2D`. If ``length`` was not given :xml:tag:`extrusion` is also accepted.
 
 
 .. xml:tag:: <cylindrical2d>
@@ -39,7 +39,7 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    .. xml:contents::
 
-       Any object from section :ref:`sec-xpl-Geometry-objects-2D`. If ``length`` was not given, xml:tag:`extrusion` is also accepted.
+       Any object from section :ref:`sec-xpl-Geometry-objects-2D`.
 
 
 
