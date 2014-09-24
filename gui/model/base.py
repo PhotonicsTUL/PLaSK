@@ -88,7 +88,7 @@ class SectionModel(TreeFragmentModel):
         super(SectionModel, self).__init__(info_cb=info_cb)
         self.name = name
         self.externalSource = None
-        self.line_nr_in_file = None
+        self.line_in_file = None
 
     def set_text(self, text):
         self.set_XML_element(
@@ -137,7 +137,7 @@ class SectionModel(TreeFragmentModel):
                 self.set_external_source(a['external'], filename)
                 return
         self.set_XML_element(element)
-        self.line_nr_in_file = element.sourceline   #TODO can be wrong when next sections will be not read correctly
+        self.line_in_file = element.sourceline   #TODO can be wrong when next sections will be not read correctly
 
     def create_info(self):
         res = super(SectionModel, self).create_info()

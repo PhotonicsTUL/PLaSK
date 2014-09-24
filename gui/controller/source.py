@@ -2,6 +2,7 @@ from ..qt import QtGui
 
 from .base import Controller
 from ..utils.config import CONFIG, parse_highlight
+from ..utils.textedit import TextEdit
 from ..utils.gui import DEFAULT_FONT
 
 from ..external.highlighter import SyntaxHighlighter, load_syntax
@@ -24,7 +25,7 @@ class SourceEditController(Controller):
         self.edited = False # True only if text has been edited after last save_data_in_model
 
     def create_source_editor(self, parent=None):
-        edit = QtGui.QPlainTextEdit(parent)
+        edit = TextEdit(parent)
         edit.setFont(DEFAULT_FONT)
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         edit.setReadOnly(self.model.is_read_only())
@@ -45,7 +46,8 @@ class SourceEditController(Controller):
 
     def refresh_editor(self, *args, **kwargs):
         if self.visible:
-            self.get_source_editor().setPlainText(self.model.get_text())
+            editor = self.get_source_editor()
+            editor.setPlainText(self.model.get_text())
             self.fresh = True
         else:
             self.fresh = False
@@ -62,6 +64,8 @@ class SourceEditController(Controller):
     def on_edit_enter(self):
         self.visible = True
         if not self.fresh: self.refresh_editor()
+        try: self.source_editor.line_numbers.offset = self.model.line_in_file
+        except AttributeError: pass
         if hasattr(self.model, 'changed'): self.model.changed += self.refresh_editor
         self.source_editor.textChanged.connect(self._on_text_edit)
 

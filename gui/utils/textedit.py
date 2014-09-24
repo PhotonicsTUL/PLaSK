@@ -1,31 +1,26 @@
 import math
 
-from ..qt import Qt, QtCore, QtGui
+from ..qt import QtCore, QtGui
 from ..utils.gui import DEFAULT_FONT
 
 
 class TextEdit(QtGui.QPlainTextEdit):
-    """Improved editor with line numebers and some other neat stuff"""
+    """Improved editor with line numbers and some other neat stuff"""
 
     def __init__(self, parent=None):
         super(TextEdit, self).__init__(parent)
         self.setFont(DEFAULT_FONT)
-
         self.line_numbers = LineNumberArea(self)
+        self.line_numbers.update_width()
+        self.blockCountChanged.connect(self.line_numbers.update_width)
+        self.updateRequest.connect(self.line_numbers.on_update_request)
+        #self.cursorPositionChanged.connect(self.highlight_current_line)
 
-# connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
-#      connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
-#      connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
-#
-#      updateLineNumberAreaWidth(0);
-
-# void CodeEditor::resizeEvent(QResizeEvent *e)
-#  {
-#      QPlainTextEdit::resizeEvent(e);
-#
-#      QRect cr = contentsRect();
-#      lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
-#  }
+    def resizeEvent(self, e):
+        super(TextEdit, self).resizeEvent(e)
+        cr = self.contentsRect()
+        self.line_numbers.setGeometry(QtCore.QRect(cr.left(), cr.top(),
+                                                   self.line_numbers.get_width(), cr.height()))
 
 
 class LineNumberArea(QtGui.QWidget):
@@ -37,42 +32,54 @@ class LineNumberArea(QtGui.QWidget):
     def __init__(self, editor):
         super(LineNumberArea, self).__init__(editor)
         self.editor = editor
-
+        self._offset = 0
+        self._count_cache = -1, -1
 
     def get_width(self):
         """Return required width"""
-        count = max(1, self.editor.blockCount())
+        count = max(1, self.editor.blockCount() + self._offset)
         digits = int(math.log10(count)) + 1
-        return 3 + self.editor.fontMetrics().width('9') * digits
+        return 8 + self.editor.fontMetrics().width('9') * digits
 
     def sizeHint(self):
         QtCore.QSize(self.get_width(), 0)
 
-    def update_width(self):
+    def update_width(self, n=0):
         self.editor.setViewportMargins(self.get_width(), 0, 0, 0)
 
-    def update_area(self, rect, dy):
+    def on_update_request(self, rect, dy):
         if dy:
             self.scroll(0, dy)
-        else:
+        elif self._count_cache[0] != self.editor.blockCount() or\
+             self._count_cache[1] != self.editor.textCursor().block().lineCount():
             self.update(0, rect.y(), self.width(), rect.height())
-
+            self._count_cache = self.editor.blockCount(), self.editor.textCursor().block().lineCount()
         if rect.contains(self.editor.viewport().rect()):
             self.update_width()
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        painter.fillRect(event.rect(), QtGui.QColor('lightgray'))
+        painter.fillRect(event.rect(), QtGui.QColor('#ddd'))
         block = self.editor.firstVisibleBlock()
-        block_number = block.blockNumber()
+        block_number = block.blockNumber() + 1 + self._offset
         top = self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top()
         bottom = top + self.editor.blockBoundingRect(block).height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                number = str(block_number + 1)
-                painter.setPen(QtGui.QColor('black'))
-                painter.drawText(0, top, self.width(), self.editor.fontMetrics().height(), Qt.AlignRight, number)
+                painter.setPen(QtCore.Qt.darkGray)
+                painter.drawText(0, top, self.width()-3, self.editor.fontMetrics().height(),
+                                 QtCore.Qt.AlignRight, str(block_number))
             block = block.next()
             top = bottom
             bottom = top + self.editor.blockBoundingRect(block).height()
             block_number += 1
+
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        if val is not None:
+            self._offset = val
+            self.update_width()

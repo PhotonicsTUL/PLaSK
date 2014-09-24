@@ -17,7 +17,7 @@
     <file alias="list-add.png">images/icons/16x16/list-add.png</file>
     <file alias="list-remove.png">images/icons/16x16/list-remove.png</file>
     <file alias="media-playback-start.png">images/icons/16x16/media-playback-start.png</file>
-    <file alias="process-stop.png">images/icons/16x16/process-stop.png</file>
+    <file alias="process-stop.png">images/icons/16x16/processs-stop.png</file>
     <file alias="plask.png">images/icons/64x64/plask.png</file>
 </qresource>
 </RCC>

@@ -1,17 +1,21 @@
 import sys
 
-from .pycode import PyCode
+try:
+    from .pycode import PyCode
+except ImportError:
+    PyCode = None
+
 from ..source import SourceEditController
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.textedit import TextEdit
 from ...utils.gui import DEFAULT_FONT
+
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 if sys.version_info >= (3, 0, 0):
     from ...external.highlighter.python32 import syntax
 else:
     from ...external.highlighter.python27 import syntax
-
 from ...external.highlighter.plask import syntax as plask_syntax
 
 syntax['formats'].update(plask_syntax['formats'])
@@ -43,10 +47,12 @@ class ScriptController(SourceEditController):
     def create_source_editor(self, parent=None):
         edit = TextEdit(parent)
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
-        self.pycode = PyCode(".", edit)
+        if PyCode:
+            self.pycode = PyCode(".", edit)
         edit.setReadOnly(self.model.is_read_only())
         return edit
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
-        self.pycode.prefix = self.document.stubs()
+        if PyCode:
+            self.pycode.prefix = self.document.stubs()

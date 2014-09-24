@@ -13,7 +13,7 @@ class NewGridDialog(QtGui.QDialog):
         kind = QtGui.QGroupBox("Kind")
         self.kind_mesh = QtGui.QRadioButton("&Mesh")
         self.kind_generator = QtGui.QRadioButton("&Generator")
-        self.kind_generator.toggled.connect(self._type_changed)
+        self.kind_generator.toggled.connect(self._set_mode)
         self.kind_mesh.setChecked(True)
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(self.kind_mesh)
@@ -55,7 +55,6 @@ class NewGridDialog(QtGui.QDialog):
         self._set_mode(False)
 
     def _set_mode(self, is_generator):
-        self.method_edit.setVisible(is_generator)
         self.form_layout.labelForField(self.method_edit).setVisible(is_generator)
         #self.method_edit.setEnabled(is_generator)
         #self.type_edit.clear()
@@ -66,6 +65,7 @@ class NewGridDialog(QtGui.QDialog):
             self.type_edit.setModel(QStringListModel(sorted(meshes_types())))
         self.type_edit.setEditText(text)
         self._type_changed(text)
+        self.method_edit.setVisible(is_generator)
 
     def _type_changed(self, new_type):
         if not self.method_edit.isVisible(): return

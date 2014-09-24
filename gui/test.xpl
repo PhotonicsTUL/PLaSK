@@ -3,6 +3,8 @@
 <defines>
   <define name="mesa" value="10"/>
   <define name="aprt" value="4"/>
+  <define name="new" value="3"/>
+  <define name="x" value="2"/>
 </defines>
 
 <materials>
@@ -44,7 +46,15 @@
   </cylindrical2d>
 </geometry>
 
-<grids/>
+<grids>
+  <mesh name="plot" type="rectangular2d">
+    <axis0 start="0" stop="{mesa}" num="501"></axis0>
+    <axis1 start="2" stop="7" num="2001"></axis1>
+  </mesh>
+  <generator method="divide" name="test" type="rectangular2d">
+    <prediv by="2"/>
+  </generator>
+</grids>
 
 <solvers/>
 
@@ -81,7 +91,6 @@ print_log(LOG_INFO,
           "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
           .format(threshold_gain, mode_wavelength))
 
-msh = mesh.Rectangular2D(linspace(0, 10, 500), linspace(2, 7, 2000))
 plot_geometry(efm.geometry, color='0.5')
 efm.modes[0].power = 10.
 plot_field(efm.outLightMagnitude(0, msh))
