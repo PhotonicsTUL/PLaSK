@@ -16,6 +16,14 @@ namespace plask { namespace phys {
      */
     PLASK_API double Varshni(double Eg0K, double alpha, double beta, double T);
 
+    /**
+     * Energy of Photon
+     * TODO doc
+     * \param wl [nm]
+     * \return [eV]
+     */
+    PLASK_API double PhotonEnergy(double wl);
+
 }} // namespace plask::phys
 
 #endif // PLASK__PHYS_FUNCTIONS_H

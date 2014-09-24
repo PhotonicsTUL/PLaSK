@@ -14,7 +14,7 @@ MI_PROPERTY(GaN, cond,
             MIArgumentRange(MaterialInfo::T, 270, 400)
             )
 Tensor2<double> GaN::cond(double T) const {
-    double tCond = 255*pow((T/300.),-0.18);
+    double tCond = 255*std::pow((T/300.),-0.18);
     return (Tensor2<double>(tCond,tCond));
 }
 
@@ -23,7 +23,7 @@ MI_PROPERTY(GaN, thermk,
             MIArgumentRange(MaterialInfo::T, 300, 450)
             )
 Tensor2<double> GaN::thermk(double T, double t) const {
-    double fun_t = pow((tanh(0.001529*pow(t,0.984))),0.12), //TODO change t to microns
+    double fun_t = std::pow((tanh(0.001529*pow(t,0.984))),0.12),
            tCondT = 230*fun_t*pow((T/300.),-1.43);
     return(Tensor2<double>(tCondT,tCondT));
  }
@@ -62,8 +62,6 @@ double GaN::nr(double wl, double T, double n) const {
         return ( 0.351664*Enew*Enew*Enew*Enew - 6.06337*Enew*Enew*Enew + 39.2317*Enew*Enew - 112.865*Enew + 124.358 );
     else
         return 0.;
-    /*if (dopant == "Si" || dopant == "O") nR = nR*(1 - 1.05e-28*free_carrier_concentration(T,N,dopant));
-    for GaN only!!!!*/
 }
 
 MI_PROPERTY(GaN, lattC,

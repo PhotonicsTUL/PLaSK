@@ -155,10 +155,13 @@ Tensor2<double> AlInAs::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlInAs, nr,
-            MIComment("TODO")
+            MISource("M.J. Mondry et al., IEEE Photon. Technol. Lett. 4 (1992) 627-630"),
+            MIComment("data for the wavelength ranging 1000-2000 nm")
             )
 double AlInAs::nr(double wl, double T, double n) const {
-    return ( 0. );
+    double tnr = sqrt(8.677 + (1.214*wl*wl)/(wl*wl-730.8*730.8)), //wl: 1000-2000 nm
+           tBeta = 3.5e-4; //D. Dey for In = 0.365
+    return ( tnr + tBeta*(T-300.) );
 }
 
 MI_PROPERTY(AlInAs, absp,

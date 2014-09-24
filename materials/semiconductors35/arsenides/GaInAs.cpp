@@ -155,11 +155,28 @@ Tensor2<double> GaInAs::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(GaInAs, nr,
-            MIComment("TODO")
+            MISource("S. Adachi, J. Appl. Phys. 53 (1982) 5863-5869"),
+            MISource("J. Piprek et al., IEEE Photon. Technol. Lett. 6 (1994) 139-142"),
+            MISource("D. Dey et al., Appl. Phys. Lett. 94 (2009) 081109"),
+            MIArgumentRange(MaterialInfo::wl, 950, 12400)
             )
 double GaInAs::nr(double wl, double T, double n) const {
-    throw NotImplemented("nR for GaInAs");
-    //return ( 0. );
+    double tEf = phys::PhotonEnergy(wl),
+           tEg = Eg(T,0,'G'),
+           tDs0 = Dso(T,0),
+           tA = 9.29 - 4.93*In,
+           tB = 7.86 + 2.66*In,
+           tChi = tEf / tEg,
+           tChi0 = tEf / (tEg + tDs0),
+           tFChi = (1/tChi/tChi) * (2 - sqrt(1 + tChi) - sqrt(1 - tChi)),
+           tFChi0 = (1/tChi0/tChi0) * (2 - sqrt(1 + tChi0) - sqrt(1 - tChi0)),
+           tnr = sqrt(tA * (tFChi + 0.5 * pow(tEg/(tEg + tDs0),1.5) * tFChi0) + tB),
+           tBeta(0.);
+
+    if (In > 0.45 && In < 0.55) tBeta = 2e-4; //J. Piprek
+    else if (In > 0.6 && In < 0.7) tBeta = 7.8e-4; //D. Dey
+
+    return ( tnr + tBeta*(T - 300.) );
 }
 
 MI_PROPERTY(GaInAs, absp,

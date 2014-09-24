@@ -60,8 +60,8 @@ Tensor2<double> GaInAs_Si::cond(double T) const {
 }
 
 MI_PROPERTY(GaInAs_Si, absp,
-            MISource("fit to ..."), // TODO
-            MIComment("no temperature dependence")
+            MISource("calculations of the absorption for 9.5 um are based on http://www.ioffe.ru/SVA/NSM/Semicond"), // TODO
+            MIComment("temperature dependence only for the wavelength of about 9.5 um")
             )
 double GaInAs_Si::absp(double wl, double T) const {
     double tAbsp(0.);
@@ -69,6 +69,11 @@ double GaInAs_Si::absp(double wl, double T) const {
         tAbsp = 18600. * pow(Nf_RT/1e18-3.1, -0.64);
     else if ((wl > 1450.) && (wl < 1650.)) // only for 1550 nm TODO
         tAbsp = 7600. * pow(Nf_RT/1e18, -2.0);
+    else if ((wl > 9000.) && (wl < 10000.)) // only for about 9.5 um TODO
+    {
+        double tNf = Nf_RT/1e16;
+        tAbsp = ((0.00086*tNf*tNf+0.3*tNf+0.74)*pow(Ga,0.0012*tNf+0.025))*(1+0.001289*(T-300));
+    }
     return ( tAbsp );
 }
 

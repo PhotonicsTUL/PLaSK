@@ -161,11 +161,15 @@ Tensor2<double> InP::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(InP, nr,
-            MISource(""),
-            MIComment("TODO")
+            MISource("refractiveindex.info, Handbook of Optics, 2nd edition, Vol. 2. McGraw-Hill 1994"),
+            MISource("S. Adachi, Handbook on Physical Properties of Semiconductors, vol. 2 III-V Compound Semiconductors, Chapter 16, Kluwer Academic Publishers, 2004"),
+            MIArgumentRange(MaterialInfo::wl, 950, 10000)
             )
 double InP::nr(double wl, double T, double n) const {
-    return ( 0. );
+    double  twl = wl/1e3,
+            tnr = sqrt(7.255+(2.316*twl*twl)/(twl*twl-0.6263*0.6263)+2.765*twl*twl/(twl*twl-32.935*32.935)),
+            tBeta = 2.7e-5; //S. Adachi (long-wavelength limit)
+    return ( tnr + tBeta*(T-300.) );
 }
 
 MI_PROPERTY(InP, absp,

@@ -16,13 +16,13 @@ std::string GaN_Mg::str() const { return StringBuilder("GaN").dopant("Mg", NA); 
 GaN_Mg::GaN_Mg(DopingAmountType Type, double Val) {
     if (Type == CARRIER_CONCENTRATION) {
         Nf_RT = Val;
-        NA = 1.561e-3*pow(Val,1.262);
+        NA = std::pow(Val/0.65e4,1/0.71);
     }
     else {
-        Nf_RT = 1.676E2*pow(Val,0.7925);
+        Nf_RT = 0.65E4*std::pow(Val,0.71);
         NA = Val;
     }
-    mob_RT = 25.747*exp(-9.034E-19*Nf_RT);
+    mob_RT = 26.7*exp(-Nf_RT/1e18);
 }
 
 MI_PROPERTY(GaN_Mg, mob,

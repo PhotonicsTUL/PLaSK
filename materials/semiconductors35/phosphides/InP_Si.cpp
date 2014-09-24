@@ -58,6 +58,8 @@ double InP_Si::absp(double wl, double T) const {
         tAbsp = 2. * (Nf_RT/1e18);
     else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
         tAbsp = 58. * (Nf_RT/1e18);
+    else if ((wl > 9200.) && (wl < 10000.)) { // only for about 9500 nm TODO
+    }
     return ( tAbsp );
 }
 
