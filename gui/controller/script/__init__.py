@@ -1,18 +1,18 @@
 import sys
 
-from ..qt import QtGui
-from ..model.script import ScriptModel
-from .source import SourceEditController
-from ..utils.config import CONFIG, parse_highlight
-from ..pyeditor import PyEditor, PyCode
-from ..utils.gui import DEFAULT_FONT
-from ..external.highlighter import SyntaxHighlighter, load_syntax
+from .pycode import PyCode
+from ..source import SourceEditController
+from ...model.script import ScriptModel
+from ...utils.config import CONFIG, parse_highlight
+from ...utils.textedit import TextEdit
+from ...utils.gui import DEFAULT_FONT
+from ...external.highlighter import SyntaxHighlighter, load_syntax
 if sys.version_info >= (3, 0, 0):
-    from ..external.highlighter.python32 import syntax
+    from ...external.highlighter.python32 import syntax
 else:
-    from ..external.highlighter.python27 import syntax
+    from ...external.highlighter.python27 import syntax
 
-from ..external.highlighter.plask import syntax as plask_syntax
+from ...external.highlighter.plask import syntax as plask_syntax
 
 syntax['formats'].update(plask_syntax['formats'])
 syntax['scanner'][None] = syntax['scanner'][None][:-1] + plask_syntax['scanner'] + [syntax['scanner'][None][-1]]
@@ -41,12 +41,9 @@ class ScriptController(SourceEditController):
         SourceEditController.__init__(self, document, model)
 
     def create_source_editor(self, parent=None):
-        edit = PyEditor(parent)
+        edit = TextEdit(parent)
+        self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         self.pycode = PyCode(".", edit)
-        parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-        self.highlighter = SyntaxHighlighter(edit.document(),
-                                             parts_scanner, code_scanner, formats,
-                                             default_font=DEFAULT_FONT)
         edit.setReadOnly(self.model.is_read_only())
         return edit
 

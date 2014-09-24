@@ -3,7 +3,6 @@
 # License: GPL
 import re
 from rope.base import codeanalyze
-from libavg.avg import PolyLineNode
 
 
 TAB_WIDTH = 4

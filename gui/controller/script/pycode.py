@@ -1,8 +1,4 @@
-from ..qt import QtGui
-
-from ..external.pycode import pyqtfrontend
-
-from ..utils.gui import DEFAULT_FONT
+from ...external.pycode import pyqtfrontend
 
 
 class PyCode(pyqtfrontend.PyCode):
@@ -21,10 +17,3 @@ class PyCode(pyqtfrontend.PyCode):
         self.prefix = prefix
         if len(self.prefix) > 0 and self.prefix[-1] != '\n':
             self.prefix += '\n'
-
-
-class PyEditor(QtGui.QPlainTextEdit):
-
-    def __init__(self, parent=None):
-        super(PyEditor, self).__init__(parent)
-        self.setFont(DEFAULT_FONT)

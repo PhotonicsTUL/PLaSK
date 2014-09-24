@@ -24,15 +24,11 @@ class SourceEditController(Controller):
         self.edited = False # True only if text has been edited after last save_data_in_model
 
     def create_source_editor(self, parent=None):
-        ed = QtGui.QTextEdit(parent)
-        ed.setFont(DEFAULT_FONT)
-        # highlighter variable is required, in other case it is deleted and text is not highlighted
-        parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
-        self.highlighter = SyntaxHighlighter(ed.document(),
-                                             parts_scanner, code_scanner, formats,
-                                             default_font=DEFAULT_FONT)
-        ed.setReadOnly(self.model.is_read_only())
-        return ed
+        edit = QtGui.QPlainTextEdit(parent)
+        edit.setFont(DEFAULT_FONT)
+        self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
+        edit.setReadOnly(self.model.is_read_only())
+        return edit
 
     def _on_text_edit(self):
         self.edited = True
