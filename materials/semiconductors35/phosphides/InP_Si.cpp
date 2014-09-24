@@ -58,7 +58,13 @@ double InP_Si::absp(double wl, double T) const {
         tAbsp = 2. * (Nf_RT/1e18);
     else if ((wl > 8900.) && (wl < 9100.)) // only for 9000 nm TODO
         tAbsp = 58. * (Nf_RT/1e18);
-    else if ((wl > 9200.) && (wl < 10000.)) { // only for about 9500 nm TODO
+    else if ((wl > 9200.) && (wl < 10000.)) { // only for about 9500 nm (based on www.ioffe.ru/SVA/NSM/Semicond/InP)
+        double tEf = phys::PhotonEnergy(wl),
+               tAbsp_n2e16 = 0.01435*pow(tEf,-2.5793),
+               tAbsp_n2e17 = 0.04715*pow(tEf,-2.6173),
+               tAbsp_n4e17 = 0.04331*pow(tEf,-3.0428);
+        if (Nf_RT < 2e17) tAbsp = (tAbsp_n2e17-tAbsp_n2e16)*(Nf_RT-2e16)/1.8E17+tAbsp_n2e16;
+        else tAbsp =(tAbsp_n4e17-tAbsp_n2e17)*(Nf_RT-2e17)/2E17+tAbsp_n2e17;
     }
     return ( tAbsp );
 }
