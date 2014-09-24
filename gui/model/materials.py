@@ -80,7 +80,7 @@ MATERIALS_PROPERTES = OrderedDict((
     ('Mso', (u'Split-off mass <i>M</i><sub>so</sub>', u'<i>m</i><sub>0</sub>',
              [(u'T', u'temperature [K]'),
               (u'e', u'lateral strain [-]')])),
-    ('Nc', (u'Effective density of states in the conduction band <i>Nc</i>', u'cm<sup>-3</sup>',
+    ('Nc', (u'Effective density of states in the conduction band <i>N<sub>c</sub></i>', u'cm<sup>-3</sup>',
             [(u'T', u'temperature [K]'),
              (u'e', u'lateral strain [-]'),
              (u'point', u'point in the Brillouin zone [-]')])),
@@ -113,7 +113,8 @@ MATERIALS_PROPERTES = OrderedDict((
 
 ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
 
-def materialHTMLHelp(property_name, with_unit=True, with_attr=False, font_size=None):
+
+def material_html_help(property_name, with_unit=True, with_attr=False, font_size=None):
     prop_help, prop_unit, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None, None))
     res = ''
     if font_size is not None: res += '<span style="font-size: %s">' % font_size
@@ -128,7 +129,8 @@ def materialHTMLHelp(property_name, with_unit=True, with_attr=False, font_size=N
     if font_size is not None: res += '</span>'
     return res
 
-def materialUnit(property_name):
+
+def material_unit(property_name):
     return MATERIALS_PROPERTES.get(property_name, (None, '', None))[1]
 
 
@@ -154,10 +156,9 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
     def get(self, col, row):
         n, v = self._material.properties[row]
         if col == 2:
-            return materialUnit(n)
+            return material_unit(n)
         elif col == 3:
-            return materialHTMLHelp(n, with_unit=False, with_attr=True,
-                                    font_size="{}pt".format(DEFAULT_FONT.pointSize()-1))
+            return material_html_help(n, with_unit=False, with_attr=True)
         return n if col == 0 else v
 
     def data(self, index, role = QtCore.Qt.DisplayRole):

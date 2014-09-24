@@ -4,7 +4,9 @@ import itertools
 from ..qt import QtCore, QtGui, qt
 from ..qt.QtGui import QSplitter
 
-from ..model.materials import MaterialsModel, MaterialPropertyModel, materialHTMLHelp, \
+from ..utils.str import html_to_tex
+
+from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
                               MATERIALS_PROPERTES, ELEMENT_GROUPS
 from ..utils.gui import HTMLDelegate, table_last_col_fill
 from .base import Controller
@@ -59,6 +61,7 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.insertSeparator(len(earlier_names)-index.row()+1)
         combo.setEditText(index.data())
         combo.setCompleter(self.get_defines_completer(parent))
+        combo.setMaxVisibleItems(len(earlier_names))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
         return combo
@@ -83,8 +86,9 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
         combo.setCompleter(completer)
         combo.highlighted.connect(lambda i:
-            QtGui.QToolTip.showText(QtGui.QCursor.pos(), materialHTMLHelp(combo.itemText(i)))
+            QtGui.QToolTip.showText(QtGui.QCursor.pos(), material_html_help(combo.itemText(i)))
         )
+        combo.setMaxVisibleItems(len(opts))
         #combo.setCompleter(completer)
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
@@ -168,19 +172,7 @@ class MaterialsController(Controller):
         plot_window.show()
 
 
-i_re = re.compile("<i>(.*?)</i>")
-sub_re = re.compile("<sub>(.*?)</sub>")
-sup_re = re.compile("<sup>(.*?)</sup>")
-
 elements_re = re.compile("[A-Z][a-z]*")
-
-def _html_to_tex(s):
-    '''Poor man's HTML to MathText conversion'''
-    s = s.replace(" ", "\/")
-    s = i_re.sub(r"\mathit{\g<1>}", s)
-    s = sub_re.sub(r"_{\g<1>}", s)
-    s = sup_re.sub(r"^{\g<1>}", s)
-    return r"$\sf " + s + "$"
 
 
 class MaterialPlot(QtGui.QWidget):
@@ -199,6 +191,10 @@ class MaterialPlot(QtGui.QWidget):
         self.param = QtGui.QComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
         self.param.currentIndexChanged.connect(self.property_changed)
+        self.param.setMaxVisibleItems(len(MATERIALS_PROPERTES))
+        self.param.highlighted.connect(lambda i:
+            QtGui.QToolTip.showText(QtGui.QCursor.pos(), material_html_help(self.param.itemText(i)))
+        )
         toolbar1 = QtGui.QToolBar()
         toolbar1.addWidget(QtGui.QLabel("Material: "))
         toolbar1.addWidget(self.material)
@@ -268,6 +264,7 @@ class MaterialPlot(QtGui.QWidget):
         self.material.insertSeparator(sep)
         if args:
             self.material.setEditText(text)
+        self.material.setMaxVisibleItems(len(material_list)-1)
 
     def set_toolbar(self, toolbar, values, old, what):
         """
@@ -432,9 +429,10 @@ class MaterialPlot(QtGui.QWidget):
         else:
             self.error.clear()
             self.error.hide()
-            axes.set_xlabel(_html_to_tex(self.arg_button.descr))
-        axes.set_ylabel(_html_to_tex(MATERIALS_PROPERTES[param][0])
-                        + ' [' + _html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
+            axes.set_xlabel(html_to_tex(self.arg_button.descr))
+        axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
+                        + ' [' +
+                        html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
         self.figure.set_tight_layout(5)
         self.canvas.draw()
         warnings.showwarning = old_showwarning
