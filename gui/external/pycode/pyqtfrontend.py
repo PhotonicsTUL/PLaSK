@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 
-from ..qt import Qt
-from ..qt.QtCore import SIGNAL, QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, QThread
-from ..qt.QtGui import QToolTip, QTreeWidget, QTreeWidgetItem, QTextCursor, QFrame, QIcon, \
+from ...qt import Qt
+from ...qt.QtCore import SIGNAL, QAbstractListModel, Qt, QModelIndex, QAbstractTableModel, QThread
+from ...qt.QtGui import QToolTip, QTreeWidget, QTreeWidgetItem, QTextCursor, QFrame, QIcon, \
     QCompleter, QTableView, QAbstractItemView, QKeyEvent
 try:
-    from ..qt.QtCore import Signal
+    from ...qt.QtCore import Signal
 except ImportError:
-    from ..qt.QtCore import pyqtSignal as Signal
+    from ...qt.QtCore import pyqtSignal as Signal
 
 
-from pycode.ropeassist import completions, calltip, definition_location
-from pycode.indenter import PythonCodeIndenter
+from .ropeassist import completions, calltip, definition_location
+from .indenter import PythonCodeIndenter
 
 
 class BackgroundOperation(QThread):
@@ -443,6 +443,7 @@ class PyCode(object):
                 return
 
         self._textedit_keyPressEvent(event)
+
         if event.text() and self._calltip.isVisible():
             self._calltip.hide()
         if (key == Qt.Key_Space and modifiers & Qt.ControlModifier) \

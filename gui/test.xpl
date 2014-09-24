@@ -1,104 +1,91 @@
 <plask>
 
 <defines>
-  <define name="v" value="4"/>
-  <define name="x" value="5"/>
-  <define name="z" value="4"/>
+  <define name="mesa" value="10"/>
+  <define name="aprt" value="4"/>
 </defines>
 
 <materials>
-  <material name="x" base="semiconductor">
-    <A>sqrt(T)</A>
-    <ac>3</ac>
-    <Me>123</Me>
+  <material name="active" base="semiconductor">
+    <nr>3.53</nr>
+    <absp>0.</absp>
   </material>
-  <material name="y" base="semiconductor">
-    <A>6</A>
+  <material name="inactive" base="active">
+    <absp>1000.</absp>
   </material>
 </materials>
 
 <geometry>
-  <cartesian2d axes="xy" left="mirror" length="1000" name="main">
+  <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
     <stack>
-      <block dx="1.5" dy="1.350" material="Al(0.3)GaAs:C=1e20" name="top-layer"/>
-      <block dx="150" dy="0.150" material="Al(0.3)GaAs:C=1e20"/>
-      <block dx="150" dy="0.150" material="GaAs"/>
-      <block dx="150" dy="0.007" material="In(0.2)GaAs" role="active" name="junction"/>
-      <block dx="150" dy="0.150" material="GaAs"/>
-      <block dx="150" dy="1.500" material="Al(0.3)GaAs:Si=5e19"/>
-      <block dx="150" dy="300" material="GaAs:Si=5e19" name="substrate"/>
-      <zero/>
-      <block dx="1000" dy="1000" material="Cu"/>
+      <stack name="top-DBR" repeat="24">
+        <block dr="{mesa}" dz="0.07" material="GaAs"/>
+        <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs"/>
+      </stack>
+      <block dr="{mesa}" dz="0.07003" material="GaAs"/>
+      <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs"/>
+      <shelf>
+        <block dr="{aprt}" dz="0.01603" material="AlAs"/>
+        <block dr="{mesa-aprt}" dz="0.01603" material="AlxOy"/>
+      </shelf>
+      <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs"/>
+      <block dr="{mesa}" dz="0.13756" material="GaAs"/>
+      <shelf>
+        <block dr="{aprt}" dz="0.005" role="gain" material="active" name="gain-region"/>
+        <block dr="{mesa-aprt}" dz="0.005" material="inactive"/>
+      </shelf>
+      <block dr="{mesa}" dz="0.13756" material="GaAs"/>
+      <stack name="bottom-DBR" repeat="29">
+        <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs"/>
+        <block dr="{mesa}" dz="0.07003" material="GaAs"/>
+      </stack>
+      <block dr="10" dz="0.07945" material="Al(0.73)GaAs"/>
     </stack>
-  </cartesian2d>
+  </cylindrical2d>
 </geometry>
 
-<grids>
-  <mesh name="aa" type="rectangular2d">
-    <axis0 start="1">1 2 3</axis0>
-    <axis1></axis1>
-  </mesh>
-  <generator method="divide" name="dd" type="rectangular2d"/>
-</grids>
+<grids/>
 
-<solvers>
-  <thermal solver="Static2D" name="therm">
-    <geometry ref="main"/>
-    <mesh ref="default"/>
-    <temperature>
-      <condition value="300.0" place="bottom"/>
-    </temperature>
-  </thermal>
-  <electrical solver="Shockley2D" name="electr">
-    <geometry ref="main"/>
-    <mesh ref="default"/>
-    <junction beta="19" js="1"/>
-    <voltage>
-      <condition value="1.0">
-        <place object="top-layer" side="top"/>
-      </condition>
-      <condition value="0.0">
-        <place object="substrate" side="bottom"/>
-      </condition>
-    </voltage>
-  </electrical>
-</solvers>
+<solvers/>
 
-<connects>
-  <connect in="electr.inTemperature" out="therm.outTemperature"/>
-  <connect in="therm.inHeat" out="electr.outHeat"/>
-</connects>
+<connects/>
 
 <script><![CDATA[
-verr = electr.compute(1)
-terr = therm.compute(1)
+import sys
+import scipy.optimize
 
-while terr > therm.maxerr or verr > electr.maxerr:
-    verr = electr.compute(6)
-    terr = therm.compute(1)
+import optical
 
-print_log(LOG_INFO, "Calculations finished!")
+efm = optical.EffectiveFrequencyCyl("efm")
+efm.geometry = GEO.main
 
-temp = therm.outTemperature(therm.mesh)
+profile = StepProfile(GEO.main, default=0.)
+profile[GEO.gain_region] = 500.
 
-plot_field(temp, 12)
-plot_geometry(GEO["main"], color='w')
-colorbar()
+efm.inGain = profile.outGain
 
-figure()
-plot_geometry(GEO["main"], set_limits=True)
-plot_mesh(electr.mesh)
+def loss_on_gain(gain):
+    global profile, efm
+    profile[GEO.gain_region] = gain
+    mode_number = efm.find_mode(980.)
+    return efm.outLoss(mode_number)
 
-pos = GEO["main"].get_object_positions(GEO["junction"])[0]
-junction_mesh = mesh.Rectilinear2D(linspace(-150., 150., 1000), [pos.y])
-current = electr.outCurrentDensity(junction_mesh)
-curry = [ abs(j.y) for j in current ]
+efm.lam0 = 980.
 
-figure()
-plot(junction_mesh.axis0, curry)
-xlabel("$x$ [um]")
-ylabel("current density [kA/cm$^2$]")
+threshold_gain = scipy.optimize.brentq(loss_on_gain, 0., 2500., xtol=0.1)
 
+profile[GEO.gain_region] = threshold_gain
+mode_number = efm.find_mode(980.)
+mode_wavelength = efm.outWavelength(mode_number)
+print_log(LOG_INFO,
+          "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+          .format(threshold_gain, mode_wavelength))
+
+msh = mesh.Rectangular2D(linspace(0, 10, 500), linspace(2, 7, 2000))
+plot_geometry(efm.geometry, color='0.5')
+efm.modes[0].power = 10.
+plot_field(efm.outLightMagnitude(0, msh))
+ylim(2,7)
 show()
 ]]></script>
 

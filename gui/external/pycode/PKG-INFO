@@ -1,0 +1,8 @@
+Metadata-Version: 1.0
+Name: pycode
+Version: 0.1
+Summary: Python coding library for IDE integration
+Author: Henning Schroeder
+Author-email: henning.schroeder@gmail.com
+License: GPL2
+Keywords: python source code pyqt pyqt4 ide autocomplete completition codeassist rope

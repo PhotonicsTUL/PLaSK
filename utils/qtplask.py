@@ -486,7 +486,7 @@ if __name__ == "__main__":
         wp = ctypes.c_wchar_p
         winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
         winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
-        winsparkle.win_sparkle_set_registry_path("Software\\PLaSK\\plask\\WinSparkle")
+        winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
         winsparkle.win_sparkle_init()
 
     try:

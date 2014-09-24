@@ -1,0 +1,8 @@
+Metadata-Version: 1.0
+Name: syntaxhighlighter
+Version: 0.1
+Home-page: https://bitbucket.org/henning/syntaxhighlighter
+Author: Henning Schroeder
+Author-email: henning.schroeder@gmail.com
+License: GPL2
+Keywords: pyqt pyqt4 syntax highlighter qsyntaxhighlighter widget

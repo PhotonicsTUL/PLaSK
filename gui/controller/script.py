@@ -7,10 +7,7 @@ from ..utils.gui import DEFAULT_FONT
 from .source import SourceEditController
 from ..utils.config import CONFIG, parse_highlight
 
-try:
-    from ..pyeditor import PyEdit
-except ImportError:
-    PyEdit = None
+from ..pyeditor import PyEdit
 
 from ..external.highlighter import SyntaxHighlighter, load_syntax
 if sys.version_info >= (3, 0, 0):
@@ -49,8 +46,7 @@ class ScriptController(SourceEditController):
     def create_source_editor(self, parent=None):
         edit = QtGui.QPlainTextEdit(parent)
         edit.setFont(DEFAULT_FONT)
-        if PyEdit:
-            self.pyedit = PyEdit(".", edit)
+        self.pyedit = PyEdit(".", edit)
         parts_scanner, code_scanner, formats = load_syntax(syntax, scheme)
         self.highlighter = SyntaxHighlighter(edit.document(),
                                              parts_scanner, code_scanner, formats,
