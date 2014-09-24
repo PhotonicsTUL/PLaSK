@@ -137,7 +137,7 @@ class SectionModel(TreeFragmentModel):
                 self.set_external_source(a['external'], filename)
                 return
         self.set_XML_element(element)
-        self.line_nr_in_file = element.sourceline
+        self.line_nr_in_file = element.sourceline   #TODO can be wrong when next sections will be not read correctly
 
     def create_info(self):
         res = super(SectionModel, self).create_info()
