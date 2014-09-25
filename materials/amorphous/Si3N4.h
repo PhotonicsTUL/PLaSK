@@ -1,8 +1,8 @@
-#ifndef PLASK__aSi3N4_H
-#define PLASK__aSi3N4_H
+#ifndef PLASK__Si3N4_H
+#define PLASK__Si3N4_H
 
 /** @file
-This file contains a-Si3N4
+This file contains Si3N4
 */
 
 #include <plask/material/material.h>
@@ -10,9 +10,9 @@ This file contains a-Si3N4
 namespace plask { namespace materials {
 
 /**
- * Represent a-Si3N4, its physical properties.
+ * Represent Si3N4, its physical properties.
  */
-struct aSi3N4: public Dielectric {
+struct Si3N4: public Dielectric {
 
     static constexpr const char* NAME = "aSi3N4";
 
@@ -30,4 +30,4 @@ protected:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__aSi3N4_H
+#endif	//PLASK__Si3N4_H
