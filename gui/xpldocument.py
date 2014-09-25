@@ -61,16 +61,16 @@ class XPLDocument(object):
         self.set_changed(False)
 
     def save_to_file(self, filename):
-        with open(filename, 'w') as f:
-            f.write('<plask>\n\n')
-            current_line_in_file = 3
-            for c in self.controllers:
-                c.model.line_in_file = current_line_in_file
-                section_string = etree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True)
-                f.write(section_string)
-                f.write('\n')
-                current_line_in_file += section_string.count('\n') + 1
-            f.write('</plask>')
+        # safe write: maybe inefficient, but does not destroy the file if the error occurs
+        data = '<plask>\n\n'
+        current_line_in_file = 3
+        for c in self.controllers:
+            c.update_line_number(current_line_in_file)
+            section_string = etree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True)
+            data += section_string + '\n'
+            current_line_in_file += section_string.count('\n') + 1
+        data += '</plask>'
+        open(filename, 'w').write(data)
         self.filename = filename
         self.set_changed(False)
 

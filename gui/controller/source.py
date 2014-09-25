@@ -16,6 +16,7 @@ scheme = {
     'syntax_text': parse_highlight(CONFIG('syntax/xml_text', 'color=black')),
 }
 
+
 class SourceEditController(Controller):
 
     def __init__(self, document=None, model=None):

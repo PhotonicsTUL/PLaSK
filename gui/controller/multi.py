@@ -2,8 +2,9 @@ from ..qt import QtGui
 
 from ..utils.gui import exception_to_msg
 from .source import SourceEditController
+from .base import Controller
 
-class MultiEditorController(object):
+class MultiEditorController(Controller):
     """
         Controller which consist with a list of controllers and display one at time (using QStackedWidget).
         Allows to change current controller.

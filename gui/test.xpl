@@ -3,8 +3,6 @@
 <defines>
   <define name="mesa" value="10"/>
   <define name="aprt" value="4"/>
-  <define name="new" value="3"/>
-  <define name="x" value="2"/>
 </defines>
 
 <materials>
@@ -48,7 +46,7 @@
 
 <grids>
   <mesh name="plot" type="rectangular2d">
-    <axis0 start="0" stop="{mesa}" num="501"></axis0>
+    <axis0 start="{-mesa}" stop="{mesa}" num="501"></axis0>
     <axis1 start="2" stop="7" num="2001"></axis1>
   </mesh>
   <generator method="divide" name="test" type="rectangular2d">
@@ -56,18 +54,17 @@
   </generator>
 </grids>
 
-<solvers/>
+<solvers>
+  <optical solver="EffectiveFrequencyCyl" name="efm">
+    <geometry ref="main"/>
+  </optical>
+</solvers>
 
 <connects/>
 
 <script><![CDATA[
 import sys
 import scipy.optimize
-
-import optical
-
-efm = optical.EffectiveFrequencyCyl("efm")
-efm.geometry = GEO.main
 
 profile = StepProfile(GEO.main, default=0.)
 profile[GEO.gain_region] = 500.
@@ -91,11 +88,10 @@ print_log(LOG_INFO,
           "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
           .format(threshold_gain, mode_wavelength))
 
-plot_geometry(efm.geometry, color='0.5')
+plot_geometry(efm.geometry, color='0.5', mirror=True)
 efm.modes[0].power = 10.
-plot_field(efm.outLightMagnitude(0, msh))
+plot_field(efm.outLightMagnitude(0, MSH.plot))
 ylim(2,7)
-show()
-]]></script>
+show()]]></script>
 
 </plask>

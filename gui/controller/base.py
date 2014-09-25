@@ -1,5 +1,6 @@
 from ..qt import QtGui, QtCore
 
+
 class Controller(object):
     """
         Base class for controllers.
@@ -16,7 +17,6 @@ class Controller(object):
         if model is not None:
             self.model = model
 
-        
     def save_data_in_model(self):
         """Called to force save data from editor in model (typically by on_edit_exit or when model is needed while
          editor still is active - for instance when user saves edited document to file)."""
@@ -30,6 +30,16 @@ class Controller(object):
         """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
         self.save_data_in_model()
         if hasattr(self, 'document'): self.document.window.set_section_actions()
+
+    def update_line_number(self, current_line_in_file):
+        """If the controller has a source editor, update its line numbers offset"""
+        self.model.line_in_file = current_line_in_file
+        try:
+            self.source_editor.line_numbers.offset = current_line_in_file
+        except AttributeError:
+            pass
+        else:
+            self.source_editor.repaint()
 
     # def get_editor(self) - to be done in subclasses
 
