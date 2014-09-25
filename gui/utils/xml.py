@@ -14,6 +14,9 @@ def print_interior(element):
     return text
 
 
+def at_line_str(element, template = ' at line {}'):
+    return template.format(element.sourceline) if element.sourceline is not None else ''
+
 class AttributeReader(object):
     """
         Helper class to check if all attributes have been read from XML tag, usage::
@@ -56,7 +59,8 @@ class AttributeReader(object):
         if self.is_sub_reader: return
         not_read = set(self.element.attrib.keys()) - self.read
         if not_read:
-            raise ValueError("XML tag <{}> has unexpected attributes: {}".format(self.element.tag, ", ".join(not_read)))
+            raise ValueError("XML tag <{}>{} has unexpected attributes: {}".format(
+                self.element.tag, at_line_str(self.element), ", ".join(not_read)))
 
     @property
     def attrib(self):
@@ -110,8 +114,9 @@ class OrderedTagReader(object):
     def require_end(self):
         """Raise ValueError if self.parent_element still has unread children."""
         if self._has_next():
-            raise ValueError("XML tag <{}> has unexpected child <{}>.".format(
-                self.parent_element.tag, self._next_element().tag))
+            raise ValueError("XML tag <{}>{} has unexpected child <{}>{}.".format(
+                self.parent_element.tag, at_line_str(self.parent_element),
+                self._next_element().tag, at_line_str(self._next_element())))
 
     def __enter__(self):
         return self
@@ -148,10 +153,11 @@ class OrderedTagReader(object):
         res = self.get(expected_tag_name)
         if res is None:
             if expected_tag_name is None:
-                raise ValueError('Unexpected end of <{}> tag.'.format(self.parent_element.tag))
+                raise ValueError('Unexpected end of <{}> tag{}.'.format(
+                    self.parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
             else:
-                raise ValueError('<{}> tag does not have required <{}> child.'.format(
-                    self.parent_element.tag, expected_tag_name))
+                raise ValueError('<{}> tag{} does not have required <{}> child.'.format(
+                    self.parent_element.tag, at_line_str(self.parent_element), expected_tag_name))
         return res
 
     def iter(self, expected_tag_name = None):
@@ -184,7 +190,9 @@ class UnorderedTagReader(object):
         tag_names = set()
         for child in parent_element:
             if child.tag in tag_names:
-                raise ValueError("Duplicated tags <{}> in <{}> are not allowed.".format(child.tag, parent_element.tag))
+                raise ValueError("Duplicated tags <{}>{} in <{}>{} are not allowed.".format(
+                    child.tag, at_line_str(self.child, ' (recurrence at line {})'),
+                    parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
             tag_names.add(child.tag)
 
     def get(self, child_name):
@@ -209,7 +217,8 @@ class UnorderedTagReader(object):
         res = self.get(child_name)
         if res is None:
             raise ValueError('<{}> tag does not have required <{}> child.'.format(
-                    self.parent_element.tag, child_name))
+                    self.parent_element.tag, at_line_str(self.parent_element),
+                    child_name))
         return res
 
     def __len__(self):
@@ -222,7 +231,8 @@ class UnorderedTagReader(object):
         """Raise ValueError if not all children have been read from XML tag."""
         not_read = set(e.tag for e in self.parent_element) - self.read
         if not_read:
-            raise ValueError("XML tag <{}> has unexpected child(ren): {}".format(self.parent_element.tag, ", ".join(not_read)))
+            raise ValueError("XML tag <{}>{} has unexpected child(ren):\n {}".format(
+                self.parent_element.tag, at_line_str(self.parent_element), ", ".join(not_read)))
 
     def __enter__(self):
         return self
