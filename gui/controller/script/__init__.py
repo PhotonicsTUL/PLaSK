@@ -5,10 +5,11 @@ try:
 except ImportError:
     PyCode = None
 
+from .editor import ScriptEditor
+
 from ..source import SourceEditController
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
-from ...utils.textedit import TextEdit
 from ...utils.gui import DEFAULT_FONT
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
@@ -45,7 +46,7 @@ class ScriptController(SourceEditController):
         SourceEditController.__init__(self, document, model)
 
     def create_source_editor(self, parent=None):
-        edit = TextEdit(parent)
+        edit = ScriptEditor(self, parent)
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         if PyCode:
             self.pycode = PyCode(".", edit)

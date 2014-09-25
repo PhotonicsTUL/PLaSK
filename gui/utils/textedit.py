@@ -1,8 +1,11 @@
 import math
 
 from ..qt import QtCore, QtGui
-from ..utils.gui import DEFAULT_FONT
 
+from .gui import DEFAULT_FONT
+from .config import CONFIG
+
+CURRENT_LINE_COLOR = QtGui.QColor(CONFIG('editor/current_line_color', '#ffffee'))
 
 class TextEdit(QtGui.QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
@@ -14,7 +17,7 @@ class TextEdit(QtGui.QPlainTextEdit):
         self.line_numbers.update_width()
         self.blockCountChanged.connect(self.line_numbers.update_width)
         self.updateRequest.connect(self.line_numbers.on_update_request)
-        #self.cursorPositionChanged.connect(self.highlight_current_line)
+        self.cursorPositionChanged.connect(self.highlight_current_line)
 
     def resizeEvent(self, e):
         super(TextEdit, self).resizeEvent(e)
@@ -22,6 +25,13 @@ class TextEdit(QtGui.QPlainTextEdit):
         self.line_numbers.setGeometry(QtCore.QRect(cr.left(), cr.top(),
                                                    self.line_numbers.get_width(), cr.height()))
 
+    def highlight_current_line(self):
+        selection = QtGui.QTextEdit.ExtraSelection()
+        selection.format.setBackground(CURRENT_LINE_COLOR)
+        selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
+        selection.cursor = self.textCursor()
+        selection.cursor.clearSelection()
+        self.setExtraSelections([selection])
 
 class LineNumberArea(QtGui.QWidget):
     """Line numbers widget

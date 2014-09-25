@@ -32,7 +32,7 @@ class BackgroundOperation(QThread):
         # slot called in main (gui) thread
         if self.callback:
             self.callback(self.result)
-        # To be safe, remove refernces for garbage collection
+        # To be safe, remove references for garbage collection
         self.args = self.kwargs = self.target = None
 
 
