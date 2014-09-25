@@ -12,7 +12,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# use new v2 API, Python types instead of Qt
+_DEBUG = False
+
 import sys
 import os
 import ctypes
@@ -25,7 +26,7 @@ from . import _resources
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
-from .utils.gui import exception_to_msg
+from .utils.widgets import exception_to_msg
 from .model.info import InfoTreeModel, Info
 from .launch import launch_plask
 
@@ -44,9 +45,6 @@ except OSError:
 WINDOWS = set()
 
 class MainWindow(QtGui.QMainWindow):
-
-    # def __new__(cls, filename=None):
-    #
 
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
@@ -68,6 +66,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             document.load_from_file(filename)
         except Exception as e:
+            if _DEBUG: raise
             QtGui.QMessageBox.critical(self, 'Error while loading XPL from file.',
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False

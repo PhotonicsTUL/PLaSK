@@ -77,7 +77,7 @@ class RectangularMesh1D(Grid):
 
     def set_XML_element(self, element):
         super(RectangularMesh1D, self).set_XML_element(element)
-        with OrderedTagReader(element) as r: self.axis.set_from_XML(r.find('axis'))
+        with OrderedTagReader(element) as r: self.axis.set_from_XML(r.get('axis'))
 
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMesh1DConroller
@@ -113,7 +113,7 @@ class RectangularMesh(Grid):
         super(RectangularMesh, self).set_XML_element(element)
         with UnorderedTagReader(element) as r:
             for i in range(0, self.dim):
-                self.axis[i].set_from_XML(r.find(RectangularMesh.axis_tag_name(i)))
+                self.axis[i].set_from_XML(r.get(RectangularMesh.axis_tag_name(i)))
 
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMeshConroller

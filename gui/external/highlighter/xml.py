@@ -16,7 +16,7 @@ syntax = {
     'scanner': {
         'tag': [
             ('tag', '^[\s]+'),
-            ('attr', '[A-Za-z_-]\w*(?==)'),
+            ('attr', '[A-Za-z_][A-Za-z_0-9-:]*(?==)'),
             ('equals', '='),
             ('value', '"[^"]*("|\n|\x08)'),
         ]

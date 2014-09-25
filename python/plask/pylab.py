@@ -372,6 +372,10 @@ def plot_stream(field, plane=None, scale=8.0, color='k', **kwargs):
 def plot_boundary(boundary, mesh, geometry, cmap=None, color='0.75', plane=None, zorder=4, **kwargs):
     '''Plot points of specified boundary'''
     #TODO documentation
+
+    if not isinstance(mesh, plask.mesh.Mesh):
+        raise TypeError("plot_boundary called for non-mesh type")
+
     if type(cmap) == str: cmap = get_cmap(cmap)
     if cmap is not None: c = []
     else: c = color
@@ -407,6 +411,9 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2)
     axes = matplotlib.pylab.gca()
     lines = []
 
+    if not isinstance(mesh, plask.mesh.Mesh):
+        raise TypeError("plot_mesh called for non-mesh type")
+
     if isinstance(mesh, plask.mesh.Rectangular2D):
         ix, iy = 0, 1
         y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
@@ -427,6 +434,8 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, set_limits=False, zorder=2)
         for y in axis[1]:
             lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder))
 
+    else:
+        raise NotImplementedError("plot_mesh can be only used for data rectangular")
 
     for line in lines:
         axes.add_line(line)

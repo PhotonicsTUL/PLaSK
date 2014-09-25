@@ -20,6 +20,8 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr depth: Alias for ``d{X}``.
    :attr width: Alias for ``d{Y}``.
    :attr height: Alias for ``d{Z}``.
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
+   :attr steps-dist: Minimum step size if the object is non-uniform.
 
    Either ``material`` or both ``material-top`` and ``material-bottom`` are required.
 
@@ -40,16 +42,20 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material-top: Definition of the material of top of the cylinder (see also ``material-bottom``).
    :attr radius: Radius of the cylinder base.
    :attr height: Height of the cylinder.
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
+   :attr steps-dist: Minimum step size if the object is non-uniform.
 
 .. xml:tag:: <sphere/> (or <circle3d/>)
 
    Corresponding Python class: :py:class:`plask.geometry.Sphere`.
-   
+
    Sphere with centre at point (0, 0, 0).
-   
+
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the sphere material (for solid triangles).
    :attr material-bottom: Definition of the material of the bottom of the sphere (for sphere which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the sphere (see also ``material-bottom``).
    :attr required radius: Radius of the sphere. (float [µm])
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
+   :attr steps-dist: Minimum step size if the object is non-uniform.

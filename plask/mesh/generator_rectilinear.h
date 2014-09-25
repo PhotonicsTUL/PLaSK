@@ -12,7 +12,14 @@ namespace plask {
  * \param geometry given geometry
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero = false);
+PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero=false);
+
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry
+ * \return generated mesh
+ */
+PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero=false);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
@@ -28,8 +35,6 @@ class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 
     /// Should we add line at horizontal zero
     bool extend_to_zero;
-
-    shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry);
 
   public:
 

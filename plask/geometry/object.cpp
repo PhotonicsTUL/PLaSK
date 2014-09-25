@@ -1,10 +1,9 @@
 #include "object.h"
-
 #include "leaf.h"
-
 #include "transform.h"
 #include "space.h"
 #include "path.h"
+#include "reader.h"
 
 namespace plask {
 

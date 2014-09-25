@@ -101,7 +101,7 @@ class OrderedTagReader(object):
     """
 
     def __init__(self, parent_element, first_index = 0):
-        super(OrderedTagReader, self).__init__()
+        # super(OrderedTagReader, self).__init__()
         self.parent_element = parent_element
         self.current_index = first_index
 
@@ -140,7 +140,7 @@ class OrderedTagReader(object):
         """
         if exc_type is None and exc_value is None and traceback is None: self.require_end()
 
-    def get(self, expected_tag_name = None):
+    def get(self, expected_tag_name=None):
         """
             Get next child of wrapped self.parent_element.
             :param str expected_tag_name: optional required name of returned tag
@@ -196,7 +196,7 @@ class UnorderedTagReader(object):
     """
 
     def __init__(self, parent_element, first_index = 0):
-        super(UnorderedTagReader, self).__init__()
+        # super(UnorderedTagReader, self).__init__()
         self.parent_element = parent_element
         self.read = set()
         tag_names = set()

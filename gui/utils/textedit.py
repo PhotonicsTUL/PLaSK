@@ -14,7 +14,7 @@ import math
 
 from ..qt import QtCore, QtGui
 
-from .gui import DEFAULT_FONT
+from .widgets import DEFAULT_FONT
 from .config import CONFIG
 
 CURRENT_LINE_COLOR = QtGui.QColor(CONFIG('editor/current_line_color', '#ffffee'))

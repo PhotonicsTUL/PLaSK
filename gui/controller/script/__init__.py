@@ -22,7 +22,7 @@ from .editor import ScriptEditor
 from ..source import SourceEditController
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
-from ...utils.gui import DEFAULT_FONT
+from ...utils.widgets import DEFAULT_FONT
 
 from ...external.highlighter import SyntaxHighlighter, load_syntax
 if sys.version_info >= (3, 0, 0):

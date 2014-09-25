@@ -15,7 +15,7 @@ from ...qt import QtGui
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from ..base import Controller
-from ...utils.gui import table_last_col_fill, exception_to_msg
+from ...utils.widgets import table_last_col_fill, exception_to_msg
 from ..table import table_with_manipulators
 from ...model.grids.section import GridsModel
 from ...utils.xml_qttree import ETreeModel

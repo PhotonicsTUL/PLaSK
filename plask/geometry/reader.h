@@ -266,7 +266,7 @@ inline shared_ptr<RequiredObjectType> GeometryReader::readObject() {
     return result;
 }
 
-// specialization for GeometryObject which doesn't required dynamic_cast
+// specialization for GeometryObject which doesn't require dynamic_cast
 template <>
 inline shared_ptr<GeometryObject> GeometryReader::readObject<GeometryObject>() {
     return readObject();

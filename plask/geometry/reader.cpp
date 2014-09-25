@@ -40,6 +40,10 @@ GeometryReader::GeometryReader(Manager &manager, XMLReader &source, shared_ptr<c
 
 inline bool isAutoName(const std::string& name) { return !name.empty() && name[0] == '#'; }
 
+
+#define XML_MAX_POINTS_ATTR "steps-num"
+#define XML_MIN_PLY_ATTR "steps-dist"
+
 shared_ptr<GeometryObject> GeometryReader::readObject() {
     std::string nodeName = source.getNodeName();
 
@@ -55,7 +59,10 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
 
     boost::optional<std::string> roles = source.getAttribute("role");    // read roles (tags)
 
-    shared_ptr<GeometryObject> new_object;    //new object will be constructed
+    auto max_points = source.getAttribute<unsigned long>(XML_MAX_POINTS_ATTR);
+    auto min_ply = source.getAttribute<double>(XML_MIN_PLY_ATTR);
+
+    shared_ptr<GeometryObject> new_object;    // new object will be constructed
 
     if (nodeName == "copy") {   //TODO(?) move code of copy to virtual method of manager to allow custom support for it in GUI
         shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
@@ -112,6 +119,14 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
             //BadId::throwIfBad("path", path, '-');
             new_object->addRole(c);
         }
+    }
+
+    if (new_object->isLeaf()) {
+        if (max_points) new_object->max_points = *max_points;
+        if (min_ply) new_object->min_ply = *min_ply;
+    } else {
+        if (max_points) throw XMLUnexpectedAttrException(source, XML_MAX_POINTS_ATTR);
+        if (min_ply) throw XMLUnexpectedAttrException(source, XML_MIN_PLY_ATTR);
     }
 
     return new_object;

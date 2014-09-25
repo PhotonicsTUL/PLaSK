@@ -72,16 +72,16 @@ OrderedAxis &OrderedAxis::operator=(const OrderedAxis &src) {
     return *this;
 }
 
-bool OrderedAxis::addPoint(double new_node_cord) {
+bool OrderedAxis::addPoint(double new_node_cord, double min_dist) {
     auto where = std::lower_bound(points.begin(), points.end(), new_node_cord);
     if (where == points.end()) {
-        if (points.size() == 0 || new_node_cord - points.back() > MIN_DISTANCE) {
+        if (points.size() == 0 || new_node_cord - points.back() > min_dist) {
             points.push_back(new_node_cord);
             fireResized();
             return true;
         }
     } else {
-        if (*where - new_node_cord > MIN_DISTANCE && (where == points.begin() || new_node_cord - *(where-1) > MIN_DISTANCE)) {
+        if (*where - new_node_cord > min_dist && (where == points.begin() || new_node_cord - *(where-1) > min_dist)) {
             points.insert(where, new_node_cord);
             fireResized();
             return true;

@@ -10,6 +10,7 @@ if len(sys.argv) == 1:
 
 try:
     import gui
+    gui._DEBUG = True
     gui.main()
 except SystemExit as e:
     sys.exit(e.code)

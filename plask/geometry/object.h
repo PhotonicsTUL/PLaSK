@@ -36,6 +36,8 @@ This file contains base class for geometries objects.
 
 namespace plask {
 
+class GeometryReader;
+
 struct PathHints;
 struct Path;
 
@@ -82,7 +84,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
             EVENT_CHILDREN_REMOVE = 1<<4, ///< children was removed
             EVENT_CHILDREN_GENERIC = 1<<5,///< children list was changed (other or custom changes)
             EVENT_BORDERS = 1<<6,         ///< borders was changed (only Geometries/calculation spaces emit events with this flags)
-            EVENT_USER_DEFINED = 1<<7     ///< user-defined flags could have ids: EVENT_USER_DEFINED, EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
+            EVENT_STEPS = 1<<7,           ///< step refining was changed
+            EVENT_USER_DEFINED = 1<<8     ///< user-defined flags could have ids: EVENT_USER_DEFINED, EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
         };
 
         /**
@@ -494,6 +497,18 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
 
     /// Minimum distance between division lines if the object is not uniform
     double min_ply;
+
+    /// Set max_points
+    void setMaxPoints(unsigned long value) {
+        max_points = value;
+        fireChanged(GeometryObject::Event::EVENT_STEPS);
+    }
+
+    /// Set min_ply
+    void setMinPly(double value) {
+        min_ply = value;
+        fireChanged(GeometryObject::Event::EVENT_STEPS);
+    }
 
     /// Roles/tags
     std::set<std::string> roles;

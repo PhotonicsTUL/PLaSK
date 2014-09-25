@@ -10,13 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtCore
-from ..qt import QtGui
 import collections
 import sys
 
+from .. import _DEBUG
+from ..qt import QtCore
+from ..qt import QtGui
 from ..utils.config import CONFIG
-
 
 def exception_to_msg(f, parent=None, err_title=None):
     """
@@ -27,7 +27,7 @@ def exception_to_msg(f, parent=None, err_title=None):
         f()
         return True
     except Exception as e:
-        #raise
+        if _DEBUG: raise
         QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
 

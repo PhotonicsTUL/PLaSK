@@ -15,7 +15,7 @@ from ..qt import QtGui
 from .base import Controller
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.textedit import TextEdit
-from ..utils.gui import DEFAULT_FONT
+from ..utils.widgets import DEFAULT_FONT
 
 from ..external.highlighter import SyntaxHighlighter, load_syntax
 from ..external.highlighter.xml import syntax
@@ -86,9 +86,7 @@ class SourceEditController(Controller):
     def on_edit_exit(self):
         try:
             self.source_editor.textChanged.disconnect(self._on_text_edit)
-        except TypeError:
-            pass
-        except AttributeError:
+        except:
             pass
         self.save_data_in_model()
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor

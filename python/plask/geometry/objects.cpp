@@ -547,16 +547,16 @@ struct GeometryObjectSteps {
     GeometryObjectSteps(const shared_ptr<GeometryObject>& obj): obj(obj) {}
 
     double get_ply() const { return obj->min_ply; }
-    void set_ply(double val) { obj->min_ply = abs(val); }
+    void set_ply(double val) { obj->setMinPly(abs(val)); }
 
     unsigned get_max_points() const { return obj->max_points; }
-    void set_max_points(unsigned val) { obj->max_points = val; }
+    void set_max_points(unsigned val) { obj->setMaxPoints(val); }
 
     std::string str() { return format("<dist=%1%, num=%2%>", obj->min_ply, obj->max_points);  }
 
     static GeometryObjectSteps get(const shared_ptr<GeometryObject>& obj) { return GeometryObjectSteps(obj); }
 
-    static void set(const shared_ptr<GeometryObject>& obj, unsigned num) { obj->max_points = num; }
+    static void set(const shared_ptr<GeometryObject>& obj, unsigned num) { obj->setMaxPoints(num); }
 
 };
 
@@ -597,7 +597,7 @@ void register_geometry_object()
         .add_property("dist", &GeometryObjectSteps::get_ply, &GeometryObjectSteps::set_ply,
                       "Minimum step size.")
         .add_property("num", &GeometryObjectSteps::get_max_points, &GeometryObjectSteps::set_max_points,
-                      "Maximum number of the mesh steps the object is divided into.")
+                      "Maximum number of the mesh steps in each direction the object is divided into.")
         .def("__str__", &GeometryObjectSteps::str)
         .def("__repr__", &GeometryObjectSteps::str)
     ;}

@@ -149,12 +149,24 @@ public:
 
     /**
      * Add (1d) point to this mesh.
+     * Point is added to mesh only if it is not closer than the specified minimum distance to the existing one.
+     * It use algorithm which has O(size()) time complexity.
+     * \param new_node_cord coordinate of point to add
+     * \param min_dist minimum distance to the existing point
+     * \return \p true if the point has been inserted
+     */
+    bool addPoint(double new_node_cord, double min_dist);
+
+    /**
+     * Add (1d) point to this mesh.
      * Point is added to mesh only if it is not already included in it.
      * It use algorithm which has O(size()) time complexity.
      * @param new_node_cord coordinate of point to add
      * @return \p true if the point has been inserted
      */
-    bool addPoint(double new_node_cord);
+    bool addPoint(double new_node_cord) {
+        return addPoint(new_node_cord, MIN_DISTANCE);
+    }
 
     /**
      * Remove point at specified index
