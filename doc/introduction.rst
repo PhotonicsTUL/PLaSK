@@ -29,7 +29,7 @@ Run the following commands:
 	$ sudo apt-get install g++ libboost-all-dev libexpat1-dev subversion \
 	  cmake cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev \
 	  liblapacke-dev libfftw3-dev python python-numpy python-scipy \
-	  python-matplotlib python-h5py python-pyside ipython libqt4-dev
+	  python-matplotlib python-h5py python-pyside ipython libqt4-dev python-rope
 	$ cd your/choosen/directory/for/project
 	$ svn checkout https://phys.p.lodz.pl/svn/plask/trunk .
 	$ mkdir build
