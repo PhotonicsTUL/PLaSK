@@ -12,7 +12,7 @@ This file contains containers of geometries objects which align all children in 
 
 namespace plask {
 
-template <int dim, typename Primitive<dim>::Direction alignDirection> 
+template <int dim, typename Primitive<dim>::Direction alignDirection>
 using AlignContainerChildAligner = typename chooseType<dim-2,
         align::Aligner<direction3D(DirectionWithout<3, direction3D(alignDirection)>::value2D)>,
         align::Aligner<DirectionWithout<3, direction3D(alignDirection)>::valueLower, DirectionWithout<3, direction3D(alignDirection)>::valueHigher>

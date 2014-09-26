@@ -25,18 +25,12 @@ struct CacheNode {
     virtual ~CacheNode() {}
 };
 
-template <int dim>
-using TranslationContainerChildAligner = typename chooseType<dim-2,
-        align::Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>,
-        align::Aligner<>
-    >::type;
-
 /**
  * Geometry objects container in which every child has an associated translation vector.
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >
-struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>> {
+struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>> {
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
     typedef typename GeometryObjectContainer<dim>::DVec DVec;
@@ -48,7 +42,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
 
     /// Type of child aligner.
-    typedef TranslationContainerChildAligner<dim> ChildAligner;
+    typedef align::AlignerD<dim> ChildAligner;
 
     /// Type of translation geometry object in space of this.
     typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
@@ -123,11 +117,11 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
     //some methods must be overwrite to invalidate cache:
     virtual void onChildChanged(const GeometryObject::Event& evt) {
         if (evt.isResize()) invalidateCache();
-        WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::onChildChanged(evt);
+        WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>::onChildChanged(evt);
     }
 
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) {
-        if (WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::removeIfTUnsafe(predicate)) {
+        if (WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>::removeIfTUnsafe(predicate)) {
             invalidateCache();
             return true;
         } else
@@ -136,7 +130,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
 
     virtual void removeAtUnsafe(std::size_t index) {
         invalidateCache();
-        WithAligners<GeometryObjectContainer<dim>, TranslationContainerChildAligner<dim>>::removeAtUnsafe(index);
+        WithAligners<GeometryObjectContainer<dim>, align::AlignerD<dim>>::removeAtUnsafe(index);
     }
 
     //virtual void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const;

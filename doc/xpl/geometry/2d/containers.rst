@@ -50,8 +50,26 @@ Containers
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
+   :attr left: Default value for horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
+   :attr right: Default value for horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
+   :attr trancenter: Default value for horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {X}center: (where **{X}** is the transverse axis name): Alias for ``trancenter``.
+   :attr {X}: (where **{X}** is the transverse axis name): Default value for horizontal alignment specification: position of the origin of each element. (float [µm])
+   :attr top: Default value for vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
+   :attr bottom: Default value for vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
+   :attr vertcenter: Default value for vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {Y}center: (where **{Y}** is the vertical axis name): Alias for *vertcenter*.
+   :attr {Y}: (where **{Y}** is the vertical axis name): Default value for vertical alignment specification: position of the origin of each element. (float [µm])
+
+   Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At most one alignment specification for each axis can be given. If alignment specification for some direction is not given, elements will be not alignment in this direction by default.
 
    .. xml:contents::
+
+      The content of this element can be any number of other two-dimensional geometry *object* (is such case defaul alignment specifications are used) or ``<item>`` elements, which are aligned in the container according to its specification.
+
+      *object*
+
+         :ref:`Two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
       .. xml:tag:: <item> [in <container2d>]
 
@@ -67,7 +85,7 @@ Containers
          :attr {Y}center: where **{Y}** is the vertical axis name: Alias for vertcenter.
          :attr {Y}: where **{Y}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
 
-         Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At least one alignment specification for each axis must be given.
+         Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At most one alignment specification for each axis can be given. If alignment specification for some direction is not given, default value is used.
 
          .. xml:contents::
 

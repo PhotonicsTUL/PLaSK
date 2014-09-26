@@ -461,6 +461,8 @@ struct Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>: publ
 
 };
 
+typedef Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT> Aligner2D;
+
 /**
  * Three directions aligner in 3D space, compose and use three 1D aligners.
  */
@@ -554,6 +556,11 @@ struct Aligner<> {
     bool isNull() { return dir1aligner.isNull() || dir2aligner.isNull() || dir3aligner.isNull(); }
 
 };
+
+typedef Aligner<> Aligner3D;
+
+/// Aligner2D if dim == 2, Aligner3D if dim == 3
+template <int dim> using AlignerD = typename chooseType<dim-2, Aligner2D, Aligner3D>::type;
 
 //two 1D aligners gives 2D aligner
 inline Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)> operator&(const Aligner<Primitive<3>::Direction(0)>& dir1aligner, const Aligner<Primitive<3>::Direction(1)>& dir2aligner) {
@@ -662,11 +669,11 @@ inline Aligner<Primitive<3>::DIRECTION_VERT> top(double coordinate) { return new
 inline Aligner<Primitive<3>::DIRECTION_VERT> vertCenter(double coordinate) { return new details::AlignerCustomImpl<Primitive<3>::DIRECTION_VERT, details::centerToCoordinate, details::VERT_CENTER>(coordinate); }
 inline Aligner<Primitive<3>::DIRECTION_VERT> vert(double coordinate) { return new details::PositionAlignerImpl<Primitive<3>::DIRECTION_VERT>(coordinate); }
 
-inline Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT> fromVector(const Vec<2, double>& v) {
+inline Aligner2D fromVector(const Vec<2, double>& v) {
     return tran(v.tran()) & vert(v.vert());
 }
 
-inline Aligner<> fromVector(const Vec<3, double>& v) {
+inline Aligner3D fromVector(const Vec<3, double>& v) {
     return lon(v.lon()) & tran(v.tran()) & vert(v.vert());
 }
 
