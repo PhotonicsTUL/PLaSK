@@ -10,14 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import re
 import itertools
 
 from ..qt import QtCore, QtGui, qt
 
 from ..utils.str import html_to_tex
 from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
-                              MATERIALS_PROPERTES, ELEMENT_GROUPS
+                              MATERIALS_PROPERTES, parse_material_components
 from ..utils.widgets import HTMLDelegate, table_last_col_fill
 from .base import Controller
 from .defines import DefinesCompletionDelegate
@@ -52,29 +51,36 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
 
     def createEditor(self, parent, option, index):
 
-        earlier_names = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
+        material_list = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
 
         if plask:
-            earlier_names.extend(
-                sorted((self._format_material(mat) for mat in plask.material.db if mat not in earlier_names),
+            material_list.extend(
+                sorted((self._format_material(mat) for mat in plask.material.db if mat not in material_list),
                        key=lambda x: x.lower()))
 
-        earlier_names.extend(e.name for e in index.model().entries[0:index.row()])
+        material_list.extend(e.name for e in index.model().entries[0:index.row()])
 
-        if not earlier_names: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
+        if not material_list: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
 
         combo = QtGui.QComboBox(parent)
         combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
-        combo.addItems(earlier_names)
+        combo.addItems(material_list)
         combo.insertSeparator(4)
-        combo.insertSeparator(len(earlier_names)-index.row()+1)
+        combo.insertSeparator(len(material_list)-index.row()+1)
         combo.setEditText(index.data())
         combo.setCompleter(self.get_defines_completer(parent))
-        combo.setMaxVisibleItems(len(earlier_names))
+        combo.setMaxVisibleItems(len(material_list))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
+        combo.currentIndexChanged[str].connect(self.show_components_popup)
         return combo
+
+    def show_components_popup(self, material):
+        name, groups, doping = parse_material_components(material, True)
+        if not groups and doping is None:
+            return
+        print name, groups, doping
 
 
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
@@ -85,23 +91,33 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
     def createEditor(self, parent, option, index):
         opts = index.model().options_to_choose(index)
 
+        if index.column() == 0:
+            used = [index.model().get(0, i) for i in range(index.model().rowCount()) if i != index.row()]
+            opts = [opt for opt in opts if opt not in used]
+
         if opts is None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
 
         combo = QtGui.QComboBox(parent)
-        combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(opts)
-        combo.setEditText(index.data())
-        completer = combo.completer()
-        completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
-        combo.setCompleter(completer)
-        combo.highlighted.connect(lambda i:
-            QtGui.QToolTip.showText(QtGui.QCursor.pos(), material_html_help(combo.itemText(i)))
-        )
         combo.setMaxVisibleItems(len(opts))
+        if index.column() == 0:
+            try:
+                combo.setCurrentIndex(opts.index(index.data()))
+            except ValueError:
+                combo.setCurrentIndex(0)
+            combo.highlighted.connect(lambda i:
+                QtGui.QToolTip.showText(QtGui.QCursor.pos(), material_html_help(combo.itemText(i))))
+        else:
+            combo.setEditable(True)
+            combo.setEditText(index.data())
+            completer = combo.completer()
+            completer.setCaseSensitivity(QtCore.Qt.CaseSensitive)
+            combo.setCompleter(completer)
         #combo.setCompleter(completer)
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
+
         return combo
 
 
@@ -180,9 +196,6 @@ class MaterialsController(Controller):
         plot_window.setWindowTitle("Parameter Plot")
         plot_window.setCentralWidget(MaterialPlot(self.model))
         plot_window.show()
-
-
-elements_re = re.compile("[A-Z][a-z]*")
 
 
 class MaterialPlot(QtGui.QWidget):
@@ -338,24 +351,6 @@ class MaterialPlot(QtGui.QWidget):
             if arg.isChecked(): return
         if first is not None: first.setChecked(True)
 
-    @staticmethod
-    def parse_material(material):
-        if plask:
-            try:
-                simple = plask.material.db.is_simple(str(material))
-            except ValueError:
-                simple = True
-            except RuntimeError:
-                simple = True
-        else:
-            simple = True
-        if ':' in material:
-            name, doping = material.split(':')
-        else:
-            name = material
-            doping = None
-        return doping, name, simple
-
     def update_info(self):
         """Update info area"""
         material_name = str(self.material.currentText())
@@ -389,11 +384,9 @@ class MaterialPlot(QtGui.QWidget):
         self.mat_toolbar.clear()
         material = self.material.currentText()
 
-        dope, name, simple = self.parse_material(material)
+        name, groups, dope = parse_material_components(material, True)
 
-        if not simple:
-            elements = elements_re.findall(name)
-            groups = ([e for e in elements if e in g][:-1] for g in ELEMENT_GROUPS)
+        if groups:
             elements = tuple(itertools.chain(*(g + ([None] if g else []) for g in groups)))[:-1]
             self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), old, 0)
         else:

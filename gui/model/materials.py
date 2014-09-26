@@ -11,6 +11,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import re
+
 from ..qt import QtCore, QtGui
 from lxml import etree as ElementTree
 from collections import OrderedDict
@@ -133,6 +135,39 @@ MATERIALS_PROPERTES = OrderedDict((
 ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
 
 
+elements_re = re.compile("[A-Z][a-z]*")
+
+
+def parse_material_components(material, minimum=False):
+    """ Parse info on materials.
+        :param minimum: remove last element from each group
+    """
+    if plask:
+        try:
+            simple = plask.material.db.is_simple(str(material))
+        except ValueError:
+            simple = True
+        except RuntimeError:
+            simple = True
+    else:
+        simple = True
+    if ':' in material:
+        name, doping = material.split(':')
+    else:
+        name = material
+        doping = None
+    if not simple:
+        elements = elements_re.findall(name)
+        if minimum:
+            groups = [[e for e in elements if e in g][:-1] for g in ELEMENT_GROUPS]
+        else:
+            groups = [[e for e in elements if e in g] for g in ELEMENT_GROUPS]
+    else:
+        groups = []
+    return name, groups, doping
+
+
+
 def material_html_help(property_name, with_unit=True, with_attr=False, font_size=None):
     prop_help, prop_unit, prop_attr = MATERIALS_PROPERTES.get(property_name, (None, None, None))
     res = ''
@@ -180,7 +215,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
             return material_html_help(n, with_unit=False, with_attr=True)
         return n if col == 0 else v
 
-    def data(self, index, role = QtCore.Qt.DisplayRole):
+    def data(self, index, role=QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
