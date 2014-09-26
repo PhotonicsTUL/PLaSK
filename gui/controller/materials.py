@@ -16,7 +16,7 @@ from ..qt import QtCore, QtGui, qt
 
 from ..utils.str import html_to_tex
 from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
-                              MATERIALS_PROPERTES, parse_material_components
+                              MATERIALS_PROPERTES, parse_material_components, elements_re
 from ..utils.widgets import HTMLDelegate, table_last_col_fill
 from .base import Controller
 from .defines import DefinesCompletionDelegate
@@ -38,6 +38,62 @@ except ImportError:
     plask = None
 else:
     import plask.material
+
+
+class ComponentsPopup(QtGui.QWidget):
+
+    def __init__(self, index, name, groups, doping, pos=None):
+        super(ComponentsPopup, self).__init__()
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        pal = self.palette()
+        pal.setColor(QtGui.QPalette.Background, QtGui.QColor("#abb"))
+        self.setPalette(pal)
+        self.index = index
+        self.elements = elements_re.findall(name)
+        self.doping = doping
+        self.edits = {}
+        first = None
+        box = QtGui.QHBoxLayout()
+        for el in tuple(itertools.chain(*(g for g in groups if len(g) > 1))):
+            label = QtGui.QLabel(' ' + el + ': ')
+            edit = QtGui.QLineEdit(self)
+            if first is None: first = edit
+            box.addWidget(label)
+            box.addWidget(edit)
+            self.edits[el] = edit
+        if doping:
+            label = QtGui.QLabel(' ' + doping + ': ')
+            edit = QtGui.QLineEdit(self)
+            if first is None: first = edit
+            box.addWidget(label)
+            box.addWidget(edit)
+            self.edits['dp'] = edit
+        box.setContentsMargins(2, 0, 2, 0)
+        self.setLayout(box)
+        if pos is None:
+            cursor = QtGui.QCursor()
+            self.move(cursor.pos())
+        else:
+            self.move(pos)
+        if first: first.setFocus()
+
+    def keyPressEvent(self, event):
+        if event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter, QtCore.Qt.Key_Escape):
+            self.close()
+
+    def closeEvent(self, event):
+        self.index.model().popup = None
+        mat = ''
+        for el in self.elements:
+            mat += el
+            if self.edits.has_key(el):
+                val = str(self.edits[el].text())
+                if val: mat += '(' + val + ')'
+        if self.doping:
+            mat += ':' + self.doping
+            val = str(self.edits['dp'].text())
+            if val: mat += '=' + val
+        self.index.model().setData(self.index, mat)
 
 
 class MaterialBaseDelegate(DefinesCompletionDelegate):
@@ -69,21 +125,25 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.insertSeparator(4)
         combo.insertSeparator(len(material_list)-index.row()+1)
         combo.setEditText(index.data())
+        try: combo.setCurrentIndex(material_list.index(index.data()))
+        except ValueError: pass
         combo.setCompleter(self.get_defines_completer(parent))
         combo.setMaxVisibleItems(len(material_list))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
-        combo.currentIndexChanged[str].connect(self.show_components_popup)
+        combo.currentIndexChanged[str].connect(lambda text: self.show_components_popup(text, index))
         return combo
 
-    def show_components_popup(self, material):
-        self.popup = None # close old poput
-        name, groups, doping = parse_material_components(material, True)
+    def show_components_popup(self, text, index):
+        combo = self.sender()
+        pos = combo.mapToGlobal(QtCore.QPoint(0, combo.height()))
+        index.model().popup = None  # close old popup
+        name, groups, doping = parse_material_components(text)
         if not groups and doping is None:
             return
-        self.popup = QtGui.QWidget()
-        self.popup.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
-        self.popup.show()
+        index.model().popup = ComponentsPopup(index, name, groups, doping, pos)
+        index.model().popup.show()
+
 
 
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
@@ -387,10 +447,10 @@ class MaterialPlot(QtGui.QWidget):
         self.mat_toolbar.clear()
         material = self.material.currentText()
 
-        name, groups, dope = parse_material_components(material, True)
+        name, groups, dope = parse_material_components(material)
 
         if groups:
-            elements = tuple(itertools.chain(*(g + ([None] if g else []) for g in groups)))[:-1]
+            elements = tuple(itertools.chain(*(g + [None] for g in groups if len(g) > 1)))[:-1]
             self.set_toolbar(self.mat_toolbar, ((e, "{} fraction".format(e)) for e in elements), old, 0)
         else:
             elements = None

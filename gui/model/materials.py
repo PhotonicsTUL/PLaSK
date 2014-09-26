@@ -138,7 +138,7 @@ ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
 elements_re = re.compile("[A-Z][a-z]*")
 
 
-def parse_material_components(material, minimum=False):
+def parse_material_components(material):
     """ Parse info on materials.
         :param minimum: remove last element from each group
     """
@@ -158,10 +158,7 @@ def parse_material_components(material, minimum=False):
         doping = None
     if not simple:
         elements = elements_re.findall(name)
-        if minimum:
-            groups = [[e for e in elements if e in g][:-1] for g in ELEMENT_GROUPS]
-        else:
-            groups = [[e for e in elements if e in g] for g in ELEMENT_GROUPS]
+        groups = [[e for e in elements if e in g] for g in ELEMENT_GROUPS]
     else:
         groups = []
     return name, groups, doping
@@ -312,6 +309,7 @@ class MaterialsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
+        self.popup = None
 
     def set_XML_element(self, element):
         self.modelAboutToBeReset.emit()
