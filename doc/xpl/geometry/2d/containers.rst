@@ -46,7 +46,7 @@ Containers
 
    Corresponding Python class: :py:class:`plask.geometry.Container2D`.
 
-   Simple container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
+   Container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
