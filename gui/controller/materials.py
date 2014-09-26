@@ -77,10 +77,13 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         return combo
 
     def show_components_popup(self, material):
+        self.popup = None # close old poput
         name, groups, doping = parse_material_components(material, True)
         if not groups and doping is None:
             return
-        print name, groups, doping
+        self.popup = QtGui.QWidget()
+        self.popup.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        self.popup.show()
 
 
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
