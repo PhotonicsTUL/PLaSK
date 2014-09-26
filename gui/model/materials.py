@@ -328,15 +328,14 @@ class MaterialsModel(TableModel):
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:
-                res.append(Info(u'Material name is required [row: %d]' % i, Info.ERROR, rows=[i], cols=[0]))
+                res.append(Info(u'Material name is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
             else:
                 names.setdefault(d.name, []).append(i)
             if not d.base:
-                res.append(Info(u'Material base is required [row: %d]' % i, Info.ERROR, rows=[i], cols=[1]))
+                res.append(Info(u'Material base is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
         for name, indexes in names.items():
             if len(indexes) > 1:
-                res.append(Info(u'Duplicated material name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
-                                Info.ERROR, rows=indexes, cols=[0]
-                                )
-                          )
+                res.append(
+                    Info(u'Duplicated material name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in indexes)),
+                         Info.ERROR, rows=indexes, cols=[0]))
         return res

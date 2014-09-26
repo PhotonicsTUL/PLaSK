@@ -31,7 +31,7 @@ class DefinesModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         TableModel.__init__(self, 'defines', parent, info_cb, *args)
 
-    def nameToIndex(self, name):
+    def name_to_index(self, name):
         """:return: index of entry with given name or -1"""
         for idx, val in enumerate(self.entries):
             if val.name == name: return idx
@@ -73,16 +73,15 @@ class DefinesModel(TableModel):
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:
-                res.append(Info('Definition name is required [row: %d]' % i, Info.ERROR, rows=[0]))
+                res.append(Info('Definition name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))
             else:
                 names.setdefault(d.name, []).append(i)
-            if not d.value: res.append(Info('Definition value is required [row: %d]' % i, Info.ERROR, rows=[1]))
+            if not d.value:
+                res.append(Info('Definition value is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(1,)))
         for name, indexes in names.items():
             if len(indexes) > 1:
-                res.append(Info('Duplicated definition name "%s" [rows: %s]' % (name, ', '.join(map(str, indexes))),
-                                Info.ERROR, rows=[0]
-                                )
-                          )
+                res.append(Info('Duplicated definition name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
+                                Info.ERROR, rows=[0]))
         return res
 
     def create_default_entry(self):

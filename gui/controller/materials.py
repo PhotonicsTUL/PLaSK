@@ -240,8 +240,8 @@ class MaterialPlot(QtGui.QWidget):
         self.error.setReadOnly(True)
         self.error.setContentsMargins(0,0,0,0)
         self.error.setFrameStyle(0)
-        pal = self.error.palette();
-        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#FFFFCC"))
+        pal = self.error.palette()
+        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         self.error.setPalette(pal)
         self.error.acceptRichText()
 

@@ -307,6 +307,9 @@ class MainWindow(QtGui.QMainWindow):
         #self.info_table = QtGui.QTableView(self.plot_dock)
         self.info_table = QtGui.QListView(self.info_dock)
         self.info_table.setModel(self.info_model)
+        pal = self.info_table.palette()
+        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
+        self.info_table.setPalette(pal)
         #self.info_table.horizontalHeader().hide()
         #self.info_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Stretch);
         self.info_dock.setWidget(self.info_table)

@@ -78,6 +78,8 @@ class ConnectsModel(TableModel):
     def create_info(self):
         res = super(ConnectsModel, self).create_info()
         for i, d in enumerate(self.entries):
-            if not d.output: res.append(Info('Connection output is required [row: %d]' % i, Info.ERROR, rows=[0]))
-            if not d.input: res.append(Info('Connection input is required [row: %d]' % i, Info.ERROR, rows=[1]))
+            if not d.output:
+                res.append(Info('Connection output is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
+            if not d.input:
+                res.append(Info('Connection input is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
         return res
