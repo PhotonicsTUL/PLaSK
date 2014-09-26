@@ -20,7 +20,12 @@ import ctypes
 import subprocess
 import pkgutil
 
-from .qt import QtGui, QtCore
+from .qt import QtGui, QtCore, qt
+
+# Set-up corrent backend for matplotlib
+try: import matplotlib
+except ImportError: pass
+else: matplotlib.rc('backend', qt4=qt)
 
 from . import _resources
 
@@ -304,14 +309,15 @@ class MainWindow(QtGui.QMainWindow):
         self.info_dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
         self.info_dock.setTitleBarWidget(QtGui.QWidget())
         self.info_model = InfoTreeModel(None)
-        #self.info_table = QtGui.QTableView(self.plot_dock)
+        #self.info = QtGui.QTableView(self.plot_dock)
         self.info_table = QtGui.QListView(self.info_dock)
         self.info_table.setModel(self.info_model)
+        self.info_table.setSelectionMode(QtGui.QListView.NoSelection)
         pal = self.info_table.palette()
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         self.info_table.setPalette(pal)
-        #self.info_table.horizontalHeader().hide()
-        #self.info_table.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Stretch);
+        #self.info.horizontalHeader().hide()
+        #self.info.horizontalHeader().setResizeMode(0, QtGui.QHeaderView.Stretch);
         self.info_dock.setWidget(self.info_table)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_dock)
 

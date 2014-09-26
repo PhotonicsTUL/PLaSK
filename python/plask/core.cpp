@@ -339,6 +339,7 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::NotImplemented>(PyExc_NotImplementedError);
     register_exception<plask::OutOfBoundsException>(PyExc_IndexError);
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
+    register_exception<plask::MaterialParseException>(PyExc_ValueError);
     register_exception<plask::NoSuchGeometryObjectType>(PyExc_TypeError);
     register_exception<plask::BadInput>(PyExc_ValueError);
     register_exception<plask::DataError>(PyExc_ValueError);

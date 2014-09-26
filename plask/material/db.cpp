@@ -12,9 +12,9 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     for (auto& p1: material1composition) {
         auto p2 = material2composition.find(p1.first);
         if (p2 == material2composition.end())
-            throw MaterialParseException("materials compositions are different: in first there is \"%1%\" object which is missing in second.", p1.first);
+            throw MaterialParseException("Materials compositions are different: in first there is '%1%' object which is missing in second", p1.first);
         if (std::isnan(p1.second) != std::isnan(p2->second))
-            throw MaterialParseException("amounts must be defined for the same objects, which is not true in case of \"%1%\" object.", p1.first);
+            throw MaterialParseException("Amounts must be defined for the same objects, which is not true in case of '%1%' object", p1.first);
     }
 }
 
@@ -96,12 +96,12 @@ void MaterialsDB::loadAllToDefault(const std::string& dir) {
             ++iter;
         }
     } else {
-        writelog(LOG_WARNING, "MaterialsDB: '%1%' does not exist or is not a directory. Cannot load default materials.", dir);
+        writelog(LOG_WARNING, "MaterialsDB: '%1%' does not exist or is not a directory. Cannot load default materials", dir);
     }
 }
 
 void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &composition) {
-    if (composition.empty()) throw MaterialParseException("unknown composition.");
+    if (composition.empty()) throw MaterialParseException("Unknown material composition");
 }
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor():
@@ -144,7 +144,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
             std::string complex_DbKey;
             try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception& e) {}
             if (constructors.find(complex_DbKey) != constructors.end())  //material is complex
-                throw MaterialParseException(format("composition is required to get \"%1%\" material.", db_Key));
+                throw MaterialParseException(format("Material composition is required to get '%1%' material", db_Key));
             throw NoSuchMaterial(db_Key);
         }
         throw NoSuchMaterial(composition, dopant_name);
@@ -172,7 +172,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant
         return get(parsed_name_with_dopant, Material::Composition(), dopant, doping_amount_type, doping_amount);
     std::vector<std::string> objects = Material::parseObjectsNames(name);
     if (composition.size() > objects.size())
-        throw plask::Exception("Too long composition vector (longer than number of objects in \"%1%\")", parsed_name_with_dopant);
+        throw plask::Exception("Too long material composition vector (longer than number of objects in '%1%')", parsed_name_with_dopant);
     Material::Composition comp;
     for (std::size_t i = 0; i < composition.size(); ++i) comp[objects[i]] = composition[i];
     for (std::size_t i = composition.size(); i < objects.size(); ++i) comp[objects[i]] = std::numeric_limits<double>::quiet_NaN();
@@ -224,7 +224,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
         if (material1name_with_components != material2name_with_components)
             throw MaterialCantBeMixedException(material1name_with_components, material2name_with_components, dopant_name);
         if (dopAmountType == Material::NO_DOPING || m1DopAmount == m2DopAmount)
-            throw MaterialParseException("%1%: only complex or doped materials with different amount of dopant can be mixed.", material1name_with_components);
+            throw MaterialParseException("%1%: only complex or doped materials with different amount of dopant can be mixed", material1name_with_components);
         std::string dbKey = material1name_with_components;
         appendDopant(dbKey, dopant_name);
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
@@ -268,9 +268,9 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
     if (m1dop != "") Material::parseDopant(m1dop, m1_dop_name, m1_dop_type, m1_dop_am);
     if (m2dop != "") Material::parseDopant(m2dop, m2_dop_name, m2_dop_type, m2_dop_am);
     if (m1_dop_name != m2_dop_name)
-        throw MaterialParseException("can't mix materials with different doping: \"%1%\" and \"%2%\"", material1_fullname, material2_fullname);
+        throw MaterialParseException("Cannot mix materials with different doping: '%1%' and '%2%'", material1_fullname, material2_fullname);
     if (m1_dop_type != m2_dop_type)
-        throw MaterialParseException("can't mix materials for which doping is given in different format: \"%1%\" and \"%2%\".", material1_fullname, material2_fullname);
+        throw MaterialParseException("Cannot mix materials for which doping is given in different format: '%1%' and '%2%'", material1_fullname, material2_fullname);
     return getFactory(m1comp, m2comp, m1_dop_name, m1_dop_type, m1_dop_am, m2_dop_am);
 }
 

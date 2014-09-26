@@ -14,10 +14,8 @@ import re
 import itertools
 
 from ..qt import QtCore, QtGui, qt
-from ..qt.QtGui import QSplitter
 
 from ..utils.str import html_to_tex
-
 from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
                               MATERIALS_PROPERTES, ELEMENT_GROUPS
 from ..utils.widgets import HTMLDelegate, table_last_col_fill
@@ -31,9 +29,9 @@ except ImportError:
     matplotlib = None
 else:
     import numpy
-    matplotlib.rc('backend', qt4=qt)
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 
 try:
     import plask
@@ -113,7 +111,7 @@ class MaterialsController(Controller):
         if selection_model is None: selection_model = MaterialsModel()
         Controller.__init__(self, document, selection_model)
 
-        self.splitter = QSplitter()
+        self.splitter = QtGui.QSplitter()
 
         self.materials_table = QtGui.QTableView()
         self.materials_table.setModel(self.model)
@@ -218,10 +216,8 @@ class MaterialPlot(QtGui.QWidget):
         self.par_toolbar = QtGui.QToolBar()
         self.mat_toolbar = QtGui.QToolBar()
         self.arguments = {}
-        self.property_changed()
 
         self.model.changed.connect(self.update_materials)
-        self.update_materials()
 
         plot = QtGui.QPushButton()
         plot.setText("&Plot")
@@ -235,15 +231,18 @@ class MaterialPlot(QtGui.QWidget):
         self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.canvas.updateGeometry()
 
-        self.error = QtGui.QTextEdit()
+        self.toolbar = NavigationToolbar(self.canvas, self)
+
+        self.error = QtGui.QTextEdit(self)
         self.error.setVisible(False)
         self.error.setReadOnly(True)
-        self.error.setContentsMargins(0,0,0,0)
+        self.error.setContentsMargins(0, 0, 0, 0)
         self.error.setFrameStyle(0)
         pal = self.error.palette()
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffc"))
         self.error.setPalette(pal)
         self.error.acceptRichText()
+        self.error.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
 
         hbox1 = QtGui.QHBoxLayout()
         hbox2 = QtGui.QHBoxLayout()
@@ -254,13 +253,41 @@ class MaterialPlot(QtGui.QWidget):
 
         hbox2.addWidget(plot)
 
-        vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(hbox1)
-        vbox.addLayout(hbox2)
-        vbox.addWidget(self.error)
-        vbox.addWidget(self.canvas)
+        layout = QtGui.QVBoxLayout()
+        layout.addLayout(hbox1)
+        layout.addLayout(hbox2)
 
-        self.setLayout(vbox)
+        plotbox = QtGui.QVBoxLayout()
+        plotbox.addWidget(self.error)
+        plotbox.addWidget(self.toolbar)
+        plotbox.addWidget(self.canvas)
+
+        splitter = QtGui.QSplitter(self)
+        splitter.setOrientation(QtCore.Qt.Vertical)
+        plotbox_widget = QtGui.QWidget()
+        plotbox_widget.setLayout(plotbox)
+        splitter.addWidget(plotbox_widget)
+
+        self.info = QtGui.QTextEdit(self)
+        self.info.setAcceptRichText(True)
+        self.info.setReadOnly(True)
+        self.info.setContentsMargins(0, 0, 0, 0)
+        self.info.setFrameStyle(0)
+        self.info.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Maximum)
+
+        splitter.addWidget(self.info)
+
+        layout.addWidget(splitter)
+        self.setLayout(layout)
+
+        self.update_materials()
+        self.property_changed()
+
+    def resizeEvent(self, event):
+        if self.error.isVisible():
+            self.error.setFixedHeight(self.error.document().size().height())
+        if self.info.isVisible():
+            self.info.setMaximumHeight(self.info.document().size().height())
 
     def update_materials(self, *args, **kwargs):
         text = self.material.currentText()
@@ -329,6 +356,31 @@ class MaterialPlot(QtGui.QWidget):
             doping = None
         return doping, name, simple
 
+    def update_info(self):
+        """Update info area"""
+        material_name = str(self.material.currentText())
+        property_name = str(self.param.currentText())
+        # TODO add browsing model if info can be included in XML
+        try:
+            info = plask.material.db.info(material_name)[property_name]
+        except (ValueError, KeyError):
+            info = None
+        self.info.clear()
+        if info:
+            text = "<table>"
+            for key, value in info.items():
+                if type(value) == dict:
+                    value = ", ".join("<i>{}</i>: {}".format(*i) for i in value.items())
+                elif type(value) == list or type(value) == tuple:
+                    value = ", ".join(value)
+                text += "<tr><td><b>{}: </b></td><td>{}</td></tr>".format(key, value)
+            self.info.setText(text + "</table>")
+            self.info.resize(self.info.document().idealWidth(), self.info.document().size().height())
+            self.info.show()
+            self.info.setMaximumHeight(self.info.document().size().height())
+        else:
+            self.info.hide()
+
     def material_changed(self):
         old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
         for child in self.mat_toolbar.children():
@@ -353,6 +405,8 @@ class MaterialPlot(QtGui.QWidget):
             self.set_toolbar(self.mat_toolbar,
                              [("["+dope+"]", dope + "doping concentration [1/cm<sup>3</sup>]")], old, 1)
 
+        self.update_info()
+
     def property_changed(self):
         old = dict((k.text(), (v[0].text(), v[1].text())) for k,v in self.arguments.items())
         for child in self.par_toolbar.children():
@@ -360,6 +414,8 @@ class MaterialPlot(QtGui.QWidget):
                 del self.arguments[child]
         self.par_toolbar.clear()
         self.set_toolbar(self.par_toolbar, MATERIALS_PROPERTES[self.param.currentText()][2], old, 2)
+
+        self.update_info()
 
     def selected_argument(self):
         button = self.sender()
@@ -438,6 +494,7 @@ class MaterialPlot(QtGui.QWidget):
         except Exception as err:
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
+            self.error.setFixedHeight(self.error.document().size().height())
         else:
             self.error.clear()
             self.error.hide()
@@ -445,10 +502,11 @@ class MaterialPlot(QtGui.QWidget):
         axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
                         + ' [' +
                         html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
-        self.figure.set_tight_layout(5)
+        self.figure.set_tight_layout(2)
         self.canvas.draw()
         warnings.showwarning = old_showwarning
         if warns:
             # if self.error.text(): self.error.append("\n")
             self.error.append("\n".join(warns))
             self.error.show()
+            self.error.setFixedHeight(self.error.document().size().height())

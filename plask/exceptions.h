@@ -232,10 +232,10 @@ struct PLASK_API MaterialMethodNotApplicable: public Exception {
 struct PLASK_API MaterialParseException: public Exception {
     MaterialParseException(): Exception("Material parse error") {}
     /// @param msg error message
-    MaterialParseException(const std::string& msg): Exception("Material parse error: " + msg) {}
+    MaterialParseException(const std::string& msg): Exception(msg) {}
 
     template <typename... T>
-    MaterialParseException(const std::string& msg, const T&... args): Exception("Material parse error: " + msg, args...) {
+    MaterialParseException(const std::string& msg, const T&... args): Exception(msg, args...) {
     }
 };
 

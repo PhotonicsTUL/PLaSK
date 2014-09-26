@@ -20,6 +20,14 @@ from .table import TableModel, TableModelEditMethods
 from .info import Info
 from ..utils.xml import OrderedTagReader, AttributeReader, require_no_attributes, require_no_children
 
+try:
+    import plask
+except ImportError:
+    plask = None
+else:
+    import plask.material
+
+
 MATERIALS_PROPERTES = OrderedDict((
     ('A', (u'Monomolecular recombination coefficient <i>A</i>', u'1/s',
            [(u'T', u'temperature [K]')])),
@@ -333,9 +341,17 @@ class MaterialsModel(TableModel):
                 names.setdefault(d.name, []).append(i)
             if not d.base:
                 res.append(Info(u'Material base is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
+            elif plask and d.base not in (e.name for e in self.entries[:i]):
+                try:
+                    plask.material.db.get(str(d.base))
+                except (ValueError, RuntimeError) as err:
+                    res.append(
+                        Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]" \
+                             .format(i+1, d.base, err), Info.ERROR, rows=[i], cols=[1]))
+
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(
-                    Info(u'Duplicated material name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in indexes)),
-                         Info.ERROR, rows=indexes, cols=[0]))
+                    Info(u'Duplicated material name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in indexes),
+                         Info.ERROR, rows=indexes, cols=[0])))
         return res
