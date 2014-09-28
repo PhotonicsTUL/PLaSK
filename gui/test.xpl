@@ -6,7 +6,7 @@
 </defines>
 
 <materials>
-  <material name="active" base="semiconductor">
+  <material name="active" base="In(0.13)GaAs">
     <nr>3.53</nr>
     <absp>0.</absp>
   </material>

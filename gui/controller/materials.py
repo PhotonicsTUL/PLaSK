@@ -40,14 +40,12 @@ else:
     import plask.material
 
 
-class ComponentsPopup(QtGui.QWidget):
+class ComponentsPopup(QtGui.QFrame):
 
     def __init__(self, index, name, groups, doping, pos=None):
         super(ComponentsPopup, self).__init__()
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
-        pal = self.palette()
-        pal.setColor(QtGui.QPalette.Background, QtGui.QColor("#abb"))
-        self.setPalette(pal)
+        self.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
         self.index = index
         self.elements = elements_re.findall(name)
         self.doping = doping
@@ -55,20 +53,20 @@ class ComponentsPopup(QtGui.QWidget):
         first = None
         box = QtGui.QHBoxLayout()
         for el in tuple(itertools.chain(*(g for g in groups if len(g) > 1))):
-            label = QtGui.QLabel(' ' + el + ': ')
+            label = QtGui.QLabel(' ' + el + ':')
             edit = QtGui.QLineEdit(self)
             if first is None: first = edit
             box.addWidget(label)
             box.addWidget(edit)
             self.edits[el] = edit
         if doping:
-            label = QtGui.QLabel(' ' + doping + ': ')
+            label = QtGui.QLabel(' [' + doping + ']:')
             edit = QtGui.QLineEdit(self)
             if first is None: first = edit
             box.addWidget(label)
             box.addWidget(edit)
             self.edits['dp'] = edit
-        box.setContentsMargins(2, 0, 2, 0)
+        box.setContentsMargins(2, 1, 2, 1)
         self.setLayout(box)
         if pos is None:
             cursor = QtGui.QCursor()
@@ -122,11 +120,11 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.setEditable(True)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(material_list)
-        combo.insertSeparator(4)
-        combo.insertSeparator(len(material_list)-index.row()+1)
         combo.setEditText(index.data())
         try: combo.setCurrentIndex(material_list.index(index.data()))
         except ValueError: pass
+        combo.insertSeparator(4)
+        combo.insertSeparator(len(material_list)-index.row()+1)
         combo.setCompleter(self.get_defines_completer(parent))
         combo.setMaxVisibleItems(len(material_list))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
@@ -305,6 +303,7 @@ class MaterialPlot(QtGui.QWidget):
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
         self.canvas.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.figure.set_facecolor(self.palette().color(QtGui.QPalette.Background).name())
         self.canvas.updateGeometry()
 
         self.toolbar = NavigationToolbar(self.canvas, self)
@@ -364,6 +363,7 @@ class MaterialPlot(QtGui.QWidget):
             self.error.setFixedHeight(self.error.document().size().height())
         if self.info.isVisible():
             self.info.setMaximumHeight(self.info.document().size().height())
+        self.figure.set_tight_layout(0)
 
     def update_materials(self, *args, **kwargs):
         text = self.material.currentText()
@@ -558,7 +558,7 @@ class MaterialPlot(QtGui.QWidget):
         axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0])
                         + ' [' +
                         html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
-        self.figure.set_tight_layout(2)
+        self.figure.set_tight_layout(0)
         self.canvas.draw()
         warnings.showwarning = old_showwarning
         if warns:
