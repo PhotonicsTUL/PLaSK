@@ -215,7 +215,6 @@ Good base classes for geometries objects are, for example:
 #include "translation_container.h"
 #include "stack.h"
 #include "separator.h"
-#include "align_container.h"
 #include "leaf.h"
 #include "cylinder.h"
 #include "border.h"

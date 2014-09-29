@@ -24,7 +24,6 @@ void register_geometry_transform();
 void register_geometry_aligners();
 void register_geometry_path();
 void register_geometry_container();
-void register_geometry_aligncontainers();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -81,7 +80,6 @@ void initGeometry() {
     register_geometry_transform();
     register_geometry_aligners();
     register_geometry_container();
-    register_geometry_aligncontainers();
 
     register_exception<NoSuchGeometryObject>(PyExc_IndexError);
 

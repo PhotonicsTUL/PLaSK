@@ -1,50 +1,9 @@
 Containers
 ^^^^^^^^^^
 
-.. xml:tag:: <align2d> (or <align>)
+.. xml:tag:: <align2d> (or: <align>, <container2d>, <container>)
 
-   Corresponding Python classes: :py:class:`plask.geometry.AlignTran2D`, :py:class:`plask.geometry.AlignVert2D`.
-
-   Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
-
-   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
-   :attr role: Object role. Important for some solvers.
-   :attr left: Horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-   :attr right: Horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-   :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
-   :attr {X}center: (where **{X}** is the transverse axis name): Alias for ``trancenter``.
-   :attr {X}: (where **{X}** is the transverse axis name): Horizontal alignment specification: position of the origin of each element. (float [µm])
-   :attr top: Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
-   :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
-   :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
-   :attr {Y}center: (where **{Y}** is the vertical axis name): Alias for *vertcenter*.
-   :attr {Y}: (where **{Y}** is the vertical axis name): Vertical alignment specification: position of the origin of each element. (float [µm])
-
-   Exactly one of the ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** attributes must be given.
-
-   .. xml:contents::
-
-      The content of this element can be any number of other two-dimensional geometry *object* or ``<item>`` elements, which are aligned in the container according to its specification.
-
-      *object*
-
-         :ref:`Two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
-
-      .. xml:tag:: <item> [in <align2d>]
-
-         Tag that allows to specify additional item attributes.
-
-         :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-         :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, **{Y}**). Specifies alignment of the item in the remaining direction. Defaults to ``left="0"`` or ``bottom="0"``.
-
-         .. xml:contents::
-
-            A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
-
-
-.. xml:tag:: <container2d> (or <container>)
-
-   Corresponding Python class: :py:class:`plask.geometry.Container2D`.
+   Corresponding Python class: :py:class:`plask.geometry.AlignContainer2D`.
 
    Container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 

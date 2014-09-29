@@ -158,6 +158,9 @@ def Shelf(repeat=None, shift=0., **kwargs):
 geometry.Shelf = Shelf
 del Shelf
 
+geometry.Container2D = geometry.AlignContainer2D
+geometry.Container3D = geometry.AlignContainer3D
+
 ## ## plask.manager ## ##
 
 def loadxpl(source, vars={}, sections=None, destination=None):

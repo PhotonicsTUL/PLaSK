@@ -26,7 +26,7 @@ struct CacheNode {
 };
 
 /**
- * Geometry objects container in which every child has an associated translation vector.
+ * Geometry objects container in which every child has an associated aligner.
  * @ingroup GEOMETRY_OBJ
  */
 template < int dim >

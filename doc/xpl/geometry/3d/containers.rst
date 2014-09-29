@@ -1,60 +1,9 @@
 Containers
 ^^^^^^^^^^
 
-Containers are objects that contain multiple other geometry objects as their items. They organize them spatially in different manners depending on the type of the container.
+.. xml:tag:: <align3d> (or: <align>, <container3d>, <container>)
 
-.. xml:tag:: <align3d> (or <align>)
-
-   Corresponding Python classes: :py:class:`plask.geometry.AlignLong3D`, :py:class:`plask.geometry.AlignTran3D`, :py:class:`plask.geometry.AlignVert3D`.
-
-   Container that align its items according to specified rules specified in its attributes. The alignment for one axis only should be given. As the objects in this container usually overlap, their order matters: latter items overwrite the former ones.
-
-   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
-   :attr role: Object role. Important for some solvers.
-   :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
-   :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
-   :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of each element. (float [µm])
-   :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
-   :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of each element. (float [µm])
-   :attr left: Transversal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-   :attr right: Transversal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-   :attr trancenter: Transversal alignment specification: position of the center of the bounding box of each element. (float [µm])
-   :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
-   :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of each element. (float [µm])
-   :attr top: Vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
-   :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
-   :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
-   :attr {Z}center: where **{Z}** is the vertical axis name: Alias for ``vertcenter``.
-   :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of each element. (float [µm])
-
-   Exactly one of the ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, and **{Y}**, ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, and **{Z}** attributes must be given.
-
-   .. xml:contents::
-
-      The content of this element can be any number of other two-dimensional geometry *object* or ``<item>`` elements, which are aligned in the container according to its specification.
-
-      *object*
-
-         :ref:`Three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
-
-      .. xml:tag:: <item> [in <align3d>]
-
-         Tag that allows to specify additional item attributes.
-
-         :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-         :attr {alignment}: Any of the stack alignment specification attributes along the axis not specified in the container attributes (``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, and **{Y}**, ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, **{Z}**). Specifies alignment of the item in the remaining direction. Defaults to ``back=0``, ``left="0"`` or ``bottom="0"`` (excluding the alignment of the container from the list).
-
-         .. xml:contents::
-
-             A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
-
-
-
-
-
-.. xml:tag:: <container3d> (or <container>)
-
-   Corresponding Python class: :py:class:`plask.geometry.Container3D`.
+   Corresponding Python class: :py:class:`plask.geometry.AlignContainer3D`.
 
    Container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 

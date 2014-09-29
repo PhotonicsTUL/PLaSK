@@ -119,26 +119,40 @@ void register_geometry_container()
     init_GeometryObjectContainer<3>();
 
     py::class_<TranslationContainer<2>, shared_ptr<TranslationContainer<2>>, py::bases<GeometryObjectContainer<2>>, boost::noncopyable>
-    ("Container2D",
-     "Container in which every child has an associated translation vector\n\n"
-     "Container2D()\n    Create a new container"
+    ("AlignContainer2D",
+     "Container in which every child has an associated aligner\n\n"
+     "AlignContainer2D()\n    Create a new container"
     )
         .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<2>>), "Add new object to the container with provided alignment")
         .def("append", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
              (py::arg("item"), py::arg("translation")=Vec<2>(0.,0.)), "Add new object to the container with provided translation vector")
         .def("append", &TranslationContainer2_add, (py::arg("item"), "c0", "c1"), "Add new object to the container with tranlastion [c0,c1]")
+
+        // alias to append
+        .def("add", py::raw_function(&TranslationContainer_add<TranslationContainer<2>>), "Add new object to the container with provided alignment")
+        .def("add", (PathHints::Hint(TranslationContainer<2>::*)(shared_ptr<TranslationContainer<2>::ChildType>,const Vec<2>&))&TranslationContainer<2>::add,
+            (py::arg("item"), py::arg("translation")=Vec<2>(0.,0.)), "Add new object to the container with provided translation vector")
+        .def("add", &TranslationContainer2_add, (py::arg("item"), "c0", "c1"), "Add new object to the container with tranlastion [c0,c1]")
+
         .def("move_item", py::raw_function(&Container_move<TranslationContainer<2>>), "Move item in container")
        ;
 
     py::class_<TranslationContainer<3>, shared_ptr<TranslationContainer<3>>, py::bases<GeometryObjectContainer<3>>, boost::noncopyable>
-    ("Container3D",
-     "Container in which every child has an associated translation vector\n\n"
-     "Container3D()\n    Create a new container"
+    ("AlignContainer3D",
+     "Container in which every child has an associated aligner\n\n"
+     "AlignContainer3D()\n    Create a new container"
     )
         .def("append", py::raw_function(&TranslationContainer_add<TranslationContainer<3>>), "Add new object to the container with provided alignment")
         .def("append", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,
              (py::arg("item"), py::arg("translation")=Vec<3>(0.,0.,0.)), "Add new object to the container with provided translation vector")
         .def("append", &TranslationContainer3_add, (py::arg("item"), "c0", "c1", "c2"), "Add new object to the container with translation [c0,c1,c2]")
+
+            // alias to append
+        .def("add", py::raw_function(&TranslationContainer_add<TranslationContainer<3>>), "Add new object to the container with provided alignment")
+        .def("add", (PathHints::Hint(TranslationContainer<3>::*)(shared_ptr<TranslationContainer<3>::ChildType>,const Vec<3>&))&TranslationContainer<3>::add,
+             (py::arg("item"), py::arg("translation")=Vec<3>(0.,0.,0.)), "Add new object to the container with provided translation vector")
+        .def("add", &TranslationContainer3_add, (py::arg("item"), "c0", "c1", "c2"), "Add new object to the container with translation [c0,c1,c2]")
+
         .def("move_item", py::raw_function(&Container_move<TranslationContainer<3>>), "Move item in container")
     ;
 
