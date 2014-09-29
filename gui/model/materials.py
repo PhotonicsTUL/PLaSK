@@ -379,12 +379,12 @@ class MaterialsModel(TableModel):
                     plask.material.db.get(str(d.base))
                 except (ValueError, RuntimeError) as err:
                     res.append(
-                        Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]" \
+                        Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"
                              .format(i+1, d.base, err), Info.ERROR, rows=[i], cols=[1]))
 
-        for name, indexes in names.items():
-            if len(indexes) > 1:
+        for name, rows in names.items():
+            if len(rows) > 1:
                 res.append(
-                    Info(u'Duplicated material name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in indexes),
-                         Info.ERROR, rows=indexes, cols=[0])))
+                    Info(u'Duplicated material name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in rows)),
+                         Info.ERROR, rows=rows, cols=[0]))
         return res
