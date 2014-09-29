@@ -10,12 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...utils.xml import AttributeReader, OrderedTagReader
+from .node import GNode
 
-class GeometryObjectModel(object):
 
-    def __init__(self, name = None):
-        super(GeometryObjectModel, self).__init__()
+class GNObject(GNode):
+
+    def __init__(self, parent = None, name = None):
+        super(GNObject, self).__init__(parent)
         self.name = name
 
     def attributes_from_XML(self, attribute_reader):
@@ -25,10 +26,5 @@ class GeometryObjectModel(object):
         """
         self.name = attribute_reader.get('name', None)
 
-    def children_from_XML(self, ordered_reader):
-        pass
 
-    def from_XML(self, element):
-        with AttributeReader(element) as a: self.attributes_from_XML(a)
-        with OrderedTagReader(element) as r: self.children_from_XML(r)
 

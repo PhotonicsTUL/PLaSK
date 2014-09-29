@@ -19,6 +19,8 @@ Copies and references to geometry objects
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr role: Object role. Important for some solvers.
    :attr required from: Name of the source two or three dimensional object to make modified copy of. Usually it is some container that has some other named its items or sub-items.
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform. Allowed only if ``from`` points to physical object.
+   :attr steps-dist: Minimum step size if the object is non-uniform. Allowed only if ``from`` points to physical object.
 
    .. xml:contents::
 
