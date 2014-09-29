@@ -129,18 +129,17 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         combo.setMaxVisibleItems(len(material_list))
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
-        combo.currentIndexChanged[str].connect(lambda text: self.show_components_popup(text, index))
+        combo.currentIndexChanged[str].connect(lambda text: self.show_components_popup(combo, text, index))
         return combo
 
-    def show_components_popup(self, text, index):
-        combo = self.sender()
+    def show_components_popup(self, combo, text, index):
         pos = combo.mapToGlobal(QtCore.QPoint(0, combo.height()))
-        index.model().popup = None  # close old popup
+        self.popup = None  # close old popup
         name, groups, doping = parse_material_components(text)
         if not groups and doping is None:
             return
-        index.model().popup = ComponentsPopup(index, name, groups, doping, pos)
-        index.model().popup.show()
+        self.popup = ComponentsPopup(index, name, groups, doping, pos)
+        self.popup.show()
 
 
 

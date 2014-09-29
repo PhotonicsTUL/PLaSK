@@ -309,7 +309,6 @@ class MaterialsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
-        self.popup = None
 
     def set_XML_element(self, element):
         self.modelAboutToBeReset.emit()
