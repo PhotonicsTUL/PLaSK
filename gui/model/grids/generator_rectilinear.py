@@ -15,7 +15,7 @@ from ...qt import QtCore
 from ...model.table import TableModelEditMethods
 
 from ...utils.xml import AttributeReader, require_no_children, UnorderedTagReader
-from .grid import Grid
+from . import Grid
 
 
 class RefinementConf(object):

@@ -13,7 +13,7 @@
 from ...qt import QtGui
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 
-from ..base import Controller
+from .. import Controller
 from ...utils.widgets import table_last_col_fill, exception_to_msg
 from ..table import table_with_manipulators
 from ...model.grids.section import GridsModel

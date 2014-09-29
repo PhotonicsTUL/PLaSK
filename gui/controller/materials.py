@@ -18,7 +18,7 @@ from ..utils.str import html_to_tex
 from ..model.materials import MaterialsModel, MaterialPropertyModel, material_html_help, \
                               MATERIALS_PROPERTES, parse_material_components, elements_re
 from ..utils.widgets import HTMLDelegate, table_last_col_fill
-from .base import Controller
+from . import Controller
 from .defines import DefinesCompletionDelegate
 from .table import table_with_manipulators
 

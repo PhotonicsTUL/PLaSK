@@ -14,7 +14,7 @@ from ..qt import QtGui
 
 from ..utils.widgets import exception_to_msg
 from .source import SourceEditController
-from .base import Controller
+from . import Controller
 
 class MultiEditorController(Controller):
     """

@@ -11,9 +11,8 @@
 # GNU General Public License for more details.
 
 from lxml import etree
-from controller.geometry.section import GeometryController
 
-from .model.base import SectionModelTreeBased
+from .model import SectionModelTreeBased
 from .controller.source import SourceEditController
 from .controller.defines import DefinesController
 from .controller.script import ScriptController

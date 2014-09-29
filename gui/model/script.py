@@ -13,7 +13,7 @@
 from lxml import etree
 from ..utils.xml import require_no_children, require_no_attributes
 
-from .base import SectionModel
+from . import SectionModel
 
 class ScriptModel(SectionModel):
 

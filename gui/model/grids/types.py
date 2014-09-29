@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .grid import GridTreeBased, GridWithoutConf
+from . import GridTreeBased, GridWithoutConf
 from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
 from .generator_rectilinear import RectilinearDivideGenerator
 

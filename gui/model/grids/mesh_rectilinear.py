@@ -13,7 +13,7 @@
 from lxml.etree import ElementTree, SubElement
 
 from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children, UnorderedTagReader
-from .grid import Grid
+from . import Grid
 
 
 class AxisConf(object):

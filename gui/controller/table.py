@@ -12,7 +12,7 @@
 
 from ..qt import QtGui
 
-from .base import Controller
+from . import Controller
 
 class TableActions(object):
 

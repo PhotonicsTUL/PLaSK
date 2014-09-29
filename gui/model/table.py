@@ -12,7 +12,7 @@
 
 from ..qt import QtCore, QtGui
 
-from .base import SectionModel
+from . import SectionModel
 from . import info
 
 class TableModelEditMethods(object):

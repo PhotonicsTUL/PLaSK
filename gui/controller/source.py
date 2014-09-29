@@ -10,9 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui
-
-from .base import Controller
+from . import Controller
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.textedit import TextEdit
 from ..utils.widgets import DEFAULT_FONT

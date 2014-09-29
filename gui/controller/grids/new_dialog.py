@@ -12,7 +12,7 @@
 
 from ...qt import QtGui
 from ...qt.QtGui import QLabel, QStringListModel
-from ...model.grids.grid import Grid
+from ...model.grids import Grid
 from ...model.grids.types import construct_grid , meshes_types, generators_types,\
     generator_methods, xml_name
 
