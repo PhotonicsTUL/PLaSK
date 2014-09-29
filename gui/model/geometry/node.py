@@ -12,6 +12,7 @@
 
 from ...utils.xml import AttributeReader, OrderedTagReader
 
+
 class GNode(object):
 
     def __init__(self, parent = None):
@@ -31,18 +32,3 @@ class GNode(object):
     def from_XML(self, element):
         with AttributeReader(element) as a: self.attributes_from_XML(a)
         with OrderedTagReader(element) as r: self.children_from_XML(r)
-
-
-class GNAgain(GNode):
-
-    def __init__(self, parent = None, ref = None):
-        super(GNAgain, self).__init__(parent)
-        self.ref = ref
-
-    def attributes_from_XML(self, attribute_reader):
-        self.ref = attribute_reader.require('ref')
-
-
-#class GNCopy(GNode):
-
-#    def __init__(self, parent = None):

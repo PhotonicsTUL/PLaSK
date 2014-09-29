@@ -14,10 +14,14 @@ from .node import GNode
 
 
 class GNObject(GNode):
+    '''Base class for all nodes read by GeometryReader::readObject() in PLaSK.'''
 
-    def __init__(self, parent = None, name = None):
+    def __init__(self, parent = None, name = None, role = None, step_num = None, step_dist = None):
         super(GNObject, self).__init__(parent)
         self.name = name
+        self.role = role
+        self.step_num = step_num
+        self.step_dist = step_dist
 
     def attributes_from_XML(self, attribute_reader):
         """
@@ -25,6 +29,8 @@ class GNObject(GNode):
         :return:
         """
         self.name = attribute_reader.get('name', None)
-
+        self.role = attribute_reader.get('role', None)
+        self.step_num = attribute_reader.get('step-num', None)
+        self.step_dist = attribute_reader.get('step-dist', None)
 
 
