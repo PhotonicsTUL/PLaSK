@@ -10,19 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-__author__ = 'qwak'
+from .object import GNObject
 
-class GNReadConf(object):
-    '''Configuration using while geometry objects are read. Stores information about expected suffix and axes configuration.'''
+class GNBlock(GNObject):
 
-    def __init__(self, conf = None, suffix = None, axes = None):
-        super(GNReadConf, self).__init__()
-        if conf is not None:
-            self.suffix = conf.suffix
-            self.axes = conf.axes
-        else:
-            self.suffix = None
-            self.axes = None
-        if suffix is not None: self.suffix = suffix
-        if axes is not None: self.axes = axes
-
+    pass

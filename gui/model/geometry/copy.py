@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from . import GNReadConf
 
 from .node import GNode
 from .object import GNObject
@@ -20,7 +21,7 @@ class GNAgain(GNode):
         super(GNAgain, self).__init__(parent)
         self.ref = ref
 
-    def attributes_from_XML(self, attribute_reader):
+    def attributes_from_XML(self, attribute_reader, reader):
         self.ref = attribute_reader.require('ref')
 
 
@@ -33,7 +34,7 @@ class GNCopyChild(GNode):
         super(GNCopyChild, self).__init__(parent)
         self.object = object
 
-    def attributes_from_XML(self, attribute_reader):
+    def attributes_from_XML(self, attribute_reader, conf):
         self.object = attribute_reader.require('object')
 
 
@@ -48,11 +49,11 @@ class GNCReplace(GNCopyChild):
         super(GNCReplace, self).__init__(parent, object)
         self.replacer = replacer    # with in PLaSK
 
-    def attributes_from_XML(self, attribute_reader):
-        super(GNCReplace, self).attributes_from_XML(attribute_reader)
+    def attributes_from_XML(self, attribute_reader, conf):
+        super(GNCReplace, self).attributes_from_XML(attribute_reader, conf)
         self.replacer = attribute_reader.get('with', None)
 
-    def children_from_XML(self, ordered_reader):
+    def children_from_XML(self, ordered_reader, reader):
         if self.replacer is not None:
             pass    #TODO read geometry object
 
@@ -63,8 +64,8 @@ class GNCToBlock(GNCopyChild):
         super(GNCToBlock, self).__init__(parent, object)
         self.material = material    # with in PLaSK
 
-    def attributes_from_XML(self, attribute_reader):
-        super(GNCToBlock, self).attributes_from_XML(attribute_reader)
+    def attributes_from_XML(self, attribute_reader, conf):
+        super(GNCToBlock, self).attributes_from_XML(attribute_reader, conf)
         self.material = attribute_reader.get('material', None)
 
 
@@ -74,8 +75,13 @@ class GNCopy(GNObject):
         super(GNCopy, self).__init__(parent, name)
         self.source = source    # from in PLaSK
 
-    def attributes_from_XML(self, attribute_reader):
-        super(GNCopy, self).attributes_from_XML(attribute_reader)
+    def attributes_from_XML(self, attribute_reader, conf):
+        super(GNCopy, self).attributes_from_XML(attribute_reader, conf)
         self.source = attribute_reader.require('from')
 
-    #TODO def children_from_XML(self, ordered_reader):
+    def children_from_XML(self, ordered_reader, conf):
+        for t in ordered_reader.iter('delete', 'replace', 'toblock'):
+            if t.tag == 'delete': el = GNCDelete(parent=self)
+            elif t.tag == 'replace': el = GNCReplace(parent=self)
+            elif t.tag == 'toblock': el = GNCToBlock(parent=self)
+            el.from_XML(t, conf)

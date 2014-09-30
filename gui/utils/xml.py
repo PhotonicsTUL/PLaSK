@@ -140,48 +140,52 @@ class OrderedTagReader(object):
         """
         if exc_type is None and exc_value is None and traceback is None: self.require_end()
 
-    def get(self, expected_tag_name=None):
+    @classmethod
+    def _expected_tag_to_str(*expected_tag_names):
+        return ', '.join('<{}>'.format(s) for s in expected_tag_names)
+
+    def get(self, *expected_tag_names):
         """
             Get next child of wrapped self.parent_element.
-            :param str expected_tag_name: optional required name of returned tag
+            :param expected_tag_names: optional required names of returned tag
             :return: Next child of wrapped self.parent_element or None if there is no more child or next child has name
                     other than expected_tag_name
         """
-        if expected_tag_name is None:
+        if len(expected_tag_names) == 0:
             return self._goto_next()
         else:
-            if self._has_next() and self._next_element().tag == expected_tag_name:
+            if self._has_next() and self._next_element().tag in expected_tag_names:
                 return self._goto_next()
             else:
                 return None
 
-    def require(self, expected_tag_name = None):
+    def require(self, *expected_tag_names):
         """
             Get next child of wrapped self.parent_element or raise ValueError if
                 there is no more child or next child has name other than expected_tag_name.
-            :param str expected_tag_name: optional required name of returned tag
+            :param expected_tag_names: optional required name of returned tag
             :return: Next child of wrapped self.parent_element.
         """
-        res = self.get(expected_tag_name)
+        res = self.get(*expected_tag_names)
         if res is None:
-            if expected_tag_name is None:
+            if len(expected_tag_names) == 0:
                 raise ValueError('Unexpected end of <{}> tag{}.'.format(
                     self.parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
             else:
-                raise ValueError('<{}> tag{} does not have required <{}> child.'.format(
-                    self.parent_element.tag, at_line_str(self.parent_element), expected_tag_name))
+                raise ValueError('<{}> tag{} does not have required {} child.'.format(
+                    self.parent_element.tag, at_line_str(self.parent_element), OrderedTagReader._expected_tag_to_str(*expected_tag_names)))
         return res
 
-    def iter(self, expected_tag_name = None):
+    def iter(self, *expected_tag_names):
         """
             Iterator over the rest children.
-            :param str expected_tag_name: optional required name of returned tags
+            :param expected_tag_names: optional required name of returned tags
             :return: yield the same as get(expected_tag_name) as long as this is not None
         """
-        res = self.get(expected_tag_name)
+        res = self.get(*expected_tag_names)
         while res is not None:
             yield res
-            res = self.get(expected_tag_name)
+            res = self.get(*expected_tag_names)
 
 
 class UnorderedTagReader(object):

@@ -23,8 +23,10 @@ class GNObject(GNode):
         self.step_num = step_num
         self.step_dist = step_dist
 
-    def attributes_from_XML(self, attribute_reader):
+    def attributes_from_XML(self, attribute_reader, conf):
         """
+
+        :param reader:
         :param AttributeReader attribute_reader: source of attributes
         :return:
         """
