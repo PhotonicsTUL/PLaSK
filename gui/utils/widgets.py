@@ -13,7 +13,6 @@
 import collections
 import sys
 
-from .. import _DEBUG
 from ..qt import QtCore
 from ..qt import QtGui
 from ..utils.config import CONFIG
@@ -27,6 +26,7 @@ def exception_to_msg(f, parent=None, err_title=None):
         f()
         return True
     except Exception as e:
+        from .. import _DEBUG
         if _DEBUG: raise
         QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False

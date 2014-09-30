@@ -49,9 +49,9 @@ class GridsController(Controller):
 
     def set_current_index(self, new_index):
         """
-            Try to change current controller.
-            :param int new_index: index of new current controller
-            :return: False only when controller should restore old selection
+            Try to change current script.
+            :param int new_index: index of new current script
+            :return: False only when script should restore old selection
         """
         if self.current_index == new_index: return True
         if self.current_controller is not None:

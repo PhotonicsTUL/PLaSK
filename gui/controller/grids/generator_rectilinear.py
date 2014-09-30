@@ -18,7 +18,7 @@ from ...qt import QtGui
 from ...utils.str import empty_to_none
 
 class RectilinearDivideGeneratorConroller(Controller):
-    """ordered and rectangular 2D and 3D divide generator controller"""
+    """ordered and rectangular 2D and 3D divide generator script"""
 
     axes_names = [
         [""], ["horizontal", "vertical"], ["longitudinal", "transverse", "vertical"]

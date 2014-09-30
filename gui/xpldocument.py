@@ -33,9 +33,9 @@ class XPLDocument(object):
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
         #self.geometry = GUIAndSourceController(GeometryController(self))
         self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
-
-        # geometry
         self.grids = GUIAndSourceController(GridsController(self))
+        self.script = ScriptController(self)
+
         self.controllers = [
             self.defines,
             self.materials,
@@ -43,7 +43,7 @@ class XPLDocument(object):
             self.grids,
             SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  # solvers
             GUIAndSourceController(ConnectsController(self)),   # connects
-            ScriptController(self)   # script
+            self.script
         ]
         for c in self.controllers:
             c.model.changed.connect(self.on_model_change)

@@ -22,6 +22,7 @@ from gui.qt import QtCore, QtGui
 from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
+
 class OutputWindow(QtGui.QMainWindow):
     '''Main Qt window class'''
 

@@ -72,7 +72,8 @@ class TableActions(object):
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 
-def table_with_manipulators(table, parent=None, model=None, title=None):
+
+def table_and_manipulators(table, parent=None, model=None, title=None):
     toolbar = QtGui.QToolBar()
     table.table_manipulators_actions = TableActions(table, model)
     toolbar.addActions(table.table_manipulators_actions.get(parent))
@@ -91,10 +92,12 @@ def table_with_manipulators(table, parent=None, model=None, title=None):
     vbox.setContentsMargins(0, 0, 0, 0)
 
     external.setLayout(vbox)
-    #if title is None:
-    #widget.setContentsMargins(0, 0, 0, 0)
 
-    return external
+    return external, toolbar
+
+
+def table_with_manipulators(table, parent=None, model=None, title=None):
+    return table_and_manipulators(table, parent, model, title)[0]
 
 
 class TableController(Controller):
@@ -115,12 +118,25 @@ class TableController(Controller):
         self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
     def get_editor(self):
-        return self.table
+        if self.model.is_read_only():
+            return self.table
+        widget = QtGui.QWidget()
+        layout = QtGui.QVBoxLayout()
+        toolbar = QtGui.QToolBar(widget)
+        for a in self.get_table_edit_actions():
+            if not a:
+                toolbar.addSeparator()
+            else:
+                toolbar.addAction(a)
+        layout.addWidget(toolbar)
+        layout.addWidget(self.table)
+        widget.setLayout(layout)
+        return widget
 
-    def on_edit_enter(self):
-        super(TableController, self).on_edit_enter()
-        if not self.model.is_read_only():
-            self.document.window.set_section_actions(*self.get_table_edit_actions())
+    # def on_edit_enter(self):
+    #     super(TableController, self).on_edit_enter()
+    #     if not self.model.is_read_only():
+    #         self.document.window.set_section_actions(*self.get_table_edit_actions())
 
     def get_table_edit_actions(self):
         return self.table_actions.get(self.document.window)

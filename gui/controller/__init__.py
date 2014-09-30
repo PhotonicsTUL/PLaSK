@@ -44,7 +44,7 @@ class Controller(object):
         if hasattr(self, 'document'): self.document.window.set_section_actions()
 
     def update_line_number(self, current_line_in_file):
-        """If the controller has a source editor, update its line numbers offset"""
+        """If the script has a source editor, update its line numbers offset"""
         self.model.line_in_file = current_line_in_file
         try:
             self.source_editor.line_numbers.offset = current_line_in_file

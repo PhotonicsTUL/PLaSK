@@ -82,7 +82,7 @@ class AxisEdit(QtGui.QGroupBox):
 
 
 class RectangularMesh1DConroller(Controller):
-    """1D rectangular mesh (ordered or regular) controller"""
+    """1D rectangular mesh (ordered or regular) script"""
     def __init__(self, document, model):
         super(RectangularMesh1DConroller, self).__init__(document=document, model=model)
         self.editor = AxisEdit(None, allow_type_select=False, accept_non_regular=not model.is_regular)
@@ -99,7 +99,7 @@ class RectangularMesh1DConroller(Controller):
 
 
 class RectangularMeshConroller(Controller):
-    """2D and 3D rectangular mesh controller"""
+    """2D and 3D rectangular mesh script"""
 
     def __init__(self, document, model):
         super(RectangularMeshConroller, self).__init__(document=document, model=model)

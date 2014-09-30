@@ -10,9 +10,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from lxml import etree as ElementTree
-
+from .controller.materials import MaterialsController
 from .controller.script import ScriptController
+
+
+class _Dummy(object):
+    pass
 
 
 class PyDocument(object):
@@ -21,17 +24,10 @@ class PyDocument(object):
 
     def __init__(self, window, filename=None):
         self.window = window
-        self.controller = ScriptController(self)
-        self.controller.model.changed.connect(self.on_model_change)
-        self.controllers = [
-            None,   # defines
-            None,   # materials
-            None,   # geometry
-            None,   # grids
-            None,   # solvers
-            None,   # connects
-            self.controller  # script
-        ]
+        self.script = ScriptController(self)
+        self.script.model.changed.connect(self.on_model_change)
+        self.materials = _Dummy()
+        self.materials.model = None
         self.filename = None
         self.set_changed(False)
         if filename: self.load_from_file(filename)
@@ -45,24 +41,24 @@ class PyDocument(object):
 
     def load_from_file(self, filename):
         data = open(filename, 'r').read()
-        self.controller.model.set_text(data)
+        self.script.model.set_text(data)
         self.filename = filename
         self.set_changed(False)
 
     def save_to_file(self, filename):
-        open(filename, 'w').write(self.controller.model.get_text())
+        open(filename, 'w').write(self.script.model.get_text())
         self.filename = filename
         self.set_changed(False)
 
     def controller_by_index(self, index):
-        return self.controller
+        return self.script
 
     def controller_by_name(self, section_name):
-        return self.controller
+        return self.script
 
     def get_info(self, level=None):
         """Get messages from all models, on given level (all by default)."""
-        return self.controller.model.get_info(level)
+        return self.script.model.get_info(level)
 
     def stubs(self):
         return ""

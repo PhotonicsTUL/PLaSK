@@ -19,7 +19,7 @@ from . import Controller
 class MultiEditorController(Controller):
     """
         Controller which consist with a list of controllers and display one at time (using QStackedWidget).
-        Allows to change current controller.
+        Allows to change current script.
     """
 
     def __init__(self, *controllers):
@@ -42,14 +42,14 @@ class MultiEditorController(Controller):
         return self.editorWidget
 
     def get_current_index(self):
-        """:return: an index of current controller (int)"""
+        """:return: an index of current script (int)"""
         return self.editorWidget.currentIndex()
 
     def set_current_index(self, new_index):
         """
-            Try to change current controller.
-            :param int new_index: index of new current controller
-            :return: true only when controller has been changed (bool)
+            Try to change current script.
+            :param int new_index: index of new current script
+            :return: true only when script has been changed (bool)
         """
         if self.get_current_index() == new_index: return False
         if not exception_to_msg(lambda: self.currect_controller.on_edit_exit(),
@@ -61,7 +61,7 @@ class MultiEditorController(Controller):
 
     @property
     def currect_controller(self):
-        """:return: current controller"""
+        """:return: current script"""
         return self.controllers[self.get_current_index()]
 
     def save_data_in_model(self):
@@ -90,5 +90,6 @@ class GUIAndSourceController(MultiEditorController):
 
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
-        self.document.window.showsource_action.triggered.disconnect(self.change_editor)
+        try: self.document.window.showsource_action.triggered.disconnect(self.change_editor)
+        except TypeError: pass
         self.document.window.showsource_action.setEnabled(False)
