@@ -10,9 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..base import Controller
+from .. import Controller
 from ..table import table_with_manipulators
-from ...model.base import TreeFragmentModel
 from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...qt import QtGui
 from ...utils.str import empty_to_none

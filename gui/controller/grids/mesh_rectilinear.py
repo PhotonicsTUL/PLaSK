@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..base import Controller
+from .. import Controller
 from ...qt import QtGui
 from ...utils.str import empty_to_none
 

@@ -146,5 +146,5 @@ class GridWithoutConf(Grid):
     #    super(GridWithoutConf, self).set_XML_element()
 
     def get_controller(self, document):
-        from ...controller.base import NoConfController
+        from ...controller import NoConfController
         return NoConfController(self.type_and_kind_str + ' has no configuration.')
