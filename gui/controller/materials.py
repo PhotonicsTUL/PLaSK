@@ -130,7 +130,6 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         self.popup.show()
 
 
-
 class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
     def __init__(self, defines_model, parent):

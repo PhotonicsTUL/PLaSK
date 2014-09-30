@@ -27,8 +27,11 @@ def exception_to_msg(f, parent=None, err_title=None):
         return True
     except Exception as e:
         from .. import _DEBUG
-        if _DEBUG: raise
-        QtGui.QMessageBox().critical(parent, err_title, str(e))
+        if _DEBUG:
+            import traceback as tb
+            tb.print_exc()
+        else:
+            QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
 
 

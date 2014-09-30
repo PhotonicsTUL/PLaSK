@@ -60,6 +60,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
+        self.tabs.currentChanged[int].connect(self.tab_change)
 
         self.setCentralWidget(self.tabs)
 
@@ -197,8 +198,6 @@ class MainWindow(QtGui.QMainWindow):
             self.setFixedSize(screen.width()*0.8, screen.height()*0.9)
         else:
             self.setGeometry(geometry)
-
-        self.tabs.currentChanged[int].connect(self.tab_change)
 
         self.show()
 
@@ -381,6 +380,15 @@ class MainWindow(QtGui.QMainWindow):
 
 
 def main():
+    try:
+        _debug_index = sys.argv.index('-debug')
+    except ValueError:
+        pass
+    else:
+        global _DEBUG
+        sys.argv = sys.argv[:_debug_index] + sys.argv[_debug_index+1:]
+        _DEBUG = True
+
     global APPLICATION
     if winsparkle:
         si = subprocess.STARTUPINFO()

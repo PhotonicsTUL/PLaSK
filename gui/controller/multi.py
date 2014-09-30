@@ -90,6 +90,5 @@ class GUIAndSourceController(MultiEditorController):
 
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
-        try: self.document.window.showsource_action.triggered.disconnect(self.change_editor)
-        except TypeError: pass
+        self.document.window.showsource_action.triggered.disconnect(self.change_editor)
         self.document.window.showsource_action.setEnabled(False)
