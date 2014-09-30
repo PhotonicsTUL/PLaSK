@@ -52,6 +52,18 @@ WINDOWS = set()
 
 MENU_ITEMS = []
 
+# icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+SECTION_ICONS = {
+    'defines': 'accessories-dictionary',
+    'materials': 'accessories-character-map',
+    'geometry': 'system-file-manager',
+    'grids': 'preferences-desktop-keyboard',
+    'solvers': 'utilities-system-monitor',
+    'connects': 'preferences-desktop-accessibility',
+    'script': 'accessories-text-editor',
+}
+
+
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, filename=None):
@@ -61,6 +73,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
+        # self.tabs.setStyleSheet('QTabBar::tab { height: 20px; }')
 
         self.setCentralWidget(self.tabs)
 
@@ -73,7 +86,6 @@ class MainWindow(QtGui.QMainWindow):
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
 
-        # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
         icon = QtGui.QIcon(':/plask.png')
         self.setWindowIcon(icon)
 
@@ -139,6 +151,11 @@ class MainWindow(QtGui.QMainWindow):
         launch_action.setStatusTip('Launch current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
+        goto_action = QtGui.QAction('&Go to line...', self)
+        goto_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_G)
+        goto_action.setStatusTip('Go to specified line')
+        goto_action.triggered.connect(self.goto_line)
+
         exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit', QtGui.QIcon(':/exit.png')), 'E&xit', self)
         exit_action.setShortcut(QtGui.QKeySequence.Quit)
         exit_action.setStatusTip('Exit application')
@@ -152,6 +169,8 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.addAction(saveas_action)
         self.menu.addSeparator()
         self.menu.addAction(launch_action)
+        self.menu.addSeparator()
+        self.menu.addAction(goto_action)
         self.menu.addSeparator()
         self.menu.addAction(self.material_plot_action)
 
@@ -221,6 +240,9 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m.title())
+            # self.tabs.setTabIcon(self.tabs.count()-1,
+            #                      QtGui.QIcon.fromTheme(SECTION_ICONS[m],
+            #                                            QtGui.QIcon(':/' + SECTION_ICONS[m])))
         self.current_tab_index = 0
         new_index = 2
         self.tabs.setCurrentIndex(new_index)
@@ -298,7 +320,7 @@ class MainWindow(QtGui.QMainWindow):
         return True
 
     def current_section_exit(self):
-        """"Should be called just before left the current section."""
+        """"Should be called just before leaving the current section."""
         if self.current_tab_index != -1:
             if not exception_to_msg(lambda: self.document.controller_by_index(self.current_tab_index).on_edit_exit(),
                                   self.tabs, 'Error while trying to store data from editor'):
@@ -307,7 +329,7 @@ class MainWindow(QtGui.QMainWindow):
         return True
 
     def current_section_enter(self):
-        """"Should be called just after set the current section."""
+        """"Should be called just after setting the current section."""
         if self.current_tab_index != -1:
             c = self.document.controller_by_index(self.current_tab_index)
             self.info_model.setModel(c.model)
@@ -377,6 +399,48 @@ class MainWindow(QtGui.QMainWindow):
         except AttributeError:
             self.setWindowTitle("[*] PLaSK")
         self.setWindowModified(changed)
+
+    def goto_line(self):
+        dialog = GotoDialog(self)
+        if dialog.exec_():
+            line_number = int(dialog.input.text())
+            indx = None
+            for i, c in enumerate(self.document.controllers):
+                if c.model.line_in_file is None: continue
+                if line_number < c.model.line_in_file: break
+                indx = i
+                cntrl = c
+                lineno = line_number - c.model.line_in_file - 1
+            if indx is not None:
+                self.tabs.setCurrentIndex(indx)
+                self.tab_change(indx)
+                if not self.showsource_action.isChecked():
+                    self.showsource_action.trigger()
+                editor = cntrl.get_source_editor()
+                cursor = QtGui.QTextCursor(editor.document().findBlockByLineNumber(
+                    min(lineno, editor.document().blockCount()-1)))
+                editor.setTextCursor(cursor)
+                editor.setFocus()
+
+
+class GotoDialog(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super(GotoDialog, self).__init__(parent)
+        self.setWindowTitle("Go to Line")
+        vbox = QtGui.QVBoxLayout()
+        hbox = QtGui.QHBoxLayout()
+        label = QtGui.QLabel()
+        label.setText("Line number:")
+        self.input = QtGui.QLineEdit()
+        self.input.setValidator(QtGui.QIntValidator(self.input))
+        hbox.addWidget(label)
+        hbox.addWidget(self.input)
+        vbox.addLayout(hbox)
+        buttons = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        vbox.addWidget(buttons)
+        self.setLayout(vbox)
 
 
 def main():

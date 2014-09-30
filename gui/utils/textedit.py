@@ -31,7 +31,6 @@ class TextEdit(QtGui.QPlainTextEdit):
         self.blockCountChanged.connect(self.line_numbers.update_width)
         self.updateRequest.connect(self.line_numbers.on_update_request)
         self.cursorPositionChanged.connect(self.highlight_current_line)
-        self.context_menu = self.createStandardContextMenu()
 
     def resizeEvent(self, e):
         super(TextEdit, self).resizeEvent(e)

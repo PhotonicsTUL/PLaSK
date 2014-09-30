@@ -28,16 +28,14 @@ class ScriptEditor(TextEdit):
 
         self.cursorPositionChanged.connect(self.update_selections)
 
-        comment_action = QtGui.QAction('Comm&ent lines', self)
-        uncomment_action = QtGui.QAction('Uncomm&ent lines', self)
-        comment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Slash)
-        uncomment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Slash)
-        comment_action.triggered.connect(self.comment_block)
-        uncomment_action.triggered.connect(self.uncomment_block)
-        # self.context_menu.addSeparator()
-        self.addAction(comment_action)
-        self.addAction(uncomment_action)
-
+        self.comment_action = QtGui.QAction('Co&mment', self)
+        self.uncomment_action = QtGui.QAction('Uncomm&ent', self)
+        self.comment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Slash)
+        self.uncomment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Slash)
+        self.comment_action.triggered.connect(self.block_comment)
+        self.uncomment_action.triggered.connect(self.block_uncomment)
+        self.addAction(self.comment_action)
+        self.addAction(self.uncomment_action)
 
     def update_selections(self):
         """Add our own custom selections"""
@@ -45,7 +43,7 @@ class ScriptEditor(TextEdit):
         brackets = BracketHighlighter.get_selections(self, self.textCursor().block(), cursor_column)
         self.setExtraSelections(self.extraSelections() + brackets)
 
-    def comment_block(self):
+    def block_comment(self):
         cursor = self.textCursor()
         cursor.beginEditBlock()
         start = cursor.selectionStart()
@@ -54,21 +52,38 @@ class ScriptEditor(TextEdit):
         cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
         while cursor.position() < end:
             cursor.insertText("# ")
-            cursor.movePosition(QtGui.QTextCursor.NextBlock)
+            if not cursor.movePosition(QtGui.QTextCursor.NextBlock):
+                break
         cursor.endEditBlock()
 
-    def uncomment_block(self):
-        # cursor = self.textCursor()
-        # cursor.beginEditBlock()
-        # start = cursor.selectionStart()
-        # end = cursor.selectionEnd()
-        # cursor.setPosition(start)
-        # cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
-        # while cursor.position() < end:
-        #     cursor.insertText("# ")
-        #     cursor.movePosition(QtGui.QTextCursor.NextBlock)
-        # cursor.endEditBlock()
-        pass
+    def block_uncomment(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+        cursor.setPosition(start)
+        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        document = self.document()
+        try:
+            while cursor.position() < end:
+                while document.characterAt(cursor.position()) in (' ', '\t'):
+                    if not cursor.movePosition(QtGui.QTextCursor.NextCharacter): raise ValueError
+                if document.characterAt(cursor.position()) == '#':
+                    cursor.deleteChar()
+                    if document.characterAt(cursor.position()) == ' ':
+                        cursor.deleteChar()
+                if not cursor.movePosition(QtGui.QTextCursor.NextBlock): raise ValueError
+        except ValueError:
+            pass
+        cursor.endEditBlock()
+
+    def contextMenuEvent(self, event):
+        menu = self.createStandardContextMenu()
+        menu.addSeparator()
+        menu.addAction(self.comment_action)
+        menu.addAction(self.uncomment_action)
+        menu.exec_(event.globalPos())
+
 
 class BracketHighlighter(object):
     """ Bracket highliter.

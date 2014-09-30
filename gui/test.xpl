@@ -93,7 +93,6 @@ plot_geometry(efm.geometry, color='0.5', mirror=True)
 efm.modes[0].power = 10.
 plot_field(efm.outLightMagnitude(0, MSH.plot))
 ylim(2,7)
-show()
-]]></script>
+show()]]></script>
 
 </plask>

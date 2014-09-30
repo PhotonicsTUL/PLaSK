@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ..qt import QtGui
+from ..qt import QtCore, QtGui
 
 from . import Controller
 
@@ -53,21 +53,25 @@ class TableActions(object):
         self.add_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-add', QtGui.QIcon(':/list-add.png')),
                                         '&Add', parent)
         self.add_action.setStatusTip('Add new entry to the list')
+        self.add_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
         self.add_action.triggered.connect(self.add_entry)
 
         self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove', QtGui.QIcon(':/list-remove.png')),
                                            '&Remove', parent)
         self.remove_action.setStatusTip('Remove selected entry from the list')
+        # self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
         self.remove_action.triggered.connect(self.remove_entry)
 
         self.move_up_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-up', QtGui.QIcon(':/go-up.png')),
                                             'Move &up', parent)
         self.move_up_action.setStatusTip('Change order of entries: move current entry up')
+        self.move_up_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
         self.move_up_action.triggered.connect(self.move_up)
 
         self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down', QtGui.QIcon(':/go-down.png')),
                                               'Move &down', parent)
         self.move_down_action.setStatusTip('Change order of entries: move current entry down')
+        self.move_down_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
         self.move_down_action.triggered.connect(self.move_down)
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action

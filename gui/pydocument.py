@@ -26,6 +26,8 @@ class PyDocument(object):
         self.window = window
         self.script = ScriptController(self)
         self.script.model.changed.connect(self.on_model_change)
+        self.script.model.line_in_file = 0
+        self.controllers = (self.script,)
         self.materials = _Dummy()
         self.materials.model = None
         self.filename = None

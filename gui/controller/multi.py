@@ -92,3 +92,7 @@ class GUIAndSourceController(MultiEditorController):
         super(GUIAndSourceController, self).on_edit_exit()
         self.document.window.showsource_action.triggered.disconnect(self.change_editor)
         self.document.window.showsource_action.setEnabled(False)
+
+    def get_source_editor(self):
+        return self.controllers[1].get_source_editor()
+
