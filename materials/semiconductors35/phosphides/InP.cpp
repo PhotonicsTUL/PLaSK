@@ -156,7 +156,7 @@ MI_PROPERTY(InP, thermk,
             MIArgumentRange(MaterialInfo::T, 300, 800)
             )
 Tensor2<double> InP::thermk(double T, double t) const {
-    double tCondT = 68.*pow((300./T),1.5);
+    double tCondT = 68.*pow((300./T),1.42);
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 

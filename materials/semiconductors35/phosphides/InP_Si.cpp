@@ -37,10 +37,10 @@ double InP_Si::Dop() const {
 }
 
 MI_PROPERTY(InP_Si, cond,
-			MIComment("no temperature dependence")
+            MIComment("")
             )
 Tensor2<double> InP_Si::cond(double T) const {
-    double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
+    double tCond = phys::qe * Nf_RT*1e6 * mob_RT * pow(300./T,0.8);
     return (Tensor2<double>(tCond, tCond));
 }
 

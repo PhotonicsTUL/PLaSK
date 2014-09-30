@@ -51,11 +51,11 @@ double GaInAs_Si::Dop() const {
 }
 
 MI_PROPERTY(GaInAs_Si, cond,
-            MIComment("no temperature dependence")
+            MIComment("")
             )
 Tensor2<double> GaInAs_Si::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob * pow(300./T,1.59);
     return ( Tensor2<double>(tCond, tCond) );
 }
 
