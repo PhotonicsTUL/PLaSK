@@ -10,6 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from ..qt import QtCore, QtGui
+
 from . import Controller
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.textedit import TextEdit
@@ -36,18 +38,17 @@ class SourceEditController(Controller):
         self.edited = False  # True only if text has been edited after last save_data_in_model
         self.source_editor = None
 
-    def create_source_editor(self, parent=None):
+    def _on_text_edit(self):
+        self.edited = True
+        self.document.set_changed()
+
+    def create_source_editor(self, parent):
         edit = TextEdit(parent)
         edit.setFont(DEFAULT_FONT)
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         edit.setReadOnly(self.model.is_read_only())
         return edit
 
-    def _on_text_edit(self):
-        self.edited = True
-        self.document.set_changed()
-
-    # text, source editor
     def get_source_editor(self):
         if self.source_editor is None:
             self.source_editor = self.create_source_editor(self.document.window)
@@ -86,7 +87,7 @@ class SourceEditController(Controller):
         self.document.window.showsource_action.setChecked(True)
         self.source_editor.textChanged.connect(self._on_text_edit)
 
-    # When the editor is turned off, model should be updated
+    # When the editor is turned off, the model should be updated
     def on_edit_exit(self):
         try:
             self.source_editor.textChanged.disconnect(self._on_text_edit)
@@ -96,3 +97,34 @@ class SourceEditController(Controller):
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
         self.document.window.showsource_action.setChecked(False)
+
+    def show_search_bar(self):
+        pass
+
+
+class SourceEditor(QtGui.QWidget):
+
+    def __init__(self, parent=None, editor_class=TextEdit):
+        self.editor = editor_class(self)
+
+        self.find_toolbar = QtGui.QToolBar(self)
+        find_label = QtGui.QLabel()
+        find_label.setText("Search:")
+        find_label.setAlignment(QtCore.Qt.AlignRight)
+        replace_label = QtGui.QLabel()
+        replace_label.setText("Replace:")
+        replace_label.setAlignment(QtCore.Qt.AlignRight)
+        find_label.setFixedWidth(replace_label.width())
+        self.find_edit = QtGui.QLineEdit()
+        self.find_toolbar.addWidget(self.find_edit)
+
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.editor)
+        layout.addWidget(self.find_toolbar)
+        self.setLayout(layout)
+
+        search_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')),
+                                                  '&Find/Replace...', self)
+        search_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_F)
+        search_action.triggered.connect(lambda: self.find_toolbar.show())
+        self.addAction(search_action)

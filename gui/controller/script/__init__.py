@@ -57,7 +57,7 @@ class ScriptController(SourceEditController):
         if model is None: model = ScriptModel()
         SourceEditController.__init__(self, document, model)
 
-    def create_source_editor(self, parent=None):
+    def create_source_editor(self, parent):
         edit = ScriptEditor(self, parent)
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         if PyCode:

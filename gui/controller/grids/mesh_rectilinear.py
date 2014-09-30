@@ -18,7 +18,7 @@ from ...utils.str import empty_to_none
 
 class AxisEdit(QtGui.QGroupBox):
 
-    def __init__(self, title, allow_type_select = False, accept_non_regular = False, axis_model = None):
+    def __init__(self, title, allow_type_select=False, accept_non_regular=False, axis_model=None):
         super(AxisEdit, self).__init__(title)
         form_layout = QtGui.QFormLayout()
         self.allow_type_select = allow_type_select

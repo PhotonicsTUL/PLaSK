@@ -28,12 +28,47 @@ class ScriptEditor(TextEdit):
 
         self.cursorPositionChanged.connect(self.update_selections)
 
+        comment_action = QtGui.QAction('Comm&ent lines', self)
+        uncomment_action = QtGui.QAction('Uncomm&ent lines', self)
+        comment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Slash)
+        uncomment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Slash)
+        comment_action.triggered.connect(self.comment_block)
+        uncomment_action.triggered.connect(self.uncomment_block)
+        # self.context_menu.addSeparator()
+        self.addAction(comment_action)
+        self.addAction(uncomment_action)
+
+
     def update_selections(self):
         """Add our own custom selections"""
         cursor_column = self.textCursor().positionInBlock()
         brackets = BracketHighlighter.get_selections(self, self.textCursor().block(), cursor_column)
         self.setExtraSelections(self.extraSelections() + brackets)
 
+    def comment_block(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+        cursor.setPosition(start)
+        cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        while cursor.position() < end:
+            cursor.insertText("# ")
+            cursor.movePosition(QtGui.QTextCursor.NextBlock)
+        cursor.endEditBlock()
+
+    def uncomment_block(self):
+        # cursor = self.textCursor()
+        # cursor.beginEditBlock()
+        # start = cursor.selectionStart()
+        # end = cursor.selectionEnd()
+        # cursor.setPosition(start)
+        # cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        # while cursor.position() < end:
+        #     cursor.insertText("# ")
+        #     cursor.movePosition(QtGui.QTextCursor.NextBlock)
+        # cursor.endEditBlock()
+        pass
 
 class BracketHighlighter(object):
     """ Bracket highliter.
