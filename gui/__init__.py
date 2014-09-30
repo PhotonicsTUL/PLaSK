@@ -55,11 +55,11 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self.current_tab_index = -1
         self.init_ui()
-        self.document = XPLDocument(self)
         if filename is not None:
             self._try_load_from_file(filename)
         else:
             self.document = XPLDocument(self)
+
         self.model_is_new()
         self.set_changed(False)
 
@@ -185,12 +185,12 @@ class MainWindow(QtGui.QMainWindow):
         self.current_tab_index = index
         self.current_section_enter()
 
-    def set_actions(self, toolbar_name, *actions):
+    def set_actions(self, name, *actions):
         try:
-            toolbar = self.toolbars[toolbar_name]
+            toolbar = self.toolbars[name]
         except KeyError:
-            toolbar = self.addToolBar(toolbar_name)
-            self.toolbars[toolbar_name] = toolbar
+            toolbar = self.addToolBar(name)
+            self.toolbars[name] = toolbar
         toolbar.clear()
         for a in actions:
             if not a:
@@ -200,10 +200,21 @@ class MainWindow(QtGui.QMainWindow):
         toolbar.setVisible(bool(actions))
 
     def set_section_actions(self, *actions):
-        self.set_actions('Section edit', *actions)
+        self.set_actions('Section', *actions)
 
-    def set_editor_select_actions(self, *actions):
-        self.set_actions('Section editor', *actions)
+    def add_tool_actions(self, actions):
+        for i, action in enumerate(actions):
+            if not action:
+                actions[i] = self.tools_menu.addSeparator()
+            else:
+                try:
+                    self.tools_menu.addAction(action, self.last_tool)
+                except AttributeError:
+                    self.tools_menu.addAction(action)
+
+    def remove_tool_actions(self, actions):
+        for action in actions:
+            self.tools_menu.removeAction(action)
 
     def init_ui(self):
         # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
@@ -262,14 +273,21 @@ class MainWindow(QtGui.QMainWindow):
 
         #view_menu = menubar.addMenu('&View')
 
-        #edit_menu = menubar.addMenu('&Edit')
-        #edit_menu.addAction(showSourceAction)
+        edit_menu = self.menubar.addMenu('&Edit')
+        self.showsource_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme('accessories-text-editor', QtGui.QIcon(':/accessories-text-editor.png')),
+            '&Show source', self)
+        self.showsource_action.setCheckable(True)
+        self.showsource_action.setStatusTip('Show XPL source of the current section')
+        self.showsource_action.setEnabled(False)
+        edit_menu.addAction(self.showsource_action)
+
+        self.tools_menu = self.menubar.addMenu('&Tools')
 
         global winsparkle
         if winsparkle:
-            tools_menu = self.menubar.addMenu('&Tools')
             if winsparkle:
-                tools_menu.addSeparator()
+                self.last_tool = self.tools_menu.addSeparator()
                 try:
                     actionWinSparkleAutoupdate = QtGui.QAction(self)
                     actionWinSparkleAutoupdate.setText(self.tr("Automatic Updates"))
@@ -278,15 +296,15 @@ class MainWindow(QtGui.QMainWindow):
                     actionWinSparkleAutoupdate.triggered.connect(
                         lambda: winsparkle.win_sparkle_set_automatic_check_for_updates(
                             int(actionWinSparkleAutoupdate.isChecked())))
-                    tools_menu.addAction(actionWinSparkleAutoupdate)
+                    self.tools_menu.addAction(actionWinSparkleAutoupdate)
                 except AttributeError:
                     pass
                 actionWinSparkle = QtGui.QAction(self)
                 actionWinSparkle.setText("Check for Updates Now...")
                 actionWinSparkle.triggered.connect(lambda: winsparkle.win_sparkle_check_update_with_ui())
-                tools_menu.addAction(actionWinSparkle)
+                self.tools_menu.addAction(actionWinSparkle)
 
-        toolbar = self.addToolBar('File')
+        toolbar = self.addToolBar('Main')
         toolbar.addAction(new_action)
         toolbar.addAction(open_action)
         toolbar.addAction(save_action)
@@ -294,10 +312,10 @@ class MainWindow(QtGui.QMainWindow):
         toolbar.addSeparator()
         toolbar.addAction(launch_action)
         #toolbar.addAction(exit_action)
-        #toolbar.addSeparator()
-        #toolbar.addAction(showSourceAction)
+        toolbar.addSeparator()
+        toolbar.addAction(self.showsource_action)
         self.toolbars = {}
-        self.toolbars['File'] = toolbar
+        self.toolbars['Main'] = toolbar
 
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)

@@ -225,9 +225,13 @@ class MaterialsController(Controller):
         self.properties_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
         self.plot_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')),
-                                         '&Show plot', self.document.window)
+                                         '&Plot material parameters', self.document.window)
         self.plot_action.setStatusTip('Show parameter plot')
         self.plot_action.triggered.connect(self.show_plot)
+        self.document.window.add_tool_actions([self.plot_action])
+
+    def __del__(self):
+        self.document.window.remove_tool_actions([self.plot_action])
 
     def material_selected(self, new_selection, old_selection):
         indexes = new_selection.indexes()

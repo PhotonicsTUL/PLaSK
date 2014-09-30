@@ -79,24 +79,16 @@ class GUIAndSourceController(MultiEditorController):
     def __init__(self, controller):
         MultiEditorController.__init__(self, controller, SourceEditController(controller.document, controller.model))
 
-    def changeEditor(self):
-        if not self.set_current_index(int(self.showSourceAction.isChecked())):
-            self.showSourceAction.setChecked(bool(self.get_current_index()))
-
-    def getShowSourceAction(self):
-        if not hasattr(self, 'showSourceAction'):
-            self.showSourceAction = QtGui.QAction(
-                QtGui.QIcon.fromTheme('accessories-text-editor', QtGui.QIcon(':/accessories-text-editor.png')),
-                '&Show source', self.document.window)
-            self.showSourceAction.setCheckable(True)
-            self.showSourceAction.setStatusTip('Show XPL source of the current section')
-            self.showSourceAction.triggered.connect(self.changeEditor)
-        return self.showSourceAction
+    def change_editor(self):
+        if not self.set_current_index(int(self.document.window.showsource_action.isChecked())):
+            self.document.window.showsource_action.setChecked(bool(self.get_current_index()))
 
     def on_edit_enter(self):
-        self.document.window.set_editor_select_actions(self.getShowSourceAction())
+        self.document.window.showsource_action.triggered.connect(self.change_editor)
+        self.document.window.showsource_action.setEnabled(True)
         super(GUIAndSourceController, self).on_edit_enter()
 
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
-        self.document.window.set_editor_select_actions()
+        self.document.window.showsource_action.triggered.disconnect(self.change_editor)
+        self.document.window.showsource_action.setEnabled(False)
