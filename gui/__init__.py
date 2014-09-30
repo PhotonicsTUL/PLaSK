@@ -103,6 +103,7 @@ class MainWindow(QtGui.QMainWindow):
             self._try_load_from_file(filename)
         else:
             self.document = XPLDocument(self)
+            self.model_is_new()
 
         #self.statusBar()
 
@@ -197,7 +198,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.setGeometry(geometry)
 
-        self.tabs.connect(self.tabs, QtCore.SIGNAL("currentChanged(int)"), self.tab_change)
+        self.tabs.currentChanged[int].connect(self.tab_change)
 
         self.show()
 
