@@ -81,17 +81,18 @@ class GUIAndSourceController(MultiEditorController):
 
     def change_editor(self):
         if not self.set_current_index(int(self.document.window.showsource_action.isChecked())):
-            self.document.window.showsource_action.setChecked(bool(self.get_current_index()))
+            self.document.window.set_show_source_state(bool(self.get_current_index()))
 
     def on_edit_enter(self):
         self.document.window.showsource_action.triggered.connect(self.change_editor)
-        self.document.window.showsource_action.setEnabled(True)
+        self.editorWidget.setCurrentIndex(int(self.document.window.get_show_source_state(do_enabled=True)))
         super(GUIAndSourceController, self).on_edit_enter()
+
 
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
         self.document.window.showsource_action.triggered.disconnect(self.change_editor)
-        self.document.window.showsource_action.setEnabled(False)
+        self.document.window.set_show_source_state(None)
 
     def get_source_editor(self):
         return self.controllers[1].get_source_editor()

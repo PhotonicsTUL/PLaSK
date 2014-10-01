@@ -401,6 +401,20 @@ class MainWindow(QtGui.QMainWindow):
                 editor.setTextCursor(cursor)
                 editor.setFocus()
 
+    def set_show_source_state(self, show_source_enabled):
+        if show_source_enabled is None:
+            self.showsource_action.setEnabled(False)
+        else:
+            self.showsource_action.setEnabled(True)
+            self.showsource_action.setChecked(show_source_enabled)
+
+    def get_show_source_state(self, do_enabled = False):
+        if do_enabled:
+            self.showsource_action.setEnabled(True)
+        else:
+            if not self.showsource_action.isEnabled(): return None
+        return self.showsource_action.isChecked()
+
 
 class GotoDialog(QtGui.QDialog):
     def __init__(self, parent=None):

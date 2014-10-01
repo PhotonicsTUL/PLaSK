@@ -84,7 +84,6 @@ class SourceEditController(Controller):
         except AttributeError: pass
         try: self.model.changed += self.refresh_editor
         except AttributeError: pass
-        self.document.window.showsource_action.setChecked(True)
         self.source_editor.textChanged.connect(self._on_text_edit)
 
     # When the editor is turned off, the model should be updated
@@ -93,7 +92,6 @@ class SourceEditController(Controller):
         self.save_data_in_model()
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
-        self.document.window.showsource_action.setChecked(False)
 
     def show_search_bar(self):
         pass
