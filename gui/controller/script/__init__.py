@@ -67,10 +67,8 @@ class ScriptController(SourceEditController):
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
-        self.document.window.showsource_action.setChecked(True)
         if PyCode:
             self.pycode.prefix = self.document.stubs()
 
     def on_edit_exit(self):
         super(ScriptController, self).on_edit_exit()
-        self.document.window.showsource_action.setChecked(False)
