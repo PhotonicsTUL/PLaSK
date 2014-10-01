@@ -10,12 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-__author__ = 'qwak'
 
 class GNReadConf(object):
-    '''Configuration using while geometry objects are read. Stores information about expected suffix and axes configuration.'''
+    """ Configuration using while geometry objects are read.
+        Stores information about expected suffix and axes configuration.
+    """
 
-    def __init__(self, conf = None, suffix = None, axes = None):
+    def __init__(self, conf=None, suffix=None, axes=None):
         super(GNReadConf, self).__init__()
         if conf is not None:
             self.suffix = conf.suffix

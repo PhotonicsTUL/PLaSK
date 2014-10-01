@@ -73,11 +73,17 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
-        # self.tabs.setStyleSheet('QTabBar::tab { height: 20px; }')
+        # self.tabs.setStyleSheet("""
+        #     QTabBar::tab {
+        #         /* height: 20px; */
+        #         background-color: blue;
+        #     }
+        #     QTabBar::tab:selected {
+        #         background-color: darkgray;
+        #     }
+        # """)
 
         self.setCentralWidget(self.tabs)
-
-        self.toolbars = {}
 
         self.showsource_action = QtGui.QAction(
             QtGui.QIcon.fromTheme('accessories-text-editor', QtGui.QIcon(':/accessories-text-editor.png')),
@@ -344,33 +350,6 @@ class MainWindow(QtGui.QMainWindow):
             return
         self.current_tab_index = index
         self.current_section_enter()
-
-    def set_actions(self, name, *actions):
-        try:
-            toolbar = self.toolbars[name]
-        except KeyError:
-            toolbar = self.addToolBar(name)
-            self.toolbars[name] = toolbar
-        toolbar.clear()
-        for a in actions:
-            if not a:
-                toolbar.addSeparator()
-            else:
-                toolbar.addAction(a)
-        toolbar.setVisible(bool(actions))
-
-    def set_section_actions(self, *actions):
-        self.set_actions('Section', *actions)
-
-    def add_tools_actions(self, actions):
-        for i, action in enumerate(actions):
-            if not action:
-                actions[i] = self.tools_menu.addSeparator()
-            else:
-                try:
-                    self.tools_menu.addAction(action, self.last_tool)
-                except AttributeError:
-                    self.tools_menu.addAction(action)
 
     def remove_tools_actions(self, actions):
         for action in actions:

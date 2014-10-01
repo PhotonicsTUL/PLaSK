@@ -19,7 +19,7 @@ from .controller.script import ScriptController
 from .controller.multi import GUIAndSourceController
 from .controller.connects import ConnectsController
 from .controller import materials
-from .controller.grids.section import GridsController
+from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader
 
 

@@ -50,8 +50,12 @@
     <axis1 start="2" stop="7" num="2001"></axis1>
   </mesh>
   <generator method="divide" name="test" type="rectangular2d">
-    <prediv by="2"/>
+    <prediv by0="4" by1="2"/>
   </generator>
+  <mesh name="plot2" type="rectilinear2d">
+    <axis0 start="{-mesa}" stop="{mesa}" num="501"/>
+    <axis1 start="2" stop="7" num="2001"/>
+  </mesh>
 </grids>
 
 <solvers>

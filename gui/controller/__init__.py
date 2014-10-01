@@ -41,7 +41,6 @@ class Controller(object):
     def on_edit_exit(self):
         """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
         self.save_data_in_model()
-        if hasattr(self, 'document'): self.document.window.set_section_actions()
 
     def update_line_number(self, current_line_in_file):
         """If the script has a source editor, update its line numbers offset"""
