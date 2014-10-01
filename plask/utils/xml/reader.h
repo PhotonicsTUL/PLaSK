@@ -312,7 +312,6 @@ class PLASK_API XMLReader {
         return stringInterpreter.get<RequiredType>(attr_str);
     }
 
-
     template <typename RequiredType>
     RequiredType parse(const std::string& attr_str, const std::string& attr_name) const {
         try {

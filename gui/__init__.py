@@ -73,15 +73,6 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
-        # self.tabs.setStyleSheet("""
-        #     QTabBar::tab {
-        #         /* height: 20px; */
-        #         background-color: blue;
-        #     }
-        #     QTabBar::tab:selected {
-        #         background-color: darkgray;
-        #     }
-        # """)
 
         self.setCentralWidget(self.tabs)
 
@@ -240,6 +231,7 @@ class MainWindow(QtGui.QMainWindow):
             return False
         else:
             self.set_model(document)
+            self.set_changed(False)
             return True
 
     def model_is_new(self):
@@ -253,8 +245,8 @@ class MainWindow(QtGui.QMainWindow):
         self.tabs.setCurrentIndex(2)
         #self.tab_change(2)
 
-    def set_model(self, model):
-        self.document = model
+    def set_model(self, document):
+        self.document = document
         self.model_is_new()
 
     def new(self):

@@ -186,6 +186,13 @@ class OutputWindow(QtGui.QMainWindow):
                                                  QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if confirm == QtGui.QMessageBox.Yes:
                 self.thread.terminate()
+                if not self.thread.wait(6000):
+                    QtGui.QMessageBox.critical(self, "Close Window",
+                                               "PLaSK process could not be terminated. Window will not be closed. "
+                                               "Please try once again or contact the program authors.",
+                                               QtGui.QMessageBox.Ok)
+                    event.ignore()
+                    return
             else:
                 event.ignore()
                 return

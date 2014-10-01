@@ -88,7 +88,6 @@ class GUIAndSourceController(MultiEditorController):
         self.editorWidget.setCurrentIndex(int(self.document.window.get_show_source_state(do_enabled=True)))
         super(GUIAndSourceController, self).on_edit_enter()
 
-
     def on_edit_exit(self):
         super(GUIAndSourceController, self).on_edit_exit()
         self.document.window.showsource_action.triggered.disconnect(self.change_editor)

@@ -293,7 +293,7 @@ BOOST_PYTHON_MODULE(effective)
                    "    complex or list of complex: Determinant at the effective index *neff* or\n"
                    "    an array matching its size.",
                    (py::arg("neff") , py::arg("polarization")=py::object()));
-        RW_PROPERTY(wavelength, getWavelength, setWavelength, "");
+        RW_PROPERTY(wavelength, getWavelength, setWavelength, "Current wavelength.");
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
         PROVIDER(outNeff, "");

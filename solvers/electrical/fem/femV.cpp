@@ -68,12 +68,16 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
             for (auto attr: source.getAttributes()) {
                 if (attr.first == "beta" || attr.first == "Vt" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
                 if (attr.first.substr(0,4) == "beta") {
-                    try { setBeta(boost::lexical_cast<size_t>(attr.first.substr(4)), boost::lexical_cast<double>(attr.second)); }
-                    catch (boost::bad_lexical_cast) { throw XMLException(source, "bad <junction> tag attribute '" + attr.first + "'"); }
+                    size_t no;
+                    try { no = boost::lexical_cast<size_t>(attr.first.substr(4)); }
+                    catch (boost::bad_lexical_cast) { throw XMLUnexpectedAttrException(source, attr.first); }
+                    setBeta(no, source.requireAttribute<double>(attr.first));
                 }
                 else if (attr.first.substr(0,2) == "js") {
-                    try { setJs(boost::lexical_cast<size_t>(attr.first.substr(2)), boost::lexical_cast<double>(attr.second)); }
-                    catch (boost::bad_lexical_cast) { throw XMLException(source, "bad <junction> tag attribute '" + attr.first + "'"); }
+                    size_t no;
+                    try { no = boost::lexical_cast<size_t>(attr.first.substr(2)); }
+                    catch (boost::bad_lexical_cast) { throw XMLUnexpectedAttrException(source, attr.first); }
+                    setJs(no, source.requireAttribute<double>(attr.first));
                 }
                 else
                     throw XMLUnexpectedAttrException(source, attr.first);
