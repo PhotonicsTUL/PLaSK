@@ -88,7 +88,7 @@ struct AlignerImpl: public Printable {
      * Set object translation in direction of aligner activity.
      *
      * This version is called if caller doesn't know child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      */
     virtual double align(Translation<3>& toAlign) const {
         if (this->useBounds())

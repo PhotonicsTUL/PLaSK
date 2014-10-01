@@ -89,7 +89,7 @@ class GridsController(Controller):
 
     def on_edit_exit(self):
         if self.current_controller is not None:
-            self.current_controller.on_edit_exit()
+            self.grids_table.selectionModel().clear()
 
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
