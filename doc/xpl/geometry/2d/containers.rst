@@ -1,13 +1,14 @@
 Containers
 ^^^^^^^^^^
 
-.. xml:tag:: <align2d> (or: <align>, <container2d>, <container>)
+.. xml:tag:: <align2d> (or <align>)
 
    Corresponding Python class: :py:class:`plask.geometry.AlignContainer2D`.
 
    Container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr left: Default value for horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
    :attr right: Default value for horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
@@ -51,6 +52,11 @@ Containers
              A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
 
+.. xml:tag:: <container2d> (or <container>)
+
+   Alias for :xml:tag:`<align2d>`.
+
+
 .. xml:tag:: <shelf2d> (or shelf)
 
    Corresponding Python class: :py:class:`plask.geometry.Shelf2D` (if ``repeat``\ =1), :py:class:`plask.geometry.MultiShelf2D` (if ``repeat``\ >1).
@@ -58,6 +64,7 @@ Containers
    Container organizing objects side-by-side to each other, like books on a bookshelf. Items on the shelf are all bottom-aligned. Optionally it is possible to require that all the items have the same height in order to avoid the vertical gaps. However it is possible to insert intentional horizontal gaps to the shelf.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic horizontal structures easily. Defaults to 1. (integer)
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
@@ -91,6 +98,7 @@ Containers
    Stack organizing its elements on top of the other. Horizontal alignment of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
    :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])

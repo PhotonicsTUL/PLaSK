@@ -10,6 +10,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    Rectangular block. Its origin is located at the lower left corner.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the block material (for solid blocks).
    :attr material-bottom: Definition of the material of the bottom of the block (for blocks which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
@@ -34,6 +35,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    Triangle with one vertex at point (0, 0).
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the triangle material (for solid triangles).
    :attr material-bottom: Definition of the material of the bottom of the triangle (for triangles which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
@@ -52,6 +54,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    Circle with centre at point (0, 0).
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr material: Definition of the circle material (for solid triangles).
    :attr material-bottom: Definition of the material of the bottom of the circle (for circle which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.

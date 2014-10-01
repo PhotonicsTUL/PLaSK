@@ -22,11 +22,12 @@ class GNObject(GNode):
         self.role = role
         self.step_num = step_num
         self.step_dist = step_dist
+        #TODO axes!
 
     def attributes_from_XML(self, attribute_reader, conf):
         """
 
-        :param reader:
+        :param conf:
         :param AttributeReader attribute_reader: source of attributes
         :return:
         """
@@ -34,5 +35,5 @@ class GNObject(GNode):
         self.role = attribute_reader.get('role', None)
         self.step_num = attribute_reader.get('step-num', None)
         self.step_dist = attribute_reader.get('step-dist', None)
-
+        #TODO axes!
 

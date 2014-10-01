@@ -14,6 +14,7 @@ Transforms always contain a single geometry object (possibly container) as their
    Clip child object to given rectangle.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr left: left edge of the clipping rectangle (-INF by default)
    :attr right: right edge of the clipping rectangle (+INF by default)
@@ -35,6 +36,7 @@ Transforms always contain a single geometry object (possibly container) as their
    Mirror reflection of the object along specified axis.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
@@ -53,6 +55,7 @@ Transforms always contain a single geometry object (possibly container) as their
    Object mirrored along specified axis. In other words this is transformed object together with its flipped version. The bounding box of the object cannot span at bot sides of zero along inverted axis.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr required axis: Name of the inverted axis (i.e. perpendicular to the reflection plane).
 
@@ -71,6 +74,7 @@ Transforms always contain a single geometry object (possibly container) as their
    A simple shift of the object. Note that the bounding box is shifted as well, so in containers that place their items basing on their bounding boxes, this transformation will have no effect.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr {X}: where **{X}** is the transverse axis name: Horizontal position of the origin of transformed element. (float [µm])
    :attr {Y}: where **{Y}** is the vertical axis name: Vertical position of the origin of transformed element. (float [µm])

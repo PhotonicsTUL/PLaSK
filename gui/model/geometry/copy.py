@@ -13,6 +13,7 @@ from . import GNReadConf
 
 from .node import GNode
 from .object import GNObject
+from .types import construct_geometry_object
 
 
 class GNAgain(GNode):
@@ -38,7 +39,6 @@ class GNCopyChild(GNode):
         self.object = attribute_reader.require('object')
 
 
-
 class GNCDelete(GNCopyChild):
     pass
 
@@ -53,9 +53,9 @@ class GNCReplace(GNCopyChild):
         super(GNCReplace, self).attributes_from_XML(attribute_reader, conf)
         self.replacer = attribute_reader.get('with', None)
 
-    def children_from_XML(self, ordered_reader, reader):
-        if self.replacer is not None:
-            pass    #TODO read geometry object
+    def children_from_XML(self, ordered_reader, conf):
+        if self.replacer is None:
+            construct_geometry_object(ordered_reader.require(), conf)
 
 
 class GNCToBlock(GNCopyChild):

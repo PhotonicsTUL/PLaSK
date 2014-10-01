@@ -13,17 +13,25 @@
 
 class GNReadConf(object):
     """ Configuration using while geometry objects are read.
-        Stores information about expected suffix and axes configuration.
+        Stores information about expected suffix, axes configuration and parent node for new elements.
     """
 
-    def __init__(self, conf=None, suffix=None, axes=None):
+    def __init__(self, conf=None, axes=None, parent=None):
         super(GNReadConf, self).__init__()
         if conf is not None:
-            self.suffix = conf.suffix
             self.axes = conf.axes
+            self.parent = conf.parent
         else:
-            self.suffix = None
             self.axes = None
-        if suffix is not None: self.suffix = suffix
+            self.parent = None
         if axes is not None: self.axes = axes
+        if parent is not None: self.parent = parent
 
+    @property
+    def dim(self):
+        return None if self.parent is None else self.parent.children_dim
+
+    @property
+    def suffix(self):
+        d = self.dim
+        return None if d is None else '{}d'.format(d)

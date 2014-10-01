@@ -1,13 +1,14 @@
 Containers
 ^^^^^^^^^^
 
-.. xml:tag:: <align3d> (or: <align>, <container3d>, <container>)
+.. xml:tag:: <align3d> (or <align>)
 
    Corresponding Python class: :py:class:`plask.geometry.AlignContainer3D`.
 
    Container in which all the items must have explicitly specified position. As the objects in this container may overlap, their order matters: latter items overwrite the former ones.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr back: Default value for longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
    :attr front: Default value for longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
@@ -61,6 +62,9 @@ Containers
              A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
 
+.. xml:tag:: <container3d> (or <container>)
+
+   Alias for :xml:tag:`<align3d>`.
 
 
 .. xml:tag:: <stack3d> (or <stack>)
@@ -70,6 +74,7 @@ Containers
    Stack organizing its elements on top of the other. Horizontal alignments of the stack elements can be controlled by the alignment attributes of the whole stack or its items.
 
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
    :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])

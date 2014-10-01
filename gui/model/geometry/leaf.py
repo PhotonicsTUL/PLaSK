@@ -14,4 +14,17 @@ from .object import GNObject
 
 class GNBlock(GNObject):
 
-    pass
+    def __init__(self, parent = None, dim = None):
+        super(GNBlock, self).__init__(parent=parent, dim=dim)
+
+    @classmethod
+    def from_XML_2d(self, element, conf):
+        result = GNBlock(dim = 2)
+        result.set_XML_element(element, conf)
+        return result
+
+    @classmethod
+    def from_XML_3d(self, element, conf):
+        result = GNBlock(dim = 3)
+        result.set_XML_element(element, conf)
+        return result
