@@ -47,7 +47,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
-.. xml:tag:: <circle/>
+.. xml:tag:: <circle2d/> (or <circle/>)
 
    Corresponding Python class: :py:class:`plask.geometry.Circle`.
 

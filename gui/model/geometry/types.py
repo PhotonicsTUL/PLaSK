@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .leaf import GNBlock
+from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
 from .container import GNStack, GNAlignContainer
 from .copy import GNCopy, GNAgain
 
@@ -20,6 +20,8 @@ geometry_types_2d = {
     # leafs:
     'block2d': GNBlock.from_XML_2d,
     'rectangle': GNBlock.from_XML_2d,
+    'circle2d': GNCircle.from_XML_2d,
+    'triangle': GNTriangle.from_XML_2d,
 
     # containers:
     'align2d': GNAlignContainer.from_XML_2d,
@@ -33,6 +35,9 @@ geometry_types_3d = {
     # leafs:
     'block3d': GNBlock.from_XML_3d,
     'cuboid': GNBlock.from_XML_3d,
+    'circle3d': GNCircle.from_XML_3d,
+    'sphere': GNCircle.from_XML_3d,
+    'cylinder': GNCylinder.from_XML_3d,
 
     # containers:
     'align3d': GNAlignContainer.from_XML_3d,

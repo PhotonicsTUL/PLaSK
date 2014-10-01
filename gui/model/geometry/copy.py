@@ -51,7 +51,7 @@ class GNCReplace(GNCopyChild):
 
     def attributes_from_XML(self, attribute_reader, conf):
         super(GNCReplace, self).attributes_from_XML(attribute_reader, conf)
-        self.replacer = attribute_reader.get('with', None)
+        self.replacer = attribute_reader.get('with')
 
     def children_from_XML(self, ordered_reader, conf):
         if self.replacer is None:
@@ -66,7 +66,7 @@ class GNCToBlock(GNCopyChild):
 
     def attributes_from_XML(self, attribute_reader, conf):
         super(GNCToBlock, self).attributes_from_XML(attribute_reader, conf)
-        self.material = attribute_reader.get('material', None)
+        self.material = attribute_reader.get('material')
 
 
 class GNCopy(GNObject):

@@ -18,18 +18,16 @@ class GNode(object):
 
     """
         :param parent: parent node of self (self will be added to parent's children)
-        :param children: table of children (_parent will be set to self for them)
         :param dim: number of dimension of self or None if it is unknown or not defined (like in case of again or copy)
         :param children_dim: required number of dimension of self's children or None if no or any children are allowed
     """
-    def __init__(self, parent = None, children = None, dim = None, children_dim = None):
+    def __init__(self, parent = None, dim = None, children_dim = None):
         super(GNode, self).__init__()
         self.dim = dim
         self.children_dim = children_dim
+        self.children = []
         self._parent = None  #used by parent property
         self.parent = parent
-        self.children = [] if children is None else children
-        for c in self.children: c.parent = self
 
     def attributes_from_XML(self, attribute_reader, conf):
         """

@@ -42,8 +42,8 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material: Definition of the cylinder material (for solid cylinders).
    :attr material-bottom: Definition of the material of the bottom of the cylinder (for cylinders which material linearly change from bottom to top). You should also set ``material-top``, and these materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the cylinder (see also ``material-bottom``).
-   :attr radius: Radius of the cylinder base.
-   :attr height: Height of the cylinder.
+   :attr required radius: Radius of the cylinder base.
+   :attr required height: Height of the cylinder.
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
