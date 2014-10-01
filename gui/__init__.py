@@ -249,10 +249,9 @@ class MainWindow(QtGui.QMainWindow):
             # self.tabs.setTabIcon(self.tabs.count()-1,
             #                      QtGui.QIcon.fromTheme(SECTION_ICONS[m],
             #                                            QtGui.QIcon(':/' + SECTION_ICONS[m])))
-        self.current_tab_index = 0
-        new_index = 2
-        self.tabs.setCurrentIndex(new_index)
-        self.tab_change(new_index)
+        self.current_tab_index = -1
+        self.tabs.setCurrentIndex(2)
+        #self.tab_change(2)
 
     def set_model(self, model):
         self.document = model
@@ -270,15 +269,16 @@ class MainWindow(QtGui.QMainWindow):
                                                      "Python script (*.py)")
         if not filename: return;
         if type(filename) == tuple: filename = filename[0]
-        if self.document.filename is None and not self.isWindowModified():
-            self._try_load_from_file(filename)
+        remove_self = self.document.filename is None and not self.isWindowModified()
+        new_window = MainWindow(filename)
+        if new_window.document.filename is not None:
+           new_window.resize(self.size())
+           WINDOWS.add(new_window)
+           if remove_self:
+               self.close()
+               WINDOWS.remove(self)
         else:
-            new_window = MainWindow(filename)
-            if new_window.document.filename is not None:
-                new_window.resize(self.size())
-                WINDOWS.add(new_window)
-            else:
-                new_window.close()
+           new_window.close()
 
     def save(self):
         if self.document.filename is not None:
