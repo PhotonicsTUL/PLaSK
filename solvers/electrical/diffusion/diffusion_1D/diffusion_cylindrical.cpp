@@ -786,7 +786,8 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
-            bool active = tags.find("active") != tags.end();
+            bool active = false;
+            for (const std::string& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
             if (QW && !active)
                 throw Exception("%1%: All marked quantum wells must belong to marked active region.", this->getId());
             if (QW && !inQW)        // QW start

@@ -2,6 +2,7 @@
 #define PLASK__MODULE_ELECTRICAL_FEMV_H
 
 #include <plask/plask.hpp>
+#include <limits>
 
 #include "block_matrix.h"
 #include "iterative_matrix.h"
@@ -31,6 +32,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     /// Details of active region
     struct Active {
+        struct Temp {
+            size_t left, right, bottom, top;
+            size_t rowl, rowr;
+            Temp(): left(0), right(0), bottom(std::numeric_limits<size_t>::max()),
+                    top(std::numeric_limits<size_t>::max()),
+                    rowl(std::numeric_limits<size_t>::max()), rowr(0) {}
+        };
         size_t left, right, bottom, top;
         size_t offset;
         double height;

@@ -115,13 +115,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
 
-    struct AR {
-        size_t left, right, bottom, top;
-        size_t rowl, rowr;
-        AR(): left(0), right(0), bottom(-1), top(-1), rowl(-1), rowr(0) {} // -1 === MAX_SIZE_T
-    };
-
-    std::vector<AR> regions;
+    std::vector<typename Active::Temp> regions;
 
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         size_t prev = 0;
@@ -131,9 +125,11 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
             if (num) { // here we are inside the active region
                 regions.resize(max(regions.size(), num));
-                AR& reg = regions[num-1];
+                auto& reg = regions[num-1];
                 if (prev != num) { // this region starts in the current row
-                    if (reg.top < r) throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
+                    if (reg.top < r) {
+                        throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
+                    }
                     if (reg.bottom >= r) reg.bottom = r; // first row
                     else if (reg.rowr <= c) throw Exception("%1%: Junction %2% is disjoint", this->getId(), num-1);
                     reg.top = r + 1;
@@ -141,7 +137,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
                 }
             }
             if (prev && prev != num) { // previous region ended
-                AR& reg = regions[prev-1];
+                auto& reg = regions[prev-1];
                 if (reg.bottom < r && reg.rowl >= c) throw Exception("%1%: Junction %2% is disjoint", this->getId(), prev-1);
                 reg.rowr = c; if (reg.right < reg.rowr) reg.right = reg.rowr;
             }
