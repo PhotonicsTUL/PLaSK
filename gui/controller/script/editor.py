@@ -50,6 +50,7 @@ class ScriptEditor(TextEdit):
         end = cursor.selectionEnd()
         cursor.setPosition(start)
         cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        if cursor.position() == end: end += 1
         while cursor.position() < end:
             cursor.insertText("# ")
             if not cursor.movePosition(QtGui.QTextCursor.NextBlock):
@@ -63,6 +64,7 @@ class ScriptEditor(TextEdit):
         end = cursor.selectionEnd()
         cursor.setPosition(start)
         cursor.movePosition(QtGui.QTextCursor.StartOfBlock)
+        if cursor.position() == end: end += 1
         document = self.document()
         try:
             while cursor.position() < end:
