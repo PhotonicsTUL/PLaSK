@@ -132,6 +132,11 @@ class OrderedTagReader(object):
                 self.parent_element.tag, at_line_str(self.parent_element),
                 self._next_element().tag, at_line_str(self._next_element())))
 
+    def recent_was_unexpected(self):
+        """Raise ValueError about tag that has been read recently."""
+        self.current_index -= 1
+        self.require_end()  # raise exception
+
     def __enter__(self):
         return self
 

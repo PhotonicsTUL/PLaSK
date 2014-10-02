@@ -42,7 +42,7 @@ geometry_types_3d = {
     # containers:
     'align3d': GNAlignContainer.from_XML_3d,
     'container3d': GNAlignContainer.from_XML_3d,
-    'stack3d': GNStack.from_XML_2d
+    'stack3d': GNStack.from_XML_3d
 }
 
 

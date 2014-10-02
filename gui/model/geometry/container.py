@@ -49,6 +49,9 @@ class GNStack(GNObject):
         return result
 
 
+#TODO GNShelf as separate class or support shelf by GNStack
+
+
 class GNAlignContainer(GNObject):
     """2D/3D align container"""
 

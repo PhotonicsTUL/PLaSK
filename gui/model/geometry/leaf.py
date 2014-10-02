@@ -24,7 +24,7 @@ class GNLeaf(GNObject):
         super(GNLeaf, self).attributes_from_XML(attribute_reader, conf)
         self.step_num = attribute_reader.get('step-num')
         self.step_dist = attribute_reader.get('step-dist')
-        #TODO material
+        #TODO material (also top/bottom)
         
 
 class GNBlock(GNLeaf):

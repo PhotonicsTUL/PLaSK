@@ -80,8 +80,9 @@ class GNCopy(GNObject):
         self.source = attribute_reader.require('from')
 
     def children_from_XML(self, ordered_reader, conf):
-        for t in ordered_reader.iter('delete', 'replace', 'toblock'):
+        for t in ordered_reader.iter():
             if t.tag == 'delete': el = GNCDelete(parent=self)
             elif t.tag == 'replace': el = GNCReplace(parent=self)
             elif t.tag == 'toblock': el = GNCToBlock(parent=self)
+            else: ordered_reader.recent_was_unexpected()
             el.from_XML(t, conf)
