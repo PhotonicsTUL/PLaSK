@@ -109,9 +109,7 @@ class MainWindow(QtGui.QMainWindow):
         self.material_plot_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_M)
         self.material_plot_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
 
-        if filename is not None:
-            self._try_load_from_file(filename)
-        else:
+        if filename is None or not self._try_load_from_file(filename):  # try to load only in filename is None
             self.document = XPLDocument(self)
             self.model_is_new()
 
@@ -259,18 +257,23 @@ class MainWindow(QtGui.QMainWindow):
                                                      "PLaSK file (*.xpl *.py);;"
                                                      "PLaSK structure data (*.xpl);;"
                                                      "Python script (*.py)")
-        if not filename: return;
         if type(filename) == tuple: filename = filename[0]
+        if not filename: return
         remove_self = self.document.filename is None and not self.isWindowModified()
         new_window = MainWindow(filename)
-        if new_window.document.filename is not None:
-           new_window.resize(self.size())
-           WINDOWS.add(new_window)
-           if remove_self:
-               self.close()
-               WINDOWS.remove(self)
-        else:
-           new_window.close()
+        try:
+            if new_window.document.filename is not None:
+                new_window.resize(self.size())
+                WINDOWS.add(new_window)
+                if remove_self:
+                    self.close()
+                    WINDOWS.remove(self)
+            else:
+                new_window.setWindowModified(False)
+                new_window.close()
+        except AttributeError:
+            new_window.setWindowModified(False)
+            new_window.close()
 
     def save(self):
         if self.document.filename is not None:
@@ -321,7 +324,7 @@ class MainWindow(QtGui.QMainWindow):
         """"Should be called just before leaving the current section."""
         if self.current_tab_index != -1:
             if not exception_to_msg(lambda: self.document.controller_by_index(self.current_tab_index).on_edit_exit(),
-                                  self.tabs, 'Error while trying to store data from editor'):
+                                    self.tabs, 'Error while trying to store data from editor'):
                 self.tabs.setCurrentIndex(self.current_tab_index)
                 return False
         return True

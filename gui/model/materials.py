@@ -314,15 +314,17 @@ class MaterialsModel(TableModel):
         self.modelAboutToBeReset.emit()
         del self.entries[:]
         with OrderedTagReader(element) as material_reader:
-            for mat in material_reader.iter("material"):
+            for mat in material_reader.iter('material'):
                 with AttributeReader(mat) as mat_attrib:
                     properties = []
                     for prop in mat:
                         require_no_children(prop)
                         require_no_attributes(prop)
                         properties.append((prop.tag, prop.text))
+                    base = mat_attrib.get('base', None)
+                    if base is None: base = mat_attrib.get('kind')  # for old files
                     self.entries.append(
-                        MaterialsModel.Material(mat_attrib.get("name", ""), mat_attrib.get("base", None), properties)
+                        MaterialsModel.Material(mat_attrib.get('name', ''), base, properties)
                     )
         self.modelReset.emit()
         self.fire_changed()

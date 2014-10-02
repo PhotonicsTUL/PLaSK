@@ -29,6 +29,7 @@ def print_interior(element):
 def at_line_str(element, template = ' at line {}'):
     return template.format(element.sourceline) if element.sourceline is not None else ''
 
+
 class AttributeReader(object):
     """
         Helper class to check if all attributes have been read from XML tag, usage::
@@ -84,10 +85,11 @@ class AttributeReader(object):
         
     def __exit__(self, exc_type, exc_value, traceback):
         """
-            It raise ValueError if any other exception haven't been raised
+            It raises ValueError if any other exception haven't been raised
             and not all attributes have been read from XML tag.
         """
-        if exc_type is None and exc_value is None and traceback is None: self.require_all_read()
+        if exc_type is None and exc_value is None and traceback is None:
+            self.require_all_read()
 
 
 class OrderedTagReader(object):

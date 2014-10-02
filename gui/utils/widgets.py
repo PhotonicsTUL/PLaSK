@@ -30,7 +30,6 @@ def exception_to_msg(f, parent=None, err_title=None):
         if _DEBUG:
             import traceback as tb
             tb.print_exc()
-            tb.print_stack()
         else:
             QtGui.QMessageBox().critical(parent, err_title, str(e))
         return False
