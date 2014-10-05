@@ -421,39 +421,62 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
         if (real(kz[i]) < 0.) kz[i] = -kz[i];
     }
 
-    dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+    // dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+    //
+    // dcomplex phas = 1.;
+    // if (zbegin != 0)
+    //     phas = exp(I * kz[zbegin] * (mesh->axis1->at(zbegin)-mesh->axis1->at(zbegin-1)));
+    //
+    // for (size_t i = zbegin+1; i < zsize; ++i) {
+    //     // Compute shift inside one layer
+    //     s1 *= phas;
+    //     s3 *= phas * phas;
+    //     s4 *= phas;
+    //     // Compute matrix after boundary
+    //     dcomplex p = 0.5 + 0.5 * kz[i] / kz[i-1];
+    //     dcomplex m = 1.0 - p;
+    //     dcomplex chi = 1. / (p - m * s3);
+    //     // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
+    //     // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
+    //     s2 += s1*m*chi*s4;
+    //     s1 *= (p*p - m*m) * chi;
+    //     s3  = (p*s3-m) * chi;
+    //     s4 *= chi;
+    //     // Compute phase shift for the next step
+    //     if (i != mesh->axis1->size())
+    //         phas = exp(I * kz[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
+    //
+    //     // Compute fields
+    //     if (saveto) {
+    //         dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
+    //         double aF = abs(F), aB = abs(B);
+    //         // zero very small fields to avoid errors in plotting for long layers
+    //         if (aF < 1e-8 * aB) F = 0.;
+    //         if (aB < 1e-8 * aF) B = 0.;
+    //         (*saveto)[i] = FieldZ(F, B);
+    //     }
+    // }
 
-    dcomplex phas = 1.;
-    if (zbegin != 0)
-        phas = exp(I * kz[zbegin] * (mesh->axis1->at(zbegin)-mesh->axis1->at(zbegin-1)));
-
-    for (size_t i = zbegin+1; i < zsize; ++i) {
-        // Compute shift inside one layer
-        s1 *= phas;
-        s3 *= phas * phas;
-        s4 *= phas;
-        // Compute matrix after boundary
-        dcomplex p = 0.5 + 0.5 * kz[i] / kz[i-1];
-        dcomplex m = 1.0 - p;
-        dcomplex chi = 1. / (p - m * s3);
-        // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
-        // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
-        s2 += s1*m*chi*s4;
-        s1 *= (p*p - m*m) * chi;
-        s3  = (p*s3-m) * chi;
-        s4 *= chi;
-        // Compute phase shift for the next step
-        if (i != mesh->axis1->size())
-            phas = exp(I * kz[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
-
-        // Compute fields
+    MatrixZ T = MatrixZ::eye();
+    for (size_t i = zbegin; i < zsize-1; ++i) {
+        double d;
+        if (i != zbegin || zbegin != 0) d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
+        else d = 0.;
+        dcomplex phas = exp(- I * kz[i] * d);
+        // Transfer through boundary
+        dcomplex n = 0.5 * kz[i]/kz[i+1];
+        MatrixZ T1 = MatrixZ((0.5+n), (0.5-n),
+                             (0.5-n), (0.5+n));
+        T1.ff *= phas; T1.fb /= phas;
+        T1.bf *= phas; T1.bb /= phas;
+        T = T1 * T;
         if (saveto) {
-            dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
+            dcomplex F = T.fb, B = T.bb;    // Assume  F0 = 0  B0 = 1
             double aF = abs(F), aB = abs(B);
             // zero very small fields to avoid errors in plotting for long layers
             if (aF < 1e-8 * aB) F = 0.;
             if (aB < 1e-8 * aF) B = 0.;
-            (*saveto)[i] = FieldZ(F, B);
+            (*saveto)[i+1] = FieldZ(F, B);
         }
     }
 
@@ -468,16 +491,17 @@ dcomplex EffectiveFrequencyCylSolver::detS1(const dcomplex& v, const std::vector
             (*saveto)[zsize-1].B = 0.;
         }
         for (size_t i = zbegin; i < zsize-1; ++i) (*saveto)[i] *= f;
-// #ifndef NDEBUG
-//         {
-//             std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
-//                 nrs << "), (" << str((*saveto)[i].F) << ":" << str((*saveto)[i].B);
-//             writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
-//         }
-// #endif
+#ifndef NDEBUG
+        std::stringstream nrs; for (size_t i = zbegin; i < zsize; ++i)
+            nrs << "), (" << str((*saveto)[i].F) << ":" << str((*saveto)[i].B);
+        writelog(LOG_DEBUG, "vertical fields = [%1%) ]", nrs.str().substr(2));
+#endif
     }
 
-    return s4 - s2*s3/s1;
+    // return s4 - s2*s3/s1;
+
+    return T.bb;    // F0 = 0    Bn = 0
+
 }
 
 

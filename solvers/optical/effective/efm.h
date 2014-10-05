@@ -28,6 +28,24 @@ struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geome
         FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
     };
 
+    struct MatrixZ {
+        dcomplex ff, fb, bf, bb;
+        MatrixZ() = default;
+        MatrixZ(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
+        static MatrixZ eye() { return MatrixZ(1.,0.,0.,1.); }
+        static MatrixZ diag(dcomplex f, dcomplex b) { return MatrixZ(f,0.,0.,b); }
+        MatrixZ operator*(const MatrixZ& T) {
+            return MatrixZ(ff*T.ff + fb*T.bf,   ff*T.fb + fb*T.bb,
+                           bf*T.ff + bb*T.bf,   bf*T.fb + bb*T.bb);
+        }
+        FieldZ operator*(const FieldZ& v) {
+            return FieldZ(ff*v.F + fb*v.B, bf*v.F + bb*v.B);
+        }
+        FieldZ solve(const FieldZ& v) {
+            return FieldZ(bb*v.F - fb*v.B, -bf*v.F + ff*v.B) / (ff*bb - fb*bf);
+        }
+    };
+
     struct FieldR {
         dcomplex J, H;
         FieldR() = default;

@@ -422,40 +422,64 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
         if (imag(ky[i]) > 0.) ky[i] = -ky[i];
     }
 
-    dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+    // dcomplex s1 = 1., s2 = 0., s3 = 0., s4 = 1.; // matrix S
+    //
+    // dcomplex phas = 1.;
+    // if (ybegin != 0)
+    //     phas = exp(I * ky[ybegin] * (mesh->axis1->at(ybegin)-mesh->axis1->at(ybegin-1)));
+    //
+    // for (size_t i = ybegin+1; i < yend; ++i) {
+    //     // Compute shift inside one layer
+    //     s1 *= phas;
+    //     s3 *= phas * phas;
+    //     s4 *= phas;
+    //     // Compute matrix after boundary
+    //     dcomplex f = (polarization==TM)? NR[i-1]/NR[i] : 1.;
+    //     dcomplex p = 0.5 + 0.5 * ky[i] / ky[i-1] * f*f;
+    //     dcomplex m = 1.0 - p;
+    //     dcomplex chi = 1. / (p - m * s3);
+    //     // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
+    //     // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
+    //     s2 += s1*m*chi*s4;
+    //     s1 *= (p*p - m*m) * chi;
+    //     s3  = (p*s3-m) * chi;
+    //     s4 *= chi;
+    //     // Compute phase shift for the next step
+    //     if (i != mesh->axis1->size())
+    //         phas = exp(I * ky[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
+    //
+    //     // Compute fields
+    //     if (save) {
+    //         dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
+    //         double aF = abs(F), aB = abs(B);
+    //         // zero very small fields to avoid errors in plotting for long layers
+    //         if (aF < 1e-8 * aB) F = 0.;
+    //         if (aB < 1e-8 * aF) B = 0.;
+    //         yfields[i] = Field(F, B);
+    //     }
+    // }
 
-    dcomplex phas = 1.;
-    if (ybegin != 0)
-        phas = exp(I * ky[ybegin] * (mesh->axis1->at(ybegin)-mesh->axis1->at(ybegin-1)));
-
-    for (size_t i = ybegin+1; i < yend; ++i) {
-        // Compute shift inside one layer
-        s1 *= phas;
-        s3 *= phas * phas;
-        s4 *= phas;
-        // Compute matrix after boundary
-        dcomplex f = (polarization==TM)? NR[i-1]/NR[i] : 1.;
-        dcomplex p = 0.5 + 0.5 * ky[i] / ky[i-1] * f*f;
-        dcomplex m = 1.0 - p;
-        dcomplex chi = 1. / (p - m * s3);
-        // F0 = [ (-m*m + p*p)*chi*s1  m*s1*s4*chi + s2 ] [ F2 ]
-        // B2 = [ (-m + p*s3)*chi      s4*chi           ] [ B0 ]
-        s2 += s1*m*chi*s4;
-        s1 *= (p*p - m*m) * chi;
-        s3  = (p*s3-m) * chi;
-        s4 *= chi;
-        // Compute phase shift for the next step
-        if (i != mesh->axis1->size())
-            phas = exp(I * ky[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
-
-        // Compute fields
+    Matrix T = Matrix::eye();
+    for (size_t i = ybegin; i < yend-1; ++i) {
+        double d;
+        if (i != ybegin || ybegin != 0) d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
+        else d = 0.;
+        dcomplex phas = exp(- I * ky[i] * d);
+        // Transfer through boundary
+        dcomplex f = (polarization==TM)? (NR[i+1]/NR[i]) : 1.;
+        dcomplex n = 0.5 * ky[i]/ky[i+1] * f*f;
+        Matrix T1 = Matrix( (0.5+n), (0.5-n),
+                            (0.5-n), (0.5+n) );
+        T1.ff *= phas; T1.fb /= phas;
+        T1.bf *= phas; T1.bb /= phas;
+        T = T1 * T;
         if (save) {
-            dcomplex F = -s2/s1, B = (s1*s4-s2*s3)/s1;    // Assume  F0 = 0  B0 = 1
+            dcomplex F = T.fb, B = T.bb;    // Assume  F0 = 0  B0 = 1
             double aF = abs(F), aB = abs(B);
             // zero very small fields to avoid errors in plotting for long layers
             if (aF < 1e-8 * aB) F = 0.;
             if (aB < 1e-8 * aF) B = 0.;
-            yfields[i] = Field(F, B);
+            yfields[i+1] = Field(F, B);
         }
     }
 
@@ -468,7 +492,9 @@ dcomplex EffectiveIndex2DSolver::detS1(const plask::dcomplex& x, const std::vect
 #endif
     }
 
-    return s1*s4 - s2*s3;
+    // return s1*s4 - s2*s3;
+
+    return T.bb;    // F0 = 0    Bn = 0
 }
 
 
@@ -644,8 +670,8 @@ dcomplex EffectiveIndex2DSolver::detS(const dcomplex& x, EffectiveIndex2DSolver:
         else d = 0.;
         dcomplex phas = exp(- I * kx[i] * d);
         // Transfer through boundary
-        dcomplex f = (polarization==TE)? (sqrt(epsilons[i+1]/epsilons[i])) : 1.;
-        dcomplex n = 0.5 * kx[i]/kx[i+1] * f*f;
+        dcomplex f = (polarization==TE)? (epsilons[i+1]/epsilons[i]) : 1.;
+        dcomplex n = 0.5 * kx[i]/kx[i+1] * f;
         Matrix T1 = Matrix( (0.5+n), (0.5-n),
                             (0.5-n), (0.5+n) );
         T1.ff *= phas; T1.fb /= phas;
