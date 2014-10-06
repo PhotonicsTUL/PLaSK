@@ -12,6 +12,7 @@
 
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
 from .container import GNStack, GNAlignContainer
+from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation
 from .copy import GNCopy, GNAgain
 
 
@@ -26,7 +27,13 @@ geometry_types_2d = {
     # containers:
     'align2d': GNAlignContainer.from_XML_2d,
     'container2d': GNAlignContainer.from_XML_2d,
-    'stack2d': GNStack.from_XML_2d
+    'stack2d': GNStack.from_XML_2d,
+
+    # transforms:
+    'clip2d': GNClip.from_XML_2d,
+    'flip2d': GNFlip.from_XML_2d,
+    'mirror2d': GNMirror.from_XML_2d,
+    'translation2d': GNTranslation.from_XML_2d
 }
 
 
@@ -42,7 +49,15 @@ geometry_types_3d = {
     # containers:
     'align3d': GNAlignContainer.from_XML_3d,
     'container3d': GNAlignContainer.from_XML_3d,
-    'stack3d': GNStack.from_XML_3d
+    'stack3d': GNStack.from_XML_3d,
+
+    # transforms:
+    'clip3d': GNClip.from_XML_3d,
+    'flip3d': GNFlip.from_XML_3d,
+    'mirror3d': GNMirror.from_XML_3d,
+    'translation3d': GNTranslation.from_XML_3d,
+    'extrusion': GNExtrusion.from_XML_3d,
+    'revolution': GNRevolution.from_XML_3d
 }
 
 

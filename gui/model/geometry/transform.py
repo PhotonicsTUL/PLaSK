@@ -12,6 +12,7 @@
 
 from .object import GNObject
 from .types import construct_geometry_object
+from ...utils.xml import xml_to_attr
 
 
 class GNTransform(GNObject):
@@ -23,7 +24,7 @@ class GNTransform(GNObject):
 class GNTranslation(GNTransform):
 
     def __init__(self, parent = None, dim = None):
-        super(GNObject, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
 
     def attributes_from_XML(self, attribute_reader, conf):
         pass    #TODO
@@ -44,7 +45,7 @@ class GNTranslation(GNTransform):
 class GNClip(GNTransform):
 
     def __init__(self, parent = None, dim = None):
-        super(GNObject, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super(GNClip, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.left = None
         self.right = None
         self.bottom = None
@@ -54,13 +55,11 @@ class GNClip(GNTransform):
             self.front = None
 
     def attributes_from_XML(self, attribute_reader, conf):
-        self.left = conf.get('left')
-        self.right = conf.get('right')
-        self.bottom = conf.get('bottom')
-        self.top = conf.get('top')
+        super(GNClip, self).attributes_from_XML(attribute_reader, conf)
+        xml_to_attr(attribute_reader, self, 'left', 'right', 'bottom', 'top')
         if self.dim == 3:
-            self.back = conf.get('back')
-            self.front = conf.get('front')
+            xml_to_attr(attribute_reader, self, 'back', 'front')
+
 
     @classmethod
     def from_XML_2d(self, element, conf):
@@ -71,5 +70,80 @@ class GNClip(GNTransform):
     @classmethod
     def from_XML_3d(self, element, conf):
         result = GNClip(dim = 3)
+        result.set_XML_element(element, conf)
+        return result
+
+
+class GNFlip(GNTransform):
+
+    def __init__(self, parent = None, dim = None):
+        super(GNFlip, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        self.axis = None
+
+    def attributes_from_XML(self, attribute_reader, conf):
+        super(GNFlip, self).attributes_from_XML(attribute_reader, conf)
+        self.axis = attribute_reader.get('axis')
+
+    @classmethod
+    def from_XML_2d(self, element, conf):
+        result = GNFlip(dim = 2)
+        result.set_XML_element(element, conf)
+        return result
+
+    @classmethod
+    def from_XML_3d(self, element, conf):
+        result = GNFlip(dim = 3)
+        result.set_XML_element(element, conf)
+        return result
+
+
+class GNMirror(GNTransform):
+
+    def __init__(self, parent = None, dim = None):
+        super(GNMirror, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        self.axis = None
+
+    def attributes_from_XML(self, attribute_reader, conf):
+        super(GNMirror, self).attributes_from_XML(attribute_reader, conf)
+        self.axis = attribute_reader.get('axis')
+
+    @classmethod
+    def from_XML_2d(self, element, conf):
+        result = GNMirror(dim = 2)
+        result.set_XML_element(element, conf)
+        return result
+
+    @classmethod
+    def from_XML_3d(self, element, conf):
+        result = GNMirror(dim = 3)
+        result.set_XML_element(element, conf)
+        return result
+
+
+class GNExtrusion(GNTransform):
+
+    def __init__(self, parent = None):
+        super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
+        self.length = None
+        
+    def attributes_from_XML(self, attribute_reader, conf):
+        super(GNExtrusion, self).attributes_from_XML(attribute_reader, conf)
+        self.length = attribute_reader.get('length')
+
+    @classmethod
+    def from_XML_3d(self, element, conf):
+        result = GNExtrusion()
+        result.set_XML_element(element, conf)
+        return result
+
+
+class GNRevolution(GNTransform):
+
+    def __init__(self, parent = None):
+        super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
+
+    @classmethod
+    def from_XML_3d(self, element, conf):
+        result = GNRevolution()
         result.set_XML_element(element, conf)
         return result

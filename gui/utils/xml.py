@@ -25,6 +25,35 @@ def print_interior(element):
         text += etree.tostring(c, pretty_print=True)
     return text
 
+def attr_to_xml(src_obj, dst_element, *attr_names):
+    """
+        Set XML attributes in dst_element.attrib using attributes from src_obj.
+        Only existing, not-None attributes are set.
+        :param src_obj: source object
+        :param dst_element: destination element
+        :param str *attr_names: names of attributes to transfer
+    """
+    for attr in attr_names:
+        a = getattr(src_obj, attr, None)
+        if a is not None: dst_element.attrib[attr] = a
+
+
+def xml_to_attr(src, dst_obj, *attr_names):
+    """
+        Set dst_obj attributes using data from src_element attributes.
+        All attributes not included in src are set to None.
+        If src is None all attributes are set to None.
+        :param src: elementtree element or AttributeReader
+        :param dst_obj: destination object
+        :param *attr_names: names of attributes to transfer
+    """
+    if src is None:
+        for attr in attr_names: setattr(dst_obj, attr, None)
+    else:
+        with AttributeReader(src) as a:
+             for attr in attr_names:
+                 setattr(dst_obj, attr, a.get(attr, None))
+
 
 def at_line_str(element, template = ' at line {}'):
     return template.format(element.sourceline) if element.sourceline is not None else ''
@@ -39,6 +68,9 @@ class AttributeReader(object):
     """
     
     def __init__(self, element):
+        """
+            :param element: elementtree Element or AttributeReader (in such case self.is_sub_reader is set to True and set of attributes read are shared)
+        """
         super(AttributeReader, self).__init__()
         if isinstance(element, AttributeReader):
             self.element = element.element
@@ -68,7 +100,7 @@ class AttributeReader(object):
         for k in keys: self.read.add(k)
         
     def require_all_read(self):
-        """Raise ValueError if not all attributes have been read from XML tag."""
+        """Raise ValueError if not all attributes have been read from XML tag. Do nothing if self.is_sub_reader is True."""
         if self.is_sub_reader: return
         not_read = set(self.element.attrib.keys()) - self.read
         if not_read:

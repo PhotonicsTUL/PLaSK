@@ -12,7 +12,7 @@
 
 from lxml.etree import ElementTree, SubElement
 
-from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children, UnorderedTagReader
+from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children, UnorderedTagReader, attr_to_xml, xml_to_attr
 from . import Grid
 
 
@@ -27,27 +27,13 @@ class AxisConf(object):
         self.type = None if type == '' else type
 
     def fill_XMLElement(self, axisElement):
-        for attr in ['start', 'stop', 'num', 'type']:
-            a = getattr(self, attr, None)
-            if a is not None: axisElement.attrib[attr] = a
+        attr_to_xml(self, axisElement, 'start', 'stop', 'num', 'type')
         axisElement.text = self.points if self.points else ''
 
-        #if self.start: axisElement.attrib['start'] = self.start
-        #if self.stop: axisElement.attrib['stop'] = self.stop
-        #if self.num: axisElement.attrib['num'] = self.num
-        #if self.points: axisElement.text = ", ".join(self.points)
-        #if self.points: axisElement.attrib['points'] = self.points
 
     def set_from_XML(self, axis_element):
-        if axis_element is None:
-            for attr in ['start', 'stop', 'num', 'type', 'points']: setattr(self, attr, None)
-        else:
-            require_no_children(axis_element)
-            with AttributeReader(axis_element) as a:
-                for attr in ['start', 'stop', 'num', 'type']:
-                    setattr(self, attr, a.get(attr, None))
-            self.points = axis_element.text
-            #self.points = [float(x) for x in axis_element.text.split(',')] #can have {...}
+        xml_to_attr(axis_element, self, 'start', 'stop', 'num', 'type')
+        self.points = None if axis_element is None else axis_element.text
 
 
 #RectangularMesh1D(Grid)
