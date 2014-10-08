@@ -22,14 +22,14 @@ NOT_MATCHING_BRACKET_COLOR = QtGui.QColor(CONFIG('editor/not_matching_bracket_co
 class ScriptEditor(TextEdit):
     """Editor with some features usefult for script editing"""
 
-    def __init__(self, controller, parent=None):
+    def __init__(self, parent=None, controller=None):
         self.controller = controller
         super(ScriptEditor, self).__init__(parent)
 
         self.cursorPositionChanged.connect(self.update_selections)
 
-        self.comment_action = QtGui.QAction('Co&mment', self)
-        self.uncomment_action = QtGui.QAction('Uncomm&ent', self)
+        self.comment_action = QtGui.QAction('Co&mment lines', self)
+        self.uncomment_action = QtGui.QAction('Uncomm&ent lines', self)
         self.comment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Slash)
         self.uncomment_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Slash)
         self.comment_action.triggered.connect(self.block_comment)
@@ -78,13 +78,6 @@ class ScriptEditor(TextEdit):
         except ValueError:
             pass
         cursor.endEditBlock()
-
-    def contextMenuEvent(self, event):
-        menu = self.createStandardContextMenu()
-        menu.addSeparator()
-        menu.addAction(self.comment_action)
-        menu.addAction(self.uncomment_action)
-        menu.exec_(event.globalPos())
 
 
 class BracketHighlighter(object):

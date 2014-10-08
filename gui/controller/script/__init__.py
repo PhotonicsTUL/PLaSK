@@ -17,9 +17,11 @@ try:
 except ImportError:
     PyCode = None
 
+from ...qt import QtGui
+
 from .editor import ScriptEditor
 
-from ..source import SourceEditController
+from ..source import SourceEditController, SourceEditor
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.widgets import DEFAULT_FONT
@@ -58,11 +60,26 @@ class ScriptController(SourceEditController):
         SourceEditController.__init__(self, document, model)
 
     def create_source_editor(self, parent):
-        edit = ScriptEditor(self, parent)
+        edit = SourceEditor(parent, ScriptEditor, self)
+        edit.setReadOnly(self.model.is_read_only())
+
+        edit.toolbar.addSeparator()
+        menu = QtGui.QMenu()
+        menu.addAction(edit.comment_action)
+        menu.addAction(edit.uncomment_action)
+        button = QtGui.QToolButton()
+        button.setIcon(QtGui.QIcon.fromTheme('code-block', QtGui.QIcon(':/code-block')))
+        button.setMenu(menu)
+        button.setPopupMode(QtGui.QToolButton.InstantPopup)
+        edit.toolbar.addWidget(button)
+        if self.model.is_read_only():
+            edit.comment_action.setEnabled(False)
+            edit.uncomment_action.setEnabled(False)
+
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         if PyCode:
             self.pycode = PyCode(".", edit)
-        edit.setReadOnly(self.model.is_read_only())
+
         return edit
 
     def on_edit_enter(self):

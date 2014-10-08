@@ -43,8 +43,7 @@ class SourceEditController(Controller):
         self.document.set_changed()
 
     def create_source_editor(self, parent):
-        edit = TextEdit(parent)
-        edit.setFont(DEFAULT_FONT)
+        edit = SourceEditor(parent)
         self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
         edit.setReadOnly(self.model.is_read_only())
         return edit
@@ -99,27 +98,136 @@ class SourceEditController(Controller):
 
 class SourceEditor(QtGui.QWidget):
 
-    def __init__(self, parent=None, editor_class=TextEdit):
-        self.editor = editor_class(self)
+    def __init__(self, parent=None, editor_class=TextEdit, *args):
+        super(SourceEditor, self).__init__(parent)
 
-        self.find_toolbar = QtGui.QToolBar(self)
-        find_label = QtGui.QLabel()
-        find_label.setText("Search:")
-        find_label.setAlignment(QtCore.Qt.AlignRight)
-        replace_label = QtGui.QLabel()
-        replace_label.setText("Replace:")
-        replace_label.setAlignment(QtCore.Qt.AlignRight)
-        find_label.setFixedWidth(replace_label.width())
-        self.find_edit = QtGui.QLineEdit()
-        self.find_toolbar.addWidget(self.find_edit)
+        self.editor = editor_class(self, *args)
+        self.editor.setFont(DEFAULT_FONT)
+
+        self.toolbar = QtGui.QToolBar(self)
+        self.toolbar.setContentsMargins(0, 0, 0, 0)
+
+        self.add_action('&Undo', 'edit-undo', QtGui.QKeySequence.Undo, self.editor.undo)
+        self.add_action('R&edo', 'edit-redo', QtGui.QKeySequence.Redo, self.editor.redo)
+        self.toolbar.addSeparator()
+        self.add_action('&Copy', 'edit-copy', QtGui.QKeySequence.Copy, self.editor.copy)
+        self.add_action('C&ut', 'edit-cut', QtGui.QKeySequence.Copy, self.editor.cut)
+        self.add_action('&Paste', 'edit-paste', QtGui.QKeySequence.Copy, self.editor.paste)
+        self.toolbar.addSeparator()
+        self.add_action('&Find...', 'edit-find', QtGui.QKeySequence.Find, self.show_find)
+        self.add_action('&Replace...', 'edit-find-replace', QtGui.QKeySequence.Replace, self.show_replace)
+
+        self.make_find_replace_widget()
 
         layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.toolbar)
         layout.addWidget(self.editor)
         layout.addWidget(self.find_toolbar)
+        layout.addWidget(self.replace_toolbar)
         self.setLayout(layout)
 
-        search_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')),
-                                                  '&Find/Replace...', self)
-        search_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_F)
-        search_action.triggered.connect(lambda: self.find_toolbar.show())
-        self.addAction(search_action)
+    def make_find_replace_widget(self):
+        self.find_toolbar = QtGui.QToolBar(self)
+        self.replace_toolbar = QtGui.QToolBar(self)
+        find_label = QtGui.QLabel()
+        find_label.setText("Search:")
+        find_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        replace_label = QtGui.QLabel()
+        replace_label.setText("Replace:")
+        replace_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label_width = replace_label.fontMetrics().width(replace_label.text())
+        find_label.setFixedWidth(label_width)
+        replace_label.setFixedWidth(label_width)
+        self.find_edit = QtGui.QLineEdit()
+        self.find_toolbar.addWidget(find_label)
+        self.find_toolbar.addWidget(self.find_edit)
+        self.replace_edit = QtGui.QLineEdit()
+        self.replace_toolbar.addWidget(replace_label)
+        self.replace_toolbar.addWidget(self.replace_edit)
+        next_button = QtGui.QPushButton(self)
+        next_button.setText("&Next")
+        next_button.setDefault(True)
+        next_button.setFixedWidth(150)  # TODO from maximum text+icon width
+        next_button.pressed.connect(self.find_next)
+        prev_button = QtGui.QPushButton(self)
+        prev_button.setText("&Previous")  # TODO from maximum text+icon width
+        prev_button.setFixedWidth(150)
+        prev_button.pressed.connect(self.find_prev)
+        self.find_toolbar.addWidget(next_button)
+        self.find_toolbar.addWidget(prev_button)
+        replace_button = QtGui.QPushButton(self)
+        replace_button.setText("R&eplace one")
+        replace_button.setFixedWidth(150)  # TODO from maximum text+icon width
+        replace_button.pressed.connect(self.replace_next)
+        replace_all_button = QtGui.QPushButton(self)
+        replace_all_button.setText("Replace &all")  # TODO from maximum text+icon width
+        replace_all_button.setFixedWidth(150)
+        replace_all_button.pressed.connect(self.replace_all)
+        self.replace_toolbar.addWidget(replace_button)
+        self.replace_toolbar.addWidget(replace_all_button)
+        self.find_toolbar.hide()
+        self.replace_toolbar.hide()
+        self._add_shortcut(QtCore.Qt.Key_Escape, self.hide_toolbars)
+        self._add_shortcut(QtGui.QKeySequence.FindNext, self.find_next)
+        self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev)
+
+    def add_action(self, name, icon, shortcut, slot):
+        action = QtGui.QAction(QtGui.QIcon.fromTheme(icon, QtGui.QIcon(':/{}'.format(icon))), name, self)
+        action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        self.toolbar.addAction(action)
+        return action
+
+    def _add_shortcut(self, shortcut, slot):
+        action = QtGui.QAction(self)
+        action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        self.editor.addAction(action)
+        return action
+
+    def show_find(self):
+        self.find_toolbar.show()
+        self.find_edit.setFocus()
+
+    def show_replace(self):
+        self.find_toolbar.show()
+        self.replace_toolbar.show()
+        self.find_edit.setFocus()
+
+    def hide_toolbars(self):
+        self.find_toolbar.hide()
+        self.replace_toolbar.hide()
+        self.editor.setFocus()
+
+    def find_next(self):
+        self.editor.find(self.find_edit.text(), QtGui.QTextDocument.FindCaseSensitively)
+
+    def find_prev(self):
+        self.editor.find(self.find_edit.text(),
+                         QtGui.QTextDocument.FindCaseSensitively | QtGui.QTextDocument.FindBackward)
+
+    def replace_next(self):
+        if not self.editor.find(self.find_edit.text(), QtGui.QTextDocument.FindCaseSensitively):
+            return False
+        cursor = self.editor.textCursor()
+        start = cursor.selectionStart()
+        cursor.insertText(self.replace_edit.text())
+        end = cursor.position()
+        cursor.setPosition(start)
+        cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+        self.editor.setTextCursor(cursor)
+        self.editor.setFocus()
+        return True
+
+    def replace_all(self):
+        cursor = self.editor.textCursor()
+        cursor.beginEditBlock()
+        try:
+            cursor.movePosition(QtGui.QTextCursor.Start)
+            self.editor.setTextCursor(cursor)
+            while self.replace_next(): pass
+        finally:
+            cursor.endEditBlock()
+
+    def __getattr__(self, item):
+        return self.editor.__getattribute__(item)
