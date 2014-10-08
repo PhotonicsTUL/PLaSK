@@ -167,7 +167,7 @@ class SourceEditor(QtGui.QWidget):
         self.replace_toolbar.addWidget(replace_all_button)
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
-        self._add_shortcut(QtCore.Qt.Key_Escape, self.hide_toolbars)
+        self._add_shortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape), self.hide_toolbars)
         self._add_shortcut(QtGui.QKeySequence.FindNext, self.find_next)
         self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev)
 

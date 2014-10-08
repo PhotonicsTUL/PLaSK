@@ -10,12 +10,19 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import sip
-for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"):
-    sip.setapi(n, 2)
-from PyQt4 import QtCore, QtGui
+try:
+    import sys
+    qt = sys.qt
+except (ImportError, AttributeError):
+    qt = 'PyQt4'
 
-qt = 'PyQt4'
+if qt == 'PyQt4':
+    import sip
+    for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"):
+        sip.setapi(n, 2)
+    from PyQt4 import QtCore, QtGui
+else:
+    from PySide import QtCore, QtGui
 
 import sys
 sys.modules['gui.qt.QtCore'] = QtCore

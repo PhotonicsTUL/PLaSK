@@ -8,6 +8,8 @@ sys.path.insert(0, base)
 if len(sys.argv) == 1:
     sys.argv.append(join(base, 'gui', 'test.xpl'))
 
+sys.qt = 'PySide'
+
 try:
     import gui
     gui._DEBUG = True
