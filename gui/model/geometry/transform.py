@@ -25,9 +25,10 @@ class GNTranslation(GNTransform):
 
     def __init__(self, parent = None, dim = None):
         super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        self.pos = [None for _ in range(0, dim)]
 
     def attributes_from_XML(self, attribute_reader, conf):
-        pass    #TODO
+        self.pos = [attribute_reader.get(a) for a in conf.axes_names(self.dim)]
 
     @classmethod
     def from_XML_2d(self, element, conf):

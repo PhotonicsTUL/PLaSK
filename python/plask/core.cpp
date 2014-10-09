@@ -58,6 +58,14 @@ void Config::set_axes(std::string axis) {
     current_axes = AxisNames::axisNamesRegister.get(axis);
 }
 
+// return list of 3 axes names or throw exception if axes_names isn't fine
+py::list axeslist_by_name(const std::string& axes_names) {
+    AxisNames a = AxisNames::axisNamesRegister.get(axes_names);
+    py::list l;
+    l.append(a.byIndex[0]); l.append(a.byIndex[1]); l.append(a.byIndex[2]);
+    return l;
+}
+
 std::string Config::__str__() const {
     return  "axes:        " + axes_name()
         + "\nlog.color:   " + std::string(py::extract<std::string>(LoggingConfig().getLoggingColor().attr("__str__")()))
@@ -305,6 +313,7 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Geometry
     initGeometry();
+    def("axeslist_by_name", axeslist_by_name);
 
     // Meshes
     register_mesh();
