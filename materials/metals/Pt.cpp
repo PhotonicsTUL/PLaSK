@@ -30,10 +30,15 @@ Tensor2<double> Pt::thermk(double T, double t) const {
 
 MI_PROPERTY(Pt, absp,
             MISource(""),
-            MIComment("TODO")
+            MIComment("TODO"),
+            MIArgumentRange(MaterialInfo::wl, 400, 12400)
             )
 double Pt::absp(double wl, double T) const {
-    return ( 1e3 );
+    double Wl = wl*1e-3;
+    if (wl<2500.)
+        return ( 1e6*(2.80215 - 15.3234*Wl + 51.5342*Wl*Wl -94.3547*pow(Wl,3.) + 101.1011*pow(Wl,4.) -65.11963*pow(Wl,5.) + 24.741*pow(Wl,6.) - 5.099038*pow(Wl,7.) + 0.4391658*pow(Wl,8.)) );
+    else
+        return ( -39538.4 + 305946*Wl - 67838.1*Wl*Wl + 7492.84*pow(Wl,3.) - 417.401*pow(Wl,4.) + 9.27859*pow(Wl,5.) );
 }
 
 bool Pt::isEqual(const Material &other) const {
@@ -42,10 +47,15 @@ bool Pt::isEqual(const Material &other) const {
 
 MI_PROPERTY(Pt, nr,
             MISource(""),
-            MIComment("TODO")
+            MIComment("TODO"),
+            MIArgumentRange(MaterialInfo::wl, 280, 12400)
 			)
 double Pt::nr(double wl, double T, double n) const {
-    return ( 1. );
+    double Wl = wl*1e-3;
+    if (wl<3700.)
+        return ( 2.20873*exp(-2.70386*pow(Wl-1.76515,2.)) + 0.438205 + 3.87609*Wl - 1.5836*Wl*Wl+0.197125*pow(Wl,3.) );
+    else
+        return ( 3.43266 - 0.963058*Wl + 0.260552*Wl*Wl - 0.00791393*pow(Wl,3.) );
 }
 
 static MaterialsDB::Register<Pt> materialDB_register_Pt;

@@ -11,18 +11,31 @@ std::string GaSb_Te::name() const { return NAME; }
 std::string GaSb_Te::str() const { return StringBuilder("GaSb").dopant("Te", ND); }
 
 GaSb_Te::GaSb_Te(DopingAmountType Type, double Val) {
-    Nf_RT = Val;
-    ND = Val;
-    mob_RT = 1050e-4 + 4600e-4 / (1.+pow(ND/2.8e17,1.05)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    if (Type == CARRIER_CONCENTRATION)
+        Nf_RT = Val;
+    else
+    {
+        ND = Val;
+        if (ND <= 1e18)
+            Nf_RT = ND;
+        else
+        {
+            double tNL = log10(ND);
+            double tnL = 0.499626*tNL*tNL*tNL - 28.7231*tNL*tNL + 549.517*tNL - 3480.87;
+            Nf_RT = ( pow(10.,tnL) );
+        }
+    }
+    mob_RT = 4260e-4/(1.+pow(Nf_RT/8e17,1.25)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
 MI_PROPERTY(GaSb_Te, mob,
-            MISource("D. Martin et al., Semiconductors Science and Technology 19 (2004) 1040-1052"),
-            MIComment("for all dopants") // TODO
+            MISource("-"),
+            MIComment("fit by Lukasz Piskorski")
             )
 Tensor2<double> GaSb_Te::mob(double T) const {
-    double tmob = 1050. + (5650.*pow(300./T,2.0)-1050.) / (1.+pow(ND/(2.8e17*pow(T/300.,2.8)),1.05));
-    return ( Tensor2<double>(tmob*1e-4,tmob*1e-4) ); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    //double tmobRT = 4260./(1.+pow(Nf_RT/8e17,1.25)); // (cm^2/(V*s)) (dopasowanie do danych eksp.: Lukasz)
+    double tmob = mob_RT * pow(300./T,0.8);
+    return ( Tensor2<double>(tmob,tmob) ); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
 MI_PROPERTY(GaSb_Te, Nf,
@@ -30,7 +43,14 @@ MI_PROPERTY(GaSb_Te, Nf,
             MIComment("no temperature dependence")
             )
 double GaSb_Te::Nf(double T) const {
-    return ( Nf_RT );
+    if (ND <= 1e18)
+        return ND;
+    else
+    {
+        double tNL = log10(ND);
+        double tnL = 0.499626*tNL*tNL*tNL - 28.7231*tNL*tNL + 549.517*tNL - 3480.87;
+        return ( pow(10.,tnL) );
+    }
 }
 
 double GaSb_Te::Dop() const {
@@ -38,11 +58,11 @@ double GaSb_Te::Dop() const {
 }
 
 MI_PROPERTY(GaSb_Te, cond,
-            MIComment("100% donor activation assumed") // TODO
+            MIComment("-") // TODO
             )
 Tensor2<double> GaSb_Te::cond(double T) const {
-    double tmob = 1050. + (5650.*pow(300./T,2.0)-1050.) / (1.+pow(ND/(2.8e17*pow(T/300.,2.8)),1.05));
-    double tCond = phys::qe * Nf_RT*1e6 * tmob*1e-4;
+    double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT;
+    double tCond = tCond_RT * pow(300./T,1.5);
     return ( Tensor2<double>(tCond, tCond) );
 }
 
@@ -53,7 +73,7 @@ MI_PROPERTY(GaSb, nr,
             )
 double GaSb_Te::nr(double wl, double T, double n) const {
     double nR300K = sqrt(1.+13.05e-6*wl*wl/(1e-6*wl*wl-0.32)); // 1e-3: nm-> um
-    double nR = nR300K - 0.034*(ND*1e-18); // -3.4e-2 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
+    double nR = nR300K - 0.034*(Nf_RT*1e-18); // -3.4e-2 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
 
     if (wl > 1800.)
         return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
@@ -68,7 +88,7 @@ MI_PROPERTY(GaSb, absp,
             MIComment("fit by Lukasz Piskorski")
             )
 double GaSb_Te::absp(double wl, double T) const {
-    double N = ND*1e-18;
+    double N = Nf_RT*1e-18;
     double L = wl*1e-3;
     double tFCabs = 2.42*N*pow(L,2.16-0.22*N);
     double tIVCBabs = (24.1*N+12.5)*(1.24/L-(0.094*N+0.12))+(-2.05*N-0.37);

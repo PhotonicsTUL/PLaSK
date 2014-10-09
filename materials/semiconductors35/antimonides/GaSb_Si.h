@@ -25,6 +25,7 @@ struct GaSb_Si: public GaSb {
     virtual double Dop() const;
     virtual Tensor2<double> cond(double T) const override;
     virtual double nr(double wl, double T, double n = .0) const override;
+    virtual double absp(double wl, double T) const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;

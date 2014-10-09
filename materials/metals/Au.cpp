@@ -10,7 +10,7 @@ std::string Au::name() const { return NAME; }
 
 MI_PROPERTY(Au, cond,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, pp. 2121-2122, 2005."),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Au::cond(double T) const {
@@ -20,7 +20,7 @@ Tensor2<double> Au::cond(double T) const {
 
 MI_PROPERTY(Au, thermk,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, 2005."),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Au::thermk(double T, double t) const {
@@ -30,10 +30,12 @@ Tensor2<double> Au::thermk(double T, double t) const {
 
 MI_PROPERTY(Au, absp,
             MISource(""),
-            MIComment("TODO")
+            MIComment("TODO"),
+            MIArgumentRange(MaterialInfo::wl, 490, 10000)
             )
 double Au::absp(double wl, double T) const {
-    return ( 1e3 );
+    double Wl = wl*1e-3;
+    return ( -39949.7*pow(Wl,-3.07546) - 113.313*Wl*Wl - 4530.42*Wl + 816908 );
 }
 
 bool Au::isEqual(const Material &other) const {
@@ -42,10 +44,12 @@ bool Au::isEqual(const Material &other) const {
 
 MI_PROPERTY(Au, nr,
             MISource(""),
-            MIComment("TODO")
+            MIComment("TODO"),
+            MIArgumentRange(MaterialInfo::wl, 700, 10000)
 			)
 double Au::nr(double wl, double T, double n) const {
-    return ( 1. );
+    double Wl = wl*1e-3;
+    return ( 0.113018*pow(Wl,1.96113) + 0.185598*Wl );
 }
 
 static MaterialsDB::Register<Au> materialDB_register_Au;
