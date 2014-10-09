@@ -25,5 +25,6 @@ class GNObject(GNode):
     def attributes_from_XML(self, attribute_reader, conf):
         self.name = attribute_reader.get('name')
         self.role = attribute_reader.get('role')
-        conf.axes = attribute_reader.get('axes')
+        self.axes = attribute_reader.get('axes')
+        conf.axes = self.axes
 

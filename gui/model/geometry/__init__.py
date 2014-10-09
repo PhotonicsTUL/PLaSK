@@ -40,8 +40,8 @@ class GNReadConf(object):
         if dim == None: dim = self.parent.dim
         return self.axes if dim == 3 else self.axes[1:]
 
-    def axis_name(self, dim, axes_nr):
-        return self.axes_dim(dim)[axes_nr]
+    def axis_name(self, dim, axis_nr):
+        return self.axes_dim(dim)[axis_nr]
 
     @property
     def axes(self):
@@ -51,3 +51,10 @@ class GNReadConf(object):
     def axes(self, name_or_list):
         if name_or_list is None: return
         self._axes =  axeslist_by_name(axes) if isinstance(name_or_list, basestring) else list(name_or_list)
+
+    def aligners(self, dim, axis_nr):
+        a = self.axis_name(dim, axis_nr)
+        if dim == 2: axis_nr += 1
+        if axis_nr == 0: return ('back', 'front', 'longcenter', a, a + 'center')
+        elif axis_nr == 1: return ('left', 'right', 'trancenter', a, a + 'center')
+        else: return ('top', 'bottom', 'vertcenter', a, a + 'center')
