@@ -1,5 +1,6 @@
 from .object import GNObject
-from .types import construct_geometry_object
+from .types import construct_geometry_object, geometry_object_names, geometry_types_3d
+from .transform import GNExtrusion
 from ...utils.xml import xml_to_attr
 
 # TODO in case of cartesian 2d accept extrusion as a child
@@ -11,16 +12,27 @@ class GNCartesian(GNObject):
         self.right = None
         self.bottom = None
         self.top = None
-        if dim == 3:
+        if dim == 2:
+            self.length = None
+        else:
             self.back = None
             self.front = None
 
     def attributes_from_XML(self, attribute_reader, conf):
         super(GNCartesian, self).attributes_from_XML(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'left', 'right', 'bottom', 'top')
-        if self.dim == 3:
+        if self.dim == 2:
+            self.length = attribute_reader.get('length')
+        else:
             xml_to_attr(attribute_reader, self, 'back', 'front')
 
+    def children_from_XML(self, ordered_reader, conf):
+        el = ordered_reader.get()
+        if el is None: return
+        if self.dim == 2 and self.length is None and el.tag in geometry_object_names(GNExtrusion.from_XML_3d, geometry_types_3d):
+            GNExtrusion.from_XML_3d(el, conf)
+        else:
+            construct_geometry_object(el, conf)
 
     @classmethod
     def from_XML_2d(self, element, conf):
@@ -48,6 +60,8 @@ class GNCylindrical(GNObject):
         super(GNCylindrical, self).attributes_from_XML(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'bottom', 'inner', 'outer', 'top')
 
+    def children_from_XML(self, ordered_reader, conf):
+        construct_geometry_object(ordered_reader.get(), conf)
 
     @classmethod
     def from_XML_2d(self, element, conf):

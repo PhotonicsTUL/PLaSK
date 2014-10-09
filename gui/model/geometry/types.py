@@ -77,6 +77,7 @@ def geometry_object_names(constructor, *allowed_types):
     return res
 
 def construct_geometry_object(element, conf, *allowed_types):
+    if element is None: return None
     if len(allowed_types) == 0:
         d = conf.dim
         if d == 2: return construct_geometry_object(element, conf, geometry_types_2d, geometry_types_other)

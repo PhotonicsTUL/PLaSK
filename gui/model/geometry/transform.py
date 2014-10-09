@@ -18,7 +18,7 @@ from ...utils.xml import xml_to_attr
 class GNTransform(GNObject):
 
     def children_from_XML(self, ordered_reader, conf):
-        construct_geometry_object(ordered_reader.require(), conf)
+        construct_geometry_object(ordered_reader.get(), conf)
 
 
 class GNTranslation(GNTransform):
