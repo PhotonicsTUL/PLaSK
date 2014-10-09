@@ -37,7 +37,7 @@ class DefinesModel(TableModel):
             if val.name == name: return idx
         return -1
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         new_entries = []
         with OrderedTagReader(element) as r:
             for e in r.iter("define"):
@@ -49,7 +49,7 @@ class DefinesModel(TableModel):
         self.fire_changed()
 
     # XML element that represents whole section
-    def get_XML_element(self):
+    def get_xml_element(self):
         res = etree.Element(self.name)
         for e in self.entries:
             if e.comment: res.append(etree.Comment(e.comment))

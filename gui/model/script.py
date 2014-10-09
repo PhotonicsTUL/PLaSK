@@ -21,13 +21,13 @@ class ScriptModel(SectionModel):
         SectionModel.__init__(self, 'script', info_cb)
         self._code = ''
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         require_no_children(element)
         require_no_attributes(element)
         self.set_text(element.text.lstrip('\n\r') if element is not None else '')
 
     # XML element that represents whole section
-    def get_XML_element(self):
+    def get_xml_element(self):
         res = etree.Element(self.name)
         res.text = etree.CDATA('\n' + self._code)
         return res

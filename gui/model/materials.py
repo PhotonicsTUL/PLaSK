@@ -301,7 +301,7 @@ class MaterialsModel(TableModel):
             self.properties = properties    # TODO what with duplicated properties, should be supported?
             self.comment = comment
 
-        def add_to_XML(self, material_section_element):
+        def add_to_xml(self, material_section_element):
             mat = ElementTree.SubElement(material_section_element, "material", { "name": self.name })
             if self.base: mat.attrib['base'] = self.base
             for (n, v) in self.properties:
@@ -310,7 +310,7 @@ class MaterialsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         self.modelAboutToBeReset.emit()
         del self.entries[:]
         with OrderedTagReader(element) as material_reader:
@@ -330,11 +330,11 @@ class MaterialsModel(TableModel):
         self.fire_changed()
 
     # XML element that represents whole section
-    def get_XML_element(self):
+    def get_xml_element(self):
         res = ElementTree.Element(self.name)
         for e in self.entries:
             if e.comment: res.append(ElementTree.Comment(e.comment))
-            e.add_to_XML(res)
+            e.add_to_xml(res)
         return res
 
     def get(self, col, row):

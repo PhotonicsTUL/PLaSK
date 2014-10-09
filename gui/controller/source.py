@@ -31,46 +31,49 @@ scheme = {
 
 class SourceEditController(Controller):
 
-    def __init__(self, document=None, model=None):
+    def __init__(self, document=None, model=None, line_numbers=True):
         Controller.__init__(self, document, model)
+        self.line_numbers = line_numbers
         self.fresh = False
         self.visible = False
         self.edited = False  # True only if text has been edited after last save_data_in_model
-        self.source_editor = None
+        self.source_widget = None
 
     def _on_text_edit(self):
         self.edited = True
         self.document.set_changed()
 
-    def create_source_editor(self, parent):
-        edit = SourceEditor(parent)
-        self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
-        edit.setReadOnly(self.model.is_read_only())
-        return edit
+    def create_source_widget(self, parent):
+        source = SourceWidget(parent, line_numbers=self.line_numbers)
+        self.highlighter = SyntaxHighlighter(source.editor.document(),
+                                             *load_syntax(syntax, scheme),
+                                             default_font=DEFAULT_FONT)
+        source.editor.setReadOnly(self.model.is_read_only())
+        return source
 
-    def get_source_editor(self):
-        if self.source_editor is None:
-            self.source_editor = self.create_source_editor(self.document.window)
-        return self.source_editor
+    def get_source_widget(self):
+        if self.source_widget is None:
+            self.source_widget = self.create_source_widget(self.document.window)
+        return self.source_widget
 
     # GUI editor, by default use source editor
-    def get_editor(self):
-        return self.get_source_editor()
+    def get_widget(self):
+        return self.get_source_widget()
 
     def refresh_editor(self, *args, **kwargs):
         if self.visible:
-            editor = self.get_source_editor()
+            editor = self.get_source_widget().editor
             editor.setPlainText(self.model.get_text())
             self.fresh = True
         else:
             self.fresh = False
 
     def save_data_in_model(self):
-        if not self.get_source_editor().isReadOnly() and self.edited:
+        if not self.get_source_widget().editor.isReadOnly() and self.edited:
             try: self.model.changed -= self.refresh_editor
             except AttributeError: pass
             try:
-                self.model.set_text(self.get_source_editor().toPlainText())
+                self.model.set_text(self.get_source_widget().editor.toPlainText())
                 self.edited = False
             finally:
                 try: self.model.changed += self.refresh_editor
@@ -79,33 +82,29 @@ class SourceEditController(Controller):
     def on_edit_enter(self):
         self.visible = True
         if not self.fresh: self.refresh_editor()
-        try: self.source_editor.line_numbers.offset = self.model.line_in_file
+        try: self.source_widget.editor.line_numbers.offset = self.model.line_in_file
         except AttributeError: pass
         try: self.model.changed += self.refresh_editor
         except AttributeError: pass
-        self.source_editor.textChanged.connect(self._on_text_edit)
+        self.source_widget.editor.textChanged.connect(self._on_text_edit)
 
     # When the editor is turned off, the model should be updated
     def on_edit_exit(self):
-        self.source_editor.textChanged.disconnect(self._on_text_edit)
+        self.source_widget.editor.textChanged.disconnect(self._on_text_edit)
         self.save_data_in_model()
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
 
-    def show_search_bar(self):
-        pass
 
+class SourceWidget(QtGui.QWidget):
 
-class SourceEditor(QtGui.QWidget):
+    def __init__(self, parent=None, editor_class=TextEdit, *args, **kwargs):
+        super(SourceWidget, self).__init__(parent)
 
-    def __init__(self, parent=None, editor_class=TextEdit, *args):
-        super(SourceEditor, self).__init__(parent)
-
-        self.editor = editor_class(self, *args)
+        self.editor = editor_class(self, *args, **kwargs)
         self.editor.setFont(DEFAULT_FONT)
 
         self.toolbar = QtGui.QToolBar(self)
-        self.toolbar.setContentsMargins(0, 0, 0, 0)
 
         self.add_action('&Undo', 'edit-undo', QtGui.QKeySequence.Undo, self.editor.undo)
         self.add_action('R&edo', 'edit-redo', QtGui.QKeySequence.Redo, self.editor.redo)
@@ -229,5 +228,5 @@ class SourceEditor(QtGui.QWidget):
         finally:
             cursor.endEditBlock()
 
-    def __getattr__(self, item):
-        return self.editor.__getattribute__(item)
+    def get_widget(self):
+        return self.editor

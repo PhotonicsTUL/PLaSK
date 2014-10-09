@@ -10,19 +10,21 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtGui
-from ...qt.QtGui import QSplitter, QItemSelectionModel
+SOLVERS = {}
 
-from .. import Controller
-from ...utils.widgets import table_last_col_fill, exception_to_msg
-from ..table import table_with_manipulators
-from ...model.grids import GridsModel
+from ..qt import QtGui
+from ..qt.QtGui import QSplitter, QItemSelectionModel
+
+from . import Controller
+from ..utils.widgets import table_last_col_fill, exception_to_msg
+from .table import table_with_manipulators
+from ..model.solvers import SolversModel
 
 
-class GridsController(Controller):
+class SolversController(Controller):
 
     def __init__(self, document, model=None):
-        if model is None: model = GridsModel()
+        if model is None: model = SolversModel()
         Controller.__init__(self, document, model)
 
         self.current_index = None
@@ -30,22 +32,20 @@ class GridsController(Controller):
 
         self.splitter = QSplitter()
 
-        self.grids_table = QtGui.QTableView()
-        self.grids_table.setModel(self.model)
-        #self.grids_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.grids_table))
-        #self.materialsTableActions = TableActions(self.grids_table)
-        table_last_col_fill(self.grids_table, self.model.columnCount(None), 80)
-        self.grids_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.grids_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.splitter.addWidget(table_with_manipulators(self.grids_table, self.splitter, title="Meshes and generators"))
+        self.solvers_table = QtGui.QTableView()
+        self.solvers_table.setModel(self.model)
+        table_last_col_fill(self.solvers_table, self.model.columnCount(None), [80, 180])
+        self.solvers_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.solvers_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.splitter.addWidget(table_with_manipulators(self.solvers_table, self.splitter, title="Solvers"))
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)
 
-        self.splitter.setSizes([10000,26000])
+        self.splitter.setSizes([10000, 20000])
 
-        selection_model = self.grids_table.selectionModel()
-        selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
+        selection_model = self.solvers_table.selectionModel()
+        selection_model.selectionChanged.connect(self.solver_selected)
 
     def set_current_index(self, new_index):
         """
@@ -56,7 +56,7 @@ class GridsController(Controller):
         if self.current_index == new_index: return True
         if self.current_controller is not None:
             if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
-                              self.document.window, 'Error while trying to store data from current grid editor'):
+                              self.document.window, 'Error while trying to store data from current solver editor'):
                 return False
         self.current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
@@ -69,11 +69,11 @@ class GridsController(Controller):
             self.current_controller.on_edit_enter()
         return True
 
-    def grid_selected(self, new_selection, old_selection):
+    def solver_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
+            self.solvers_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
 
     def get_widget(self):
         return self.splitter
@@ -85,11 +85,11 @@ class GridsController(Controller):
     def on_edit_enter(self):
         #if self.current_controller is not None:
         #    self.current_controller.on_edit_enter()
-        self.grids_table.selectionModel().clear()   #model could completly changed
+        self.solvers_table.selectionModel().clear()   #model could completly changed
 
     def on_edit_exit(self):
         if self.current_controller is not None:
-            self.grids_table.selectionModel().clear()
+            self.solvers_table.selectionModel().clear()
 
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it

@@ -14,6 +14,8 @@
 
 _DEBUG = False
 
+OPERATIONS = []
+
 import sys
 import os
 import ctypes
@@ -22,16 +24,17 @@ import pkgutil
 
 from .qt import QtGui, QtCore, qt
 
-# Set-up corrent backend for matplotlib
-try: import matplotlib
-except ImportError: pass
-else: matplotlib.rc('backend', qt4=qt)
 
-from . import _resources
+# Set-up correct backend for matplotlib
+try:
+    import matplotlib
+except ImportError:
+    pass
+else:
+    matplotlib.rc('backend', qt4=qt)
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
-from .material_plot import show_material_plot
 from .utils.widgets import exception_to_msg
 from .model.info import InfoTreeModel, Info
 from .launch import launch_plask
@@ -50,7 +53,9 @@ except OSError:
 
 WINDOWS = set()
 
-MENU_ITEMS = []
+RECENT = CONFIG['session/recent_files']
+if RECENT is None:
+    RECENT = []
 
 # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 SECTION_ICONS = {
@@ -104,11 +109,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.info_model.layoutChanged.connect(lambda: self.info_dock.setVisible(self.info_model.rowCount() > 0))
 
-        self.material_plot_action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')),
-                                                  '&Material parameters...', self)
-        self.material_plot_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_M)
-        self.material_plot_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
-
         if filename is None or not self._try_load_from_file(filename):  # try to load only in filename is None
             self.document = XPLDocument(self)
             self.model_is_new()
@@ -146,34 +146,42 @@ class MainWindow(QtGui.QMainWindow):
         launch_action.setStatusTip('Launch current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
-        goto_action = QtGui.QAction('&Go to line...', self)
+        goto_action = QtGui.QAction('&Go to Line...', self)
         goto_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_G)
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.goto_line)
 
-        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('exit', QtGui.QIcon(':/exit.png')), 'E&xit', self)
+        exit_action = QtGui.QAction(QtGui.QIcon.fromTheme('application-exit', QtGui.QIcon(':/application-exit.png')),
+                                    'E&xit', self)
         exit_action.setShortcut(QtGui.QKeySequence.Quit)
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
 
+        self.recent_menu = QtGui.QMenu('Open &Recent')
+        self.recent_menu.setIcon(
+            QtGui.QIcon.fromTheme('document-open-recent', QtGui.QIcon(':/document-open-recent.png')))
+        self.update_recent_files()
+
         self.menu = QtGui.QMenu('&Operations')
+
         self.menu.addAction(new_action)
         self.menu.addAction(open_action)
-        self.menu.addSeparator()
+        self.menu.addMenu(self.recent_menu)
         self.menu.addAction(save_action)
         self.menu.addAction(saveas_action)
         self.menu.addSeparator()
         self.menu.addAction(launch_action)
-        self.menu.addSeparator()
         self.menu.addAction(goto_action)
-        self.menu.addSeparator()
-        self.menu.addAction(self.material_plot_action)
-
+        if OPERATIONS:
+            self.menu.addSeparator()
+            for op in OPERATIONS:   # for plugins use
+                self.menu.addAction(op(self))
         self.menu.addSeparator()
         self.menu.addAction(exit_action)
 
         menu_button = QtGui.QPushButton(self)
         menu_button.setText("&Operations")
+        menu_button.setIcon(save_action.icon())
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         menu_button.setPalette(pal)
@@ -215,6 +223,17 @@ class MainWindow(QtGui.QMainWindow):
 
         self.show()
 
+    def update_recent_files(self):
+        self.recent_menu.clear()
+        class Func(object):
+            def __init__(s, f): s.f = f
+            def __call__(s): return self.open(s.f)
+        for i,f in enumerate(reversed(RECENT)):
+            action = QtGui.QAction(f, self)
+            action.triggered.connect(Func(f))
+            # action.setShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_0 + (i+1)%10))
+            self.recent_menu.addAction(action)
+
     def _try_load_from_file(self, filename):
         if filename.endswith('.py'):
             document = PyDocument(self)
@@ -235,13 +254,12 @@ class MainWindow(QtGui.QMainWindow):
     def model_is_new(self):
         self.tabs.clear()
         for m in XPLDocument.SECTION_NAMES:
-            self.tabs.addTab(self.document.controller_by_name(m).get_editor(), m.title())
+            self.tabs.addTab(self.document.controller_by_name(m).get_widget(), m.title())
             # self.tabs.setTabIcon(self.tabs.count()-1,
             #                      QtGui.QIcon.fromTheme(SECTION_ICONS[m],
             #                                            QtGui.QIcon(':/' + SECTION_ICONS[m])))
         self.current_tab_index = -1
         self.tabs.setCurrentIndex(2)
-        #self.tab_change(2)
 
     def set_model(self, document):
         self.document = document
@@ -250,15 +268,28 @@ class MainWindow(QtGui.QMainWindow):
     def new(self):
         new_window = MainWindow()
         new_window.resize(self.size())
+        new_window.move(self.x() + 24, self.y() + 24)
         WINDOWS.add(new_window)
 
-    def open(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "",
-                                                     "PLaSK file (*.xpl *.py);;"
-                                                     "PLaSK structure data (*.xpl);;"
-                                                     "Python script (*.py)")
-        if type(filename) == tuple: filename = filename[0]
-        if not filename: return
+    def open(self, filename=None):
+        global RECENT
+        if not filename:
+            filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "",
+                                                         "PLaSK file (*.xpl *.py);;"
+                                                         "PLaSK structure data (*.xpl);;"
+                                                         "Python script (*.py)")
+            if type(filename) == tuple: filename = filename[0]
+            if not filename: return
+        try:
+            RECENT.remove(filename)
+        except ValueError:
+            pass
+        RECENT.append(filename)
+        RECENT = RECENT[:10]
+        CONFIG['session/recent_files'] = RECENT
+        CONFIG.sync()
+        for window in WINDOWS:
+            window.update_recent_files()
         remove_self = self.document.filename is None and not self.isWindowModified()
         new_window = MainWindow(filename)
         try:
@@ -268,6 +299,8 @@ class MainWindow(QtGui.QMainWindow):
                 if remove_self:
                     self.close()
                     WINDOWS.remove(self)
+                else:
+                    new_window.move(self.x() + 24, self.y() + 24)
             else:
                 new_window.setWindowModified(False)
                 new_window.close()
@@ -390,7 +423,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.tab_change(indx)
                 if not self.showsource_action.isChecked():
                     self.showsource_action.trigger()
-                editor = cntrl.get_source_editor()
+                editor = cntrl.get_source_widget().editor
                 cursor = QtGui.QTextCursor(editor.document().findBlockByLineNumber(
                     min(lineno, editor.document().blockCount()-1)))
                 editor.setTextCursor(cursor)
@@ -466,6 +499,15 @@ def main():
         mod = loader.find_module(modname).load_module(modname)
 
     if len(sys.argv) > 1:
+        filename = os.path.abspath(sys.argv[1])
+        global RECENT
+        try:
+            RECENT.remove(filename)
+        except ValueError:
+            pass
+        RECENT.append(filename)
+        RECENT = RECENT[:10]
+        CONFIG['session/recent_files'] = RECENT
         WINDOWS.add(MainWindow(sys.argv[1]))
     else:
         WINDOWS.add(MainWindow())

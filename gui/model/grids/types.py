@@ -15,26 +15,26 @@ from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
 from .generator_rectilinear import RectilinearDivideGenerator
 
 MESHES_TYPES = {
-    'ordered': RectangularMesh1D.from_XML,
-    'regular': RectangularMesh1D.from_XML,
-    'rectangular2d': RectangularMesh.from_XML,
-    'rectangular3d': RectangularMesh.from_XML,
+    'ordered': RectangularMesh1D.from_xml,
+    'regular': RectangularMesh1D.from_xml,
+    'rectangular2d': RectangularMesh.from_xml,
+    'rectangular3d': RectangularMesh.from_xml,
 }
 
 GENERATORS_TYPES = {
     'ordered': {
-            'divide': RectilinearDivideGenerator.from_XML,
-            'simple': GridWithoutConf.from_XML,
+            'divide': RectilinearDivideGenerator.from_xml,
+            'simple': GridWithoutConf.from_xml,
     },
     'rectangular2d': {
-            'divide': RectilinearDivideGenerator.from_XML,
-            'simple': GridWithoutConf.from_XML,
+            'divide': RectilinearDivideGenerator.from_xml,
+            'simple': GridWithoutConf.from_xml,
     },
     'rectangular3d': {
-            'divide': RectilinearDivideGenerator.from_XML,
-            'simple': GridWithoutConf.from_XML,
+            'divide': RectilinearDivideGenerator.from_xml,
+            'simple': GridWithoutConf.from_xml,
     },
-}   # use GridTreeBased.from_XML for grids without special support
+}   # use GridTreeBased.from_xml for grids without special support
 
 DISPLAY_NAMES = {
     'rectilinear1d': "Rectilinear1D",
@@ -47,12 +47,12 @@ DISPLAY_NAMES = {
 
 def contruct_mesh(grids_model, element):
     t = MESHES_TYPES.get(element.attrib['type'])
-    return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element)
+    return t(grids_model, element) if t else GridTreeBased.from_xml(grids_model, element)
 
 def contruct_generator(grids_model, element):
     t = GENERATORS_TYPES.get(element.attrib['type'])
     if t: t = t.get(element.attrib['method'])
-    return t(grids_model, element) if t else GridTreeBased.from_XML(grids_model, element)
+    return t(grids_model, element) if t else GridTreeBased.from_xml(grids_model, element)
 
 
 def construct_grid(grids_model, element):

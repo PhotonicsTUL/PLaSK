@@ -173,7 +173,7 @@ void endPlask() {
 //******************************************************************************
 int main(int argc, const char *argv[])
 {
-    //setlocale(LC_ALL,"");    std::locale::global(std::locale(""));    //set default locale from env (C is used when program starts), boost filesystem will do the same
+    //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
     if (argc > 1 && std::string(argv[1]) == "-V") {
         printf("PLaSK " PLASK_VERSION "\n");

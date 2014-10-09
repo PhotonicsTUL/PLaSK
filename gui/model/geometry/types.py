@@ -19,45 +19,45 @@ from .copy import GNCopy, GNAgain
 geometry_types_2d = {
 
     # leafs:
-    'block2d': GNBlock.from_XML_2d,
-    'rectangle': GNBlock.from_XML_2d,
-    'circle2d': GNCircle.from_XML_2d,
-    'triangle': GNTriangle.from_XML_2d,
+    'block2d': GNBlock.from_xml_2d,
+    'rectangle': GNBlock.from_xml_2d,
+    'circle2d': GNCircle.from_xml_2d,
+    'triangle': GNTriangle.from_xml_2d,
 
     # containers:
-    'align2d': GNAlignContainer.from_XML_2d,
-    'container2d': GNAlignContainer.from_XML_2d,
-    'stack2d': GNStack.from_XML_2d,
+    'align2d': GNAlignContainer.from_xml_2d,
+    'container2d': GNAlignContainer.from_xml_2d,
+    'stack2d': GNStack.from_xml_2d,
 
     # transforms:
-    'clip2d': GNClip.from_XML_2d,
-    'flip2d': GNFlip.from_XML_2d,
-    'mirror2d': GNMirror.from_XML_2d,
-    'translation2d': GNTranslation.from_XML_2d
+    'clip2d': GNClip.from_xml_2d,
+    'flip2d': GNFlip.from_xml_2d,
+    'mirror2d': GNMirror.from_xml_2d,
+    'translation2d': GNTranslation.from_xml_2d
 }
 
 
 geometry_types_3d = {
 
     # leafs:
-    'block3d': GNBlock.from_XML_3d,
-    'cuboid': GNBlock.from_XML_3d,
-    'circle3d': GNCircle.from_XML_3d,
-    'sphere': GNCircle.from_XML_3d,
-    'cylinder': GNCylinder.from_XML_3d,
+    'block3d': GNBlock.from_xml_3d,
+    'cuboid': GNBlock.from_xml_3d,
+    'circle3d': GNCircle.from_xml_3d,
+    'sphere': GNCircle.from_xml_3d,
+    'cylinder': GNCylinder.from_xml_3d,
 
     # containers:
-    'align3d': GNAlignContainer.from_XML_3d,
-    'container3d': GNAlignContainer.from_XML_3d,
-    'stack3d': GNStack.from_XML_3d,
+    'align3d': GNAlignContainer.from_xml_3d,
+    'container3d': GNAlignContainer.from_xml_3d,
+    'stack3d': GNStack.from_xml_3d,
 
     # transforms:
-    'clip3d': GNClip.from_XML_3d,
-    'flip3d': GNFlip.from_XML_3d,
-    'mirror3d': GNMirror.from_XML_3d,
-    'translation3d': GNTranslation.from_XML_3d,
-    'extrusion': GNExtrusion.from_XML_3d,
-    'revolution': GNRevolution.from_XML_3d
+    'clip3d': GNClip.from_xml_3d,
+    'flip3d': GNFlip.from_xml_3d,
+    'mirror3d': GNMirror.from_xml_3d,
+    'translation3d': GNTranslation.from_xml_3d,
+    'extrusion': GNExtrusion.from_xml_3d,
+    'revolution': GNRevolution.from_xml_3d
 }
 
 

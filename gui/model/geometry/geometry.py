@@ -18,32 +18,32 @@ class GNCartesian(GNObject):
             self.back = None
             self.front = None
 
-    def attributes_from_XML(self, attribute_reader, conf):
-        super(GNCartesian, self).attributes_from_XML(attribute_reader, conf)
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNCartesian, self).attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'left', 'right', 'bottom', 'top')
         if self.dim == 2:
             self.length = attribute_reader.get('length')
         else:
             xml_to_attr(attribute_reader, self, 'back', 'front')
 
-    def children_from_XML(self, ordered_reader, conf):
+    def children_from_xml(self, ordered_reader, conf):
         el = ordered_reader.get()
         if el is None: return
-        if self.dim == 2 and self.length is None and el.tag in geometry_object_names(GNExtrusion.from_XML_3d, geometry_types_3d):
-            GNExtrusion.from_XML_3d(el, conf)
+        if self.dim == 2 and self.length is None and el.tag in geometry_object_names(GNExtrusion.from_xml_3d, geometry_types_3d):
+            GNExtrusion.from_xml_3d(el, conf)
         else:
             construct_geometry_object(el, conf)
 
     @classmethod
-    def from_XML_2d(self, element, conf):
+    def from_xml_2d(self, element, conf):
         result = GNCartesian(dim = 2)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNCartesian(dim = 3)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
 
@@ -56,15 +56,15 @@ class GNCylindrical(GNObject):
         self.outer = None
         self.top = None
 
-    def attributes_from_XML(self, attribute_reader, conf):
-        super(GNCylindrical, self).attributes_from_XML(attribute_reader, conf)
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNCylindrical, self).attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'bottom', 'inner', 'outer', 'top')
 
-    def children_from_XML(self, ordered_reader, conf):
+    def children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
 
     @classmethod
-    def from_XML_2d(self, element, conf):
+    def from_xml_2d(self, element, conf):
         result = GNCylindrical(dim = 2)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result

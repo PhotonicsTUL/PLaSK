@@ -40,7 +40,7 @@ class OutputWindow(QtGui.QMainWindow):
                 font_family = "Monaco"
             else:
                 font_family = "Monospace"
-            CONFIG['launcher_local/font_family'] = font_family
+            CONFIG['launcher_local/font_fpycodeamily'] = font_family
             font.setStyleHint(QtGui.QFont.TypeWriter)
         font.setFamily(font_family)
         font.setPointSize(int(CONFIG('launcher_local/font_size', 10)))
@@ -185,7 +185,7 @@ class OutputWindow(QtGui.QMainWindow):
                                                  "All computation results may be lost!",
                                                  QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if confirm == QtGui.QMessageBox.Yes:
-                self.thread.terminate()
+                self.thread.kill_process()
                 if not self.thread.wait(6000):
                     QtGui.QMessageBox.critical(self, "Close Window",
                                                "PLaSK process could not be terminated. Window will not be closed. "
@@ -310,11 +310,6 @@ class Launcher(object):
         return widget
 
     def launch(self, main_window, *args):
-        if self.dirname:
-            dirname = self.dirname
-        else:
-            dirname = os.path.dirname(os.path.abspath(main_window.document.filename or 'dummy'))
-
         if main_window.isWindowModified():
             confirm = QtGui.QMessageBox.question(main_window, "Unsaved File",
                                                  "The file must be saved before launching local computations. "
@@ -322,11 +317,15 @@ class Launcher(object):
                                                  QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
             if confirm == QtGui.QMessageBox.No or not main_window.save():
                 return
-
+        filename = os.path.abspath(main_window.document.filename)
+        if self.dirname:
+            dirname = self.dirname
+        else:
+            dirname = os.path.dirname(filename)
         window = OutputWindow(main_window.document.filename, self)
         self.windows.add(window)
         self.mutex = QtCore.QMutex()
-        window.thread = PlaskThread(main_window.document.filename, dirname, window.lines, self.mutex, *args)
+        window.thread = PlaskThread(filename, dirname, window.lines, self.mutex, *args)
         window.thread.finished.connect(window.thread_finished)
         window.halt_action.triggered.connect(window.halt_thread)
         window.thread.start()

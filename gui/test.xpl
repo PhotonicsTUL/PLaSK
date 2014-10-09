@@ -7,6 +7,7 @@
 
 <materials>
   <material name="active" base="In(0.13)GaAs">
+    <A>T**2</A>
     <nr>3.53</nr>
     <absp>0.</absp>
   </material>

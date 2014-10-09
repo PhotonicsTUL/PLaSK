@@ -29,7 +29,7 @@ class GNode(object):
         self._parent = None  #used by parent property
         self.parent = parent
 
-    def attributes_from_XML(self, attribute_reader, conf):
+    def attributes_from_xml(self, attribute_reader, conf):
         """
 
         :param reader:
@@ -38,18 +38,18 @@ class GNode(object):
         """
         pass
 
-    def children_from_XML(self, ordered_reader, conf):
+    def children_from_xml(self, ordered_reader, conf):
         pass
 
     def preset_conf(self, conf):
         conf.parent = self
 
-    def set_XML_element(self, element, conf = None):
+    def set_xml_element(self, element, conf = None):
         if conf is not None and conf.parent is not None: self.parent = conf.parent
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
-        with AttributeReader(element) as a: self.attributes_from_XML(a, subtree_conf)
-        with OrderedTagReader(element) as r: self.children_from_XML(r, subtree_conf)
+        with AttributeReader(element) as a: self.attributes_from_xml(a, subtree_conf)
+        with OrderedTagReader(element) as r: self.children_from_xml(r, subtree_conf)
 
     #def append(self, child):
     #    self.children.append(child)

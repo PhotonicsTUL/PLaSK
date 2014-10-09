@@ -79,8 +79,8 @@ class TreeFragmentModel(InfoSource):
         if self.parent is not None: self.parent.fire_changed(refresh_info, *args, **kwargs)
 
     def get_text(self):
-        return print_interior(self.get_XML_element())
-        #return etree.tostring(self.get_XML_element())
+        return print_interior(self.get_xml_element())
+        #return etree.tostring(self.get_xml_element())
 
     def is_read_only(self):
         """
@@ -105,7 +105,7 @@ class SectionModel(TreeFragmentModel):
         self.line_in_file = None
 
     def set_text(self, text):
-        self.set_XML_element(
+        self.set_xml_element(
             etree.fromstringlist(['<', self.name.encode('utf-8'), '>', text.encode('utf-8'), '</',
                                         self.name.encode('utf-8'), '>'], parser=XML_parser))
                                         # .encode('utf-8') wymagane (tylko) przez lxml
@@ -113,7 +113,7 @@ class SectionModel(TreeFragmentModel):
     def is_read_only(self):
         return self.externalSource is not None
 
-    def get_file_XML_element(self):
+    def get_file_xml_element(self):
         """
             Get XML element ready to save in XPL document.
             It represents the whole section and either contains data or points to external source (has external attribute).
@@ -121,7 +121,7 @@ class SectionModel(TreeFragmentModel):
         if self.externalSource is not None:
             return etree.Element(self.name, {"external": self.externalSource.filename})
         else:
-            return self.get_XML_element()
+            return self.get_xml_element()
 
     def clear(self):
         """Make this section empty."""
@@ -135,7 +135,7 @@ class SectionModel(TreeFragmentModel):
                    used only for optimization in circular reference finding
         """
         try:
-            self.set_XML_element(getSectionXMLFromFile(self.name, self.externalSource.filenameAbs, original_filename))
+            self.set_xml_element(getSectionXMLFromFile(self.name, self.externalSource.filenameAbs, original_filename))
         except Exception as e:
             self.externalSource.error = str(e)
         else:
@@ -145,12 +145,12 @@ class SectionModel(TreeFragmentModel):
         self.externalSource = ExternalSource(filename, original_filename)
         self.reload_external_source(original_filename)
 
-    def set_file_XML_element(self, element, filename=None):
+    def set_file_xml_element(self, element, filename=None):
         with AttributeReader(element) as a:
             if 'external' in a:
                 self.set_external_source(a['external'], filename)
                 return
-        self.set_XML_element(element)
+        self.set_xml_element(element)
         self.line_in_file = element.sourceline   # TODO can be wrong when the next sections will not be read correctly
 
     def create_info(self):
@@ -178,7 +178,7 @@ class SectionModelTreeBased(SectionModel):
         SectionModel.__init__(self, name)
         self.element = etree.Element(name)
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         self.element = element
         self.fire_changed()
 
@@ -187,7 +187,7 @@ class SectionModelTreeBased(SectionModel):
         self.fire_changed()
 
     # XML element that represents whole section
-    def get_XML_element(self):
+    def get_xml_element(self):
         return self.element
 
 

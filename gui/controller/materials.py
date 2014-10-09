@@ -182,10 +182,11 @@ class MaterialsController(Controller):
                                                                               self.materials_table))
         #self.materialsTableActions = TableActions(self.materials_table)
         table_last_col_fill(self.materials_table, self.model.columnCount(None), 140)
-        materials_table, materials_toolbar = table_and_manipulators(self.materials_table, self.splitter, title="Materials")
+        materials_table, materials_toolbar = \
+            table_and_manipulators(self.materials_table, self.splitter, title="Materials")
         self.splitter.addWidget(materials_table)
-        materials_toolbar.addSeparator()
-        materials_toolbar.addAction(self.document.window.material_plot_action)
+        # materials_toolbar.addSeparator()
+        # materials_toolbar.addAction(self.document.window.material_plot_action)
 
         self.property_model = MaterialPropertyModel(selection_model)
         self.properties_table = QtGui.QTableView()
@@ -223,7 +224,7 @@ class MaterialsController(Controller):
         #self.properties_table.resizeColumnsToContents()
         self.properties_table.resizeRowsToContents()
 
-    def get_editor(self):
+    def get_widget(self):
         return self.splitter
 
 

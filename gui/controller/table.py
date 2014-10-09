@@ -121,7 +121,7 @@ class TableController(Controller):
         self.table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
-    def get_editor(self):
+    def get_widget(self):
         if self.model.is_read_only():
             return self.table
         widget = QtGui.QWidget()

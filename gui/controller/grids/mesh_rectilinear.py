@@ -94,7 +94,7 @@ class RectangularMesh1DConroller(Controller):
     def on_edit_enter(self):
         self.editor.from_model(self.model.axis)
 
-    def get_editor(self):
+    def get_widget(self):
         return self.editor
 
 
@@ -123,5 +123,5 @@ class RectangularMeshConroller(Controller):
         for i in range(0, self.model.dim):
             self.axis_edit[i].from_model(self.model.axis[i])
 
-    def get_editor(self):
+    def get_widget(self):
         return self.form

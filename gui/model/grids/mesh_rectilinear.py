@@ -26,12 +26,12 @@ class AxisConf(object):
         self.points = points
         self.type = None if type == '' else type
 
-    def fill_XMLElement(self, axisElement):
+    def fill_xmlElement(self, axisElement):
         attr_to_xml(self, axisElement, 'start', 'stop', 'num', 'type')
         axisElement.text = self.points if self.points else ''
 
 
-    def set_from_XML(self, axis_element):
+    def set_from_xml(self, axis_element):
         xml_to_attr(axis_element, self, 'start', 'stop', 'num', 'type')
         self.points = None if axis_element is None else axis_element.text
 
@@ -43,9 +43,9 @@ class RectangularMesh1D(Grid):
     """Model of 1D rectangular mesh (ordered or regular)"""
 
     @staticmethod
-    def from_XML(grids_model, element):
+    def from_xml(grids_model, element):
         e = RectangularMesh1D(grids_model, element.attrib['name'], element.attrib['type'])
-        e.set_XML_element(element)
+        e.set_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type):
@@ -56,14 +56,14 @@ class RectangularMesh1D(Grid):
     def is_regular(self):
         return self.type == 'regular'
 
-    def get_XML_element(self):
-        res = super(RectangularMesh1D, self).get_XML_element()
-        self.axis.fill_XMLElement(SubElement(res, 'axis'))
+    def get_xml_element(self):
+        res = super(RectangularMesh1D, self).get_xml_element()
+        self.axis.fill_xmlElement(SubElement(res, 'axis'))
         return res
 
-    def set_XML_element(self, element):
-        super(RectangularMesh1D, self).set_XML_element(element)
-        with OrderedTagReader(element) as r: self.axis.set_from_XML(r.get('axis'))
+    def set_xml_element(self, element):
+        super(RectangularMesh1D, self).set_xml_element(element)
+        with OrderedTagReader(element) as r: self.axis.set_from_xml(r.get('axis'))
 
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMesh1DConroller
@@ -75,9 +75,9 @@ class RectangularMesh(Grid):
     """Model of 2D and 3D rectangular mesh"""
 
     @staticmethod
-    def from_XML(grids_model, element):
+    def from_xml(grids_model, element):
         e = RectangularMesh(grids_model, int(element.attrib['type'][-2]), element.attrib['name'])
-        e.set_XML_element(element)
+        e.set_xml_element(element)
         return e
 
     def __init__(self, grids_model, dim, name):
@@ -89,17 +89,17 @@ class RectangularMesh(Grid):
     def axis_tag_name(nr):
         return "axis{}".format(nr)
 
-    def get_XML_element(self):
-        res = super(RectangularMesh, self).get_XML_element()
+    def get_xml_element(self):
+        res = super(RectangularMesh, self).get_xml_element()
         for i in range(0, self.dim):
-            self.axis[i].fill_XMLElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
+            self.axis[i].fill_xmlElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
         return res
 
-    def set_XML_element(self, element):
-        super(RectangularMesh, self).set_XML_element(element)
+    def set_xml_element(self, element):
+        super(RectangularMesh, self).set_xml_element(element)
         with UnorderedTagReader(element) as r:
             for i in range(0, self.dim):
-                self.axis[i].set_from_XML(r.get(RectangularMesh.axis_tag_name(i)))
+                self.axis[i].set_from_xml(r.get(RectangularMesh.axis_tag_name(i)))
 
     def get_controller(self, document):
         from ...controller.grids.mesh_rectilinear import RectangularMeshConroller

@@ -97,5 +97,5 @@ class RectilinearDivideGeneratorConroller(Controller):
             self.prediv[i].setText(self.model.get_prediv(i))
             self.postdiv[i].setText(self.model.get_postdiv(i))
 
-    def get_editor(self):
+    def get_widget(self):
         return self.form

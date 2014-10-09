@@ -29,7 +29,7 @@ class ConnectsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         TableModel.__init__(self, 'connects', parent, info_cb, *args)
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         new_entries = []
         with OrderedTagReader(element) as r:
             for e in r.iter("connect"):
@@ -41,7 +41,7 @@ class ConnectsModel(TableModel):
         self.fire_changed()
 
     # XML element that represents whole section
-    def get_XML_element(self):
+    def get_xml_element(self):
         res = etree.Element(self.name)
         for e in self.entries:
             if e.comment: res.append(etree.Comment(e.comment))

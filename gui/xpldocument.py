@@ -18,6 +18,7 @@ from .controller.defines import DefinesController
 from .controller.script import ScriptController
 from .controller.multi import GUIAndSourceController
 from .controller.connects import ConnectsController
+from .controller.solvers import SolversController
 from .controller import materials
 from .controller.grids import GridsController
 from .utils.xml import XML_parser, OrderedTagReader
@@ -35,14 +36,17 @@ class XPLDocument(object):
         self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
         self.grids = GUIAndSourceController(GridsController(self))
         self.script = ScriptController(self)
+        #self.solvers = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4]))
+        self.solvers = GUIAndSourceController(SolversController(self))
+        self.connects = GUIAndSourceController(ConnectsController(self))
 
         self.controllers = (
             self.defines,
             self.materials,
             self.geometry,
             self.grids,
-            SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4])),  # solvers
-            GUIAndSourceController(ConnectsController(self)),   # connects
+            self.solvers,
+            self.connects,
             self.script
         )
         for c in self.controllers:
@@ -65,7 +69,7 @@ class XPLDocument(object):
             for i in range(len(XPLDocument.SECTION_NAMES)):
                 element = r.get(XPLDocument.SECTION_NAMES[i])
                 if element is not None:
-                    self.model_by_index(i).set_file_XML_element(element, filename)
+                    self.model_by_index(i).set_file_xml_element(element, filename)
                 else:
                     self.model_by_index(i).clear()
         self.filename = filename
@@ -77,7 +81,7 @@ class XPLDocument(object):
         current_line_in_file = 3
         for c in self.controllers:
             c.update_line_number(current_line_in_file)
-            section_string = etree.tostring(c.model.get_file_XML_element(), encoding="UTF-8", pretty_print=True)
+            section_string = etree.tostring(c.model.get_file_xml_element(), encoding="UTF-8", pretty_print=True)
             data += section_string + '\n'
             current_line_in_file += section_string.count('\n') + 1
         data += '</plask>'

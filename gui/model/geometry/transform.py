@@ -17,7 +17,7 @@ from ...utils.xml import xml_to_attr
 
 class GNTransform(GNObject):
 
-    def children_from_XML(self, ordered_reader, conf):
+    def children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
 
 
@@ -27,19 +27,19 @@ class GNTranslation(GNTransform):
         super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.pos = [None for _ in range(0, dim)]
 
-    def attributes_from_XML(self, attribute_reader, conf):
+    def attributes_from_xml(self, attribute_reader, conf):
         self.pos = [attribute_reader.get(a) for a in conf.axes_names(self.dim)]
 
     @classmethod
-    def from_XML_2d(self, element, conf):
+    def from_xml_2d(self, element, conf):
         result = GNTranslation(dim = 2)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNTranslation(dim = 3)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
 
@@ -55,23 +55,23 @@ class GNClip(GNTransform):
             self.back = None
             self.front = None
 
-    def attributes_from_XML(self, attribute_reader, conf):
-        super(GNClip, self).attributes_from_XML(attribute_reader, conf)
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNClip, self).attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'left', 'right', 'bottom', 'top')
         if self.dim == 3:
             xml_to_attr(attribute_reader, self, 'back', 'front')
 
 
     @classmethod
-    def from_XML_2d(self, element, conf):
+    def from_xml_2d(self, element, conf):
         result = GNClip(dim = 2)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNClip(dim = 3)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
 
@@ -81,20 +81,20 @@ class GNFlip(GNTransform):
         super(GNFlip, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
-    def attributes_from_XML(self, attribute_reader, conf):
-        super(GNFlip, self).attributes_from_XML(attribute_reader, conf)
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNFlip, self).attributes_from_xml(attribute_reader, conf)
         self.axis = attribute_reader.get('axis')
 
     @classmethod
-    def from_XML_2d(self, element, conf):
+    def from_xml_2d(self, element, conf):
         result = GNFlip(dim = 2)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNFlip(dim = 3)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
 
@@ -104,20 +104,20 @@ class GNMirror(GNTransform):
         super(GNMirror, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
-    def attributes_from_XML(self, attribute_reader, conf):
-        super(GNMirror, self).attributes_from_XML(attribute_reader, conf)
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNMirror, self).attributes_from_xml(attribute_reader, conf)
         self.axis = attribute_reader.get('axis')
 
     @classmethod
-    def from_XML_2d(self, element, conf):
+    def from_xml_2d(self, element, conf):
         result = GNMirror(dim = 2)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNMirror(dim = 3)
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
 
@@ -127,14 +127,14 @@ class GNExtrusion(GNTransform):
         super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
         self.length = None
         
-    def attributes_from_XML(self, attribute_reader, conf):
-        super(GNExtrusion, self).attributes_from_XML(attribute_reader, conf)
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNExtrusion, self).attributes_from_xml(attribute_reader, conf)
         self.length = attribute_reader.get('length')
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNExtrusion()
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result
 
 
@@ -144,7 +144,7 @@ class GNRevolution(GNTransform):
         super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
 
     @classmethod
-    def from_XML_3d(self, element, conf):
+    def from_xml_3d(self, element, conf):
         result = GNRevolution()
-        result.set_XML_element(element, conf)
+        result.set_xml_element(element, conf)
         return result

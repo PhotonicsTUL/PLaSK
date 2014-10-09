@@ -17,7 +17,7 @@ class Controller(object):
     """
         Base class for controllers.
         Controllers create editor for the fragment of the XPL document (a section or smaller fragment) and make it
-        available by get_editor method (subclasses must implement this method).
+        available by get_widget method (subclasses must implement this method).
         They also transfer data from model to editor (typically in on_edit_enter) and in opposite direction
         (typically in save_data_in_model).
     """
@@ -52,7 +52,7 @@ class Controller(object):
         else:
             self.source_editor.repaint()
 
-    # def get_editor(self) - to be done in subclasses
+    # def get_widget(self) - to be done in subclasses
 
 
 
@@ -63,5 +63,5 @@ class NoConfController(Controller):
         self.label = QtGui.QLabel(text)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
 
-    def get_editor(self):
+    def get_widget(self):
         return self.label

@@ -32,5 +32,5 @@ class GeometryController(Controller):
         self.tree.setModel(ETreeModel(model))
         self.splitter.addWidget(self.tree)
 
-    def get_editor(self):
+    def get_widget(self):
         return self.splitter

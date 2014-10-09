@@ -40,14 +40,14 @@ class RefinementConf(object):
         self.by = by
         self.every = every
 
-    def get_XML_element(self):
+    def get_xml_element(self):
         res = Element('axis{}'.format(self.axis))
         for attr in RefinementConf.attributes_names:
             a = getattr(self, attr, None)
             if a is not None: res.attrib[attr] = a
         return res
 
-    def set_from_XML(self, axis_element):
+    def set_from_xml(self, axis_element):
         if axis_element is None:
             self.axis = 0
             for attr in RefinementConf.attributes_names: setattr(self, attr, None)
@@ -127,9 +127,9 @@ class RectilinearDivideGenerator(Grid):
     warnings = ('missing', 'multiple', 'outside')
 
     @staticmethod
-    def from_XML(grids_model, element):
+    def from_xml(grids_model, element):
         e = RectilinearDivideGenerator(grids_model, element.attrib['name'], element.attrib['type'])
-        e.set_XML_element(element)
+        e.set_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type, gradual=False, prediv=None, postdiv=None, refinements=None,
@@ -147,7 +147,7 @@ class RectilinearDivideGenerator(Grid):
     def dim(self):
         return 1 if self.type == 'ordered' else int(self.type[-2])
 
-    def _append_div_XML_element(self, div_name, dst):
+    def _append_div_xml_element(self, div_name, dst):
         div = getattr(self, div_name)
         if div is None: return
         div_element = Element(div_name)
@@ -160,16 +160,16 @@ class RectilinearDivideGenerator(Grid):
             if div_element.attrib:
                 dst.append(div_element)
 
-    def get_XML_element(self):
-        res = super(RectilinearDivideGenerator, self).get_XML_element()
+    def get_xml_element(self):
+        res = super(RectilinearDivideGenerator, self).get_xml_element()
         if self.gradual is not None:
             SubElement(res, "gradual", attrib={'all': self.gradual})
-        self._append_div_XML_element('prediv', res)
-        self._append_div_XML_element('postdiv', res)
+        self._append_div_xml_element('prediv', res)
+        self._append_div_xml_element('postdiv', res)
         if len(self.refinements.entries) > 0:
             refinements_element = SubElement(res, 'refinements')
             for r in self.refinements.entries:
-                refinements_element.append(r.get_XML_element())
+                refinements_element.append(r.get_xml_element())
         warnings_el = Element('warnings')
         for w in RectilinearDivideGenerator.warnings:
             v = getattr(self, 'warning_'+w, None)
@@ -177,7 +177,7 @@ class RectilinearDivideGenerator(Grid):
         if warnings_el.attrib: res.append(warnings_el)
         return res
 
-    def _div_from_XML(self, div_name, src):
+    def _div_from_xml(self, div_name, src):
         div_element = src.find(div_name)
         if div_element is None:
             setattr(self, div_name, None)
@@ -189,8 +189,8 @@ class RectilinearDivideGenerator(Grid):
                 else:
                     setattr(self, div_name, tuple(a.get('by'+str(i)) for i in range(0, self.dim)))
 
-    def set_XML_element(self, element):
-        super(RectilinearDivideGenerator, self).set_XML_element(element)
+    def set_xml_element(self, element):
+        super(RectilinearDivideGenerator, self).set_xml_element(element)
         with UnorderedTagReader(element) as r:
             gradual_element = r.find('gradual')
             if gradual_element is not None:
@@ -200,14 +200,14 @@ class RectilinearDivideGenerator(Grid):
                     self.gradual = 'no'
                 else:
                     self.gradual = None
-            self._div_from_XML('prediv', r)
-            self._div_from_XML('postdiv', r)
+            self._div_from_xml('prediv', r)
+            self._div_from_xml('postdiv', r)
             self.refinements.entries = []
             refinements_element = r.find('refinements')
             if refinements_element is not None:
                 for ref_el in refinements_element:
                     to_append = RefinementConf()
-                    to_append.set_from_XML(ref_el)
+                    to_append.set_from_xml(ref_el)
                     self.refinements.entries.append(to_append)
             warnings_element = r.find('warnings')
             if warnings_element is None:

@@ -28,7 +28,7 @@ class MultiEditorController(Controller):
 
         self.editorWidget = QtGui.QStackedWidget()
         for c in controllers:
-            self.editorWidget.addWidget(c.get_editor())
+            self.editorWidget.addWidget(c.get_widget())
 
     @property
     def model(self):
@@ -38,7 +38,7 @@ class MultiEditorController(Controller):
     def document(self):
         return self.controllers[0].document
 
-    def get_editor(self):
+    def get_widget(self):
         return self.editorWidget
 
     def get_current_index(self):
@@ -93,6 +93,6 @@ class GUIAndSourceController(MultiEditorController):
         self.document.window.showsource_action.triggered.disconnect(self.change_editor)
         self.document.window.set_show_source_state(None)
 
-    def get_source_editor(self):
-        return self.controllers[1].get_source_editor()
+    def get_source_widget(self):
+        return self.controllers[1].get_source_widget()
 

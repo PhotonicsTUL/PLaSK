@@ -87,12 +87,12 @@ class NewGridDialog(QtGui.QDialog):
 
     def get_grid(self, grids_model):
         return construct_grid(
-                grids_model,
-                Grid.contruct_empty_XML_element(
-                    xml_name(self.name_edit.text()),
-                    xml_name(self.type_edit.currentText()),
-                    xml_name(self.method_edit.currentText()) if self.kind_generator.isChecked() else None
-                )
+            grids_model,
+            Grid.contruct_empty_xml_element(
+                xml_name(self.name_edit.text()),
+                xml_name(self.type_edit.currentText()),
+                xml_name(self.method_edit.currentText()) if self.kind_generator.isChecked() else None
+            )
         )
 
 

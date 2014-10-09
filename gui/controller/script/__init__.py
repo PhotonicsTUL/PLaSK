@@ -16,12 +16,13 @@ try:
     from .pycode import PyCode
 except ImportError:
     PyCode = None
+    sys.stderr.write('Could not initialize PyCode\n')
 
 from ...qt import QtGui
 
 from .editor import ScriptEditor
 
-from ..source import SourceEditController, SourceEditor
+from ..source import SourceEditController, SourceWidget
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.widgets import DEFAULT_FONT
@@ -59,28 +60,30 @@ class ScriptController(SourceEditController):
         if model is None: model = ScriptModel()
         SourceEditController.__init__(self, document, model)
 
-    def create_source_editor(self, parent):
-        edit = SourceEditor(parent, ScriptEditor, self)
-        edit.setReadOnly(self.model.is_read_only())
+    def create_source_widget(self, parent):
+        source = SourceWidget(parent, ScriptEditor, self)
+        source.editor.setReadOnly(self.model.is_read_only())
 
-        edit.toolbar.addSeparator()
+        source.toolbar.addSeparator()
         menu = QtGui.QMenu()
-        menu.addAction(edit.comment_action)
-        menu.addAction(edit.uncomment_action)
+        menu.addAction(source.editor.comment_action)
+        menu.addAction(source.editor.uncomment_action)
         button = QtGui.QToolButton()
         button.setIcon(QtGui.QIcon.fromTheme('code-block', QtGui.QIcon(':/code-block')))
         button.setMenu(menu)
         button.setPopupMode(QtGui.QToolButton.InstantPopup)
-        edit.toolbar.addWidget(button)
+        source.toolbar.addWidget(button)
         if self.model.is_read_only():
-            edit.comment_action.setEnabled(False)
-            edit.uncomment_action.setEnabled(False)
+            source.editor.comment_action.setEnabled(False)
+            source.editor.uncomment_action.setEnabled(False)
 
-        self.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme), default_font=DEFAULT_FONT)
+        self.highlighter = SyntaxHighlighter(source.editor.document(),
+                                             *load_syntax(syntax, scheme),
+                                             default_font=DEFAULT_FONT)
         if PyCode:
-            self.pycode = PyCode(".", edit)
+            self.pycode = PyCode(".", source.editor)
 
-        return edit
+        return source
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()

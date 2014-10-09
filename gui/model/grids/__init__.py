@@ -17,6 +17,7 @@ from xml.sax.saxutils import quoteattr
 from ...qt import QtCore
 
 from ...utils.xml import print_interior, XML_parser, AttributeReader
+from ...controller.source import SourceEditController
 from .. import TreeFragmentModel
 from ..info import InfoSource
 from ..table import TableModel
@@ -26,7 +27,7 @@ class Grid(TreeFragmentModel):
     """Base class for models of grids (meshes or generators)"""
 
     @staticmethod
-    def contruct_empty_XML_element(name, type, method=None):
+    def contruct_empty_xml_element(name, type, method=None):
         if method is not None:
             return etree.Element("generator", {"name": name, "type": type, "method": method})
         else:
@@ -38,10 +39,10 @@ class Grid(TreeFragmentModel):
         if type is not None: self.type = type
         if method is not None: self._method = method
 
-    def get_XML_element(self):
-        return Grid.contruct_empty_XML_element(self.name, self.type, self.method)
+    def get_xml_element(self):
+        return Grid.contruct_empty_xml_element(self.name, self.type, self.method)
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         with AttributeReader(element) as a:
             self.name = a.get('name', None)
             a.mark_read('type')
@@ -68,7 +69,7 @@ class Grid(TreeFragmentModel):
             tab = ['<mesh name=', quoteattr(self.name).encode('utf-8'), ' type=',
                    quoteattr(self.type).encode('utf-8'), '>', text.encode('utf-8'), '</mesh>']
         #print ''.join(tab)
-        self.set_XML_element(etree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
+        self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))   # .encode('utf-8') wymagane (tylko) przez lxml
 
     @property
     def type_and_kind_str(self):
@@ -79,8 +80,7 @@ class Grid(TreeFragmentModel):
             return "%s mesh" % display_name(self.type)
 
     def get_controller(self, document):
-        from ...controller.source import SourceEditController
-        return SourceEditController(document=document, model=self)
+        return SourceEditController(document=document, model=self, line_numbers=False)
 
 #class Generator(Grid):
 #    """Base class for models of generators"""
@@ -90,29 +90,29 @@ class Grid(TreeFragmentModel):
 
 
 class GridTreeBased(Grid):
-    """Universal grid model, used for grids not supported in other way (data are stored as XML element)"""
+    """Universal grid model, used for grids not supported in other way (data is stored as XML element)"""
 
     @staticmethod
-    def from_XML(grids_model, element):
+    def from_xml(grids_model, element):
         return GridTreeBased(grids_model, element=element)
 
     def __init__(self, grids_model, name=None, type=None, method=None, element=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
         super(GridTreeBased, self).__init__(grids_model)
         if element is None:
-            self.element = Grid.contruct_empty_XML_element(name, type, method)
+            self.element = Grid.contruct_empty_xml_element(name, type, method)
         else:
             self.element = element
         #Grid.__init__(self, name, type, method)
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         self.element = element
         with AttributeReader(element) as a:
             a.mark_read('name', 'type')
             if self.is_generator: a.mark_read('method')
     #    self.fireChanged()    #TODO ???
 
-    def get_XML_element(self):
+    def get_xml_element(self):
         return self.element
 
     @property
@@ -136,17 +136,17 @@ class GridWithoutConf(Grid):
     """Model for all grids that does not require any configuration."""
 
     @staticmethod
-    def from_XML(grids_model, element):
+    def from_xml(grids_model, element):
         return GridWithoutConf(grids_model, element.attrib['name'], element.attrib['type'], element.attrib.get('method', None))
 
     #def __init__(self, grids_model, name, type, method):
     #    super(GridWithoutConf, self).__init__(grids_model, name, type, method)
 
-    #def get_XML_element(self):
-    #    return super(GridWithoutConf, self).get_XML_element()
+    #def get_xml_element(self):
+    #    return super(GridWithoutConf, self).get_xml_element()
 
-    #def set_XML_element(self, element):
-    #    super(GridWithoutConf, self).set_XML_element()
+    #def set_xml_element(self, element):
+    #    super(GridWithoutConf, self).set_xml_element()
 
     def get_controller(self, document):
         from ...controller import NoConfController
@@ -162,19 +162,18 @@ class GridsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         super(GridsModel, self).__init__('grids', parent, info_cb, *args)
 
-    def set_XML_element(self, element):
+    def set_xml_element(self, element):
         self.layoutAboutToBeChanged.emit()
-        del self.entries[:]
         if element is not None:
-            for g in element:
-                self.entries.append(construct_grid(self, g))
+            self.entries = [construct_grid(self, g) for g in element]
+        else:
+            self.entries = []
         self.layoutChanged.emit()
         self.fire_changed()
 
-    # XML element that represents whole section
-    def get_XML_element(self):
+    def get_xml_element(self):
         res = etree.Element(self.name)
-        for e in self.entries: res.append(e.get_XML_element())
+        for e in self.entries: res.append(e.get_xml_element())
         return res
 
     def columnCount(self, parent=QtCore.QModelIndex()):

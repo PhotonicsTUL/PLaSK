@@ -15,6 +15,7 @@ from ..qt import QtCore, QtGui
 from . import SectionModel
 from . import info
 
+
 class TableModelEditMethods(object):
 
     def insert(self, index=None, value=None):

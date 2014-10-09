@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .qt import QtGui, QtCore
+from gui.qt import QtGui, QtCore
 
 import itertools
 
@@ -19,8 +19,10 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 
-from .model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components
-from .utils.str import html_to_tex
+import gui
+
+from gui.model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components
+from gui.utils.str import html_to_tex
 
 try:
     import plask
@@ -150,7 +152,7 @@ class MaterialPlot(QtGui.QWidget):
         self.material.insertSeparator(sep)
         if args:
             self.material.setEditText(text)
-        self.material.setMaxVisibleItems(len(material_list)-1)
+        self.material.setMaxVisibleItems(len(material_list) - (-1 if plask is None else 1))
 
     def set_toolbar(self, toolbar, values, old, what):
         """
@@ -192,7 +194,7 @@ class MaterialPlot(QtGui.QWidget):
         # TODO add browsing model if info can be included in XML
         try:
             info = plask.material.db.info(material_name)[property_name]
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, AttributeError):
             info = None
         self.info.clear()
         if info:
@@ -320,6 +322,7 @@ class MaterialPlot(QtGui.QWidget):
                     vals = [plask.material.db.get(material_name, **dict(((arg_name, a),), **other_elements)).
                             __getattribute__(param)(**other_args) for a in plot_range]
             axes.plot(plot_range, vals)
+            self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
@@ -348,7 +351,17 @@ def show_material_plot(parent, model):
     # plot_window.setWidget(MaterialPlot())
     # self.document.window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, plot_window)
     plot_window = QtGui.QMainWindow(parent)
-    plot_window.setWindowTitle("Parameter Plot")
+    plot_window.setWindowTitle("Material Parameter")
     plot_window.setCentralWidget(MaterialPlot(model))
     plot_window.show()
 
+
+def material_plot_operation(parent):
+    action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')),
+                           'Examine &Material Parameters...', parent)
+    action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_M)
+    action.triggered.connect(lambda: show_material_plot(parent, parent.document.materials.model))
+    return action
+
+
+gui.OPERATIONS.append(material_plot_operation)
