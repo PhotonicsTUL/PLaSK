@@ -26,6 +26,7 @@ class GNode(object):
         self.dim = dim
         self.children_dim = children_dim
         self.children = []
+        self.in_parent = None   #configuration inside parent (container)
         self._parent = None  #used by parent property
         self.parent = parent
 
@@ -64,5 +65,6 @@ class GNode(object):
         if self.parent == parent: return
         if self.parent is not None:
             self.parent.children.remove(self)
+            self.in_parent = None
         self.parent = parent
         parent.children.append(self)

@@ -12,6 +12,8 @@
 
 from .object import GNObject
 from .types import construct_geometry_object
+from ...utils.xml import AttributeReader, OrderedTagReader
+from . import GNAligner
 
 class GNStack(GNObject):
     """2D/3D (multi-)stack"""
@@ -57,15 +59,19 @@ class GNAlignContainer(GNObject):
 
     def __init__(self, parent = None, dim = None):
         super(GNAlignContainer, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNAlignContainer, self).attributes_from_xml(attribute_reader, conf)
-        #TODO default aligners
+        self.aligners = conf.read_aligners(attribute_reader, self.children_dim)
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
             if c.tag == 'item':
-                pass    #TODO!!
+                with OrderedTagReader(c) as item_child_reader:
+                    child = construct_geometry_object(item_child_reader.require(), conf)
+                with AttributeReader(c) as item_attr_reader:
+                    child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim)
             else:
                 construct_geometry_object(c, conf)
 
