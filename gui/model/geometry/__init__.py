@@ -110,11 +110,11 @@ class GNReadConf(object):
         :param attribute_reader:
         :param dims:
         :param axes_to_read: numbers of axes to read, default to range(0, dims) (if not given any)
-        :return: list of GNAligner for each axis to read (with None-s if aligner for given axis was not read)
+        :return: tuple of GNAligner for each axis to read (GNAligner with None-s if aligner for given axis was not read)
         """
         if dims is None: dims = self.parent.dim
         to_read = range(0, dims) if len(axes_to_read) == 0 else axes_to_read
-        res = [GNAligner(None, None) for _ in to_read]
+        res = (GNAligner(None, None) for _ in to_read)
         for axis_nr in to_read:
             for position_name in self.aligners(dims, axis_nr):
                 value = attribute_reader.get(position_name)

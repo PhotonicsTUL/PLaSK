@@ -12,29 +12,40 @@
 
 from .object import GNObject
 from .types import construct_geometry_object
+from .node import GNode
 from ...utils.xml import AttributeReader, OrderedTagReader
 from . import GNAligner
+
+class GNZero(GNode):
+
+    def __init__(self, parent = None, dim = None):
+        super(GNZero, self).__init__(parent=parent, dim=dim)
+
 
 class GNStack(GNObject):
     """2D/3D (multi-)stack"""
 
     def __init__(self, parent = None, dim = None):
         super(GNStack, self).__init__(parent=parent, dim=dim, children_dim=dim)
-        self.repeat = '1'
-        self.shift = '0'
+        self.repeat = None
+        self.shift = None
+        self.aligner = GNAligner(None, None)
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNStack, self).attributes_from_xml(attribute_reader, conf)
-        self.repeat = attribute_reader.get('repeat', '1')
-        self.shift = attribute_reader.get('shift', '0')
-        #TODO default aligners
+        self.repeat = attribute_reader.get('repeat')
+        self.shift = attribute_reader.get('shift')
+        self.aligner, = conf.read_aligners(attribute_reader, self.children_dim, self.children_dim-2)  #direction tran
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
             if c.tag == 'item':
-                pass    #TODO!!
+                with OrderedTagReader(c) as item_child_reader:
+                    child = construct_geometry_object(item_child_reader.require(), conf)
+                with AttributeReader(c) as item_attr_reader:
+                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.children_dim-2)  #direction tran
             elif c.tag == 'zero':
-                pass    #TODO!!
+                GNZero(self, self.children_dim)
             else:
                 construct_geometry_object(c, conf)
 
