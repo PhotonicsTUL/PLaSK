@@ -63,6 +63,7 @@
   <optical solver="EffectiveFrequencyCyl" name="efm">
     <geometry ref="main"/>
   </optical>
+  <thermal solver="StaticCyl" name="therm"/>
 </solvers>
 
 <connects/>

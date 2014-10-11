@@ -35,7 +35,6 @@ else:
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
-from .utils.widgets import exception_to_msg
 from .model.info import InfoTreeModel, Info
 from .launch import launch_plask
 
@@ -56,6 +55,8 @@ WINDOWS = set()
 RECENT = CONFIG['session/recent_files']
 if RECENT is None:
     RECENT = []
+elif type(RECENT) is not list:
+    RECENT = [RECENT]
 
 # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 SECTION_ICONS = {
@@ -356,8 +357,7 @@ class MainWindow(QtGui.QMainWindow):
     def current_section_exit(self):
         """"Should be called just before leaving the current section."""
         if self.current_tab_index != -1:
-            if not exception_to_msg(lambda: self.document.controller_by_index(self.current_tab_index).on_edit_exit(),
-                                    self.tabs, 'Error while trying to store data from editor'):
+            if not self.document.controller_by_index(self.current_tab_index).on_edit_exit():
                 self.tabs.setCurrentIndex(self.current_tab_index)
                 return False
         return True

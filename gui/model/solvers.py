@@ -30,11 +30,11 @@ from .table import TableModel
 from . import TreeFragmentModel
 
 
-class SolverModel(TreeFragmentModel):
+class Solver(TreeFragmentModel):
     """Base class for all solver models"""
 
     def __init__(self, category, solver='', name='', parent=None, info_cb=None):
-        super(SolverModel, self).__init__(parent, info_cb)
+        super(Solver, self).__init__(parent, info_cb)
         self.category = category
         self.solver = solver
         self.name = name
@@ -54,7 +54,7 @@ class SolverModel(TreeFragmentModel):
                ' solver=', quoteattr(self.solver).encode('utf-8'),
                ' name=', quoteattr(self.name).encode('utf-8'), '>',
                text.encode('utf-8'),
-               '</'. self.category.encode('utf-8'), '>']
+               '</', self.category.encode('utf-8'), '>']
         #print ''.join(tab)
         self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))
 
@@ -62,26 +62,26 @@ class SolverModel(TreeFragmentModel):
         return SourceEditController(document=document, model=self, line_numbers=False)
 
 
-class SolverModelXML(SolverModel):
+class GenericSolver(Solver):
     """Universal solver model, used for solvers not supported in other way (data is stored as XML element)"""
 
     @staticmethod
     def from_xml(element, parent):
-        return SolverModelXML(element, parent=parent)
+        return GenericSolver(element, parent=parent)
 
     def __init__(self, element, parent=None, category=None, solver=None, name=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
         if element is None:
-            super(SolverModelXML, self).__init__(category, solver, name, parent)
-            self.element = SolverModel.get_xml_element(self)
+            super(GenericSolver, self).__init__(category, solver, name, parent)
+            self.element = Solver.get_xml_element(self)
         else:
-            super(SolverModelXML, self).__init__(None, parent=parent)
-            super(SolverModelXML, self).set_xml_element(element)
+            super(GenericSolver, self).__init__(None, parent=parent)
+            super(GenericSolver, self).set_xml_element(element)
             self.element = element
 
     def set_xml_element(self, element):
         self.element = element
-        super(SolverModelXML, self).set_xml_element(element)
+        super(GenericSolver, self).set_xml_element(element)
     #    self.fireChanged()    #TODO ???
 
     def get_xml_element(self):
@@ -98,7 +98,7 @@ class SolversModel(TableModel):
 
     def construct_solver(self, element):
         # TODO
-        return SolverModelXML.from_xml(element, self)
+        return GenericSolver.from_xml(element, self)
 
     def set_xml_element(self, element):
         self.layoutAboutToBeChanged.emit()
@@ -140,5 +140,7 @@ class SolversModel(TableModel):
         return flags
 
     def create_default_entry(self):
-        # TODO
-        return SolverModel(CATEGORIES[-1], parent=self)
+        from ..controller.solvers import get_new_solver
+        new_solver = get_new_solver()
+        if new_solver is not None:
+            return Solver(parent=self, **new_solver)

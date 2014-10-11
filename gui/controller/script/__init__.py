@@ -91,4 +91,4 @@ class ScriptController(SourceEditController):
             self.pycode.prefix = self.document.stubs()
 
     def on_edit_exit(self):
-        super(ScriptController, self).on_edit_exit()
+        return super(ScriptController, self).on_edit_exit()

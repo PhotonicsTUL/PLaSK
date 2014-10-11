@@ -12,7 +12,6 @@
 
 from ..qt import QtGui
 
-from ..utils.widgets import exception_to_msg
 from .source import SourceEditController
 from . import Controller
 
@@ -52,8 +51,7 @@ class MultiEditorController(Controller):
             :return: true only when script has been changed (bool)
         """
         if self.get_current_index() == new_index: return False
-        if not exception_to_msg(lambda: self.currect_controller.on_edit_exit(),
-                              self.document.window, 'Error while trying to store data from editor'):
+        if not self.currect_controller.on_edit_exit():
             return False
         self.editorWidget.setCurrentIndex(new_index)
         self.currect_controller.on_edit_enter()
@@ -71,7 +69,7 @@ class MultiEditorController(Controller):
         self.currect_controller.on_edit_enter()
 
     def on_edit_exit(self):
-        self.currect_controller.on_edit_exit()
+        return self.currect_controller.on_edit_exit()
 
 
 class GUIAndSourceController(MultiEditorController):
@@ -89,9 +87,10 @@ class GUIAndSourceController(MultiEditorController):
         super(GUIAndSourceController, self).on_edit_enter()
 
     def on_edit_exit(self):
-        super(GUIAndSourceController, self).on_edit_exit()
+        result = super(GUIAndSourceController, self).on_edit_exit()
         self.document.window.showsource_action.triggered.disconnect(self.change_editor)
         self.document.window.set_show_source_state(None)
+        return result
 
     def get_source_widget(self):
         return self.controllers[1].get_source_widget()

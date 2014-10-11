@@ -10,7 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from .controller.materials import MaterialsController
+import shutil
+
 from .controller.script import ScriptController
 
 
@@ -48,7 +49,12 @@ class PyDocument(object):
         self.set_changed(False)
 
     def save_to_file(self, filename):
-        open(filename, 'w').write(self.script.model.get_text())
+        try:
+            shutil.move(filename, filename+'~')
+        except OSError:
+            pass
+        text = self.script.model.get_text()
+        open(filename, 'w').write(text)
         self.filename = filename
         self.set_changed(False)
 

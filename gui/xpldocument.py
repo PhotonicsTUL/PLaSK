@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import shutil
 from lxml import etree
 
 from .model import SectionModelTreeBased
@@ -80,11 +81,15 @@ class XPLDocument(object):
         data = '<plask>\n\n'
         current_line_in_file = 3
         for c in self.controllers:
-            c.update_line_number(current_line_in_file)
+            c.update_line_numbers(current_line_in_file)
             section_string = etree.tostring(c.model.get_file_xml_element(), encoding="UTF-8", pretty_print=True)
             data += section_string + '\n'
             current_line_in_file += section_string.count('\n') + 1
         data += '</plask>'
+        try:
+            shutil.move(filename, filename+'~')
+        except OSError:
+            pass
         open(filename, 'w').write(data)
         self.filename = filename
         self.set_changed(False)

@@ -15,10 +15,10 @@ SOLVERS = {}
 from ..qt import QtGui
 from ..qt.QtGui import QSplitter, QItemSelectionModel
 
+from ..utils.widgets import table_last_col_fill
+from ..model.solvers import SolversModel, CATEGORIES
 from . import Controller
-from ..utils.widgets import table_last_col_fill, exception_to_msg
 from .table import table_with_manipulators
-from ..model.solvers import SolversModel
 
 
 class SolversController(Controller):
@@ -55,8 +55,7 @@ class SolversController(Controller):
         """
         if self.current_index == new_index: return True
         if self.current_controller is not None:
-            if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
-                              self.document.window, 'Error while trying to store data from current solver editor'):
+            if not self.current_controller.on_edit_exit():
                 return False
         self.current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
@@ -90,6 +89,7 @@ class SolversController(Controller):
     def on_edit_exit(self):
         if self.current_controller is not None:
             self.solvers_table.selectionModel().clear()
+        return True
 
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
@@ -102,3 +102,41 @@ class SolversController(Controller):
 
     def get_table_edit_actions(self):
         return self.tableActions.get(self.document.window)
+
+
+class NewSolverDialog(QtGui.QDialog):
+
+    def __init__(self, parent=None):
+        super(NewSolverDialog, self).__init__(parent)
+        layout = QtGui.QFormLayout()
+        layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+
+        self.category = QtGui.QComboBox()
+        self.category.addItems(CATEGORIES)
+        self.category.currentIndexChanged.connect(self.category_changed)
+        layout.addRow("Category:", self.category)
+
+        self.solver = QtGui.QComboBox()
+        self.solver.setEditable(True)
+        layout.addRow("Solver:", self.solver)
+
+        self.name = QtGui.QLineEdit()
+        layout.addRow("Name:", self.name)
+
+        button_box = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addRow(button_box)
+
+        self.setLayout(layout)
+
+    def category_changed(self, index):
+        pass
+
+
+def get_new_solver():
+    dialog = NewSolverDialog()
+    if dialog.exec_() == QtGui.QDialog.Accepted:
+        return dict(category=dialog.category.currentText(),
+                    solver=dialog.solver.currentText(),
+                    name=dialog.name.text())

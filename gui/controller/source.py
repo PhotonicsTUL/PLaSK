@@ -90,10 +90,12 @@ class SourceEditController(Controller):
 
     # When the editor is turned off, the model should be updated
     def on_edit_exit(self):
+        if not self.try_save_data_in_model():
+            return False
         self.source_widget.editor.textChanged.disconnect(self._on_text_edit)
-        self.save_data_in_model()
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
+        return True
 
 
 class SourceWidget(QtGui.QWidget):

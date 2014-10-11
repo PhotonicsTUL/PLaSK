@@ -53,16 +53,16 @@ class NewGridDialog(QtGui.QDialog):
         self.form_layout.addRow("&Type:", self.type_edit)
         self.form_layout.addRow("M&ethod:", self.method_edit)
 
-        self.buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
+        self.button_box = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok | QtGui. QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
 
-        mainLayout = QtGui.QVBoxLayout()
-        mainLayout.addWidget(kind)
-        mainLayout.addLayout(self.form_layout)
-        mainLayout.addStretch()
-        mainLayout.addWidget(self.buttonBox)
-        self.setLayout(mainLayout)
+        main_layout = QtGui.QVBoxLayout()
+        main_layout.addWidget(kind)
+        main_layout.addLayout(self.form_layout)
+        main_layout.addStretch()
+        main_layout.addWidget(self.button_box)
+        self.setLayout(main_layout)
 
         self._set_mode(False)
 

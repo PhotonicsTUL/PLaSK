@@ -14,7 +14,7 @@ from ...qt import QtGui
 from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from .. import Controller
-from ...utils.widgets import table_last_col_fill, exception_to_msg
+from ...utils.widgets import table_last_col_fill
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
 
@@ -55,8 +55,7 @@ class GridsController(Controller):
         """
         if self.current_index == new_index: return True
         if self.current_controller is not None:
-            if not exception_to_msg(lambda: self.current_controller.on_edit_exit(),
-                              self.document.window, 'Error while trying to store data from current grid editor'):
+            if not self.current_controller.on_edit_exit():
                 return False
         self.current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
@@ -90,6 +89,7 @@ class GridsController(Controller):
     def on_edit_exit(self):
         if self.current_controller is not None:
             self.grids_table.selectionModel().clear()
+        return True
 
     #def onEditEnter(self):
     #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it

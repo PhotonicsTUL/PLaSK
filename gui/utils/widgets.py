@@ -17,23 +17,6 @@ from ..qt import QtCore
 from ..qt import QtGui
 from ..utils.config import CONFIG
 
-def exception_to_msg(f, parent=None, err_title=None):
-    """
-        Call f() in try block, and after catch exception show Qt message.
-        :return: false only if F() has thrown an exception, true in other cases (bool)
-    """
-    try:
-        f()
-        return True
-    except Exception as e:
-        from .. import _DEBUG
-        if _DEBUG:
-            import traceback as tb
-            tb.print_exc()
-        else:
-            QtGui.QMessageBox().critical(parent, err_title, str(e))
-        return False
-
 
 DEFAULT_FONT = QtGui.QFont()
 _font_family = CONFIG['editor/font_family']

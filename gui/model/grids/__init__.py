@@ -89,16 +89,16 @@ class Grid(TreeFragmentModel):
 #    """Base class for models of meshes"""
 
 
-class GridTreeBased(Grid):
+class GenericGrid(Grid):
     """Universal grid model, used for grids not supported in other way (data is stored as XML element)"""
 
     @staticmethod
     def from_xml(grids_model, element):
-        return GridTreeBased(grids_model, element=element)
+        return GenericGrid(grids_model, element=element)
 
     def __init__(self, grids_model, name=None, type=None, method=None, element=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
-        super(GridTreeBased, self).__init__(grids_model)
+        super(GenericGrid, self).__init__(grids_model)
         if element is None:
             self.element = Grid.contruct_empty_xml_element(name, type, method)
         else:
