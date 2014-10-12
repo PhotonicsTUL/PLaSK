@@ -26,8 +26,7 @@ class Controller(object):
         """Optionally set document and/or model."""
         super(Controller, self).__init__()
         if document is not None: self.document = document
-        if model is not None:
-            self.model = model
+        if model is not None: self.model = model
 
     def save_data_in_model(self):
         """Called to force save data from editor in model (typically by on_edit_exit or when model is needed while
@@ -75,7 +74,8 @@ class Controller(object):
         else:
             return True
 
-    # def get_widget(self) - to be done in subclasses
+    def get_widget(self):
+        raise NotImplementedError("Method 'get_widget' must be overriden in a subclass!")
 
 
 

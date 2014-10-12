@@ -429,17 +429,55 @@ class PyCode(object):
         modifiers = event.modifiers()
         if key == Qt.Key_Tab:
             tc = self._textedit.textCursor()
-            lineno = tc.blockNumber()
-            self._indenter.correct_indentation(lineno)
+            if tc.hasSelection():
+                tc.beginEditBlock()
+                try:
+                    start = tc.selectionStart()
+                    tc.setPosition(tc.selectionEnd())
+                    end_line = tc.blockNumber()
+                    tc.setPosition(start)
+                    tc.movePosition(QTextCursor.StartOfBlock)
+                    lineno = tc.blockNumber()
+                    while lineno <= end_line:
+                        self._indenter.correct_indentation(lineno)
+                        if not tc.movePosition(QTextCursor.NextBlock):
+                            break
+                        lineno = tc.blockNumber()
+                finally:
+                    tc.endEditBlock()
+            else:
+                lineno = tc.blockNumber()
+                self._indenter.correct_indentation(lineno)
             return
         elif key == Qt.Key_Backspace:
             tc = self._textedit.textCursor()
-            lineno = tc.blockNumber()
-            col = tc.columnNumber()
-            text = unicode(tc.block().text())[:col]
-            if text and text.strip(" \t") == "":
-                self._indenter.deindent(lineno)
-                return
+            if tc.hasSelection():
+                stop = False
+                tc.beginEditBlock()
+                try:
+                    start = tc.selectionStart()
+                    tc.setPosition(tc.selectionEnd())
+                    end_line = tc.blockNumber()
+                    tc.setPosition(start)
+                    lineno = tc.blockNumber()
+                    while lineno <= end_line:
+                        text = unicode(tc.block().text())
+                        if text.startswith(' ') or text.startswith('\t'):
+                            self._indenter.deindent(lineno)
+                            stop = True
+                        if not tc.movePosition(QTextCursor.NextBlock):
+                            break
+                        lineno = tc.blockNumber()
+                finally:
+                    tc.endEditBlock()
+                if stop: return
+            else:
+                lineno = tc.blockNumber()
+                col = tc.columnNumber()
+                text = unicode(tc.block().text())[:col]
+                if text and text.strip(" \t") == "":
+                    self._indenter.deindent(lineno)
+                    return
 
         self._textedit_keyPressEvent(event)
 

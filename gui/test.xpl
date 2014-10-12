@@ -60,10 +60,15 @@
 </grids>
 
 <solvers>
-  <optical solver="EffectiveFrequencyCyl" name="efm">
+  <optical name="efm" solver="EffectiveFrequencyCyl">
     <geometry ref="main"/>
+    <mesh ref=""/>
+    <mode emission="top" lam0="980" vlam="980"/>
   </optical>
-  <thermal solver="StaticCyl" name="therm"/>
+  <thermal solver="StaticCyl" name="therm">
+    <geometry ref="main"/>
+    <mesh ref="test"/>
+  </thermal>
 </solvers>
 
 <connects/>
@@ -87,7 +92,6 @@ efm.lam0 = 980.
 
 # threshold_gain = scipy.optimize.brentq(loss_on_gain, 0., 2500., xtol=0.1)
 threshold_gain = scipy.optimize.fsolve(loss_on_gain, 1000., xtol=0.1)[0]
-
 profile[GEO.gain_region] = threshold_gain
 mode_number = efm.find_mode(980.)
 mode_wavelength = efm.outWavelength(mode_number)
@@ -99,6 +103,7 @@ plot_geometry(efm.geometry, color='0.5', mirror=True)
 efm.modes[0].power = 10.
 plot_field(efm.outLightMagnitude(0, MSH.plot))
 ylim(2,7)
-show()]]></script>
+show()
+]]></script>
 
 </plask>

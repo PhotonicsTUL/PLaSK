@@ -101,10 +101,10 @@ Optical solvers
          Parameters of the global root-finding algorithm.
 
          :attr method: Root finding method (‘muller’ or ‘broyden’)
-         :attr tolx: Tolerance on effective index. (float [-])
+         :attr tolx: Tolerance on effective frequency. (float [-])
          :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
          :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
-         :attr maxstep: Maximum step in one iteration of root finding. (float [a.u.])
+         :attr maxstep: Maximum step in one iteration of root finding (Broyden method only). (float [a.u.])
          :attr maxiter: Maximum number of root finding iterations. (integer)
          :attr alpha: Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).  (float [a.u.])
          :attr lambda: Minimum decrease ratio of one step (Broyden method only). (float [a.u.])

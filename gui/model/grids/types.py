@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from . import GenericGrid, GridWithoutConf
+from . import TreeFragmentGrid, GridWithoutConf
 from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
 from .generator_rectilinear import RectilinearDivideGenerator
 
@@ -34,7 +34,7 @@ GENERATORS_TYPES = {
             'divide': RectilinearDivideGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
     },
-}   # use GenericGrid.from_xml for grids without special support
+}   # use TreeFragmentGrid.from_xml for grids without special support
 
 DISPLAY_NAMES = {
     'rectilinear1d': "Rectilinear1D",
@@ -47,12 +47,12 @@ DISPLAY_NAMES = {
 
 def contruct_mesh(grids_model, element):
     t = MESHES_TYPES.get(element.attrib['type'])
-    return t(grids_model, element) if t else GenericGrid.from_xml(grids_model, element)
+    return t(grids_model, element) if t else TreeFragmentGrid.from_xml(grids_model, element)
 
 def contruct_generator(grids_model, element):
     t = GENERATORS_TYPES.get(element.attrib['type'])
     if t: t = t.get(element.attrib['method'])
-    return t(grids_model, element) if t else GenericGrid.from_xml(grids_model, element)
+    return t(grids_model, element) if t else TreeFragmentGrid.from_xml(grids_model, element)
 
 
 def construct_grid(grids_model, element):

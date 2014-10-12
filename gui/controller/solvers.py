@@ -10,15 +10,149 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-SOLVERS = {}
-
-from ..qt import QtGui
+from ..qt import QtCore, QtGui
 from ..qt.QtGui import QSplitter, QItemSelectionModel
+from ..qt.QtCore import Qt
 
 from ..utils.widgets import table_last_col_fill
-from ..model.solvers import SolversModel, CATEGORIES
 from . import Controller
 from .table import table_with_manipulators
+
+
+class SolverAutoWidget(QtGui.QScrollArea):
+
+    def __init__(self, controller, parent=None):
+        super(SolverAutoWidget, self).__init__(parent)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+        self.controller = controller
+
+        config = controller.model.config
+
+        layout = QtGui.QFormLayout()
+        layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+
+        label = QtGui.QLabel("General")
+        font = label.font()
+        font.setBold(True)
+        label.setFont(font)
+        layout.addRow(label)
+
+        self.geometry = QtGui.QComboBox()
+        self.geometry.setEditable(True)
+        #TODO make sure the list is up-to date; add some graphical thumbnail
+        layout.addRow("Geometry:", self.geometry)
+
+        if config['mesh']:
+            self.mesh = QtGui.QComboBox()
+            self.mesh.setEditable(True)
+            #TODO add some graphical thumbnail
+            layout.addRow("Mesh:", self.mesh)
+        else:
+            self.mesh = None
+
+        self.controls = {}
+
+        for group, desc, items in config['conf']:
+            label = QtGui.QLabel(desc)
+            font = label.font()
+            font.setBold(True)
+            label.setFont(font)
+            layout.addRow(label)
+            for item in items:
+                if len(item) == 3:
+                    attr, text, choices = item
+                    edit = QtGui.QComboBox()
+                    edit.addItems([''] + list(choices))
+                else:
+                    attr, text = item
+                    edit = QtGui.QLineEdit()
+                edit.setToolTip(attr)
+                self.controls[group, attr] = edit
+                layout.addRow(text + ':', edit)
+
+        main = QtGui.QWidget()
+        main.setLayout(layout)
+        self.setWidget(main)
+
+    def resizeEvent(self, event):
+        super(SolverAutoWidget, self).resizeEvent(event)
+        self.widget().setFixedWidth(event.size().width())
+
+    def eventFilter(self, obj, event):
+        if obj and obj == self.widget() and event.type() == QtCore.QEvent.Resize:
+            self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
+        return super(SolverAutoWidget, self).eventFilter(obj, event)
+
+    def load_data(self):
+        model = self.controller.model
+        config = model.config
+        self.geometry.setEditText(model.geometry)
+        if self.mesh is not None:
+            self.mesh.setEditText(model.mesh)
+        for group, _, items in config['conf']:
+            for item in items:
+                attr = item[0]
+                edit = self.controls[group, attr]
+                value = model.data[group][attr]
+                if type(edit) == QtGui.QComboBox:
+                    try:
+                        edit.setCurrentIndex(item[2].index(value) + 1)
+                    except ValueError:
+                        edit.setCurrentIndex(0)
+                else:
+                    edit.setText(value)
+
+    def save_data(self):
+        model = self.controller.model
+        config = model.config
+        model.geometry = self.geometry.currentText()
+        if self.mesh is not None:
+            model.mesh = self.mesh.currentText()
+        for group, _, items in config['conf']:
+            for item in items:
+                attr = item[0]
+                edit = self.controls[group, attr]
+                if type(edit) == QtGui.QComboBox:
+                    if edit.currentIndex() == 0:
+                        model.data[group][attr] = ''
+                    else:
+                        model.data[group][attr] = item[2][edit.currentIndex()-1]
+                else:
+                    model.data[group][attr] = edit.text()
+
+
+class ConfSolverController(Controller):
+    """Class for solvers defined in configuration dictionary"""
+
+    def __init__(self, document, model):
+        super(ConfSolverController, self).__init__(document, model)
+        try:
+            widget_class = self.model.config['widget']
+        except KeyError:
+            widget_class = SolverAutoWidget
+        self.widget = widget_class(self)
+
+    def get_widget(self):
+        return self.widget
+
+    def on_edit_enter(self):
+        #TODO update geometry list
+        try:
+            #TODO select only meshes/generators of proper dimensions
+            grids = [m.name for m in self.document.grids.model.entries]
+            self.widget.mesh.clear()
+            self.widget.mesh.addItems([''] + grids)
+        except AttributeError:
+            pass
+        self.widget.load_data()
+
+    def save_data_in_model(self):
+        self.widget.save_data()
+
+
+from ..model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS
 
 
 class SolversController(Controller):
@@ -84,21 +218,12 @@ class SolversController(Controller):
     def on_edit_enter(self):
         #if self.current_controller is not None:
         #    self.current_controller.on_edit_enter()
-        self.solvers_table.selectionModel().clear()   #model could completly changed
+        self.solvers_table.selectionModel().clear()   # model could have completly changed
 
     def on_edit_exit(self):
         if self.current_controller is not None:
             self.solvers_table.selectionModel().clear()
         return True
-
-    #def onEditEnter(self):
-    #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
-    #    if not self.model.isReadOnly():
-    #        self.document.window.setSectionActions(*self.get_table_edit_actions())
-
-    # when editor is turn off, model should be update
-    #def onEditExit(self):
-    #    self.document.window.setSectionActions()
 
     def get_table_edit_actions(self):
         return self.tableActions.get(self.document.window)
@@ -118,6 +243,9 @@ class NewSolverDialog(QtGui.QDialog):
 
         self.solver = QtGui.QComboBox()
         self.solver.setEditable(True)
+        if MODELS:
+            self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)
+            self.solver.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
         layout.addRow("Solver:", self.solver)
 
         self.name = QtGui.QLineEdit()
@@ -131,7 +259,9 @@ class NewSolverDialog(QtGui.QDialog):
         self.setLayout(layout)
 
     def category_changed(self, index):
-        pass
+        category = self.category.currentText()
+        self.solver.clear()
+        self.solver.addItems([slv for cat,slv in MODELS if cat == category])
 
 
 def get_new_solver():

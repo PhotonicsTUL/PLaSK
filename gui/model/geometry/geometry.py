@@ -3,10 +3,11 @@ from .types import construct_geometry_object, geometry_object_names, geometry_ty
 from .transform import GNExtrusion
 from ...utils.xml import xml_to_attr
 
+
 # TODO in case of cartesian 2d accept extrusion as a child
 class GNCartesian(GNObject):
 
-    def __init__(self, parent = None, dim = None):
+    def __init__(self, parent=None, dim=None):
         super(GNCartesian, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.left = None
         self.right = None
@@ -36,7 +37,7 @@ class GNCartesian(GNObject):
 
     @classmethod
     def from_xml_2d(self, element, conf):
-        result = GNCartesian(dim = 2)
+        result = GNCartesian(dim=2)
         result.set_xml_element(element, conf)
         return result
 
@@ -49,7 +50,7 @@ class GNCartesian(GNObject):
 
 class GNCylindrical(GNObject):
 
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GNCylindrical, self).__init__(parent=parent, dim=2, children_dim=2)
         self.bottom = None
         self.inner = None

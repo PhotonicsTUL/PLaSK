@@ -98,6 +98,7 @@ class SourceEditController(Controller):
         return True
 
 
+# class SourceWidget(QtGui.QMainWindow):
 class SourceWidget(QtGui.QWidget):
 
     def __init__(self, parent=None, editor_class=TextEdit, *args, **kwargs):
@@ -125,7 +126,22 @@ class SourceWidget(QtGui.QWidget):
         layout.addWidget(self.editor)
         layout.addWidget(self.find_toolbar)
         layout.addWidget(self.replace_toolbar)
+
+        # self.setWindowFlags(QtCore.Qt.Widget)
+        # central_widget = QtGui.QWidget(self)
+        # self.setCentralWidget(central_widget)
+        # self.addToolBar(self.toolbar)
+        # central_widget.setLayout(layout)
         self.setLayout(layout)
+
+    # def hideEvent(self, *args, **kwargs):
+    #     super(SourceWidget, self).hideEvent(*args, **kwargs)
+    #     self.toolbar.hide()
+
+    # def showEvent(self, *args, **kwargs):
+    #     self.toolbar.show()
+    #     super(SourceWidget, self).showEvent(*args, **kwargs)
+
 
     def make_find_replace_widget(self):
         self.find_toolbar = QtGui.QToolBar(self)
