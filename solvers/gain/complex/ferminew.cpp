@@ -318,9 +318,9 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             tDso.push_back(region.getLayerMaterial(i)->Dso(T));
         plask::shared_ptr<QW::obszar_aktywny> aktyw(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tDso, roughness)); // roughness = 0.05 for example // TODO
         aktyw->zrob_macierze_przejsc();
-        //writelog(LOG_INFO, "Do funkcji Adama idzie %1%, %2%, %3% i %4%", n, tQWTotH, T, tQWnR);
-        //n = przelicz_nQW_na_npow(aktyw, n, tQWTotH, T, tQWnR); // ADAM
-        QW::gain gainModule(aktyw, n*(tQWTotH*1e-7), T, tQWnR); // TODO
+
+        n = recalcConc(aktyw, n, tQWTotH, T, tQWnR); // LUKASZ
+        QW::gain gainModule(aktyw, n*(tQWTotH*1e-7), T, tQWnR);
 
         writelog(LOG_INFO, "Calculating quasi Fermi levels and carrier concentrations..");
         double tFe = gainModule.policz_qFlc();
@@ -482,72 +482,39 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
             return -1;
 }
 
-template <typename GeometryType> //ADAM
-double FerminewGainSolver<GeometryType>::przelicz_nQW_na_npow(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR)
+template <typename GeometryType> //LUKASZ 2014.10.13 concentration recalculation to obtain n from diffusion model
+double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR)
 {
-    // dobrze jakby to dzialalo
-
-    writelog(LOG_INFO, "Do funkcji Adama poszlo %1%, %2%, %3% i %4%", iN, (iQWTotH*1*1e-7), iT, iQWnR);
+    writelog(LOG_INFO, "conc. recalculation - input params: %1%, %2%, %3% i %4%", iN, (iQWTotH*1*1e-7), iT, iQWnR);
 
     double nQW=iN;
     double iN1=0.,tn1=0.;
-    int jj;
-    jj = 1;
-    while((1)&&(jj>0))
+    while(1)
     {
-        iN1=iN;
-        QW::gain gainModule(iAktyw, iN*(iQWTotH*1*1e-7), iT, iQWnR); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
-        double tFlc1 = gainModule.policz_qFlc();
-        double tFlv1 = gainModule.policz_qFlv();
-        writelog(LOG_INFO, "Flc1 %1%", tFlc1);
-        writelog(LOG_INFO, "Flv1 %1%", tFlv1);
-        //std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, mT);
-        //tn1=QW::struktura::koncentracja_na_cm_3(tN[2]);
-        //cout<<tn1<<"\n";
-        if(tn1>=nQW) iN/=2.;
-        else break;
-        jj--;
-    } writelog(LOG_INFO, "Raz %1%", iN);
-    double iN2=0.,tn2=0.;
-    iN*=2.;
-    jj = 1;
-    while((1)&&(jj>0))
-    {
-        iN2=iN;
-        QW::gain gainModule(iAktyw, iN*(iQWTotH*1*1e-7), iT, iQWnR); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
-        double tFlc2 = gainModule.policz_qFlc();
-        double tFlv2 = gainModule.policz_qFlv();
-        writelog(LOG_INFO, "Flc2 %1%", tFlc2);
-        writelog(LOG_INFO, "Flv2 %1%", tFlv2);
-        //std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, mT);
-        //tn2=QW::struktura::koncentracja_na_cm_3(tN[2]);
-        //cout<<tn2<<"\n";
-        if(tn2<=nQW) {iN1=iN2; tn1=tn2; iN*=2.;}
-        else break;
-        jj--;
-    } writelog(LOG_INFO, "Dwa %1%", iN);
-    double iN3=0.,tn3=0.;
-    jj = 10;
-    while((1)&&(jj>0)) //metoda siecznych
-    {
-        iN=iN1-(tn1-nQW)*(iN2-iN1)/(tn2-tn1);
-        iN3=iN;
-        QW::gain gainModule(iAktyw, iN*(iQWTotH*1*1e-7), iT, iQWnR); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
-        double tFlc3 = gainModule.policz_qFlc();
-        double tFlv3 = gainModule.policz_qFlv();
-        writelog(LOG_INFO, "Flc3 %1%", tFlc3);
-        writelog(LOG_INFO, "Flv3 %1%", tFlv3);
-        //std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, mT);
-        //tn3=QW::struktura::koncentracja_na_cm_3(tN[2]);
-        //cout<<tn3<<"\n";
-        if(abs(tn3-nQW)/nQW<1e-6) break;
-        if(tn3-nQW>0) {iN1=iN3; tn1=tn3;}
-        else{iN2=iN3; tn2=tn3;}
-        jj--;
-    } writelog(LOG_INFO, "Trzy %1%", iN);
-    return iN;
-}
+        iN1=iN*10.;
+        //writelog(LOG_INFO, "iN1 %1%", iN1);
+        QW::gain gainModule1(iAktyw, iN1*(iQWTotH*1*1e-7), iT, iQWnR); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
+        double tFlc1 = gainModule1.policz_qFlc();
+        double tFlv1 = gainModule1.policz_qFlv();
+        //writelog(LOG_INFO, "Flc1 %1%", tFlc1);
+        //writelog(LOG_INFO, "Flv1 %1%", tFlv1);
 
+        std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFlc1, iT);
+
+        //for(int i = 0; i <= (int) tN.size() - 1; i++)
+        //    writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
+
+        //tn1=struktura::koncentracja_na_cm_3(tN[2]);
+        auto tMaxElem = std::max_element(tN.begin(), tN.end());
+        tn1 = *tMaxElem;
+        tn1 = QW::struktura::koncentracja_na_cm_3(tn1);
+        //writelog(LOG_INFO, "max. conc.: %1%", tn1);
+        if(tn1>=nQW) iN-=0.001e18;
+        else break;
+    }
+    //writelog(LOG_INFO, "result iN1: %1%", iN1);
+    return iN1;
+}
 
 template <typename GeometryType>
 const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
