@@ -25,10 +25,19 @@ class GNTranslation(GNTransform):
 
     def __init__(self, parent = None, dim = None):
         super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
-        self.pos = [None for _ in range(0, dim)]
+        self.size = [None for _ in range(0, dim)]
 
     def attributes_from_xml(self, attribute_reader, conf):
-        self.pos = [attribute_reader.get(a) for a in conf.axes_names(self.dim)]
+        axes_names = conf.axes_names(self.dim)
+        alternative_names = ('depth', 'width', 'height')[(3-self.dim):]
+        self.size = [None for _ in range(0, self.dim)]
+        for i in range(0, self.dim):
+            self.size[i] = attribute_reader.get('d' + axes_names[i])
+            if self.size[i] is None:
+                self.size[i] = attribute_reader.get(alternative_names[i])
+
+    def tag_name(self, full_name = True):
+        return "translation{}d".format(self.dim) if full_name else "translation"
 
     @classmethod
     def from_xml_2d(self, element, conf):
@@ -61,6 +70,8 @@ class GNClip(GNTransform):
         if self.dim == 3:
             xml_to_attr(attribute_reader, self, 'back', 'front')
 
+    def tag_name(self, full_name = True):
+        return "clip{}d".format(self.dim) if full_name else "clip"
 
     @classmethod
     def from_xml_2d(self, element, conf):
@@ -85,6 +96,9 @@ class GNFlip(GNTransform):
         super(GNFlip, self).attributes_from_xml(attribute_reader, conf)
         self.axis = attribute_reader.get('axis')
 
+    def tag_name(self, full_name = True):
+        return "flip{}d".format(self.dim) if full_name else "flip"
+
     @classmethod
     def from_xml_2d(self, element, conf):
         result = GNFlip(dim = 2)
@@ -107,6 +121,9 @@ class GNMirror(GNTransform):
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNMirror, self).attributes_from_xml(attribute_reader, conf)
         self.axis = attribute_reader.get('axis')
+
+    def tag_name(self, full_name = True):
+        return "mirror{}d".format(self.dim) if full_name else "mirror"
 
     @classmethod
     def from_xml_2d(self, element, conf):
@@ -131,6 +148,9 @@ class GNExtrusion(GNTransform):
         super(GNExtrusion, self).attributes_from_xml(attribute_reader, conf)
         self.length = attribute_reader.get('length')
 
+    def tag_name(self, full_name = True):
+        return "extrusion"
+
     @classmethod
     def from_xml_3d(self, element, conf):
         result = GNExtrusion()
@@ -142,6 +162,9 @@ class GNRevolution(GNTransform):
 
     def __init__(self, parent = None):
         super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
+
+    def tag_name(self, full_name = True):
+        return "revolution"
 
     @classmethod
     def from_xml_3d(self, element, conf):

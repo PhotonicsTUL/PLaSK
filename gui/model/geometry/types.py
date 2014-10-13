@@ -11,9 +11,10 @@
 # GNU General Public License for more details.
 
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
-from .container import GNStack, GNAlignContainer
+from .container import GNStack, GNAlignContainer, GNShelf
 from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation
 from .copy import GNCopy, GNAgain
+from .geometry import GNCartesian, GNCylindrical
 
 
 geometry_types_2d = {
@@ -28,6 +29,7 @@ geometry_types_2d = {
     'align2d': GNAlignContainer.from_xml_2d,
     'container2d': GNAlignContainer.from_xml_2d,
     'stack2d': GNStack.from_xml_2d,
+    'shelf2d': GNShelf.from_xml_2d,
 
     # transforms:
     'clip2d': GNClip.from_xml_2d,
@@ -64,6 +66,13 @@ geometry_types_3d = {
 geometry_types_other = {
     'again': GNAgain,
     'copy': GNCopy
+}
+
+geometry_types_geometries = {
+    'cartesian2d': GNCartesian.from_xml_2d,
+    'cartesian3d': GNCartesian.from_xml_3d,
+    'cylindrical': GNCylindrical.from_xml_2d,
+    'cylindrical2d': GNCylindrical.from_xml_2d
 }
 
 def geometry_object_names(constructor, *allowed_types):

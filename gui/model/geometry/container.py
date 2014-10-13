@@ -9,17 +9,46 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from sphinx.writers.latex import collected_footnote
 
 from .object import GNObject
 from .types import construct_geometry_object
 from .node import GNode
-from ...utils.xml import AttributeReader, OrderedTagReader
+from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr
 from . import GNAligner
 
 class GNZero(GNode):
 
     def __init__(self, parent = None, dim = None):
         super(GNZero, self).__init__(parent=parent, dim=dim)
+
+    def tag_name(self, full_name = True):
+        return 'zero'
+
+
+class GNGap(GNode):
+
+    def GNGap(self, parent = None):
+        super(GNGap, self).GNGap(parent=parent, dim=2)
+        self.size = None
+
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNode, self).attributes_from_xml(attribute_reader, conf)
+        self.size = attribute_reader.get('size')
+        if self.size is not None:
+            self.size_is_total = False
+        else:
+            self.size = attribute_reader.get('total')
+            if self.size is not None: self.size_is_total = True
+
+    def tag_name(self, full_name = True):
+        return 'gap'
+
+    @classmethod
+    def from_xml(self, element, conf):
+        result = GNGap(dim = 2)
+        result.set_xml_element(element, conf)
+        return result
 
 
 class GNStack(GNObject):
@@ -49,6 +78,9 @@ class GNStack(GNObject):
             else:
                 construct_geometry_object(c, conf)
 
+    def tag_name(self, full_name = True):
+        return "stack{}d".format(self.dim) if full_name else "stack"
+
     @classmethod
     def from_xml_2d(self, element, conf):
         result = GNStack(dim = 2)
@@ -62,7 +94,36 @@ class GNStack(GNObject):
         return result
 
 
-#TODO GNShelf as separate class or support shelf by GNStack
+class GNShelf(GNObject):
+    """(multi-)shelf"""
+
+    def __init__(self, parent = None):
+        super(GNShelf, self).__init__(parent=parent, dim=2, children_dim=2)
+        self.repeat = None
+        self.shift = None
+        self.flat = None
+
+    def attributes_from_xml(self, attribute_reader, conf):
+        super(GNShelf, self).attributes_from_xml(attribute_reader, conf)
+        xml_to_attr(attribute_reader, self, 'repeat', 'shift', 'flat')
+
+    def children_from_xml(self, ordered_reader, conf):
+        for c in ordered_reader.iter():
+            if c.tag == 'zero':
+                GNZero(self, self.children_dim)
+            elif c.tag == 'gap':
+                GNGap.from_xml(self, conf)
+            else:
+                construct_geometry_object(c, conf)
+
+    def tag_name(self, full_name = True):
+        return "shelf{}d".format(self.dim) if full_name else "shelf"
+
+    @classmethod
+    def from_xml_2d(self, element, conf):
+        result = GNShelf()
+        result.set_xml_element(element, conf)
+        return result
 
 
 class GNAlignContainer(GNObject):
@@ -85,6 +146,9 @@ class GNAlignContainer(GNObject):
                     child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim)
             else:
                 construct_geometry_object(c, conf)
+
+    def tag_name(self, full_name = True):
+        return "align{}d".format(self.dim) if full_name else "align"
 
     @classmethod
     def from_xml_2d(self, element, conf):

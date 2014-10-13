@@ -25,6 +25,9 @@ class GNAgain(GNode):
     def attributes_from_xml(self, attribute_reader, reader):
         self.ref = attribute_reader.require('ref')
 
+    def tag_name(self, full_name = True):
+        return "again"
+
 
 
 # ---------- copy tag and its children: --------------
@@ -40,7 +43,9 @@ class GNCopyChild(GNode):
 
 
 class GNCDelete(GNCopyChild):
-    pass
+
+    def tag_name(self, full_name = True):
+        return "delete"
 
 
 class GNCReplace(GNCopyChild):
@@ -57,6 +62,9 @@ class GNCReplace(GNCopyChild):
         if self.replacer is None:
             construct_geometry_object(ordered_reader.require(), conf)
 
+    def tag_name(self, full_name = True):
+        return "replace"
+
 
 class GNCToBlock(GNCopyChild):
 
@@ -67,6 +75,9 @@ class GNCToBlock(GNCopyChild):
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNCToBlock, self).attributes_from_xml(attribute_reader, conf)
         self.material = attribute_reader.get('material')
+
+    def tag_name(self, full_name = True):
+        return "toblock"
 
 
 class GNCopy(GNObject):
@@ -86,3 +97,6 @@ class GNCopy(GNObject):
             elif t.tag == 'toblock': el = GNCToBlock(parent=self)
             else: ordered_reader.recent_was_unexpected()
             el.from_xml(t, conf)
+
+    def tag_name(self, full_name = True):
+        return "copy"

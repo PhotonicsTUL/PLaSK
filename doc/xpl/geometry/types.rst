@@ -24,7 +24,7 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
        Any object from section :ref:`sec-xpl-Geometry-objects-2D`. If ``length`` was not given :xml:tag:`extrusion` is also accepted.
 
 
-.. xml:tag:: <cylindrical2d>
+.. xml:tag:: <cylindrical2d> (or <cylindrical>)
 
    Corresponding Python class: :py:class:`plask.geometry.Cylindrical2D`.
 

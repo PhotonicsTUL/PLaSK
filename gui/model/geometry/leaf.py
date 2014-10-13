@@ -31,10 +31,14 @@ class GNBlock(GNLeaf):
 
     def __init__(self, parent = None, dim = None):
         super(GNBlock, self).__init__(parent=parent, dim=dim)
+        self.size = [None for _ in range(0, dim)]
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNBlock, self).attributes_from_xml(attribute_reader, conf)
-        #TODO size
+        self.pos = [attribute_reader.get(a) for a in conf.axes_names(self.dim)]
+
+    def tag_name(self, full_name = True):
+        return "block{}d".format(self.dim) if full_name else "block"
 
     @classmethod
     def from_xml_2d(self, element, conf):
@@ -61,6 +65,9 @@ class GNCylinder(GNLeaf):
         self.radius = attribute_reader.get('radius')
         self.height = attribute_reader.get('height')
 
+    def tag_name(self, full_name = True):
+        return "cylinder"
+
     @classmethod
     def from_xml_3d(self, element, conf):
         result = GNCylinder()
@@ -78,6 +85,9 @@ class GNCircle(GNLeaf):
         super(GNCircle, self).attributes_from_xml(attribute_reader, conf)
         self.radius = attribute_reader.get('radius')
 
+    def tag_name(self, full_name = True):
+        return "circle{}d".format(self.dim) if full_name else "circle"
+
     @classmethod
     def from_xml_2d(self, element, conf):
         result = GNCircle(dim = 2)
@@ -94,12 +104,17 @@ class GNCircle(GNLeaf):
 class GNTriangle(GNLeaf):
 
     def __init__(self, parent = None):
-        super(GNTriangle, self).__init__(parent=parent)
-        #TODO points
+        super(GNTriangle, self).__init__(parent=parent, dim=2)
+        self.points = ((None, None), (None, None))
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNTriangle, self).attributes_from_xml(attribute_reader, conf)
-        #TODO points
+        n = conf.axes_names(2)
+        r = attribute_reader
+        self.points = ((r.get(n[0] + '0'), r.get(n[1] + '0')), (r.get(n[0] + '1'), r.get(n[1] + '1')))
+
+    def tag_name(self, full_name = True):
+        return "triangle"
 
     @classmethod
     def from_xml_2d(self, element, conf):
