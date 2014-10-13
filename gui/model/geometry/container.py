@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from lxml import etree
 
 from .object import GNObject
 from .types import construct_geometry_object
@@ -73,13 +74,17 @@ class GNStack(GNObject):
     def attributes_to_xml(self, element, conf):
         super(GNStack, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift')
-        conf.write_aligners(element, self.children_dim, self.children_dim-2)    #self.children_dim-2 is direction tran
+        conf.write_aligners(element, self.children_dim, {self.children_dim-2 : self.aligner})    #self.children_dim-2 is direction tran
 
     def get_child_xml_element(self, child, conf):
+        child_element = super(GNStack, self).get_child_xml_element(child, conf)
         if child.in_parent is not None:
-            pass #TODO
+            res = etree.Element('item')
+            res.append(child_element)
+            conf.write_aligners(res, self.children_dim, {self.children_dim-2 : child.in_parent})
+            return res
         else:
-            return super(GNStack, self).get_child_xml_element(child, conf)
+            return child_element
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
