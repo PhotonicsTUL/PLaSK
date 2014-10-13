@@ -25,8 +25,11 @@ class Controller(object):
     def __init__(self, document=None, model=None):
         """Optionally set document and/or model."""
         super(Controller, self).__init__()
-        if document is not None: self.document = document
-        if model is not None: self.model = model
+        if document is not None:
+            self.document = document
+        if model is not None:
+            self.model = model
+        self.notify_changes = False
 
     def save_data_in_model(self):
         """Called to force save data from editor in model (typically by on_edit_exit or when model is needed while
@@ -77,6 +80,9 @@ class Controller(object):
     def get_widget(self):
         raise NotImplementedError("Method 'get_widget' must be overriden in a subclass!")
 
+    def fire_changed(self, *args, **kwargs):
+        if self.notify_changes:
+            self.model.fire_changed()
 
 
 class NoConfController(Controller):

@@ -26,7 +26,7 @@ class AxisConf(object):
         self.points = points
         self.type = None if type == '' else type
 
-    def fill_xmlElement(self, axisElement):
+    def fill_xml_element(self, axisElement):
         attr_to_xml(self, axisElement, 'start', 'stop', 'num', 'type')
         axisElement.text = self.points if self.points else ''
 
@@ -58,7 +58,7 @@ class RectangularMesh1D(Grid):
 
     def get_xml_element(self):
         res = super(RectangularMesh1D, self).get_xml_element()
-        self.axis.fill_xmlElement(SubElement(res, 'axis'))
+        self.axis.fill_xml_element(SubElement(res, 'axis'))
         return res
 
     def set_xml_element(self, element):
@@ -92,7 +92,7 @@ class RectangularMesh(Grid):
     def get_xml_element(self):
         res = super(RectangularMesh, self).get_xml_element()
         for i in range(0, self.dim):
-            self.axis[i].fill_xmlElement(SubElement(res, RectangularMesh.axis_tag_name(i)))
+            self.axis[i].fill_xml_element(SubElement(res, RectangularMesh.axis_tag_name(i)))
         return res
 
     def set_xml_element(self, element):

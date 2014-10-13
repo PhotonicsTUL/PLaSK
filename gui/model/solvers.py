@@ -136,9 +136,9 @@ class ConfSolver(Solver):
         element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
         if self.lib is not None:
             element.attrib['lib'] = self.lib
-        if self.geometry is not None:
+        if self.geometry:
             etree.SubElement(element, 'geometry', {'ref': self.geometry})
-        if self.mesh is not None:
+        if self.mesh:
             etree.SubElement(element, 'mesh', {'ref': self.mesh})
         for tag,_,_ in self.config['conf']:
             attrs = dict((item for item in self.data[tag].items() if item[1]))

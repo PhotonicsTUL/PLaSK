@@ -51,7 +51,7 @@
     <axis1 start="2" stop="7" num="2001"></axis1>
   </mesh>
   <generator method="divide" name="test" type="rectangular2d">
-    <prediv by0="0" by1="2"/>
+    <prediv by0="2"/>
   </generator>
   <mesh name="plot2" type="rectilinear2d">
     <axis0 start="{-mesa}" stop="{mesa}" num="501"/>
@@ -62,8 +62,7 @@
 <solvers>
   <optical name="efm" solver="EffectiveFrequencyCyl">
     <geometry ref="main"/>
-    <mesh ref=""/>
-    <mode emission="top" lam0="980" vlam="980"/>
+    <mode lam0="980"/>
   </optical>
   <thermal solver="StaticCyl" name="therm">
     <geometry ref="main"/>

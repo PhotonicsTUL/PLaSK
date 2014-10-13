@@ -16,6 +16,7 @@ from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...qt import QtGui
 from ...utils.str import empty_to_none
 
+
 class RectilinearDivideGeneratorConroller(Controller):
     """ordered and rectangular 2D and 3D divide generator script"""
 
@@ -32,11 +33,13 @@ class RectilinearDivideGeneratorConroller(Controller):
     def _make_div_hbox(self, container_to_add, label, tooltip):
         hbox_div = QtGui.QHBoxLayout()
         res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
-        for i in range(0, self.model.dim):
+        for i,r in enumerate(res):
             axis_name = RectilinearDivideGeneratorConroller.axes_names[self.model.dim-1][i]
-            hbox_div.addWidget(QtGui.QLabel('by {}{}:'.format(i, ' (' + axis_name + ')' if axis_name else '')))
-            hbox_div.addWidget(res[i])
-            res[i].setToolTip(tooltip.format(' in {} direction'.format(axis_name) if axis_name else ''))
+            # hbox_div.addWidget(QtGui.QLabel('by {}{}:'.format(i, ' (' + axis_name + ')' if axis_name else '')))
+            hbox_div.addWidget(QtGui.QLabel('{}:'.format(axis_name if axis_name else str(i))))
+            hbox_div.addWidget(r)
+            r.setToolTip(tooltip.format(' in {} direction'.format(axis_name) if axis_name else ''))
+            r.textEdited.connect(self.fire_changed)
         container_to_add.addRow(label, hbox_div)
         return res
 
@@ -49,20 +52,24 @@ class RectilinearDivideGeneratorConroller(Controller):
         form_layout = QtGui.QFormLayout()
 
         self.gradual = QtGui.QComboBox()    #not checkbox to allow put defines {}
+        self.gradual.currentIndexChanged.connect(self.fire_changed)
+        self.gradual.textChanged.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
         self.gradual.setToolTip("Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated"
                                 " mesh may differ more than by the factor of two). Gradual is enabled by default.")
-        form_layout.addRow("gradual", self.gradual)
+        form_layout.addRow("Gradual change:", self.gradual)
 
-        self.prediv = self._make_div_hbox(form_layout, "prediv",
+        self.prediv = self._make_div_hbox(form_layout, "Pre-refining divisions:",
                                           "Set number of the initial divisions of each geometry object{}.")
-        self.postdiv = self._make_div_hbox(form_layout, "postdiv",
+        self.postdiv = self._make_div_hbox(form_layout, "Post-refining divisions:",
                                            "Set number of the final divisions of each geometry object{}.")
 
         warnings_layout = QtGui.QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
-            cb  = QtGui.QComboBox()
+            cb = QtGui.QComboBox()
+            cb.currentIndexChanged.connect(self.fire_changed)
+            cb.textChanged.connect(self.fire_changed)
             cb.addItems(['', 'true', 'false'])
             cb.setEditable(True)
             cb.setToolTip(RectilinearDivideGeneratorConroller.warning_help.get(w, ''))
@@ -72,7 +79,7 @@ class RectilinearDivideGeneratorConroller(Controller):
             warnings_layout.addWidget(label)
             cb.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Preferred)
             warnings_layout.addWidget(cb)
-        form_layout.addRow('warnings', warnings_layout)
+        form_layout.addRow('Warnings:', warnings_layout)
 
         vbox.addLayout(form_layout)
 
@@ -90,12 +97,16 @@ class RectilinearDivideGeneratorConroller(Controller):
         self.model.set_postdiv([empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)])
 
     def on_edit_enter(self):
+        self.notify_changes = False
         for attr_name in ['gradual'] + ['warning_'+w for w in RectilinearDivideGenerator.warnings]:
             a = getattr(self.model, attr_name)
             getattr(self, attr_name).setEditText('' if a is None else a)
         for i in range(0, self.model.dim):
             self.prediv[i].setText(self.model.get_prediv(i))
             self.postdiv[i].setText(self.model.get_postdiv(i))
+        self.notify_changes = True
 
     def get_widget(self):
         return self.form
+
+

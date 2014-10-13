@@ -25,8 +25,9 @@ class GridsController(Controller):
         if model is None: model = GridsModel()
         Controller.__init__(self, document, model)
 
-        self.current_index = None
-        self.current_controller = None
+        self._current_index = None
+        self._last_index = None
+        self._current_controller = None
 
         self.splitter = QSplitter()
 
@@ -53,19 +54,19 @@ class GridsController(Controller):
             :param int new_index: index of new current script
             :return: False only when script should restore old selection
         """
-        if self.current_index == new_index: return True
-        if self.current_controller is not None:
-            if not self.current_controller.on_edit_exit():
+        if self._current_index == new_index: return True
+        if self._current_controller is not None:
+            if not self._current_controller.on_edit_exit():
                 return False
-        self.current_index = new_index
+        self._current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
             self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
-        if self.current_index is None:
-            self.current_controller = None
+        if self._current_index is None:
+            self._current_controller = None
         else:
-            self.current_controller = self.model.entries[new_index].get_controller(self.document)
-            self.parent_for_editor_widget.addWidget(self.current_controller.get_widget())
-            self.current_controller.on_edit_enter()
+            self._current_controller = self.model.entries[new_index].get_controller(self.document)
+            self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
+            self._current_controller.on_edit_enter()
         return True
 
     def grid_selected(self, new_selection, old_selection):
@@ -78,27 +79,19 @@ class GridsController(Controller):
         return self.splitter
 
     def save_data_in_model(self):
-        if self.current_controller is not None:
-            self.current_controller.save_data_in_model()
+        if self._current_controller is not None:
+            self._current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        #if self.current_controller is not None:
-        #    self.current_controller.on_edit_enter()
-        self.grids_table.selectionModel().clear()   #model could completly changed
+        self.grids_table.selectionModel().clear()   # model could completly changed
+        if self._last_index is not None:
+            self.grids_table.selectRow(self._last_index)
 
     def on_edit_exit(self):
-        if self.current_controller is not None:
+        if self._current_controller is not None:
+            self._last_index = self._current_index
             self.grids_table.selectionModel().clear()
         return True
-
-    #def onEditEnter(self):
-    #    self.saveDataInModel()  #this should do nothing, but is called in case of subclass use it
-    #    if not self.model.isReadOnly():
-    #        self.document.window.setSectionActions(*self.get_table_edit_actions())
-
-    # when editor is turn off, model should be update
-    #def onEditExit(self):
-    #    self.document.window.setSectionActions()
 
     def get_table_edit_actions(self):
         return self.tableActions.get(self.document.window)

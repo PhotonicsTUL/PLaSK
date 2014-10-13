@@ -41,12 +41,16 @@ class SolverAutoWidget(QtGui.QScrollArea):
 
         self.geometry = QtGui.QComboBox()
         self.geometry.setEditable(True)
+        self.geometry.textChanged.connect(self.controller.fire_changed)
+        self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
         #TODO make sure the list is up-to date; add some graphical thumbnail
         layout.addRow("Geometry:", self.geometry)
 
         if config['mesh']:
             self.mesh = QtGui.QComboBox()
             self.mesh.setEditable(True)
+            self.mesh.textChanged.connect(self.controller.fire_changed)
+            self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
             #TODO add some graphical thumbnail
             layout.addRow("Mesh:", self.mesh)
         else:
@@ -65,9 +69,12 @@ class SolverAutoWidget(QtGui.QScrollArea):
                     attr, text, choices = item
                     edit = QtGui.QComboBox()
                     edit.addItems([''] + list(choices))
+                    edit.textChanged.connect(self.controller.fire_changed)
+                    edit.currentIndexChanged.connect(self.controller.fire_changed)
                 else:
                     attr, text = item
                     edit = QtGui.QLineEdit()
+                    edit.textEdited.connect(self.controller.fire_changed)
                 edit.setToolTip(attr)
                 self.controls[group, attr] = edit
                 layout.addRow(text + ':', edit)
@@ -146,7 +153,9 @@ class ConfSolverController(Controller):
             self.widget.mesh.addItems([''] + grids)
         except AttributeError:
             pass
+        self.notify_changes = False
         self.widget.load_data()
+        self.notify_changes = True
 
     def save_data_in_model(self):
         self.widget.save_data()
@@ -161,8 +170,9 @@ class SolversController(Controller):
         if model is None: model = SolversModel()
         Controller.__init__(self, document, model)
 
-        self.current_index = None
-        self.current_controller = None
+        self._current_index = None
+        self._last_index = None
+        self._current_controller = None
 
         self.splitter = QSplitter()
 
@@ -187,19 +197,19 @@ class SolversController(Controller):
             :param int new_index: index of new current script
             :return: False only when script should restore old selection
         """
-        if self.current_index == new_index: return True
-        if self.current_controller is not None:
-            if not self.current_controller.on_edit_exit():
+        if self._current_index == new_index: return True
+        if self._current_controller is not None:
+            if not self._current_controller.on_edit_exit():
                 return False
-        self.current_index = new_index
+        self._current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
             self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
-        if self.current_index is None:
-            self.current_controller = None
+        if self._current_index is None:
+            self._current_controller = None
         else:
-            self.current_controller = self.model.entries[new_index].get_controller(self.document)
-            self.parent_for_editor_widget.addWidget(self.current_controller.get_widget())
-            self.current_controller.on_edit_enter()
+            self._current_controller = self.model.entries[new_index].get_controller(self.document)
+            self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
+            self._current_controller.on_edit_enter()
         return True
 
     def solver_selected(self, new_selection, old_selection):
@@ -212,16 +222,17 @@ class SolversController(Controller):
         return self.splitter
 
     def save_data_in_model(self):
-        if self.current_controller is not None:
-            self.current_controller.save_data_in_model()
+        if self._current_controller is not None:
+            self._current_controller.save_data_in_model()
 
     def on_edit_enter(self):
-        #if self.current_controller is not None:
-        #    self.current_controller.on_edit_enter()
         self.solvers_table.selectionModel().clear()   # model could have completly changed
+        if self._last_index is not None:
+            self.solvers_table.selectRow(self._last_index)
 
     def on_edit_exit(self):
-        if self.current_controller is not None:
+        if self._current_controller is not None:
+            self._last_index = self._current_index
             self.solvers_table.selectionModel().clear()
         return True
 

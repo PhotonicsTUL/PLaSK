@@ -149,7 +149,7 @@ class OrderedTagReader(object):
 
     def _goto_next(self):
         """
-            Increment current_index if there is next element.
+            Increment _current_index if there is next element.
             :return: Next element or None if there is no such element
         """
         if not self._has_next(): return None
