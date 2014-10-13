@@ -57,7 +57,7 @@ class GNAligner(object):
             self._position = value
 
     def position_str(self, dims, axis_names_in_dims, axis_nr):
-        return '' if self.position is None else GNAligner.names(dims, axis_names_in_dims, axis_nr)[self.position]
+        return None if self.position is None else GNAligner.names(dims, axis_names_in_dims, axis_nr)[self.position]
 
 
 class GNReadConf(object):
@@ -124,3 +124,10 @@ class GNReadConf(object):
                     res[axis_nr].value = value
                     break
         return res
+
+    def write_aligners(self, element, dims = None, **axes_and_aligners):
+        if dims is None: dims = self.parent.dim
+        for axis_nr, aligner in axes_and_aligners:
+            pos_str = aligner.position_str(dims, self.axes_names(dims), axis_nr)
+            if pos_str is not None and aligner.value:
+                element.attrib[pos_str] = aligner.value

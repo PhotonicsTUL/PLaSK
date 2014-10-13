@@ -9,12 +9,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from sphinx.writers.latex import collected_footnote
 
 from .object import GNObject
 from .types import construct_geometry_object
 from .node import GNode
-from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr
+from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
 from . import GNAligner
 
 class GNZero(GNode):
@@ -41,6 +40,11 @@ class GNGap(GNode):
             self.size = attribute_reader.get('total')
             if self.size is not None: self.size_is_total = True
 
+    def attributes_to_xml(self, element, conf):
+        super(GNGap, self).attributes_to_xml(element, conf)
+        if self.size is not None:
+            element.attrib['total' if self.size_is_total else 'size'] = self.size
+
     def tag_name(self, full_name = True):
         return 'gap'
 
@@ -64,7 +68,18 @@ class GNStack(GNObject):
         super(GNStack, self).attributes_from_xml(attribute_reader, conf)
         self.repeat = attribute_reader.get('repeat')
         self.shift = attribute_reader.get('shift')
-        self.aligner, = conf.read_aligners(attribute_reader, self.children_dim, self.children_dim-2)  #direction tran
+        self.aligner, = conf.read_aligners(attribute_reader, self.children_dim, self.children_dim-2)  #self.children_dim-2 is direction tran
+
+    def attributes_to_xml(self, element, conf):
+        super(GNStack, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'repeat', 'shift')
+        conf.write_aligners(element, self.children_dim, self.children_dim-2)    #self.children_dim-2 is direction tran
+
+    def get_child_xml_element(self, child, conf):
+        if child.in_parent is not None:
+            pass #TODO
+        else:
+            return super(GNStack, self).get_child_xml_element(child, conf)
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
@@ -72,7 +87,7 @@ class GNStack(GNObject):
                 with OrderedTagReader(c) as item_child_reader:
                     child = construct_geometry_object(item_child_reader.require(), conf)
                 with AttributeReader(c) as item_attr_reader:
-                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.children_dim-2)  #direction tran
+                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.children_dim-2)  #self.children_dim-2 is direction tran
             elif c.tag == 'zero':
                 GNZero(self, self.children_dim)
             else:

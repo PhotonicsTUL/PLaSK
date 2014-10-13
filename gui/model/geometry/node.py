@@ -9,7 +9,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from model.geometry import GNReadConf
+from lxml import etree
+from . import GNReadConf
 
 from ...utils.xml import AttributeReader, OrderedTagReader
 
@@ -51,6 +52,22 @@ class GNode(object):
         self.preset_conf(subtree_conf)
         with AttributeReader(element) as a: self.attributes_from_xml(a, subtree_conf)
         with OrderedTagReader(element) as r: self.children_from_xml(r, subtree_conf)
+
+    def attributes_to_xml(self, element, conf):
+        pass
+
+    def get_child_xml_element(self, child, conf):
+        return child.get_xml_element(conf)
+
+    def get_xml_element(self, conf):
+        subtree_conf = GNReadConf(conf)
+        self.preset_conf(subtree_conf)
+        res = etree.Element(self.tag_name(full_name = conf.parent is None or conf.parent.children_dim is None))
+        self.attributes_to_xml(res, subtree_conf)
+        for c in self.children:
+            res.append(self.get_child_xml_element(c, subtree_conf))
+        self.children_to_xml(res, subtree_conf)
+        return res
 
     #def append(self, child):
     #    self.children.append(child)

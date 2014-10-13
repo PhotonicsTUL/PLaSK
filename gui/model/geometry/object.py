@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 from .node import GNode
+from ...utils.xml import xml_to_attr, attr_to_xml
 
 
 class GNObject(GNode):
@@ -23,8 +24,11 @@ class GNObject(GNode):
         self.axes = None
 
     def attributes_from_xml(self, attribute_reader, conf):
-        self.name = attribute_reader.get('name')
-        self.role = attribute_reader.get('role')
-        self.axes = attribute_reader.get('axes')
-        conf.axes = self.axes
+        super(GNObject, self).attributes_from_xml(attribute_reader, conf)
+        xml_to_attr(attribute_reader, self, 'name', 'role', 'axes')
+        if self.axes is not None: conf.axes = self.axes
 
+    def attributes_to_xml(self, element, conf):
+        super(GNObject, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'name', 'role', 'axes')
+        if self.axes is not None: conf.axes = self.axes
