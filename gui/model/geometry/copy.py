@@ -14,6 +14,7 @@ from . import GNReadConf
 from .node import GNode
 from .object import GNObject
 from .types import construct_geometry_object
+from ...utils.xml import attr_to_xml
 
 
 class GNAgain(GNode):
@@ -23,7 +24,12 @@ class GNAgain(GNode):
         self.ref = ref
 
     def attributes_from_xml(self, attribute_reader, reader):
-        self.ref = attribute_reader.require('ref')
+        super(GNAgain, self).attributes_from_xml(attribute_reader, reader)
+        self.ref = attribute_reader.get('ref')
+
+    def attributes_to_xml(self, element, conf):
+        super(GNAgain, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'ref')
 
     def tag_name(self, full_name = True):
         return "again"
@@ -41,6 +47,10 @@ class GNCopyChild(GNode):
     def attributes_from_xml(self, attribute_reader, conf):
         self.object = attribute_reader.require('object')
 
+    def attributes_to_xml(self, element, conf):
+        super(GNCopyChild, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'object')
+
 
 class GNCDelete(GNCopyChild):
 
@@ -57,6 +67,10 @@ class GNCReplace(GNCopyChild):
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNCReplace, self).attributes_from_xml(attribute_reader, conf)
         self.replacer = attribute_reader.get('with')
+
+    def attributes_to_xml(self, element, conf):
+        super(GNCReplace, self).attributes_to_xml(element, conf)
+        if self.replacer is not None: element.attrib['with'] = self.replacer
 
     def children_from_xml(self, ordered_reader, conf):
         if self.replacer is None:
@@ -76,6 +90,10 @@ class GNCToBlock(GNCopyChild):
         super(GNCToBlock, self).attributes_from_xml(attribute_reader, conf)
         self.material = attribute_reader.get('material')
 
+    def attributes_to_xml(self, element, conf):
+        super(GNCToBlock, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'material')
+
     def tag_name(self, full_name = True):
         return "toblock"
 
@@ -89,6 +107,10 @@ class GNCopy(GNObject):
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNCopy, self).attributes_from_xml(attribute_reader, conf)
         self.source = attribute_reader.require('from')
+
+    def attributes_to_xml(self, element, conf):
+        super(GNCopy, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'from')
 
     def children_from_xml(self, ordered_reader, conf):
         for t in ordered_reader.iter():

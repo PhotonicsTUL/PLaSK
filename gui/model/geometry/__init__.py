@@ -125,9 +125,13 @@ class GNReadConf(object):
                     break
         return res
 
-    def write_aligners(self, element, dims = None, axes_and_aligners = {}):
-        if dims is None: dims = self.parent.dim
-        for axis_nr, aligner in axes_and_aligners:
+    def write_aligners(self, element, dims = None, aligners = {}):
+        if isinstance(aligners, (list, tuple)):
+            if dims is None: dims = len(aligners)
+            aligners = { axis_nr : aligners[axis_nr] for axis_nr in range(0, dims) }
+        else:
+            if dims is None: dims = self.parent.dim
+        for axis_nr, aligner in aligners:
             pos_str = aligner.position_str(dims, self.axes_names(dims), axis_nr)
             if pos_str is not None and aligner.value:
                 element.attrib[pos_str] = aligner.value

@@ -76,16 +76,6 @@ class GNStack(GNObject):
         attr_to_xml(self, element, 'repeat', 'shift')
         conf.write_aligners(element, self.children_dim, {self.children_dim-2 : self.aligner})    #self.children_dim-2 is direction tran
 
-    def get_child_xml_element(self, child, conf):
-        child_element = super(GNStack, self).get_child_xml_element(child, conf)
-        if child.in_parent is not None:
-            res = etree.Element('item')
-            res.append(child_element)
-            conf.write_aligners(res, self.children_dim, {self.children_dim-2 : child.in_parent})
-            return res
-        else:
-            return child_element
-
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
             if c.tag == 'item':
@@ -97,6 +87,16 @@ class GNStack(GNObject):
                 GNZero(self, self.children_dim)
             else:
                 construct_geometry_object(c, conf)
+
+    def get_child_xml_element(self, child, conf):
+        child_element = super(GNStack, self).get_child_xml_element(child, conf)
+        if child.in_parent is not None:
+            res = etree.Element('item')
+            res.append(child_element)
+            conf.write_aligners(res, self.children_dim, {self.children_dim-2 : child.in_parent})
+            return res
+        else:
+            return child_element
 
     def tag_name(self, full_name = True):
         return "stack{}d".format(self.dim) if full_name else "stack"
@@ -126,6 +126,10 @@ class GNShelf(GNObject):
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNShelf, self).attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'repeat', 'shift', 'flat')
+
+    def attributes_to_xml(self, element, conf):
+        super(GNShelf, self).attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'repeat', 'shift', 'flat')
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
@@ -157,6 +161,10 @@ class GNAlignContainer(GNObject):
         super(GNAlignContainer, self).attributes_from_xml(attribute_reader, conf)
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim)
 
+    def attributes_to_xml(self, element, conf):
+        super(GNAlignContainer, self).attributes_to_xml(element, conf)
+        conf.write_aligners(element, self.children_dim, self.aligners)
+
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
             if c.tag == 'item':
@@ -166,6 +174,16 @@ class GNAlignContainer(GNObject):
                     child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim)
             else:
                 construct_geometry_object(c, conf)
+
+    def get_child_xml_element(self, child, conf):
+        child_element = super(GNAlignContainer, self).get_child_xml_element(child, conf)
+        if child.in_parent is not None:
+            res = etree.Element('item')
+            res.append(child_element)
+            conf.write_aligners(res, self.children_dim, child.in_parent)
+            return res
+        else:
+            return child_element
 
     def tag_name(self, full_name = True):
         return "align{}d".format(self.dim) if full_name else "align"
