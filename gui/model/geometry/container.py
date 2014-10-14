@@ -11,11 +11,12 @@
 # GNU General Public License for more details.
 from lxml import etree
 
+from .reader import GNAligner
 from .object import GNObject
 from .types import construct_geometry_object
 from .node import GNode
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
-from . import GNAligner
+
 
 class GNZero(GNode):
 

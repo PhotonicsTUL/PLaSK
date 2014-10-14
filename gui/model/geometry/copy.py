@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from . import GNReadConf
+from model.geometry.reader import GNReadConf
 
 from .node import GNode
 from .object import GNObject

@@ -10,8 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 from lxml import etree
-from . import GNReadConf
 
+from .reader import GNReadConf
 from ...utils.xml import AttributeReader, OrderedTagReader
 
 
