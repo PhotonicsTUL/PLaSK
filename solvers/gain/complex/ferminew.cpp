@@ -299,14 +299,19 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         }
     }
 
-    buildStructure(T, region);
+    int tStrType = buildStructure(T, region);
+    if (tStrType == 0) writelog(LOG_INFO, "I-type QW for Ec-Evhh and Ec-Evlh.");
+    else if (tStrType == 1) writelog(LOG_INFO, "I-type QW for Ec-Evhh.");
+    else if (tStrType == 2) writelog(LOG_INFO, "I-type QW for Ec-Evlh.");
+    else writelog(LOG_INFO, "No I-type QW both for Ec-Evhh and Ec-Evlh.");
+
 
     double tCladEg = region.getLayerMaterial(0)->CB(T,0.) - region.getLayerMaterial(0)->VB(T,0.); // cladding Eg (eV) TODO
     //double tQWDso = region.materialQW->Dso(T); // QW Dso (eV)
     double tQWTotH = region.qwtotallen*0.1; // total thickness of QWs (nm)
     double tQWnR = region.materialQW->nr(wavelength,T); // QW nR
 
-    std::vector<QW::struktura *> tHoles;
+    std::vector<QW::struktura *> tHoles; tHoles.clear();
     if (!mEvhh)
         tHoles.push_back(&(*mpStrEvhh));
     if (!mEvlh)
@@ -329,7 +334,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
         writelog(LOG_RESULT, "Fp %1%", tFp);
         std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFe, T);
         for(int i = 0; i <= (int) tN.size() - 1; i++)
-            writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
+            writelog(LOG_RESULT, "carrier concentration in layer %1%: %2% cm-3", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
 
         /*double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0);
         double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1);
@@ -389,7 +394,7 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
     for (int i=1; i<tN-1; ++i)
     {
         double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-        double tH = region.getLayerBox(i).height()*1e4; // tH (A)
+        double tH = cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
         mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)-tDEc)); // wells and barriers
         writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", i, region.getLayerMaterial(i)->CB(T,e)-tDEc);
         mpEc.push_back(mpLay); tX += tH;
@@ -428,7 +433,7 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         for (int i=1; i<tN-1; ++i)
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = region.getLayerBox(i).height()*1e4; // tH (A)
+            double tH = cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh)); // wells and barriers
             //writelog(LOG_DETAIL, "Evhh dla warstwy %1%: %2%", i, -region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh);
             mpEvhh.push_back(mpLay); tX += tH;
@@ -466,7 +471,7 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         for (int i=1; i<tN-1; ++i)
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = region.getLayerBox(i).height()*1e4; // tH (A)
+            double tH = cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh)); // wells and barriers
             //writelog(LOG_DETAIL, "Evlh dla warstwy %1%: %2%", i, -region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh);
             mpEvlh.push_back(mpLay); tX += tH;
@@ -482,37 +487,47 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
             return -1;
 }
 
+template <typename GeometryType>
+double FerminewGainSolver<GeometryType>::cutNumber(double iNumber, int iN)
+{
+    double x = iNumber;
+    int tMulti = 10;
+    int i = 0;
+    while(i<iN){tMulti *=10; i++;}
+    //******************************** obciecie do ile miejsc po przecinku ******************************************************
+    int y = x * tMulti;			// przesuwamy przecinek o ile+1 miejsc i pozbywamy sie reszty za przecinkiem - y jest calkowite
+    if (y % 10 >= 5) y += 10;		// jezeli cyfra jednosci >= ile+1
+    iNumber = (y / 10) * 10/tMulti;	// usuwamy ostatnia cyfre i zamieniamy na liczbe zmiennoprzecinkowa
+
+    return iNumber;
+}
+
 template <typename GeometryType> //LUKASZ 2014.10.13 concentration recalculation to obtain n from diffusion model
 double FerminewGainSolver<GeometryType>::recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR)
 {
-    writelog(LOG_INFO, "conc. recalculation - input params: %1%, %2%, %3% i %4%", iN, (iQWTotH*1*1e-7), iT, iQWnR);
+    //writelog(LOG_INFO, "conc. recalculation - input params: %1%, %2%, %3% i %4%", iN, (iQWTotH*1*1e-7), iT, iQWnR);
 
+    double tStep = 1e-3*iN*0.25; // TODO
     double nQW=iN;
     double iN1=0.,tn1=0.;
     while(1)
     {
         iN1=iN*10.;
-        //writelog(LOG_INFO, "iN1 %1%", iN1);
+
         QW::gain gainModule1(iAktyw, iN1*(iQWTotH*1*1e-7), iT, iQWnR); // (&aktyw, 3e18*8e-7, mT, mSAR->getWellNref())
         double tFlc1 = gainModule1.policz_qFlc();
-        double tFlv1 = gainModule1.policz_qFlv();
-        //writelog(LOG_INFO, "Flc1 %1%", tFlc1);
-        //writelog(LOG_INFO, "Flv1 %1%", tFlv1);
+        //double tFlv1 = gainModule1.policz_qFlv();
 
         std::vector<double> tN = mpStrEc->koncentracje_w_warstwach(tFlc1, iT);
 
-        //for(int i = 0; i <= (int) tN.size() - 1; i++)
-        //    writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
-
-        //tn1=struktura::koncentracja_na_cm_3(tN[2]);
         auto tMaxElem = std::max_element(tN.begin(), tN.end());
         tn1 = *tMaxElem;
         tn1 = QW::struktura::koncentracja_na_cm_3(tn1);
         //writelog(LOG_INFO, "max. conc.: %1%", tn1);
-        if(tn1>=nQW) iN-=0.001e18;
+        if(tn1>=nQW) iN-=tStep;
         else break;
     }
-    //writelog(LOG_INFO, "result iN1: %1%", iN1);
+
     return iN1;
 }
 
@@ -607,8 +622,13 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
 */
             double L = region.qwtotallen / region.totallen; // no unit
             writelog(LOG_RESULT, "L %1%", L);
-            double tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0) / L;
-            double tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1) / L;
+
+            double tGehh, tGelh;
+            tGehh = tGelh = 0.;
+
+            tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0) / L;
+            tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1) / L;
+
             gainOnMesh[i] = tGehh+tGelh;
             writelog(LOG_RESULT, "gainOnMesh %1%", gainOnMesh[i]);
         }

@@ -281,7 +281,7 @@ public:
     double nosniki_w_v(double Fl);
     double policz_qFlv();
     double getT();
-    double Get_gain_at_n(double E, double hQW, double iL); // LUKASZ remember to delete this
+    double Get_gain_at_n(double E, double hQW, double iL); // LUKASZ
 
     double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
     double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v);

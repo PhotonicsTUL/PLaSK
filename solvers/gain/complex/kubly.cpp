@@ -900,10 +900,13 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   int i;
   for(i = 1; i <= (int) tablica.size() - 2; i++)
     {
-      if(tablica[i - 1]->x_kon != tablica[i]->x_pocz)
+      //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
+    writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+    if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
 	{
-	  std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<" w "<<co<<": "<<(tablica[i - 1]->x_kon)<<" =/= "<<(tablica[i]->x_pocz)<<"\n";
-	  abort();
+      //std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<" w "<<co<<": "<<(tablica[i - 1]->x_kon)<<" =/= "<<(tablica[i]->x_pocz)<<"\n";
+      writelog(LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
+      abort();
 	}
       kawalki.push_back(*tablica[i]);
       tablica[i-1]->nast = tablica[i]; // ustawianie wskaznika na sasiadke
@@ -918,9 +921,14 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
 	}
     }
   //  std::clog<<"i = "<<i<<"\tx_pocz("<<(i-1)"<<(tablica[i - 1]->x_pocz)<<"\n";
-  if(tablica[i - 1]->x_kon != tablica[i]->x_pocz)
+
+  //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
+  writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+  if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
     {
       std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<"\n";
+      writelog(LOG_DETAIL, "Rozne krance warstw %1% i %2%", (i-1), i); // LUKASZ
+      writelog(LOG_DETAIL, "Rozne krance warstw"); // LUKASZ
       abort();
     }
   if(dol >= gora)
@@ -943,8 +951,11 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
     }
   typ = co;
   dokl = 1e-6;
+  writelog(LOG_DETAIL, "Computing levels"); // LUKASZ
   szukanie_poziomow(gora);
+  writelog(LOG_DETAIL, "Normalisation"); // LUKASZ
   normowanie();
+  writelog(LOG_DETAIL, "Structure built"); // LUKASZ
   // profil(0., 1e-5);
 }
 /*****************************************************************************/
@@ -2255,8 +2266,11 @@ double gain::getT()
 /*****************************************************************************/
 double gain::Get_gain_at_n(double E, double hQW, double iL)
 {
-    double tGehh = wzmocnienie_od_pary_pasm(E, 0, 0) / iL;
-    double tGelh = wzmocnienie_od_pary_pasm(E, 0, 1) / iL;
+    double tGehh, tGelh;
+    tGehh = tGelh = 0.;
+
+    tGehh = wzmocnienie_od_pary_pasm(E, 0, 0) / iL;
+    tGelh = wzmocnienie_od_pary_pasm(E, 0, 1) / iL;
     return (tGehh+tGelh);
 }
 /*****************************************************************************/
@@ -2463,27 +2477,32 @@ double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // pod
 double gain::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
 {
   //  std::cerr<<"\npasmo walencyjna nr "<<nr_v<<"\n";
-  struktura * el = pasma->pasmo_przew[nr_c];
-  struktura * dziu = pasma->pasmo_wal[nr_v];
-  A2D * m_prz = pasma->calki_przekrycia[nr_c][nr_v];
-  double wzmoc = 0;
-  double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
-  double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
-  double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
-  double E0;
-  for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
-    for(int nrpoz_dziu = 0; nrpoz_dziu <= int(dziu->rozwiazania.size()) - 1; nrpoz_dziu++)
-	{
-	  //	  std::cerr<<"\nprzekrycie w "<<nrpoz_el<<", "<<nrpoz_dziu;
-	  //	  std::cerr<<" = "<<(*m_prz)[nrpoz_el][nrpoz_dziu];
-	  E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
-	  if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -5*posz_en) ) // czy warto tracić czas
-	    {
-	      wzmoc += wzmocnienie_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu);
-	      //	      std::cerr<<"\nnowy wzmoc = "<<wzmoc;
-	    }
-	}
-  return wzmoc;
+  if ( (nr_c >= pasma->pasmo_przew.size()) || (nr_v >= pasma->pasmo_wal.size()) ) // added by LUKASZ
+    return 0.;
+  else
+  {
+    struktura * el = pasma->pasmo_przew[nr_c];
+    struktura * dziu = pasma->pasmo_wal[nr_v];
+    A2D * m_prz = pasma->calki_przekrycia[nr_c][nr_v];
+    double wzmoc = 0;
+    double minimalna_przerwa = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
+    double min_E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
+    double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop;
+    double E0;
+    for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
+      for(int nrpoz_dziu = 0; nrpoz_dziu <= int(dziu->rozwiazania.size()) - 1; nrpoz_dziu++)
+      {
+        //std::cerr<<"\nprzekrycie w "<<nrpoz_el<<", "<<nrpoz_dziu;
+        //std::cerr<<" = "<<(*m_prz)[nrpoz_el][nrpoz_dziu];
+        E0 = pasma->Egcv[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
+        if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -5*posz_en) ) // czy warto tracić czas
+        {
+          wzmoc += wzmocnienie_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu);
+          //std::cerr<<"\nnowy wzmoc = "<<wzmoc;
+        }
+      }
+    return wzmoc;
+  }
 }
 /*****************************************************************************/
 double gain::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
