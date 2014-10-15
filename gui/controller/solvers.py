@@ -68,6 +68,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 if len(item) == 3:
                     attr, text, choices = item
                     edit = QtGui.QComboBox()
+                    edit.setEditable(True)
                     edit.addItems([''] + list(choices))
                     edit.textChanged.connect(self.controller.fire_changed)
                     edit.currentIndexChanged.connect(self.controller.fire_changed)
@@ -104,10 +105,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 edit = self.controls[group, attr]
                 value = model.data[group][attr]
                 if type(edit) == QtGui.QComboBox:
-                    try:
-                        edit.setCurrentIndex(item[2].index(value) + 1)
-                    except ValueError:
-                        edit.setCurrentIndex(0)
+                    edit.setEditText(value)
                 else:
                     edit.setText(value)
 
@@ -122,12 +120,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 attr = item[0]
                 edit = self.controls[group, attr]
                 if type(edit) == QtGui.QComboBox:
-                    if edit.currentIndex() == 0:
-                        model.data[group][attr] = ''
-                    else:
-                        model.data[group][attr] = item[2][edit.currentIndex()-1]
-                else:
-                    model.data[group][attr] = edit.text()
+                    model.data[group][attr] = edit.currentText()
 
 
 class ConfSolverController(Controller):

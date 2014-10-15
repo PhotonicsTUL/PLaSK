@@ -68,7 +68,7 @@ Optical solvers
 
    Corresponding Python class: :py:class:`optical.effective.EffectiveFrequencyCyl`.
 
-   Scalar optical solver based on the effective index method.
+   Scalar optical solver based on the effective frequency method.
 
    .. xml:contents::
 

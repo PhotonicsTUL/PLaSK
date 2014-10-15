@@ -236,4 +236,9 @@ class SolversModel(TableModel):
         from ..controller.solvers import get_new_solver
         new_solver = get_new_solver()
         if new_solver is not None:
-            return TreeFragmentSolver.create_empty(parent=self, **new_solver)
+            try:
+                factory = SOLVERS[new_solver['category'], new_solver['solver']]
+            except KeyError:
+                return TreeFragmentSolver.create_empty(parent=self, **new_solver)
+            else:
+                return factory(new_solver['name'], parent=self)
