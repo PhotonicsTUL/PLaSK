@@ -33,7 +33,7 @@ Thermal solvers
          Configuration of the matrix solver.
 
          :attr algorithm: Solution algorithm. Defaults to ``cholesky``. (``cholesky``, ``gauss``, or ``iterative``)
-         :attr itererr: Allowed residual error for the iterative algorithm.
+         :attr itererr: Maximum allowed residual error for the iterative algorithm.
          :attr iterlim: Maximum number of iterations for the iterative algorithm.
          :attr logfreq: Frequency of logging iterative solver progress.
          .. :attr preconditioner: Preconditioner for the iterative (conjugate gradient) algorithm. (``jacobi`` or ``factor``)
