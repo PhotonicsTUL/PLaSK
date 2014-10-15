@@ -4,7 +4,7 @@ from gui import solvers
 
 EffectiveIndex2D = {
     'desc': 'Scalar optical solver based on the effective index method',
-    'mesh': True,
+    'mesh': 'Rectangular2D',
     'conf': (
         ('mode', 'Mode properties', (
             ('polarization', 'Polarization',('TE', 'TM')),
@@ -41,7 +41,7 @@ EffectiveIndex2D = {
 
 EffectiveFrequencyCyl = {
     'desc': 'Scalar optical solver based on the frequency index method',
-    'mesh': True,
+    'mesh': 'Rectangular2D',
     'conf': (
         ('mode', 'Mode properties', (
             ('lam0', 'Approximate wavelength [nm]'),

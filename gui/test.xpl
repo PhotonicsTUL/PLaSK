@@ -1,108 +1,227 @@
 <plask>
 
 <defines>
-  <define name="mesa" value="10"/>
-  <define name="aprt" value="4"/>
+  <define name="mesaRadius" value="10."/>
+  <define name="aperture" value="{mesaRadius-6.}"/>
 </defines>
 
 <materials>
-  <material name="active" base="In(0.13)GaAs">
-    <A>T**2</A>
-    <nr>3.53</nr>
-    <absp>0.</absp>
-  </material>
-  <material name="inactive" base="active">
-    <absp>1000.</absp>
+  <material name="InGaAsQW" base="In(0.22)GaAs">
+    <nr>3.621</nr>
+    <absp>0</absp>
+    <A>110000000</A>
+    <B>7e-011-1.08e-12*(T-300)</B>
+    <C>1e-029+1.4764e-33*(T-300)</C>
+    <D>10+0.01667*(T-300)</D>
   </material>
 </materials>
 
 <geometry>
-  <cylindrical2d axes="rz" name="main" top="air" bottom="AlAs" outer="extend">
+  <cylindrical2d axes="rz" name="GeoTE">
     <stack>
-      <stack name="top-DBR" repeat="24">
-        <block dr="{mesa}" dz="0.07" material="GaAs"/>
-        <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs"/>
-      </stack>
-      <block dr="{mesa}" dz="0.07003" material="GaAs"/>
-      <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs"/>
       <shelf>
-        <block dr="{aprt}" dz="0.01603" material="AlAs"/>
-        <block dr="{mesa-aprt}" dz="0.01603" material="AlxOy"/>
+        <gap total="{mesaRadius-1}"/>
+        <block dr="4" dz="0.0500" material="Au" name="n-contact"/>
       </shelf>
-      <block dr="{mesa}" dz="0.03178" material="Al(0.73)GaAs"/>
-      <block dr="{mesa}" dz="0.13756" material="GaAs"/>
-      <shelf>
-        <block dr="{aprt}" dz="0.005" role="gain" material="active" name="gain-region"/>
-        <block dr="{mesa-aprt}" dz="0.005" material="inactive"/>
-      </shelf>
-      <block dr="{mesa}" dz="0.13756" material="GaAs"/>
-      <stack name="bottom-DBR" repeat="29">
-        <block dr="{mesa}" dz="0.07945" material="Al(0.73)GaAs"/>
-        <block dr="{mesa}" dz="0.07003" material="GaAs"/>
+      <stack name="VCSEL">
+        <stack name="top-DBR" repeat="24">
+          <block dr="{mesaRadius}" dz="0.07003" material="GaAs:Si=2e+18"/>
+          <block dr="{mesaRadius}" dz="0.07945" material="Al(0.73)GaAs:Si=2e+18"/>
+        </stack>
+        <block dr="{mesaRadius}" dz="0.07003" material="GaAs:Si=2e+18"/>
+        <block dr="{mesaRadius}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
+        <shelf>
+          <block dr="{aperture}" dz="0.01603" material="AlAs:Si=2e+18" name="aperture"/>
+          <block dr="{mesaRadius-aperture}" dz="0.01603" material="AlxOy" name="oxide"/>
+        </shelf>
+        <block dr="{mesaRadius}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
+        <block dr="{mesaRadius}" dz="0.11756" material="GaAs:Si=5e+17"/>
+        <stack role="active" name="junction">
+          <block dr="{mesaRadius}" dz="0.005" material="InGaAsQW" role="QW"/>
+          <stack repeat="4">
+            <block dr="{mesaRadius}" dz="0.005" material="GaAs"/>
+            <block dr="{mesaRadius}" dz="0.005" material="InGaAsQW" role="QW"/>
+          </stack>
+        </stack>
+        <block dr="{mesaRadius}" dz="0.11756" material="GaAs:C=5e+17"/>
+        <stack name="bottom-DBR" repeat="29">
+          <block dr="{mesaRadius}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
+          <block dr="{mesaRadius}" dz="0.07003" material="GaAs:C=2e+18"/>
+        </stack>
+        <block dr="{mesaRadius}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
       </stack>
-      <block dr="10" dz="0.07945" material="Al(0.73)GaAs"/>
+      <zero/>
+      <block dr="200." dz="150." material="GaAs:C=2e+18"/>
+      <block dr="2500." dz="5000." material="Cu" name="p-contact"/>
     </stack>
+  </cylindrical2d>
+  <cylindrical2d axes="rz" name="GeoO" top="air" bottom="GaAs" outer="extend">
+    <again ref="VCSEL"/>
   </cylindrical2d>
 </geometry>
 
 <grids>
-  <mesh name="plot" type="rectangular2d">
-    <axis0 start="{-mesa}" stop="{mesa}" num="501"></axis0>
-    <axis1 start="2" stop="7" num="2001"></axis1>
-  </mesh>
-  <generator method="divide" name="test" type="rectangular2d">
-    <prediv by0="2"/>
+  <generator method="divide" name="default" type="rectangular2d">
+    <postdiv by0="3" by1="2"/>
+    <refinements>
+      <axis1 object="p-contact" at="50"/>
+      <axis0 object="oxide" at="-0.1"/>
+      <axis0 object="oxide" at="-0.05"/>
+      <axis0 object="aperture" at="0.1"/>
+    </refinements>
   </generator>
-  <mesh name="plot2" type="rectilinear2d">
-    <axis0 start="{-mesa}" stop="{mesa}" num="501"/>
-    <axis1 start="2" stop="7" num="2001"/>
+  <mesh name="diffusion" type="regular">
+    <axis start="0" stop="{mesaRadius}" num="2000"></axis>
   </mesh>
+  <generator method="divide" name="optical" type="rectangular2d">
+    <prediv by0="10" by1="3"/>
+  </generator>
+  <generator method="divide" name="plots" type="rectangular2d">
+    <postdiv by="30"/>
+  </generator>
 </grids>
 
 <solvers>
-  <optical name="efm" solver="EffectiveFrequencyCyl">
-    <geometry ref="main"/>
+  <thermal name="THERMAL" solver="StaticCyl">
+    <geometry ref="GeoTE"/>
+    <mesh ref="default"/>
+    <temperature>
+    <condition value="300." place="bottom"/>
+    <condition value="300." place="right"/>
+  </temperature>
+  </thermal>
+  <electrical solver="ShockleyCyl" name="ELECTRICAL">
+    <geometry ref="GeoTE"/>
+    <mesh ref="default"/>
+    <junction js="1" beta="11"/>
+    <voltage>
+      <condition value="2.0">
+        <place object="p-contact" side="bottom"/>
+      </condition>
+      <condition value="0.0">
+        <place object="n-contact" side="top"/>
+      </condition>
+    </voltage>
+  </electrical>
+  <electrical solver="DiffusionCyl" name="DIFFUSION">
+    <geometry ref="GeoO"/>
+    <mesh ref="diffusion"/>
+    <config fem-method="parabolic" accuracy="0.005"/>
+  </electrical>
+  <gain solver="FermiCyl" name="GAIN">
+    <geometry ref="GeoO"/>
+    <config lifetime="0.5" matrix-elem="8"/>
+  </gain>
+  <optical name="OPTICAL" solver="EffectiveFrequencyCyl">
+    <geometry ref="GeoO"/>
+    <mesh ref="optical"/>
     <mode lam0="980"/>
   </optical>
-  <thermal solver="StaticCyl" name="therm">
-    <geometry ref="main"/>
-    <mesh ref="test"/>
-  </thermal>
 </solvers>
 
-<connects/>
+<connects>
+  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>
+  <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>
+  <connect in="DIFFUSION.inTemperature" out="THERMAL.outTemperature"/>
+  <connect in="DIFFUSION.inCurrentDensity" out="ELECTRICAL.outCurrentDensity"/>
+  <connect in="GAIN.inTemperature" out="THERMAL.outTemperature"/>
+  <connect in="GAIN.inCarriersConcentration" out="DIFFUSION.outCarriersConcentration"/>
+  <connect in="OPTICAL.inTemperature" out="THERMAL.outTemperature"/>
+  <connect in="OPTICAL.inGain" out="GAIN.outGain"/>
+</connects>
 
 <script><![CDATA[
 import sys
 import scipy.optimize
 
-profile = StepProfile(GEO.main, default=0.)
-profile[GEO.gain_region] = 500.
+config.axes = 'rz'
 
-efm.inGain = profile.outGain
+def loss_on_voltage(voltage):
+    ELECTRICAL.invalidate()
+    ELECTRICAL.voltage_boundary[0].value = voltage[0]
+    verr = ELECTRICAL.compute(1)
+    terr = THERMAL.compute(1)
+    iters=0
+    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters<15:
+        verr = ELECTRICAL.compute(8)
+	terr = THERMAL.compute(1)
+        iters += 1
+    DIFFUSION.compute_threshold()
+    det_lams = linspace(OPTICAL.lam0-2, OPTICAL.lam0+2, 401)+0.2j*(voltage-0.5)/1.5
+    det_vals = abs(OPTICAL.get_determinant(det_lams, m=0))
+    det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \
+               np.r_[det_vals[:-1] < det_vals[1:], False] & \
+               np.r_[det_vals[:] < 1]
+    mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
+    mode_loss = OPTICAL.outLoss(mode_number)
+    print_log(LOG_RESULT,
+              'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
+              .format(voltage[0], ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
+    return mode_loss
+		
+OPTICAL.lam0 = 981.5
+OPTICAL.vat = 0
 
-def loss_on_gain(gain):
-    global profile, efm
-    profile[GEO.gain_region] = gain
-    mode_number = efm.find_mode(980.)
-    return efm.outLoss(mode_number)
+threshold_voltage = scipy.optimize.fsolve(loss_on_voltage, 1.5, xtol=0.01)
+loss_on_voltage(threshold_voltage)
+threshold_current = abs(ELECTRICAL.get_total_current())
+print_log(LOG_WARNING, "Vth = {:.3f}V    Ith = {:.3f}mA"
+                       .format(threshold_voltage, threshold_current))
 
-efm.lam0 = 980.
+geometry_width = GEO.GeoO.bbox.upper[0]
+geometry_height = GEO.GeoO.bbox.upper[1]
+RR = linspace(-geometry_width, geometry_width, 200)
+ZZ = linspace(0, geometry_height, 500)
+intensity_mesh = mesh.Rectangular2D(RR, ZZ)
 
-# threshold_gain = scipy.optimize.brentq(loss_on_gain, 0., 2500., xtol=0.1)
-threshold_gain = scipy.optimize.fsolve(loss_on_gain, 1000., xtol=0.1)[0]
-profile[GEO.gain_region] = threshold_gain
-mode_number = efm.find_mode(980.)
-mode_wavelength = efm.outWavelength(mode_number)
-print_log(LOG_INFO,
-          "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
-          .format(threshold_gain, mode_wavelength))
+IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, intensity_mesh)
+figure()
+plot_field(IntensityField, 100)
+plot_geometry(GEO.GeoO, mirror=True, color="w")
+gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.format(GEO["aperture"].dr))
+axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
+axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
+xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
+xlabel(u"r [\xb5m]")
+ylabel(u"z [\xb5m]")
 
-plot_geometry(efm.geometry, color='0.5', mirror=True)
-efm.modes[0].power = 10.
-plot_field(efm.outLightMagnitude(0, MSH.plot))
-ylim(2,7)
+
+new_aperture = 3.
+GEO["aperture"].dr = new_aperture
+GEO["oxide"].dr = DEF["mesaRadius"] - new_aperture
+
+OPTICAL.lam0=982.
+threshold_voltage = scipy.optimize.brentq(loss_on_voltage, 0.5, 2., xtol=0.01)
+loss_on_voltage(threshold_voltage)
+threshold_current = abs(ELECTRICAL.get_total_current())
+print_log(LOG_WARNING, "Vth = {:.3f}V    Ith = {:.3f}mA"
+                       .format(threshold_voltage, threshold_current))
+
+IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, intensity_mesh)
+figure()
+plot_field(IntensityField, 100)
+plot_geometry(GEO.GeoO, mirror=True, color="w")
+gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.format(GEO["aperture"].dr))
+axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
+axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
+xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
+xlabel(u"r [\xb5m]")
+ylabel(u"z [\xb5m]")
+
+figure()
+plot_geometry(GEO.GeoTE, set_limits=True)
+gcf().canvas.set_window_title("GEO TE")
+
+figure()
+plot_geometry(GEO.GeoTE, set_limits=True)
+defmesh = MSG.default(GEO.GeoTE.item)
+plot_mesh(defmesh, color="0.75")
+plot_boundary(ELECTRICAL.voltage_boundary, defmesh, ELECTRICAL.geometry, color="b", marker="D")
+plot_boundary(THERMAL.temperature_boundary, defmesh, THERMAL.geometry, color="r")
+gcf().canvas.set_window_title("Default mesh")
+
 show()
+
 ]]></script>
 
 </plask>

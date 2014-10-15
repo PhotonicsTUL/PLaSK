@@ -9,27 +9,3 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-from gui import solvers
-
-Static = {
-    'desc': 'Static thermal solver based on finite-element method.',
-    'mesh': True,
-    'conf': (
-        ('loop', 'Self-consistent loop', (
-            ('inittemp', 'Initial temperature [K]'),
-            ('maxerr', 'Maximum allowed error [K]'))),
-        ('matrix', 'Matrix solver', (
-            ('algorithm', 'Solution algorithm', ('cholesky', 'gauss', 'iterative')),
-            ('itererr', 'Max. iterative residual error'),
-            ('iterlim', 'Max. number of iterations'),
-            ('logfreq', 'Progress logging frequency'))),
-        ('temperature', 'Thermal boundary conditions', ()),  # TODO
-        ('heatflux', 'Heat flux boundary conditions', ()),  # TODO
-        ('convection', 'Convective boundary conditions', ()),  # TODO
-        ('radiation', 'Radiative boundary conditions', ()),  # TODO
-    ),
-    'flow': ('inHeat', 'outTemperature'),
-}
-
-#solvers.register_config('thermal', Static2D=Static, StaticCyl=Static, Static3D=Static)

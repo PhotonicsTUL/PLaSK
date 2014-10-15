@@ -15,8 +15,12 @@ from ..qt.QtGui import QSplitter, QItemSelectionModel
 from ..qt.QtCore import Qt
 
 from ..utils.widgets import table_last_col_fill
+from ..utils.textedit import TextEdit
+from ..utils.widgets import DEFAULT_FONT
+from ..external.highlighter import SyntaxHighlighter, load_syntax
 from . import Controller
 from .table import table_with_manipulators
+from .source import scheme, syntax
 
 
 class SolverAutoWidget(QtGui.QScrollArea):
@@ -64,21 +68,32 @@ class SolverAutoWidget(QtGui.QScrollArea):
             font.setBold(True)
             label.setFont(font)
             layout.addRow(label)
-            for item in items:
-                if len(item) == 3:
-                    attr, text, choices = item
-                    edit = QtGui.QComboBox()
-                    edit.setEditable(True)
-                    edit.addItems([''] + list(choices))
-                    edit.textChanged.connect(self.controller.fire_changed)
-                    edit.currentIndexChanged.connect(self.controller.fire_changed)
-                else:
-                    attr, text = item
-                    edit = QtGui.QLineEdit()
-                    edit.textEdited.connect(self.controller.fire_changed)
-                edit.setToolTip(attr)
-                self.controls[group, attr] = edit
-                layout.addRow(text + ':', edit)
+            if type(items) in (tuple, list):
+                for item in items:
+                    if len(item) == 3:
+                        attr, text, choices = item
+                        edit = QtGui.QComboBox()
+                        edit.setEditable(True)
+                        edit.addItems([''] + list(choices))
+                        edit.textChanged.connect(self.controller.fire_changed)
+                        edit.currentIndexChanged.connect(self.controller.fire_changed)
+                    else:
+                        attr, text = item
+                        edit = QtGui.QLineEdit()
+                        edit.textEdited.connect(self.controller.fire_changed)
+                    edit.setToolTip(attr)
+                    self.controls[group, attr] = edit
+                    layout.addRow(text + ':', edit)
+            else:
+                edit = TextEdit(parent, line_numbers=False)
+                font = QtGui.QFont(DEFAULT_FONT)
+                font.setPointSize(font.pointSize()-1)
+                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme),
+                                                     default_font=font)
+                edit.setToolTip(group)
+                self.controls[group] = edit
+                layout.addRow(edit)
+                edit.textChanged.connect(self.controller.fire_changed)
 
         main = QtGui.QWidget()
         main.setLayout(layout)
@@ -96,18 +111,25 @@ class SolverAutoWidget(QtGui.QScrollArea):
     def load_data(self):
         model = self.controller.model
         config = model.config
+        self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
         self.geometry.setEditText(model.geometry)
         if self.mesh is not None:
+            self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
             self.mesh.setEditText(model.mesh)
         for group, _, items in config['conf']:
-            for item in items:
-                attr = item[0]
-                edit = self.controls[group, attr]
-                value = model.data[group][attr]
-                if type(edit) == QtGui.QComboBox:
-                    edit.setEditText(value)
-                else:
-                    edit.setText(value)
+            if type(items) in (tuple, list):
+                for item in items:
+                    attr = item[0]
+                    edit = self.controls[group, attr]
+                    value = model.data[group][attr]
+                    if type(edit) == QtGui.QComboBox:
+                        edit.setCurrentIndex(edit.findText(value))
+                        edit.setEditText(value)
+                    else:
+                        edit.setText(value)
+            else:
+                edit = self.controls[group]
+                edit.setPlainText(model.data[group])
 
     def save_data(self):
         model = self.controller.model
@@ -116,11 +138,17 @@ class SolverAutoWidget(QtGui.QScrollArea):
         if self.mesh is not None:
             model.mesh = self.mesh.currentText()
         for group, _, items in config['conf']:
-            for item in items:
-                attr = item[0]
-                edit = self.controls[group, attr]
-                if type(edit) == QtGui.QComboBox:
-                    model.data[group][attr] = edit.currentText()
+            if type(items) in (tuple, list):
+                for item in items:
+                    attr = item[0]
+                    edit = self.controls[group, attr]
+                    if type(edit) == QtGui.QComboBox:
+                        model.data[group][attr] = edit.currentText()
+                    else:
+                        model.data[group][attr] = edit.text()
+            else:
+                edit = self.controls[group]
+                model.data[group] = edit.toPlainText()
 
 
 class ConfSolverController(Controller):
@@ -139,14 +167,16 @@ class ConfSolverController(Controller):
 
     def on_edit_enter(self):
         #TODO update geometry list
+        self.notify_changes = False
         try:
             #TODO select only meshes/generators of proper dimensions
-            grids = [m.name for m in self.document.grids.model.entries]
+            mesh_type = self.model.config.get('mesh')
+            if mesh_type is not None: mesh_type = mesh_type.lower()
+            grids = [m.name for m in self.document.grids.model.entries if m.type == mesh_type]
             self.widget.mesh.clear()
             self.widget.mesh.addItems([''] + grids)
         except AttributeError:
             pass
-        self.notify_changes = False
         self.widget.load_data()
         self.notify_changes = True
 

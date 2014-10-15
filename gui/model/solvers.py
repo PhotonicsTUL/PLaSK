@@ -82,7 +82,6 @@ class TreeFragmentSolver(Solver):
 
     def set_xml_element(self, element):
         self.element = element
-    #    self.fireChanged()    #TODO ???
 
     def get_xml_element(self):
         return self.element
@@ -130,7 +129,10 @@ class ConfSolver(Solver):
             self.lib = config['lib']
         except KeyError:
             pass
-        self.data = dict((tag, dict((a[0], '') for a in attrs)) for (tag,_,attrs) in self.config['conf'])
+        self.data = dict((tag,
+                          dict((a[0], '') for a in attrs) if type(attrs) in (tuple, list) else
+                          ''  # TODO add proper support for boundary conditions
+                         ) for (tag,_,attrs) in self.config['conf'])
 
     def get_xml_element(self):
         element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
@@ -141,9 +143,18 @@ class ConfSolver(Solver):
         if self.mesh:
             etree.SubElement(element, 'mesh', {'ref': self.mesh})
         for tag,_,_ in self.config['conf']:
-            attrs = dict((item for item in self.data[tag].items() if item[1]))
-            if attrs:
-                etree.SubElement(element, tag, attrs)
+            data = self.data[tag]
+            if type(data) is dict:
+                attrs = dict((item for item in data.items() if item[1]))
+                if attrs:
+                    etree.SubElement(element, tag, attrs)
+            else:
+                if data:
+                    lines = data.encode('utf-8').split('\n')
+                    if not lines[-1]: lines = lines[:-1]
+                    lines = '\n    '.join(lines)
+                    el = etree.fromstringlist(['<', tag, '>\n    ', lines, '\n  </', tag, '>'])
+                    element.append(el)
         return element
 
     def set_xml_element(self, element):
@@ -157,9 +168,12 @@ class ConfSolver(Solver):
                 #TODO report missing or missmatching mesh
             else:
                 data = self.data[el.tag]
-                with AttributeReader(el) as attr:
-                    for name in data:
-                        data[name] = attr.get(name, '')
+                if type(data) is dict:
+                    with AttributeReader(el) as attr:
+                        for name in data:
+                            data[name] = attr.get(name, '')
+                else:
+                    self.data[el.tag] = print_interior(el)
 
     def get_controller(self, document):
         return ConfSolverController(document, self)
@@ -191,7 +205,6 @@ class SolversModel(TableModel):
             return TreeFragmentSolver(element, self)
         else:
             return factory(element=element, parent=self)
-
 
     def set_xml_element(self, element):
         self.layoutAboutToBeChanged.emit()
