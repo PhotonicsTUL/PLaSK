@@ -76,9 +76,10 @@
   <generator method="divide" name="optical" type="rectangular2d">
     <prediv by0="10" by1="3"/>
   </generator>
-  <generator method="divide" name="plots" type="rectangular2d">
-    <postdiv by="30"/>
-  </generator>
+  <mesh name="plots" type="rectangular2d">
+    <axis0></axis0>
+    <axis1></axis1>
+  </mesh>
 </grids>
 
 <solvers>

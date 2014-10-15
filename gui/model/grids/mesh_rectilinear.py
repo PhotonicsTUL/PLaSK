@@ -70,7 +70,6 @@ class RectangularMesh1D(Grid):
         return RectangularMesh1DConroller(document=document, model=self)
 
 
-
 class RectangularMesh(Grid):
     """Model of 2D and 3D rectangular mesh"""
 

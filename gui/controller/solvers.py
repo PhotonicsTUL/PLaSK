@@ -47,6 +47,8 @@ class SolverAutoWidget(QtGui.QScrollArea):
         self.geometry.setEditable(True)
         self.geometry.textChanged.connect(self.controller.fire_changed)
         self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
+        self.geometry.setToolTip('&lt;<b>geometry ref</b>=""&gt;<br/>'
+                                 'Name of the existing geometry for use by this solver.')
         #TODO make sure the list is up-to date; add some graphical thumbnail
         layout.addRow("Geometry:", self.geometry)
 
@@ -55,6 +57,8 @@ class SolverAutoWidget(QtGui.QScrollArea):
             self.mesh.setEditable(True)
             self.mesh.textChanged.connect(self.controller.fire_changed)
             self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
+            self.mesh.setToolTip('&lt;<b>mesh ref</b>=""&gt;<br/>'
+                                 'Name of the existing {} mesh for use by this solver.'.format(config['mesh']))
             #TODO add some graphical thumbnail
             layout.addRow("Mesh:", self.mesh)
         else:
@@ -70,18 +74,18 @@ class SolverAutoWidget(QtGui.QScrollArea):
             layout.addRow(label)
             if type(items) in (tuple, list):
                 for item in items:
-                    if len(item) == 3:
-                        attr, text, choices = item
+                    if len(item) == 4:
+                        attr, text, help, choices = item
                         edit = QtGui.QComboBox()
                         edit.setEditable(True)
                         edit.addItems([''] + list(choices))
                         edit.textChanged.connect(self.controller.fire_changed)
                         edit.currentIndexChanged.connect(self.controller.fire_changed)
                     else:
-                        attr, text = item
+                        attr, text, help = item
                         edit = QtGui.QLineEdit()
                         edit.textEdited.connect(self.controller.fire_changed)
-                    edit.setToolTip(attr)
+                    edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(group, attr, help))
                     self.controls[group, attr] = edit
                     layout.addRow(text + ':', edit)
             else:
@@ -90,7 +94,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme),
                                                      default_font=font)
-                edit.setToolTip(group)
+                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(group, desc))
                 self.controls[group] = edit
                 layout.addRow(edit)
                 edit.textChanged.connect(self.controller.fire_changed)

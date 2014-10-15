@@ -14,22 +14,28 @@ from gui import solvers
 
 Static = {
     'desc': 'Static thermal solver based on finite-element method.',
-    'mesh': 'Rectangular2D',
-    'conf': (
+    u'mesh': 'Rectangular2D',
+    u'conf': (
         ('loop', 'Self-consistent loop', (
-            ('inittemp', 'Initial temperature [K]'),
-            ('maxerr', 'Maximum allowed error [K]'))),
+            ('inittemp', 'Initial temperature [K]',
+             u'Initial temperature used for the first computation. (float&nbsp;[K])'),
+            ('maxerr', 'Maximum allowed error [K]',
+             u'Maximum allowed error in a self-consistent loop. (float&nbsp;[K])'))),
         ('matrix', 'Matrix solver', (
-            ('algorithm', 'Solution algorithm', ('cholesky', 'gauss', 'iterative')),
-            ('itererr', 'Max. iterative residual error'),
-            ('iterlim', 'Max. number of iterations'),
-            ('logfreq', 'Progress logging frequency'))),
+            ('algorithm', 'Solution algorithm',
+             u'Algorithm used for solving set of linear positive-definite equations.', ('cholesky', 'gauss', 'iterative')),
+            ('itererr', 'Max. residual error',
+             u'Maximum allowed residual error for the iterative algorithm. (float&nbsp;[-])'),
+            ('iterlim', 'Max. number of iterations',
+             u'Maximum number of iterations for the iterative algorithm. (int)'),
+            ('logfreq', 'Progress logging frequency',
+             u'Number of iterations after which the progress is logged. (int)'))),
         ('temperature', 'Thermal boundary conditions', None),  # TODO
         ('heatflux', 'Heat flux boundary conditions', None),  # TODO
         ('convection', 'Convective boundary conditions', None),  # TODO
         ('radiation', 'Radiative boundary conditions', None),  # TODO
     ),
-    'flow': ('inHeat', 'outTemperature'),
+    u'flow': ('inHeat', 'outTemperature'),
 }
 
 solvers.register_config('thermal', Static2D=Static, StaticCyl=Static, Static3D=Static)

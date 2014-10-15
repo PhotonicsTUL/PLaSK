@@ -16,34 +16,47 @@ from ...qt import QtGui
 from ...utils.str import empty_to_none
 
 
+AXIS_NAMES = [
+    [''], ['horizontal', 'vertical'], ['longitudinal', 'transverse', 'vertical']
+]
+
+
 class AxisEdit(QtGui.QGroupBox):
 
-    def __init__(self, title, controller, allow_type_select=False, accept_non_regular=False, axis_model=None):
-        super(AxisEdit, self).__init__(title)
+    def __init__(self, axis, controller, title=None, allow_type_select=False, accept_non_regular=False, axis_model=None):
+        super(AxisEdit, self).__init__(title if title is not None else axis)
+        if axis is None: axis = 'axis'
         form_layout = QtGui.QFormLayout()
         self.allow_type_select = allow_type_select
         if not allow_type_select: self.accept_non_regular = accept_non_regular
         if self.allow_type_select:
             self.type = QtGui.QComboBox()
             self.type.addItems(['(auto-detected)', 'ordered', 'regular'])
-            self.setToolTip('Type of axis. If auto-detected is selected, axis will be regular only if any of the start, stop or num attributes are specified (in other case it will be ordered).')
+            self.type.setToolTip('&lt;{} <b>type</b>=""&gt;<br/>'
+                                 'Type of axis. If auto-detected is selected, axis will be regular only if any of the '
+                                 'start, stop or num attributes are specified (in other case it will be ordered).'
+                                 .format(axis))
             self.type.currentIndexChanged.connect(controller.fire_changed)
             form_layout.addRow("Axis type:", self.type)
         self.start = QtGui.QLineEdit()
-        self.start.setToolTip(u'Position of the first point on the axis. (float [µm])')
+        self.start.setToolTip(u'&lt;{} <b>start</b>="" stop="" num=""&gt;<br/>'
+                              u'Position of the first point on the axis. (float [µm])'.format(axis))
         self.start.textEdited.connect(controller.fire_changed)
         form_layout.addRow("Start:", self.start)
         self.stop = QtGui.QLineEdit()
-        self.stop.setToolTip(u'Position of the last point on the axis. (float [µm])')
+        self.stop.setToolTip(u'&lt;{} start="" <b>stop</b>="" num=""&gt;\n'
+                             u'Position of the last point on the axis. (float [µm])'.format(axis))
         self.stop.textEdited.connect(controller.fire_changed)
         form_layout.addRow("Stop:", self.stop)
         self.num = QtGui.QLineEdit()
-        self.num.setToolTip('Number of the equally distributed points along the axis. (integer)')
+        self.num.setToolTip('&lt;{} start="" stop="" <b>num</b>=""&gt;<br/>'
+                            'Number of the equally distributed points along the axis. (integer)'.format(axis))
         self.num.textEdited.connect(controller.fire_changed)
         form_layout.addRow("Num:", self.num)
         if allow_type_select or accept_non_regular:
             self.points = QtGui.QTextEdit()
-            self.points.setToolTip('Comma-separated list of the mesh points along this axis.')
+            self.points.setToolTip('&lt;{0}&gt;<b><i>points</i></b>&lt;/{0}&gt;<br/>'
+                                   'Comma-separated list of the mesh points along this axis.'.format(axis))
             self.points.textChanged.connect(controller.fire_changed)
             #self.points.setWordWrapMode(QtGui.QTextEdit.LineWrapMode)
             form_layout.addRow("Points:", self.points)
@@ -114,7 +127,9 @@ class RectangularMeshConroller(Controller):
         vbox = QtGui.QVBoxLayout()
         self.axis_edit = []
         for i in range(0, model.dim):
-            self.axis_edit.append(AxisEdit(model.axis_tag_name(i), self, allow_type_select=True))
+            self.axis_edit.append(AxisEdit(model.axis_tag_name(i), self,
+                                           title=AXIS_NAMES[model.dim-1][i].title() + ' axis',
+                                           allow_type_select=True))
             vbox.addWidget(self.axis_edit[-1])
         vbox.addStretch()
         self.form.setLayout(vbox)

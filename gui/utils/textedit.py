@@ -42,9 +42,18 @@ class TextEdit(QtGui.QPlainTextEdit):
             self.line_numbers.setGeometry(QtCore.QRect(cr.left(), cr.top(),
                                                        self.line_numbers.get_width(), cr.height()))
 
+    def focusInEvent(self, event):
+        super(TextEdit, self).focusInEvent(event)
+        self.highlight_current_line()
+
+    def focusOutEvent(self, event):
+        super(TextEdit, self).focusOutEvent(event)
+        self.highlight_current_line()
+
     def highlight_current_line(self):
         selection = QtGui.QTextEdit.ExtraSelection()
-        selection.format.setBackground(CURRENT_LINE_COLOR)
+        if self.hasFocus():
+            selection.format.setBackground(CURRENT_LINE_COLOR)
         selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()

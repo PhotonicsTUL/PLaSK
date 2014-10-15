@@ -24,8 +24,8 @@ class RefinementConf(object):
     attributes_names = ['object', 'path', 'at', 'by', 'every']
     all_attributes_names = ['axis'] + attributes_names
     all_attributes_help = [
-        'Name of axis where refinement should be added.',
-        'Name of the geometry object to add additional division to. (required)',
+        'Name of the axis where the refinement should be added.',
+        'Name of the geometry object to add the additional division to. (required)',
         'Path name, specifying particular instance of the object given in the object attribute.',
         'If this is given, a single refinement line is placed at the position specified in it (in the local object coordinates).',
         'If this is given, multiple refinement lines are placed dividing the object into a specified number of equal parts.',
@@ -88,7 +88,12 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             return self.get(index.column(), index.row())
         if role == QtCore.Qt.ToolTipRole:
-            return RefinementConf.all_attributes_help[index.column()]
+            col = index.column()
+            attr = ('</b>... ', '<b>object</b>=""', '<b>path</b>=""',
+                    '<b>at</b>=""', '<b>by</b>=""', '<b>every</b>=""')[col]
+            return '&lt;{1}axis{0} {2}&gt;<br/>{3}'.format(
+                self.get(0, index.row()), '<b>' if col == 0 else '', attr,
+                RefinementConf.all_attributes_help[col])
 
     def set(self, col, row, value):
         self.entries[row].set_attr_by_index(col, value)
@@ -107,7 +112,7 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
     def headerData(self, col, orientation, role):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             try:
-                return RefinementConf.all_attributes_names[col]
+                return RefinementConf.all_attributes_names[col].title()
             except IndexError:
                 return None
 

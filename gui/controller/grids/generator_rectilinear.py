@@ -10,19 +10,16 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from .mesh_rectilinear import AXIS_NAMES
 from .. import Controller
 from ..table import table_with_manipulators
 from ...model.grids.generator_rectilinear import RectilinearDivideGenerator
 from ...qt import QtGui
 from ...utils.str import empty_to_none
 
-
 class RectilinearDivideGeneratorConroller(Controller):
-    """ordered and rectangular 2D and 3D divide generator script"""
+    """Ordered and rectangular 2D and 3D divide generator script."""
 
-    axes_names = [
-        [""], ["horizontal", "vertical"], ["longitudinal", "transverse", "vertical"]
-    ]
 
     warning_help = {
         'missing': 'Warn if any refinement references to non-existing object. Defaults to true.',
@@ -34,11 +31,11 @@ class RectilinearDivideGeneratorConroller(Controller):
         hbox_div = QtGui.QHBoxLayout()
         res = tuple(QtGui.QLineEdit() for _ in range(0, self.model.dim))
         for i,r in enumerate(res):
-            axis_name = RectilinearDivideGeneratorConroller.axes_names[self.model.dim-1][i]
+            axis_name = AXIS_NAMES[self.model.dim-1][i]
             # hbox_div.addWidget(QtGui.QLabel('by {}{}:'.format(i, ' (' + axis_name + ')' if axis_name else '')))
             hbox_div.addWidget(QtGui.QLabel('{}:'.format(axis_name if axis_name else str(i))))
             hbox_div.addWidget(r)
-            r.setToolTip(tooltip.format(' in {} direction'.format(axis_name) if axis_name else ''))
+            r.setToolTip(tooltip.format('by{}'.format(i), ' in {} direction'.format(axis_name) if axis_name else ''))
             r.textEdited.connect(self.fire_changed)
         container_to_add.addRow(label, hbox_div)
         return res
@@ -56,14 +53,17 @@ class RectilinearDivideGeneratorConroller(Controller):
         self.gradual.textChanged.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
-        self.gradual.setToolTip("Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated"
-                                " mesh may differ more than by the factor of two). Gradual is enabled by default.")
-        form_layout.addRow("Gradual change:", self.gradual)
+        self.gradual.setToolTip('&lt;<b>gradual all</b>=""&gt;<br/>'
+                                'Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated'
+                                ' mesh may differ more than by the factor of two). Gradual is enabled by default.')
+        form_layout.addRow('Gradual change:', self.gradual)
 
-        self.prediv = self._make_div_hbox(form_layout, "Pre-refining divisions:",
-                                          "Set number of the initial divisions of each geometry object{}.")
-        self.postdiv = self._make_div_hbox(form_layout, "Post-refining divisions:",
-                                           "Set number of the final divisions of each geometry object{}.")
+        self.prediv = self._make_div_hbox(form_layout, 'Pre-refining divisions:',
+                                          '&lt;<b>prediv {}</b>=""&gt;<br/>'
+                                          'Set number of the initial divisions of each geometry object{}.')
+        self.postdiv = self._make_div_hbox(form_layout, 'Post-refining divisions:',
+                                           '&lt;<b>postdiv {}</b>=""&gt;<br/>'
+                                           'Set number of the final divisions of each geometry object{}.')
 
         warnings_layout = QtGui.QHBoxLayout()
         for w in RectilinearDivideGenerator.warnings:
@@ -72,7 +72,8 @@ class RectilinearDivideGeneratorConroller(Controller):
             cb.textChanged.connect(self.fire_changed)
             cb.addItems(['', 'true', 'false'])
             cb.setEditable(True)
-            cb.setToolTip(RectilinearDivideGeneratorConroller.warning_help.get(w, ''))
+            cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
+                          RectilinearDivideGeneratorConroller.warning_help.get(w, ''))
             setattr(self, 'warning_'+w, cb)
             label = QtGui.QLabel(w+':')
             label.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
@@ -85,7 +86,7 @@ class RectilinearDivideGeneratorConroller(Controller):
 
         self.refinements = QtGui.QTableView()
         self.refinements.setModel(model.refinements)
-        vbox.addWidget(table_with_manipulators(self.refinements, title="Refinements:"))
+        vbox.addWidget(table_with_manipulators(self.refinements, title='Refinements:'))
 
         #vbox.addStretch()
         self.form.setLayout(vbox)
