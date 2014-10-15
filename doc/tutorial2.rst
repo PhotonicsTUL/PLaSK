@@ -276,6 +276,10 @@ The complete Python script (with some clean-ups) for this tutorial is presented 
                 "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
                 .format(threshold_gain, mode_wavelength))
 
+.. rubric:: Example files
+
+You can download the complete files from this tutorial: :download:`tutorial2.xpl <tutorial2.xpl>`, :download:`tutorial2.py <tutorial2.py>`.
+
 .. rubric:: Footnotes
 .. [#module-sys] In Python modules are some external libraries that extend its functionality. The ``sys`` module give access to many system function and objects.
 .. [#hyphens-in-py] Both these forms can be used simultaneously. However, with the attribute access you must replace any hyphens in the name (``-``) with the underscore (``_``). So ``GEO["the-geometry"]`` is equivalent to ``GEO.the_geometry``.

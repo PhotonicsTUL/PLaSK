@@ -3,7 +3,7 @@
 Finding the threshold current of a gallium-arsenide VCSEL
 ---------------------------------------------------------
 
-In this tutorial we will perform a full thermo-electro-optical modelling of a VCSEL structure to find it's threshold current.
+In this tutorial we will perform a full thermo-electro-optical modeling of a VCSEL structure to find it's threshold current.
 
 Analyzed structure
 ^^^^^^^^^^^^^^^^^^
@@ -222,9 +222,9 @@ We could now run our calculations. However, it is a good habit, to check the geo
    plot_geometry(GEO.GeoTE, set_limits=True)
    defmesh = MSG.default(GEO.GeoTE.item)
    plot_mesh(defmesh, color="0.75")
-   plot_boundary(ELECTRICAL.voltage_boundary, defmesh, 
+   plot_boundary(ELECTRICAL.voltage_boundary, defmesh,
                  ELECTRICAL.geometry, color="b", marker="D")
-   plot_boundary(THERMAL.temperature_boundary, defmesh, 
+   plot_boundary(THERMAL.temperature_boundary, defmesh,
                  THERMAL.geometry, color="r")
    gcf().canvas.set_window_title("Default mesh")
 
@@ -287,9 +287,9 @@ Then we can move directly to defining a function for the Brent root-finding algo
                   np.r_[det_vals[:] < 1]
        mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
        mode_loss = OPTICAL.outLoss(mode_number)
-       print_log(LOG_RESULT, 
+       print_log(LOG_RESULT,
 	    'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
-	    .format(voltage, ELECTRICAL.get_total_current(), 
+	    .format(voltage, ELECTRICAL.get_total_current(),
                     OPTICAL.outWavelength(mode_number), mode_loss))
        return mode_loss
 
@@ -353,7 +353,7 @@ We might want to visualise the found mode at the threshold. For this we have to 
    ZZ = linspace(0, geometry_height, 500)
    intensity_mesh = mesh.Rectangular2D(RR, ZZ)
 
-   IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, 
+   IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1,
                                               intensity_mesh)
    figure()
    plot_field(IntensityField, 100)
@@ -399,7 +399,7 @@ Now we just have to repeat the calculations with the drawing part and to move th
    print_log(LOG_WARNING, "Vth = {:.3f}V    Ith = {:.3f}mA"
                           .format(threshold_voltage, threshold_current))
 
-   IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1, 
+   IntensityField = OPTICAL.outLightMagnitude(len(OPTICAL.outWavelength)-1,
                                               intensity_mesh)
    figure()
    plot_field(IntensityField, 100)
@@ -414,5 +414,9 @@ Now we just have to repeat the calculations with the drawing part and to move th
 
    show()
 
-.. rubic:: Footnotes
+.. rubric:: Example files
+
+You can download the complete files from this tutorial: :download:`tutorial3.xpl <tutorial3.xpl>`, :download:`tutorial3.py <tutorial3.py>`.
+
+.. rubric:: Footnotes
 .. [#disable-warning] It is possible to disable warning, for this please refer to the documentation of the generator :xml:tag:`<warnings>` tag.

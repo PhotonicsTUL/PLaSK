@@ -401,6 +401,10 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
 
         show()
 
+.. rubric:: Example files
+
+You can download the complete file from this tutorial: :download:`tutorial1.xpl <tutorial1.xpl>`.
+
 .. rubric:: Footnotes
 .. [#run-py-file] Actually it is possible to run the computations without creating :term:`XPL` file at all, as everything can be defined using Python, however, this option will be presented later.
 .. [#rect-mesh-skip-empty] Actually this is true only for rectangular meshes. There are special mesh types in PLaSK, which can skip empty areas from computations.

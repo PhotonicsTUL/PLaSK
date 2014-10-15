@@ -13,7 +13,16 @@ Instalation
 
 Windows
 ^^^^^^^
-Install complete Python distribution. We recommend Anaconda from Continuum Analytics (https://store.continuum.io/cshop/anaconda/). While installing select "Register Anaconda as default Python version of the system" option. Then run the PLaSK installer provided. We recommend selecting "Add PLaSK to the system PATH for all users" and "Create PLaSK Desktop Icon" options.
+In order to install PLaSK on MS Windows, perform two steps:
+
+1. Install Anaconda Python Distribution (please use 64-bit installer) version 1.9.2 (Do not install 2.x.x version). While installing select “Register Anaconda as default Python version of the system” option. Do not install Anaconda in the folder with any spaces in the name (e.g. C:\Program Files\)! This step needs to be performed only once.
+
+2. Download and install latest build of the PLaSK Windows binary. This should be done each time the new version is issued (PLaSK graphical launcher will inform you about it automatically).
+
+.. note::
+
+   PLaSK for Windows is 64-bit now. You must use 64 Windows (most probably you are) and install 64-bit Python to be able to use it!
+
 
 .. _sec-Instalation-Linux:
 
@@ -22,27 +31,22 @@ Linux systems
 
 DEB based distros (Debian, Ubuntu, Mint, etc.)
 """"""""""""""""""""""""""""""""""""""""""""""
-Run the following commands:
+First download the package You should choose the correct one for your architecture (amd64 or i386) and Linux version.
+
+Then issue the following commands:
 
 .. code-block:: bash
 
-	$ sudo apt-get install g++ libboost-all-dev libexpat1-dev subversion \
-	  cmake cmake-qt-gui doxygen libeigen3-dev libopenblas-dev liblapack-dev \
-	  liblapacke-dev libfftw3-dev python python-numpy python-scipy \
-	  python-matplotlib python-h5py python-pyside ipython libqt4-dev python-rope
-	$ cd your/choosen/directory/for/project
-	$ svn checkout https://phys.p.lodz.pl/svn/plask/trunk .
-	$ mkdir build
-	$ cd build
-	$ cmake ..
-	$ make -j4
-	$ sudo make install
+   $ sudo apt-get install libexpat1 libboost-python-dev libboost-system-dev \
+                          libboost-filesystem-dev libopenblas-base liblapack3 python-numpy \
+                          ipython python-matplotlib python-h5py python-rope python-jedi
 
-And so far that's all.
+   $ sudo dpkg -i your_downloaded_file.deb
 
-RPM based distros
-"""""""""""""""""
-TODO
+where your_downloaded_file.deb is the file name of the downloaded package.
+
+If there is no error, you can run PLaSK.
+
 
 .. _sec-Running-PLaSK:
 
@@ -54,13 +58,13 @@ In Linux :term:`shell` or MACOS terminal:
 
 .. code-block:: bash
 
-	joe@cray:~/laser$ plask vcsel.xpl 10
+   joe@cray:~/laser$ plask vcsel.xpl 10
 
 In Windows from the Command Prompt:
 
 .. code-block:: bat
 
-	C:\Users\joe\laser> "C:\Program Files\PLaSK\bin\plask.exe" vcsel.xpl 10
+   C:\Users\joe\laser> "C:\Program Files\PLaSK\bin\plask.exe" vcsel.xpl 10
 
 Such command-line invocation can be used to run PLaSK locally, but is also useful in HPC clusters with any kind of batch queue. In the latter case make sure that you provide the command plask :file:`your_file.xpl` to the queue, adding absolute or relative paths to files where necessary. PLaSK looks for all its system files in location relative to the main binary, so there is no need to install it in the default system location (although it is recommended). The following example shows how to add the command to the queue in a one of popular batch systems like Torque or SGE (it is assumed that PLaSK is installed in user home directory in the subdirectory :file:`plask`):
 
