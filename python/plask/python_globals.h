@@ -106,8 +106,20 @@ bool __is__(const shared_ptr<T>& a, const shared_ptr<T>& b) {
     return a == b;
 }
 
+
 // ----------------------------------------------------------------------------------------------------------------------
 inline py::object pass_through(const py::object& o) { return o; }
+
+
+// ----------------------------------------------------------------------------------------------------------------------
+struct PredicatePythonCallable {
+    py::object callable;
+    PredicatePythonCallable(const py::object& callable): callable(callable) {};
+    bool operator()(const GeometryObject& obj) const {
+        return py::extract<bool>(callable(const_pointer_cast<GeometryObject>(obj.shared_from_this())));
+    }
+};
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Format complex numbers in Python way

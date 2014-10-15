@@ -30,6 +30,22 @@ template <> struct Space_getMaterial<Geometry3D> {
     }
 };
 
+template <typename SpaceType>
+static py::list Space_getMatching(const shared_ptr<SpaceType>& self, const py::object& callable) {
+    std::vector<shared_ptr<const GeometryObject>> objs = self->getChild()->getObjects(PredicatePythonCallable(callable));
+    py::list result;
+    for (auto i: objs) result.append(const_pointer_cast<GeometryObject>(i));
+    return result;
+}
+
+template <typename SpaceType>
+static py::list Space_getWithRole(const shared_ptr<SpaceType>& self, const std::string& role) {
+    std::vector<shared_ptr<const GeometryObject>> objs = self->getChild()->getObjects(GeometryObject::PredicateHasRole(role));
+    py::list result;
+    for (auto i: objs) result.append(const_pointer_cast<GeometryObject>(i));
+    return result;
+}
+
 template <typename S> struct Space_getPathsTo {
     static inline GeometryObject::Subtree call(const S& self, double c0, double c1, bool all) {
         return self.getPathsAt(Vec<2,double>(c0, c1), all);
@@ -435,6 +451,28 @@ void register_calculation_spaces() {
              "Returns:\n"
              "    Material at the specified point."
             )
+        .def("get_matching_objects", &Space_getMatching<Geometry2DCartesian>, py::arg("cond"),
+             "Get list of the geometry tree objects matching condition.\n\n"
+             "This method returns all the objects in the geometry tree that match the specified\n"
+             "condition.\n\n"
+             "Args:\n"
+             "    cond: Python callable that accepts a geometry object and returns Boolean\n"
+             "          indicating whether the object should be returned by this method or not.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
+        .def("get_role_objects", &Space_getWithRole<Geometry2DCartesian>, py::arg("role"),
+             "Get list of the geometry tree objects that have the specified role.\n\n"
+             "This method returns all the objects in the geometry tree that have the specified\n"
+             "role.\n\n"
+             ".. rubric:: Warning!\n\n"
+             "This method will return the very object with the role specified and not its items,\n"
+             "which is against the normal behavior of the roles.\n\n"
+             "Args:\n"
+             "    str role: Role to search objects with.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
         .def("get_leafs", &Space_getLeafs<Geometry2DCartesian>, (py::arg("path")=py::object()),
              "Get list of the geometry tree leafs.\n\n"
              "This method returns all the geometry tree leafs located under this geometry\n"
@@ -630,6 +668,28 @@ void register_calculation_spaces() {
              "Returns:\n"
              "    Material at the specified point.\n"
             )
+        .def("get_matching_objects", &Space_getMatching<Geometry2DCylindrical>, py::arg("cond"),
+             "Get list of the geometry tree objects matching condition.\n\n"
+             "This method returns all the objects in the geometry tree that match the specified\n"
+             "condition.\n\n"
+             "Args:\n"
+             "    cond: Python callable that accepts a geometry object and returns Boolean\n"
+             "          indicating whether the object should be returned by this method or not.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
+        .def("get_role_objects", &Space_getWithRole<Geometry2DCylindrical>, py::arg("role"),
+             "Get list of the geometry tree objects that have the specified role.\n\n"
+             "This method returns all the objects in the geometry tree that have the specified\n"
+             "role.\n\n"
+             ".. rubric:: Warning!\n\n"
+             "This method will return the very object with the role specified and not its items,\n"
+             "which is against the normal behavior of the roles.\n\n"
+             "Args:\n"
+             "    str role: Role to search objects with.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
         .def("get_leafs", &Space_getLeafs<Geometry2DCylindrical>, (py::arg("path")=py::object()),
              "Get list of the geometry tree leafs.\n\n"
              "This method returns all the geometry tree leafs located under this geometry\n"
@@ -822,6 +882,28 @@ void register_calculation_spaces() {
              "    float c0, c1, c2: Coordinates of the tested point.\n"
              "Returns:\n"
              "    Material at the specified point.\n"
+            )
+        .def("get_matching_objects", &Space_getMatching<Geometry3D>, py::arg("cond"),
+             "Get list of the geometry tree objects matching condition.\n\n"
+             "This method returns all the objects in the geometry tree that match the specified\n"
+             "condition.\n\n"
+             "Args:\n"
+             "    cond: Python callable that accepts a geometry object and returns Boolean\n"
+             "          indicating whether the object should be returned by this method or not.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
+        .def("get_role_objects", &Space_getWithRole<Geometry3D>, py::arg("role"),
+             "Get list of the geometry tree objects that have the specified role.\n\n"
+             "This method returns all the objects in the geometry tree that have the specified\n"
+             "role.\n\n"
+             ".. rubric:: Warning!\n\n"
+             "This method will return the very object with the role specified and not its items,\n"
+             "which is against the normal behavior of the roles.\n\n"
+             "Args:\n"
+             "    str role: Role to search objects with.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
             )
         .def("get_leafs", &Space_getLeafs<Geometry3D>, (py::arg("path")=py::object()),
              "Get list of the geometry tree leafs.\n\n"

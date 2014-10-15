@@ -78,6 +78,21 @@ template <> struct MethodsD<3> {
 
 };
 
+static py::list GeometryObject_getMatching(const shared_ptr<GeometryObject>& self, const py::object& callable) {
+    std::vector<shared_ptr<const GeometryObject>> objs = self->getObjects(PredicatePythonCallable(callable));
+    py::list result;
+    for (auto i: objs) result.append(const_pointer_cast<GeometryObject>(i));
+    return result;
+}
+
+static py::list GeometryObject_getWithRole(const shared_ptr<GeometryObject>& self, const std::string& role) {
+    std::vector<shared_ptr<const GeometryObject>> objs = self->getObjects(GeometryObject::PredicateHasRole(role));
+    py::list result;
+    for (auto i: objs) result.append(const_pointer_cast<GeometryObject>(i));
+    return result;
+}
+
+
 template <int dim>
 static py::list GeometryObjectD_getRolesAt(const GeometryObjectD<dim>& self, const typename GeometryObjectD<dim>::DVec& point) {
     py::list result;
@@ -587,7 +602,33 @@ void register_geometry_object()
                       "It is possible to assign simply an integer number to this parameter, in which\n"
                       "case it changes its ``num`` attribute.\n"
                      )
-        .def("validate", &GeometryObject::validate, "Check if the object is complete and ready for calculations.")
+        .def("validate", &GeometryObject::validate,
+             "Check if the object is complete and ready for calculations.\n\n"
+             "This method is specific for a particular object. It raises an exception if\n"
+             "the object definition is somehow incomplete.\n"
+            )
+        .def("get_matching_objects", &GeometryObject_getMatching, py::arg("cond"),
+             "Get list of the geometry tree objects matching condition.\n\n"
+             "This method returns all the objects in the geometry tree that match the specified\n"
+             "condition.\n\n"
+             "Args:\n"
+             "    cond: Python callable that accepts a geometry object and returns Boolean\n"
+             "          indicating whether the object should be returned by this method or not.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
+        .def("get_role_objects", &GeometryObject_getWithRole, py::arg("role"),
+             "Get list of the geometry tree objects that have the specified role.\n\n"
+             "This method returns all the objects in the geometry tree that have the specified\n"
+             "role.\n\n"
+             ".. rubric:: Warning!\n\n"
+             "This method will return the very object with the role specified and not its items,\n"
+             "which is against the normal behavior of the roles.\n\n"
+             "Args:\n"
+             "    str role: Role to search objects with.\n"
+             "Returns:\n"
+             "    sequence: List of objects matching your condition.\n\n"
+            )
         .def("__repr__", &GeometryObject__repr__)
         .def("__eq__", __is__<GeometryObject>)
     ;

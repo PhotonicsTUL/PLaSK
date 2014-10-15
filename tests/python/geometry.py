@@ -102,6 +102,7 @@ class Containers(unittest.TestCase):
         self.aln = plask.material.AlN()
         self.block1 = plask.geometry.Block2D(5,3, self.gan)
         self.block2 = plask.geometry.Block2D(5,3, self.aln)
+        self.block2.role = "something"
         self.cube1 = plask.geometry.Block3D(4,4,2, self.gan)
         self.cube2 = plask.geometry.Block3D(4,4,2, self.aln)
         plask.config.axes = 'yz'
@@ -205,10 +206,16 @@ class Containers(unittest.TestCase):
         stack = plask.geometry.Stack2D()
         stack.append(self.block1)
         stack.append(self.block2)
-        self.block2.role = "something"
         self.assertIn( "something", stack.get_roles(2., 4.) )
         self.assertTrue( stack.has_role("something", 2., 4.) )
+        self.assertEqual( stack.get_role_objects("something"), [self.block2] )
 
+    def testGetting(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(self.block1)
+        stack.append(self.block2)
+        stack.append(self.block1)
+        self.assertEqual( stack.get_matching_objects(lambda o: o == self.block1), [self.block1, self.block1] )
 
 class Borders(unittest.TestCase):
 
