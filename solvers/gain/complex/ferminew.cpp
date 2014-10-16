@@ -559,7 +559,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
             if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
                 points.push_back(std::make_pair(i,r));
 
-    //#pragma omp parallel for
+    //#pragma omp parallel for // do not use parallel computations now LUKASZ 2014.10.16
     for (int j = 0; j < points.size(); j++)
     {
         size_t i = points[j].first;
