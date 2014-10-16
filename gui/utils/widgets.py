@@ -86,21 +86,39 @@ class HTMLDelegate(QtGui.QStyledItemDelegate):
         return QtCore.QSize(doc.idealWidth(), doc.size().height())
 
 
-class ComboBoxDelegate(QtGui.QStyledItemDelegate):
+class ComboBoxDelegate(QtGui.QItemDelegate):
 
-    def __init__(self, list, parent):
+    def __init__(self, list, parent, editable=True):
         QtGui.QItemDelegate.__init__(self, parent)
         self.list = list
-        #self.model = model
+        self.editable = editable
 
     def createEditor(self, parent, option, index):
         combo = QtGui.QComboBox(parent)
-        combo.setEditable(True)
+        combo.setEditable(self.editable)
         combo.setInsertPolicy(QtGui.QComboBox.NoInsert)
         combo.addItems(self.list)
+        self._first_enter = True
         #self.connect(combo, QtCore.SIGNAL("currentIndexChanged(int)"),
         #             self, QtCore.SLOT("currentIndexChanged()"))
         return combo
+
+    def setEditorData(self, combo, index):
+        try:
+            combo.setCurrentIndex(self.list.index(index.data()))
+        except IndexError:
+            pass
+        if self.editable:
+            combo.setEditText(index.data())
+        combo.showPopup()
+
+    def eventFilter(self, combo, event):
+        if event.type() == QtCore.QEvent.Enter and self._first_enter:
+            combo.showPopup()
+            self._first_enter = False
+            return True
+        else:
+            return super(ComboBoxDelegate, self).eventFilter(combo, event)
 
 
 #class CheckBoxDelegate(QtGui.QStyledItemDelegate):

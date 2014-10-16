@@ -39,6 +39,28 @@ class AfterBracketCompleter(QtGui.QCompleter):
         return [path]
 
 
+def get_defines_completer(model, parent):
+    completer = AfterBracketCompleter(model, parent)
+    completer.setModel(model)  # PySide needs this
+    tab = QtGui.QTableView(parent)
+    #tab.resizeColumnsToContents()
+    tab.setModel(model)
+    tab.setMinimumSize(0, 200)
+    #tab.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
+    tab.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+    tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+    tab.setSelectionBehavior(QtGui.QTableView.SelectRows)
+    tab.setSelectionMode(QtGui.QTableView.SingleSelection)
+    tab.horizontalHeader().hide()
+    tab.verticalHeader().hide()
+    tab.setSortingEnabled(False)
+    tab.setShowGrid(False)
+    tab.setWordWrap(False)
+    #tab.setContentsMargins(1, 1, 1, 1)
+    completer.setPopup(tab)
+    return completer
+
+
 class DefineHintsTableModel(QtCore.QAbstractTableModel):
 
     def __init__(self, defines_model, parent=None, *args):
@@ -75,30 +97,9 @@ class DefinesCompletionDelegate(QtGui.QStyledItemDelegate):
         self.model = DefineHintsTableModel(model, parent)
         #self.model = model
 
-    def get_defines_completer(self, parent):
-        completer = AfterBracketCompleter(self.model, parent)
-        completer.setModel(self.model)  # PySide needs this
-        tab = QtGui.QTableView(parent)
-        #tab.resizeColumnsToContents()
-        tab.setModel(self.model)
-        tab.setMinimumSize(0, 200)
-        #tab.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents)
-        tab.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-        tab.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        tab.setSelectionBehavior(QtGui.QTableView.SelectRows)
-        tab.setSelectionMode(QtGui.QTableView.SingleSelection)
-        tab.horizontalHeader().hide()
-        tab.verticalHeader().hide()
-        tab.setSortingEnabled(False)
-        tab.setShowGrid(False)
-        tab.setWordWrap(False)
-        #tab.setContentsMargins(1, 1, 1, 1)
-        completer.setPopup(tab)
-        return completer
-
     def createEditor(self, parent, option, index):
         ed = QtGui.QLineEdit(parent)
-        completer = self.get_defines_completer(parent)
+        completer = get_defines_completer(self.model, parent)
         ed.setCompleter(completer)
         return ed
 

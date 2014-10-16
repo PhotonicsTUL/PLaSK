@@ -88,7 +88,6 @@
     <mesh ref="default"/>
     <temperature>
     <condition value="300." place="bottom"/>
-    <condition value="300." place="right"/>
   </temperature>
   </thermal>
   <electrical solver="ShockleyCyl" name="ELECTRICAL">

@@ -21,6 +21,7 @@ from ..external.highlighter import SyntaxHighlighter, load_syntax
 from . import Controller
 from .table import table_with_manipulators
 from .source import scheme, syntax
+from .defines import get_defines_completer
 
 
 class SolverAutoWidget(QtGui.QScrollArea):
@@ -43,10 +44,13 @@ class SolverAutoWidget(QtGui.QScrollArea):
         label.setFont(font)
         layout.addRow(label)
 
+        defines = get_defines_completer(self.controller.document.defines.model, self)
+
         self.geometry = QtGui.QComboBox()
         self.geometry.setEditable(True)
         self.geometry.textChanged.connect(self.controller.fire_changed)
         self.geometry.currentIndexChanged.connect(self.controller.fire_changed)
+        self.geometry.setCompleter(defines)
         self.geometry.setToolTip('&lt;<b>geometry ref</b>=""&gt;<br/>'
                                  'Name of the existing geometry for use by this solver.')
         #TODO make sure the list is up-to date; add some graphical thumbnail
@@ -57,6 +61,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
             self.mesh.setEditable(True)
             self.mesh.textChanged.connect(self.controller.fire_changed)
             self.mesh.currentIndexChanged.connect(self.controller.fire_changed)
+            self.mesh.setCompleter(defines)
             self.mesh.setToolTip('&lt;<b>mesh ref</b>=""&gt;<br/>'
                                  'Name of the existing {} mesh for use by this solver.'.format(config['mesh']))
             #TODO add some graphical thumbnail
@@ -85,6 +90,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                         attr, text, help = item
                         edit = QtGui.QLineEdit()
                         edit.textEdited.connect(self.controller.fire_changed)
+                    edit.setCompleter(defines)
                     edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(group, attr, help))
                     self.controls[group, attr] = edit
                     layout.addRow(text + ':', edit)

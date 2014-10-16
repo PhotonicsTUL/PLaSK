@@ -12,11 +12,11 @@
 
 from lxml.etree import Element, SubElement
 from ...qt import QtCore
-from ...model.table import TableModelEditMethods
+from ..table import TableModelEditMethods
 
 from ...utils.xml import AttributeReader, require_no_children, UnorderedTagReader
 from . import Grid
-
+from .mesh_rectilinear import AXIS_NAMES
 
 class RefinementConf(object):
     """Store refinement configuration of rectilinear generator"""
@@ -62,12 +62,12 @@ class RefinementConf(object):
         return getattr(self, RefinementConf.all_attributes_names[index])
 
     def set_attr_by_index(self, index, value):
-        setattr(self, RefinementConf.all_attributes_names[index], int(value) if index == 0 else value)
+        setattr(self, RefinementConf.all_attributes_names[index], value)
 
 
 class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
 
-    def __init__(self, generator, entries = None, parent=None, *args):
+    def __init__(self, generator, entries=None, parent=None, *args):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         TableModelEditMethods.__init__(self)
         self.generator = generator
@@ -81,7 +81,10 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
         return len(RefinementConf.all_attributes_names)
 
     def get(self, col, row):
-        return self.entries[row].get_attr_by_index(col)
+        value = self.entries[row].get_attr_by_index(col)
+        if col == 0:
+            value = AXIS_NAMES[self.generator.dim-1][value]
+        return value
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
@@ -96,9 +99,11 @@ class Refinements(QtCore.QAbstractTableModel, TableModelEditMethods):
                 RefinementConf.all_attributes_help[col])
 
     def set(self, col, row, value):
+        if col == 0:
+            value = AXIS_NAMES[self.generator.dim-1].index(value)
         self.entries[row].set_attr_by_index(col, value)
 
-    def setData(self, index, value, role = QtCore.Qt.EditRole):
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
         self.dataChanged.emit(index, index)
         self.generator.fire_changed()

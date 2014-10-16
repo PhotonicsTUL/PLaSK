@@ -14,11 +14,8 @@
 from .. import Controller
 from ...qt import QtGui
 from ...utils.str import empty_to_none
-
-
-AXIS_NAMES = [
-    [''], ['horizontal', 'vertical'], ['longitudinal', 'transverse', 'vertical']
-]
+from ...model.grids.mesh_rectilinear import AXIS_NAMES
+from ..defines import get_defines_completer
 
 
 class AxisEdit(QtGui.QGroupBox):
@@ -26,6 +23,7 @@ class AxisEdit(QtGui.QGroupBox):
     def __init__(self, axis, controller, title=None, allow_type_select=False, accept_non_regular=False, axis_model=None):
         super(AxisEdit, self).__init__(title if title is not None else axis)
         if axis is None: axis = 'axis'
+        defines = get_defines_completer(controller.document.defines.model, self)
         form_layout = QtGui.QFormLayout()
         self.allow_type_select = allow_type_select
         if not allow_type_select: self.accept_non_regular = accept_non_regular
@@ -39,16 +37,19 @@ class AxisEdit(QtGui.QGroupBox):
             self.type.currentIndexChanged.connect(controller.fire_changed)
             form_layout.addRow("Axis type:", self.type)
         self.start = QtGui.QLineEdit()
+        self.start.setCompleter(defines)
         self.start.setToolTip(u'&lt;{} <b>start</b>="" stop="" num=""&gt;<br/>'
                               u'Position of the first point on the axis. (float [µm])'.format(axis))
         self.start.textEdited.connect(controller.fire_changed)
         form_layout.addRow("Start:", self.start)
         self.stop = QtGui.QLineEdit()
+        self.stop.setCompleter(defines)
         self.stop.setToolTip(u'&lt;{} start="" <b>stop</b>="" num=""&gt;\n'
                              u'Position of the last point on the axis. (float [µm])'.format(axis))
         self.stop.textEdited.connect(controller.fire_changed)
         form_layout.addRow("Stop:", self.stop)
         self.num = QtGui.QLineEdit()
+        self.num.setCompleter(defines)
         self.num.setToolTip('&lt;{} start="" stop="" <b>num</b>=""&gt;<br/>'
                             'Number of the equally distributed points along the axis. (integer)'.format(axis))
         self.num.textEdited.connect(controller.fire_changed)

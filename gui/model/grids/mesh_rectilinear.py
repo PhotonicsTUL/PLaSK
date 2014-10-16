@@ -16,6 +16,11 @@ from ...utils.xml import AttributeReader, OrderedTagReader, require_no_children,
 from . import Grid
 
 
+AXIS_NAMES = [
+    [''], ['horizontal', 'vertical'], ['longitudinal', 'transverse', 'vertical']
+]
+
+
 class AxisConf(object):
     """Store axis configuration of rectilinear mesh"""
 

@@ -141,6 +141,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         if index.column() == 0:
             used = [index.model().get(0, i) for i in range(index.model().rowCount()) if i != index.row()]
             opts = [opt for opt in opts if opt not in used]
+            self._first_enter = True
 
         if opts is None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
 
@@ -166,6 +167,14 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         #             self, QtCore.SLOT("currentIndexChanged()"))
 
         return combo
+
+    def eventFilter(self, editor, event):
+        if isinstance(editor, QtGui.QComboBox) and event.type() == QtCore.QEvent.Enter and self._first_enter:
+            editor.showPopup()
+            self._first_enter = False
+            return True
+        else:
+            return super(MaterialPropertiesDelegate, self).eventFilter(editor, event)
 
 
 class MaterialsController(Controller):
