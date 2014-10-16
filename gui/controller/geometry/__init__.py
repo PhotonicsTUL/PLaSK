@@ -10,25 +10,21 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...model import SectionModelTreeBased
+from ...model.geometry import GeometryModel
 from ...qt import QtGui
-from ...qt.QtGui import QSplitter, QItemSelectionModel
 
 from .. import Controller
-from ..table import table_with_manipulators
-from ...model.grids import GridsModel
-from ...utils.xml_qttree import ETreeModel
 
 
 class GeometryController(Controller):
 
     def __init__(self, document, model=None):
-        if model is None: model = SectionModelTreeBased('geometry') #TODO: native model
+        if model is None: model = GeometryModel()
         Controller.__init__(self, document, model)
 
-        self.splitter = QSplitter()
+        self.splitter = QtGui.QSplitter()
         self.tree = QtGui.QTreeView()
-        self.tree.setModel(ETreeModel(model))
+        self.tree.setModel(model)
         self.splitter.addWidget(self.tree)
 
     def get_widget(self):

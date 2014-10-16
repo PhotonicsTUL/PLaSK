@@ -16,6 +16,7 @@ from lxml import etree
 from .model import SectionModelTreeBased
 from .controller.source import SourceEditController
 from .controller.defines import DefinesController
+from .controller.geometry import GeometryController
 from .controller.script import ScriptController
 from .controller.multi import GUIAndSourceController
 from .controller.connects import ConnectsController
@@ -33,8 +34,8 @@ class XPLDocument(object):
         self.window = window
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
-        #self.geometry = GUIAndSourceController(GeometryController(self))
-        self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
+        self.geometry = GUIAndSourceController(GeometryController(self))
+        #self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
         self.grids = GUIAndSourceController(GridsController(self))
         self.script = ScriptController(self)
         #self.solvers = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4]))

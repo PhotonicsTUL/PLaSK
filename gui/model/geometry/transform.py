@@ -9,9 +9,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
 from .object import GNObject
-from .types import construct_geometry_object
+from .constructor import construct_geometry_object
 from ...utils.xml import xml_to_attr, attr_to_xml
 
 
@@ -48,13 +47,13 @@ class GNTranslation(GNTransform):
         return "translation{}d".format(self.dim) if full_name else "translation"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNTranslation(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNTranslation(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -88,13 +87,13 @@ class GNClip(GNTransform):
         return "clip{}d".format(self.dim) if full_name else "clip"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNClip(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNClip(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -118,13 +117,13 @@ class GNFlip(GNTransform):
         return "flip{}d".format(self.dim) if full_name else "flip"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNFlip(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNFlip(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -148,13 +147,13 @@ class GNMirror(GNTransform):
         return "mirror{}d".format(self.dim) if full_name else "mirror"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNMirror(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNMirror(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -178,7 +177,7 @@ class GNExtrusion(GNTransform):
         return "extrusion"
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNExtrusion()
         result.set_xml_element(element, conf)
         return result
@@ -193,7 +192,7 @@ class GNRevolution(GNTransform):
         return "revolution"
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNRevolution()
         result.set_xml_element(element, conf)
         return result

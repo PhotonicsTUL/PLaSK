@@ -13,8 +13,8 @@ from lxml import etree
 
 from .reader import GNAligner
 from .object import GNObject
-from .types import construct_geometry_object
 from .node import GNode
+from .constructor import construct_geometry_object
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
 
 
@@ -29,12 +29,12 @@ class GNZero(GNode):
 
 class GNGap(GNode):
 
-    def GNGap(self, parent = None):
-        super(GNGap, self).GNGap(parent=parent, dim=2)
+    def __init__(self, parent = None):
+        super(GNGap, self).__init__(parent=parent, dim=2)
         self.size = None
 
     def attributes_from_xml(self, attribute_reader, conf):
-        super(GNode, self).attributes_from_xml(attribute_reader, conf)
+        super(GNGap, self).attributes_from_xml(attribute_reader, conf)
         self.size = attribute_reader.get('size')
         if self.size is not None:
             self.size_is_total = False
@@ -51,8 +51,8 @@ class GNGap(GNode):
         return 'gap'
 
     @classmethod
-    def from_xml(self, element, conf):
-        result = GNGap(dim = 2)
+    def from_xml(cls, element, conf):
+        result = GNGap()
         result.set_xml_element(element, conf)
         return result
 
@@ -103,13 +103,13 @@ class GNStack(GNObject):
         return "stack{}d".format(self.dim) if full_name else "stack"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNStack(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNStack(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -137,7 +137,7 @@ class GNShelf(GNObject):
             if c.tag == 'zero':
                 GNZero(self, self.children_dim)
             elif c.tag == 'gap':
-                GNGap.from_xml(self, conf)
+                GNGap.from_xml(c, conf)
             else:
                 construct_geometry_object(c, conf)
 
@@ -145,7 +145,7 @@ class GNShelf(GNObject):
         return "shelf{}d".format(self.dim) if full_name else "shelf"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNShelf()
         result.set_xml_element(element, conf)
         return result
@@ -190,13 +190,13 @@ class GNAlignContainer(GNObject):
         return "align{}d".format(self.dim) if full_name else "align"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNAlignContainer(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNAlignContainer(dim = 3)
         result.set_xml_element(element, conf)
         return result

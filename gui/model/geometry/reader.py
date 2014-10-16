@@ -10,6 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from plask import axeslist_by_name
+
 class GNAligner(object):
 
     POSITION_LOW = 0
@@ -66,11 +68,11 @@ class GNReadConf(object):
 
     def __init__(self, conf=None, axes=None, parent=None):
         super(GNReadConf, self).__init__()
+        self._axes = ['z', 'x', 'y']
         if conf is not None:
             self.axes = conf.axes
             self.parent = conf.parent
         else:
-            self.axes = ['z', 'x', 'y']
             self.parent = None
         if axes is not None: self.axes = axes
         if parent is not None: self.parent = parent
@@ -89,7 +91,7 @@ class GNReadConf(object):
         return self.axes if dim == 3 else self.axes[1:]
 
     def axis_name(self, dim, axis_nr):
-        return self.axes_dim(dim)[axis_nr]
+        return self.axes_names(dim)[axis_nr]
 
     @property
     def axes(self):
@@ -98,7 +100,7 @@ class GNReadConf(object):
     @axes.setter
     def axes(self, name_or_list):
         if name_or_list is None: return
-        self._axes =  axeslist_by_name(axes) if isinstance(name_or_list, basestring) else list(name_or_list)
+        self._axes =  axeslist_by_name(name_or_list) if isinstance(name_or_list, basestring) else list(name_or_list)
 
     def aligners(self, dims, axis_nr):
         if dims is None: dims = self.parent.dim
@@ -130,7 +132,7 @@ class GNReadConf(object):
             aligners = { axis_nr : aligners[axis_nr] for axis_nr in range(0, dims) }
         else:
             if dims is None: dims = self.parent.dim
-        for axis_nr, aligner in aligners:
+        for axis_nr, aligner in aligners.items():
             pos_str = aligner.position_str(dims, self.axes_names(dims), axis_nr)
             if pos_str is not None and aligner.value:
                 element.attrib[pos_str] = aligner.value

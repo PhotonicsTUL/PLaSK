@@ -9,11 +9,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from model.geometry.reader import GNReadConf
+from . import construct_geometry_object
+from .reader import GNReadConf
 
 from .node import GNode
 from .object import GNObject
-from .types import construct_geometry_object
 from ...utils.xml import attr_to_xml
 
 
@@ -34,6 +34,11 @@ class GNAgain(GNode):
     def tag_name(self, full_name = True):
         return "again"
 
+    @classmethod
+    def from_xml(cls, element, conf):
+        result = GNAgain()
+        result.set_xml_element(element, conf)
+        return result
 
 
 # ---------- copy tag and its children: --------------
@@ -122,3 +127,9 @@ class GNCopy(GNObject):
 
     def tag_name(self, full_name = True):
         return "copy"
+
+    @classmethod
+    def from_xml(cls, element, conf):
+        result = GNAgain()
+        result.set_xml_element(element, conf)
+        return result

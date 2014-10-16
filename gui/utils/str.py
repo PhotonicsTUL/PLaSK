@@ -18,6 +18,8 @@ def empty_to_none(str):
         :return: None if str is empty or consists only with white characters, str in other cases"""
     return None if len(str) == 0 or str.isspace() else str
 
+def none_to_empty(str):
+    return '' if str is None else str
 
 _re_i = re.compile("<i>(.*?)</i>")
 _re_sub = re.compile("<sub>(.*?)</sub>")

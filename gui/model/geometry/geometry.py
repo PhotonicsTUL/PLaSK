@@ -1,5 +1,5 @@
+from .constructor import geometry_object_names, construct_geometry_object
 from .object import GNObject
-from .types import construct_geometry_object, geometry_object_names, geometry_types_3d
 from .transform import GNExtrusion
 from ...utils.xml import xml_to_attr, attr_to_xml
 
@@ -35,6 +35,7 @@ class GNCartesian(GNObject):
             attr_to_xml(self, element, 'back', 'front')
 
     def children_from_xml(self, ordered_reader, conf):
+        from .types import geometry_types_3d
         el = ordered_reader.get()
         if el is None: return
         if self.dim == 2 and self.length is None and el.tag in geometry_object_names(GNExtrusion.from_xml_3d, geometry_types_3d):
@@ -46,13 +47,13 @@ class GNCartesian(GNObject):
         return "cartesian{}d".format(self.dim)
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNCartesian(dim=2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNCartesian(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -82,7 +83,7 @@ class GNCylindrical(GNObject):
         return "cylindrical{}d".format(self.dim) if full_name else "cylindrical"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
-        result = GNCylindrical(dim = 2)
+    def from_xml_2d(cls, element, conf):
+        result = GNCylindrical()
         result.set_xml_element(element, conf)
         return result

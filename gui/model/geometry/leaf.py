@@ -52,25 +52,25 @@ class GNBlock(GNLeaf):
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNBlock, self).attributes_from_xml(attribute_reader, conf)
-        self.pos = [attribute_reader.get(a) for a in conf.axes_names(self.dim)]
+        self.size = [attribute_reader.get('d'+a) for a in conf.axes_names(self.dim)]
 
     def attributes_to_xml(self, element, conf):
         super(GNBlock, self).attributes_to_xml(element, conf)
         for a in range(0, self.dim):
-            if self.pos[a] is not None:
-                element.attrib[conf.axis_name(self.dim, a)] = self.pos[a]
+            if self.size[a] is not None:
+                element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
 
     def tag_name(self, full_name = True):
         return "block{}d".format(self.dim) if full_name else "block"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNBlock(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNBlock(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -95,7 +95,7 @@ class GNCylinder(GNLeaf):
         return "cylinder"
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNCylinder()
         result.set_xml_element(element, conf)
         return result
@@ -119,13 +119,13 @@ class GNCircle(GNLeaf):
         return "circle{}d".format(self.dim) if full_name else "circle"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNCircle(dim = 2)
         result.set_xml_element(element, conf)
         return result
 
     @classmethod
-    def from_xml_3d(self, element, conf):
+    def from_xml_3d(cls, element, conf):
         result = GNCircle(dim = 3)
         result.set_xml_element(element, conf)
         return result
@@ -155,7 +155,7 @@ class GNTriangle(GNLeaf):
         return "triangle"
 
     @classmethod
-    def from_xml_2d(self, element, conf):
+    def from_xml_2d(cls, element, conf):
         result = GNTriangle()
         result.set_xml_element(element, conf)
         return result

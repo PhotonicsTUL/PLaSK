@@ -66,12 +66,14 @@ class GNode(object):
         self.attributes_to_xml(res, subtree_conf)
         for c in self.children:
             res.append(self.get_child_xml_element(c, subtree_conf))
-        self.children_to_xml(res, subtree_conf)
         return res
 
     #def append(self, child):
     #    self.children.append(child)
     #    child.parent = self
+
+    def tag_name(self, full_name = True):
+        raise NotImplementedError('tag_name')
 
     @property
     def parent(self):
@@ -79,9 +81,10 @@ class GNode(object):
 
     @parent.setter
     def parent(self, parent):
-        if self.parent == parent: return
-        if self.parent is not None:
-            self.parent.children.remove(self)
+        if self._parent == parent: return
+        if self._parent is not None:
+            self._parent.children.remove(self)
             self.in_parent = None
-        self.parent = parent
-        parent.children.append(self)
+        self._parent = parent
+        if self._parent is not None:
+            self._parent.children.append(self)
