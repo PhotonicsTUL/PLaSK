@@ -34,7 +34,7 @@ MI_PROPERTY(GaInNAs, Eg,
             )
 double GaInNAs::Eg(double T, double e, char point) const {
     double tEg(0.);
-    if (point == 'G')
+    if ((point == 'G') || (point == '*'))
     {
         double tEgG_GaNAs = 0.5 * ( /*GaNAs.En*/1.65 + mGaAs.Eg(T,e,point) - sqrt(pow(1.65-mGaAs.Eg(T,e,point),2.)+4./**GaNAs.V*/*2.7*2.7*N));
         double tEgG_InNAs = 0.5 * ( /*InNAs.En*/1.44 + mInAs.Eg(T,e,point) - sqrt(pow(1.44-mInAs.Eg(T,e,point),2.)+4./**InNAs.V*/*2.0*2.0*N));

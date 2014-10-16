@@ -25,6 +25,13 @@ double InP::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(1.4236, 0.363e-3, 162., T);
     else if (point == 'X') tEg = 2.384-3.7e-4*T;
     else if (point == 'L') tEg = phys::Varshni(2.014, 0.363e-3, 162., T);
+    else if (point == '*')
+    {
+        double tEgG = phys::Varshni(1.4236, 0.363e-3, 162., T);
+        double tEgX = 2.384-3.7e-4*T;
+        double tEgL = phys::Varshni(2.014, 0.363e-3, 162., T);
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

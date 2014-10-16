@@ -33,6 +33,13 @@ double InAsSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = As*mInAs.Eg(T,e,point) + Sb*mInSb.Eg(T,e,point) - As*Sb*0.67;
     else if (point == 'X') tEg = As*mInAs.Eg(T,e,point) + Sb*mInSb.Eg(T,e,point) - As*Sb*0.6;
     else if (point == 'L') tEg = As*mInAs.Eg(T,e,point) + Sb*mInSb.Eg(T,e,point) - As*Sb*0.6;
+    else if (point == '*')
+    {
+        double tEgG = As*mInAs.Eg(T,e,point) + Sb*mInSb.Eg(T,e,point) - As*Sb*0.67;
+        double tEgX = As*mInAs.Eg(T,e,point) + Sb*mInSb.Eg(T,e,point) - As*Sb*0.6;
+        double tEgL = As*mInAs.Eg(T,e,point) + Sb*mInSb.Eg(T,e,point) - As*Sb*0.6;
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

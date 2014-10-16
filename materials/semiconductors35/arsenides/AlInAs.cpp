@@ -33,6 +33,13 @@ double AlInAs::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Al*In*(0.70);
     else if (point == 'X') tEg = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point);
     else if (point == 'L') tEg = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point);
+    else if (point == '*')
+    {
+        double tEgG = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Al*In*(0.70);
+        double tEgX = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point);
+        double tEgL = Al*mAlAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point);
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

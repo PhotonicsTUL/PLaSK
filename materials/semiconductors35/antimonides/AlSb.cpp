@@ -25,6 +25,13 @@ double AlSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(2.386, 0.42e-3, 140., T);
     else if (point == 'X') tEg = phys::Varshni(1.696, 0.39e-3, 140., T);
     else if (point == 'L') tEg = phys::Varshni(2.329, 0.58e-3, 140., T);
+    else if (point == '*')
+    {
+        double tEgG = phys::Varshni(2.386, 0.42e-3, 140., T);
+        double tEgX = phys::Varshni(1.696, 0.39e-3, 140., T);
+        double tEgL = phys::Varshni(2.329, 0.58e-3, 140., T);
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

@@ -25,6 +25,13 @@ double GaSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(0.812, 0.417e-3, 140., T);
     else if (point == 'X') tEg = phys::Varshni(1.141, 0.475e-3, 94., T);
     else if (point == 'L') tEg = phys::Varshni(0.875, 0.597e-3, 140., T);
+    else if (point == '*')
+    {
+        double tEgG = phys::Varshni(0.812, 0.417e-3, 140., T);
+        double tEgX = phys::Varshni(1.141, 0.475e-3, 94., T);
+        double tEgL = phys::Varshni(0.875, 0.597e-3, 140., T);
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

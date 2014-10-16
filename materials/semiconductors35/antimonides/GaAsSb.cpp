@@ -33,6 +33,13 @@ double GaAsSb::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = As*mGaAs.Eg(T,e,point) + Sb*mGaSb.Eg(T,e,point) - As*Sb*1.43;
     else if (point == 'X') tEg = As*mGaAs.Eg(T,e,point) + Sb*mGaSb.Eg(T,e,point) - As*Sb*1.2;
     else if (point == 'L') tEg = As*mGaAs.Eg(T,e,point) + Sb*mGaSb.Eg(T,e,point) - As*Sb*1.2;
+    else if (point == '*')
+    {
+        double tEgG = As*mGaAs.Eg(T,e,point) + Sb*mGaSb.Eg(T,e,point) - As*Sb*1.43;
+        double tEgX = As*mGaAs.Eg(T,e,point) + Sb*mGaSb.Eg(T,e,point) - As*Sb*1.2;
+        double tEgL = As*mGaAs.Eg(T,e,point) + Sb*mGaSb.Eg(T,e,point) - As*Sb*1.2;
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

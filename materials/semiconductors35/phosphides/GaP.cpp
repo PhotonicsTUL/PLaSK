@@ -25,6 +25,13 @@ double GaP::Eg(double T, double e, char point) const {
     if (point == 'G') tEg = phys::Varshni(2.896, 0.96e-3, 423., T);
     else if (point == 'X') tEg = phys::Varshni(2.35, 0.5771e-3, 372., T);
     else if (point == 'L') tEg = phys::Varshni(2.72, 0.5771e-3, 372., T);
+    else if (point == '*')
+    {
+        double tEgG = phys::Varshni(2.896, 0.96e-3, 423., T);
+        double tEgX = phys::Varshni(2.35, 0.5771e-3, 372., T);
+        double tEgL = phys::Varshni(2.72, 0.5771e-3, 372., T);
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }

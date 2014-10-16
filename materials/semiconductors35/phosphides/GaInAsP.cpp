@@ -43,6 +43,19 @@ double GaInAsP::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*As*mGaAs.Eg(T,e,point) + Ga*P*mGaP.Eg(T,e,point)
             + In*As*mInAs.Eg(T,e,point) + In*P*mInP.Eg(T,e,point)
             - Ga*In*As*(0.33) - Ga*In*P*(1.03) - Ga*As*P*(0.16) - In*As*P*(0.27);
+    else if (point == '*')
+    {
+        double tEgG = Ga*As*mGaAs.Eg(T,e,point) + Ga*P*mGaP.Eg(T,e,point)
+                + In*As*mInAs.Eg(T,e,point) + In*P*mInP.Eg(T,e,point)
+                - Ga*In*As*(0.477) - Ga*In*P*(0.65) - Ga*As*P*(0.19) - In*As*P*(0.10) - Ga*In*As*P*(0.13);
+        double tEgX = Ga*As*mGaAs.Eg(T,e,point) + Ga*P*mGaP.Eg(T,e,point)
+                + In*As*mInAs.Eg(T,e,point) + In*P*mInP.Eg(T,e,point)
+                - Ga*In*As*(1.4) - Ga*In*P*(0.20) - Ga*As*P*(0.24) - In*As*P*(0.27);
+        double tEgL = Ga*As*mGaAs.Eg(T,e,point) + Ga*P*mGaP.Eg(T,e,point)
+                + In*As*mInAs.Eg(T,e,point) + In*P*mInP.Eg(T,e,point)
+                - Ga*In*As*(0.33) - Ga*In*P*(1.03) - Ga*As*P*(0.16) - In*As*P*(0.27);
+        tEg = min(tEgG,min(tEgX,tEgL));
+    }
     if (!e) return tEg;
     else return ( CB(T,e,point) - max(VB(T,e,point,'H'),VB(T,e,point,'L')) );
 }
