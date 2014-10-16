@@ -47,10 +47,10 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         new_roots = []
         for child_element in element:
             new_roots.append(construct_geometry_object(child_element, conf, geometry_types_geometries))
-        self.modelAboutToBeReset.emit()
+        self.beginResetModel()
         self.axes = new_axes
         self.roots = new_roots
-        self.modelReset.emit()
+        self.endResetModel()
         self.fire_changed()
 
     # QAbstractItemModel implementation:

@@ -264,9 +264,9 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
 
     @material.setter
     def material(self, material):
-        self.modelAboutToBeReset.emit()
+        self.beginResetModel()
         self._material = material
-        self.modelReset.emit()
+        self.endResetModel()
 
     def options_to_choose(self, index):
         """:return: list of available options to choose at given index or None"""
@@ -311,7 +311,7 @@ class MaterialsModel(TableModel):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
 
     def set_xml_element(self, element):
-        self.modelAboutToBeReset.emit()
+        self.beginResetModel()
         del self.entries[:]
         with OrderedTagReader(element) as material_reader:
             for mat in material_reader.iter('material'):
@@ -326,7 +326,7 @@ class MaterialsModel(TableModel):
                     self.entries.append(
                         MaterialsModel.Material(mat_attrib.get('name', ''), base, properties)
                     )
-        self.modelReset.emit()
+        self.endResetModel()
         self.fire_changed()
 
     # XML element that represents whole section

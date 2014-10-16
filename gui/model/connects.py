@@ -35,9 +35,9 @@ class ConnectsModel(TableModel):
             for e in r.iter("connect"):
                 with AttributeReader(e) as a:
                     new_entries.append(ConnectsModel.Entry(a.get("out", ""), a.get("in", "")))
-        self.modelAboutToBeReset.emit()
+        self.beginResetModel()
         self.entries = new_entries
-        self.modelReset.emit()
+        self.endResetModel()
         self.fire_changed()
 
     # XML element that represents whole section

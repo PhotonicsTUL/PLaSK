@@ -43,9 +43,9 @@ class DefinesModel(TableModel):
             for e in r.iter("define"):
                 with AttributeReader(e) as a:
                     new_entries.append(DefinesModel.Entry(a.get("name", ""), a.get("value", "")))
-        self.modelAboutToBeReset.emit()
+        self.beginResetModel()
         self.entries = new_entries
-        self.modelReset.emit()
+        self.endResetModel()
         self.fire_changed()
 
     # XML element that represents whole section
