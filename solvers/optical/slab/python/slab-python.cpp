@@ -884,7 +884,7 @@ BOOST_PYTHON_MODULE(slab)
                    "        wavelength, as they may change due to the dispersion.\n"
                    , (py::arg("lam"), "polarization", "side", py::arg("dispersive")=true));
         solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
-                   "Compute Fourier coefficients of the reflected field on the perpendicular incidence [%].\n\n"
+                   "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
                    "Args:\n"
                    "    lam (float): Incident light wavelength.\n"
                    "    polarization: Specification of the incident light polarization.\n"
@@ -894,7 +894,7 @@ BOOST_PYTHON_MODULE(slab)
                    "        present.\n"
                    , (py::arg("lam"), "polarization", "side"));
         solver.def("compute_transmitted_orders", &FourierSolver2D_transmittedAmplitudes,
-                   "Compute Fourier coefficients of the reflected field on the perpendicular incidence [%].\n\n"
+                   "Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
                    "Args:\n"
                    "    lam (float): Incident light wavelength.\n"
                    "    polarization: Specification of the incident light polarization.\n"
