@@ -335,6 +335,13 @@ BOOST_PYTHON_MODULE(_plask)
                       "Solvers usually get initialized at the beginning of the computations.\n"
                       "You can clean the initialization state and free the memory by calling\n"
                       "the :meth:`invalidate` method.")
+        .def("initialize", &plask::Solver::initCalculation,
+             "Initialize solver.\n\n"
+             "This method manually initialized the solver and sets :attr:`initialized` to\n"
+             "*True*. Normally calling it is not necessary, as each solver automatically\n"
+             "initializes itself when needed.\n\n"
+             "Returns:\n"
+             "    bool: solver :attr:`initialized` state prior to this method call.")
         .def("invalidate", &plask::Solver::invalidate,
              "Set the solver back to uninitialized state.\n\n"
              "This method frees the memory allocated by the solver and sets\n"

@@ -40,7 +40,7 @@ static py::list Space_getMatching(const shared_ptr<SpaceType>& self, const py::o
 
 template <typename SpaceType>
 static py::list Space_getWithRole(const shared_ptr<SpaceType>& self, const std::string& role) {
-    std::vector<shared_ptr<const GeometryObject>> objs = self->getChild()->getObjects(GeometryObject::PredicateHasRole(role));
+    std::vector<shared_ptr<const GeometryObject>> objs = self->getObjectsWithRole(role);
     py::list result;
     for (auto i: objs) result.append(const_pointer_cast<GeometryObject>(i));
     return result;

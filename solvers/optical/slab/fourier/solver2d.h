@@ -18,8 +18,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     struct Mode {
         FourierSolver2D* solver;                            ///< Solver this mode belongs to
-        ExpansionPW2D::Component symmetry;                  ///< Mode horizontal symmetry
-        ExpansionPW2D::Component polarization;              ///< Mode polarization
+        Expansion::Component symmetry;                  ///< Mode horizontal symmetry
+        Expansion::Component polarization;              ///< Mode polarization
         dcomplex k0;                                        ///< Stored mode frequency
         dcomplex beta;                                      ///< Stored mode effective index
         dcomplex ktran;                                     ///< Stored mode transverse wavevector
@@ -88,19 +88,38 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         invalidate();
     }
 
+    /// Set transverse wavevector
+    void setKtran(dcomplex k)  {
+        if (k != 0. && expansion.symmetric()) {
+            Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
+            expansion.symmetry = Expansion::E_UNSPECIFIED;
+            invalidate();
+        }
+        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        ktran = k;
+    }
+
+    /// Set transverse wavevector
+    void setKlong(dcomplex k)  {
+        if (k != 0. && expansion.separated()) {
+            Solver::writelog(LOG_WARNING, "Resetting polarizations separation");
+            expansion.polarization = Expansion::E_UNSPECIFIED;
+            invalidate();
+        }
+        if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
+        klong = k;
+    }
+
     /// Return current mode symmetry
-    ExpansionPW2D::Component getSymmetry() const { return expansion.symmetry; }
+    Expansion::Component getSymmetry() const { return expansion.symmetry; }
     /// Set new mode symmetry
-    void setSymmetry(ExpansionPW2D::Component symmetry) {
+    void setSymmetry(Expansion::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
-        if (expansion.initialized) {
-            if (expansion.symmetric() && symmetry == ExpansionPW2D::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric() && symmetry != ExpansionPW2D::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot add mode symmetry now -- invalidate the solver first", getId());
-        }
-        if (ktran != 0.) {
+        if ((expansion.symmetric() && symmetry == Expansion::E_UNSPECIFIED) ||
+            (!expansion.symmetric() && symmetry != Expansion::E_UNSPECIFIED))
+            invalidate();
+        if (ktran != 0. && symmetry != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
         }
@@ -108,30 +127,16 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         expansion.symmetry = symmetry;
     }
 
-    /// Set transverse wavevector
-    void setKtran(dcomplex k)  {
-        if (k != 0.) {
-            if (expansion.symmetric()) {
-                if (expansion.initialized)
-                    throw Exception("%1%: Cannot remove mode symmetry now -- invalidate the solver first", getId());
-                else
-                    Solver::writelog(LOG_WARNING, "Resetting mode symmetry");
-            }
-            expansion.symmetry = Expansion::E_UNSPECIFIED;
-        }
-        if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-        ktran = k;
-    }
-
     /// Return current mode polarization
-    ExpansionPW2D::Component getPolarization() const { return expansion.polarization; }
+    Expansion::Component getPolarization() const { return expansion.polarization; }
     /// Set new mode polarization
-    void setPolarization(ExpansionPW2D::Component polarization) {
-        if (expansion.initialized) {
-            if (expansion.separated() && polarization == ExpansionPW2D::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot remove polarizations separation now -- invalidate the solver first", getId());
-            if (!expansion.separated() && polarization != ExpansionPW2D::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot add polarizations separation now -- invalidate the solver first", getId());
+    void setPolarization(Expansion::Component polarization) {
+        if ((expansion.separated() && polarization == Expansion::E_UNSPECIFIED) ||
+            (!expansion.separated() && polarization != Expansion::E_UNSPECIFIED))
+            invalidate();
+        if (klong != 0. && polarization != Expansion::E_UNSPECIFIED) {
+            Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
+            klong = 0.;
         }
         expansion.polarization = polarization;
     }
@@ -147,12 +152,12 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param savidx pointer to which optionally save nonzero incident index
      * \return incident field vector
      */
-    cvector incidentVector(ExpansionPW2D::Component polarization, size_t* savidx=nullptr) {
+    cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
         size_t idx;
-        if (polarization == ExpansionPW2D::E_UNSPECIFIED)
+        if (polarization == Expansion::E_UNSPECIFIED)
             throw BadInput(getId(), "Wrong incident polarization specified for the reflectivity computation");
         if (expansion.symmetric()) {
-            if (expansion.symmetry == ExpansionPW2D::E_UNSPECIFIED)
+            if (expansion.symmetry == Expansion::E_UNSPECIFIED)
                 expansion.symmetry = polarization;
             else if (expansion.symmetry != polarization)
                 throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
@@ -161,7 +166,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
             expansion.polarization = polarization;
             idx = expansion.iE(0);
         } else {
-            idx = (polarization == ExpansionPW2D::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
+            idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
         }
         if (savidx) *savidx = idx;
         cvector incident(expansion.matrixSize(), 0.);
@@ -206,21 +211,21 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    cvector getReflectedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
+    cvector getReflectedAmplitudes(Expansion::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
      * Get amplitudes of transmitted diffraction orders
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    cvector getTransmittedAmplitudes(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence);
+    cvector getTransmittedAmplitudes(Expansion::Component polarization, Transfer::IncidentDirection incidence);
 
     /**
      * Get reflection coefficient
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    double getReflection(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+    double getReflection(Expansion::Component polarization, Transfer::IncidentDirection incidence) {
         return sumAmplitutes(getReflectedAmplitudes(polarization, incidence));
     }
 
@@ -229,7 +234,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param polarization polarization of the perpendicularly incident light
      * \param incidence incidence side
      */
-    double getTransmission(ExpansionPW2D::Component polarization, Transfer::IncidentDirection incidence) {
+    double getTransmission(Expansion::Component polarization, Transfer::IncidentDirection incidence) {
         return sumAmplitutes(getTransmittedAmplitudes(polarization, incidence));
     }
 
@@ -240,7 +245,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldE(ExpansionPW2D::Component polarization,
+    DataVector<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
                                                    Transfer::IncidentDirection incident,
                                                    shared_ptr<const MeshD<2>> dst_mesh,
                                                    InterpolationMethod method) {
@@ -256,7 +261,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<Vec<3,dcomplex>> getReflectedFieldH(ExpansionPW2D::Component polarization,
+    DataVector<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
                                                    Transfer::IncidentDirection incident,
                                                    shared_ptr<const MeshD<2>> dst_mesh,
                                                    InterpolationMethod method) {
@@ -272,7 +277,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    DataVector<double> getReflectedFieldMagnitude(ExpansionPW2D::Component polarization,
+    DataVector<double> getReflectedFieldMagnitude(Expansion::Component polarization,
                                                   Transfer::IncidentDirection incident,
                                                   shared_ptr<const MeshD<2>> dst_mesh,
                                                   InterpolationMethod method) {
@@ -374,7 +379,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
          * \param polarization polarization of the perpendicularly incident light
          * \param side incidence side
          */
-        Reflected(FourierSolver2D* parent, double wavelength, ExpansionPW2D::Component polarization, Transfer::IncidentDirection side):
+        Reflected(FourierSolver2D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
             outElectricField([=](size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) -> DataVector<const Vec<3,dcomplex>> {
                 parent->setWavelength(wavelength);
                 return parent->getReflectedFieldE(polarization, side, dst_mesh, method); }, size),

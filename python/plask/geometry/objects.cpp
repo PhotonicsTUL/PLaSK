@@ -86,7 +86,7 @@ static py::list GeometryObject_getMatching(const shared_ptr<GeometryObject>& sel
 }
 
 static py::list GeometryObject_getWithRole(const shared_ptr<GeometryObject>& self, const std::string& role) {
-    std::vector<shared_ptr<const GeometryObject>> objs = self->getObjects(GeometryObject::PredicateHasRole(role));
+    std::vector<shared_ptr<const GeometryObject>> objs = self->getObjectsWithRole(role);
     py::list result;
     for (auto i: objs) result.append(const_pointer_cast<GeometryObject>(i));
     return result;

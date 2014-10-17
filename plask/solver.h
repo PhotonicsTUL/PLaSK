@@ -483,14 +483,14 @@ class PLASK_API Solver {
      */
     virtual void onInvalidate() {}
 
+  public:
+
     /**
      * This should be called on beginning of each calculation method to ensure that solver will be initialized.
      * It's does nothing if solver is already initialized and calls onInitialize() if it's not.
      * @return @c true only if solver was already initialized (before calling initCalculation)
      */
     bool initCalculation();
-
-  public:
 
     /**
      * Construct uninitialized solver.

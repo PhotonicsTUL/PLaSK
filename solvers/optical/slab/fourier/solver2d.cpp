@@ -66,34 +66,34 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             klong = reader.getAttribute<dcomplex>("k-long", klong);
             if (reader.hasAttribute("symmetry")) {
                 std::string repr = reader.requireAttribute("symmetry");
-                ExpansionPW2D::Component val;
+                Expansion::Component val;
                 AxisNames* axes = nullptr;
                 if (geometry) axes = &geometry->axisNames;
                 if (repr == "none" || repr == "NONE" || repr == "None")
-                    val = ExpansionPW2D::E_UNSPECIFIED;
+                    val = Expansion::E_UNSPECIFIED;
                 else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
                          repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
-                    val = ExpansionPW2D::E_TRAN;
+                    val = Expansion::E_TRAN;
                 else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
                          repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
-                    val = ExpansionPW2D::E_LONG;
+                    val = Expansion::E_LONG;
                 else
                     throw XMLBadAttrException(reader, "symmetry", repr, "symmetric field component name (maybe you need to specify the geometry first)");
                 setSymmetry(val);
             }
             if (reader.hasAttribute("polarization")) {
                 std::string repr = reader.requireAttribute("polarization");
-                ExpansionPW2D::Component val;
+                Expansion::Component val;
                 AxisNames* axes = nullptr;
                 if (geometry) axes = &geometry->axisNames;
                 if (repr == "none" || repr == "NONE" || repr == "None")
-                    val = ExpansionPW2D::E_UNSPECIFIED;
+                    val = Expansion::E_UNSPECIFIED;
                 else if (repr == "TE" || repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
                          repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
-                    val = ExpansionPW2D::E_TRAN;
+                    val = Expansion::E_TRAN;
                 else if (repr == "TM" || repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
                          repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
-                    val = ExpansionPW2D::E_LONG;
+                    val = Expansion::E_LONG;
                 else
                     throw XMLBadAttrException(reader, "polarization", repr, "existing field component name (maybe you need to specify the geometry first)");
                 setPolarization(val);
@@ -137,7 +137,7 @@ void FourierSolver2D::onInvalidate()
 
 size_t FourierSolver2D::findMode(dcomplex neff)
 {
-    if (expansion.polarization != ExpansionPW2D::E_UNSPECIFIED)
+    if (expansion.polarization != Expansion::E_UNSPECIFIED)
         throw Exception("%1%: Cannot search for effective index with polarization separation", getId());
     klong = neff * k0;
     if (klong == 0.) klong = 1e-12;
@@ -154,7 +154,7 @@ size_t FourierSolver2D::findMode(dcomplex neff)
 }
 
 
-cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polarization,
+cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarization,
                                                 Transfer::IncidentDirection incidence)
 {
     size_t idx;
@@ -193,7 +193,7 @@ cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polariz
             reflected[iz] = 0;
         }
     } else { // klong == 0
-        if (expansion.polarization == ExpansionPW2D::E_LONG) {
+        if (expansion.polarization == Expansion::E_LONG) {
             for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
                 size_t i = expansion.iE(n);
                 dcomplex gx = n * bt, gy = gamma[i];
@@ -212,7 +212,7 @@ cvector FourierSolver2D::getReflectedAmplitudes(ExpansionPW2D::Component polariz
 }
 
 
-cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polarization,
+cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarization,
                                                   Transfer::IncidentDirection incidence)
 {
     size_t idx;
@@ -260,7 +260,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(ExpansionPW2D::Component polar
             transmitted[iz] = 0;
         }
     } else { // klong == 0
-        if (expansion.polarization == ExpansionPW2D::E_LONG) {
+        if (expansion.polarization == Expansion::E_LONG) {
             for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
                 size_t i = expansion.iE(n);
                 dcomplex gx = n * bt, gy = gamma[i];

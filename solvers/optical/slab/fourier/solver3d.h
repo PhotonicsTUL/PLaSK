@@ -120,13 +120,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     void setSymmetryLong(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
-        if (expansion.initialized) {
-            if (expansion.symmetric_long() && symmetry == Expansion::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric_long() && symmetry != Expansion::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot add longitudinal mode symmetry now -- invalidate the solver first", getId());
-        }
-        if (klong != 0.) {
+        if ((expansion.symmetric_long() && symmetry == Expansion::E_UNSPECIFIED) ||
+            (!expansion.symmetric_long() && symmetry != Expansion::E_UNSPECIFIED))
+            invalidate();
+        if (klong != 0. && symmetry != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting klong to 0.");
             klong = 0.;
         }
@@ -140,13 +137,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
     void setSymmetryTran(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
             throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
-        if (expansion.initialized) {
-            if (expansion.symmetric_tran() && symmetry == Expansion::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
-            if (!expansion.symmetric_tran() && symmetry != Expansion::E_UNSPECIFIED)
-                throw Exception("%1%: Cannot add transverse mode symmetry now -- invalidate the solver first", getId());
-        }
-        if (ktran != 0.) {
+        if ((expansion.symmetric_tran() && symmetry == Expansion::E_UNSPECIFIED) ||
+            (!expansion.symmetric_tran() && symmetry != Expansion::E_UNSPECIFIED))
+            invalidate();
+        if (ktran != 0. && symmetry != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting ktran to 0.");
             ktran = 0.;
         }
@@ -156,14 +150,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     /// Set longitudinal wavevector
     void setKlong(dcomplex k)  {
-        if (k != 0.) {
-            if (expansion.symmetric_long()) {
-                if (expansion.initialized)
-                    throw Exception("%1%: Cannot remove longitudinal mode symmetry now -- invalidate the solver first", getId());
-                else
-                    Solver::writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
-            }
+        if (k != 0. && expansion.symmetric_long()) {
+            Solver::writelog(LOG_WARNING, "Resetting longitudinal mode symmetry");
             expansion.symmetry_long = Expansion::E_UNSPECIFIED;
+            invalidate();
         }
         if (k != klong && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         klong = k;
@@ -171,14 +161,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     /// Set transverse wavevector
     void setKtran(dcomplex k)  {
-        if (k != 0.) {
-            if (expansion.symmetric_tran()) {
-                if (expansion.initialized)
-                    throw Exception("%1%: Cannot remove transverse mode symmetry now -- invalidate the solver first", getId());
-                else
-                    Solver::writelog(LOG_WARNING, "Resetting transverse mode symmetry");
-            }
+        if (k != 0. && expansion.symmetric_tran()) {
+            Solver::writelog(LOG_WARNING, "Resetting transverse mode symmetry");
             expansion.symmetry_tran = Expansion::E_UNSPECIFIED;
+            invalidate();
         }
         if (k != ktran && transfer) transfer->fields_determined = Transfer::DETERMINED_NOTHING;
         ktran = k;

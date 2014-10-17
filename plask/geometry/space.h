@@ -468,6 +468,15 @@ public:
     }
 
     /**
+     * Get all objects with a specified role with this object as root.
+     * \param role role to search objects with
+     * \return all objects with this object as root having a specified role
+     */
+    std::vector<shared_ptr<const GeometryObject>> getObjectsWithRole(const std::string& role) const {
+        return getChild()->getObjectsWithRole(role);
+    }
+
+    /**
      * Find all paths to objects which lies at given @p point.
      * @param point point in local coordinates
      * @param all if true then return all paths if branches overlap the point

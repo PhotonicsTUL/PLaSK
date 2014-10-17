@@ -813,6 +813,24 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
     }
 
     /**
+     * Append all objects with a specified role in subtree with this in root to vector @p dest.
+     * \param dest objects destination vector
+     * \param role role to search objects with
+     */
+    void getObjectsWithRoleToVec(const std::string& role, std::vector<shared_ptr<const GeometryObject>>& dest) const {
+        getObjectsToVec(PredicateHasRole(role), dest);
+    }
+
+    /**
+     * Get all objects with a specified role in subtree with this object as root.
+     * \param role role to search objects with
+     * \return all objects in subtree with this object as root having a specified role
+     */
+    std::vector<shared_ptr<const GeometryObject>> getObjectsWithRole(const std::string& role) const {
+        return getObjects(PredicateHasRole(role));
+    }
+
+    /**
      * Get number of object children in geometry graph.
      * @return number of children
      */
