@@ -35,9 +35,9 @@ double AlGaSb::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Al*mAlSb.Eg(T,e,point) + Ga*mGaSb.Eg(T,e,point);
     else if (point == '*')
     {
-        double tEgG = Al*mAlSb.Eg(T,e,point) + Ga*mGaSb.Eg(T,e,point) - Al*Ga*(-0.044+1.22*Al);
-        double tEgX = Al*mAlSb.Eg(T,e,point) + Ga*mGaSb.Eg(T,e,point);
-        double tEgL = Al*mAlSb.Eg(T,e,point) + Ga*mGaSb.Eg(T,e,point);
+        double tEgG = Al*mAlSb.Eg(T,e,'G') + Ga*mGaSb.Eg(T,e,'G') - Al*Ga*(-0.044+1.22*Al);
+        double tEgX = Al*mAlSb.Eg(T,e,'X') + Ga*mGaSb.Eg(T,e,'X');
+        double tEgL = Al*mAlSb.Eg(T,e,'L') + Ga*mGaSb.Eg(T,e,'L');
         tEg = min(tEgG,min(tEgX,tEgL));
     }
     if (!e) return tEg;

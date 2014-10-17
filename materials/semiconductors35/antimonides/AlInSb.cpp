@@ -35,9 +35,9 @@ double AlInSb::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
     else if (point == '*')
     {
-        double tEgG = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point) - Al*In*(0.43);
-        double tEgX = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
-        double tEgL = Al*mAlSb.Eg(T,e,point) + In*mInSb.Eg(T,e,point);
+        double tEgG = Al*mAlSb.Eg(T,e,'G') + In*mInSb.Eg(T,e,'G') - Al*In*(0.43);
+        double tEgX = Al*mAlSb.Eg(T,e,'X') + In*mInSb.Eg(T,e,'X');
+        double tEgL = Al*mAlSb.Eg(T,e,'L') + In*mInSb.Eg(T,e,'L');
         tEg = min(tEgG,min(tEgX,tEgL));
     }
     if (!e) return tEg;

@@ -35,9 +35,9 @@ double AlGaAs::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point);
     else if (point == '*')
     {
-        double tEgG = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point) - Al*Ga*(-0.127+1.310*Al);
-        double tEgX = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point) - Al*Ga*(0.055);
-        double tEgL = Al*mAlAs.Eg(T,e,point) + Ga*mGaAs.Eg(T,e,point);
+        double tEgG = Al*mAlAs.Eg(T,e,'G') + Ga*mGaAs.Eg(T,e,'G') - Al*Ga*(-0.127+1.310*Al);
+        double tEgX = Al*mAlAs.Eg(T,e,'X') + Ga*mGaAs.Eg(T,e,'X') - Al*Ga*(0.055);
+        double tEgL = Al*mAlAs.Eg(T,e,'L') + Ga*mGaAs.Eg(T,e,'L');
         tEg = min(tEgG,min(tEgX,tEgL));
     }
     if (!e) return tEg;

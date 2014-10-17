@@ -35,9 +35,9 @@ double GaInP::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*1.03;
     else if (point == '*')
     {
-        double tEgG = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*0.65;
-        double tEgX = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*0.20;
-        double tEgL = Ga*mGaP.Eg(T, e, point) + In*mInP.Eg(T, e, point) - Ga*In*1.03;
+        double tEgG = Ga*mGaP.Eg(T, e, 'G') + In*mInP.Eg(T, e, 'G') - Ga*In*0.65;
+        double tEgX = Ga*mGaP.Eg(T, e, 'X') + In*mInP.Eg(T, e, 'X') - Ga*In*0.20;
+        double tEgL = Ga*mGaP.Eg(T, e, 'L') + In*mInP.Eg(T, e, 'L') - Ga*In*1.03;
         tEg = min(tEgG,min(tEgX,tEgL));
     }
     if (!e) return tEg;

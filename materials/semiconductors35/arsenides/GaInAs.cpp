@@ -35,9 +35,9 @@ double GaInAs::Eg(double T, double e, char point) const {
     else if (point == 'L') tEg = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*0.33;
     else if (point == '*')
     {
-        double tEgG = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*0.477;
-        double tEgX = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*1.4;
-        double tEgL = Ga*mGaAs.Eg(T,e,point) + In*mInAs.Eg(T,e,point) - Ga*In*0.33;
+        double tEgG = Ga*mGaAs.Eg(T,e,'G') + In*mInAs.Eg(T,e,'G') - Ga*In*0.477;
+        double tEgX = Ga*mGaAs.Eg(T,e,'X') + In*mInAs.Eg(T,e,'X') - Ga*In*1.4;
+        double tEgL = Ga*mGaAs.Eg(T,e,'L') + In*mInAs.Eg(T,e,'L') - Ga*In*0.33;
         tEg = min(tEgG,min(tEgX,tEgL));
     }
     if (!e) return tEg;
