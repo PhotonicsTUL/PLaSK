@@ -170,7 +170,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
         }
         if (savidx) *savidx = idx;
         cvector incident(expansion.matrixSize(), 0.);
-        incident[idx] = 1.;
+        incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
         return incident;
     }
 
