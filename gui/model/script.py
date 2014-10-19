@@ -36,6 +36,6 @@ class ScriptModel(SectionModel):
         return self._code
 
     def set_text(self, text):
-        self._code = text
+        self._code = text.expandtabs()
         self.fire_changed()
 

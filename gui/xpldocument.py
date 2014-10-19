@@ -34,8 +34,11 @@ class XPLDocument(object):
         self.window = window
         self.defines = GUIAndSourceController(DefinesController(self))
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
-        self.geometry = GUIAndSourceController(GeometryController(self))
-        #self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
+        from . import _DEBUG
+        if _DEBUG:
+            self.geometry = GUIAndSourceController(GeometryController(self))
+        else:
+            self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
         self.grids = GUIAndSourceController(GridsController(self))
         self.script = ScriptController(self)
         #self.solvers = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4]))

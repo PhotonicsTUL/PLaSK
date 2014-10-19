@@ -12,12 +12,6 @@
 
 import sys
 
-try:
-    from .pycode import PyCode
-except ImportError:
-    PyCode = None
-    sys.stderr.write('Could not initialize PyCode\n')
-
 from ...qt import QtGui
 
 from .editor import ScriptEditor
@@ -80,15 +74,11 @@ class ScriptController(SourceEditController):
         self.highlighter = SyntaxHighlighter(source.editor.document(),
                                              *load_syntax(syntax, scheme),
                                              default_font=DEFAULT_FONT)
-        if PyCode:
-            self.pycode = PyCode(".", source.editor)
 
         return source
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
-        if PyCode:
-            self.pycode.prefix = self.document.stubs()
 
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()

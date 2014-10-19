@@ -17,45 +17,45 @@
 </materials>
 
 <geometry>
-  <cylindrical2d axes="rz" name="GeoTE">
+  <cylindrical2d name="GeoTE" axes="rz">
     <stack>
       <shelf>
         <gap total="{mesaRadius-1}"/>
-        <block dr="4" dz="0.0500" material="Au" name="n-contact"/>
+        <block name="n-contact" material="Au" dr="4" dz="0.0500"/>
       </shelf>
       <stack name="VCSEL">
         <stack name="top-DBR" repeat="24">
-          <block dr="{mesaRadius}" dz="0.07003" material="GaAs:Si=2e+18"/>
-          <block dr="{mesaRadius}" dz="0.07945" material="Al(0.73)GaAs:Si=2e+18"/>
+          <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+          <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07945"/>
         </stack>
-        <block dr="{mesaRadius}" dz="0.07003" material="GaAs:Si=2e+18"/>
-        <block dr="{mesaRadius}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
+        <block material="GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.07003"/>
+        <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
         <shelf>
-          <block dr="{aperture}" dz="0.01603" material="AlAs:Si=2e+18" name="aperture"/>
-          <block dr="{mesaRadius-aperture}" dz="0.01603" material="AlxOy" name="oxide"/>
+          <block name="aperture" material="AlAs:Si=2e+18" dr="{aperture}" dz="0.01603"/>
+          <block name="oxide" material="AlxOy" dr="{mesaRadius-aperture}" dz="0.01603"/>
         </shelf>
-        <block dr="{mesaRadius}" dz="0.03178" material="Al(0.73)GaAs:Si=2e+18"/>
-        <block dr="{mesaRadius}" dz="0.11756" material="GaAs:Si=5e+17"/>
-        <stack role="active" name="junction">
-          <block dr="{mesaRadius}" dz="0.005" material="InGaAsQW" role="QW"/>
+        <block material="Al(0.73)GaAs:Si=2e+18" dr="{mesaRadius}" dz="0.03178"/>
+        <block material="GaAs:Si=5e+17" dr="{mesaRadius}" dz="0.11756"/>
+        <stack name="junction" role="active">
+          <block role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
           <stack repeat="4">
-            <block dr="{mesaRadius}" dz="0.005" material="GaAs"/>
-            <block dr="{mesaRadius}" dz="0.005" material="InGaAsQW" role="QW"/>
+            <block material="GaAs" dr="{mesaRadius}" dz="0.005"/>
+            <block role="QW" material="InGaAsQW" dr="{mesaRadius}" dz="0.005"/>
           </stack>
         </stack>
-        <block dr="{mesaRadius}" dz="0.11756" material="GaAs:C=5e+17"/>
+        <block material="GaAs:C=5e+17" dr="{mesaRadius}" dz="0.11756"/>
         <stack name="bottom-DBR" repeat="29">
-          <block dr="{mesaRadius}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
-          <block dr="{mesaRadius}" dz="0.07003" material="GaAs:C=2e+18"/>
+          <block material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
+          <block material="GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07003"/>
         </stack>
-        <block dr="{mesaRadius}" dz="0.07945" material="Al(0.73)GaAs:C=2e+18"/>
+        <block material="Al(0.73)GaAs:C=2e+18" dr="{mesaRadius}" dz="0.07945"/>
       </stack>
       <zero/>
-      <block dr="200." dz="150." material="GaAs:C=2e+18"/>
-      <block dr="2500." dz="5000." material="Cu" name="p-contact"/>
+      <block material="GaAs:C=2e+18" dr="200." dz="150."/>
+      <block name="p-contact" material="Cu" dr="2500." dz="5000."/>
     </stack>
   </cylindrical2d>
-  <cylindrical2d axes="rz" name="GeoO" top="air" bottom="GaAs" outer="extend">
+  <cylindrical2d name="GeoO" axes="rz" bottom="GaAs" outer="extend" top="air">
     <again ref="VCSEL"/>
   </cylindrical2d>
 </geometry>
@@ -142,9 +142,9 @@ def loss_on_voltage(voltage):
     verr = ELECTRICAL.compute(1)
     terr = THERMAL.compute(1)
     iters=0
-    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters<15:
+    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters < 15:
         verr = ELECTRICAL.compute(8)
-	terr = THERMAL.compute(1)
+        terr = THERMAL.compute(1)
         iters += 1
     DIFFUSION.compute_threshold()
     det_lams = linspace(OPTICAL.lam0-2, OPTICAL.lam0+2, 401)+0.2j*(voltage-0.5)/1.5
@@ -158,7 +158,7 @@ def loss_on_voltage(voltage):
               'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
               .format(voltage[0], ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
     return mode_loss
-		
+                
 OPTICAL.lam0 = 981.5
 OPTICAL.vat = 0
 
@@ -222,6 +222,14 @@ gcf().canvas.set_window_title("Default mesh")
 
 show()
 
+sys.exit()
+
+if True:
+    if a:
+        d()
+    else:
+        c()
+    
 ]]></script>
 
 </plask>
