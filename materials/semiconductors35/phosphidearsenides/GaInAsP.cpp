@@ -18,6 +18,7 @@ std::string GaInAsP::str() const { return StringBuilder("Ga")("In", In)("As")("P
 std::string GaInAsP::name() const { return NAME; }
 
 MI_PROPERTY(GaInAsP, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::lattC(double T, char x) const {
@@ -30,7 +31,8 @@ double GaInAsP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInAsP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -61,6 +63,7 @@ double GaInAsP::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsP, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::Dso(double T, double e) const {
@@ -70,6 +73,7 @@ double GaInAsP::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaInAsP, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 Tensor2<double> GaInAsP::Me(double T, double e, char point) const {
@@ -83,6 +87,7 @@ Tensor2<double> GaInAsP::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsP, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 Tensor2<double> GaInAsP::Mhh(double T, double e) const {
@@ -94,6 +99,7 @@ Tensor2<double> GaInAsP::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInAsP, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 Tensor2<double> GaInAsP::Mlh(double T, double e) const {
@@ -114,6 +120,7 @@ double GaInAsP::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsP, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::VB(double T, double e, char point, char hole) const {
@@ -132,6 +139,7 @@ double GaInAsP::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaInAsP, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::ac(double T) const {
@@ -141,6 +149,7 @@ double GaInAsP::ac(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::av(double T) const {
@@ -148,6 +157,7 @@ double GaInAsP::av(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::b(double T) const {
@@ -155,6 +165,7 @@ double GaInAsP::b(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::d(double T) const {
@@ -162,6 +173,7 @@ double GaInAsP::d(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::c11(double T) const {
@@ -169,6 +181,7 @@ double GaInAsP::c11(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::c12(double T) const {
@@ -176,6 +189,7 @@ double GaInAsP::c12(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::c44(double T) const {
@@ -183,7 +197,8 @@ double GaInAsP::c44(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: GaP, InP, GaAs, InAs")
             )
 Tensor2<double> GaInAsP::thermk(double T, double t) const {
     double lCondT = 1./(Ga*As/mGaAs.thermk(T,t).c00 + Ga*P/mGaP.thermk(T,t).c00

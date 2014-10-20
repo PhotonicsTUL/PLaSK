@@ -16,6 +16,7 @@ std::string GaInP::str() const { return StringBuilder("In", In)("Ga")("P"); }
 std::string GaInP::name() const { return NAME; }
 
 MI_PROPERTY(GaInP, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::lattC(double T, char x) const {
@@ -26,7 +27,8 @@ double GaInP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaP, InP")
             )
 double GaInP::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -45,6 +47,7 @@ double GaInP::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInP, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::Dso(double T, double e) const {
@@ -52,6 +55,7 @@ double GaInP::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaInP, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: GaP, InP")
             )
 Tensor2<double> GaInP::Me(double T, double e, char point) const {
@@ -61,6 +65,7 @@ Tensor2<double> GaInP::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInP, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, InP")
             )
 Tensor2<double> GaInP::Mhh(double T, double e) const {
@@ -70,6 +75,7 @@ Tensor2<double> GaInP::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInP, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, InP")
             )
 Tensor2<double> GaInP::Mlh(double T, double e) const {
@@ -88,6 +94,7 @@ double GaInP::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInP, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::VB(double T, double e, char point, char hole) const {
@@ -104,6 +111,7 @@ double GaInP::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaInP, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::ac(double T) const {
@@ -111,6 +119,7 @@ double GaInP::ac(double T) const {
 }
 
 MI_PROPERTY(GaInP, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::av(double T) const {
@@ -118,6 +127,7 @@ double GaInP::av(double T) const {
 }
 
 MI_PROPERTY(GaInP, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::b(double T) const {
@@ -125,6 +135,7 @@ double GaInP::b(double T) const {
 }
 
 MI_PROPERTY(GaInP, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::d(double T) const {
@@ -132,6 +143,7 @@ double GaInP::d(double T) const {
 }
 
 MI_PROPERTY(GaInP, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::c11(double T) const {
@@ -139,6 +151,7 @@ double GaInP::c11(double T) const {
 }
 
 MI_PROPERTY(GaInP, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::c12(double T) const {
@@ -146,6 +159,7 @@ double GaInP::c12(double T) const {
 }
 
 MI_PROPERTY(GaInP, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, InP")
             )
 double GaInP::c44(double T) const {
@@ -153,7 +167,7 @@ double GaInP::c44(double T) const {
 }
 
 MI_PROPERTY(GaInP, A,
-            MISource("L. Piskorski, master thesis"),
+            MISource("L. Piskorski, Analiza numeryczna polprzewodnikowego lasera zlaczowego typu VCSEL emitujacego promieniowanie o dlugości fali dostosowanej do systemow telekomunikacyjnych bazujacych na swiatlowodach plastikowych (in Polish), MSc thesis, 2006"),
             MIComment("no temperature dependence")
             )
 double GaInP::A(double T) const {
@@ -161,8 +175,7 @@ double GaInP::A(double T) const {
 }
 
 MI_PROPERTY(GaInP, B,
-            MISource("L. Piskorski, master thesis"),
-            MIComment("TODO")
+            MISource("L. Piskorski, Analiza numeryczna polprzewodnikowego lasera zlaczowego typu VCSEL emitujacego promieniowanie o dlugości fali dostosowanej do systemow telekomunikacyjnych bazujacych na swiatlowodach plastikowych (in Polish), MSc thesis, 2006")
             )
 double GaInP::B(double T) const {
     return ( 1e-10*pow(300/T,1.5) );
@@ -170,8 +183,7 @@ double GaInP::B(double T) const {
 
 MI_PROPERTY(GaInP, C,
             MISource("W. W. Chow et al., IEEE Journal of Selected Topics in Quantum Electronics 1 (1995) 649-653"),
-            MIComment("no temperature dependence"),
-            MIComment("TODO")
+            MIComment("no temperature dependence")
             )
 double GaInP::C(double T) const {
     return ( 3.5e-30 );
@@ -179,14 +191,15 @@ double GaInP::C(double T) const {
 
 MI_PROPERTY(GaInP, D,
             MISource("O. Imafuji et al., Journal of Selected Topics in Quantum Electronics 5 (1999) 721-728"), // D(300K)
-            MISource("L. Piskorski, master thesis") // D(T)
+            MISource("L. Piskorski, Analiza numeryczna polprzewodnikowego lasera zlaczowego typu VCSEL emitujacego promieniowanie o dlugości fali dostosowanej do systemow telekomunikacyjnych bazujacych na swiatlowodach plastikowych (in Polish), MSc thesis, 2006") // D(T)
             )
 double GaInP::D(double T) const {
     return ( T/300. );
 }
 
 MI_PROPERTY(GaInP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: GaP, InP")
             )
 Tensor2<double> GaInP::thermk(double T, double t) const {
     double lCondT = 1./(Ga/mGaP.thermk(T,t).c00 + In/mInP.thermk(T,t).c00 + Ga*In*0.72),

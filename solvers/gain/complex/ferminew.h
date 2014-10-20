@@ -99,7 +99,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                     if (lastbarrier) ++qwn;
                     else solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
                     lastbarrier = false;
-                    writelog(LOG_DETAIL, "has role QW checked");
+                    //writelog(LOG_DETAIL, "has role QW checked");
                 }
                 else //if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier")) // TODO 4.09.2014
                 {
@@ -115,7 +115,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                              !is_zero(material->VB(300) - materialBarrier->VB(300)))
                         throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());*/
                     lastbarrier = true;
-                    writelog(LOG_DETAIL, "has role barrier checked");
+                    //writelog(LOG_DETAIL, "has role barrier checked");
                 } // TODO something must be added here because of spacers placed next to external barriers
             }
             qwtotallen *= 1e4; // µm -> Å

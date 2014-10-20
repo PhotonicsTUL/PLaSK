@@ -16,6 +16,7 @@ std::string InAsSb::str() const { return StringBuilder("In")("As")("Sb", Sb); }
 std::string InAsSb::name() const { return NAME; }
 
 MI_PROPERTY(InAsSb, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::lattC(double T, char x) const {
@@ -26,7 +27,8 @@ double InAsSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(InAsSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: InAs, InSb")
             )
 double InAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -45,6 +47,7 @@ double InAsSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InAsSb, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: InAs, InSb")
             )
 double InAsSb::Dso(double T, double e) const {
@@ -52,6 +55,7 @@ double InAsSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(InAsSb, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: InAs, InSb")
             )
 Tensor2<double> InAsSb::Me(double T, double e, char point) const {
@@ -61,6 +65,7 @@ Tensor2<double> InAsSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InAsSb, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: InAs, InSb")
             )
 Tensor2<double> InAsSb::Mhh(double T, double e) const {
@@ -70,6 +75,7 @@ Tensor2<double> InAsSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(InAsSb, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: InAs, InSb")
             )
 Tensor2<double> InAsSb::Mlh(double T, double e) const {
@@ -88,6 +94,7 @@ double InAsSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InAsSb, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::VB(double T, double e, char point, char hole) const {
@@ -104,6 +111,7 @@ double InAsSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(InAsSb, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::ac(double T) const {
@@ -111,6 +119,7 @@ double InAsSb::ac(double T) const {
 }
 
 MI_PROPERTY(InAsSb, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::av(double T) const {
@@ -118,6 +127,7 @@ double InAsSb::av(double T) const {
 }
 
 MI_PROPERTY(InAsSb, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::b(double T) const {
@@ -125,6 +135,7 @@ double InAsSb::b(double T) const {
 }
 
 MI_PROPERTY(InAsSb, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::d(double T) const {
@@ -132,6 +143,7 @@ double InAsSb::d(double T) const {
 }
 
 MI_PROPERTY(InAsSb, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::c11(double T) const {
@@ -139,6 +151,7 @@ double InAsSb::c11(double T) const {
 }
 
 MI_PROPERTY(InAsSb, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::c12(double T) const {
@@ -146,6 +159,7 @@ double InAsSb::c12(double T) const {
 }
 
 MI_PROPERTY(InAsSb, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: InAs, InSb")
             )
 double InAsSb::c44(double T) const {
@@ -153,7 +167,8 @@ double InAsSb::c44(double T) const {
 }
 
 MI_PROPERTY(InAsSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: InAs, InSb")
             )
 Tensor2<double> InAsSb::thermk(double T, double t) const {
     double lCondT = 1./(As/mInAs.thermk(T,t).c00 + Sb/mInSb.thermk(T,t).c00 + As*Sb*0.91),

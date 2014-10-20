@@ -16,6 +16,7 @@ std::string GaAsSb::str() const { return StringBuilder("Ga")("As")("Sb", Sb); }
 std::string GaAsSb::name() const { return NAME; }
 
 MI_PROPERTY(GaAsSb, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::lattC(double T, char x) const {
@@ -26,7 +27,8 @@ double GaAsSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaAsSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaAs, GaSb")
             )
 double GaAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -45,6 +47,7 @@ double GaAsSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaAsSb, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: GaAs, GaSb")
             )
 double GaAsSb::Dso(double T, double e) const {
@@ -52,6 +55,7 @@ double GaAsSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaAsSb, Me,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MISource("nonlinear interpolation: GaAs, GaSb")
             )
 Tensor2<double> GaAsSb::Me(double T, double e, char point) const {
@@ -61,6 +65,7 @@ Tensor2<double> GaAsSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaAsSb, Mhh,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 Tensor2<double> GaAsSb::Mhh(double T, double e) const {
@@ -70,6 +75,7 @@ Tensor2<double> GaAsSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaAsSb, Mlh,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 Tensor2<double> GaAsSb::Mlh(double T, double e) const {
@@ -88,6 +94,7 @@ double GaAsSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaAsSb, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: GaAs, GaSb")
             )
 double GaAsSb::VB(double T, double e, char point, char hole) const {
@@ -104,6 +111,7 @@ double GaAsSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaAsSb, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::ac(double T) const {
@@ -111,6 +119,7 @@ double GaAsSb::ac(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::av(double T) const {
@@ -118,6 +127,7 @@ double GaAsSb::av(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::b(double T) const {
@@ -125,6 +135,7 @@ double GaAsSb::b(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::d(double T) const {
@@ -132,6 +143,7 @@ double GaAsSb::d(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::c11(double T) const {
@@ -139,6 +151,7 @@ double GaAsSb::c11(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::c12(double T) const {
@@ -146,6 +159,7 @@ double GaAsSb::c12(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaAs, GaSb")
             )
 double GaAsSb::c44(double T) const {
@@ -153,7 +167,8 @@ double GaAsSb::c44(double T) const {
 }
 
 MI_PROPERTY(GaAsSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: GaAs, GaSb")
             )
 Tensor2<double> GaAsSb::thermk(double T, double t) const {
     double lCondT = 1./(As/mGaAs.thermk(T,t).c00 + Sb/mGaSb.thermk(T,t).c00 + As*Sb*0.91),

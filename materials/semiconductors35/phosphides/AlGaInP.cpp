@@ -17,6 +17,7 @@ std::string AlGaInP::str() const { return StringBuilder("Al", Al)("Ga", Ga)("In"
 std::string AlGaInP::name() const { return NAME; }
 
 MI_PROPERTY(AlGaInP, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::lattC(double T, char x) const {
@@ -24,7 +25,8 @@ double AlGaInP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaInP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -49,6 +51,7 @@ double AlGaInP::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInP, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::Dso(double T, double e) const {
@@ -57,6 +60,7 @@ double AlGaInP::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaInP, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: AlP, GaP, InP")
             )
 Tensor2<double> AlGaInP::Me(double T, double e, char point) const {
@@ -68,6 +72,7 @@ Tensor2<double> AlGaInP::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInP, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 Tensor2<double> AlGaInP::Mhh(double T, double e) const {
@@ -77,6 +82,7 @@ Tensor2<double> AlGaInP::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaInP, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 Tensor2<double> AlGaInP::Mlh(double T, double e) const {
@@ -95,6 +101,7 @@ double AlGaInP::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInP, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::VB(double T, double e, char point, char hole) const {
@@ -111,6 +118,7 @@ double AlGaInP::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlGaInP, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::ac(double T) const {
@@ -118,6 +126,7 @@ double AlGaInP::ac(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::av(double T) const {
@@ -125,6 +134,7 @@ double AlGaInP::av(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::b(double T) const {
@@ -132,6 +142,7 @@ double AlGaInP::b(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::d(double T) const {
@@ -139,6 +150,7 @@ double AlGaInP::d(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::c11(double T) const {
@@ -146,6 +158,7 @@ double AlGaInP::c11(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::c12(double T) const {
@@ -153,6 +166,7 @@ double AlGaInP::c12(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, GaP, InP")
             )
 double AlGaInP::c44(double T) const {
@@ -160,7 +174,8 @@ double AlGaInP::c44(double T) const {
 }
 
 MI_PROPERTY(AlGaInP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: AlP, GaP, InP")
             )
 Tensor2<double> AlGaInP::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlP.thermk(T,t).c00 + Ga/mGaP.thermk(T,t).c00 + In/mInP.thermk(T,t).c00

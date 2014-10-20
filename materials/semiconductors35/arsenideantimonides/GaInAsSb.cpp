@@ -196,7 +196,8 @@ double GaInAsSb::c44(double T) const {
 }
 
 MI_PROPERTY(GaInAsSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: GaSb, InSb, GaAs, InAs")
             )
 Tensor2<double> GaInAsSb::thermk(double T, double t) const {
     double lCondT = 1./(Ga*As/mGaAs.thermk(T,t).c00 + Ga*Sb/mGaSb.thermk(T,t).c00

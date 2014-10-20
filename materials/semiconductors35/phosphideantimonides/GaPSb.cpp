@@ -16,6 +16,7 @@ std::string GaPSb::str() const { return StringBuilder("Ga")("P")("Sb", Sb); }
 std::string GaPSb::name() const { return NAME; }
 
 MI_PROPERTY(GaPSb, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::lattC(double T, char x) const {
@@ -26,7 +27,8 @@ double GaPSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaPSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaP, GaSb")
             )
 double GaPSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -45,6 +47,7 @@ double GaPSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaPSb, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::Dso(double T, double e) const {
@@ -52,6 +55,7 @@ double GaPSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaPSb, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, GaSb")
             )
 Tensor2<double> GaPSb::Me(double T, double e, char point) const {
@@ -61,6 +65,7 @@ Tensor2<double> GaPSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaPSb, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, GaSb")
             )
 Tensor2<double> GaPSb::Mhh(double T, double e) const {
@@ -70,6 +75,7 @@ Tensor2<double> GaPSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaPSb, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaP, GaSb")
             )
 Tensor2<double> GaPSb::Mlh(double T, double e) const {
@@ -88,6 +94,7 @@ double GaPSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaPSb, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::VB(double T, double e, char point, char hole) const {
@@ -104,6 +111,7 @@ double GaPSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaPSb, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::ac(double T) const {
@@ -111,6 +119,7 @@ double GaPSb::ac(double T) const {
 }
 
 MI_PROPERTY(GaPSb, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::av(double T) const {
@@ -118,6 +127,7 @@ double GaPSb::av(double T) const {
 }
 
 MI_PROPERTY(GaPSb, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::b(double T) const {
@@ -125,6 +135,7 @@ double GaPSb::b(double T) const {
 }
 
 MI_PROPERTY(GaPSb, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::d(double T) const {
@@ -132,6 +143,7 @@ double GaPSb::d(double T) const {
 }
 
 MI_PROPERTY(GaPSb, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::c11(double T) const {
@@ -139,6 +151,7 @@ double GaPSb::c11(double T) const {
 }
 
 MI_PROPERTY(GaPSb, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::c12(double T) const {
@@ -146,6 +159,7 @@ double GaPSb::c12(double T) const {
 }
 
 MI_PROPERTY(GaPSb, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaP, GaSb")
             )
 double GaPSb::c44(double T) const {
@@ -153,7 +167,8 @@ double GaPSb::c44(double T) const {
 }
 
 MI_PROPERTY(GaPSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: GaP, GaSb")
             )
 Tensor2<double> GaPSb::thermk(double T, double t) const {
     double lCondT = 1./(P/mGaP.thermk(T,t).c00 + Sb/mGaSb.thermk(T,t).c00 + P*Sb*0.16),

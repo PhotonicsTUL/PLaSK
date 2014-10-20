@@ -901,7 +901,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   for(i = 1; i <= (int) tablica.size() - 2; i++)
     {
       //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
-    writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+    //writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
     if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
 	{
       //std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<" w "<<co<<": "<<(tablica[i - 1]->x_kon)<<" =/= "<<(tablica[i]->x_pocz)<<"\n";
@@ -923,7 +923,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co)
   //  std::clog<<"i = "<<i<<"\tx_pocz("<<(i-1)"<<(tablica[i - 1]->x_pocz)<<"\n";
 
   //if(tablica[i - 1]->x_kon != tablica[i]->x_pocz) // LUKASZ
-  writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
+  //writelog(LOG_DETAIL, "Layers ends: %1%, %2%", tablica[i - 1]->x_kon, tablica[i]->x_pocz); // LUKASZ
   if (std::abs(tablica[i - 1]->x_kon - tablica[i]->x_pocz) > 1e-5) // LUKASZ
     {
       std::cerr<<"Rozne krance warstw "<<(i - 1)<<" i "<<i<<"\n";

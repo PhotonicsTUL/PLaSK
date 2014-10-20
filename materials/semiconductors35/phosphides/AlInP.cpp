@@ -16,6 +16,7 @@ std::string AlInP::str() const { return StringBuilder("Al", Al)("In")("P"); }
 std::string AlInP::name() const { return NAME; }
 
 MI_PROPERTY(AlInP, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::lattC(double T, char x) const {
@@ -26,7 +27,8 @@ double AlInP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlInP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: AlP, InP")
             )
 double AlInP::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -45,6 +47,7 @@ double AlInP::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInP, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: AlP, InP")
             )
 double AlInP::Dso(double T, double e) const {
@@ -52,6 +55,7 @@ double AlInP::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlInP, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlP, InP")
             )
 Tensor2<double> AlInP::Me(double T, double e, char point) const {
@@ -61,6 +65,7 @@ Tensor2<double> AlInP::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInP, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlP, InP")
             )
 Tensor2<double> AlInP::Mhh(double T, double e) const {
@@ -70,6 +75,7 @@ Tensor2<double> AlInP::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlInP, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlP, InP")
             )
 Tensor2<double> AlInP::Mlh(double T, double e) const {
@@ -88,6 +94,7 @@ double AlInP::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInP, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::VB(double T, double e, char point, char hole) const {
@@ -104,6 +111,7 @@ double AlInP::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlInP, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::ac(double T) const {
@@ -111,6 +119,7 @@ double AlInP::ac(double T) const {
 }
 
 MI_PROPERTY(AlInP, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::av(double T) const {
@@ -118,6 +127,7 @@ double AlInP::av(double T) const {
 }
 
 MI_PROPERTY(AlInP, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::b(double T) const {
@@ -125,6 +135,7 @@ double AlInP::b(double T) const {
 }
 
 MI_PROPERTY(AlInP, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::d(double T) const {
@@ -132,6 +143,7 @@ double AlInP::d(double T) const {
 }
 
 MI_PROPERTY(AlInP, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::c11(double T) const {
@@ -139,6 +151,7 @@ double AlInP::c11(double T) const {
 }
 
 MI_PROPERTY(AlInP, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::c12(double T) const {
@@ -146,6 +159,7 @@ double AlInP::c12(double T) const {
 }
 
 MI_PROPERTY(AlInP, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlP, InP")
             )
 double AlInP::c44(double T) const {
@@ -153,7 +167,8 @@ double AlInP::c44(double T) const {
 }
 
 MI_PROPERTY(AlInP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: AlP, InP")
             )
 Tensor2<double> AlInP::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlP.thermk(T,t).c00 + In/mInP.thermk(T,t).c00 + Al*In*0.15),

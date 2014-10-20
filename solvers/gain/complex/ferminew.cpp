@@ -220,7 +220,7 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                 double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
                 double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
                 region.origin += Vec<2>(0., -h);
-                writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
+                //writelog(LOG_DETAIL, "Adding bottom cladding; h = %1%",h);
                 region.layers->push_back(make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
                 region.bottomlen = h;
                 added_bottom_cladding = true;
@@ -243,8 +243,8 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                     auto layer = make_shared<Block<2>>(Vec<2>(w,h), layer_material);
                     if (layer_QW) layer->addRole("QW");
                     region->layers->push_back(layer);
-                    if (layer_QW) writelog(LOG_DETAIL, "Adding qw; h = %1%",h);
-                    else writelog(LOG_DETAIL, "Adding barrier; h = %1%",h);
+                    //if (layer_QW) writelog(LOG_DETAIL, "Adding qw; h = %1%",h);
+                    //else writelog(LOG_DETAIL, "Adding barrier; h = %1%",h);
                 }
             }
             else
@@ -258,7 +258,7 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
                         if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
                             throw Exception("%1%: Material above quantum well not uniform.", this->getId());
                     region->layers->push_back(make_shared<Block<2>>(Vec<2>(w,h), top_material));
-                    writelog(LOG_DETAIL, "Adding top cladding; h = %1%",h);
+                    //writelog(LOG_DETAIL, "Adding top cladding; h = %1%",h);
 
                     ileft = 0;
                     iright = points->axis0->size();
@@ -278,8 +278,51 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
         this->writelog(LOG_DETAIL, "Active region %1%: %2%nm single QW, %3%nm all QW, %4%nm total",
                        n++, 0.1*region.qwlen, 0.1*region.qwtotallen, 0.1*region.totallen);
     }
-}
 
+    // energy levels for active region with two identcal QWs won't be calculated so QW widths must be changed
+    this->writelog(LOG_DETAIL, "Updating QW widths");
+    n = 0;
+    for (auto& region: regions) {
+        region.lens.clear();
+        int tN = region.size(); // number of all layers in the active region (QW, barr, external)
+        int tNoOfQWs = 0; // number of QWs counter
+        for (int i=0; i<tN; ++i) {
+            if (region.isQW(i)) tNoOfQWs++;
+            region.lens.push_back(region.getLayerBox(i).height()*1e4);
+            this->writelog(LOG_DETAIL, "Layer %1% thickness: ", region.lens[i]);
+        }
+        this->writelog(LOG_DETAIL, "Number of QWs in active region %1%: %2%", n, tNoOfQWs);
+        this->writelog(LOG_DETAIL, "QW thickness %1%", region.qwlen);
+
+        double tHstep = region.qwlen*roughness/40.; // 40. - assumed (if 10 - differences in QW widths are to big)
+        this->writelog(LOG_DETAIL, "QW thickness step %1%", tHstep);
+        if ( !(tNoOfQWs%2) )
+        {
+            double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep+0.5*tHstep;
+            for (int i=0; i<tN; ++i) {
+                if (region.isQW(i))
+                {
+                    //region.
+                    this->writelog(LOG_DETAIL, "Modified thickness of layer %1%: %2%", i, tH0);
+                    tH0 += tHstep;
+                }
+            }
+        }
+        else
+        {
+            double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep;
+            for (int i=0; i<tN; ++i) {
+                if (region.isQW(i))
+                {
+                    this->writelog(LOG_DETAIL, "Modified thickness of layer %1%: %2%", i, tH0);
+                    tH0 += tHstep;
+                }
+            }
+        }
+        n++;
+    }
+
+}
 
 template <typename GeometryType>
 QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region)
@@ -372,13 +415,9 @@ int FerminewGainSolver<GeometryType>::buildStructure(double T, const ActiveRegio
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& region)
 {
-    //writelog(LOG_INFO, "Building Ec");
-
     mpEc.clear();
 
-    int tN = region.size(); // number of all layers int the active region (QW, barr, external)
-
-    writelog(LOG_DETAIL, "number of all layers int the active region: %1%", tN);
+    int tN = region.size(); // number of all layers in the active region (QW, barr, external)
 
     double eClad1 = 0.; // TODO
     double eClad2 = 0.; // TODO
@@ -389,33 +428,26 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
 
     double tX = 0.;
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::lewa, region.getLayerMaterial(0)->Me(T,eClad1).c00, region.getLayerMaterial(0)->Me(T,eClad1).c11, tX, (region.getLayerMaterial(0)->CB(T,eClad1)-tDEc)); // left cladding
-    writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", 0, region.getLayerMaterial(0)->CB(T,0.)-tDEc);
     mpEc.push_back(mpLay);
     for (int i=1; i<tN-1; ++i)
     {
         double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-        double tH = cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+        double tH = cutNumber(region.lens[i],2); // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
         mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)-tDEc)); // wells and barriers
-        writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", i, region.getLayerMaterial(i)->CB(T,e)-tDEc);
         mpEc.push_back(mpLay); tX += tH;
         if (region.getLayerMaterial(i)->CB(T,e) >= tDEc)
             tfStructOK = false;
     }
     mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Me(T,eClad2).c00, region.getLayerMaterial(tN-1)->Me(T,eClad2).c11, tX, (region.getLayerMaterial(tN-1)->CB(T,eClad2)-tDEc)); // right cladding
-    writelog(LOG_DETAIL, "Ec dla warstwy %1%: %2%", tN-1, region.getLayerMaterial(tN-1)->CB(T,0.)-tDEc);
     mpEc.push_back(mpLay); // add delete somewhere! TODO
 
-    if (tfStructOK)
-        return 0; // band structure OK
-    else
-        return -1;
+    if (tfStructOK) return 0; // band structure OK
+    else return -1;
 }
 
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo& region)
 {
-    //writelog(LOG_INFO, "Building Evhh");
-
     mpEvhh.clear();
 
     int tN = region.size(); // number of all layers int the active region (QW, barr, external)
@@ -433,9 +465,8 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         for (int i=1; i<tN-1; ++i)
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+            double tH = cutNumber(region.lens[i],2); // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh)); // wells and barriers
-            //writelog(LOG_DETAIL, "Evhh dla warstwy %1%: %2%", i, -region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh);
             mpEvhh.push_back(mpLay); tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','H') <= tDEvhh)
                 tfStructOK = false;
@@ -443,17 +474,13 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Mhh(T,eClad2).c00, region.getLayerMaterial(tN-1)->Mhh(T,eClad2).c11, tX, (-region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','H')+tDEvhh));
         mpEvhh.push_back(mpLay); // add delete somewhere! TODO
 
-        if (tfStructOK)
-            return 0; // band structure OK
-        else
-            return -1;
+        if (tfStructOK) return 0; // band structure OK
+        else return -1;
 }
 
 template <typename GeometryType>
 int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo& region)
 {
-    //writelog(LOG_INFO, "Building Evlh");
-
     mpEvlh.clear();
 
     int tN = region.size(); // number of all layers int the active region (QW, barr, external)
@@ -471,9 +498,8 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         for (int i=1; i<tN-1; ++i)
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+            double tH = cutNumber(region.lens[i],2); // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh)); // wells and barriers
-            //writelog(LOG_DETAIL, "Evlh dla warstwy %1%: %2%", i, -region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh);
             mpEvlh.push_back(mpLay); tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','L') <= tDEvlh)
                 tfStructOK = false;
@@ -481,14 +507,12 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         mpLay = new QW::warstwa_skraj(QW::warstwa_skraj::prawa, region.getLayerMaterial(tN-1)->Mlh(T,eClad2).c00, region.getLayerMaterial(tN-1)->Mlh(T,eClad2).c11, tX, (-region.getLayerMaterial(tN-1)->VB(T,eClad2,'G','L')+tDEvlh));
         mpEvlh.push_back(mpLay); // add delete somewhere! TODO
 
-        if (tfStructOK)
-            return 0; // band structure OK
-        else
-            return -1;
+        if (tfStructOK) return 0; // band structure OK
+        else return -1;
 }
 
 template <typename GeometryType>
-double FerminewGainSolver<GeometryType>::cutNumber(double iNumber, int iN)
+double FerminewGainSolver<GeometryType>::cutNumber(double iNumber, int iN) // copied from RPSMES
 {
     double x = iNumber;
     int tMulti = 10;
@@ -621,7 +645,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
                 writelog(LOG_RESULT, "koncentracja_na_cm_3 w warstwie %1% wynosi %2%", i, QW::struktura::koncentracja_na_cm_3(tN[i]));
 */
             double L = region.qwtotallen / region.totallen; // no unit
-            writelog(LOG_RESULT, "L %1%", L);
+            //writelog(LOG_RESULT, "L %1%", L);
 
             double tGehh, tGelh;
             tGehh = tGelh = 0.;
@@ -630,7 +654,7 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
             tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1) / L;
 
             gainOnMesh[i] = tGehh+tGelh;
-            writelog(LOG_RESULT, "gainOnMesh %1%", gainOnMesh[i]);
+            writelog(LOG_RESULT, "calculated gain: %1% cm-1", gainOnMesh[i]);
         }
         else if (mEc)
             throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
