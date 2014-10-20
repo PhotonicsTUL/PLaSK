@@ -65,7 +65,7 @@ class TreeFragmentModel(InfoSource):
         """
         InfoSource.__init__(self, info_cb)
         self.changed = Signal()
-        self.parent = parent
+        self.tree_parent = parent   #parent is not good name, due to its commonly using in Qt!
 
     def fire_changed(self, refresh_info=True, *args, **kwargs):
         """
@@ -76,7 +76,7 @@ class TreeFragmentModel(InfoSource):
         if 'src' not in kwargs: kwargs['src'] = self
         self.changed(self, *args, **kwargs)
         if refresh_info: self.fire_info_changed()
-        if self.parent is not None: self.parent.fire_changed(refresh_info, *args, **kwargs)
+        if self.tree_parent is not None: self.tree_parent.fire_changed(refresh_info, *args, **kwargs)
 
     def get_text(self):
         return print_interior(self.get_xml_element())
@@ -89,7 +89,7 @@ class TreeFragmentModel(InfoSource):
             (SectionModel overwrite it).
             :return: true if model is read-only (typically: has been read from external source)
         """
-        return self.parent.is_read_only()
+        return self.tree_parent.is_read_only()
 
 
 class SectionModel(TreeFragmentModel):

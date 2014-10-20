@@ -59,6 +59,10 @@ class XPLDocument(object):
         self.filename = None
         self.set_changed(False)
         if filename: self.load_from_file(filename)
+
+        if _DEBUG:  #very useful!
+            from .utils.modeltest import ModelTest
+            ModelTest(self.model_by_name('geometry'))
         #self.tree = etree()
 
     def on_model_change(self, model, *args, **kwargs):
