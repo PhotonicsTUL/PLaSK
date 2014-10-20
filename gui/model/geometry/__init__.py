@@ -55,7 +55,6 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     # QAbstractItemModel implementation:
     def columnCount(self, parent = QtCore.QModelIndex()):
-        #sys.stderr.write('columnCount {} {}\n'.format(parent.isValid(), parent.internalPointer()))
         return 2
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
@@ -68,49 +67,51 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                 return none_to_empty(getattr(item, 'name', ''))
 
     def flags(self, index):
-        #sys.stderr.write('flags {} {}\n'.format(index.isValid(), index.internalPointer()))
         if not index.isValid(): return QtCore.Qt.NoItemFlags
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        res = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        if not self.is_read_only():
+            if index.column() == 1 and hasattr(index.internalPointer(), 'name'): #name
+                res |= QtCore.Qt.ItemIsEditable
+        return res
 
     def headerData(self, section, orientation, role = QtCore.Qt.DisplayRole):
-        #sys.stderr.write('headerData {}\n'.format(section))
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return ('tag', 'name')[section]
         return None
 
     def _children_list(self, parent_index):
-        #sys.stderr.write('parent is valid: {} {}\n'.format(parent_index.isValid(), parent_index.internalPointer()))
         return parent_index.internalPointer().children if parent_index.isValid() else self.roots
 
     def index(self, row, column, parent = QtCore.QModelIndex()):
-        #sys.stderr.write('index {} {} {} {}\n'.format(parent.isValid(), parent.internalPointer(), row, column))
-        if not self.hasIndex(row, column, parent):
-            #sys.stderr.write(' self.hasIndex returns False\n')
-            return QtCore.QModelIndex()
+        if not self.hasIndex(row, column, parent): return QtCore.QModelIndex()
         l = self._children_list(parent)
-        #res = self.createIndex(row, column, l[row]) #if 0 <= row < len(l) else QtCore.QModelIndex()
-        #sys.stderr.write(' is {} {} {} {}\n'.format(res.isValid(), res.internalPointer(), res.row(), res.column()))
         return self.createIndex(row, column, l[row]) #if 0 <= row < len(l) else QtCore.QModelIndex()
-        #if row < len(l):
-        #    return self.createIndex(row, column, l[row])
-        #else:
-        #    QtCore.QModelIndex()
-
 
     def parent(self, index):
-        #sys.stderr.write('parent {} {}\n'.format(index.isValid(), index.internalPointer()))
         if not index.isValid(): return QtCore.QModelIndex()
         childItem = index.internalPointer()
         parentItem = childItem.parent
-        if parentItem is None:
-            #sys.stderr.write(' returns None')
-            return QtCore.QModelIndex()
+        if parentItem is None: return QtCore.QModelIndex()
         return self.createIndex(parentItem.children.index(childItem), 0, parentItem)
 
     def rowCount(self, parent = QtCore.QModelIndex()):
-        #sys.stderr.write('rowCount {} {}\n'.format(parent.isValid(), parent.internalPointer()))
         if parent.column() > 0: return 0
         return len(self._children_list(parent))
+
+    def set(self, col, element, value):
+        if col == 1:
+            element.name = value
+            return True
+        return False
+
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
+        if not index.isValid(): return False
+        if self.set(index.column(), index.internalPointer(), value):
+            self.fire_changed()
+            self.dataChanged.emit(index, index)
+            return True
+        else:
+            return False
 
     #def hasChildren(self, parent = QtCore.QModelIndex()):
     #    return bool(self._children_list(parent))
