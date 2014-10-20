@@ -12,6 +12,7 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
     matrixelem = 0.; // [m0*eV]
     differenceQuotient = 0.01;  // [%]
     if_strain = false;
+    if_fixed_QWs_widths = false;
     inTemperature.changedConnectMethod(this, &FerminewGainSolver<GeometryType>::onInputChange);
     inCarriersConcentration.changedConnectMethod(this, &FerminewGainSolver<GeometryType>::onInputChange);
 }
@@ -33,7 +34,9 @@ void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
         if (param == "config") {
             roughness = reader.getAttribute<double>("roughness", roughness);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
+
             if_strain = reader.getAttribute<bool>("strained", if_strain);
+            if_fixed_QWs_widths = reader.getAttribute<bool>("fixedQWsWidths", if_fixed_QWs_widths);
             reader.requireTagEnd();
         } else if (param == "levels") {
             std::string els, hhs, lhs;
@@ -288,34 +291,38 @@ void FerminewGainSolver<GeometryType>::detectActiveRegions()
         int tNoOfQWs = 0; // number of QWs counter
         for (int i=0; i<tN; ++i) {
             if (region.isQW(i)) tNoOfQWs++;
-            region.lens.push_back(region.getLayerBox(i).height()*1e4);
+            region.lens.push_back(region.getLayerBox(i).height()*1e4); // in [A]
             this->writelog(LOG_DETAIL, "Layer %1% thickness: ", region.lens[i]);
         }
         this->writelog(LOG_DETAIL, "Number of QWs in active region %1%: %2%", n, tNoOfQWs);
         this->writelog(LOG_DETAIL, "QW thickness %1%", region.qwlen);
 
-        double tHstep = region.qwlen*roughness/40.; // 40. - assumed (if 10 - differences in QW widths are to big)
-        this->writelog(LOG_DETAIL, "QW thickness step %1%", tHstep);
-        if ( !(tNoOfQWs%2) )
+        if (!if_fixed_QWs_widths)
         {
-            double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep+0.5*tHstep;
-            for (int i=0; i<tN; ++i) {
-                if (region.isQW(i))
-                {
-                    //region.
-                    this->writelog(LOG_DETAIL, "Modified thickness of layer %1%: %2%", i, tH0);
-                    tH0 += tHstep;
+            double tHstep = region.qwlen*roughness/40.; // 40. - assumed (if 10 - differences in QW widths are to big)
+            this->writelog(LOG_DETAIL, "QW thickness step %1%", tHstep);
+            if ( !(tNoOfQWs%2) )
+            {
+                double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep+0.5*tHstep;
+                for (int i=0; i<tN; ++i) {
+                    if (region.isQW(i))
+                    {
+                        region.lens[i] = tH0;
+                        this->writelog(LOG_DETAIL, "Modified thickness of layer %1%: %2%", i, region.lens[i]);
+                        tH0 += tHstep;
+                    }
                 }
             }
-        }
-        else
-        {
-            double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep;
-            for (int i=0; i<tN; ++i) {
-                if (region.isQW(i))
-                {
-                    this->writelog(LOG_DETAIL, "Modified thickness of layer %1%: %2%", i, tH0);
-                    tH0 += tHstep;
+            else
+            {
+                double tH0 = region.qwlen-(int(tNoOfQWs/2))*tHstep;
+                for (int i=0; i<tN; ++i) {
+                    if (region.isQW(i))
+                    {
+                        region.lens[i] = tH0;
+                        this->writelog(LOG_DETAIL, "Modified thickness of layer %1%: %2%", i, region.lens[i]);
+                        tH0 += tHstep;
+                    }
                 }
             }
         }
@@ -432,7 +439,8 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
     for (int i=1; i<tN-1; ++i)
     {
         double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-        double tH = cutNumber(region.lens[i],2); // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+        double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+        //writelog(LOG_DETAIL, "tH i buildEc function: %1%", tH);
         mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)-tDEc)); // wells and barriers
         mpEc.push_back(mpLay); tX += tH;
         if (region.getLayerMaterial(i)->CB(T,e) >= tDEc)
@@ -465,7 +473,7 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         for (int i=1; i<tN-1; ++i)
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = cutNumber(region.lens[i],2); // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+            double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh)); // wells and barriers
             mpEvhh.push_back(mpLay); tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','H') <= tDEvhh)
@@ -498,7 +506,7 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         for (int i=1; i<tN-1; ++i)
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
-            double tH = cutNumber(region.lens[i],2); // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
+            double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
             mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh)); // wells and barriers
             mpEvlh.push_back(mpLay); tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','L') <= tDEvlh)

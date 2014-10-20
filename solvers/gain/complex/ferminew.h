@@ -153,9 +153,10 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     friend struct GainSpectrum<GeometryType>;
     friend class QW::gain;
 
-    double roughness;               ///< roughness [-?]
+    double roughness;               ///< roughness [-]
     double matrixelem;              ///< optical matrix element [m0*eV]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
+    bool fixQWsWidths;           ///< if true QW widths will not be changed for gain calculations
 
     int mEc, mEvhh, mEvlh; // to choose the correct band edges
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
@@ -215,6 +216,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
   public:
 
     bool if_strain;                 ///< Consider strain in QW?
+    bool if_fixed_QWs_widths;    ///< Fix QWs widhts?
 
     double getRoughness() const { return roughness; }
     void setRoughness(double iRoughness)  { roughness = iRoughness; }
