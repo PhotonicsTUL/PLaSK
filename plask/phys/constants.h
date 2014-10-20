@@ -21,6 +21,8 @@ namespace phys {
     constexpr double epsilon0 = 1./mu0/c/c;     ///< Vacuum permittivity [F/m]
     constexpr double h_J = 6.62606957e-34;      ///< Planck's constant [J*s]
     constexpr double h_eV = 4.135667516e-15;    ///< Planck's constant [eV*s]
+    constexpr double hb_J = 0.5*h_J/M_PI;       ///< Dirac's constant [J*s]
+    constexpr double hb_eV = 0.5*h_eV/M_PI;     ///< Dirac's constant [eV*s]
     constexpr double SB = 5.670373e-8;          ///< Stefan-Boltzmann constant [W/m^2/K^4]
     constexpr double kB_J = 1.3806503e-23;      ///< Boltzmann constant [J/K]
     constexpr double kB_eV = 8.6173423e-5;      ///< Boltzmann constant [eV/K]

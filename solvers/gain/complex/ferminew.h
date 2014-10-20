@@ -154,6 +154,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     friend class QW::gain;
 
     double roughness;               ///< roughness [-]
+    double lifetime;                ///< lifetime [ps]
     double matrixelem;              ///< optical matrix element [m0*eV]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
     bool fixQWsWidths;           ///< if true QW widths will not be changed for gain calculations
@@ -220,6 +221,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 
     double getRoughness() const { return roughness; }
     void setRoughness(double iRoughness)  { roughness = iRoughness; }
+
+    double getLifeTime() const { return lifetime; }
+    void setLifeTime(double iLifeTime)  { lifetime = iLifeTime; }
 
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
@@ -290,7 +294,7 @@ struct GainSpectrum {
             gMod = solver->getGainModule(wavelength, T, n, *region); // added
             gModExist = true; // added
         } // added
-        return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // added
+        return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen, solver->getLifeTime()); // added
         //return solver->getGainModule(wavelength, T, n, *region) // commented
         //    .Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // commented
         /*return solver->getGainModule(wavelength, T, n, *region)

@@ -2264,14 +2264,17 @@ double gain::getT()
   return T;
 }
 /*****************************************************************************/
-double gain::Get_gain_at_n(double E, double hQW, double iL)
+double gain::Get_gain_at_n(double E, double hQW, double iL, double iTau)
 {
-    double tGehh, tGelh;
+    /*double tGehh, tGelh;
     tGehh = tGelh = 0.;
 
     tGehh = wzmocnienie_od_pary_pasm(E, 0, 0) / iL;
     tGelh = wzmocnienie_od_pary_pasm(E, 0, 1) / iL;
-    return (tGehh+tGelh);
+    return (tGehh+tGelh);*/
+    //WRITELOG(LOG_DETAIL, "Tau in kubly: %1% ps", iTau);
+    if (!iTau) return ( wzmocnienie_calk_bez_splotu(E) / iL ); //20.10.2014 adding lifetime
+    else return ( wzmocnienie_calk_ze_splotem(E,phys::hb_eV*1e12/iTau) / iL ); //20.10.2014 adding lifetime
 }
 /*****************************************************************************/
 double gain::gdzie_qFlc(double E)
@@ -2378,7 +2381,7 @@ double gain::L(double x, double b)
   return 1/(M_PI*b)/(1 + x/b*x/b );
 }
 /*****************************************************************************/
-double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podział na kawałek o promieniu Rb wokół 0 i resztę
+double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podzial na kawalek o promieniu Rb wokol 0 i reszte
 {
   //  double blad = 0.005;
   // b energia do poszerzenia w lorentzu
@@ -2470,7 +2473,7 @@ double gain::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // pod
     }
   calka2 *= h/3;
   double calka = calka1 + calka2;
-  std::clog<<"\na = "<<a<<"\t4poch = "<<czwpoch0b<<"\tn0 = "<<n0<<"\tnR = "<<nR<<"\tcalka = "<<calka<<"\n";
+  //std::clog<<"\na = "<<a<<"\t4poch = "<<czwpoch0b<<"\tn0 = "<<n0<<"\tnR = "<<nR<<"\tcalka = "<<calka<<"\n";
   return calka;
 }
 /*****************************************************************************/

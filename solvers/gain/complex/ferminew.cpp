@@ -9,6 +9,7 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     roughness = 0.05; // [-]
+    lifetime = 0.1; // [ps]
     matrixelem = 0.; // [m0*eV]
     differenceQuotient = 0.01;  // [%]
     if_strain = false;
@@ -33,6 +34,7 @@ void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
         std::string param = reader.getNodeName();
         if (param == "config") {
             roughness = reader.getAttribute<double>("roughness", roughness);
+            lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
 
             if_strain = reader.getAttribute<bool>("strained", if_strain);
@@ -655,13 +657,16 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
             double L = region.qwtotallen / region.totallen; // no unit
             //writelog(LOG_RESULT, "L %1%", L);
 
-            double tGehh, tGelh;
+            //20.10.2014 adding lifetime
+            /*double tGehh, tGelh;
             tGehh = tGelh = 0.;
 
             tGehh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 0) / L;
             tGelh = gainModule.wzmocnienie_od_pary_pasm(nm_to_eV(wavelength), 0, 1) / L;
 
-            gainOnMesh[i] = tGehh+tGelh;
+            gainOnMesh[i] = tGehh+tGelh;*/
+            if (!lifetime) gainOnMesh[i] = gainModule.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength)) / L; //20.10.2014 adding lifetime
+            else gainOnMesh[i] = gainModule.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),phys::hb_eV*1e12/lifetime) / L; //20.10.2014 adding lifetime
             writelog(LOG_RESULT, "calculated gain: %1% cm-1", gainOnMesh[i]);
         }
         else if (mEc)
