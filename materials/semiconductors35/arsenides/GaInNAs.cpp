@@ -18,6 +18,8 @@ std::string GaInNAs::str() const { return StringBuilder("Ga")("In", In)("N", N)(
 std::string GaInNAs::name() const { return NAME; }
 
 MI_PROPERTY(GaInNAs, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::lattC(double T, char x) const {
@@ -30,7 +32,9 @@ double GaInNAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInNAs, Eg,
-            MISource("R. Kudrawiec, J. Appl. Phys. 101 (2007) 023522")
+            MISource("R. Kudrawiec, J. Appl. Phys. 101 (2007) 023522"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
 double GaInNAs::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -47,6 +51,8 @@ double GaInNAs::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInNAs, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("nonlinear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::Dso(double T, double e) const {
@@ -56,6 +62,7 @@ double GaInNAs::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaInNAs, Me,
+            MISource("Sarzala et al., Appl Phys A 108 (2012) 521-528"),
             MISource("nonlinear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 Tensor2<double> GaInNAs::Me(double T, double e, char point) const {
@@ -67,6 +74,7 @@ Tensor2<double> GaInNAs::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInNAs, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 Tensor2<double> GaInNAs::Mhh(double T, double e) const {
@@ -78,6 +86,7 @@ Tensor2<double> GaInNAs::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInNAs, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 Tensor2<double> GaInNAs::Mlh(double T, double e) const {
@@ -89,7 +98,8 @@ Tensor2<double> GaInNAs::Mlh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInNAs, CB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696")
             )
 double GaInNAs::CB(double T, double e, char point) const {
     double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
@@ -98,6 +108,8 @@ double GaInNAs::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInNAs, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::VB(double T, double e, char point, char hole) const {
@@ -116,6 +128,8 @@ double GaInNAs::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaInNAs, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::ac(double T) const {
@@ -125,6 +139,8 @@ double GaInNAs::ac(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::av(double T) const {
@@ -132,6 +148,8 @@ double GaInNAs::av(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::b(double T) const {
@@ -139,6 +157,8 @@ double GaInNAs::b(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::d(double T) const {
@@ -146,6 +166,8 @@ double GaInNAs::d(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::c11(double T) const {
@@ -153,6 +175,8 @@ double GaInNAs::c11(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::c12(double T) const {
@@ -160,6 +184,8 @@ double GaInNAs::c12(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::c44(double T) const {
@@ -171,6 +197,24 @@ MI_PROPERTY(GaInNAs, thermk,
             )
 Tensor2<double> GaInNAs::thermk(double T, double t) const {
     return ( Tensor2<double>(0.,0.) );
+}
+
+MI_PROPERTY(GaInNAs, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double GaInNAs::dens(double T) const {
+    return ( Ga*As*mGaAs.dens(T) + Ga*N*mGaN.dens(T) + In*As*mInAs.dens(T) + In*N*mInN.dens(T) );
+}
+
+MI_PROPERTY(GaInNAs, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double GaInNAs::cp(double T) const {
+    return ( Ga*mGaAs.cp(T) + In*mInAs.cp(T) ); // till cp for GaN(zb) and InN(zb) unknown
 }
 
 MI_PROPERTY(GaInNAs, nr,

@@ -170,6 +170,24 @@ Tensor2<double> AlGaInP::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(AlGaInP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlP, GaP, InP"),
+            MIComment("no temperature dependence")
+            )
+double AlGaInP::dens(double T) const {
+    return ( Al*mAlP.dens(T) + Ga*mGaP.dens(T) + In*mInP.dens(T) );
+}
+
+MI_PROPERTY(AlGaInP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlP, GaP, InP"),
+            MIComment("no temperature dependence")
+            )
+double AlGaInP::cp(double T) const {
+    return ( Al*mAlP.cp(T) + Ga*mGaP.cp(T) + In*mInP.cp(T) );
+}
+
 MI_PROPERTY(AlGaInP, nr,
             MIComment("TODO")
             )

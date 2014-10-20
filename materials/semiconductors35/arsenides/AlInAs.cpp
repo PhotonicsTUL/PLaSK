@@ -16,6 +16,7 @@ std::string AlInAs::str() const { return StringBuilder("Al", Al)("In")("As"); }
 std::string AlInAs::name() const { return NAME; }
 
 MI_PROPERTY(AlInAs, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::lattC(double T, char x) const {
@@ -26,7 +27,8 @@ double AlInAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlInAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: AlAs, InAs")
             )
 double AlInAs::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -45,6 +47,7 @@ double AlInAs::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInAs, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: AlAs, InAs")
             )
 double AlInAs::Dso(double T, double e) const {
@@ -52,6 +55,7 @@ double AlInAs::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlInAs, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: AlAs, InAs")
             )
 Tensor2<double> AlInAs::Me(double T, double e, char point) const {
@@ -61,6 +65,7 @@ Tensor2<double> AlInAs::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInAs, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlAs, InAs")
             )
 Tensor2<double> AlInAs::Mhh(double T, double e) const {
@@ -70,6 +75,7 @@ Tensor2<double> AlInAs::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlInAs, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlAs, InAs")
             )
 Tensor2<double> AlInAs::Mlh(double T, double e) const {
@@ -88,6 +94,7 @@ double AlInAs::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInAs, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::VB(double T, double e, char point, char hole) const {
@@ -104,6 +111,7 @@ double AlInAs::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlInAs, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::ac(double T) const {
@@ -111,6 +119,7 @@ double AlInAs::ac(double T) const {
 }
 
 MI_PROPERTY(AlInAs, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::av(double T) const {
@@ -118,6 +127,7 @@ double AlInAs::av(double T) const {
 }
 
 MI_PROPERTY(AlInAs, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::b(double T) const {
@@ -125,6 +135,7 @@ double AlInAs::b(double T) const {
 }
 
 MI_PROPERTY(AlInAs, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::d(double T) const {
@@ -132,6 +143,7 @@ double AlInAs::d(double T) const {
 }
 
 MI_PROPERTY(AlInAs, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::c11(double T) const {
@@ -139,6 +151,7 @@ double AlInAs::c11(double T) const {
 }
 
 MI_PROPERTY(AlInAs, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::c12(double T) const {
@@ -146,6 +159,7 @@ double AlInAs::c12(double T) const {
 }
 
 MI_PROPERTY(AlInAs, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, InAs")
             )
 double AlInAs::c44(double T) const {
@@ -153,12 +167,31 @@ double AlInAs::c44(double T) const {
 }
 
 MI_PROPERTY(AlInAs, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: AlAs, InAs")
             )
 Tensor2<double> AlInAs::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlAs.thermk(T,t).c00 + In/mInAs.thermk(T,t).c00 + Al*In*0.15),
            vCondT = 1./(Al/mAlAs.thermk(T,t).c11 + In/mInAs.thermk(T,t).c11 + Al*In*0.15);
     return ( Tensor2<double>(lCondT,vCondT) );
+}
+
+MI_PROPERTY(AlInAs, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double AlInAs::dens(double T) const {
+    return ( Al*mAlAs.dens(T) + In*mInAs.dens(T) );
+}
+
+MI_PROPERTY(AlInAs, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double AlInAs::cp(double T) const {
+    return ( Al*mAlAs.cp(T) + In*mInAs.cp(T) );
 }
 
 MI_PROPERTY(AlInAs, nr,

@@ -165,6 +165,18 @@ Tensor2<double> AlP::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(AlP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double AlP::dens(double T) const { return 2.3604e3; }
+
+MI_PROPERTY(AlP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double AlP::cp(double T) const { return 0.727e3; }
+
 MI_PROPERTY(AlP, nr,
             MISource(""),
             MIComment("TODO")

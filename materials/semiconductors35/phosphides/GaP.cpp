@@ -166,6 +166,18 @@ Tensor2<double> GaP::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(GaP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaP::dens(double T) const { return 4.1299e3; }
+
+MI_PROPERTY(GaP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaP::cp(double T) const { return 0.313e3; }
+
 MI_PROPERTY(GaP, nr,
             MISource(""),
             MIComment("TODO")

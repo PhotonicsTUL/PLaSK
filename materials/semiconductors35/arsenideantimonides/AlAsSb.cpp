@@ -161,6 +161,24 @@ Tensor2<double> AlAsSb::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(AlAsSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlAs, AlSb"),
+            MIComment("no temperature dependence")
+            )
+double AlAsSb::dens(double T) const {
+    return ( As*mAlAs.dens(T) + Sb*mAlSb.dens(T) );
+}
+
+MI_PROPERTY(AlAsSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlAs, AlSb"),
+            MIComment("no temperature dependence")
+            )
+double AlAsSb::cp(double T) const {
+    return ( As*mAlAs.cp(T) + Sb*mAlSb.cp(T) );
+}
+
 MI_PROPERTY(AlAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
             MIArgumentRange(MaterialInfo::wl, 500, 7000),

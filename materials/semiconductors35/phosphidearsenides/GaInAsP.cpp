@@ -195,6 +195,20 @@ Tensor2<double> GaInAsP::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(GaInAsP, dens,
+            MISource("linear interpolation: GaP, InP, GaAs, InAs")
+            )
+double GaInAsP::dens(double T) const {
+    return ( Ga*As*mGaAs.dens(T) + Ga*P*mGaP.dens(T) + In*As*mInAs.dens(T) + In*P*mInP.dens(T) );
+}
+
+MI_PROPERTY(GaInAsP, cp,
+            MISource("linear interpolation: GaP, InP, GaAs, InAs")
+            )
+double GaInAsP::cp(double T) const {
+    return ( Ga*As*mGaAs.cp(T) + Ga*P*mGaP.cp(T) + In*As*mInAs.cp(T) + In*P*mInP.cp(T) );
+}
+
 MI_PROPERTY(GaInAsP, nr,
             MIComment("TODO")
             )

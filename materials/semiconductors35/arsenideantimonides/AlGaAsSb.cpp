@@ -18,6 +18,7 @@ std::string AlGaAsSb::str() const { return StringBuilder("Al", Al)("Ga")("As")("
 std::string AlGaAsSb::name() const { return NAME; }
 
 MI_PROPERTY(AlGaAsSb, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::lattC(double T, char x) const {
@@ -30,7 +31,8 @@ double AlGaAsSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaAsSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -61,6 +63,7 @@ double AlGaAsSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaAsSb, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::Dso(double T, double e) const {
@@ -70,6 +73,7 @@ double AlGaAsSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaAsSb, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 Tensor2<double> AlGaAsSb::Me(double T, double e, char point) const {
@@ -83,6 +87,7 @@ Tensor2<double> AlGaAsSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaAsSb, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 Tensor2<double> AlGaAsSb::Mhh(double T, double e) const {
@@ -94,6 +99,7 @@ Tensor2<double> AlGaAsSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaAsSb, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 Tensor2<double> AlGaAsSb::Mlh(double T, double e) const {
@@ -114,7 +120,8 @@ double AlGaAsSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaAsSb, VB,
-            MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::VB(double T, double e, char point, char hole) const {
     double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*Sb*mGaSb.VB(T,0.,point,hole)
@@ -132,6 +139,7 @@ double AlGaAsSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlGaAsSb, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::ac(double T) const {
@@ -140,6 +148,7 @@ double AlGaAsSb::ac(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::av(double T) const {
@@ -147,6 +156,7 @@ double AlGaAsSb::av(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::b(double T) const {
@@ -154,6 +164,7 @@ double AlGaAsSb::b(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::d(double T) const {
@@ -161,6 +172,7 @@ double AlGaAsSb::d(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::c11(double T) const {
@@ -168,6 +180,7 @@ double AlGaAsSb::c11(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::c12(double T) const {
@@ -175,6 +188,7 @@ double AlGaAsSb::c12(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs")
             )
 double AlGaAsSb::c44(double T) const {
@@ -182,7 +196,8 @@ double AlGaAsSb::c44(double T) const {
 }
 
 MI_PROPERTY(AlGaAsSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: GaSb, AlSb, GaAs, AlAs")
             )
 Tensor2<double> AlGaAsSb::thermk(double T, double t) const {
     double lCondT = 1./(Ga*As/mGaAs.thermk(T,t).c00 + Ga*Sb/mGaSb.thermk(T,t).c00
@@ -192,6 +207,24 @@ Tensor2<double> AlGaAsSb::thermk(double T, double t) const {
                         + Al*As/mAlAs.thermk(T,t).c11 + Al*Sb/mAlSb.thermk(T,t).c11
                         + Al*Ga*0.32 + As*Sb*0.91);
     return ( Tensor2<double>(lCondT,vCondT) );
+}
+
+MI_PROPERTY(AlGaAsSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs"),
+            MIComment("no temperature dependence")
+            )
+double AlGaAsSb::dens(double T) const {
+    return ( Ga*As*mGaAs.dens(T) + Ga*Sb*mGaSb.dens(T) + Al*As*mAlAs.dens(T) + Al*Sb*mAlSb.dens(T) );
+}
+
+MI_PROPERTY(AlGaAsSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaSb, AlSb, GaAs, AlAs"),
+            MIComment("no temperature dependence")
+            )
+double AlGaAsSb::cp(double T) const {
+    return ( Ga*As*mGaAs.cp(T) + Ga*Sb*mGaSb.cp(T) + Al*As*mAlAs.cp(T) + Al*Sb*mAlSb.cp(T) );
 }
 
 MI_PROPERTY(AlGaAsSb, nr,

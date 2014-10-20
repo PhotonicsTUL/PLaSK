@@ -167,6 +167,18 @@ Tensor2<double> InP::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(InP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InP::dens(double T) const { return 4.7902e3; }
+
+MI_PROPERTY(InP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InP::cp(double T) const { return 0.322e3; }
+
 MI_PROPERTY(InP, nr,
             MISource("refractiveindex.info, Handbook of Optics, 2nd edition, Vol. 2. McGraw-Hill 1994"),
             MISource("S. Adachi, Handbook on Physical Properties of Semiconductors, vol. 2 III-V Compound Semiconductors, Chapter 16, Kluwer Academic Publishers, 2004"),

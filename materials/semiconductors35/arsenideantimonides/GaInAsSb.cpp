@@ -18,6 +18,7 @@ std::string GaInAsSb::str() const { return StringBuilder("Ga")("In", In)("As")("
 std::string GaInAsSb::name() const { return NAME; }
 
 MI_PROPERTY(GaInAsSb, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::lattC(double T, char x) const {
@@ -30,7 +31,8 @@ double GaInAsSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInAsSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -61,7 +63,8 @@ double GaInAsSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsSb, Dso,
-            MISource("nonlinear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::Dso(double T, double e) const {
     return ( Ga*As*mGaAs.Dso(T,e) + Ga*Sb*mGaSb.Dso(T,e)
@@ -70,7 +73,8 @@ double GaInAsSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaInAsSb, Me,
-            MISource("nonlinear interpolation: GaSb, InSb")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("nonlinear interpolation: GaSb, InSb, GaAs, InAs")
             )
 Tensor2<double> GaInAsSb::Me(double T, double e, char point) const {
     double lMe = Ga*As*mGaAs.Me(T,e,point).c00 + Ga*Sb*mGaSb.Me(T,e,point).c00
@@ -83,7 +87,8 @@ Tensor2<double> GaInAsSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsSb, Mhh,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 Tensor2<double> GaInAsSb::Mhh(double T, double e) const {
     double lMhh = Ga*As*mGaAs.Mhh(T,e).c00 + Ga*Sb*mGaSb.Mhh(T,e).c00
@@ -94,7 +99,8 @@ Tensor2<double> GaInAsSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInAsSb, Mlh,
-            MISource("nonlinear interpolation: GaSb, InSb")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("nonlinear interpolation: GaSb, InSb, GaAs, InAs")
             )
 Tensor2<double> GaInAsSb::Mlh(double T, double e) const {
     double lMlh = Ga*As*mGaAs.Mlh(T,e).c00 + Ga*Sb*mGaSb.Mlh(T,e).c00
@@ -114,7 +120,8 @@ double GaInAsSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsSb, VB,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::VB(double T, double e, char point, char hole) const {
     double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*Sb*mGaSb.VB(T,0.,point,hole)
@@ -132,7 +139,8 @@ double GaInAsSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaInAsSb, ac,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::ac(double T) const {
     return ( Ga*As*mGaAs.ac(T) + Ga*Sb*mGaSb.ac(T)
@@ -140,42 +148,48 @@ double GaInAsSb::ac(double T) const {
 }
 
 MI_PROPERTY(GaInAsSb, av,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::av(double T) const {
     return ( Ga*As*mGaAs.av(T) + Ga*Sb*mGaSb.av(T) + In*As*mInAs.av(T) + In*Sb*mInSb.av(T) );
 }
 
 MI_PROPERTY(GaInAsSb, b,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::b(double T) const {
     return ( Ga*As*mGaAs.b(T) + Ga*Sb*mGaSb.b(T) + In*As*mInAs.b(T) + In*Sb*mInSb.b(T) );
 }
 
 MI_PROPERTY(GaInAsSb, d,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::d(double T) const {
     return ( Ga*As*mGaAs.d(T) + Ga*Sb*mGaSb.d(T) + In*As*mInAs.d(T) + In*Sb*mInSb.d(T) );
 }
 
 MI_PROPERTY(GaInAsSb, c11,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::c11(double T) const {
     return ( Ga*As*mGaAs.c11(T) + Ga*Sb*mGaSb.c11(T) + In*As*mInAs.c11(T) + In*Sb*mInSb.c11(T) );
 }
 
 MI_PROPERTY(GaInAsSb, c12,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::c12(double T) const {
     return ( Ga*As*mGaAs.c12(T) + Ga*Sb*mGaSb.c12(T) + In*As*mInAs.c12(T) + In*Sb*mInSb.c12(T) );
 }
 
 MI_PROPERTY(GaInAsSb, c44,
-            MISource("linear interpolation: GaSb, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs")
             )
 double GaInAsSb::c44(double T) const {
     return ( Ga*As*mGaAs.c44(T) + Ga*Sb*mGaSb.c44(T) + In*As*mInAs.c44(T) + In*Sb*mInSb.c44(T) );
@@ -192,6 +206,24 @@ Tensor2<double> GaInAsSb::thermk(double T, double t) const {
                         + In*As/mInAs.thermk(T,t).c11 + In*Sb/mInSb.thermk(T,t).c11
                         + Ga*In*0.72 + As*Sb*0.91);
     return ( Tensor2<double>(lCondT,vCondT) );
+}
+
+MI_PROPERTY(GaInAsSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double GaInAsSb::dens(double T) const {
+    return ( Ga*As*mGaAs.dens(T) + Ga*Sb*mGaSb.dens(T) + In*As*mInAs.dens(T) + In*Sb*mInSb.dens(T) );
+}
+
+MI_PROPERTY(GaInAsSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaSb, InSb, GaAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double GaInAsSb::cp(double T) const {
+    return ( Ga*As*mGaAs.cp(T) + Ga*Sb*mGaSb.cp(T) + In*As*mInAs.cp(T) + In*Sb*mInSb.cp(T) );
 }
 
 MI_PROPERTY(GaInAsSb, nr,

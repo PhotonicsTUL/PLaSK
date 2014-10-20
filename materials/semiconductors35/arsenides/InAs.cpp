@@ -181,6 +181,17 @@ Tensor2<double> InAs::thermk(double T, double t) const {
     return(Tensor2<double>(tCondT, tCondT));
 }
 
+MI_PROPERTY(InAs, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InAs::dens(double T) const { return 5.6678e3; }
+
+MI_PROPERTY(InAs, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InAs::cp(double T) const { return 0.352e3; }
 
 MI_PROPERTY(InAs, eps,
             MISource("http://www.iue.tuwien.ac.at/phd/quay/node27.html")

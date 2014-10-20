@@ -161,6 +161,24 @@ Tensor2<double> InAsSb::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(InAsSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: InAs, InSb"),
+            MIComment("no temperature dependence")
+            )
+double InAsSb::dens(double T) const {
+    return ( As*mInAs.dens(T) + Sb*mInSb.dens(T) );
+}
+
+MI_PROPERTY(InAsSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: InAs, InSb"),
+            MIComment("no temperature dependence")
+            )
+double InAsSb::cp(double T) const {
+    return ( As*mInAs.cp(T) + Sb*mInSb.cp(T) );
+}
+
 MI_PROPERTY(InAsSb, nr,
             MIComment("TODO")
             )

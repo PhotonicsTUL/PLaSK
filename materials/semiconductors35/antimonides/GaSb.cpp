@@ -166,6 +166,18 @@ Tensor2<double> GaSb::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(GaSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaSb::dens(double T) const { return 5.61461e3; }
+
+MI_PROPERTY(GaSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaSb::cp(double T) const { return 0.344e3; }
+
 MI_PROPERTY(GaSb, nr,
             MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"),
             MIArgumentRange(MaterialInfo::wl, 1800, 2560),

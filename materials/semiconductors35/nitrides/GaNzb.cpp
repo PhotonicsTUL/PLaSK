@@ -188,6 +188,11 @@ Tensor2<double> GaNzb::cond(double T) const {
     return 0.;
 }
 
+MI_PROPERTY(GaNzb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaNzb::dens(double T) const { return 6.02e3; }
 
 MI_PROPERTY(GaNzb, nr,
             MISource(""),

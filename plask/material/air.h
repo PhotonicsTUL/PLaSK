@@ -2,7 +2,7 @@
 #define PLASK__AIR_H
 
 /** @file
-This file contains undoped AlN
+This file contains air
 */
 
 #include <plask/material/material.h>
@@ -10,7 +10,7 @@ This file contains undoped AlN
 namespace plask { namespace materials {
 
 /**
- * Represent undoped AlN, its physical properties.
+ * Represent air, its physical properties.
  */
 struct PLASK_API Air: public Material {
 

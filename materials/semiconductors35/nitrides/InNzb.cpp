@@ -188,6 +188,11 @@ Tensor2<double> InNzb::cond(double T) const {
     return 0.;
 }
 
+MI_PROPERTY(InNzb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InNzb::dens(double T) const { return 6.903e3; }
 
 MI_PROPERTY(InNzb, nr,
             MISource(""),

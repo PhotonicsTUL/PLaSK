@@ -161,6 +161,24 @@ Tensor2<double> GaAsP::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(GaAsP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaAs, GaP"),
+            MIComment("no temperature dependence")
+            )
+double GaAsP::dens(double T) const {
+    return ( As*mGaAs.dens(T) + P*mGaP.dens(T) );
+}
+
+MI_PROPERTY(GaAsP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaAs, GaP"),
+            MIComment("no temperature dependence")
+            )
+double GaAsP::cp(double T) const {
+    return ( As*mGaAs.cp(T) + P*mGaP.cp(T) );
+}
+
 MI_PROPERTY(GaAsP, nr,
             MIComment("TODO")
             )

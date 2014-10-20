@@ -161,6 +161,24 @@ Tensor2<double> AlGaP::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(AlGaP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlP, GaP"),
+            MIComment("no temperature dependence")
+            )
+double AlGaP::dens(double T) const {
+    return ( Al*mAlP.dens(T) + Ga*mGaP.dens(T) );
+}
+
+MI_PROPERTY(AlGaP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlP, GaP"),
+            MIComment("no temperature dependence")
+            )
+double AlGaP::cp(double T) const {
+    return ( Al*mAlP.cp(T) + Ga*mGaP.cp(T) );
+}
+
 MI_PROPERTY(AlGaP, nr,
             MIComment("TODO")
             )

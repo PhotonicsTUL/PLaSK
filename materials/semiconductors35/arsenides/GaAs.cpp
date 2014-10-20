@@ -192,6 +192,17 @@ Tensor2<double> GaAs::cond(double T) const {
     return Tensor2<double>(c, c);
 }
 
+MI_PROPERTY(GaAs, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::dens(double T) const { return 5.31749e3; }
+
+MI_PROPERTY(GaAs, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double GaAs::cp(double T) const { return 0.327e3; }
 
 MI_PROPERTY(GaAs, nr,
             MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242"),

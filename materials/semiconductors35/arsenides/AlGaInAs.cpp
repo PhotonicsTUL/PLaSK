@@ -17,6 +17,7 @@ std::string AlGaInAs::str() const { return StringBuilder("Al", Al)("Ga", Ga)("In
 std::string AlGaInAs::name() const { return NAME; }
 
 MI_PROPERTY(AlGaInAs, lattC,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::lattC(double T, char x) const {
@@ -24,7 +25,8 @@ double AlGaInAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaInAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("nonlinear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -49,6 +51,7 @@ double AlGaInAs::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInAs, Dso,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::Dso(double T, double e) const {
@@ -57,6 +60,7 @@ double AlGaInAs::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaInAs, Me,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("nonlinear interpolation: AlAs, GaAs, InAs")
             )
 Tensor2<double> AlGaInAs::Me(double T, double e, char point) const {
@@ -68,6 +72,7 @@ Tensor2<double> AlGaInAs::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInAs, Mhh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 Tensor2<double> AlGaInAs::Mhh(double T, double e) const {
@@ -77,6 +82,7 @@ Tensor2<double> AlGaInAs::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaInAs, Mlh,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 Tensor2<double> AlGaInAs::Mlh(double T, double e) const {
@@ -95,6 +101,7 @@ double AlGaInAs::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInAs, VB,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::VB(double T, double e, char point, char hole) const {
@@ -112,6 +119,7 @@ double AlGaInAs::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlGaInAs, ac,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("nonlinear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::ac(double T) const {
@@ -120,6 +128,7 @@ double AlGaInAs::ac(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, av,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::av(double T) const {
@@ -127,6 +136,7 @@ double AlGaInAs::av(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, b,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::b(double T) const {
@@ -134,6 +144,7 @@ double AlGaInAs::b(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, d,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::d(double T) const {
@@ -141,6 +152,7 @@ double AlGaInAs::d(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, c11,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::c11(double T) const {
@@ -148,6 +160,7 @@ double AlGaInAs::c11(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, c12,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::c12(double T) const {
@@ -155,6 +168,7 @@ double AlGaInAs::c12(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, c44,
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("linear interpolation: AlAs, GaAs, InAs")
             )
 double AlGaInAs::c44(double T) const {
@@ -162,7 +176,8 @@ double AlGaInAs::c44(double T) const {
 }
 
 MI_PROPERTY(AlGaInAs, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("inversion od nonlinear interpolation of resistivity: AlAs, GaAs, InAs")
             )
 Tensor2<double> AlGaInAs::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlAs.thermk(T,t).c00 + Ga/mGaAs.thermk(T,t).c00 + In/mInAs.thermk(T,t).c00
@@ -171,6 +186,25 @@ Tensor2<double> AlGaInAs::thermk(double T, double t) const {
                         + Al*Ga*0.32 + Al*In*0.15 + Ga*In*0.72);
     return ( Tensor2<double>(lCondT,vCondT) );
 }
+
+MI_PROPERTY(AlGaInAs, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlAs, GaAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double AlGaInAs::dens(double T) const {
+    return ( Al*mAlAs.dens(T) + Ga*mGaAs.dens(T) + In*mInAs.dens(T) );
+}
+
+MI_PROPERTY(AlGaInAs, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: AlAs, GaAs, InAs"),
+            MIComment("no temperature dependence")
+            )
+double AlGaInAs::cp(double T) const {
+    return ( Al*mAlAs.cp(T) + Ga*mGaAs.cp(T) + In*mInAs.cp(T) );
+}
+
 
 MI_PROPERTY(AlGaInAs, nr,
             MIComment("TODO")

@@ -194,6 +194,24 @@ Tensor2<double> GaInP::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(GaInP, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaP, InP"),
+            MIComment("no temperature dependence")
+            )
+double GaInP::dens(double T) const {
+    return ( Ga*mGaP.dens(T) + In*mInP.dens(T) );
+}
+
+MI_PROPERTY(GaInP, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaP, InP"),
+            MIComment("no temperature dependence")
+            )
+double GaInP::cp(double T) const {
+    return ( Ga*mGaP.cp(T) + In*mInP.cp(T) );
+}
+
 MI_PROPERTY(GaInP, nr,
             MIComment("TODO")
             )

@@ -167,6 +167,18 @@ Tensor2<double> InSb::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(InSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InSb::dens(double T) const { return 5.77677e3; }
+
+MI_PROPERTY(InSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double InSb::cp(double T) const { return 0.350e3; }
+
 bool InSb::isEqual(const Material &other) const {
     return true;
 }

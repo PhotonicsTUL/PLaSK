@@ -180,6 +180,18 @@ Tensor2<double> AlAs::thermk(double T, double t) const {
     return(Tensor2<double>(tk, tk));
 }
 
+MI_PROPERTY(AlAs, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double AlAs::dens(double T) const { return 3.73016e3; }
+
+MI_PROPERTY(AlAs, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MIComment("no temperature dependence")
+            )
+double AlAs::cp(double T) const { return 0.424e3; }
+
 
 MI_PROPERTY(AlAs, nr,
             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837"),

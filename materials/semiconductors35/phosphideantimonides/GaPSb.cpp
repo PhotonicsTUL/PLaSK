@@ -161,6 +161,24 @@ Tensor2<double> GaPSb::thermk(double T, double t) const {
     return ( Tensor2<double>(lCondT,vCondT) );
 }
 
+MI_PROPERTY(GaPSb, dens,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaP, GaSb"),
+            MIComment("no temperature dependence")
+            )
+double GaPSb::dens(double T) const {
+    return ( P*mGaP.dens(T) + Sb*mGaSb.dens(T) );
+}
+
+MI_PROPERTY(GaPSb, cp,
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("linear interpolation: GaP, GaSb"),
+            MIComment("no temperature dependence")
+            )
+double GaPSb::cp(double T) const {
+    return ( P*mGaP.cp(T) + Sb*mGaSb.cp(T) );
+}
+
 MI_PROPERTY(GaPSb, nr,
             MIComment("TODO")
             )
