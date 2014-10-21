@@ -30,6 +30,15 @@ struct PLASK_API Gain : public FieldProperty<double, double> {
 };
 
 /**
+ * Luminescence [?].
+ */
+struct PLASK_API Luminescence : public FieldProperty<double, double> {
+    static constexpr const char* NAME = "luminescence";
+    static constexpr const char* UNIT = "?"; // TODO
+    static inline double getDefaultValue() { return NAN; }
+};
+
+/**
  * Derivative of material gain over carriers concentration [cm²].
  *
  * Providers of material gain derivative should accept additional parameter,

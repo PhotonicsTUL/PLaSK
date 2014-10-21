@@ -2277,6 +2277,11 @@ double gain::Get_gain_at_n(double E, double hQW, double iL, double iTau)
     else return ( wzmocnienie_calk_ze_splotem(E,phys::hb_eV*1e12/iTau) / iL ); //20.10.2014 adding lifetime
 }
 /*****************************************************************************/
+double gain::Get_luminescence_at_n(double E, double hQW, double iL)
+{
+    return ( luminescencja_calk(E) / iL ); //20.10.2014 adding lifetime
+}
+/*****************************************************************************/
 double gain::gdzie_qFlc(double E)
 {
   return nosniki_w_c(E) - nosniki_c;
@@ -2695,6 +2700,15 @@ double gain::wzmocnienie_calk_bez_splotu(double E)
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
     for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
       wynik += wzmocnienie_od_pary_pasm(E, nr_c, nr_v);
+  return wynik;
+}
+/*****************************************************************************/
+double gain::luminescencja_calk(double E) // LUKASZ
+{
+  double wynik = 0.;
+  for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+    for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+      wynik += spont_od_pary_pasm(E, nr_c, nr_v);
   return wynik;
 }
 /*****************************************************************************/

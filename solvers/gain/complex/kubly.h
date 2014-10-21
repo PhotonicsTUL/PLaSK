@@ -282,6 +282,7 @@ public:
     double policz_qFlv();
     double getT();
     double Get_gain_at_n(double E, double hQW, double iL, double iTau); // LUKASZ
+    double Get_luminescence_at_n(double E, double hQW, double iL); // LUKASZ
 
     double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
     double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v);
@@ -289,6 +290,7 @@ public:
     double spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v);
     double wzmocnienie_calk_ze_splotem(double E, double b, double blad = 0.02); // podzial na kawalek o promieniu Rb wokol 0 i reszte
     double wzmocnienie_calk_bez_splotu(double E);
+    double luminescencja_calk(double E); // LUKASZ
     void profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b);
     void profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
     void profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok);

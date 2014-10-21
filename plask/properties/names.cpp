@@ -18,6 +18,7 @@ constexpr const char* HolesConcentration::NAME;             constexpr const char
 constexpr const char* Conductivity::NAME;                   constexpr const char* Conductivity::UNIT;
 
 constexpr const char* Gain::NAME;                           constexpr const char* Gain::UNIT;
+constexpr const char* Luminescence::NAME;                   constexpr const char* Luminescence::UNIT;
 constexpr const char* GainOverCarriersConcentration::NAME;  constexpr const char* GainOverCarriersConcentration::UNIT;
 
 constexpr const char* RefractiveIndex::NAME;                constexpr const char* RefractiveIndex::UNIT;

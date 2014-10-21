@@ -11,6 +11,7 @@
 namespace plask { namespace solvers { namespace ferminew {
 
 template <typename GeometryT> struct GainSpectrum;
+template <typename GeometryT> struct LuminescenceSpectrum;
 
 /**
  * Gain solver using Fermi Golden Rule
@@ -137,6 +138,9 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     /// Provider for gain distribution
     typename ProviderFor<Gain,GeometryType>::Delegate outGain;
 
+    /// Provider for luminescence distribution
+    typename ProviderFor<Luminescence,GeometryType>::Delegate outLuminescence;
+
     /// Provider for gain over carriers concentration derivative distribution
     typename ProviderFor<GainOverCarriersConcentration, GeometryType>::Delegate outGainOverCarriersConcentration;
 
@@ -151,6 +155,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
   protected:
 
     friend struct GainSpectrum<GeometryType>;
+    friend struct LuminescenceSpectrum<GeometryType>;
     friend class QW::gain;
 
     double roughness;               ///< roughness [-]
@@ -196,6 +201,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason)
     {
         outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain
+        outLuminescence.fireChanged();  // the input changed, so we inform the world that everybody should get the new luminescence
     }
 
     /**
@@ -212,6 +218,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
      * \return gain distribution
      */
     const LazyData<double> getGain(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<double> getLuminescence(const shared_ptr<const MeshD<2> > &dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
     //const DataVector<double> getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT); // LUKASZ
 
   public:
@@ -232,6 +239,11 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
      * Reg gain spectrum object for future use;
      */
     GainSpectrum<GeometryType> getGainSpectrum(const Vec<2>& point);
+
+    /**
+     * Reg luminescence spectrum object for future use;
+     */
+    LuminescenceSpectrum<GeometryType> getLuminescenceSpectrum(const Vec<2>& point);
 };
 
 
@@ -302,8 +314,72 @@ struct GainSpectrum {
     }
 };
 
+/**
+ * Cached luminescence spectrum
+ */
+template <typename GeometryT>
+struct LuminescenceSpectrum {
 
+    FerminewGainSolver<GeometryT>* solver; ///< Source solver
+    Vec<2> point;                       ///< Point in which the luminescence is calculated
 
+    /// Active region containing the point
+    const typename FerminewGainSolver<GeometryT>::ActiveRegionInfo* region;
+
+    double T;                           ///< Temperature
+    double n;                           ///< Carriers concentration
+    QW::gain gMod; // added
+    bool gModExist; // added
+
+    LuminescenceSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN)
+    {
+        //std::cout << "Setting gModExist to false\n"; // added
+        gModExist = false; // added
+    //LuminescenceSpectrum(FerminewGainSolver<GeometryT>* solver, const Vec<2> point): solver(solver), point(point), T(NAN), n(NAN) {
+        for (const auto& reg: solver->regions) {
+            if (reg.contains(point)) {
+                region = &reg;
+                solver->inTemperature.changedConnectMethod(this, &LuminescenceSpectrum::onTChange);
+                solver->inCarriersConcentration.changedConnectMethod(this, &LuminescenceSpectrum::onNChange);
+                return;
+            };
+        }
+        throw BadInput(solver->getId(), "Point %1% does not belong to any active region", point);
+    }
+
+    void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) { T = NAN; }
+
+    void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) { n = NAN; }
+
+    ~LuminescenceSpectrum() {
+        solver->inTemperature.changedDisconnectMethod(this, &LuminescenceSpectrum::onTChange);
+        solver->inCarriersConcentration.changedDisconnectMethod(this, &LuminescenceSpectrum::onNChange);
+    }
+
+    /**
+     * Get luminescence at given valenegth
+     * \param wavelength wavelength to get luminescence
+     * \return luminescence
+     */
+    double getLuminescence(double wavelength)
+    {
+        //std::cout << "Runing getLuminescence in spectrum\n"; // added
+    //double getLuminescence(double wavelength) {
+        if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
+        if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
+        if (!gModExist) // added
+        { // added
+            //std::cout << "Getting GainModule in spectrum\n"; // added
+            gMod = solver->getGainModule(wavelength, T, n, *region); // added
+            gModExist = true; // added
+        } // added
+        return gMod.Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // added
+        //return solver->getGainModule(wavelength, T, n, *region) // commented
+        //    .Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // commented
+        /*return solver->getGainModule(wavelength, T, n, *region)
+            .Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen);*/
+    }
+};
 
 }}} // namespace
 

@@ -4,7 +4,8 @@ namespace plask { namespace solvers { namespace ferminew {
 
 template <typename GeometryType>
 FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): SolverWithMesh<GeometryType,OrderedMesh1D>(name),
-    outGain(this, &FerminewGainSolver<GeometryType>::getGain)/*, // LUKASZ
+    outGain(this, &FerminewGainSolver<GeometryType>::getGain),
+    outLuminescence(this, &FerminewGainSolver<GeometryType>::getLuminescence)/*, // LUKASZ
     outGainOverCarriersConcentration(this, &FerminewGainSolver<GeometryType>::getdGdn)*/ // getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
@@ -97,6 +98,7 @@ void FerminewGainSolver<GeometryType>::onInitialize() // In this function check 
     //TODO
 
     outGain.fireChanged();
+    outLuminescence.fireChanged();
 }
 
 
@@ -685,6 +687,69 @@ const LazyData<double> FerminewGainSolver<GeometryType>::getGain(const shared_pt
     }
 } // LUKASZ
 
+template <typename GeometryType>
+const LazyData<double> FerminewGainSolver<GeometryType>::getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp)
+{
+    if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_SPLINE;
+
+    this->writelog(LOG_INFO, "Calculating luminescence");
+    this->initCalculation(); // This must be called before any calculation!
+
+    auto mesh2 = make_shared<RectangularMesh<2>>();    //RectilinearMesh2D
+    if (this->mesh) {
+        auto verts = make_shared<OrderedAxis>();
+        for (auto p: *dst_mesh) verts->addPoint(p.vert());
+        mesh2->setAxis0(this->mesh); mesh2->setAxis1(verts);
+    }
+    const shared_ptr<const MeshD<2>> src_mesh((this->mesh)? mesh2 : dst_mesh);
+
+    auto geo_mesh = make_shared<const WrappedMesh<2>>(src_mesh, this->geometry);
+
+    DataVector<const double> nOnMesh = inCarriersConcentration(geo_mesh, interp); // carriers concentration on the mesh
+    DataVector<const double> TOnMesh = inTemperature(geo_mesh, interp); // temperature on the mesh
+    DataVector<double> luminescenceOnMesh(geo_mesh->size(), 0.);
+
+    std::vector<std::pair<size_t,size_t>> points;
+    for (size_t i = 0; i != geo_mesh->size(); i++)
+        for (size_t r = 0; r != regions.size(); ++r)
+            if (regions[r].contains(geo_mesh->at(i)) && nOnMesh[i] > 0.)
+                points.push_back(std::make_pair(i,r));
+
+    //#pragma omp parallel for // do not use parallel computations now LUKASZ 2014.10.16
+    for (int j = 0; j < points.size(); j++)
+    {
+        size_t i = points[j].first;
+
+        double T = TOnMesh[i];
+        double n = nOnMesh[i];
+
+        const ActiveRegionInfo& region = regions[points[j].second];
+
+        QW::gain gainModule = getGainModule(wavelength, T, n, region);
+
+        if ((!mEc)&&((!mEvhh)||(!mEvlh)))
+        {
+            double L = region.qwtotallen / region.totallen; // no unit
+
+            luminescenceOnMesh[i] = gainModule.luminescencja_calk(nm_to_eV(wavelength)) / L; //20.10.2014 adding luminescence
+            writelog(LOG_RESULT, "calculated luminescence: %1% ?", luminescenceOnMesh[i]);
+        }
+        else if (mEc)
+            throw BadInput(this->getId(), "Conduction QW depth negative for e, check VB values of active-region materials");
+        else //if ((mEvhh)&&(mEvlh))
+            throw BadInput(this->getId(), "Valence QW depth negative both for hh and lh, check VB values of active-region materials");
+    }
+
+    if (this->mesh)
+    {
+        return interpolate(mesh2, luminescenceOnMesh, make_shared<const WrappedMesh<2>>(dst_mesh, this->geometry), interp);
+    }
+    else
+    {
+        return luminescenceOnMesh;
+    }
+} // LUKASZ
+
 /*
 template <typename GeometryType>
 const DataVector<double> FerminewGainSolver<GeometryType>::getdGdn(const MeshD<2>& dst_mesh, double wavelength, InterpolationMethod interp)
@@ -742,6 +807,12 @@ GainSpectrum<GeometryType> FerminewGainSolver<GeometryType>::getGainSpectrum(con
     return GainSpectrum<GeometryType>(this, point);
 }
 
+template <typename GeometryType>
+LuminescenceSpectrum<GeometryType> FerminewGainSolver<GeometryType>::getLuminescenceSpectrum(const Vec<2>& point)
+{
+    this->initCalculation();
+    return LuminescenceSpectrum<GeometryType>(this, point);
+}
 
 template <> std::string FerminewGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.Ferminew2D"; }
 template <> std::string FerminewGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FerminewCyl"; }

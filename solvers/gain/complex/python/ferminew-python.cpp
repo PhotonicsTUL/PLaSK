@@ -26,6 +26,16 @@ static py::object FerminewGainSpectrum__call__(GainSpectrum<GeometryT>& self, py
    return UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
 }
 
+template <typename GeometryT>
+static LuminescenceSpectrum<GeometryT> FerminewGetLuminescenceSpectrum2(FerminewGainSolver<GeometryT>* solver, double c0, double c1) {
+    return solver->getLuminescenceSpectrum(Vec<2>(c0,c1));
+}
+
+template <typename GeometryT>
+static py::object FerminewLuminescenceSpectrum__call__(LuminescenceSpectrum<GeometryT>& self, py::object wavelengths) {
+   return UFUNC<double>([&](double x){return self.getLuminescence(x);}, wavelengths);
+}
+
 /*template <typename GeometryT>
 static py::object FerminewGain_setLevels(py::tuple args, py::dict kwargs)
 {
@@ -78,6 +88,7 @@ BOOST_PYTHON_MODULE(complex)
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
+        PROVIDER(outLuminescence, "");
         PROVIDER(outGainOverCarriersConcentration, "");
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
@@ -86,12 +97,21 @@ BOOST_PYTHON_MODULE(complex)
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FerminewGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
+        solver.def("luminescencespectrum", &__Class__::getLuminescenceSpectrum, "Get luminescence spectrum at given point", py::arg("point"),
+                   py::with_custodian_and_ward_postcall<0,1>());
+        solver.def("luminescencespectrum", FerminewGetLuminescenceSpectrum2<Geometry2DCartesian>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
+                   py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
         py::class_<GainSpectrum<Geometry2DCartesian>, plask::shared_ptr<GainSpectrum<Geometry2DCartesian>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FerminewGainSpectrum__call__<Geometry2DCartesian>)
+        ;
+        py::class_<LuminescenceSpectrum<Geometry2DCartesian>, plask::shared_ptr<LuminescenceSpectrum<Geometry2DCartesian>>>("LuminescenceSpectrum",
+            "Luminescence spectrum class. You can call it like a function to get luminescences for different vavelengths.",
+            py::no_init)
+            .def("__call__", &FerminewLuminescenceSpectrum__call__<Geometry2DCartesian>)
         ;
     }
     {CLASS(FerminewGainSolver<Geometry2DCylindrical>, "FerminewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
@@ -100,6 +120,7 @@ BOOST_PYTHON_MODULE(complex)
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
+        PROVIDER(outLuminescence, "");
         PROVIDER(outGainOverCarriersConcentration, "");
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
@@ -108,13 +129,22 @@ BOOST_PYTHON_MODULE(complex)
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("spectrum", FerminewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
+        solver.def("luminescencespectrum", &__Class__::getLuminescenceSpectrum, "Get luminescence spectrum at given point", py::arg("point"),
+                   py::with_custodian_and_ward_postcall<0,1>());
+        solver.def("luminescencespectrum", FerminewGetLuminescenceSpectrum2<Geometry2DCartesian>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
+                   py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
         py::class_<GainSpectrum<Geometry2DCylindrical>, plask::shared_ptr<GainSpectrum<Geometry2DCylindrical>>>("Spectrum",
             "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
             .def("__call__", &FerminewGainSpectrum__call__<Geometry2DCylindrical>)
-        ; // LUKASZ
+        ;
+        py::class_<LuminescenceSpectrum<Geometry2DCylindrical>, plask::shared_ptr<LuminescenceSpectrum<Geometry2DCylindrical>>>("LuminescenceSpectrum",
+            "Luminescence spectrum class. You can call it like a function to get luminescences for different vavelengths.",
+            py::no_init)
+            .def("__call__", &FerminewLuminescenceSpectrum__call__<Geometry2DCylindrical>)
+        ;
     }
 
 }
