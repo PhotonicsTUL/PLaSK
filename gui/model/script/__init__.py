@@ -11,9 +11,10 @@
 # GNU General Public License for more details.
 
 from lxml import etree
-from ..utils.xml import require_no_children, require_no_attributes
+from ...utils.xml import require_no_children, require_no_attributes
 
-from . import SectionModel
+from .. import SectionModel
+
 
 class ScriptModel(SectionModel):
 
