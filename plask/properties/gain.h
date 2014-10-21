@@ -34,7 +34,7 @@ struct PLASK_API Gain : public FieldProperty<double, double> {
  */
 struct PLASK_API Luminescence : public FieldProperty<double, double> {
     static constexpr const char* NAME = "luminescence";
-    static constexpr const char* UNIT = "?"; // TODO
+    static constexpr const char* UNIT = "a.u.";
     static inline double getDefaultValue() { return NAN; }
 };
 

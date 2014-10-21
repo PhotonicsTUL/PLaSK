@@ -131,7 +131,7 @@ BOOST_PYTHON_MODULE(complex)
                    py::with_custodian_and_ward_postcall<0,1>());
         solver.def("luminescencespectrum", &__Class__::getLuminescenceSpectrum, "Get luminescence spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0,1>());
-        solver.def("luminescencespectrum", FerminewGetLuminescenceSpectrum2<Geometry2DCartesian>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
+        solver.def("luminescencespectrum", FerminewGetLuminescenceSpectrum2<Geometry2DCylindrical>, "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
