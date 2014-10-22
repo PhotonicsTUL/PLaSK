@@ -15,7 +15,7 @@ from ...qt import QtCore
 
 from .. import SectionModel
 from .reader import GNReadConf
-from .constructor import construct_geometry_object
+from .constructor import construct_geometry_object, construct_by_name
 from ...utils.str import none_to_empty
 from ...utils.xml import AttributeReader
 from .types import geometry_types_geometries
@@ -114,14 +114,18 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             return False
 
     def removeRows(self, row, count, parent = QtCore.QModelIndex()):
+        l = self._children_list(parent)
         end = row + count
+        if row < 0 or end > len(l): return False
         self.beginRemoveRows(parent, row, end)
-        if not parent.isValid():
-            del self.roots[row:end]
-        else:
-            pass    #TODO
+        del l[row:end]
         self.endRemoveRows()
+        self.fire_changed()
+        return True
 
-
-    #def hasChildren(self, parent = QtCore.QModelIndex()):
-    #    return bool(self._children_list(parent))
+    # other actions:
+    def append_geometry(self, type_name):
+        self.beginInsertRows(QtCore.QModelIndex(), len(self.roots), len(self.roots))
+        self.roots.append(construct_by_name(type_name, geometry_types_geometries))
+        self.endInsertRows()
+        self.fire_changed()

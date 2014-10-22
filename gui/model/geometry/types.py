@@ -68,10 +68,13 @@ geometry_types_other = {
     'copy': GNCopy.from_xml
 }
 
-geometry_types_geometries = {
+geometry_types_geometries_core = {
     'cartesian2d': GNCartesian.from_xml_2d,
     'cartesian3d': GNCartesian.from_xml_3d,
-    'cylindrical': GNCylindrical.from_xml_2d,
-    'cylindrical2d': GNCylindrical.from_xml_2d
+    'cylindrical': GNCylindrical.from_xml_2d
 }
 
+geometry_types_geometries = {   #with alternative names
+    'cylindrical2d': GNCylindrical.from_xml_2d
+}
+geometry_types_geometries.update(geometry_types_geometries_core)

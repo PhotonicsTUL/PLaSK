@@ -48,6 +48,7 @@ class GNode(object):
 
     def set_xml_element(self, element, conf = None):
         if conf is not None and conf.parent is not None: self.parent = conf.parent
+        if element is None: return
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
         with AttributeReader(element) as a: self.attributes_from_xml(a, subtree_conf)
