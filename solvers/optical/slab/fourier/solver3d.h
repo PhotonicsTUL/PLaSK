@@ -113,9 +113,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
         invalidate();
     }
 
-
     /// Return current mode symmetry
     Expansion::Component getSymmetryLong() const { return expansion.symmetry_long; }
+
     /// Set new mode symmetry
     void setSymmetryLong(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
@@ -133,6 +133,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<Geometry3D> {
 
     /// Return current mode symmetry
     Expansion::Component getSymmetryTran() const { return expansion.symmetry_tran; }
+
     /// Set new mode symmetry
     void setSymmetryTran(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))

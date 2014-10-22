@@ -112,6 +112,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     /// Return current mode symmetry
     Expansion::Component getSymmetry() const { return expansion.symmetry; }
+
     /// Set new mode symmetry
     void setSymmetry(Expansion::Component symmetry) {
         if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
@@ -129,6 +130,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<Geometry2DCartesian> 
 
     /// Return current mode polarization
     Expansion::Component getPolarization() const { return expansion.polarization; }
+    
     /// Set new mode polarization
     void setPolarization(Expansion::Component polarization) {
         if ((expansion.separated() && polarization == Expansion::E_UNSPECIFIED) ||
