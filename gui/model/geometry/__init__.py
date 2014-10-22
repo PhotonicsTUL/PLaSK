@@ -113,5 +113,15 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         else:
             return False
 
+    def removeRows(self, row, count, parent = QtCore.QModelIndex()):
+        end = row + count
+        self.beginRemoveRows(parent, row, end)
+        if not parent.isValid():
+            del self.roots[row:end]
+        else:
+            pass    #TODO
+        self.endRemoveRows()
+
+
     #def hasChildren(self, parent = QtCore.QModelIndex()):
     #    return bool(self._children_list(parent))

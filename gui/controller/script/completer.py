@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtCore, QtGui
+from ...qt import QtCore, QtGui, qt
 from ...qt.QtCore import Qt
 
 from ...model.script.completer import CompletionsModel, get_completions
@@ -32,7 +32,7 @@ class CompletionsPopup(QtGui.QTableView):
         self.setShowGrid(False)
         self.setWordWrap(False)
 
-    visibility_changed = QtCore.Signal(bool)
+    visibility_changed = QtCore.pyqtSignal(bool) if qt == 'PyQt4' else QtCore.Signal(bool)
 
     def showEvent(self, event):
         self.visibility_changed.emit(True)
