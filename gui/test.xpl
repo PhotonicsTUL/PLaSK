@@ -138,7 +138,6 @@ config.axes = 'rz'
 
 import os
 
-
 def loss_on_voltage(voltage):
     ELECTRICAL.invalidate()
     ELECTRICAL.voltage_boundary[0].value = voltage[0]

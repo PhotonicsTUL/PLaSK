@@ -12,10 +12,10 @@
 
 import sys
 
-from ...qt import QtGui
+from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
-from .completer import CompletionsController
+from ...model.script.completer import CompletionsModel, get_completions
 
 from .brackets import get_selections as get_bracket_selections
 from .indenter import indent, unindent, autoindent
@@ -60,6 +60,12 @@ class ScriptEditor(TextEdit):
         self.controller = controller
         super(ScriptEditor, self).__init__(parent)
 
+        self.completer = QtGui.QCompleter()
+        self.completer.setWidget(self)
+        self.completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.completer.activated.connect(self.insert_completion)
+
         self.cursorPositionChanged.connect(self.update_selections)
 
         self.comment_action = QtGui.QAction('Co&mment lines', self)
@@ -70,39 +76,6 @@ class ScriptEditor(TextEdit):
         self.uncomment_action.triggered.connect(self.block_uncomment)
         self.addAction(self.comment_action)
         self.addAction(self.uncomment_action)
-
-    def keyPressEvent(self, event):
-        key = event.key()
-        if key in (Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace):
-            cursor = self.textCursor()
-            if cursor.hasSelection():
-                if key == Qt.Key_Tab:
-                    indent(self)
-                    return
-                elif key == Qt.Key_Backtab:
-                    unindent(self)
-                    return
-            elif key == Qt.Key_Backtab:
-                unindent(self)
-                return
-            else:
-                col = cursor.positionInBlock()
-                inindent = not cursor.block().text()[:col].strip()
-                if inindent:
-                    if key == Qt.Key_Tab:
-                        indent(self, col)
-                        return
-                    else:
-                        if not (cursor.atBlockStart()):
-                            unindent(self, col)
-                            return
-
-        super(ScriptEditor, self).keyPressEvent(event)
-
-        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
-            autoindent(self)
-        elif key == Qt.Key_Period:
-            self.controller.completions.show_completions()
 
     def update_selections(self):
         """Add our own custom selections"""
@@ -149,6 +122,77 @@ class ScriptEditor(TextEdit):
             pass
         cursor.endEditBlock()
 
+    def insert_completion(self, completion):
+        # if self.completer.widget() != self: return
+        cursor = self.textCursor()
+        extra = len(self.completer.completionPrefix())
+        cursor.movePosition(QtGui.QTextCursor.Left)
+        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
+        cursor.insertText(completion[extra:])
+        self.setTextCursor(cursor)
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        modifiers = event.modifiers()
+
+        if self.completer.popup().isVisible():
+            if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
+                event.ignore()
+                return  # let the completer do default behaviors
+            if event.text():
+                self.completer.setCompletionPrefix(self.completer.completionPrefix() + event.text())
+
+        if key in (Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace):
+            cursor = self.textCursor()
+            if cursor.hasSelection():
+                if key == Qt.Key_Tab:
+                    indent(self)
+                    return
+                elif key == Qt.Key_Backtab:
+                    unindent(self)
+                    return
+            elif key == Qt.Key_Backtab:
+                unindent(self)
+                return
+            else:
+                col = cursor.positionInBlock()
+                inindent = not cursor.block().text()[:col].strip()
+                if inindent:
+                    if key == Qt.Key_Tab:
+                        indent(self, col)
+                        return
+                    else:
+                        if not (cursor.atBlockStart()):
+                            unindent(self, col)
+                            return
+
+        if key != Qt.Key_Period or modifiers != Qt.ControlModifier:
+            super(ScriptEditor, self).keyPressEvent(event)
+
+        eow = "~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="  # end of word
+        has_modifier = modifiers != Qt.NoModifier and not modifiers & (Qt.ControlModifier | Qt.ShiftModifier)
+        if has_modifier or not event.text() or event.text()[-1] in eow:
+            self.completer.popup().hide()
+
+        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
+            autoindent(self)
+        elif key == Qt.Key_Period and modifiers in (Qt.NoModifier, Qt.ControlModifier):
+            cursor = self.textCursor()
+            row = cursor.blockNumber()
+            col = cursor.positionInBlock()
+            cursor.select(QtGui.QTextCursor.WordUnderCursor)
+            completion_prefix = cursor.selectedText()
+            items = get_completions(self.toPlainText(), row, col)
+            if items:
+                self.completer.setModel(QtGui.QStringListModel(items, self.completer))
+                if completion_prefix != self.completer.completionPrefix():
+                    self.completer.setCompletionPrefix(completion_prefix)
+                    self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0))
+                cr = self.cursorRect()
+                cr.setWidth(self.completer.popup().sizeHintForColumn(0)
+                            + self.completer.popup().verticalScrollBar().sizeHint().width())
+                self.completer.complete(cr)  # popup it up!`
+
 
 class ScriptController(SourceEditController):
 
@@ -176,8 +220,6 @@ class ScriptController(SourceEditController):
         self.highlighter = SyntaxHighlighter(source.editor.document(),
                                              *load_syntax(syntax, scheme),
                                              default_font=DEFAULT_FONT)
-
-        self.completions = CompletionsController(source.editor)
 
         return source
 

@@ -57,7 +57,7 @@ class CompletionsModel(QtCore.QAbstractTableModel):
         if index.isValid() and role in (Qt.DisplayRole, Qt.EditRole, Qt.DecorationRole):
             row = index.row()
             col = index.column()
-            return self.items[row].name
+            return self.items[row]#.name
             # if col == 0:
             #     value = self._icon_map[value]
         else:
@@ -73,4 +73,4 @@ class CompletionsModel(QtCore.QAbstractTableModel):
 def get_completions(text, block, column):
     if jedi is None: return
     script = jedi.Script(text, block+1, column)
-    return script.completions()
+    return [item.name for item in script.completions()]
