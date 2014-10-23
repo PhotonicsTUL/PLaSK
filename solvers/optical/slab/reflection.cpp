@@ -29,8 +29,6 @@ ReflectionTransfer::~ReflectionTransfer() {
 
 void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 {
-    write_debug("Getting admittance matrix for layers %d to %d", start, end);
-
     // Get matrices sizes
     int N0 = diagonalizer->source()->matrixSize();
     int N = diagonalizer->matrixSize(); // <= N0
@@ -73,7 +71,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
-    write_debug("Searching for reflection for layers %d to %d", start, end);
+    write_debug("%s: searching for reflection for layers %d to %d", solver->getId(), start, end);
 
     const int inc = (start < end) ? 1 : -1;
 
@@ -93,6 +91,9 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     #ifdef OPENMP_FOUND
         std::vector<boost::mutex> layer_locks(diagonalizer->lcount);
         for (boost::mutex& mutex: layer_locks) mutex.lock();
+        #ifndef NDEBUG
+            std::vector<bool> layer_accessed(diagonalizer->lcount, false);
+        #endif
     #endif
 
     #pragma omp parallel
@@ -102,8 +103,8 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             try {
                 if (!error) diagonalizer->diagonalizeLayer(l);
                 #ifdef OPENMP_FOUND
-                layer_locks[l].unlock();
-                write_debug("Layer %d diagonalized", l);
+                    layer_locks[l].unlock();
+                    write_debug("%s: layer %d diagonalized", solver->getId(), l);
                 #endif
             } catch(...) {
                 error = std::current_exception();
@@ -114,16 +115,17 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
         if (!error) try {
 
             #ifdef OPENMP_FOUND
-                write_debug("Entering into single region of reflection search [%d]", omp_get_thread_num());
+                write_debug("%s: entering into single region of reflection search in thread %d", solver->getId(), omp_get_thread_num());
+                layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
+                #ifndef NDEBUG
+                    write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[start]);
+                    layer_accessed[solver->stack[start]] = true;
+                #endif
             #endif
 
             // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
             if (!emitting) {
 
-                #ifdef OPENMP_FOUND
-                    layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
-                    write_debug("Using diagonalized layer %d", solver->stack[start]);
-                #endif
                 gamma = diagonalizer->Gamma(solver->stack[start]);
 
                 // Aply PML
@@ -148,10 +150,6 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             storeP(start);
 
             for (int n = start; n != end; n += inc) {
-                #ifdef OPENMP_FOUND
-                    layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
-                    write_debug("Using diagonalized layer %d", solver->stack[n]);
-                #endif
                 gamma = diagonalizer->Gamma(solver->stack[n]);
                 assert(!gamma.isnan());
 
@@ -171,7 +169,12 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);          // wrk = TE[n] * P
                 #ifdef OPENMP_FOUND
                     layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
-                    write_debug("Using diagonalized layer %d", solver->stack[n+inc]);
+                    #ifndef NDEBUG
+                        if (!layer_accessed[solver->stack[n+inc]]) {
+                            write_debug("%s: using diagonalized layer %d", solver->getId(), solver->stack[n+inc]);
+                            layer_accessed[solver->stack[n+inc]] = true;
+                        }
+                    #endif
                 #endif
                 mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
 
