@@ -156,6 +156,7 @@ const border::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool
 }
 
 void Geometry2DCartesian::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    dest_xml_object.attr("axes", axes.str());
     //TODO borders
 }
 
@@ -252,6 +253,7 @@ const border::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bo
 }
 
 void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    dest_xml_object.attr("axes", axes.str());
     //TODO borders
 }
 
@@ -336,6 +338,7 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 // }
 
 void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    dest_xml_object.attr("axes", axes.str());
     //TODO borders
 }
 

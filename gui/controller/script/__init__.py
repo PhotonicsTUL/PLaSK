@@ -33,6 +33,7 @@ else:
     from ...external.highlighter.python27 import syntax
 from ...external.highlighter.plask import syntax as plask_syntax
 
+
 syntax['formats'].update(plask_syntax['formats'])
 syntax['scanner'][None] = syntax['scanner'][None][:-1] + plask_syntax['scanner'] + [syntax['scanner'][None][-1]]
 
@@ -131,6 +132,24 @@ class ScriptEditor(TextEdit):
         cursor.insertText(completion[extra:])
         self.setTextCursor(cursor)
 
+    def start_completion(self):
+        cursor = self.textCursor()
+        row = cursor.blockNumber()
+        col = cursor.positionInBlock()
+        cursor.select(QtGui.QTextCursor.WordUnderCursor)
+        completion_prefix = cursor.selectedText()
+        items = get_completions(self.toPlainText(), row, col)
+        if items:
+            # self.completer.setModel(QtGui.QStringListModel(items, self.completer))
+            self.completer.setModel(CompletionsModel(items))
+            if completion_prefix != self.completer.completionPrefix():
+                self.completer.setCompletionPrefix(completion_prefix)
+                self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0))
+            rect = self.cursorRect()
+            rect.setWidth(self.completer.popup().sizeHintForColumn(0)
+                          + self.completer.popup().verticalScrollBar().sizeHint().width())
+            self.completer.complete(rect)  # popup it up!`
+
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
@@ -139,8 +158,18 @@ class ScriptEditor(TextEdit):
             if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
                 event.ignore()
                 return  # let the completer do default behaviors
-            if event.text():
-                self.completer.setCompletionPrefix(self.completer.completionPrefix() + event.text())
+            elif event.key() == Qt.Key_Backspace:
+                self.completer.setCompletionPrefix(self.completer.completionPrefix()[:-1])
+            elif event.text():
+                last = event.text()[-1]
+                if modifiers & ~(Qt.ControlModifier | Qt.ShiftModifier) or \
+                        not (last.isalpha() or last.isdigit() or last == '_'):
+                    self.completer.popup().hide()
+                else:
+                    self.completer.setCompletionPrefix(self.completer.completionPrefix() + event.text())
+            elif key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_AltGr,
+                             Qt.Key_Meta, Qt.Key_Super_L, Qt.Key_Super_R):
+                self.completer.popup().hide()
 
         if key in (Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace):
             cursor = self.textCursor()
@@ -166,32 +195,12 @@ class ScriptEditor(TextEdit):
                             unindent(self, col)
                             return
 
-        if key != Qt.Key_Period or modifiers != Qt.ControlModifier:
-            super(ScriptEditor, self).keyPressEvent(event)
-
-        eow = "~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="  # end of word
-        has_modifier = modifiers != Qt.NoModifier and not modifiers & (Qt.ControlModifier | Qt.ShiftModifier)
-        if has_modifier or not event.text() or event.text()[-1] in eow:
-            self.completer.popup().hide()
+        super(ScriptEditor, self).keyPressEvent(event)
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
-        elif key == Qt.Key_Period and modifiers in (Qt.NoModifier, Qt.ControlModifier):
-            cursor = self.textCursor()
-            row = cursor.blockNumber()
-            col = cursor.positionInBlock()
-            cursor.select(QtGui.QTextCursor.WordUnderCursor)
-            completion_prefix = cursor.selectedText()
-            items = get_completions(self.toPlainText(), row, col)
-            if items:
-                self.completer.setModel(QtGui.QStringListModel(items, self.completer))
-                if completion_prefix != self.completer.completionPrefix():
-                    self.completer.setCompletionPrefix(completion_prefix)
-                    self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0))
-                cr = self.cursorRect()
-                cr.setWidth(self.completer.popup().sizeHintForColumn(0)
-                            + self.completer.popup().verticalScrollBar().sizeHint().width())
-                self.completer.complete(cr)  # popup it up!`
+        elif key == Qt.Key_Period or (key == Qt.Key_Space and modifiers == Qt.ControlModifier):
+            self.start_completion()
 
 
 class ScriptController(SourceEditController):

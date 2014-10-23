@@ -174,6 +174,8 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
 
     _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
 
+    space->axisNames = current_axes;
+
     return space;
 }
 
@@ -207,6 +209,8 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
 
     _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
 
+    space->axisNames = current_axes;
+
     return space;
 }
 
@@ -230,6 +234,8 @@ static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs
     parsed_kwargs.insert("geometry");
 
     _Space_setBorders(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '%s'");
+
+    space->axisNames = current_axes;
 
     return space;
 }

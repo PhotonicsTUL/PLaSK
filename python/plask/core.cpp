@@ -22,6 +22,7 @@ void initMaterials();
 void initGeometry();
 
 void register_manager();
+void register_xml_writer();
 
 void register_vectors();
 void register_mesh();
@@ -299,6 +300,7 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Manager
     register_manager();
+    register_xml_writer();
 
     // Vectors
     register_vectors();
