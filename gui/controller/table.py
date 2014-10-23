@@ -79,6 +79,7 @@ class TableActions(object):
 
 def table_and_manipulators(table, parent=None, model=None, title=None):
     toolbar = QtGui.QToolBar()
+    toolbar.setStyleSheet("QToolBar { border: 0px }")
     table.table_manipulators_actions = TableActions(table, model)
     toolbar.addActions(table.table_manipulators_actions.get(parent))
 
@@ -127,6 +128,7 @@ class TableController(Controller):
         widget = QtGui.QWidget()
         layout = QtGui.QVBoxLayout()
         toolbar = QtGui.QToolBar(widget)
+        toolbar.setStyleSheet("QToolBar { border: 0px }")
         for a in self.get_table_edit_actions():
             if not a:
                 toolbar.addSeparator()

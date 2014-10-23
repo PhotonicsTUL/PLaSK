@@ -47,6 +47,7 @@ class GeometryController(Controller):
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
+        toolbar.setStyleSheet("QToolBar { border: 0px }")
 
         self.add_menu = QtGui.QMenu()
 

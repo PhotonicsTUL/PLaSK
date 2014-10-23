@@ -493,6 +493,7 @@ def main():
 
     APPLICATION = QtGui.QApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
+    sys.argv = APPLICATION.arguments()
 
     icons_path = QtGui.QIcon.themeSearchPaths()
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))

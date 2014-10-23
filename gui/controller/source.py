@@ -108,6 +108,7 @@ class SourceWidget(QtGui.QWidget):
         self.editor.setFont(DEFAULT_FONT)
 
         self.toolbar = QtGui.QToolBar(self)
+        self.toolbar.setStyleSheet("QToolBar { border: 0px }")
 
         self.add_action('&Undo', 'edit-undo', QtGui.QKeySequence.Undo, self.editor.undo)
         self.add_action('R&edo', 'edit-redo', QtGui.QKeySequence.Redo, self.editor.redo)
@@ -146,6 +147,8 @@ class SourceWidget(QtGui.QWidget):
     def make_find_replace_widget(self):
         self.find_toolbar = QtGui.QToolBar(self)
         self.replace_toolbar = QtGui.QToolBar(self)
+        self.find_toolbar.setStyleSheet("QToolBar { border: 0px }")
+        self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
         find_label = QtGui.QLabel()
         find_label.setText("Search:")
         find_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
