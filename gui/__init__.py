@@ -498,6 +498,8 @@ def main():
     icons_path = QtGui.QIcon.themeSearchPaths()
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QtGui.QIcon.setThemeSearchPaths(icons_path[:-1])
+    if not QtGui.QIcon.themeName():
+        QtGui.QIcon.setThemeName('hicolor')
 
     plugins_dir = os.path.join(__path__[0], 'plugins')
     for loader, modname, ispkg in pkgutil.walk_packages([plugins_dir]):

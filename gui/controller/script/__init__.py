@@ -15,6 +15,7 @@ import sys
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
+from .completer import CompletionsController
 from ...model.script.completer import CompletionsModel, get_completions
 
 from .brackets import get_selections as get_bracket_selections
@@ -61,11 +62,7 @@ class ScriptEditor(TextEdit):
         self.controller = controller
         super(ScriptEditor, self).__init__(parent)
 
-        self.completer = QtGui.QCompleter()
-        self.completer.setWidget(self)
-        self.completer.setCompletionMode(QtGui.QCompleter.PopupCompletion)
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-        self.completer.activated.connect(self.insert_completion)
+        self.completer = CompletionsController(self)
 
         self.cursorPositionChanged.connect(self.update_selections)
 
@@ -123,33 +120,6 @@ class ScriptEditor(TextEdit):
             pass
         cursor.endEditBlock()
 
-    def insert_completion(self, completion):
-        # if self.completer.widget() != self: return
-        cursor = self.textCursor()
-        extra = len(self.completer.completionPrefix())
-        cursor.movePosition(QtGui.QTextCursor.Left)
-        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
-        cursor.insertText(completion[extra:])
-        self.setTextCursor(cursor)
-
-    def start_completion(self):
-        cursor = self.textCursor()
-        row = cursor.blockNumber()
-        col = cursor.positionInBlock()
-        cursor.select(QtGui.QTextCursor.WordUnderCursor)
-        completion_prefix = cursor.selectedText()
-        items = get_completions(self.toPlainText(), row, col)
-        if items:
-            # self.completer.setModel(QtGui.QStringListModel(items, self.completer))
-            self.completer.setModel(CompletionsModel(items))
-            if completion_prefix != self.completer.completionPrefix():
-                self.completer.setCompletionPrefix(completion_prefix)
-                self.completer.popup().setCurrentIndex(self.completer.completionModel().index(0, 0))
-            rect = self.cursorRect()
-            rect.setWidth(self.completer.popup().sizeHintForColumn(0)
-                          + self.completer.popup().verticalScrollBar().sizeHint().width())
-            self.completer.complete(rect)  # popup it up!`
-
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
@@ -200,7 +170,7 @@ class ScriptEditor(TextEdit):
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
         elif key == Qt.Key_Period or (key == Qt.Key_Space and modifiers == Qt.ControlModifier):
-            self.start_completion()
+            self.completer.start_completion()
 
 
 class ScriptController(SourceEditController):

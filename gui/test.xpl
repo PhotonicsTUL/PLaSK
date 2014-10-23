@@ -136,7 +136,7 @@ import scipy.optimize
 
 config.axes = 'rz'
 
-import os
+plot
 
 def loss_on_voltage(voltage):
     ELECTRICAL.invalidate()
@@ -226,12 +226,13 @@ show()
 
 sys.exit()
 
-if True:
-    if a:
-        d()
-    else:
-        c()
-    
+class A(object):
+    def __init__(self):
+        self.a = 1
+        
+a = A()
+print a.a
+
 ]]></script>
 
 </plask>

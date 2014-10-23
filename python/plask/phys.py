@@ -18,12 +18,6 @@ The following constants are defined here:
 
 '''
 
-class Quantity(object):
-    '''Physical quantity.
-
-       Use as ``quantity.unit`` to get its value
-    '''
-    pass
 
 qe = 1.60217733e-19
 
@@ -33,14 +27,14 @@ mu0 = 1.25663706144e-06
 
 eps0 = 8.854187817e-6
 
-h = Quantity()
-h.J = 6.62606957e-34
-h.eV = 4.135667516e-15
+class h(object):
+    J = 6.62606957e-34
+    eV = 4.135667516e-15
+h = h()
 
 SB = 5.670373e-8
 
-kB = Quantity()
-kB.J = 1.3806503e-23
-kB.eV = 8.6173423e-5
-
-del Quantity
+class kB(object):
+    J = 1.3806503e-23
+    eV = 8.6173423e-5
+kB = kB()

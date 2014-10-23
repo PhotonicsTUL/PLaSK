@@ -14,6 +14,7 @@ from lxml import etree
 from ...utils.xml import require_no_children, require_no_attributes
 
 from .. import SectionModel
+from .completer import prepare_completions
 
 
 class ScriptModel(SectionModel):
@@ -21,6 +22,7 @@ class ScriptModel(SectionModel):
     def __init__(self, info_cb=None):
         SectionModel.__init__(self, 'script', info_cb)
         self._code = ''
+        prepare_completions()
 
     def set_xml_element(self, element):
         require_no_children(element)
