@@ -136,7 +136,7 @@ import scipy.optimize
 
 config.axes = 'rz'
 
-plot
+# scipy.
 
 def loss_on_voltage(voltage):
     ELECTRICAL.invalidate()

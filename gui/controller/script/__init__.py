@@ -165,7 +165,8 @@ class ScriptEditor(TextEdit):
                             unindent(self, col)
                             return
 
-        super(ScriptEditor, self).keyPressEvent(event)
+        if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier):
+            super(ScriptEditor, self).keyPressEvent(event)
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
