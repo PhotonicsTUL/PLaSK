@@ -228,6 +228,8 @@ public:
         this->strategy = strategy.clone();
     }
 
+    std::string str() const { return strategy->str(); }
+
     StrategyHolder<direction, StrategyType>& operator=(const StrategyType& strategy) { setStrategy(strategy); return *this; }
 
     template <int adirection>

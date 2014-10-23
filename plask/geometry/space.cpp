@@ -41,6 +41,12 @@ void Geometry::setBorders(const std::function<boost::optional<std::string>(const
     }
 }
 
+void Geometry::storeBorderInXML(XMLWriter::Element &dest_xml_object, Geometry::Direction direction, bool higher) const {
+    const border::Strategy& b = this->getBorder(direction, higher);
+    if (b.type() != border::Strategy::DEFAULT)
+        dest_xml_object.attr(this->alternativeDirectionName(direction, higher), b.str());
+}
+
 template <int dim>
 void GeometryD<dim>::onChildChanged(const GeometryObject::Event &evt) {
     if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
@@ -157,7 +163,10 @@ const border::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool
 
 void Geometry2DCartesian::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axes", axes.str());
-    //TODO borders
+    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, false);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, true);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, false);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, true);
 }
 
 void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
@@ -254,7 +263,10 @@ const border::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bo
 
 void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axes", axes.str());
-    //TODO borders
+    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, false);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, true);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, false);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, true);
 }
 
 void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
@@ -339,7 +351,10 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 
 void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     dest_xml_object.attr("axes", axes.str());
-    //TODO borders
+    for (int dir = 0; dir < 3; ++dir) {
+        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), false);
+        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), true);
+    }
 }
 
 
