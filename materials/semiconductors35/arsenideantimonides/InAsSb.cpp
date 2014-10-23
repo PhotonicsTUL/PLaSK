@@ -195,10 +195,12 @@ double InAsSb::cp(double T) const {
 }
 
 MI_PROPERTY(InAsSb, nr,
-            MIComment("TODO")
+            MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898"),
+            MIComment("fit by Lukasz Piskorski")
             )
 double InAsSb::nr(double wl, double T, double n) const {
-    return ( 0. );
+    double w = wl*1e-3;
+    return ( (-0.0009*w*w*w+0.015*w*w-0.018*w+3.61) * (-0.11*As*As*As+0.04*As*As-0.04*As+1.061) - 0.01*pow(1.-As,0.3)*w );
 }
 
 MI_PROPERTY(InAsSb, absp,

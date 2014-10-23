@@ -55,19 +55,20 @@ Tensor2<double> GaSb_Si::cond(double T) const {
     return ( Tensor2<double>(tCond, tCond) );
 }
 
-MI_PROPERTY(GaSb, nr,
+MI_PROPERTY(GaSb_Si, nr,
             MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"),
-            MIArgumentRange(MaterialInfo::wl, 1800, 2560),
-            MIComment("fit by Lukasz Piskorski")
+            MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009"),
+            MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040"),
+            MIArgumentRange(MaterialInfo::wl, 620, 2560),
+            MIComment("fit by Lukasz Piskorski"),
+            MIComment("no fitting data from 827-1798nm wavelength range"),
+            MIComment("basing on fig. 5a (Adachi,1989) nR(wv) relation can be used for 620-4700nm wavelength range")
             )
-double GaSb_Si::nr(double wl, double T, double n) const {
-    double nR300K = sqrt(1.+13.05e-6*wl*wl/(1e-6*wl*wl-0.32)); // 1e-3: nm-> um
+double GaSb_Si::nr(double wl, double T, double) const {
+    double tE = phys::h_eVc1e9/wl; // wl -> E
+    double nR300K = 0.502*tE*tE*tE - 1.216*tE*tE + 1.339*tE + 3.419;
     double nR = nR300K - 0.0079*(Nf_RT*1e-18); // -7.9e-3 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
-
-    if (wl > 1800.)
-        return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
-    else
-        return 0.;
+    return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
 }
 
 MI_PROPERTY(GaSb_Si, absp,
