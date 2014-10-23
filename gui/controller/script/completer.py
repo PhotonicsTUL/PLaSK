@@ -16,23 +16,6 @@ from ...qt.QtCore import Qt
 from ...model.script.completer import CompletionsModel, get_completions
 
 
-class CompletionsPopup(QtGui.QTableView):
-
-    def __init__(self, parent=None):
-        super(CompletionsPopup, self).__init__(parent)
-        self.setMinimumHeight(150)
-        # self.setAlternatingRowColors(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.horizontalHeader().setStretchLastSection(True)
-        self.horizontalHeader().hide()
-        self.verticalHeader().hide()
-        self.setSortingEnabled(False)
-        self.setShowGrid(False)
-        self.setWordWrap(False)
-
-
 class CompletionsController(QtGui.QCompleter):
 
     def __init__(self, edit, parent=None):
@@ -55,7 +38,6 @@ class CompletionsController(QtGui.QCompleter):
         self._edit.setTextCursor(cursor)
 
     def start_completion(self):
-        print type(self.popup())
         cursor = self._edit.textCursor()
         row = cursor.blockNumber()
         col = cursor.positionInBlock()

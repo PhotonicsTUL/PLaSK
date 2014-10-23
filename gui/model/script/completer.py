@@ -66,7 +66,7 @@ class CompletionsModel(QtCore.QAbstractTableModel):
                             "class": QtGui.QIcon.fromTheme("code-class"),
                             "statement": QtGui.QIcon.fromTheme("code-variable"),
                             "keyword": QtGui.QIcon.fromTheme("code-typedef"),
-                            "import": QtGui.QIcon.fromTheme("code-context"),
+                            "import": QtGui.QIcon.fromTheme("code-block"),
                             "forflow": QtGui.QIcon.fromTheme("code-context"),
                            })
 
