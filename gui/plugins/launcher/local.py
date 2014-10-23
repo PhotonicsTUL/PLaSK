@@ -106,14 +106,14 @@ class OutputWindow(QtGui.QMainWindow):
         menu_button = QtGui.QToolButton()
         menu_button.setMenu((view_menu))
         menu_button.setPopupMode(QtGui.QToolButton.InstantPopup)
-        menu_button.setIcon(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')))
+        menu_button.setIcon(QtGui.QIcon.fromTheme('edit-find'))
         menu_button.setFocusPolicy(QtCore.Qt.NoFocus)
         # menu_button.setText("Log Levels")
         tool_action = QtGui.QWidgetAction(self)
         tool_action.setDefaultWidget(menu_button)
         toolbar.addAction(tool_action)
 
-        self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop', QtGui.QIcon(':/process-stop.png')),
+        self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop'),
                                          "Halt", self)
         self.halt_action.setShortcut('Ctrl+h')
         toolbar.addAction(self.halt_action)
@@ -265,7 +265,7 @@ class Launcher(object):
             dirname = self.dirname
         else:
             dirname = os.path.dirname(os.path.abspath(main_window.document.filename or 'dummy'))
-        dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open', QtGui.QIcon(':/folder-open.png')))
+        dirbutton.setIcon(QtGui.QIcon.fromTheme('folder-open'))
         dirbutton.pressed.connect(lambda: self.select_workdir(main_window.document.filename))
         dirlayout = QtGui.QHBoxLayout()
         self.diredit = QtGui.QLineEdit()

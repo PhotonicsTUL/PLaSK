@@ -357,7 +357,7 @@ def show_material_plot(parent, model):
 
 
 def material_plot_operation(parent):
-    action = QtGui.QAction(QtGui.QIcon.fromTheme('edit-find', QtGui.QIcon(':/edit-find.png')),
+    action = QtGui.QAction(QtGui.QIcon.fromTheme('matplotlib'),
                            'Examine &Material Parameters...', parent)
     action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_M)
     action.triggered.connect(lambda: show_material_plot(parent, parent.document.materials.model))

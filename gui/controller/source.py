@@ -189,7 +189,7 @@ class SourceWidget(QtGui.QWidget):
         self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev)
 
     def add_action(self, name, icon, shortcut, slot):
-        action = QtGui.QAction(QtGui.QIcon.fromTheme(icon, QtGui.QIcon(':/{}'.format(icon))), name, self)
+        action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), name, self)
         action.setShortcut(shortcut)
         action.triggered.connect(slot)
         self.toolbar.addAction(action)

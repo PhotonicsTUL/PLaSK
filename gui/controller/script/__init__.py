@@ -218,7 +218,7 @@ class ScriptController(SourceEditController):
         menu.addAction(source.editor.comment_action)
         menu.addAction(source.editor.uncomment_action)
         button = QtGui.QToolButton()
-        button.setIcon(QtGui.QIcon.fromTheme('code-block', QtGui.QIcon(':/code-block')))
+        button.setIcon(QtGui.QIcon.fromTheme('document-properties'))
         button.setMenu(menu)
         button.setPopupMode(QtGui.QToolButton.InstantPopup)
         source.toolbar.addWidget(button)

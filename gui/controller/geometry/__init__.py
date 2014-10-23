@@ -52,14 +52,14 @@ class GeometryController(Controller):
 
         addButton = QtGui.QToolButton()
         addButton.setText('Add')
-        addButton.setIcon(QtGui.QIcon.fromTheme('list-add', QtGui.QIcon(':/list-add.png')))
+        addButton.setIcon(QtGui.QIcon.fromTheme('list-add'))
         addButton.setToolTip('Add new geometry object to the tree')
         addButton.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Plus)
         addButton.setMenu(self.add_menu)
         addButton.setPopupMode(QtGui.QToolButton.InstantPopup)
         toolbar.addWidget(addButton)
 
-        self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove', QtGui.QIcon(':/list-remove.png')), '&Remove', toolbar)
+        self.remove_action = QtGui.QAction(QtGui.QIcon.fromTheme('list-remove'), '&Remove', toolbar)
         self.remove_action.setStatusTip('Remove selected node from the tree')
         # self.remove_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_Minus)
         self.remove_action.triggered.connect(self.remove_node)
