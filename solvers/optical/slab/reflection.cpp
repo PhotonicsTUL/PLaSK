@@ -29,6 +29,8 @@ ReflectionTransfer::~ReflectionTransfer() {
 
 void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 {
+    write_debug("Getting admittance matrix for layers %d to %d", start, end);
+
     // Get matrices sizes
     int N0 = diagonalizer->source()->matrixSize();
     int N = diagonalizer->matrixSize(); // <= N0
@@ -71,6 +73,8 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
+    write_debug("Searching for reflection for layers %d to %d", start, end);
+
     const int inc = (start < end) ? 1 : -1;
 
     int N0 = diagonalizer->source()->matrixSize();
@@ -99,6 +103,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 if (!error) diagonalizer->diagonalizeLayer(l);
                 #ifdef OPENMP_FOUND
                 layer_locks[l].unlock();
+                write_debug("Layer %d diagonalized", l);
                 #endif
             } catch(...) {
                 error = std::current_exception();
@@ -108,11 +113,16 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
         #pragma omp single
         if (!error) try {
 
+            #ifdef OPENMP_FOUND
+                write_debug("Entering into single region of reflection search [%d]", omp_get_thread_num());
+            #endif
+
             // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
             if (!emitting) {
 
                 #ifdef OPENMP_FOUND
                     layer_locks[solver->stack[start]].lock(); layer_locks[solver->stack[start]].unlock();
+                    write_debug("Using diagonalized layer %d", solver->stack[start]);
                 #endif
                 gamma = diagonalizer->Gamma(solver->stack[start]);
 
@@ -140,6 +150,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             for (int n = start; n != end; n += inc) {
                 #ifdef OPENMP_FOUND
                     layer_locks[solver->stack[n]].lock(); layer_locks[solver->stack[n]].unlock();
+                    write_debug("Using diagonalized layer %d", solver->stack[n]);
                 #endif
                 gamma = diagonalizer->Gamma(solver->stack[n]);
                 assert(!gamma.isnan());
@@ -159,7 +170,8 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
                 for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P.orig + I
                 mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, wrk);          // wrk = TE[n] * P
                 #ifdef OPENMP_FOUND
-                layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
+                    layer_locks[solver->stack[n+inc]].lock(); layer_locks[solver->stack[n+inc]].unlock();
+                    write_debug("Using diagonalized layer %d", solver->stack[n+inc]);
                 #endif
                 mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), wrk, temp);// temp = invTE[n+1] * wrk (= A)
 
@@ -211,6 +223,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
 void ReflectionTransfer::storeP(size_t n) {
     if (allP) {
+        write_debug("Storing reflection matrix for layer %d", n);
         int N = diagonalizer->matrixSize();
         if (memP.size() != solver->stack.size()) {
             // Allocate the storage for admittance matrices
@@ -325,11 +338,11 @@ void ReflectionTransfer::determineFields()
             mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);         // temp := TH * F2
             mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);      // B2 := invTH * temp
 
-//            // multiply rows of invTH by -1 where necessary for the outer layer
-//            if (n+inc == end) {
-//                for (int i = 0; i < N; i++)
-//                    if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
-//            }
+            // // multiply rows of invTH by -1 where necessary for the outer layer
+            // if (n+inc == end) {
+            //     for (int i = 0; i < N; i++)
+            //         if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
+            // }
 
             for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];              // F2 := F1 + B1
             mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);         // temp := TE * F2
@@ -337,25 +350,25 @@ void ReflectionTransfer::determineFields()
                   temp.data(), N0, -1., B2.data(), N);                       // B2 := invTE * temp - B2
 
             H = (n+inc == end)? 0 : (solver->vbounds[n+inc] - solver->vbounds[n+inc-1]);
-//            if (n+inc != end) {
+            // if (n+inc != end) {
                 for (int i = 0; i < N; i++)
                     B2[i] *= 0.5 * exp(-I*gamma[i]*H);                      // B2 := 1/2 * phas * B2
-//            } else {
-//                for (int i = 0; i < N; i++) {
-//                    dcomplex g = gamma[i];
-//                    if (real(g) < -SMALL) g = -g;
-//                    B2[i] *= 0.5 * exp(-I*g*H);                             // B2 := 1/2 * phas * B2
-//                }
-//            }
+            // } else {
+            //     for (int i = 0; i < N; i++) {
+            //         dcomplex g = gamma[i];
+            //         if (real(g) < -SMALL) g = -g;
+            //         B2[i] *= 0.5 * exp(-I*g*H);                             // B2 := 1/2 * phas * B2
+            //     }
+            // }
         }
 
-         mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
-//        for (int i = 0; i < N; ++i) fields[end].F[i] = 0.; // in the outer layer there is no incoming field
-//        // In the outer layers replace F and B where necessary for consistent gamma handling
-//        cvector& F2 = fields[end].F;
-//        cvector& B2 = fields[end].B;
-//        for (int i = 0; i < N; i++)
-//            if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
+        mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
+        // for (int i = 0; i < N; ++i) fields[end].F[i] = 0.; // in the outer layer there is no incoming field
+        // // In the outer layers replace F and B where necessary for consistent gamma handling
+        // cvector& F2 = fields[end].F;
+        // cvector& B2 = fields[end].B;
+        // for (int i = 0; i < N; i++)
+        //     if (real(gamma[i]) < -SMALL) std::swap(F2[i], B2[i]);
     }
 
     allP = false;

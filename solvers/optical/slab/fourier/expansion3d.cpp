@@ -211,7 +211,11 @@ void ExpansionPW3D::layerMaterialCoefficients(size_t l)
     size_t nN = nNl * nNt;
     const double normlim = min(Ll/nNl, Lt/nNt) * 1e-9;
 
-    solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+    #if defined(OPENMP_FOUND) && !defined(NDEBUG)
+        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points) [%4%]", l, Ml, Mt, omp_get_thread_num());
+    #else
+        solver->writelog(LOG_DETAIL, "Getting refractive indices for layer %1% (sampled at %2%x%3% points)", l, Ml, Mt);
+    #endif
 
     auto mesh = make_shared<RectangularMesh<3>>
                            (make_shared<RegularAxis>(long_mesh),
@@ -443,6 +447,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
 void ExpansionPW3D::getMatrices(size_t lay, dcomplex k0, dcomplex klong, dcomplex ktran, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
+
+    write_debug("Getting matrices for layer %d", lay);
 
     int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
 
