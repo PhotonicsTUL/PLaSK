@@ -644,6 +644,7 @@ public:
     //     return subspace;
     // }
 
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
 };
 
@@ -657,6 +658,9 @@ void GeometryD<3>::setPlanarBorders(const border::Strategy& border_to_set) {
     setBorders(DIRECTION_LONG, border_to_set);
     setBorders(DIRECTION_TRAN, border_to_set);
 }
+
+template <> void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
+template <> void GeometryD<3>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const;
 
 PLASK_API_EXTERN_TEMPLATE_CLASS(GeometryD<2>)
 PLASK_API_EXTERN_TEMPLATE_CLASS(GeometryD<3>)
@@ -817,8 +821,6 @@ public:
 //         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, borders, axesNames);
 //     }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
-
     virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
 
 };
@@ -956,8 +958,6 @@ public:
         if (direction == DIRECTION_TRAN) return true;
         return getBorder(direction, false).type() == border::Strategy::MIRROR || getBorder(direction, true).type() == border::Strategy::MIRROR;
     }
-
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
     void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const;
 
@@ -1106,8 +1106,6 @@ public:
     virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const override;
 
 //     virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr, bool copyBorders=false) const;
-
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 };
 
 

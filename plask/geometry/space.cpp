@@ -78,6 +78,24 @@ shared_ptr<Material> GeometryD<dim>::getMaterial(const Vec<dim, double> &p) cons
     return getMaterialOrDefault(p);
 }
 
+template <>
+void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    dest_xml_object.attr("axes", axes.str());
+    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, false);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, true);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, false);
+    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, true);
+}
+
+template <>
+void GeometryD<3>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    dest_xml_object.attr("axes", axes.str());
+    for (int dir = 0; dir < 3; ++dir) {
+        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), false);
+        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), true);
+    }
+}
+
 template class PLASK_API GeometryD<2>;
 template class PLASK_API GeometryD<3>;
 
@@ -159,14 +177,6 @@ void Geometry2DCartesian::setBorder(Direction direction, bool higher, const bord
 const border::Strategy& Geometry2DCartesian::getBorder(Direction direction, bool higher) const {
     Primitive<3>::ensureIsValid2DDirection(direction);
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
-}
-
-void Geometry2DCartesian::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr("axes", axes.str());
-    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, false);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, true);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, false);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, true);
 }
 
 void Geometry2DCartesian::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
@@ -261,14 +271,6 @@ const border::Strategy& Geometry2DCylindrical::getBorder(Direction direction, bo
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 
-void Geometry2DCylindrical::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr("axes", axes.str());
-    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, false);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_TRAN, true);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, false);
-    this->storeBorderInXML(dest_xml_object, DIRECTION_VERT, true);
-}
-
 void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const {
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
@@ -348,14 +350,6 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 
 // Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyBorders) const {
 // }
-
-void Geometry3D::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    dest_xml_object.attr("axes", axes.str());
-    for (int dir = 0; dir < 3; ++dir) {
-        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), false);
-        this->storeBorderInXML(dest_xml_object, plask::Geometry::Direction(dir), true);
-    }
-}
 
 
 
