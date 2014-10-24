@@ -12,6 +12,7 @@
 from lxml import etree
 
 from .reader import GNReadConf
+from .constructor import append_to_qt_add_child_menu
 from ...utils.xml import AttributeReader, OrderedTagReader
 
 
@@ -75,6 +76,22 @@ class GNode(object):
 
     def tag_name(self, full_name = True):
         raise NotImplementedError('tag_name')
+
+    def accept_new_child(self):
+        return False
+
+    def add_child_qt_menu(self):
+        from .types import geometry_types_2d_core, geometry_types_3d_core, geometry_types_other
+        from ...qt import QtGui
+        result = QtGui.QMenu()
+        if self.children_dim is None or self.children_dim == 2:
+            append_to_qt_add_child_menu(self, result, geometry_types_2d_core)
+        if self.children_dim is None or self.children_dim == 3:
+            if self.children_dim is None: result.addSeparator()
+            append_to_qt_add_child_menu(self, result, geometry_types_3d_core)
+        result.addSeparator()
+        append_to_qt_add_child_menu(self, result, geometry_types_other)
+        return result
 
     @property
     def parent(self):

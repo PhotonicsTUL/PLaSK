@@ -57,7 +57,13 @@ class GNGap(GNode):
         return result
 
 
-class GNStack(GNObject):
+class GNContainerBase(GNObject):
+
+    def accept_new_child(self):
+        return True
+
+
+class GNStack(GNContainerBase):
     """2D/3D (multi-)stack"""
 
     def __init__(self, parent = None, dim = None):
@@ -115,7 +121,7 @@ class GNStack(GNObject):
         return result
 
 
-class GNShelf(GNObject):
+class GNShelf(GNContainerBase):
     """(multi-)shelf"""
 
     def __init__(self, parent = None):
@@ -151,7 +157,7 @@ class GNShelf(GNObject):
         return result
 
 
-class GNAlignContainer(GNObject):
+class GNAlignContainer(GNContainerBase):
     """2D/3D align container"""
 
     def __init__(self, parent = None, dim = None):

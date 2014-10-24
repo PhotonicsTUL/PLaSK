@@ -20,8 +20,17 @@ from .. import Controller
 
 class GeometryController(Controller):
 
+    def _get_add_child_menu(self, geometry_node):
+        if geometry_node is None or not geometry_node.accept_new_child(): return None
+        return geometry_node.add_child_qt_menu()
+
     def fill_add_menu(self):
         self.add_menu.clear()
+        current_index = self.tree.selectionModel().currentIndex()
+        if current_index.isValid():
+            add_child_menu = self._get_add_child_menu(current_index.internalPointer())
+            if add_child_menu:
+                self.add_menu.addAction('child').setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
             a = QtGui.QAction(n, self.add_menu)
             a.triggered[()].connect(lambda n=n: self.append_geometry_node(n))

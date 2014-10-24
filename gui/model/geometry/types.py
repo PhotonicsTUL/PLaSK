@@ -16,18 +16,14 @@ from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTr
 from .copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
-
-geometry_types_2d = {
-
+geometry_types_2d_core = {  #only unique names of types, displayed in add menu
     # leafs:
-    'block2d': GNBlock.from_xml_2d,
     'rectangle': GNBlock.from_xml_2d,
     'circle2d': GNCircle.from_xml_2d,
     'triangle': GNTriangle.from_xml_2d,
 
     # containers:
     'align2d': GNAlignContainer.from_xml_2d,
-    'container2d': GNAlignContainer.from_xml_2d,
     'stack2d': GNStack.from_xml_2d,
     'shelf2d': GNShelf.from_xml_2d,
 
@@ -38,19 +34,28 @@ geometry_types_2d = {
     'translation2d': GNTranslation.from_xml_2d
 }
 
-
-geometry_types_3d = {
+geometry_types_2d = {   #all names: geometry_types_2d_core + aliases
 
     # leafs:
-    'block3d': GNBlock.from_xml_3d,
+    'block2d': GNBlock.from_xml_2d,
+
+    # containers:
+    'container2d': GNAlignContainer.from_xml_2d,
+
+    # transforms:
+}
+geometry_types_2d.update(geometry_types_2d_core)
+
+
+geometry_types_3d_core = {  #only unique names of types, displayed in add menu
+
+    # leafs:
     'cuboid': GNBlock.from_xml_3d,
-    'circle3d': GNCircle.from_xml_3d,
     'sphere': GNCircle.from_xml_3d,
     'cylinder': GNCylinder.from_xml_3d,
 
     # containers:
     'align3d': GNAlignContainer.from_xml_3d,
-    'container3d': GNAlignContainer.from_xml_3d,
     'stack3d': GNStack.from_xml_3d,
 
     # transforms:
@@ -62,11 +67,25 @@ geometry_types_3d = {
     'revolution': GNRevolution.from_xml_3d
 }
 
+geometry_types_3d = {   #all names: geometry_types_2d_core + aliases
+
+    # leafs:
+    'block3d': GNBlock.from_xml_3d,
+    'circle3d': GNCircle.from_xml_3d,
+
+    # containers:
+    'container3d': GNAlignContainer.from_xml_3d,
+
+    # transforms:
+}
+geometry_types_3d.update(geometry_types_3d_core)
+
 
 geometry_types_other = {
     'again': GNAgain.from_xml,
     'copy': GNCopy.from_xml
 }
+
 
 geometry_types_geometries_core = {
     'cartesian2d': GNCartesian.from_xml_2d,
@@ -78,3 +97,5 @@ geometry_types_geometries = {   #with alternative names
     'cylindrical2d': GNCylindrical.from_xml_2d
 }
 geometry_types_geometries.update(geometry_types_geometries_core)
+
+
