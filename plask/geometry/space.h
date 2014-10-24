@@ -169,8 +169,6 @@ protected:
         return directions[ax][orient];
     }
 
-    static const std::map<std::string, std::string> null_borders;
-
     void storeBorderInXML(XMLWriter::Element& dest_xml_object, Direction direction, bool higher) const;
 };
 

@@ -5,8 +5,6 @@
 
 namespace plask {
 
-const std::map<std::string, std::string> Geometry::null_borders;
-
 void Geometry::setBorders(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsSource &materialsSource)
 {
     boost::optional<std::string> v, v_lo, v_hi;
