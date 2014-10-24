@@ -18,9 +18,10 @@ from ...qt.QtCore import Qt
 from ... import _DEBUG
 
 try:
-    from ...external import jedi
+    import jedi
 except ImportError:
     jedi = None
+
 
 JEDI_LOCK = QtCore.QMutex()
 
@@ -70,12 +71,22 @@ class CompletionsModel(QtCore.QAbstractTableModel):
             self._load_icons()
 
     def _load_icons(self):
-        self._icons.update({"function": QtGui.QIcon.fromTheme("code-function"),
-                            "class": QtGui.QIcon.fromTheme("code-class"),
-                            "statement": QtGui.QIcon.fromTheme("code-variable"),
-                            "keyword": QtGui.QIcon.fromTheme("code-typedef"),
-                            "import": QtGui.QIcon.fromTheme("code-block"),
-                            "forflow": QtGui.QIcon.fromTheme("code-context"),
+        code_function = QtGui.QIcon.fromTheme("code-function")
+        code_class = QtGui.QIcon.fromTheme("code-class")
+        code_variable = QtGui.QIcon.fromTheme("code-variable")
+        code_typedef = QtGui.QIcon.fromTheme("code-typedef")
+        code_block = QtGui.QIcon.fromTheme("code-block")
+        code_context = QtGui.QIcon.fromTheme("code-context")
+        no_icon = QtGui.QIcon()
+        self._icons.update({None: no_icon,
+                            "function": code_function,
+                            "class": code_class,
+                            "statement": code_variable,
+                            "instance": code_variable,
+                            "keyword": code_context,
+                            "module": code_block,
+                            "import": code_typedef,
+                            "forflow": code_context,
                            })
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -86,10 +97,10 @@ class CompletionsModel(QtCore.QAbstractTableModel):
             row = index.row()
             col = index.column()
             value = self.items[row]
-            if role == Qt.DecorationRole:
-                return self._icons.get(value.type, QtGui.QIcon())
-            elif role in (Qt.DisplayRole, Qt.EditRole):
-                return value.name
+            if role in (Qt.DisplayRole, Qt.EditRole):
+                return value[0]
+            elif role == Qt.DecorationRole:
+                return self._icons.get(value[1], QtGui.QIcon())
             else:
                 return None
         else:
@@ -112,13 +123,23 @@ from plask.hdf5 import *
 '''
 
 
+def _try_type(compl):
+    try:
+        return compl.type
+    except:
+        return None
+
+
 def get_completions(document, text, block, column):
     if jedi is None or not JEDI_LOCK.tryLock():
         return
     try:
-        prefix = PREAMBLE + document.stubs()
-        script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column)
-        completions = [c for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
-    finally:
-        JEDI_LOCK.unlock()
-    return completions
+        try:
+            prefix = PREAMBLE + document.stubs()
+            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column)
+            items = [(c.name, _try_type(c)) for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
+        finally:
+            JEDI_LOCK.unlock()
+        return items
+    except:
+        return

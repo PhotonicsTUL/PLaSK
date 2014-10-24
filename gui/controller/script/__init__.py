@@ -170,8 +170,11 @@ class ScriptEditor(TextEdit):
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
-        elif key == Qt.Key_Period or (key == Qt.Key_Space and modifiers == Qt.ControlModifier):
-            self.completer.start_completion()
+        elif not self.completer.popup().isVisible():
+            if key == Qt.Key_Period:
+                self.completer.start_completion(blocking=False)
+            elif key == Qt.Key_Space and modifiers == Qt.ControlModifier:
+                self.completer.start_completion()
 
 
 class ScriptController(SourceEditController):

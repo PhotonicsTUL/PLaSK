@@ -24,6 +24,8 @@ import pkgutil
 
 from .qt import QtGui, QtCore, qt
 
+sys.path.append(os.path.join(__path__[0], 'external'))
+
 
 # Set-up correct backend for matplotlib
 try:
