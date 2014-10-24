@@ -135,6 +135,9 @@ from scipy import optimize
 
 config.axes = 'rz'
 
+cyl = plask.geometry.Cylinder(2, 1, None)
+cyl.get_object_positions
+
 def loss_on_voltage(voltage):
     ELECTRICAL.invalidate()
     ELECTRICAL.voltage_boundary[0].value = voltage[0]

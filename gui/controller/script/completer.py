@@ -39,8 +39,9 @@ class CompletionsController(QtGui.QCompleter):
         self.setCompletionMode(QtGui.QCompleter.PopupCompletion)
         self.setCaseSensitivity(Qt.CaseInsensitive)
         self.activated.connect(self.insert_completion)
-        # self.setPopup(CompletionsPopup())
-        # self.setCompletionColumn(1)
+        self.popup().setMinimumWidth(300)
+        self.popup().setMinimumHeight(200)
+        self.popup().setAlternatingRowColors(True)
 
     def insert_completion(self, completion):
         # if self.widget() != self._edit: return

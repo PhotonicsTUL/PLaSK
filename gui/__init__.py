@@ -24,7 +24,7 @@ import pkgutil
 
 from .qt import QtGui, QtCore, qt
 
-sys.path.append(os.path.join(__path__[0], 'external'))
+sys.path.insert(0, os.path.join(__path__[0], 'external'))
 
 
 # Set-up correct backend for matplotlib
@@ -473,7 +473,7 @@ def main():
         pass
     else:
         global _DEBUG
-        sys.argv = sys.argv[:_debug_index] + sys.argv[_debug_index+1:]
+        del sys.argv[_debug_index]
         _DEBUG = True
 
     global APPLICATION

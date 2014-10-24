@@ -136,10 +136,23 @@ def get_completions(document, text, block, column):
     try:
         try:
             prefix = PREAMBLE + document.stubs()
-            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column)
+            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
             items = [(c.name, _try_type(c)) for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
         finally:
             JEDI_LOCK.unlock()
         return items
     except:
         return
+
+
+def get_docstring(document, text, block, column):
+    if jedi is None or not JEDI_LOCK.tryLock():
+        return
+    try:
+        prefix = PREAMBLE + document.stubs()
+        script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
+        defs = script.goto_definitions()
+        if defs:
+            return defs[0].name, defs[0].docstring()
+    finally:
+        JEDI_LOCK.unlock()

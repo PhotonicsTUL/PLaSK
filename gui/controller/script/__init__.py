@@ -16,7 +16,7 @@ from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
 from .completer import CompletionsController
-from ...model.script.completer import CompletionsModel, get_completions
+from ...model.script.completer import CompletionsModel, get_completions, get_docstring
 
 from .brackets import get_selections as get_bracket_selections
 from .indenter import indent, unindent, autoindent
@@ -62,8 +62,6 @@ class ScriptEditor(TextEdit):
         self.controller = controller
         super(ScriptEditor, self).__init__(parent)
 
-        self.completer = CompletionsController(self)
-
         self.cursorPositionChanged.connect(self.update_selections)
 
         self.comment_action = QtGui.QAction('Co&mment lines', self)
@@ -74,6 +72,13 @@ class ScriptEditor(TextEdit):
         self.uncomment_action.triggered.connect(self.block_uncomment)
         self.addAction(self.comment_action)
         self.addAction(self.uncomment_action)
+
+        self.completer = CompletionsController(self)
+        self.doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-faq'), 'Show &docstring', self)
+        self.doc_action.setShortcut(Qt.Key_F1)
+        self.doc_action.triggered.connect(self.show_docstring)
+        self.addAction(self.doc_action)
+        self._help_window = None
 
     def update_selections(self):
         """Add our own custom selections"""
@@ -119,6 +124,34 @@ class ScriptEditor(TextEdit):
         except ValueError:
             pass
         cursor.endEditBlock()
+
+    def show_docstring(self):
+        cursor = self.textCursor()
+        row = cursor.blockNumber()
+        col = cursor.positionInBlock()
+        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(Qt.WaitCursor))
+        namedocstring = get_docstring(self.controller.document, self.toPlainText(), row, col)
+        if namedocstring:
+            name, docstring = namedocstring
+            if self._help_window is None:
+                self._help_window = QtGui.QTextEdit()
+                self._help_window.setParent(None)
+                self._help_window.setReadOnly(True)
+                help_font = self.font()
+                help_font.setPointSize(8)  # TODO
+                pal = self._help_window.palette()
+                pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
+                self._help_window.setPalette(pal)
+                self._help_window.setFont(help_font)
+                self._help_window.setAttribute(Qt.WA_ShowWithoutActivating)
+                self._help_window.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
+                self._help_window.setMinimumWidth(88*self._help_window.fontMetrics().width('W'))
+                self._help_window.setMinimumHeight(20*self._help_window.fontMetrics().height())
+            self._help_window.setWindowTitle(name)
+            self._help_window.setText(docstring)
+            self._help_window.show()
+        QtGui.QApplication.restoreOverrideCursor()
+
 
     def keyPressEvent(self, event):
         key = event.key()

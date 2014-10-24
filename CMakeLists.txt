@@ -138,7 +138,7 @@ include_directories(${EXPAT_INCLUDE_DIR})
 
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
-set(boost_components system filesystem) #thread
+set(boost_components system filesystem) # thread
 if(BUILD_TESTING)
     set(boost_components ${boost_components} unit_test_framework)
 endif(BUILD_TESTING)
@@ -183,25 +183,25 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 ## ---------- libraries for better stack printing ------------------------------
 if(PRINT_STACKTRACE_ON_EXCEPTION)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	if(WIN32)
-                add_subdirectory(extlib/PEparser)	# PE parser (for proper resolving some symbols in stack printing under windows mingw)
-		set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
-	else(WIN32)
-		find_package(DW)
-		if(DW_FOUND)
-			set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
-			include_directories(${DW_INCLUDE_DIRS})
-			set(BACKWARD_HAS_DW 1)
-		else(DW_FOUND)  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
-			find_package(BFD)
-			if(BFD_FOUND)
-				set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
-				set(BACKWARD_HAS_BFD 1)
-			else(BFD_FOUND)
-				set(PRINT_STACKTRACE_LIBRARY "")
-			endif(BFD_FOUND)
-		endif(DW_FOUND)
-	endif(WIN32)
+    if(WIN32)
+                add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
+        set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
+    else(WIN32)
+        find_package(DW)
+        if(DW_FOUND)
+            set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
+            include_directories(${DW_INCLUDE_DIRS})
+            set(BACKWARD_HAS_DW 1)
+        else(DW_FOUND)  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
+            find_package(BFD)
+            if(BFD_FOUND)
+                set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
+                set(BACKWARD_HAS_BFD 1)
+            else(BFD_FOUND)
+                set(PRINT_STACKTRACE_LIBRARY "")
+            endif(BFD_FOUND)
+        endif(DW_FOUND)
+    endif(WIN32)
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif(PRINT_STACKTRACE_ON_EXCEPTION)
 
@@ -331,7 +331,20 @@ if(BUILD_PYTHON)
         set_target_properties(plask PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
 
+    set(plask_stubs _plask geometry mesh material flow)
+    foreach(stub ${plask_stubs})
+        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
+        list(APPEND plask_stubs_modules plask.${stub})
+    endforeach()
+    add_custom_command(OUTPUT ${plask_stubs_files}
+                       COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
+                       DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/python
+                      )
+    add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files})
+    
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
+    install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
 
@@ -386,9 +399,9 @@ endmacro()
 
 macro(add_solver_test test test_file)
     add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
-	if(WIN32)
-		set_tests_properties(${test} PROPERTIES ENVIRONMENT "PATH=${plask_bin_path}\;$ENV{PATH}")
-	endif()
+    if(WIN32)
+        set_tests_properties(${test} PROPERTIES ENVIRONMENT "PATH=${plask_bin_path}\;$ENV{PATH}")
+    endif()
     set(SOLVER_TEST_DEPENDS ${test_file})
 endmacro()
 
