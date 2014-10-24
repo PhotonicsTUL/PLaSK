@@ -131,12 +131,9 @@
 </connects>
 
 <script><![CDATA[
-import sys
-import scipy.optimize
+from scipy import optimize
 
 config.axes = 'rz'
-
-# scipy.
 
 def loss_on_voltage(voltage):
     ELECTRICAL.invalidate()
@@ -164,7 +161,7 @@ def loss_on_voltage(voltage):
 OPTICAL.lam0 = 981.5
 OPTICAL.vat = 0
 
-threshold_voltage = scipy.optimize.fsolve(loss_on_voltage, 1.5, xtol=0.01)
+threshold_voltage = optimize.fsolve(loss_on_voltage, 1.5, xtol=0.01)
 loss_on_voltage(threshold_voltage)
 threshold_current = abs(ELECTRICAL.get_total_current())
 print_log(LOG_WARNING, "Vth = {:.3f}V    Ith = {:.3f}mA"

@@ -10,11 +10,15 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import sys
+
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
+from ... import _DEBUG
+
 try:
-    import jedi
+    from ...external import jedi
 except ImportError:
     jedi = None
 
@@ -45,6 +49,10 @@ class _JediThread(QtCore.QThread):
 
 def prepare_completions():
     if jedi:
+        # if _DEBUG:
+        #     def print_debug(obj, txt):
+        #         sys.stderr.write(txt + '\n')
+        #     jedi.set_debug_function(print_debug)
         global _jedi_thread
         _jedi_thread = _JediThread()
         _jedi_thread.start()
@@ -96,8 +104,9 @@ class CompletionsModel(QtCore.QAbstractTableModel):
 
 PREAMBLE = '''
 from pylab import *
-from plask import geometry, mesh, material, flow, phys, algorithm
 from plask import *
+from plask import geometry, mesh, material, flow, phys, algorithm
+import plask.geometry, plask.mesh, plask.material, plask.plow, plask.phys, plask.algorithm
 from plask.pylab import *
 from plask.hdf5 import *
 '''
