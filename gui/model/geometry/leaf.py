@@ -17,7 +17,7 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 class GNLeaf(GNObject):
 
     def __init__(self, parent = None, dim = None):
-        super(GNObject, self).__init__(parent=parent, dim=dim, children_dim=None)
+        super(GNLeaf, self).__init__(parent=parent, dim=dim, children_dim=None)
         self.step_num = None
         self.step_dist = None
         self.material_top = None
