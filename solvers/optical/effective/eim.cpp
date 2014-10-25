@@ -22,15 +22,15 @@ EffectiveIndex2DSolver::EffectiveIndex2DSolver(const std::string& name) :
     inTemperature = 300.;
     inGain = NAN;
     root.tolx = 1.0e-6;
-    root.tolf_min = 1.0e-8;
-    root.tolf_max = 1.0e-6;
+    root.tolf_min = 1.0e-7;
+    root.tolf_max = 2.0e-5;
     root.maxiter = 500;
-    root.method = RootDigger::ROOT_BROYDEN;
-    stripe_root.tolx = 1.0e-8;
-    stripe_root.tolf_min = 1.0e-8;
-    stripe_root.tolf_max = 1.0e-6;
+    root.method = RootDigger::ROOT_MULLER;
+    stripe_root.tolx = 1.0e-6;
+    stripe_root.tolf_min = 1.0e-7;
+    stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxiter = 500;
-    stripe_root.method = RootDigger::ROOT_BROYDEN;
+    stripe_root.method = RootDigger::ROOT_MULLER;
     inTemperature.changedConnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
     inGain.changedConnectMethod(this, &EffectiveIndex2DSolver::onInputChange);
 }
