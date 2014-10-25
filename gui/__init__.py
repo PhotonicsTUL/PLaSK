@@ -74,7 +74,7 @@ SECTION_ICONS = {
 
 class MainWindow(QtGui.QMainWindow):
 
-    closed = QtCore.pyqtSignal() if qt == 'PyQt4' else QtCore.Signal(bool)
+    closed = QtCore.pyqtSignal() if qt == 'PyQt4' else QtCore.Signal()
 
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
