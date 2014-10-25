@@ -74,10 +74,12 @@ SECTION_ICONS = {
 
 class MainWindow(QtGui.QMainWindow):
 
+    closed = QtCore.pyqtSignal() if qt == 'PyQt4' else QtCore.Signal(bool)
+
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
-        self.current_tab_index = -1
 
+        self.current_tab_index = -1
         self.tabs = QtGui.QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
@@ -114,7 +116,7 @@ class MainWindow(QtGui.QMainWindow):
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only in filename is None
             self.document = XPLDocument(self)
-            self.model_is_new()
+            self.setup_model()
 
         #self.statusBar()
 
@@ -238,10 +240,7 @@ class MainWindow(QtGui.QMainWindow):
             self.recent_menu.addAction(action)
 
     def _try_load_from_file(self, filename):
-        if filename.endswith('.py'):
-            document = PyDocument(self)
-        else:
-            document = XPLDocument(self)
+        document = PyDocument(self) if filename.endswith('.py') else XPLDocument(self)
         try:
             document.load_from_file(filename)
         except Exception as e:
@@ -250,23 +249,24 @@ class MainWindow(QtGui.QMainWindow):
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
-            self.set_model(document)
+            self.document = document
+            self.setup_model()
             self.set_changed(False)
             return True
 
-    def model_is_new(self):
+    def setup_model(self):
         self.tabs.clear()
-        for m in XPLDocument.SECTION_NAMES:
+        for m in self.document.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_widget(), m.title())
             # self.tabs.setTabIcon(self.tabs.count()-1,
             #                      QtGui.QIcon.fromTheme(SECTION_ICONS[m],
             #                                            QtGui.QIcon(':/' + SECTION_ICONS[m])))
         self.current_tab_index = -1
-        self.tabs.setCurrentIndex(2)
+        if isinstance(self.document, PyDocument):
+            self.tab_change(0)
+        else:
+            self.tabs.setCurrentIndex(2)
 
-    def set_model(self, document):
-        self.document = document
-        self.model_is_new()
 
     def new(self):
         new_window = MainWindow()
@@ -393,6 +393,8 @@ class MainWindow(QtGui.QMainWindow):
             if confirm == QtGui.QMessageBox.Cancel or (confirm == QtGui.QMessageBox.Yes and not self.save()):
                 event.ignore()
                 return
+
+        self.closed.emit()
 
         geometry = self.geometry()
         CONFIG['session/geometry'] = geometry

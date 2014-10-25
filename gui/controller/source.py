@@ -128,11 +128,6 @@ class SourceWidget(QtGui.QWidget):
         layout.addWidget(self.find_toolbar)
         layout.addWidget(self.replace_toolbar)
 
-        # self.setWindowFlags(QtCore.Qt.Widget)
-        # central_widget = QtGui.QWidget(self)
-        # self.setCentralWidget(central_widget)
-        # self.addToolBar(self.toolbar)
-        # central_widget.setLayout(layout)
         self.setLayout(layout)
 
     # def hideEvent(self, *args, **kwargs):

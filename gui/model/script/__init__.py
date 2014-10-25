@@ -27,7 +27,10 @@ class ScriptModel(SectionModel):
     def set_xml_element(self, element):
         require_no_children(element)
         require_no_attributes(element)
-        self.set_text(element.text.lstrip('\n\r') if element is not None else '')
+        if element is not None:
+            self.set_text(element.text[1:] if element.text[0] == '\n' else element.text)
+        else:
+            self.set_text('')
 
     # XML element that represents whole section
     def get_xml_element(self):

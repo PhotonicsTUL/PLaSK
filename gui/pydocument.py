@@ -11,9 +11,13 @@
 # GNU General Public License for more details.
 
 import shutil
+import re
+
+from .qt import QtGui
 
 from .controller.script import ScriptController
 
+coding_re = re.compile(r"(?:\s*#[^\n]*\n)?\s*#[^\n]*coding[=:]\s*([-\w.]+)")
 
 class _Dummy(object):
     pass
@@ -44,16 +48,33 @@ class PyDocument(object):
 
     def load_from_file(self, filename):
         data = open(filename, 'r').read()
-        self.script.model.set_text(data)
+        m = coding_re.match(data)
+        if m:
+            coding = m.group(1)
+        else:
+            coding = 'utf8'
+        self.script.model.set_text(data.decode(coding))
         self.filename = filename
         self.set_changed(False)
 
     def save_to_file(self, filename):
+        text = self.script.model.get_text()
+        m = coding_re.match(text)
+        if m:
+            coding = m.group(1)
+            try:
+                text = text.encode(coding)
+            except UnicodeEncodeError:
+                QtGui.QMessageBox.critical(None, "Error while saving file.",
+                                           "The file could not be saved with the specified encoding '{}'.\n\n"
+                                           "Please set the proper encoding and try again.".format(coding))
+                return
+        else:
+            text = text.encode('utf8')
         try:
             shutil.move(filename, filename+'~')
         except OSError:
             pass
-        text = self.script.model.get_text()
         open(filename, 'w').write(text)
         self.filename = filename
         self.set_changed(False)
