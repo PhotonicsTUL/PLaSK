@@ -133,7 +133,7 @@
 <script><![CDATA[
 from scipy import optimize
 
-OPTICAL.root.
+OPTICAL.root.alpha
 
 class A(object):
     

@@ -51,7 +51,7 @@ class Solver(TreeFragmentModel):
         with AttributeReader(element) as attr:
             self.name = attr.get('name', None)
             self.solver = attr.get('solver', None)
-            self.lib = attr.get('lib', self.lib)
+            self.lib = attr.get('lib', None)
 
     def set_text(self, text):
         tab = ['<', self.category.encode('utf-8'),
@@ -180,9 +180,9 @@ class ConfSolver(Solver):
 
     def stub(self):
         if self.lib is not None:
-            return "import {1}.{2}.{3}\n{0} = {1}.{2}.{3}()".format(self.name, self.category, self.lib, self.solver)
+            return "import {1}.{2}.{3} as {0}\n{0} = {0}()".format(self.name, self.category, self.lib, self.solver)
         else:
-            return "import {1}.{2}\n{0} = {1}.{2}()".format(self.name, self.category, self.solver)
+            return "import {1}.{2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
 
 
 class ConfSolverFactory(object):
