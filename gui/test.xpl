@@ -83,7 +83,7 @@
 </grids>
 
 <solvers>
-  <thermal name="THERMAL" solver="StaticCyl">
+  <thermal name="THERMAL" solver="StaticCyl" lib="fem">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
     <temperature>
@@ -112,7 +112,7 @@
     <geometry ref="GeoO"/>
     <config lifetime="0.5" matrix-elem="8"/>
   </gain>
-  <optical name="OPTICAL" solver="EffectiveFrequencyCyl">
+  <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
     <mode lam0="980"/>
@@ -133,29 +133,107 @@
 <script><![CDATA[
 from scipy import optimize
 
+OPTICAL.root.
+
 class A(object):
     
-    val = None
-    """vvv"""
+    val = property()
+    """
+    ppp
+    """
+
+    @property
+    def prop(self):
+        """
+        Prop
+        :rtype: RootParams
+        """
+        pass
 
     def fun(self):
         """
         Fun fun fun
+        :rtype: RootParams
         """
         pass
 
-
 a = A()
-a.val
-a.prop
+#a.prop.
+#a.val.
+a.fun()
 
-from thermal.fem import Static2D
+MSG.default.
+    """Model for solver with its configuration specified in a simple Python dictionary
+       and automatically generated controller widget"""
+
+    def __init__(self, config, category, lib=None, solver='', name='', parent=None, info_cb=None):
+        super(ConfSolver, self).__init__(category, solver, name, parent, info_cb)
+        self.config = config
+        self.lib = lib
+        self.data = dict((tag,
+                          dict((a[0], '') for a in attrs) if type(attrs) in (tuple, list) else
+                          ''  # TODO add proper support for boundary conditions
+                         ) for (tag,_,attrs) in self.config['conf'])
+
+    def get_xml_element(self):
+        element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
+        if self.lib is not None:
+            element.attrib['lib'] = self.lib
+        if self.geometry:
+            etree.SubElement(element, 'geometry', {'ref': self.geometry})
+        if self.mesh:
+            etree.SubElement(element, 'mesh', {'ref': self.mesh})
+        for tag,_,_ in self.config['conf']:
+            data = self.data[tag]
+            if type(data) is dict:
+                attrs = dict((item for item in data.items() if item[1]))
+                if attrs:
+                    etree.SubElement(element, tag, attrs)
+            else:
+                if data:
+                    lines = data.encode('utf-8').split('\n')
+                    if not lines[-1]: lines = lines[:-1]
+                    lines = '\n    '.join(lines)
+                    el = etree.fromstringlist(['<', tag, '>\n    ', lines, '\n  </', tag, '>'])
+                    element.append(el)
+        return element
+
+    def set_xml_element(self, element):
+        super(ConfSolver, self).set_xml_element(element)
+        for el in element:
+            if el.tag == 'geometry':
+                self.geometry = el.attrib.get('ref')
+                #TODO report missing or missmatching geometry
+            elif el.tag == 'mesh':
+                self.mesh = el.attrib.get('ref')
+                #TODO report missing or missmatching mesh
+            else:
+                data = self.data[el.tag]
+                if type(data) is dict:
+                    with AttributeReader(el) as attr:
+                        for name in data:
+                            data[name] = attr.get(name, '')
+                else:
+                    self.data[el.tag] = print_interior(el)
+
+    def get_controller(self, document):
+        return ConfSolverController(document, self)
+
+    def stub(self):
+        if self.lib is not None:
+            return "import {1}.{2}.{3}\n{0} = {1}.{2}.{3}()".format(self.name, self.category, self.lib, self.solver)
+        else:
+            return "import {1}.{2}\n{0} = {1}.{2}()".format(self.name, self.category, self.solver)
+
 therm = Static2D('therm')
 therm.algorithm
 
+opt = EffectiveIndex2D('opt')
+r = opt.root.
+
 config.axes = 'rz'
 
-cyl = plask.geometry.Cylinder(2, 1, None)
+cyl = geometry.Cylinder(2, 1, None)
 cyl.get_object_positions
 
 def loss_on_voltage(voltage):

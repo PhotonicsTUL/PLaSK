@@ -12,7 +12,7 @@ using namespace plask::python;
 using namespace plask::solvers::effective;
 
 #define ROOTDIGGER_ATTRS_DOC \
-    ".. rubric:: Attributes\n\n" \
+    ".. rubric:: Attributes:\n\n" \
     ".. autosummary::\n\n" \
     "   ~optical.effective.RootParams.alpha\n" \
     "   ~optical.effective.RootParams.lambd\n" \
@@ -22,7 +22,8 @@ using namespace plask::solvers::effective;
     "   ~optical.effective.RootParams.method\n" \
     "   ~optical.effective.RootParams.tolf_max\n" \
     "   ~optical.effective.RootParams.tolf_min\n" \
-    "   ~optical.effective.RootParams.tolx\n"
+    "   ~optical.effective.RootParams.tolx\n\n" \
+    ":rtype: RootParams\n"
 
 #define SEARCH_ARGS_DOC \
     "    start (complex): Start of the search range (0 means automatic).\n" \
@@ -306,7 +307,8 @@ BOOST_PYTHON_MODULE(effective)
                  ".. autosummary::\n\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
                  "   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
-                 "   ~optical.effective.EffectiveIndex2D.Mode.power\n");
+                 "   ~optical.effective.EffectiveIndex2D.Mode.power\n"
+                 ":rtype: Mode\n");
 
         py::scope scope = solver;
 
@@ -420,7 +422,8 @@ BOOST_PYTHON_MODULE(effective)
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.lam\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
                  "   ~optical.effective.EffectiveFrequencyCyl.Mode.loss\n"
-                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n");
+                 "   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n"
+                 ":rtype: Mode\n");
         solver.add_property("vat", &EffectiveFrequencyCylSolver_getStripeR, &EffectiveFrequencyCylSolver_setStripeR,
                             "Radial position of at which the vertical part of the field is calculated.\n\n"
                             "Should be a float number or ``None`` to compute effective frequencies for all\n"

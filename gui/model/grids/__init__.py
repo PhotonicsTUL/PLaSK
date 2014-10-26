@@ -153,7 +153,7 @@ class GridWithoutConf(Grid):
 
 
 from ...controller.grids.new_dialog import construct_grid_using_dialog
-from .types import construct_grid
+from .types import construct_grid, display_name
 
 
 class GridsModel(TableModel):
@@ -202,3 +202,13 @@ class GridsModel(TableModel):
 
     def create_default_entry(self):
         return construct_grid_using_dialog(self)
+
+    def stubs(self):
+        res = 'class MSH(object):\n    """PLaSK object containing the defined meshes."""\n'
+        res += '\n'.join("    {0} = mesh.{1}()".format(e.name.replace('-', '_'), display_name(e.type))
+                         for e in self.entries if not e.is_generator) + '\n'
+        res += 'class MSG(object):\n    """PLaSK object containing the defined mesh generators."""\n'
+        res += '\n'.join("    {0} = mesh.{1}.{2}Generator()"
+                            .format(e.name.replace('-', '_'), display_name(e.type), display_name(e.method))
+                         for e in self.entries if e.is_generator)
+        return res

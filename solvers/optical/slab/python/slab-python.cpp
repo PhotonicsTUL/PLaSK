@@ -17,7 +17,7 @@ using namespace plask::python;
 using namespace plask::solvers::slab;
 
 #define ROOTDIGGER_ATTRS_DOC \
-    ".. rubric:: Attributes\n\n" \
+    ".. rubric:: Attributes:\n\n" \
     ".. autosummary::\n\n" \
     "   ~optical.slab.RootParams.alpha\n" \
     "   ~optical.slab.RootParams.lambd\n" \
@@ -27,15 +27,17 @@ using namespace plask::solvers::slab;
     "   ~optical.slab.RootParams.method\n" \
     "   ~optical.slab.RootParams.tolf_max\n" \
     "   ~optical.slab.RootParams.tolf_min\n" \
-    "   ~optical.slab.RootParams.tolx\n"
+    "   ~optical.slab.RootParams.tolx\n\n" \
+    ":rtype: RootParams\n"
 
 #define PML_ATTRS_DOC \
-    ".. rubric:: Attributes\n\n" \
+    ".. rubric:: Attributes:\n\n" \
     ".. autosummary::\n\n" \
     "   ~optical.slab.PML.factor\n" \
     "   ~optical.slab.PML.shape\n" \
     "   ~optical.slab.PML.dist\n" \
-    "   ~optical.slab.PML.size\n"
+    "   ~optical.slab.PML.size\n\n" \
+    ":rtype: PML"
 
 template <typename SolverT>
 static const std::vector<std::size_t>& SlabSolver_getStack(const SolverT& self) { return self.getStack(); }
@@ -920,7 +922,8 @@ BOOST_PYTHON_MODULE(slab)
                    "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                    "        of the non-vanishing electric field component.\n"
                    "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                   "        present.\n"
+                   "        present.\n\n"
+                   ":rtype: Fourier2D.Reflected\n"
                    , (py::arg("lam"), "polarization", "side"));
         py::scope scope = solver;
 
@@ -1039,7 +1042,8 @@ BOOST_PYTHON_MODULE(slab)
                     "        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                     "        of the non-vanishing electric field component.\n"
                     "    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                    "        present.\n"
+                    "        present.\n\n"
+                    ":rtype: Fourier3D.Reflected\n"
                     , (py::arg("lam"), "polarization", "side"));
         RO_FIELD(modes, "Computed modes.");
         py::scope scope = solver;

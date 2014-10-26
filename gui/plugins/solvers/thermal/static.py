@@ -14,8 +14,8 @@ from gui import solvers
 
 Static = {
     'desc': 'Static thermal solver based on finite-element method.',
-    u'mesh': 'Rectangular2D',
-    u'conf': (
+    'mesh': 'Rectangular2D',
+    'conf': (
         ('loop', 'Self-consistent loop', (
             ('inittemp', 'Initial temperature [K]',
              u'Initial temperature used for the first computation. (float&nbsp;[K])'),
@@ -38,4 +38,5 @@ Static = {
     u'flow': ('inHeat', 'outTemperature'),
 }
 
-solvers.register_config('thermal', Static2D=Static, StaticCyl=Static, Static3D=Static)
+solvers.register_config('thermal', 'fem', Static2D=Static, StaticCyl=Static)
+solvers.register_config('thermal', 'fem3d', Static3D=Static)

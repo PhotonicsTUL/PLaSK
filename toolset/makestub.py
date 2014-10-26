@@ -44,9 +44,11 @@ class StubCreator(object):
         return "#coding: utf8\n" + self._doc + "\n".join(imports + self._out)
 
     def create_stub(self, root, depth=0):
+        emitted = False
         doc = getattr(root, "__doc__")
         if doc:
             self.emit_doc(doc, depth)
+            emitted = True
         items1 = [(n, getattr(root, n)) for n in dir(root)
                   if ((n[:2] != '__' or n[-2:] != '__') or n == '__call__')
                   and hasattr(root, n)]
@@ -63,14 +65,18 @@ class StubCreator(object):
             if isinstance(value, int) or isinstance(value, float) or \
                isinstance(value, str) or value is None:
                 self.emit("%s = %r" % (name, value), depth)
+                emitted = True
             elif isinstance(value, property):
                 self.create_property_stub(name, value, depth)
+                emitted = True
             elif isinstance(value, collections.Callable) and hasattr(value, "__name__"):
                 if isclass(value):
                     if name != "__class__":
                         self.create_class_stub(name, value, depth)
+                        emitted = True
                 else:
                     self.create_function_stub(name, value, depth)
+                    emitted = True
             elif hasattr(value, "__class__") and isclass(value.__class__):
                 cls = value.__class__
                 if cls.__module__ == self._module:
@@ -79,6 +85,7 @@ class StubCreator(object):
                     self.emit("{} = {}.{}()".format(name, cls.__module__, cls.__name__))
                     self._imports.add(cls.__module__)
                 self.emit("")
+                emitted = True
                 #if isfunction(value) or isbuiltin(value):
                 #    self.create_function_stub(name, value, depth)
                 #elif isclass(value):
@@ -88,6 +95,7 @@ class StubCreator(object):
             else:
                 if name not in ("__dict__", "__weakref__"):
                     print("*", name, type(value), isinstance(value, collections.Callable))
+        return emitted
 
     def create_class_stub(self, name, cls, depth):
         if depth == 0:
@@ -108,29 +116,31 @@ class StubCreator(object):
             bases = ", ".join(b for b in bases if b != name)
             if not bases: bases = "object"
             self.emit("class {}({}):".format(name, bases), depth)
-            self.create_stub(cls, depth + 1)
-            self.emit("pass", depth + 1)
-            #if not self.create_stub(cls, depth + 1):
-            #    self.emit("pass", depth + 1)
+            if not self.create_stub(cls, depth + 1):
+                self.emit("pass", depth + 1)
         self.emit("")
 
+    rtype_re = re.compile(r"\s*:rtype:\s+([\w_](?:.?[\w\d_]+)*)")
+
     def create_property_stub(self, name, prop, depth):
-        # self.emit("")
-        try:
-            typename = type(prop).__name__ + '()'
-        except AttributeError:
-            typename = 'None'
-        else:
-            if typename == 'property()':
-                typename = 'None'
-        self.emit("{} = {}".format(name, typename), depth)
         doc = getattr(prop, "__doc__", "")
+        try:
+            rtype = self.rtype_re.findall(doc)
+        except TypeError:
+            rtype = None
+        if rtype:
+            self.emit("@property", depth)
+            self.emit("def {}():".format(name), depth)
+            depth += 1
+            # self.emit("{} = {}()".format(name, rtype[0]), depth)
+        else:
+            self.emit("{} = None".format(name), depth)
         if doc: self.emit_doc(doc, depth)
         self.emit("")
 
     #e.g. BottomOf( (GeometryObject)object [, (PathHints)path=None]) -> Boundary :
     # search for: (type)name[=default_value]
-    fun_arg_re = re.compile("\(([a-zA-Z0-9_]+)\)([a-zA-Z0-9_]+)(=([a-zA-Z0-9_]*))?")
+    funcarg_re = re.compile("\(([a-zA-Z0-9_]+)\)([a-zA-Z0-9_]+)(=([a-zA-Z0-9_]*))?")
 
     def func_args(self, func):
         try:
@@ -148,7 +158,7 @@ class StubCreator(object):
                     aftsig = False
                     args = []
                     #print l
-                    for m in self.fun_arg_re.finditer(l):
+                    for m in self.funcarg_re.finditer(l):
                         arg_s = m.group(2)
                         v = m.group(4)
                         if v: arg_s += '=' + v;

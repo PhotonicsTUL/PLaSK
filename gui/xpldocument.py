@@ -121,8 +121,4 @@ class XPLDocument(object):
         return res
 
     def stubs(self):
-        res = ""
-        for c in self.controllers:
-            res += c.model.stubs()
-            res += '\n'
-        return res
+        return '\n'.join(s for s in (c.model.stubs() for c in self.controllers) if s)

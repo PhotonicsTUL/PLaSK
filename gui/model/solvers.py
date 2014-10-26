@@ -51,7 +51,7 @@ class Solver(TreeFragmentModel):
         with AttributeReader(element) as attr:
             self.name = attr.get('name', None)
             self.solver = attr.get('solver', None)
-            self.lib = attr.get('lib', None)
+            self.lib = attr.get('lib', self.lib)
 
     def set_text(self, text):
         tab = ['<', self.category.encode('utf-8'),
@@ -65,6 +65,9 @@ class Solver(TreeFragmentModel):
 
     def get_controller(self, document):
         return SourceEditController(document=document, model=self, line_numbers=False)
+
+    def stub(self):
+        return "{} = None".format(self.name)
 
 
 class TreeFragmentSolver(Solver):
@@ -122,13 +125,10 @@ class ConfSolver(Solver):
     """Model for solver with its configuration specified in a simple Python dictionary
        and automatically generated controller widget"""
 
-    def __init__(self, config, category, solver='', name='', parent=None, info_cb=None):
+    def __init__(self, config, category, lib=None, solver='', name='', parent=None, info_cb=None):
         super(ConfSolver, self).__init__(category, solver, name, parent, info_cb)
         self.config = config
-        try:
-            self.lib = config['lib']
-        except KeyError:
-            pass
+        self.lib = lib
         self.data = dict((tag,
                           dict((a[0], '') for a in attrs) if type(attrs) in (tuple, list) else
                           ''  # TODO add proper support for boundary conditions
@@ -178,16 +178,23 @@ class ConfSolver(Solver):
     def get_controller(self, document):
         return ConfSolverController(document, self)
 
+    def stub(self):
+        if self.lib is not None:
+            return "import {1}.{2}.{3}\n{0} = {1}.{2}.{3}()".format(self.name, self.category, self.lib, self.solver)
+        else:
+            return "import {1}.{2}\n{0} = {1}.{2}()".format(self.name, self.category, self.solver)
+
 
 class ConfSolverFactory(object):
 
-    def __init__(self, category, solver, config):
+    def __init__(self, category, lib, solver, config):
         self.category = category
         self.solver = solver
         self.config = config
+        self.lib = lib
 
     def __call__(self, name='', parent=None, info_cb=None, element=None):
-        result = ConfSolver(self.config, self.category, self.solver, name, parent, info_cb)
+        result = ConfSolver(self.config, self.category, self.lib, self.solver, name, parent, info_cb)
         if element is not None:
             result.set_xml_element(element)
         return result
@@ -255,3 +262,7 @@ class SolversModel(TableModel):
                 return TreeFragmentSolver.create_empty(parent=self, **new_solver)
             else:
                 return factory(new_solver['name'], parent=self)
+
+    def stubs(self):
+
+        return "\n".join(solver.stub() for solver in self.entries)

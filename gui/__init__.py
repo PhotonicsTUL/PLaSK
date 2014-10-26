@@ -468,6 +468,7 @@ class GotoDialog(QtGui.QDialog):
 
 
 def main():
+    sys.path.insert(1, os.path.normpath(os.path.join(__path__[0], '..', '..', '..', 'share', 'plask', 'stubs')))
     try:
         _debug_index = sys.argv.index('-debug')
     except ValueError:

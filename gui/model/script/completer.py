@@ -15,8 +15,6 @@ import sys
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
-from ... import _DEBUG
-
 try:
     import jedi
 except ImportError:
@@ -113,7 +111,7 @@ class CompletionsModel(QtCore.QAbstractTableModel):
         return 1
 
 
-PREAMBLE = '''
+PREAMBLE = '''\
 from pylab import *
 from plask import *
 from plask import geometry, mesh, material, flow, phys, algorithm
@@ -132,12 +130,21 @@ def _try_type(compl):
 
 def get_completions(document, text, block, column):
     if jedi is None: return
+    from ... import _DEBUG
     JEDI_LOCK.lock()
     try:
         prefix = PREAMBLE + document.stubs()
+        if _DEBUG:
+            print("------------------------------------------------------------------------------------")
+            print(prefix)
+            print("------------------------------------------------------------------------------------")
+            sys.stdout.flush()
         script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
         items = [(c.name, _try_type(c)) for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
     except:
+        if _DEBUG:
+            import traceback
+            traceback.print_exc()
         items = None
     finally:
         JEDI_LOCK.unlock()
@@ -146,14 +153,28 @@ def get_completions(document, text, block, column):
 
 def get_docstring(document, text, block, column):
     if jedi is None: return
+    from ... import _DEBUG
     JEDI_LOCK.lock()
     try:
         prefix = PREAMBLE + document.stubs()
+        if _DEBUG:
+            print("------------------------------------------------------------------------------------")
+            print(prefix)
+            print("------------------------------------------------------------------------------------")
+            sys.stdout.flush()
         script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
         defs = script.completions()
         if defs:
-            return defs[0].name, defs[0].docstring()
+            doc = defs[0].docstring(raw="True")
+            if doc:
+                return defs[0].name, doc
+            else:
+                defs = script.goto_definitions()
+                if defs:
+                    return defs[0].name, defs[0].docstring(raw="True")
     except:
-        pass
+        if _DEBUG:
+            import traceback
+            traceback.print_exc()
     finally:
         JEDI_LOCK.unlock()

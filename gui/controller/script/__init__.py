@@ -146,6 +146,7 @@ class ScriptEditor(TextEdit):
 
     def show_docstring(self):
         cursor = self.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(Qt.WaitCursor))

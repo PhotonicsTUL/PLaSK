@@ -73,28 +73,39 @@ def construct_grid(grids_model, element):
 
 
 def display_name(item):
-    ''':return: name of the mesh/generator to display in the GUI'''
+    """
+    :return: name of the mesh/generator to display in the GUI
+    """
     name = DISPLAY_NAMES.get(item)
     if name is None:
         name = item.title()
     return name
 
+
 def xml_name(name):
-    ''':return: XML tag name of the mesh/generator'''
+    """
+    :return: XML tag name of the mesh/generator
+    """
     return name.lower() #TODO make it better if needed
 
 
 def meshes_types():
-    """:return: known types of meshes (list of strings)"""
+    """
+    :return: known types of meshes (list of strings)
+    """
     return (display_name(i) for i in MESHES_TYPES.keys())
 
+
 def generators_types():
-    """:return: known types of generator (list of strings)"""
+    """
+    :return: known types of generator (list of strings)
+    """
     return (display_name(i) for i in GENERATORS_TYPES.keys())
+
 
 def generator_methods(generator_name):
     """
-        :param str generator_type: name of generator type
-        :return: known methods for generator with given type (empty if the type of a generator is not known)
+    :param str generator_type: name of generator type
+    :return: known methods for generator with given type (empty if the type of a generator is not known)
     """
     return (display_name(i) for i in GENERATORS_TYPES.get(generator_name, {}).keys())

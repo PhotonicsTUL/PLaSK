@@ -331,20 +331,21 @@ if(BUILD_PYTHON)
         set_target_properties(plask PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
 
-    set(plask_stubs _plask geometry mesh material flow)
-    foreach(stub ${plask_stubs})
-        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
-        list(APPEND plask_stubs_modules plask.${stub})
-    endforeach()
-    add_custom_command(OUTPUT ${plask_stubs_files}
-                       COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
-                       DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py
-                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/python
-                      )
-    add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files})
+    if(BUILD_GUI)
+        set(plask_stubs _plask geometry mesh material flow)
+        foreach(stub ${plask_stubs})
+            list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
+            list(APPEND plask_stubs_modules plask.${stub})
+        endforeach()
+        add_custom_command(OUTPUT ${plask_stubs_files}
+                           COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
+                           DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/python
+                          )
+        install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
+    endif()
     
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
-    install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
 
@@ -431,19 +432,23 @@ foreach(solv ${solver_lists})
 endforeach()
 
 # Scan solver categories for solvers.lst and process them
-file(GLOB_RECURSE lst_lists RELATIVE ${CMAKE_SOURCE_DIR} solvers/*solvers.lst)
+file(GLOB_RECURSE lst_lists RELATIVE ${CMAKE_SOURCE_DIR}/solvers solvers/*solvers.lst)
 foreach(lst ${lst_lists})
     add_custom_command(OUTPUT ${PLASK_PATH}/${lst}
-                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${lst} ${PLASK_PATH}/${lst}
-                       DEPENDS ${CMAKE_SOURCE_DIR}/${lst})
-    list(APPEND solvers_lst_files ${PLASK_PATH}/${lst})
+                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${lst} ${PLASK_PATH}/solvers/${lst}
+                       DEPENDS ${CMAKE_SOURCE_DIR}/solvers/${lst})
+    list(APPEND solvers_lst_files ${PLASK_PATH}/solvers/${lst})
     get_filename_component(lst_dir ${lst} PATH)
-    install(FILES ${PLASK_PATH}/${lst} DESTINATION lib/plask/${lst_dir} COMPONENT solvers)
+    install(FILES ${PLASK_PATH}/solvers/${lst} DESTINATION lib/plask/solvers/${lst_dir} COMPONENT solvers)
     if(BUILD_PYTHON)
-        add_custom_command(OUTPUT ${PLASK_PATH}/${lst_dir}/__init__.py
-                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/solvers_lst.py ${PLASK_PATH} ${lst_dir}
-                           DEPENDS ${PLASK_PATH}/${lst})
-        list(APPEND solvers_lst_files ${PLASK_PATH}/${lst_dir}/__init__.py)
+        add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${lst_dir}/__init__.py
+                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/solvers_lst.py ${PLASK_PATH} solvers/${lst_dir}
+                           DEPENDS ${PLASK_PATH}/solvers/${lst})
+        list(APPEND solvers_lst_files ${PLASK_PATH}/solvers/${lst_dir}/__init__.py)
+        if (BUILD_GUI)
+            list(APPEND plask_solvers_stubs_files ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py)
+            file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir})
+        endif()
     endif()
 endforeach()
 add_custom_target(solvers-lst ALL DEPENDS ${solvers_lst_files})
@@ -459,8 +464,23 @@ foreach(solv ${solvers})
             list(APPEND solvers_test_targets "solver-${solvtarget}-test")
         endif()
         add_subdirectory(solvers/${solv})
+        if(BUILD_PYTHON AND BUILD_GUI)
+            string(REPLACE "/" "." solvmodule ${solv})
+            list(APPEND plask_solvers_stubs ${solvmodule})
+            list(APPEND plask_solvers_stubs_files ${CMAKE_BINARY_DIR}/share/plask/stubs/${solv}.py)
+        endif()
     endif()
 endforeach()
+
+if(BUILD_PYTHON AND BUILD_GUI)
+    add_custom_command(OUTPUT ${plask_solvers_stubs_files}
+                       COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_solvers_stubs}
+                       DEPENDS solvers/${solv} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
+                      )
+    add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files} ${plask_solvers_stubs_files})
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs DESTINATION share/plask/ COMPONENT gui)
+endif()
 
 # ----------===== Unit tests =====--------------------------------------------
 if(BUILD_TESTING)

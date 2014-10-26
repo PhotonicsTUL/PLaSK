@@ -47,9 +47,9 @@ class CompletionsController(QtGui.QCompleter):
         # if self.widget() != self._edit: return
         cursor = self._edit.textCursor()
         extra = len(self.completionPrefix())
-        cursor.movePosition(QtGui.QTextCursor.Left)
-        if self._edit.document().characterAt(cursor.position()) in ('\n', ' '):
-            cursor.movePosition(QtGui.QTextCursor.Right)
+        if not (cursor.atBlockStart() or
+                self._edit.document().characterAt(cursor.position()-1).isspace()):
+            cursor.movePosition(QtGui.QTextCursor.Left)
         cursor.movePosition(QtGui.QTextCursor.EndOfWord)
         cursor.insertText(completion[extra:])
         self._edit.setTextCursor(cursor)

@@ -14,6 +14,6 @@ from .model import solvers as model
 from .controller import solvers as controller
 
 
-def register_config(category, **kwargs):
+def register_config(category, lib, **kwargs):
     for solver,config in kwargs.items():
-        model.SOLVERS[category,solver] = model.ConfSolverFactory(category, solver, config)
+        model.SOLVERS[category,solver] = model.ConfSolverFactory(category, lib, solver, config)
