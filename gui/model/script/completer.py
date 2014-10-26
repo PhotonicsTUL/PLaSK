@@ -150,7 +150,7 @@ def get_docstring(document, text, block, column):
     try:
         prefix = PREAMBLE + document.stubs()
         script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
-        defs = script.goto_definitions()
+        defs = script.completions()
         if defs:
             return defs[0].name, defs[0].docstring()
     except:

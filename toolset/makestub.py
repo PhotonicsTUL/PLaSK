@@ -116,9 +116,16 @@ class StubCreator(object):
 
     def create_property_stub(self, name, prop, depth):
         # self.emit("")
-        self.emit("{} = None".format(name), depth)
-        # doc = getattr(prop, "__doc__", "")
-        # if doc: self.emit_doc(doc, depth)
+        try:
+            typename = type(prop).__name__ + '()'
+        except AttributeError:
+            typename = 'None'
+        else:
+            if typename == 'property()':
+                typename = 'None'
+        self.emit("{} = {}".format(name, typename), depth)
+        doc = getattr(prop, "__doc__", "")
+        if doc: self.emit_doc(doc, depth)
         self.emit("")
 
     #e.g. BottomOf( (GeometryObject)object [, (PathHints)path=None]) -> Boundary :

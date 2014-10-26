@@ -133,6 +133,26 @@
 <script><![CDATA[
 from scipy import optimize
 
+class A(object):
+    
+    val = None
+    """vvv"""
+
+    def fun(self):
+        """
+        Fun fun fun
+        """
+        pass
+
+
+a = A()
+a.val
+a.prop
+
+from thermal.fem import Static2D
+therm = Static2D('therm')
+therm.algorithm
+
 config.axes = 'rz'
 
 cyl = plask.geometry.Cylinder(2, 1, None)

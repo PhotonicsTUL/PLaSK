@@ -48,6 +48,8 @@ class CompletionsController(QtGui.QCompleter):
         cursor = self._edit.textCursor()
         extra = len(self.completionPrefix())
         cursor.movePosition(QtGui.QTextCursor.Left)
+        if self._edit.document().characterAt(cursor.position()) in ('\n', ' '):
+            cursor.movePosition(QtGui.QTextCursor.Right)
         cursor.movePosition(QtGui.QTextCursor.EndOfWord)
         cursor.insertText(completion[extra:])
         self._edit.setTextCursor(cursor)

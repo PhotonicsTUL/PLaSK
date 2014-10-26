@@ -96,7 +96,7 @@ class XPLDocument(object):
         data += '</plask>'
         try:
             shutil.move(filename, filename+'~')
-        except OSError:
+        except (IOError, OSError):
             pass
         open(filename, 'w').write(data)
         self.filename = filename

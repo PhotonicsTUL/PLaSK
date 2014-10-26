@@ -73,7 +73,7 @@ class PyDocument(object):
             text = text.encode('utf8')
         try:
             shutil.move(filename, filename+'~')
-        except OSError:
+        except (IOError, OSError):
             pass
         open(filename, 'w').write(text)
         self.filename = filename

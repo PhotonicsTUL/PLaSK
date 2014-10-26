@@ -267,7 +267,6 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.tabs.setCurrentIndex(2)
 
-
     def new(self):
         new_window = MainWindow()
         new_window.resize(self.size())
