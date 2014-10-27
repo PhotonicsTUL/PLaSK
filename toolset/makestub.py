@@ -140,7 +140,7 @@ class StubCreator(object):
 
     #e.g. BottomOf( (GeometryObject)object [, (PathHints)path=None]) -> Boundary :
     # search for: (type)name[=default_value]
-    funcarg_re = re.compile("\(([a-zA-Z0-9_]+)\)([a-zA-Z0-9_]+)(=([a-zA-Z0-9_]*))?")
+    funcarg_re = re.compile("\\(([a-zA-Z0-9_]+)\\)([a-zA-Z0-9_]+)(?:=([a-zA-Z0-9_]+|'[^']*'|\"[^\"]*\"))?")
 
     def func_args(self, func):
         try:
@@ -158,10 +158,11 @@ class StubCreator(object):
                     aftsig = False
                     args = []
                     #print l
+                    print(self.funcarg_re.findall(l))
                     for m in self.funcarg_re.finditer(l):
                         arg_s = m.group(2)
-                        v = m.group(4)
-                        if v: arg_s += '=' + v;
+                        v = m.group(3)
+                        if v is not None: arg_s += '=' + v;
                         args.append(arg_s)
                     if args and args[0] == 'arg1':
                         args[0] = "self"
@@ -197,7 +198,7 @@ class StubCreator(object):
 
     def create_function_stub(self, name, func, depth):
         # self.emit("", 0)
-        if func.__name__ != name:
+        if func.__name__ != name and func.__name__ != '<lambda>':
             self.emit("%s = %s # function alias" % (name, func.__name__), depth)
         else:
             args, doc = self.func_args(func)

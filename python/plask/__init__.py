@@ -49,7 +49,7 @@ def update_factories():
     '''For each material in default database make factory in ``plask.material``.'''
     def factory(name):
         func = lambda **kwargs: material.db.get(name, **kwargs)
-        func.__doc__ = u"Create {} material.".format(name)
+        func.__doc__ = u"Create material {}.\n\n:rtype: Material".format(name)
         return func
     for mat in material.db:
         if mat == 'air': continue
