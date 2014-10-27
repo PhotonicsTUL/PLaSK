@@ -53,6 +53,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         self.endResetModel()
         self.fire_changed()
 
+    def stubs(self):
+        return "\n".join(r.stub() for r in self.roots)
+
     # QAbstractItemModel implementation:
     def columnCount(self, parent = QtCore.QModelIndex()):
         return 2

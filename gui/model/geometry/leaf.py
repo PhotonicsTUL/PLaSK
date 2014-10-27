@@ -42,7 +42,9 @@ class GNLeaf(GNObject):
 
     def set_material(self, material):
         self.material_bottom = self.material_top = material
-        
+
+    def stub(self):
+        return ''
 
 class GNBlock(GNLeaf):
 
@@ -62,6 +64,9 @@ class GNBlock(GNLeaf):
 
     def tag_name(self, full_name = True):
         return "block{}d".format(self.dim) if full_name else "block"
+
+    def python_type(self):
+        return 'geometry.Block{}D'.format(self.dim)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -94,6 +99,9 @@ class GNCylinder(GNLeaf):
     def tag_name(self, full_name = True):
         return "cylinder"
 
+    def python_type(self):
+        return 'geometry.Cylinder'
+
     @classmethod
     def from_xml_3d(cls, element, conf):
         result = GNCylinder()
@@ -117,6 +125,9 @@ class GNCircle(GNLeaf):
 
     def tag_name(self, full_name = True):
         return "circle{}d".format(self.dim) if full_name else "circle"
+
+    def python_type(self):
+        return 'geometry.Circle' if self.dim == 2 else 'geometry.Sphere'
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -153,6 +164,9 @@ class GNTriangle(GNLeaf):
 
     def tag_name(self, full_name = True):
         return "triangle"
+
+    def python_type(self):
+        return 'geometry.Triangle'
 
     @classmethod
     def from_xml_2d(cls, element, conf):

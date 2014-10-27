@@ -34,6 +34,9 @@ class GNAgain(GNode):
     def tag_name(self, full_name = True):
         return "again"
 
+    def stub(self):
+        return ''
+
     @classmethod
     def from_xml(cls, element, conf):
         result = GNAgain()
@@ -111,7 +114,7 @@ class GNCopy(GNObject):
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNCopy, self).attributes_from_xml(attribute_reader, conf)
-        self.source = attribute_reader.require('from')
+        self.source = attribute_reader.get('from')
 
     def attributes_to_xml(self, element, conf):
         super(GNCopy, self).attributes_to_xml(element, conf)
@@ -127,6 +130,11 @@ class GNCopy(GNObject):
 
     def tag_name(self, full_name = True):
         return "copy"
+
+    def stub(self):
+        if self.name is not None and '{' not in self.name and self.source is not None and '{' not in self.source:
+            return '{}={}\n'.format(self.name, self.source)
+        return ''
 
     @classmethod
     def from_xml(cls, element, conf):

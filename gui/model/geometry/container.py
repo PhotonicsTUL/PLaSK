@@ -108,6 +108,10 @@ class GNStack(GNContainerBase):
     def tag_name(self, full_name = True):
         return "stack{}d".format(self.dim) if full_name else "stack"
 
+    def python_type(self):
+        return 'geometry.MultiStack{}D'.format(self.dim)
+        #self.repeat is a string and can contain {}, we can't use it
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNStack(dim = 2)
@@ -149,6 +153,9 @@ class GNShelf(GNContainerBase):
 
     def tag_name(self, full_name = True):
         return "shelf{}d".format(self.dim) if full_name else "shelf"
+
+    def python_type(self):
+        return 'geometry.Shelf2D{}'
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -194,6 +201,9 @@ class GNAlignContainer(GNContainerBase):
 
     def tag_name(self, full_name = True):
         return "align{}d".format(self.dim) if full_name else "align"
+
+    def python_type(self):
+        return 'geometry.AlignContainer{}D'.format(self.dim)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

@@ -46,6 +46,9 @@ class GNTranslation(GNTransform):
     def tag_name(self, full_name = True):
         return "translation{}d".format(self.dim) if full_name else "translation"
 
+    def python_type(self):
+        return 'geometry.Translation{}D'.format(self.dim)
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNTranslation(dim = 2)
@@ -86,6 +89,9 @@ class GNClip(GNTransform):
     def tag_name(self, full_name = True):
         return "clip{}d".format(self.dim) if full_name else "clip"
 
+    def python_type(self):
+        return 'geometry.Clip{}D'.format(self.dim)
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNClip(dim = 2)
@@ -115,6 +121,9 @@ class GNFlip(GNTransform):
 
     def tag_name(self, full_name = True):
         return "flip{}d".format(self.dim) if full_name else "flip"
+
+    def python_type(self):
+        return 'geometry.Flip{}D'.format(self.dim)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -146,6 +155,9 @@ class GNMirror(GNTransform):
     def tag_name(self, full_name = True):
         return "mirror{}d".format(self.dim) if full_name else "mirror"
 
+    def python_type(self):
+        return 'geometry.Mirror{}D'.format(self.dim)
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNMirror(dim = 2)
@@ -176,6 +188,9 @@ class GNExtrusion(GNTransform):
     def tag_name(self, full_name = True):
         return "extrusion"
 
+    def python_type(self):
+        return 'geometry.Extrusion'
+
     @classmethod
     def from_xml_3d(cls, element, conf):
         result = GNExtrusion()
@@ -190,6 +205,9 @@ class GNRevolution(GNTransform):
 
     def tag_name(self, full_name = True):
         return "revolution"
+
+    def python_type(self):
+        return 'geometry.Revolution'
 
     @classmethod
     def from_xml_3d(cls, element, conf):

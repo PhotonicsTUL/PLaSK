@@ -12,6 +12,7 @@
 
 from .node import GNode
 from ...utils.xml import xml_to_attr, attr_to_xml
+from ...utils.str import empty_to_none
 
 
 class GNObject(GNode):
@@ -32,3 +33,15 @@ class GNObject(GNode):
         super(GNObject, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'name', 'role', 'axes')
         if self.axes is not None: conf.axes = self.axes
+
+    def stub(self):
+        if self.name is None or '{' in self.name:
+            res = ''
+        else:
+            res = '{}={}()\n'.format(self.name, self.python_type())
+        for c in self.children:
+            cs = c.stub()
+            if cs:
+                res += cs
+                res += '\n'
+        return res

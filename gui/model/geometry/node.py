@@ -106,3 +106,7 @@ class GNode(object):
         self._parent = parent
         if self._parent is not None:
             self._parent.children.append(self)
+
+    def stub(self):
+        return ''
+

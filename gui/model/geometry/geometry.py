@@ -46,6 +46,9 @@ class GNCartesian(GNObject):
     def tag_name(self, full_name = True):
         return "cartesian{}d".format(self.dim)
 
+    def python_type(self):
+        return 'geometry.Cartesian{}D'.format(self.dim)
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNCartesian(dim=2)
@@ -81,6 +84,9 @@ class GNCylindrical(GNObject):
 
     def tag_name(self, full_name = True):
         return "cylindrical{}d".format(self.dim) if full_name else "cylindrical"
+
+    def python_type(self):
+        return 'geometry.Cylindrical2D'
 
     @classmethod
     def from_xml_2d(cls, element, conf):
