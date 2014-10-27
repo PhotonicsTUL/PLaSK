@@ -61,7 +61,7 @@ class CompletionsController(QtGui.QCompleter):
         cursor.select(QtGui.QTextCursor.WordUnderCursor)
         completion_prefix = cursor.selectedText()
         if blocking:
-            QtGui.QApplication.setOverrideCursor(QtGui.QCursor(Qt.WaitCursor))
+            QtGui.QApplication.setOverrideCursor(Qt.WaitCursor)
             completions = get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col)
             QtGui.QApplication.restoreOverrideCursor()
             self.show_completion_popup(completion_prefix, completions)
@@ -74,7 +74,7 @@ class CompletionsController(QtGui.QCompleter):
                 QtGui.QApplication.restoreOverrideCursor()
             self._thread = _CompleterThread(self._edit.controller.document, self._edit.toPlainText(), row, col)
             self._thread.finished.connect(thread_finished)
-            QtGui.QApplication.setOverrideCursor(QtGui.QCursor(Qt.BusyCursor))
+            QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
             self._thread.start()
 
     def show_completion_popup(self, completion_prefix, completions):

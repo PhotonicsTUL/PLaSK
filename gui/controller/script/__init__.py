@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import sys
+from copy import deepcopy, copy
 
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
@@ -36,7 +37,7 @@ from ...external.highlighter.plask import syntax as plask_syntax
 
 
 syntax['formats'].update(plask_syntax['formats'])
-syntax['scanner'][None] = syntax['scanner'][None][:-1] + plask_syntax['scanner'] + [syntax['scanner'][None][-1]]
+syntax['scanner'][None][-1:-1] = plask_syntax['scanner']
 
 scheme = {
     'syntax_comment': parse_highlight(CONFIG('syntax/python_comment', 'color=green, italic=true')),
@@ -44,14 +45,14 @@ scheme = {
     'syntax_builtin': parse_highlight(CONFIG('syntax/python_builtin', 'color=maroon')),
     'syntax_keyword': parse_highlight(CONFIG('syntax/python_keyword', 'color=black, bold=true')),
     'syntax_number': parse_highlight(CONFIG('syntax/python_number', 'color=darkblue')),
-    'syntax_member': parse_highlight(CONFIG('syntax/python_member', 'color=#440044')),
+    'syntax_member': parse_highlight(CONFIG('syntax/python_member', 'color=#444400')),
     'syntax_plask': parse_highlight(CONFIG('syntax/python_plask', 'color=#0088ff')),
     'syntax_provider': parse_highlight(CONFIG('syntax/python_provider', 'color=#888800')),
     'syntax_receiver': parse_highlight(CONFIG('syntax/python_receiver', 'color=#888800')),
     'syntax_log': parse_highlight(CONFIG('syntax/python_log', 'color=blue')),
     'syntax_solver': parse_highlight(CONFIG('syntax/python_solver', 'color=red')),
     'syntax_loaded': parse_highlight(CONFIG('syntax/python_loaded', 'color=#ff8800')),
-    'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#880044')),
+    'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#440088')),
 }
 
 
@@ -149,7 +150,7 @@ class ScriptEditor(TextEdit):
         cursor.movePosition(QtGui.QTextCursor.EndOfWord)
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
-        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(Qt.WaitCursor))
+        QtGui.QApplication.setOverrideCursor(Qt.WaitCursor)
         namedocstring = get_docstring(self.controller.document, self.toPlainText(), row, col)
         if namedocstring:
             name, docstring = namedocstring
@@ -267,10 +268,6 @@ class ScriptController(SourceEditController):
         source.toolbar.addSeparator()
         source.toolbar.addAction(source.editor.doc_action)
 
-        self.highlighter = SyntaxHighlighter(source.editor.document(),
-                                             *load_syntax(syntax, scheme),
-                                             default_font=DEFAULT_FONT)
-
         dock = HelpDock(source.editor.make_help_area(), window)
         source.editor.help_window = dock
         state = CONFIG['session/scriptwindow']
@@ -293,6 +290,22 @@ class ScriptController(SourceEditController):
 
     def on_edit_enter(self):
         super(ScriptController, self).on_edit_enter()
+
+        if self.document.solvers:
+            current_syntax = {'formats': syntax['formats'],
+                              'partitions': syntax['partitions'],
+                              'scanner': copy(syntax['scanner'])}
+            solvers = [e.name for e in self.document.solvers.model.entries]
+            if solvers:
+                current_syntax['scanner'][None] = copy(syntax['scanner'][None])
+                current_syntax['scanner'][None].insert(-1, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
+        else:
+            current_syntax = syntax
+
+        self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
+                                             *load_syntax(current_syntax, scheme),
+                                             default_font=DEFAULT_FONT)
+
 
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()

@@ -171,7 +171,7 @@ def get_docstring(document, text, block, column):
             else:
                 defs = script.goto_definitions()
                 if defs:
-                    return defs[0].name, defs[0].docstring(raw="True")
+                    return defs[0].name, defs[0].docstring()
     except:
         if _DEBUG:
             import traceback

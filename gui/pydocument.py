@@ -35,6 +35,7 @@ class PyDocument(object):
         self.controllers = (self.script,)
         self.materials = _Dummy()
         self.materials.model = None
+        self.solvers = None
         self.filename = None
         self.set_changed(False)
         if filename: self.load_from_file(filename)
