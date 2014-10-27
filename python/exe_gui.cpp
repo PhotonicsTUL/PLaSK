@@ -77,6 +77,8 @@ static py::object initPlask(int argc, const char* argv[])
 
     sys.attr("path") = path;
 
+    sys.attr("executable") = plask::exePathAndName();
+
     py::object _plask = py::import("_plask");
 
     sys.attr("modules")["plask._plask"] = _plask;

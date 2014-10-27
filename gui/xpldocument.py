@@ -95,7 +95,7 @@ class XPLDocument(object):
             current_line_in_file += section_string.count('\n') + 1
         data += '</plask>'
         try:
-            shutil.move(filename, filename+'~')
+            shutil.copyfile(filename, filename+'~')
         except (IOError, OSError):
             pass
         open(filename, 'w').write(data)

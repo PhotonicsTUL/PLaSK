@@ -24,8 +24,8 @@ import pkgutil
 
 from .qt import QtGui, QtCore, qt
 
-sys.path.insert(0, os.path.join(__path__[0], 'external'))
-
+sys.path.insert(2, os.path.join(__path__[0], 'external'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
 
 # Set-up correct backend for matplotlib
 try:
@@ -93,7 +93,7 @@ class MainWindow(QtGui.QMainWindow):
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
 
-        icon = QtGui.QIcon(':/plask.png')
+        icon = QtGui.QIcon.fromTheme('plask')
         self.setWindowIcon(icon)
 
         self.info_dock = QtGui.QDockWidget("Warnings", self)
@@ -468,7 +468,6 @@ class GotoDialog(QtGui.QDialog):
 
 
 def main():
-    sys.path.insert(1, os.path.normpath(os.path.join(__path__[0], '..', '..', '..', 'share', 'plask', 'stubs')))
     try:
         _debug_index = sys.argv.index('-debug')
     except ValueError:

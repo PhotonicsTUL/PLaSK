@@ -51,7 +51,8 @@ class Solver(TreeFragmentModel):
         with AttributeReader(element) as attr:
             self.name = attr.get('name', None)
             self.solver = attr.get('solver', None)
-            self.lib = attr.get('lib', None)
+            if 'lib' in attr:
+                self.lib = attr['lib']
 
     def set_text(self, text):
         tab = ['<', self.category.encode('utf-8'),

@@ -55,7 +55,7 @@
       <block name="p-contact" material="Cu" dr="2500." dz="5000."/>
     </stack>
   </cylindrical2d>
-  <cylindrical2d name="GeoO" axes="rz" bottom="GaAs" outer="extend" top="air">
+  <cylindrical2d name="GeoO" axes="rz" outer="extend" bottom="GaAs" top="air">
     <again ref="VCSEL"/>
   </cylindrical2d>
 </geometry>
@@ -172,6 +172,8 @@ opt = EffectiveIndex2D('opt')
 r = opt.root.
 
 config.axes = 'rz'
+
+OPTICAL.
 
 cyl = geometry.Cylinder(2, 1, None)
 cyl.get_object_positions
