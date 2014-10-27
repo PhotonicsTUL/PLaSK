@@ -482,7 +482,7 @@ if(BUILD_PYTHON AND BUILD_GUI)
                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
                       )
     add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files} ${plask_solvers_stubs_files})
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs DESTINATION share/plask/ COMPONENT gui)
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs DESTINATION share/plask/ COMPONENT GUI)
 endif()
 
 # ----------===== Unit tests =====--------------------------------------------
