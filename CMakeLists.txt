@@ -331,12 +331,15 @@ if(BUILD_PYTHON)
         set_target_properties(plask PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
 
+    set(plask_stubs _plask geometry mesh material flow)
+    foreach(stub ${plask_stubs})
+        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
+        list(APPEND plask_stubs_modules plask.${stub})
+    endforeach()
+
+    file(REMOVE ${plask_stubs_files}) # Wrong stubs can make build fail
+
     if(BUILD_GUI)
-        set(plask_stubs _plask geometry mesh material flow)
-        foreach(stub ${plask_stubs})
-            list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
-            list(APPEND plask_stubs_modules plask.${stub})
-        endforeach()
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py
@@ -344,7 +347,7 @@ if(BUILD_PYTHON)
                           )
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
     endif()
-    
+
     install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
