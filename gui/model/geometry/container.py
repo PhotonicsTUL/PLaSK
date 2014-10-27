@@ -109,8 +109,10 @@ class GNStack(GNContainerBase):
         return "stack{}d".format(self.dim) if full_name else "stack"
 
     def python_type(self):
-        return 'geometry.MultiStack{}D'.format(self.dim)
-        #self.repeat is a string and can contain {}, we can't use it
+        if self.repeat is None or self.repeat.strip() == '1':
+            return 'geometry.SingleStack{}D'.format(self.dim)
+        else:
+            return 'geometry.MultiStack{}D'.format(self.dim)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
