@@ -790,9 +790,10 @@ void initMaterials() {
              py::arg("dir")=plaskMaterialsPath())
         .staticmethod("load_all") // TODO make it non-static
         .def("get", py::raw_function(&MaterialsDB_get),
-             "Get material of given name and doping."
+             "Get material of given name and doping.\n\n"
+             ":rtype: Material\n"
              )
-        .def("__call__", py::raw_function(&MaterialsDB_get))
+        .def("__call__", py::raw_function(&MaterialsDB_get), ":rtype: Material\n")
         .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
@@ -815,55 +816,250 @@ void initMaterials() {
     py::class_<Material, shared_ptr<Material>, boost::noncopyable> MaterialClass("Material", "Base class for all materials.", py::no_init);
     MaterialClass
         .def("__init__", raw_constructor(&PythonMaterial::__init__))
+
         .def("complete_composition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
-             "Fix incomplete material composition basing on pattern")
+             "Fix incomplete material composition basing on pattern.\n\n"
+             "Args:\n"
+             "    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
+             "                        missing some elements).\n"
+             "    name (str): Material name.\n\n"
+             "Return:\n"
+             "    dict: Dictionary with completed composition.")
         .staticmethod("complete_composition")
-        .add_property("name", &Material::name)
-        .add_property("kind", &Material::kind)
+
+        .add_property("name", &Material::name, "Material name.")
+
+        .add_property("kind", &Material::kind, "Material kind.")
+
         .def("__str__", &Material__str__)
+
         .def("__repr__", &Material__repr__)
+
         .def("__eq__", (bool(Material::*)(const Material&)const)&Material::operator==)
+
         .add_property("simple", &Material::isSimple)
 
-        .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")), "Get lattice constant [A]")
-        .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"), "Get energy gap Eg [eV]")
-        .def("CB", &Material::CB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"), "Get conduction band level CB [eV]")
-        .def("VB", &Material::VB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*", py::arg("hole")='H'), "Get valance band level VB [eV]")
-        .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("e")=0), "Get split-off energy Dso [eV]")
-        .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0), "Get split-off mass Mso [m0]")
-        .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"), "Get split-off mass Mso [m0]")
-        .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0), "Get heavy hole effective mass Mhh [m0]")
-        .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0), "Get light hole effective mass Mlh [m0]")
-        .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0), "Get hole effective mass Mh [m0]")
-        .def("ac", &Material::ac, (py::arg("T")=300.), "Get hydrostatic deformation potential for the conduction band ac [eV]")
-        .def("av", &Material::av, (py::arg("T")=300.), "Get hydrostatic deformation potential for the valence band av [eV]")
-        .def("b", &Material::b, (py::arg("T")=300.), "Get shear deformation potential b [eV]")
-        .def("d", &Material::d, (py::arg("T")=300.), "Get shear deformation potential d [eV]")
-        .def("c11", &Material::c11, (py::arg("T")=300.), "Get elastic constant c11 [GPa]")
-        .def("c12", &Material::c12, (py::arg("T")=300.), "Get elastic constant c12 [GPa]")
-        .def("c44", &Material::c44, (py::arg("T")=300.), "Get elastic constant c44 [GPa]")
-        .def("eps", &Material::eps, (py::arg("T")=300.), "Get dielectric constant EpsR")
-        .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"), "Get electron affinity Chi [eV]")
-        .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"), "Get effective density of states in the conduction band Nc [m**(-3)]")
-        .def("Nv", &Material::Nv, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"), "Get effective density of states in the valence band Nv [m**(-3)]")
-        .def("Ni", &Material::Ni, (py::arg("T")=300.), "Get intrinsic carrier concentration Ni [m**(-3)]")
-        .def("Nf", &Material::Nf, (py::arg("T")=300.), "Get free carrier concentration N [m**(-3)]")
-        .def("EactD", &Material::EactD, (py::arg("T")=300.), "Get donor ionisation energy EactD [eV]")
-        .def("EactA", &Material::EactA, (py::arg("T")=300.), "Get acceptor ionisation energy EactA [eV]")
-        .def("mob", &Material::mob, (py::arg("T")=300.), "Get mobility [m**2/(V*s)]")
-        .def("cond", &Material::cond, (py::arg("T")=300.), "Get electrical conductivity Sigma [S/m]")
-        .add_property("condtype", &Material::condtype, "Electrical conductivity type")
-        .def("A", &Material::A, (py::arg("T")=300.), "Get monomolecular recombination coefficient A [1/s]")
-        .def("B", &Material::B, (py::arg("T")=300.), "Get radiative recombination coefficient B [m**3/s]")
-        .def("C", &Material::C, (py::arg("T")=300.), "Get Auger recombination coefficient C [m**6/s]")
-        .def("D", &Material::D, (py::arg("T")=300.), "Get ambipolar diffusion coefficient D [m**2/s]")
-        .def("thermk", &Material::thermk, (py::arg("T")=300., py::arg("h")=INFINITY), "Get thermal conductivity [W/(m*K)]")
-        .def("dens", &Material::dens, (py::arg("T")=300.), "Get density [kg/m**3]")
-        .def("cp", &Material::cp, (py::arg("T")=300.), "Get specific heat at constant pressure [J/(kg*K)]")
-        .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.), "Get refractive index nr")
-        .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.), "Get absorption coefficient alpha")
-        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.), "Get complex refractive index Nr")
-        .def("NR", &Material::NR, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.), "Get complex refractive index tensor Nr")
+        .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")="a"),
+             "Get lattice constant [A].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    x (char): lattice parameter [-].\n")
+
+        .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
+             "Get energy gap Eg [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+
+        .def("CB", &Material::CB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
+             "Get conduction band level CB [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+
+        .def("VB", &Material::VB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*", py::arg("hole")='H'),
+             "Get valance band level VB [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n"
+             "    hole (char): Hole type ('H' or 'L').\n")
+
+        .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("e")=0),
+             "Get split-off energy Dso [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n")
+
+        .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0),
+             "Get split-off mass Mso [m0].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n")
+
+        .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
+             "Get split-off mass Mso [m0].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+
+        .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0),
+             "Get heavy hole effective mass Mhh [m0].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n")
+
+        .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0),
+             "Get light hole effective mass Mlh [m0].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n")
+
+        .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0),
+             "Get hole effective mass Mh [m0].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n")
+
+        .def("ac", &Material::ac, (py::arg("T")=300.),
+             "Get hydrostatic deformation potential for the conduction band ac [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("av", &Material::av, (py::arg("T")=300.),
+             "Get hydrostatic deformation potential for the valence band av [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("b", &Material::b, (py::arg("T")=300.),
+             "Get shear deformation potential b [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("d", &Material::d, (py::arg("T")=300.),
+             "Get shear deformation potential d [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("c11", &Material::c11, (py::arg("T")=300.),
+             "Get elastic constant c11 [GPa].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("c12", &Material::c12, (py::arg("T")=300.),
+             "Get elastic constant c12 [GPa].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("c44", &Material::c44, (py::arg("T")=300.),
+             "Get elastic constant c44 [GPa].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("eps", &Material::eps, (py::arg("T")=300.),
+             "Get dielectric constant EpsR.\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
+             "Get electron affinity Chi [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+
+        .def("Nc", &Material::Nc, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
+             "Get effective density of states in the conduction band Nc [1/m³].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+
+        .def("Nv", &Material::Nv, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
+             "Get effective density of states in the valence band Nv [1/m³].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    e (float): Lateral strain [-].\n"
+             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+
+        .def("Ni", &Material::Ni, (py::arg("T")=300.),
+             "Get intrinsic carrier concentration Ni [1/m³].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("Nf", &Material::Nf, (py::arg("T")=300.),
+             "Get free carrier concentration N [1/m³].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("EactD", &Material::EactD, (py::arg("T")=300.),
+             "Get donor ionisation energy EactD [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("EactA", &Material::EactA, (py::arg("T")=300.),
+             "Get acceptor ionisation energy EactA [eV].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("mob", &Material::mob, (py::arg("T")=300.),
+             "Get mobility [m**2/(V*s)].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("cond", &Material::cond, (py::arg("T")=300.),
+             "Get electrical conductivity Sigma [S/m].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .add_property("condtype", &Material::condtype,
+             "Electrical conductivity type.")
+
+        .def("A", &Material::A, (py::arg("T")=300.),
+             "Get monomolecular recombination coefficient A [1/s].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("B", &Material::B, (py::arg("T")=300.),
+             "Get radiative recombination coefficient B [m³/s].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("C", &Material::C, (py::arg("T")=300.),
+             "Get Auger recombination coefficient C [m⁶/s].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("D", &Material::D, (py::arg("T")=300.),
+             "Get ambipolar diffusion coefficient D [m²/s].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("thermk", &Material::thermk, (py::arg("T")=300., py::arg("h")=INFINITY),
+             "Get thermal conductivity [W/(m K)].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n"
+             "    h (float): Layer thickness [µm] [-].\n")
+
+        .def("dens", &Material::dens, (py::arg("T")=300.),
+             "Get density [kg/m**3].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("cp", &Material::cp, (py::arg("T")=300.),
+             "Get specific heat at constant pressure [J/(kg K)].\n\n"
+             "Args:\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
+             "Get refractive index nr.\n\n"
+             "Args:\n"
+             "    wl (float): Wavelength [nm].\n"
+             "    T (float): Temperature [K].\n"
+             "    n (float): Injected carriers concentration [1/cm³].\n")
+
+        .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.),
+             "Get absorption coefficient alpha.\n\n"
+             "Args:\n"
+             "    wl (float): Wavelength [nm].\n"
+             "    T (float): Temperature [K].\n")
+
+        .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
+             "Get complex refractive index Nr.\n\n"
+             "Args:\n"
+             "    wl (float): Wavelength [nm].\n"
+             "    T (float): Temperature [K].\n"
+             "    n (float): Injected carriers concentration [1/cm³].\n")
+
+        .def("NR", &Material::NR, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
+             "Get complex refractive index tensor Nr.\n\n"
+             "Args:\n"
+             "    wl (float): Wavelength [nm].\n"
+             "    T (float): Temperature [K].\n"
+             "    n (float): Injected carriers concentration [1/cm³].\n")
     ;
 
     MaterialFromPythonString();

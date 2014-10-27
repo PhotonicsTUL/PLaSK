@@ -157,8 +157,6 @@ class StubCreator(object):
                         continue
                     aftsig = False
                     args = []
-                    #print l
-                    print(self.funcarg_re.findall(l))
                     for m in self.funcarg_re.finditer(l):
                         arg_s = m.group(2)
                         v = m.group(3)

@@ -94,14 +94,14 @@ This section contains specification of custom materials that can be used togethe
          Conduction band level *CB* [eV].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``point`` — point in the Brillouin zone [-].
+         ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <chi>
 
          Electron affinity *χ* [eV].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``point`` — point in the Brillouin zone [-].
+         ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <cond>
 
@@ -154,7 +154,7 @@ This section contains specification of custom materials that can be used togethe
          Energy gap *E*\ :sub:`g` [eV].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``point`` — point in the Brillouin zone [-].
+         ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <eps>
 
@@ -215,7 +215,7 @@ This section contains specification of custom materials that can be used togethe
          Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``point`` — point in the Brillouin zone [-].
+         ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <Nf>
 
@@ -233,27 +233,27 @@ This section contains specification of custom materials that can be used togethe
 
          Complex refractive index *n*\ :sub:`R` [-].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [1/cm].
+         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
       .. xml:tag:: <nr>
 
          Real refractive index *n*\ :sub:`R` [-].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [1/cm].
+         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
       .. xml:tag:: <NR>
 
          Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
          Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
-         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [1/cm].
+         Variables: ``wl`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
       .. xml:tag:: <Nv>
 
          Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``point`` — point in the Brillouin zone [-].
+         ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <thermk>
 
@@ -266,5 +266,5 @@ This section contains specification of custom materials that can be used togethe
          Valance band level offset *VB* [eV].
 
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``hole`` — hole type (``'H'`` or ``'L'``) [-].
+         ``hole`` — hole type (``'H'`` or ``'L'``).
 
