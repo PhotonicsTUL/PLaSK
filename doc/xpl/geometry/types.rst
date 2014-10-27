@@ -18,6 +18,10 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr borders: Specification of all borders. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr planar: Specification of all planar borders, i.e. all borders except top-bottom. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr {axis}-lo: where **{axis}** is the name of axis: Specification of lower border in **{axis}** direction. Alias to ``bottom`` or ``left``. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr {axis}-hi: where **{axis}** is the name of axis: Specification of higher border in **{axis}** direction. Alias to ``top`` or ``right``. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
    .. xml:contents::
 
@@ -36,6 +40,10 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
    :attr inner: Specification of the inner radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr outer: Specification of the outer radical border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr borders: Specification of all borders. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr planar: Specification of all planar borders, i.e. all borders except top-bottom. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr {axis}-lo: where **{axis}** is the name of axis: Specification of lower border in **{axis}** direction. Alias to ``bottom`` or ``inner``. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr {axis}-hi: where **{axis}** is the name of axis: Specification of higher border in **{axis}** direction. Alias to ``top`` or ``outer``. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
    .. xml:contents::
 
@@ -57,6 +65,10 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr top: Specification of the top border. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr borders: Specification of all borders. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr planar: Specification of all planar borders, i.e. all borders except top-bottom. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr {axis}-lo: where **{axis}** is the name of axis: Specification of lower border in **{axis}** direction. Alias to ``back``, ``bottom`` or ``left``. (any material name, ``mirror``, ``periodic``, or ``extend``)
+   :attr {axis}-hi: where **{axis}** is the name of axis: Specification of higher border in **{axis}** direction. Alias to ``front``, ``top`` or ``right``. (any material name, ``mirror``, ``periodic``, or ``extend``)
 
    .. xml:contents::
 
