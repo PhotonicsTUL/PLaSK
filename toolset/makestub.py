@@ -23,7 +23,7 @@ class StubCreator(object):
         self._doc = ""
         self._imports = set()
 
-    def emit(self, code, depth=0):
+    def emit(self, code, depth):
         self._out.append("%s%s" % (INDENT * depth, code))
 
     def emit_doc(self, doc, depth):
@@ -80,11 +80,11 @@ class StubCreator(object):
             elif hasattr(value, "__class__") and isclass(value.__class__):
                 cls = value.__class__
                 if cls.__module__ == self._module:
-                    self.emit("{} = {}()".format(name, cls.__name__))
+                    self.emit("{} = {}()".format(name, cls.__name__), depth)
                 else:
-                    self.emit("{} = {}.{}()".format(name, cls.__module__, cls.__name__))
+                    self.emit("{} = {}.{}()".format(name, cls.__module__, cls.__name__), depth)
                     self._imports.add(cls.__module__)
-                self.emit("")
+                self.emit("", depth)
                 emitted = True
                 #if isfunction(value) or isbuiltin(value):
                 #    self.create_function_stub(name, value, depth)
@@ -99,7 +99,7 @@ class StubCreator(object):
 
     def create_class_stub(self, name, cls, depth):
         if depth == 0:
-            self.emit("")
+            self.emit("", 0)
         #print name
         if cls.__name__ != name:
             self.emit("%s = %s # class alias" % (name, cls.__name__), depth)
@@ -118,7 +118,7 @@ class StubCreator(object):
             self.emit("class {}({}):".format(name, bases), depth)
             if not self.create_stub(cls, depth + 1):
                 self.emit("pass", depth + 1)
-        self.emit("")
+        self.emit("", 0)
 
     rtype_re = re.compile(r"\s*:rtype:\s+([\w_](?:.?[\w\d_]+)*)")
 
@@ -136,7 +136,7 @@ class StubCreator(object):
         else:
             self.emit("{} = None".format(name), depth)
         if doc: self.emit_doc(doc, depth)
-        self.emit("")
+        self.emit("", 0)
 
     #e.g. BottomOf( (GeometryObject)object [, (PathHints)path=None]) -> Boundary :
     # search for: (type)name[=default_value]
@@ -196,7 +196,7 @@ class StubCreator(object):
             return ", ".join(args), getattr(func, "__doc__", "")
 
     def create_function_stub(self, name, func, depth):
-        # self.emit("")
+        # self.emit("", 0)
         if func.__name__ != name:
             self.emit("%s = %s # function alias" % (name, func.__name__), depth)
         else:
@@ -206,8 +206,8 @@ class StubCreator(object):
                 self.emit_doc(doc, depth + 1)
             else:
                 self.emit("pass", depth + 1)
-                self.emit("")
-        self.emit("")
+                self.emit("", 0)
+        self.emit("", 0)
 
     def create_stub_from_module(self, module_name):
         mod = __import__(module_name, {}, {}, [])
