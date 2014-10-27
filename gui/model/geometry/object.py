@@ -38,10 +38,10 @@ class GNObject(GNode):
         if self.name is None or '{' in self.name:
             res = ''
         else:
-            res = '{}={}()\n'.format(self.name, self.python_type())
+            res = '    {} = {}()\n'.format(self.name, self.python_type())
         for c in self.children:
             cs = c.stub()
             if cs:
                 res += cs
                 res += '\n'
-        return res
+        return res[:-1]

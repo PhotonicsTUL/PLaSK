@@ -54,7 +54,9 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         self.fire_changed()
 
     def stubs(self):
-        return "\n".join(r.stub() for r in self.roots)
+        res = 'class GEO(object):\n    """PLaSK object containing the defined geometry objects."""\n'
+        res += '\n'.join(s for s in (r.stub() for r in self.roots) if s)
+        return res
 
     # QAbstractItemModel implementation:
     def columnCount(self, parent = QtCore.QModelIndex()):

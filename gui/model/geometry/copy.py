@@ -133,7 +133,7 @@ class GNCopy(GNObject):
 
     def stub(self):
         if self.name is not None and '{' not in self.name and self.source is not None and '{' not in self.source:
-            return '{}={}\n'.format(self.name, self.source)
+            return '    {} = {}'.format(self.name, self.source)
         return ''
 
     @classmethod
