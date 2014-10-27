@@ -874,32 +874,32 @@ void initMaterials() {
              "    e (float): Lateral strain [-].\n")
 
         .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0),
-             "Get split-off mass Mso [m0].\n\n"
+             "Get split-off mass Mso [m₀].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n"
              "    e (float): Lateral strain [-].\n")
 
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get split-off mass Mso [m0].\n\n"
+             "Get split-off mass Mso [m₀].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n"
              "    e (float): Lateral strain [-].\n"
              "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0),
-             "Get heavy hole effective mass Mhh [m0].\n\n"
+             "Get heavy hole effective mass Mhh [m₀].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n"
              "    e (float): Lateral strain [-].\n")
 
         .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0),
-             "Get light hole effective mass Mlh [m0].\n\n"
+             "Get light hole effective mass Mlh [m₀].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n"
              "    e (float): Lateral strain [-].\n")
 
         .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0),
-             "Get hole effective mass Mh [m0].\n\n"
+             "Get hole effective mass Mh [m₀].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n"
              "    e (float): Lateral strain [-].\n")

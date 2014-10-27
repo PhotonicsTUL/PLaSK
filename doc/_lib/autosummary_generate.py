@@ -178,7 +178,7 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
             elif doc.objtype == 'class':
                 ns['members'] = dir(obj)
                 ns['methods'], ns['all_methods'] = \
-                                 get_members(obj, 'method')
+                                 get_members(obj, 'method', ['__call__'])
                 ns['attributes'], ns['all_attributes'] = \
                                  get_members(obj, 'attribute')
                 ns['classes'], ns['all_classes'] = \
