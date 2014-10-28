@@ -31,6 +31,8 @@ DOCSTRING_PARAM_PATTERNS = [
 DOCSTRING_RETURN_PATTERNS = [
     re.compile(r'\s*:rtype:\s*([^\n]+)', re.M),  # Sphinx
     re.compile(r'\s*@rtype:\s*([^\n]+)', re.M),  # Epydoc
+    re.compile(r'\s*Returns\s*\n\s*-------\s*\n\s*[^\n]+ : ([^\n]+)', re.M),  # Numpy
+    re.compile(r'\s*Returns?:\s*\n\s*(?::class:`)?~?([^:\s`]+)\s*:', re.M),  # PLaSK
 ]
 
 REST_ROLE_PATTERN = re.compile(r':[^`]+:`([^`]+)`')

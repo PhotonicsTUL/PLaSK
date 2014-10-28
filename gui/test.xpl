@@ -173,7 +173,6 @@ r = opt.root.
 
 config.axes = 'rz'
 
-OPTICAL.
 
 cyl = geometry.Cylinder(2, 1, None)
 cyl.get_object_positions

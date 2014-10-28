@@ -289,8 +289,6 @@ class ScriptController(SourceEditController):
             CONFIG.sync()
 
     def on_edit_enter(self):
-        super(ScriptController, self).on_edit_enter()
-
         if self.document.solvers:
             current_syntax = {'formats': syntax['formats'],
                               'partitions': syntax['partitions'],
@@ -301,11 +299,11 @@ class ScriptController(SourceEditController):
                 current_syntax['scanner'][None].insert(-1, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
         else:
             current_syntax = syntax
-
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
                                              *load_syntax(current_syntax, scheme),
                                              default_font=DEFAULT_FONT)
-
+        self.highlighter.rehighlight()
+        super(ScriptController, self).on_edit_enter()
 
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()

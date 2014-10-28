@@ -940,7 +940,7 @@ void initMaterials() {
              "    T (float): Temperature [K].\n")
 
         .def("eps", &Material::eps, (py::arg("T")=300.),
-             "Get dielectric constant EpsR.\n\n"
+             "Get dielectric constant ε [-].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
@@ -986,7 +986,7 @@ void initMaterials() {
              "    T (float): Temperature [K].\n")
 
         .def("mob", &Material::mob, (py::arg("T")=300.),
-             "Get mobility [m**2/(V*s)].\n\n"
+             "Get mobility [m²/(V s)].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
@@ -1025,7 +1025,7 @@ void initMaterials() {
              "    h (float): Layer thickness [µm] [-].\n")
 
         .def("dens", &Material::dens, (py::arg("T")=300.),
-             "Get density [kg/m**3].\n\n"
+             "Get density [kg/m³].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
@@ -1035,27 +1035,27 @@ void initMaterials() {
              "    T (float): Temperature [K].\n")
 
         .def("nr", &Material::nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
-             "Get refractive index nr.\n\n"
+             "Get refractive index nr [-].\n\n"
              "Args:\n"
              "    wl (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n"
              "    n (float): Injected carriers concentration [1/cm³].\n")
 
         .def("absp", &Material::absp, (py::arg("wl"), py::arg("T")=300.),
-             "Get absorption coefficient alpha.\n\n"
+             "Get absorption coefficient alpha [1/cm].\n\n"
              "Args:\n"
              "    wl (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n")
 
         .def("Nr", &Material::Nr, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
-             "Get complex refractive index Nr.\n\n"
+             "Get complex refractive index Nr [-].\n\n"
              "Args:\n"
              "    wl (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n"
              "    n (float): Injected carriers concentration [1/cm³].\n")
 
         .def("NR", &Material::NR, (py::arg("wl"), py::arg("T")=300., py::arg("n")=0.),
-             "Get complex refractive index tensor Nr.\n\n"
+             "Get complex refractive index tensor Nr [-].\n\n"
              "Args:\n"
              "    wl (float): Wavelength [nm].\n"
              "    T (float): Temperature [K].\n"
