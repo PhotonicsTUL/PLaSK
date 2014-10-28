@@ -68,7 +68,9 @@ elif type(RECENT) is not list:
     RECENT = [RECENT]
 
 def update_recent_files(filename):
-    global RECENT
+    global RECENT, CURRENT_DIR
+    CURRENT_DIR = os.path.dirname(filename)
+    CONFIG['session/recent_dir'] = CURRENT_DIR  # update_recent_files() will call CONFIG.sync()
     try:
         RECENT.remove(filename)
     except ValueError:
@@ -270,11 +272,7 @@ class MainWindow(QtGui.QMainWindow):
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
-            global CURRENT_DIR
-            absfilename = os.path.abspath(filename)
-            CURRENT_DIR = os.path.dirname(absfilename)
-            CONFIG['session/recent_dir'] = CURRENT_DIR  # update_recent_files() will call CONFIG.sync()
-            update_recent_files(absfilename)
+            update_recent_files(os.path.abspath(filename))
             self.document = document
             self.setup_model()
             self.set_changed(False)
@@ -329,6 +327,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.document.filename is not None:
             if not self.before_save(): return False
             self.document.save_to_file(self.document.filename)
+            update_recent_files(self.document.filename)
             return True
         else:
             return self.save_as()
@@ -336,11 +335,12 @@ class MainWindow(QtGui.QMainWindow):
     def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
         if not self.before_save(): return False
-        filter = "Python script (*.py)" if isinstance(self.document, PyDocument) else "PLaSK structure data  (*.xpl)"
-        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or "", filter)
+        flt = "Python script (*.py)" if isinstance(self.document, PyDocument) else "PLaSK structure data  (*.xpl)"
+        filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or CURRENT_DIR, flt)
         if type(filename) is tuple: filename = filename[0]
         if not filename: return False
         self.document.save_to_file(filename)
+        update_recent_files(filename)
         return True
 
     def before_save(self):
