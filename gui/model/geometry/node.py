@@ -12,7 +12,6 @@
 from lxml import etree
 
 from .reader import GNReadConf
-from .constructor import append_to_qt_add_child_menu
 from ...utils.xml import AttributeReader, OrderedTagReader
 
 
@@ -80,17 +79,16 @@ class GNode(object):
     def accept_new_child(self):
         return False
 
-    def add_child_qt_menu(self):
-        from .types import geometry_types_2d_core, geometry_types_3d_core, geometry_types_other
-        from ...qt import QtGui
-        result = QtGui.QMenu()
+    def add_child_options(self):
+        from .types import geometry_types_2d_core_leafs, geometry_types_2d_core_containers, geometry_types_2d_core_transforms,\
+                           geometry_types_3d_core_leafs, geometry_types_3d_core_containers, geometry_types_3d_core_transforms,\
+                           geometry_types_other
+        result = []
         if self.children_dim is None or self.children_dim == 2:
-            append_to_qt_add_child_menu(self, result, geometry_types_2d_core)
+            result.extend((geometry_types_2d_core_containers, geometry_types_2d_core_leafs, geometry_types_2d_core_transforms))
         if self.children_dim is None or self.children_dim == 3:
-            if self.children_dim is None: result.addSeparator()
-            append_to_qt_add_child_menu(self, result, geometry_types_3d_core)
-        result.addSeparator()
-        append_to_qt_add_child_menu(self, result, geometry_types_other)
+            result.extend((geometry_types_3d_core_containers, geometry_types_3d_core_leafs, geometry_types_3d_core_transforms))
+        result.append(geometry_types_other)
         return result
 
     @property

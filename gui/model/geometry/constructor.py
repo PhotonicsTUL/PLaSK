@@ -47,12 +47,3 @@ def construct_using_constructor(constructor, parent = None):
     result = constructor(None, None)
     result.parent = parent
     return result
-
-def append_to_qt_add_child_menu(parent_node, menu, *allowed_types):
-    from ...qt import QtGui
-    for types_map in allowed_types:
-        for type_name, type_constructor in types_map.items():
-            a = QtGui.QAction(type_name, menu)
-            a.triggered[()].connect(lambda type_constructor=type_constructor, parent_node=parent_node:
-                                    construct_using_constructor(type_constructor, parent_node))
-            menu.addAction(a)

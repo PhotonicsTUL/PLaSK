@@ -46,6 +46,9 @@ class GNGeometryBase(GNObject):
     def children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
 
+    def accept_new_child(self):
+        return not self.children
+
 
 class GNCartesian(GNGeometryBase):
 
@@ -83,6 +86,13 @@ class GNCartesian(GNGeometryBase):
 
     def python_type(self):
         return 'geometry.Cartesian{}D'.format(self.dim)
+
+    def add_child_options(self):
+        res = super(GNCartesian, self).add_child_options()
+        if self.dim == 2:
+            from .types import geometry_types_3d_core_extrusion
+            res.insert(0, geometry_types_3d_core_extrusion)
+        return res
 
     @classmethod
     def from_xml_2d(cls, element, conf):

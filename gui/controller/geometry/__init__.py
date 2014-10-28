@@ -9,9 +9,10 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import operator
 
 from ...model.geometry import GeometryModel
-from ...model.geometry.constructor import construct_by_name
+from ...model.geometry.constructor import construct_by_name, construct_using_constructor
 from ...model.geometry.types import geometry_types_geometries_core
 from ...qt import QtGui, QtCore
 
@@ -20,15 +21,33 @@ from .. import Controller
 
 class GeometryController(Controller):
 
-    def _get_add_child_menu(self, geometry_node):
+    def _add_child(self, type_constructor, parent_index):
+        pos = len(parent_index.internalPointer().children)
+        self.model.beginInsertRows(parent_index, pos, pos)
+        construct_using_constructor(type_constructor, parent_index.internalPointer())
+        self.model.endInsertRows()
+
+    def _get_add_child_menu(self, geometry_node_index):
+        geometry_node = geometry_node_index.internalPointer()
         if geometry_node is None or not geometry_node.accept_new_child(): return None
-        return geometry_node.add_child_qt_menu()
+        first = True
+        result = QtGui.QMenu()
+        for section in geometry_node.add_child_options():
+            if not first:
+                result.addSeparator()
+            first = False
+            for type_name, type_constructor in sorted(section.items(), key=operator.itemgetter(0)):
+                a = QtGui.QAction(type_name, result)
+                a.triggered[()].connect(lambda type_constructor=type_constructor, parent_index=geometry_node_index:
+                                        self._add_child(type_constructor, parent_index))
+                result.addAction(a)
+        return result
 
     def fill_add_menu(self):
         self.add_menu.clear()
         current_index = self.tree.selectionModel().currentIndex()
         if current_index.isValid():
-            add_child_menu = self._get_add_child_menu(current_index.internalPointer())
+            add_child_menu = self._get_add_child_menu(current_index)
             if add_child_menu:
                 self.add_menu.addAction('child').setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():

@@ -19,6 +19,9 @@ class GNTransform(GNObject):
     def children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
 
+    def accept_new_child(self):
+        return not self.children
+
 
 class GNTranslation(GNTransform):
 
