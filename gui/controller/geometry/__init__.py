@@ -92,6 +92,7 @@ class GeometryController(Controller):
 
         vbox.addWidget(self._construct_toolbar())
         vbox.addWidget(self._construct_tree(model))
+        tree_selection_model = self.tree.selectionModel()   #workaround of segfault in pySide, see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
         self.tree.selectionModel().selectionChanged.connect(self.update_actions)
         self.update_actions()
 
