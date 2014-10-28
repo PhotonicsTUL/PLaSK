@@ -76,7 +76,8 @@ class GNCartesian(GNGeometryBase):
         from .types import geometry_types_3d
         el = ordered_reader.get()
         if el is None: return
-        if self.dim == 2 and self.length is None and el.tag in geometry_object_names(GNExtrusion.from_xml_3d, geometry_types_3d):
+        if self.dim == 2 and el.tag in geometry_object_names(GNExtrusion.from_xml_3d, geometry_types_3d):
+            #we don't require self.length is None, our model could store some "in building" states not well defined for PLaSK
             GNExtrusion.from_xml_3d(el, conf)
         else:
             construct_geometry_object(el, conf)
