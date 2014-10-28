@@ -191,13 +191,17 @@ std::string XMLReader::getNodeName() const {
 }
 
 std::string XMLReader::getTextContent() const {
-    if (getNodeType() != NODE_TEXT)
-        throw XMLUnexpectedElementException(*this, "text");
+    if (getNodeType() != NODE_TEXT) {
+        if (getNodeType() == NODE_ELEMENT_END)
+            return "";
+        else
+            throw XMLUnexpectedElementException(*this, "text");
+    }
     if (contentFilter) {
         try {
             return contentFilter(getCurrent().text);
         } catch (const std::exception& e) {
-            throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + 
+            throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) +
                                ": Bad parsed expression", e.what());
         }
     } else
@@ -213,7 +217,7 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
         try {
             return attributeFilter(res_it->second);
         } catch (const std::exception& e) {
-            throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) + 
+            throw XMLException("XML line " + boost::lexical_cast<std::string>(this->getCurrent().lineNr) +
                                " in <" + this->getCurrent().text + "> attribute '" + name +
                                "': Bad parsed expression", e.what());
         }
@@ -275,7 +279,7 @@ std::string XMLReader::requireText() {
 
 std::string XMLReader::requireTextInCurrentTag() {
     std::string t = requireText();
-    requireTagEnd();
+    if (t.length() != 0) requireTagEnd();
     return t;
 }
 

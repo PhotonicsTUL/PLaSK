@@ -134,6 +134,7 @@
 from scipy import optimize
 
 OPTICAL.root.maxiter
+ELECTRICAL
 
 class A(object):
     
@@ -161,12 +162,6 @@ a = A()
 #a.prop.
 #a.val.
 a.fun()
-
-MSG.default.
-arr = ndarray()
-
-therm = Static2D('therm')
-therm.algorithm
 
 opt = EffectiveIndex2D('opt')
 r = opt.root.
@@ -225,7 +220,6 @@ axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
 xlabel(u"r [\xb5m]")
 ylabel(u"z [\xb5m]")
-
 
 new_aperture = 3.
 GEO["aperture"].dr = new_aperture

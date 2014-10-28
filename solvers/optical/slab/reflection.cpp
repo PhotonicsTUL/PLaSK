@@ -226,7 +226,6 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
 void ReflectionTransfer::storeP(size_t n) {
     if (allP) {
-        write_debug("Storing reflection matrix for layer %d", n);
         int N = diagonalizer->matrixSize();
         if (memP.size() != solver->stack.size()) {
             // Allocate the storage for admittance matrices

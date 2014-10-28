@@ -45,6 +45,8 @@ except ImportError:
 
 material.db = material.MaterialsDB.get_default()
 
+material.get = lambda *args, **kwargs: material.db.get(*args, **kwargs)
+
 def update_factories():
     '''For each material in default database make factory in ``plask.material``.'''
     def factory(name):

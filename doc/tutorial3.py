@@ -7,29 +7,29 @@ loadxpl(filename)
 config.axes = 'rz'
 
 def loss_on_voltage(voltage):
-	ELECTRICAL.invalidate()
-	ELECTRICAL.voltage_boundary[0].value = voltage
-	verr = ELECTRICAL.compute(1)
-	terr = THERMAL.compute(1)
-	iters=0
-	while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters<15:
-		verr = ELECTRICAL.compute(8)
-		terr = THERMAL.compute(1)
-		iters+=1
-	DIFFUSION.compute_threshold()
-	det_lams = linspace(OPTICAL.lam0-2, OPTICAL.lam0+2, 401)+0.2j*(voltage-0.5)/1.5
-	det_vals = abs(OPTICAL.get_determinant(det_lams, m=0))
-	det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \
-	           np.r_[det_vals[:-1] < det_vals[1:], False] & \
-	           np.r_[det_vals[:] < 1]
-	mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
-	mode_loss = OPTICAL.outLoss(mode_number)
-	print_log(LOG_RESULT,
-	    'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
-	    .format(voltage, ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
-	return mode_loss
-	
-	
+        ELECTRICAL.invalidate()
+        ELECTRICAL.voltage_boundary[0].value = voltage
+        verr = ELECTRICAL.compute(1)
+        terr = THERMAL.compute(1)
+        iters=0
+        while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters<15:
+                verr = ELECTRICAL.compute(8)
+                terr = THERMAL.compute(1)
+                iters+=1
+        DIFFUSION.compute_threshold()
+        det_lams = linspace(OPTICAL.lam0-2, OPTICAL.lam0+2, 401)+0.2j*(voltage-0.5)/1.5
+        det_vals = abs(OPTICAL.get_determinant(det_lams, m=0))
+        det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \
+                   np.r_[det_vals[:-1] < det_vals[1:], False] & \
+                   np.r_[det_vals[:] < 1]
+        mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
+        mode_loss = OPTICAL.outLoss(mode_number)
+        print_log(LOG_RESULT,
+            'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
+            .format(voltage, ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
+        return mode_loss
+        
+        
 OPTICAL.lam0 = 981.5
 OPTICAL.vat = 0
 

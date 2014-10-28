@@ -52,13 +52,34 @@ try:
 except OSError:
     winsparkle = None
 
+
 WINDOWS = set()
+
+
+CURRENT_DIR = CONFIG['session/recent_dir']
+if CURRENT_DIR is None:
+    CURRENT_DIR = os.getcwd()
+
 
 RECENT = CONFIG['session/recent_files']
 if RECENT is None:
     RECENT = []
 elif type(RECENT) is not list:
     RECENT = [RECENT]
+
+def update_recent_files(filename):
+    global RECENT
+    try:
+        RECENT.remove(filename)
+    except ValueError:
+        pass
+    RECENT.append(filename)
+    RECENT = RECENT[-10:]
+    CONFIG['session/recent_files'] = RECENT
+    CONFIG.sync()
+    for window in WINDOWS:
+        window.update_recent_list()
+
 
 # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 SECTION_ICONS = {
@@ -165,7 +186,7 @@ class MainWindow(QtGui.QMainWindow):
         self.recent_menu = QtGui.QMenu('Open &Recent')
         self.recent_menu.setIcon(
             QtGui.QIcon.fromTheme('document-open-recent'))
-        self.update_recent_files()
+        self.update_recent_list()
 
         self.menu = QtGui.QMenu('&Operations')
 
@@ -228,7 +249,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.show()
 
-    def update_recent_files(self):
+    def update_recent_list(self):
         self.recent_menu.clear()
         class Func(object):
             def __init__(s, f): s.f = f
@@ -249,6 +270,11 @@ class MainWindow(QtGui.QMainWindow):
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
+            global CURRENT_DIR
+            absfilename = os.path.abspath(filename)
+            CURRENT_DIR = os.path.dirname(absfilename)
+            CONFIG['session/recent_dir'] = CURRENT_DIR  # update_recent_files() will call CONFIG.sync()
+            update_recent_files(absfilename)
             self.document = document
             self.setup_model()
             self.set_changed(False)
@@ -274,24 +300,13 @@ class MainWindow(QtGui.QMainWindow):
         WINDOWS.add(new_window)
 
     def open(self, filename=None):
-        global RECENT
         if not filename:
-            filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", "",
+            filename = QtGui.QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
                                                          "PLaSK file (*.xpl *.py);;"
                                                          "PLaSK structure data (*.xpl);;"
                                                          "Python script (*.py)")
             if type(filename) == tuple: filename = filename[0]
             if not filename: return
-        try:
-            RECENT.remove(filename)
-        except ValueError:
-            pass
-        RECENT.append(filename)
-        RECENT = RECENT[:10]
-        CONFIG['session/recent_files'] = RECENT
-        CONFIG.sync()
-        for window in WINDOWS:
-            window.update_recent_files()
         remove_self = self.document.filename is None and not self.isWindowModified()
         new_window = MainWindow(filename)
         try:

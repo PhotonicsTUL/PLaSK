@@ -201,7 +201,7 @@ class GNExtrusion(GNTransform):
 class GNRevolution(GNTransform):
 
     def __init__(self, parent = None):
-        super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
+        super(GNTransform, self).__init__(parent=parent, dim=3, children_dim=2)
 
     def tag_name(self, full_name = True):
         return "revolution"

@@ -19,6 +19,10 @@ CATEGORIES = (
     'optical'
 )
 
+import sys
+import os
+import re
+
 from ..qt import QtCore
 
 from lxml import etree
@@ -68,7 +72,26 @@ class Solver(TreeFragmentModel):
         return SourceEditController(document=document, model=self, line_numbers=False)
 
     def stub(self):
-        return "{} = None".format(self.name)
+        if self.category is not None and self.solver is not None:
+            lib = self.lib
+            if lib is None:
+                try:
+                    prefix = os.path.dirname(os.path.dirname(sys.executable))
+                    lst_re = re.compile(r'(\w+)\.{}'.format(self.solver))
+                    with open(os.path.join(prefix, 'lib', 'plask', 'solvers', self.category, 'solvers.lst')) as lfile:
+                        for line in lfile:
+                            match = lst_re.match(line)
+                            if match:
+                                lib = match.group(1)
+                                break
+                except (IOError, SystemError):
+                    pass
+            if lib is not None:
+                return "import {1}.{2}.{3} as {0}\n{0} = {0}()".format(self.name, self.category, lib, self.solver)
+            else:
+                return "import {1}.{2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
+        else:
+            return "{} = None".format(self.name)
 
 
 class TreeFragmentSolver(Solver):
