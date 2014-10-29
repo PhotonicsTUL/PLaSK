@@ -68,6 +68,20 @@ Transforms always contain a single geometry object (possibly container) as their
 
 
 
+.. xml:tag:: <intersection3d> (or <intersection>)
+
+   Corresponding Python class: :py:class:`plask.geometry.Intersection3D`.
+
+   Clip child object to given shape.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr role: Object role. Important for some solvers.
+
+   .. xml:contents::
+
+       Two :ref:`three-dimensional geometry objects <sec-xpl-Geometry-objects-3D>`. First is a child of this, second is a clipping shape (materials are not required in its leafs).
+
 
 
 .. xml:tag:: <revolution>

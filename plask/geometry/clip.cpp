@@ -68,11 +68,13 @@ inline static void writeClip2D3D(XMLWriter::Element& dest_xml_object, const Clip
 
 template <>
 void Clip<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    GeometryObjectTransform<2>::writeXMLAttr(dest_xml_object, axes);
     writeClip2D3D(dest_xml_object, clipBox);
 }
 
 template <>
 void Clip<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    GeometryObjectTransform<3>::writeXMLAttr(dest_xml_object, axes);
     writeClip2D3D(dest_xml_object, clipBox);
     dest_xml_object.attr("back", clipBox.back());
     dest_xml_object.attr("front", clipBox.front());

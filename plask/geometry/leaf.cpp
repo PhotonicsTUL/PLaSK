@@ -5,11 +5,12 @@ namespace plask {
 
 template <int dim>
 XMLWriter::Element& GeometryObjectLeaf<dim>::SolidMaterial::writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
-    return dest_xml_object.attr(GeometryReader::XML_MATERIAL_ATTR, material->str());
+    return material ? dest_xml_object.attr(GeometryReader::XML_MATERIAL_ATTR, material->str()) : dest_xml_object;
 }
 
 template <int dim>
 XMLWriter::Element& GeometryObjectLeaf<dim>::MixedCompositionMaterial::writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+    if (! materialFactory) return dest_xml_object;
     return dest_xml_object
             .attr(GeometryReader::XML_MATERIAL_BOTTOM_ATTR, (*materialFactory)(0.0)->str())
             .attr(GeometryReader::XML_MATERIAL_TOP_ATTR, (*materialFactory)(1.0)->str());
@@ -20,10 +21,21 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
     if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
         this->setMaterialFast(src.getMaterial(*matstr));
     else
-        this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(
-                    src.source.requireAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR),
-                    src.source.requireAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR)
-                    ));
+        if (src.materialsAreRequired) {
+            this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(
+                        src.source.requireAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR),
+                        src.source.requireAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR)
+                        ));
+        } else {
+            auto top_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR);
+            auto bottom_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
+            if (top_attr && bottom_attr)
+                this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr));
+            else
+                if (top_attr || bottom_attr)
+                    src.source.throwException(format("If \"%1%\" or \"%2%\" attribute is given, the second one is also required.",
+                                                     GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
+        }
     return src;
 }
 

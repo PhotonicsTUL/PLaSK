@@ -617,7 +617,6 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
         writeXML(parent_xml_object, write_cb, AxisNames::getAbsoluteNames());
     }
 
-
     /**
      * Cast this to GeometryObjectD<DIMS>.
      * @return this casted to GeometryObjectD<DIMS> or nullptr if casting is not possible.
@@ -962,6 +961,14 @@ protected:
      * @param axes choosen name of axes
      */
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+
+    /**
+     * Append all children of this to XML @p dest_xml_object..
+     * @param dest_xml_object XML tag where attribiutes should be append
+     * @param write_cb write callback, used to get names for objects and paths
+     * @param axes chosen name of axes
+     */
+    virtual void writeXMLChildren(XMLWriter::Element& dest_xml_object, WriteXMLCallback& write_cb, const AxisNames &axes) const;
 
     /**
      * Check if given @p index is valid child index and throw exception of it is not.

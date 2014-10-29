@@ -98,9 +98,7 @@ void GeometryObject::writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCal
     XMLWriter::Element tag = write_cb.makeTag(parent_xml_object, *this, axes);
     if (WriteXMLCallback::isRef(tag)) return;
     writeXMLAttr(tag, axes);
-    const std::size_t child_count = getRealChildrenCount();
-    for (std::size_t i = 0; i < child_count; ++i)
-        getRealChildNo(i)->writeXML(tag, write_cb, axes);
+    writeXMLChildren(tag, write_cb, axes);
 }
 
 template<int DIMS>
@@ -178,6 +176,12 @@ void GeometryObject::ensureCanHasAsParent(const GeometryObject& potential_parent
 
 void GeometryObject::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     //do nothing
+}
+
+void GeometryObject::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {
+    const std::size_t child_count = getRealChildrenCount();
+    for (std::size_t i = 0; i < child_count; ++i)
+        getRealChildNo(i)->writeXML(dest_xml_object, write_cb, axes);
 }
 
 std::size_t GeometryObject::getRealChildrenCount() const {

@@ -4,6 +4,11 @@
 
 namespace plask {
 
+constexpr const char* const GeometryReader::XML_NAME_ATTR;
+constexpr const char* const GeometryReader::XML_MATERIAL_ATTR;
+constexpr const char* const GeometryReader::XML_MATERIAL_TOP_ATTR;
+constexpr const char* const GeometryReader::XML_MATERIAL_BOTTOM_ATTR;
+
 std::map<std::string, GeometryReader::object_read_f*>& GeometryReader::objectReaders() {
     static std::map<std::string, GeometryReader::object_read_f*> result;
     return result;
@@ -27,14 +32,14 @@ GeometryReader::SetExpectedSuffix::SetExpectedSuffix(GeometryReader &reader, con
     reader.expectedSuffix = new_expected_suffix;
 }
 
-plask::GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
-    : expectedSuffix(0), manager(manager), source(source),
+GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source, const MaterialsDB& materialsDB)
+    : materialsAreRequired(true), expectedSuffix(0), manager(manager), source(source),
       materialSource(new MaterialsSourceDB(materialsDB))
 {
 }
 
 GeometryReader::GeometryReader(Manager &manager, XMLReader &source, shared_ptr<const MaterialsSource> materialsSource)
-    : expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
+    : materialsAreRequired(true), expectedSuffix(0), manager(manager), source(source), materialSource(materialsSource)
 {
 }
 

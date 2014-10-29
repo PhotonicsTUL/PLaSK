@@ -3,6 +3,7 @@
 #include <plask/geometry/transform.h>
 #include <plask/geometry/mirror.h>
 #include <plask/geometry/clip.h>
+#include <plask/geometry/intersection.h>
 
 namespace plask { namespace python {
 
@@ -165,6 +166,19 @@ DECLARE_GEOMETRY_ELEMENT_23D(Clip, "Clip", "Transform that clips the held geomet
     ;
 }
 
+template <int dim>
+shared_ptr<Intersection<dim>> Intersection_constructor(shared_ptr<GeometryObjectD<dim>> object, shared_ptr<GeometryObjectD<dim>> shape) {
+    return make_shared<Intersection<dim>>(object, shape);
+}
+
+DECLARE_GEOMETRY_ELEMENT_23D(Intersection, "Intersection", "Transform that clips the held geometry object to the specified shape ("," version)")
+{
+    GEOMETRY_ELEMENT_23D(Intersection, GeometryObjectTransform<dim>, py::no_init)
+        .def("__init__", py::make_constructor(&Intersection_constructor<dim>, py::default_call_policies(), (py::arg("item")=shared_ptr<GeometryObjectD<dim>>(), py::arg("shape")=shared_ptr<GeometryObjectD<dim>>())))
+    //.def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box")
+    ;
+}
+
 void register_geometry_changespace();
 
 void register_geometry_transform()
@@ -185,6 +199,9 @@ void register_geometry_transform()
 
     init_Clip<2>();
     init_Clip<3>();
+
+    /*init_Intersection<2>();
+    init_Intersection<3>();*/
 }
 
 }} // namespace plask::python

@@ -78,7 +78,9 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
         return make_shared<Clip<dim>>(getChild(), new_clip);
     }
 
-   virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
+    protected:
+
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
 };
 

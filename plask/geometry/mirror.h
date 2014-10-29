@@ -9,7 +9,7 @@
 namespace plask {
 
 /**
- * Represent geometry object equal to its child with mirror reflection.
+ * Represent geometry object equal to mirror reflection of its child.
  * @tparam dim
  * @ingroup GEOMETRY_OBJ
  */
@@ -84,7 +84,9 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<3>)
 
 /**
- * We suppose that getBoundingBoxes().upper[flipDir] > 0
+ * Represent geometry object equal to its child with mirror reflection.
+ * @tparam dim
+ * @ingroup GEOMETRY_OBJ
  */
 //TODO add checking of coordinates
 template <int dim>
