@@ -438,7 +438,7 @@ endforeach()
 file(GLOB_RECURSE lst_lists RELATIVE ${CMAKE_SOURCE_DIR}/solvers solvers/*solvers.lst)
 foreach(lst ${lst_lists})
     add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${lst}
-                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${lst} ${PLASK_PATH}/solvers/${lst}
+                       COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/solvers/${lst} ${PLASK_PATH}/solvers/${lst}
                        DEPENDS ${CMAKE_SOURCE_DIR}/solvers/${lst})
     list(APPEND solvers_lst_files ${PLASK_PATH}/solvers/${lst})
     get_filename_component(lst_dir ${lst} PATH)
