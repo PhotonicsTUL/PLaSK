@@ -487,8 +487,12 @@ if __name__ == "__main__":
 
     if msgbox.exec_() == QtGui.QMessageBox.Yes:
         del app
-        plaskgui = os.path.join(os.path.dirname(sys.argv[0]), 'plaskgui')
-        os.execl(plaskgui, plaskgui, *sys.argv[1:])
+        if sys.platform == 'win32':
+            plaskgui = os.path.join(os.path.dirname(sys.argv[0]), 'plaskgui.exe')
+            os.execl(plaskgui, '"' + plaskgui + '"', *sys.argv[1:])
+        else:
+            plaskgui = os.path.join(os.path.dirname(sys.argv[0]), 'plaskgui')
+            os.execl(plaskgui, plaskgui, *sys.argv[1:])
 
     else:
         try:

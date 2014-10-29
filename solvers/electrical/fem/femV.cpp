@@ -148,6 +148,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
     }
 
     size_t condsize = 0;
+    active.clear();
     active.reserve(regions.size());
     size_t i = 0;
     for (auto& reg: regions) {

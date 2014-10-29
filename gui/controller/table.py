@@ -136,6 +136,8 @@ class TableController(Controller):
                 toolbar.addAction(a)
         layout.addWidget(toolbar)
         layout.addWidget(self.table)
+        widget.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
         widget.setLayout(layout)
         return widget
 
