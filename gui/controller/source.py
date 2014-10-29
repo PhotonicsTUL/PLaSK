@@ -64,7 +64,7 @@ class SourceEditController(Controller):
         if self.visible:
             editor = self.get_source_widget().editor
             text = self.model.get_text()
-            if text[-1] == '\n':
+            if text and text[-1] == '\n':
                 text = text[:-1]
             editor.setPlainText(text)
             self.fresh = True

@@ -304,13 +304,13 @@ class ScriptController(SourceEditController):
             CONFIG.sync()
 
     def on_edit_enter(self):
-        if self.document.solvers:
+        if self.document.solvers and self.document.solvers.model.entries:
             current_syntax = {'formats': syntax['formats'],
                               'partitions': syntax['partitions'],
                               'scanner': copy(syntax['scanner'])}
+            current_syntax['scanner'][None] = copy(syntax['scanner'][None])
             solvers = [e.name for e in self.document.solvers.model.entries]
             if solvers:
-                current_syntax['scanner'][None] = copy(syntax['scanner'][None])
                 current_syntax['scanner'][None].insert(-1, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
         else:
             current_syntax = syntax

@@ -12,7 +12,7 @@
 
 from PySide import QtCore, QtGui
 
-qt = 'PySide'
+qt4 = 'PySide'
 
 import sys
 sys.modules['gui.qt.QtCore'] = QtCore

@@ -63,7 +63,7 @@ class TextEdit(QtGui.QPlainTextEdit):
 class LineNumberArea(QtGui.QWidget):
     """Line numbers widget
 
-       http://qt-project.org/doc/qt-4.8/widgets-codeeditor.html
+       http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
     """
 
     def __init__(self, editor):

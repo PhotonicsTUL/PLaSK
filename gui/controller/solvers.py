@@ -302,6 +302,8 @@ class NewSolverDialog(QtGui.QDialog):
 
         self.setLayout(layout)
 
+        self.category_changed(self.category.currentIndex())
+
     def category_changed(self, index):
         category = self.category.currentText()
         self.solver.clear()

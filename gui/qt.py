@@ -12,17 +12,17 @@
 
 try:
     import sys
-    qt = sys.qt
+    qt4 = sys.qt4
 except (ImportError, AttributeError):
-    qt = 'PyQt4'
+    qt4 = 'PySide'
 
-if qt == 'PyQt4':
+if qt4 == 'PySide':
+    from PySide import QtCore, QtGui
+else:
     import sip
     for n in ("QDate", "QDateTime", "QString", "QTextStream", "QTime", "QUrl", "QVariant"):
         sip.setapi(n, 2)
     from PyQt4 import QtCore, QtGui
-else:
-    from PySide import QtCore, QtGui
 
 import sys
 sys.modules['gui.qt.QtCore'] = QtCore

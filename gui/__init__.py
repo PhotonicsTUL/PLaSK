@@ -22,7 +22,7 @@ import ctypes
 import subprocess
 import pkgutil
 
-from .qt import QtGui, QtCore, qt
+from .qt import QtGui, QtCore, qt4
 
 sys.path.insert(2, os.path.join(__path__[0], 'external'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
@@ -33,7 +33,7 @@ try:
 except ImportError:
     pass
 else:
-    matplotlib.rc('backend', qt4=qt)
+    matplotlib.rc('backend', qt4=qt4)
 
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
@@ -46,6 +46,7 @@ try:
     import plask
 except ImportError:
     pass
+
 
 try:
     winsparkle = ctypes.CDLL('WinSparkle.dll')
@@ -97,7 +98,7 @@ SECTION_ICONS = {
 
 class MainWindow(QtGui.QMainWindow):
 
-    closed = QtCore.pyqtSignal() if qt == 'PyQt4' else QtCore.Signal()
+    closed = QtCore.pyqtSignal() if qt4 == 'PyQt4' else QtCore.Signal()
 
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
