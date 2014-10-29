@@ -175,7 +175,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(Intersection, "Intersection", "Transform that clips
 {
     GEOMETRY_ELEMENT_23D(Intersection, GeometryObjectTransform<dim>, py::no_init)
         .def("__init__", py::make_constructor(&Intersection_constructor<dim>, py::default_call_policies(), (py::arg("item")=shared_ptr<GeometryObjectD<dim>>(), py::arg("shape")=shared_ptr<GeometryObjectD<dim>>())))
-    //.def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box")
+        .add_property("clip_shape", &Intersection<dim>::getClippingShape, &Intersection<dim>::setClippingShape, "Clipping shape")
     ;
 }
 
@@ -200,8 +200,8 @@ void register_geometry_transform()
     init_Clip<2>();
     init_Clip<3>();
 
-    /*init_Intersection<2>();
-    init_Intersection<3>();*/
+    init_Intersection<2>();
+    init_Intersection<3>();
 }
 
 }} // namespace plask::python

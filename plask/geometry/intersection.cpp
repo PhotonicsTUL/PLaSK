@@ -6,23 +6,23 @@ namespace plask {
 
 template <int dim>
 typename Intersection<dim>::Box Intersection<dim>::getBoundingBox() const {
-    return getChild()->getBoundingBox().intersection(clipShape->getBoundingBox());
+    return getChild()->getBoundingBox().intersection(clippingShape->getBoundingBox());
 }
 
 template <int dim>
 shared_ptr<Material> Intersection<dim>::getMaterial(const typename Intersection<dim>::DVec &p) const {
-    return clipShape->contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
+    return clippingShape->contains(p) ? getChild()->getMaterial(p) : shared_ptr<Material>();
 }
 
 template <int dim>
 bool Intersection<dim>::contains(const typename Intersection<dim>::DVec &p) const {
-    return clipShape->contains(p) && getChild()->contains(p);
+    return clippingShape->contains(p) && getChild()->contains(p);
 }
 
 template <int dim>
 GeometryObject::Subtree Intersection<dim>::getPathsAt(const Intersection<dim>::DVec &point, bool all) const
 {
-    if (clipShape->contains(point))
+    if (clippingShape->contains(point))
         return GeometryObject::Subtree::extendIfNotEmpty(this, getChild()->getPathsAt(point, all));
         else
             return GeometryObject::Subtree();
@@ -36,7 +36,7 @@ void Intersection<dim>::getBoundingBoxesToVec(const GeometryObject::Predicate& p
     }
     std::vector<Box> result = getChild()->getBoundingBoxes(predicate, path);
     dest.reserve(dest.size() + result.size());
-    Box clipBox = clipShape->getBoundingBox();
+    Box clipBox = clippingShape->getBoundingBox();
     for (Box& r: result) {
         r.makeIntersection(clipBox);
         dest.push_back(r);
@@ -61,7 +61,7 @@ template <int dim>
 void Intersection<dim>::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {
     if (auto child = getChild()) {
         child->writeXML(dest_xml_object, write_cb, axes);
-        if (clipShape) clipShape->writeXML(dest_xml_object, write_cb, axes);
+        if (clippingShape) clippingShape->writeXML(dest_xml_object, write_cb, axes);
     }
 }
 
@@ -72,7 +72,7 @@ shared_ptr<GeometryObject> read_Intersection(GeometryReader& reader) {
     intersection->setChild(reader.readObject<typename Intersection<dim>::ChildType>());
     {
         GeometryReader::ReadShapeOnly enableShapeOnlyMode(reader);
-        intersection->clipShape = reader.readObject<typename Intersection<dim>::ChildType>();
+        intersection->clippingShape = reader.readObject<typename Intersection<dim>::ChildType>();
     }
     reader.source.requireTagEnd();
     return intersection;
