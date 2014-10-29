@@ -71,7 +71,7 @@ shared_ptr<GeometryObject> read_Intersection(GeometryReader& reader) {
     shared_ptr< Intersection<dim> > intersection = make_shared<Intersection<dim>>();
     intersection->setChild(reader.readObject<typename Intersection<dim>::ChildType>());
     {
-        GeometryReader::ReadShapeOnly enableShapeOnlyMode(reader);
+        GeometryReader::RevertMaterialsAreRequired enableShapeOnlyMode(reader, false);
         intersection->clippingShape = reader.readObject<typename Intersection<dim>::ChildType>();
     }
     reader.source.requireTagEnd();

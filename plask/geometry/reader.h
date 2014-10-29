@@ -112,13 +112,14 @@ class PLASK_API GeometryReader {
     };
 
     /**
-     * Don't require materials in leafs up to time of end of life of this object.
+     * Revert materialsAreRequired flag in destructor. Change this flag in constructor, if new value is given.
      */
-    struct PLASK_API ReadShapeOnly {
+    struct PLASK_API RevertMaterialsAreRequired {
         GeometryReader& reader;
         bool old;
-        ReadShapeOnly(GeometryReader& reader): reader(reader), old(reader.materialsAreRequired) { reader.materialsAreRequired = false; }
-        ~ReadShapeOnly() { reader.materialsAreRequired = old; }
+        RevertMaterialsAreRequired(GeometryReader &reader): reader(reader), old(reader.materialsAreRequired) {}
+        RevertMaterialsAreRequired(GeometryReader& reader, bool new_value): reader(reader), old(reader.materialsAreRequired) { reader.materialsAreRequired = new_value; }
+        ~RevertMaterialsAreRequired() { reader.materialsAreRequired = old; }
     };
 
     /// Geometry manager which stores reading results.
