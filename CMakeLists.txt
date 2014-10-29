@@ -469,18 +469,17 @@ foreach(solv ${solvers})
         add_subdirectory(solvers/${solv})
         if(BUILD_PYTHON AND BUILD_GUI)
             string(REPLACE "/" "." solvmodule ${solv})
-            list(APPEND plask_solvers_stubs ${solvmodule})
             list(APPEND plask_solvers_stubs_files ${CMAKE_BINARY_DIR}/share/plask/stubs/${solv}.py)
+            add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/plask/stubs/${solv}.py
+                               COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${solvmodule}
+                               DEPENDS solvers/${solv} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
+                              )
         endif()
     endif()
 endforeach()
 
 if(BUILD_PYTHON AND BUILD_GUI)
-    add_custom_command(OUTPUT ${plask_solvers_stubs_files}
-                       COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_solvers_stubs}
-                       DEPENDS solvers/${solv} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
-                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
-                      )
     add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files} ${plask_solvers_stubs_files})
     install(DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs DESTINATION share/plask/ COMPONENT GUI)
 endif()
