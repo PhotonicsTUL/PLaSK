@@ -304,7 +304,8 @@ class MainWindow(QtGui.QMainWindow):
                                                          "PLaSK structure data (*.xpl);;"
                                                          "Python script (*.py)")
             if type(filename) == tuple: filename = filename[0]
-            if not filename: return
+            if not filename:
+                return
         remove_self = self.document.filename is None and not self.isWindowModified()
         new_window = MainWindow(filename)
         try:
@@ -325,7 +326,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def save(self):
         if self.document.filename is not None:
-            if not self.before_save(): return False
+            if not self.before_save():
+                return False
             self.document.save_to_file(self.document.filename)
             update_recent_files(self.document.filename)
             return True
@@ -334,11 +336,14 @@ class MainWindow(QtGui.QMainWindow):
 
     def save_as(self):
         """Ask for filename and save to chosen file. Return true only when file has been saved."""
-        if not self.before_save(): return False
+        if not self.before_save():
+            return False
         flt = "Python script (*.py)" if isinstance(self.document, PyDocument) else "PLaSK structure data  (*.xpl)"
         filename = QtGui.QFileDialog.getSaveFileName(self, "Save file as", self.document.filename or CURRENT_DIR, flt)
-        if type(filename) is tuple: filename = filename[0]
-        if not filename: return False
+        if type(filename) is tuple:
+            filename = filename[0]
+        if not filename:
+            return False
         self.document.save_to_file(filename)
         update_recent_files(filename)
         return True

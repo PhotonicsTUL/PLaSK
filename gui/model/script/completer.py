@@ -15,35 +15,20 @@ import sys
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
+from ...utils.qthread import BackgroundTask, Lock
+
 try:
     import jedi
 except ImportError:
     jedi = None
 
 
-JEDI_LOCK = QtCore.QMutex()
+JEDI_MUTEX = QtCore.QMutex()
 
 
-class _JediThread(QtCore.QThread):
-
-    def __init__(self):
-        super(_JediThread, self).__init__()
-        self.finished.connect(_JediThread.delete_global)
-
-    def run(self):
-        JEDI_LOCK.lock()
-        try:
-            jedi.preload_module('pylab', 'plask')
-        finally:
-            JEDI_LOCK.unlock()
-
-    @staticmethod
-    def delete_global():
-        global _jedi_thread
-        try:
-            del _jedi_thread
-        except NameError:
-            pass
+def preload_jedi_modules():
+    with Lock(JEDI_MUTEX):
+        jedi.preload_module('pylab', 'plask')
 
 
 def prepare_completions():
@@ -52,9 +37,7 @@ def prepare_completions():
         #     def print_debug(obj, txt):
         #         sys.stderr.write(txt + '\n')
         #     jedi.set_debug_function(print_debug)
-        global _jedi_thread
-        _jedi_thread = _JediThread()
-        _jedi_thread.start()
+        BackgroundTask(preload_jedi_modules)
 
 
 class CompletionsModel(QtCore.QAbstractTableModel):
@@ -131,50 +114,46 @@ def _try_type(compl):
 def get_completions(document, text, block, column):
     if jedi is None: return
     from ... import _DEBUG
-    JEDI_LOCK.lock()
-    try:
-        prefix = PREAMBLE + document.stubs()
-        if _DEBUG:
-            print("------------------------------------------------------------------------------------")
-            print(prefix)
-            print("------------------------------------------------------------------------------------")
-            sys.stdout.flush()
-        script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
-        items = [(c.name, _try_type(c)) for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
-    except:
-        if _DEBUG:
-            import traceback
-            traceback.print_exc()
-        items = None
-    finally:
-        JEDI_LOCK.unlock()
+    with Lock(JEDI_MUTEX):
+        try:
+            prefix = PREAMBLE + document.stubs()
+            if _DEBUG:
+                print("------------------------------------------------------------------------------------")
+                print(prefix)
+                print("------------------------------------------------------------------------------------")
+                sys.stdout.flush()
+            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
+            items = [(c.name, _try_type(c)) for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
+        except:
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
+            items = None
     return items
 
 
 def get_docstring(document, text, block, column):
     if jedi is None: return
     from ... import _DEBUG
-    JEDI_LOCK.lock()
-    try:
-        prefix = PREAMBLE + document.stubs()
-        if _DEBUG:
-            print("------------------------------------------------------------------------------------")
-            print(prefix)
-            print("------------------------------------------------------------------------------------")
-            sys.stdout.flush()
-        script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
-        defs = script.completions()
-        if defs:
-            doc = defs[0].docstring(raw="True")
-            if doc:
-                return defs[0].name, doc
-            else:
-                defs = script.goto_definitions()
-                if defs:
-                    return defs[0].name, defs[0].docstring()
-    except:
-        if _DEBUG:
-            import traceback
-            traceback.print_exc()
-    finally:
-        JEDI_LOCK.unlock()
+    with Lock(JEDI_MUTEX):
+        try:
+            prefix = PREAMBLE + document.stubs()
+            if _DEBUG:
+                print("------------------------------------------------------------------------------------")
+                print(prefix)
+                print("------------------------------------------------------------------------------------")
+                sys.stdout.flush()
+            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
+            defs = script.completions()
+            if defs:
+                doc = defs[0].docstring(raw="True")
+                if doc:
+                    return defs[0].name, doc
+                else:
+                    defs = script.goto_definitions()
+                    if defs:
+                        return defs[0].name, defs[0].docstring()
+        except:
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()

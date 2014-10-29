@@ -63,7 +63,10 @@ class SourceEditController(Controller):
     def refresh_editor(self, *args, **kwargs):
         if self.visible:
             editor = self.get_source_widget().editor
-            editor.setPlainText(self.model.get_text())
+            text = self.model.get_text()
+            if text[-1] == '\n':
+                text = text[:-1]
+            editor.setPlainText(text)
             self.fresh = True
         else:
             self.fresh = False
@@ -73,7 +76,7 @@ class SourceEditController(Controller):
             try: self.model.changed -= self.refresh_editor
             except AttributeError: pass
             try:
-                self.model.set_text(self.get_source_widget().editor.toPlainText())
+                self.model.set_text(self.get_source_widget().editor.toPlainText() + '\n')
                 self.edited = False
             finally:
                 try: self.model.changed += self.refresh_editor
@@ -127,6 +130,9 @@ class SourceWidget(QtGui.QWidget):
         layout.addWidget(self.editor)
         layout.addWidget(self.find_toolbar)
         layout.addWidget(self.replace_toolbar)
+
+        # self.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.setLayout(layout)
 

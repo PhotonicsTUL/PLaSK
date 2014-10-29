@@ -10,24 +10,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from ...qt import QtCore, QtGui, qt
+from ...qt import QtGui
 from ...qt.QtCore import Qt
 
+from ...utils.qthread import BackgroundTask
+
 from ...model.script.completer import CompletionsModel, get_completions
-
-
-class _CompleterThread(QtCore.QThread):
-
-    def __init__(self, document, text, block, column):
-        super(_CompleterThread, self).__init__()
-        self._document = document
-        self._text = text
-        self._block = block
-        self._column = column
-        self.completions = None
-
-    def run(self):
-        self.completions = get_completions(self._document, self._text, self._block, self._column)
 
 
 class CompletionsController(QtGui.QCompleter):
@@ -54,28 +42,22 @@ class CompletionsController(QtGui.QCompleter):
         cursor.insertText(completion[extra:])
         self._edit.setTextCursor(cursor)
 
-    def start_completion(self, blocking=True):
+    def start_completion(self):
         cursor = self._edit.textCursor()
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
         cursor.select(QtGui.QTextCursor.WordUnderCursor)
         completion_prefix = cursor.selectedText()
-        if blocking:
-            QtGui.QApplication.setOverrideCursor(Qt.WaitCursor)
-            completions = get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col)
+
+        def thread_finished(completions):
+            tc = self._edit.textCursor()
+            if tc.blockNumber() == row and tc.positionInBlock() == col:
+                self.show_completion_popup(completion_prefix, completions)
             QtGui.QApplication.restoreOverrideCursor()
-            self.show_completion_popup(completion_prefix, completions)
-        else:
-            def thread_finished():
-                tc = self._edit.textCursor()
-                if tc.blockNumber() == row and tc.positionInBlock() == col:
-                    self.show_completion_popup(completion_prefix, self._thread.completions)
-                del self._thread
-                QtGui.QApplication.restoreOverrideCursor()
-            self._thread = _CompleterThread(self._edit.controller.document, self._edit.toPlainText(), row, col)
-            self._thread.finished.connect(thread_finished)
-            QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
-            self._thread.start()
+
+        QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        BackgroundTask(lambda: get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col),
+                       thread_finished).start()
 
     def show_completion_popup(self, completion_prefix, completions):
         if completions:

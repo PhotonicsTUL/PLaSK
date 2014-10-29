@@ -12,7 +12,7 @@
     <A>110000000</A>
     <B>7e-011-1.08e-12*(T-300)</B>
     <C>1e-029+1.4764e-33*(T-300)</C>
-    <D>10+0.01667*(T-300)</D>
+    <D>10+0.016670*(T-300)</D>
   </material>
 </materials>
 
@@ -134,7 +134,8 @@
 from scipy import optimize
 
 OPTICAL.root.maxiter
-ELECTRICAL
+
+optimize
 
 class A(object):
     
@@ -265,7 +266,6 @@ class A(object):
         
 a = A()
 print a.a
-
 ]]></script>
 
 </plask>

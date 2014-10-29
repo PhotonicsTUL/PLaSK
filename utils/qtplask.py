@@ -119,6 +119,7 @@ e3yvbFvNnXJIuGDwnbRnjWbqL+3shQHhLiUaAKZ85RBgFL9HHyYI/SdfQ7MTa6WMvbgAAAAASUVO
 RK5CYII=
 '''
 
+
 class MainWindow(QtGui.QMainWindow):
     '''Main Qt window class'''
 
@@ -168,7 +169,7 @@ class MainWindow(QtGui.QMainWindow):
         self.messagesView.setReadOnly(True)
         self.messagesView.setAcceptRichText(True)
         self.messagesView.setFont(font)
-        self.messagesView.append(self.tr("Press F5 to start computations..."))
+        self.messagesView.append(self.tr("\n  This program will be removed soon. You should switch to PLaSK GUI..."))
         #splitter.addWidget(self.messagesView)
         layout.addWidget(self.messagesView)
 
@@ -472,36 +473,53 @@ class PlaskThread(QtCore.QThread):
 
 if __name__ == "__main__":
 
-    try:
-        winsparkle = ctypes.CDLL('WinSparkle.dll')
-    except OSError:
-        winsparkle = None
-    else:
-        si = subprocess.STARTUPINFO()
-        si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = subprocess.SW_HIDE
-        proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
-        version, err = proc.communicate()
-        prog, ver = version.strip().split()
-        wp = ctypes.c_wchar_p
-        winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
-        winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
-        winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
-        winsparkle.win_sparkle_init()
-
-    try:
-        fname = sys.argv[1]
-    except IndexError:
-        fname = None
-    else:
-        fname = os.path.realpath(fname)
     app = QtGui.QApplication(sys.argv)
-    mainwindow = MainWindow()
-    app.aboutToQuit.connect(mainwindow.quitting)
-    mainwindow.show()
-    if fname:
-        mainwindow.start_plask(fname)
-    exit_code = app.exec_()
-    if winsparkle:
-        winsparkle.win_sparkle_cleanup()
-    sys.exit(exit_code)
+
+    msgbox = QtGui.QMessageBox()
+    msgbox.setText("This program will soon be removed from PLaSK. You may launch your code using the PLaSK GUI.\n\n"
+                   "PLaSK GUI offers many improvements in editing of your file: graphical configuration, hinting "
+                   "and autocompletion in script editing, online help, etc.\n\n"
+                   "To run your simulation from the GUI just press F5.")
+    msgbox.setInformativeText("<b>Do you want to start PLaSK GUI now?</b>")
+    msgbox.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+    msgbox.setIcon(QtGui.QMessageBox.Warning)
+    msgbox.setDefaultButton(QtGui.QMessageBox.Yes)
+
+    if msgbox.exec_() == QtGui.QMessageBox.Yes:
+        del app
+        plaskgui = os.path.join(os.path.dirname(sys.argv[0]), 'plaskgui')
+        os.execl(plaskgui, plaskgui, *sys.argv[1:])
+
+    else:
+        try:
+            winsparkle = ctypes.CDLL('WinSparkle.dll')
+        except OSError:
+            winsparkle = None
+        else:
+            si = subprocess.STARTUPINFO()
+            si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+            proc = subprocess.Popen(['plask', '-V'], startupinfo=si, stdout=subprocess.PIPE)
+            version, err = proc.communicate()
+            prog, ver = version.strip().split()
+            wp = ctypes.c_wchar_p
+            winsparkle.win_sparkle_set_app_details(wp("PLaSK"), wp("PLaSK"), wp(ver))
+            winsparkle.win_sparkle_set_appcast_url("http://phys.p.lodz.pl/appcast/plask.xml")
+            winsparkle.win_sparkle_set_registry_path("Software\\plask\\updates")
+            winsparkle.win_sparkle_init()
+
+        try:
+            fname = sys.argv[1]
+        except IndexError:
+            fname = None
+        else:
+            fname = os.path.realpath(fname)
+        mainwindow = MainWindow()
+        app.aboutToQuit.connect(mainwindow.quitting)
+        mainwindow.show()
+        if fname:
+            mainwindow.start_plask(fname)
+        exit_code = app.exec_()
+        if winsparkle:
+            winsparkle.win_sparkle_cleanup()
+        sys.exit(exit_code)

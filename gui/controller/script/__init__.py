@@ -16,6 +16,8 @@ from copy import deepcopy, copy
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
 
+from ...utils.qthread import BackgroundTask
+
 from .completer import CompletionsController
 from ...model.script.completer import get_docstring
 
@@ -56,6 +58,20 @@ scheme = {
 }
 
 
+class _DocstringThread(QtCore.QThread):
+
+    def __init__(self, document, text, block, column):
+        super(_DocstringThread, self).__init__()
+        self._document = document
+        self._text = text
+        self._block = block
+        self._column = column
+        self.completions = None
+
+    def run(self):
+        self.completions = get_docstring(self._document, self._text, self._block, self._column)
+
+
 class ScriptEditor(TextEdit):
     """Editor with some features usefult for script editing"""
 
@@ -85,7 +101,6 @@ class ScriptEditor(TextEdit):
         hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
         hide_doc_action.triggered.connect(lambda: self.help_window.hide() if self.help_window is not None else None)
         self.addAction(hide_doc_action)
-
 
     def update_selections(self):
         """Add our own custom selections"""
@@ -145,15 +160,8 @@ class ScriptEditor(TextEdit):
         help_window.setMinimumHeight(8 * help_window.fontMetrics().height())
         return help_window
 
-    def show_docstring(self):
-        cursor = self.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
-        row = cursor.blockNumber()
-        col = cursor.positionInBlock()
-        QtGui.QApplication.setOverrideCursor(Qt.WaitCursor)
-        namedocstring = get_docstring(self.controller.document, self.toPlainText(), row, col)
-        if namedocstring:
-            name, docstring = namedocstring
+    def show_help_window(self, name=None, docstring=None):
+        if docstring is not None:
             if self.help_window is None:
                 self.help_window = self.make_help_area()
                 self.help_window.setParent(None)
@@ -163,6 +171,15 @@ class ScriptEditor(TextEdit):
             self.help_window.setText(docstring)
             self.help_window.show()
         QtGui.QApplication.restoreOverrideCursor()
+
+    def show_docstring(self):
+        cursor = self.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
+        row = cursor.blockNumber()
+        col = cursor.positionInBlock()
+        QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        BackgroundTask(lambda: get_docstring(self.controller.document, self.toPlainText(), row, col),
+                       self.show_help_window).start()
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -214,11 +231,9 @@ class ScriptEditor(TextEdit):
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
-        elif not self.completer.popup().isVisible():
-            if key == Qt.Key_Period:
-                self.completer.start_completion(blocking=False)
-            elif key == Qt.Key_Space and modifiers == Qt.ControlModifier:
-                self.completer.start_completion()
+        elif (key == Qt.Key_Period or (key == Qt.Key_Space and modifiers == Qt.ControlModifier)) and \
+                not self.completer.popup().isVisible():
+            self.completer.start_completion()
 
 
 class HelpDock(QtGui.QDockWidget):
