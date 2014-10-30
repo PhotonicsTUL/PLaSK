@@ -85,7 +85,6 @@ class SourceWidget(QtGui.QWidget):
         self.replace_toolbar.addWidget(self.replace_edit)
         next_button = QtGui.QPushButton(self)
         next_button.setText("&Next")
-        next_button.setDefault(True)
         next_button.setFixedWidth(150)  # TODO from maximum text+icon width
         next_button.pressed.connect(self.find_next)
         prev_button = QtGui.QPushButton(self)
@@ -181,15 +180,17 @@ class SourceWidget(QtGui.QWidget):
 
     def find_next(self):
         self._find()
+        self.editor.setFocus()
 
     def find_prev(self):
         self._find(backward=True)
+        self.editor.setFocus()
 
     def find_type(self):
         self._find(cont=True)
 
     def replace_next(self):
-        if not self._find():
+        if not self._find(cont=True):
             return False
         pal = self.editor.palette()
         self.find_edit.setPalette(pal)
@@ -197,9 +198,10 @@ class SourceWidget(QtGui.QWidget):
         start = cursor.selectionStart()
         cursor.insertText(self.replace_edit.text())
         end = cursor.position()
-        cursor.setPosition(start)
-        cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
-        self.editor.setTextCursor(cursor)
+        if not self._find(cont=False):
+            cursor.setPosition(start)
+            cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
+            self.editor.setTextCursor(cursor)
         self.editor.setFocus()
         return True
 
