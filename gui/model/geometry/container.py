@@ -26,6 +26,12 @@ class GNZero(GNode):
     def tag_name(self, full_name = True):
         return 'zero'
 
+    @classmethod
+    def from_xml(cls, element, conf):
+        result = GNZero()
+        result.set_xml_element(element, conf)
+        return result
+
 
 class GNGap(GNode):
 
@@ -114,6 +120,11 @@ class GNStack(GNContainerBase):
         else:
             return 'geometry.MultiStack{}D'.format(self.dim)
 
+    def add_child_options(self):
+        res = super(GNStack, self).add_child_options()
+        res.insert(0, {'zero': GNZero.from_xml})
+        return res
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNStack(dim = 2)
@@ -158,6 +169,11 @@ class GNShelf(GNContainerBase):
 
     def python_type(self):
         return 'geometry.Shelf2D{}'
+
+    def add_child_options(self):
+        res = super(GNStack, self).add_child_options()
+        res.insert(0, {'gap': GNGap.from_xml, 'zero': GNZero.from_xml})
+        return res
 
     @classmethod
     def from_xml_2d(cls, element, conf):

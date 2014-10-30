@@ -84,6 +84,9 @@ class GNCReplace(GNCopyChild):
         if self.replacer is None:
             construct_geometry_object(ordered_reader.require(), conf)
 
+    def accept_new_child(self):
+        return not self.children
+
     def tag_name(self, full_name = True):
         return "replace"
 
@@ -136,8 +139,18 @@ class GNCopy(GNObject):
             return '    {} = {}'.format(self.name, self.source)
         return ''
 
+    def accept_new_child(self):
+        return True
+
+    def add_child_options(self):
+        return [{
+                'delete': lambda i1, i2: GNCDelete(),
+                'replace': lambda i1, i2: GNCReplace(),
+                'toblock': lambda i1, i2: GNCToBlock()
+                }]
+
     @classmethod
     def from_xml(cls, element, conf):
-        result = GNAgain()
+        result = GNCopy()
         result.set_xml_element(element, conf)
         return result
