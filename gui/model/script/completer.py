@@ -27,7 +27,7 @@ JEDI_MUTEX = QtCore.QMutex()
 
 
 def preload_jedi_modules():
-    with Lock(JEDI_MUTEX):
+    with Lock(JEDI_MUTEX) as lck:
         jedi.preload_module('pylab', 'plask')
 
 
@@ -114,7 +114,7 @@ def _try_type(compl):
 def get_completions(document, text, block, column):
     if jedi is None: return
     from ... import _DEBUG
-    with Lock(JEDI_MUTEX):
+    with Lock(JEDI_MUTEX) as lck:
         try:
             prefix = PREAMBLE + document.stubs()
             if _DEBUG:
@@ -135,7 +135,7 @@ def get_completions(document, text, block, column):
 def get_docstring(document, text, block, column):
     if jedi is None: return
     from ... import _DEBUG
-    with Lock(JEDI_MUTEX):
+    with Lock(JEDI_MUTEX) as lck:
         try:
             prefix = PREAMBLE + document.stubs()
             if _DEBUG:

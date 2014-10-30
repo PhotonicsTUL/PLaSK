@@ -175,11 +175,13 @@ class MaterialPlot(QtGui.QWidget):
             select.descr = descr
             val1 = QtGui.QLineEdit()
             val1.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+            val1.returnPressed.connect(self.update_plot)
             toolbar.addWidget(val1)
             sep = toolbar.addWidget(QtGui.QLabel("-"))
             sep.setVisible(False)
             val2 = QtGui.QLineEdit()
             val2.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
+            val2.returnPressed.connect(self.update_plot)
             if select.text() in old:
                 val1.setText(old[select.text()][0])
                 val2.setText(old[select.text()][1])

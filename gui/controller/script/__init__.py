@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 import sys
-from copy import deepcopy, copy
+from copy import copy
 
 from ...qt import QtCore, QtGui
 from ...qt.QtCore import Qt
@@ -57,6 +57,8 @@ scheme = {
     'syntax_pylab': parse_highlight(CONFIG('syntax/python_pylab', 'color=#440088')),
 }
 
+SELECTION_COLOR = QtGui.QColor(CONFIG('editor/selection_color', '#ffff88'))
+
 
 class ScriptEditor(TextEdit):
     """Editor with some features usefult for script editing"""
@@ -66,6 +68,7 @@ class ScriptEditor(TextEdit):
         super(ScriptEditor, self).__init__(parent)
 
         self.cursorPositionChanged.connect(self.update_selections)
+        self.selectionChanged.connect(self.update_selections)
 
         self.comment_action = QtGui.QAction('Co&mment lines', self)
         self.uncomment_action = QtGui.QAction('Uncomm&ent lines', self)
@@ -78,11 +81,34 @@ class ScriptEditor(TextEdit):
 
         self.completer = CompletionsController(self)
 
+        self._link_cursor = False
+        self.setMouseTracking(True)
+
     def update_selections(self):
         """Add our own custom selections"""
         col = self.textCursor().positionInBlock()
         brackets = get_bracket_selections(self, self.textCursor().block(), col)
-        self.setExtraSelections(self.extraSelections() + brackets)
+
+        self.setExtraSelections(self.extraSelections() + self.get_same_as_selected() + brackets)
+
+    def get_same_as_selected(self):
+        cursor = self.textCursor()
+        if not cursor.hasSelection(): return []
+        document = self.document()
+        text = cursor.selectedText()
+        cursor.movePosition(QtGui.QTextCursor.Start)
+        selections = []
+        while True:
+            cursor = document.find(text, cursor,
+                                   QtGui.QTextDocument.FindCaseSensitively | QtGui.QTextDocument.FindWholeWords)
+            if not cursor.isNull():
+                selection = QtGui.QTextEdit.ExtraSelection()
+                selection.cursor = cursor
+                selection.format.setBackground(SELECTION_COLOR)
+                selections.append(selection)
+            else:
+                break
+        return selections
 
     def block_comment(self):
         cursor = self.textCursor()
@@ -296,4 +322,3 @@ class HelpDock(QtGui.QDockWidget):
             self.textarea.setText(docstring)
             self.show()
         QtGui.QApplication.restoreOverrideCursor()
-

@@ -135,8 +135,6 @@ from scipy import optimize
 
 OPTICAL.root.maxiter
 
-optimize
-
 class A(object):
     
     val = property()
@@ -160,8 +158,7 @@ class A(object):
         pass
 
 a = A()
-#a.prop.
-#a.val.
+a.prop
 a.fun()
 
 config.axes = 'rz'
