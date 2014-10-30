@@ -18,7 +18,7 @@ from ...utils.widgets import table_last_col_fill
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
 
-
+# TODO use ControllerWithSubController
 class GridsController(Controller):
 
     def __init__(self, document, model=None):

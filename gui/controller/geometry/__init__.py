@@ -17,9 +17,8 @@ from ...model.geometry.types import geometry_types_geometries_core
 from ...qt import QtGui, QtCore
 
 from .. import Controller
-from ...utils.widgets import table_last_col_fill
 
-
+# TODO use ControllerWithSubController
 class GeometryController(Controller):
 
     def _add_child(self, type_constructor, parent_index):
@@ -153,7 +152,11 @@ class GeometryController(Controller):
         self.update_actions()
 
         self.splitter = QtGui.QSplitter()
+        self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.addWidget(external)
+
+        self.parent_for_editor_widget = QtGui.QStackedWidget()
+        self.splitter.addWidget(self.parent_for_editor_widget)
 
     def get_widget(self):
         return self.splitter

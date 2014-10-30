@@ -94,3 +94,54 @@ class NoConfController(Controller):
 
     def get_widget(self):
         return self.label
+
+
+class ControllerWithSubController(Controller):
+    """Subclass must have grid field or property (qt table or tree) and implement get_controller_for_index."""
+
+    def __init__(self, document, model):
+        super(ControllerWithSubController, self).__init__(self, document, model)
+
+        self._current_index = None
+        self._current_controller = None
+
+        self.grid.setModel(self.model)
+        self.grid.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.grid.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+
+        self.parent_for_editor_widget = QtGui.QStackedWidget()
+
+        selection_model = self.grids_table.selectionModel()
+        selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
+
+    def get_controller_for_index(self, index):
+        #self.model.entries[new_index].get_controller(self.document)
+        return None
+
+    def set_current_index(self, new_index):
+        """
+            Try to change current script.
+            :param int new_index: index of new current script
+            :return: False only when script should restore old selection
+        """
+        if self._current_index == new_index: return True
+        if self._current_controller is not None:
+            if not self._current_controller.on_edit_exit():
+                return False
+        self._current_index = new_index
+        for i in reversed(range(self.parent_for_editor_widget.count())):
+            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
+        if self._current_index is None:
+            self._current_controller = None
+        else:
+            self._current_controller = self.get_controller_for_index(new_index)
+            if self._current_controller is not None:
+                self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
+                self._current_controller.on_edit_enter()
+        return True
+
+    def grid_selected(self, new_selection, old_selection):
+        if new_selection.indexes() == old_selection.indexes(): return
+        indexes = new_selection.indexes()
+        if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
+            self.grid.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
