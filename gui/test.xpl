@@ -164,11 +164,7 @@ a = A()
 #a.val.
 a.fun()
 
-opt = EffectiveIndex2D('opt')
-r = opt.root.
-
 config.axes = 'rz'
-
 
 cyl = geometry.Cylinder(2, 1, None)
 cyl.get_object_positions

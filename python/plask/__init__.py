@@ -22,7 +22,7 @@ Modules
    algorithm
 '''
 
-import sys as _sys
+import sys
 import os as _os
 import weakref as _weakref
 
@@ -40,6 +40,10 @@ try:
     from ._plask import __globals
 except ImportError:
     pass
+
+def print_exc()
+    """Print last exception to PLaSK log."""
+    _plask._print_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
 
 ## ## plask.material ## ##
 
@@ -194,7 +198,7 @@ def runxpl(source, vars={}):
        'vars' is the optional dictionary with substitution variables
     '''
     env = globals().copy()
-    env['plask'] = _sys.modules["plask"]
+    env['plask'] = sys.modules["plask"]
     env.update(vars)
     loadxpl(source, vars, destination=env)
     if type(source) == str:
@@ -206,7 +210,7 @@ def runxpl(source, vars={}):
         code = compile(env['__script__'], filename, 'exec')
         exec(code, env)
     except Exception as exc:
-        ety, eva, etb = _sys.exc_info()
+        ety, eva, etb = sys.exc_info()
         _plask._print_exception(ety, eva, etb, env['__manager__'].script_first_line, filename, True)
 
 
