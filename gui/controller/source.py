@@ -136,25 +136,16 @@ class SourceWidget(QtGui.QWidget):
 
         self.setLayout(layout)
 
-    # def hideEvent(self, *args, **kwargs):
-    #     super(SourceWidget, self).hideEvent(*args, **kwargs)
-    #     self.toolbar.hide()
-
-    # def showEvent(self, *args, **kwargs):
-    #     self.toolbar.show()
-    #     super(SourceWidget, self).showEvent(*args, **kwargs)
-
-
     def make_find_replace_widget(self):
         self.find_toolbar = QtGui.QToolBar(self)
         self.replace_toolbar = QtGui.QToolBar(self)
         self.find_toolbar.setStyleSheet("QToolBar { border: 0px }")
         self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
         find_label = QtGui.QLabel()
-        find_label.setText("Search: ")
+        find_label.setText(" Search: ")
         find_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         replace_label = QtGui.QLabel()
-        replace_label.setText("Replace: ")
+        replace_label.setText(" Replace: ")
         replace_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         label_width = replace_label.fontMetrics().width(replace_label.text())
         find_label.setFixedWidth(label_width)
@@ -191,6 +182,7 @@ class SourceWidget(QtGui.QWidget):
         self._add_shortcut(QtGui.QKeySequence(QtCore.Qt.Key_Escape), self.hide_toolbars)
         self._add_shortcut(QtGui.QKeySequence.FindNext, self.find_next)
         self._add_shortcut(QtGui.QKeySequence.FindPrevious, self.find_prev)
+        self.find_edit.textEdited.connect(self.find_type)
 
     def add_action(self, name, icon, shortcut, slot):
         action = QtGui.QAction(QtGui.QIcon.fromTheme(icon), name, self)
@@ -207,10 +199,19 @@ class SourceWidget(QtGui.QWidget):
         return action
 
     def show_find(self):
+        cursor = self.editor.textCursor()
+        if cursor.hasSelection():
+            self.find_edit.setText(cursor.selection().toPlainText())
+            self.find_edit.selectAll()
+        self.find_edit.setPalette(self.editor.palette())
         self.find_toolbar.show()
         self.find_edit.setFocus()
 
     def show_replace(self):
+        cursor = self.editor.textCursor()
+        if cursor.hasSelection():
+            self.find_edit.setText(cursor.selection().toPlainText())
+            self.find_edit.selectAll()
         self.find_toolbar.show()
         self.replace_toolbar.show()
         self.find_edit.setFocus()
@@ -220,12 +221,32 @@ class SourceWidget(QtGui.QWidget):
         self.replace_toolbar.hide()
         self.editor.setFocus()
 
+    def _find(self, cont=True, backward=False):
+        cursor = self.editor.textCursor()
+        if cont:
+            cursor.setPosition(cursor.selectionStart())
+        pal = self.find_edit.palette()
+        found = self.editor.document().find(self.find_edit.text(), cursor, QtGui.QTextDocument.FindCaseSensitively |
+                                            (QtGui.QTextDocument.FindBackward if backward else 0))
+        if found.isNull():
+            cursor.movePosition(QtGui.QTextCursor.End if backward else QtGui.QTextCursor.Start)
+            found = self.editor.document().find(self.find_edit.text(), cursor, QtGui.QTextDocument.FindCaseSensitively |
+                                                (QtGui.QTextDocument.FindBackward if backward else 0))
+        if found.isNull():
+            pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#fdd"))
+        else:
+            self.editor.setTextCursor(found)
+            pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#dfd"))
+        self.find_edit.setPalette(pal)
+
     def find_next(self):
-        self.editor.find(self.find_edit.text(), QtGui.QTextDocument.FindCaseSensitively)
+        self._find()
 
     def find_prev(self):
-        self.editor.find(self.find_edit.text(),
-                         QtGui.QTextDocument.FindCaseSensitively | QtGui.QTextDocument.FindBackward)
+        self._find(backward=True)
+
+    def find_type(self):
+        self._find(cont=True)
 
     def replace_next(self):
         if not self.editor.find(self.find_edit.text(), QtGui.QTextDocument.FindCaseSensitively):

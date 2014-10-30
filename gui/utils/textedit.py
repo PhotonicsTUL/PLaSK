@@ -26,6 +26,7 @@ class TextEdit(QtGui.QPlainTextEdit):
     def __init__(self, parent=None, line_numbers=True):
         super(TextEdit, self).__init__(parent)
         self.setFont(DEFAULT_FONT)
+        self.setLineWrapMode(QtGui.QPlainTextEdit.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)
             self.line_numbers.update_width()
