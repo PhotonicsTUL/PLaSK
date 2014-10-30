@@ -211,8 +211,14 @@ namespace detail {
 
     struct NumpyDataDeleter {
         PyArrayObject* arr;
-        NumpyDataDeleter(PyArrayObject* arr) : arr(arr) { Py_XINCREF(arr); }
-        void operator()(void*) { Py_XDECREF(arr); }
+        NumpyDataDeleter(PyArrayObject* arr) : arr(arr) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            Py_XINCREF(arr);
+        }
+        void operator()(void*) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            Py_XDECREF(arr);
+        }
     };
 
     template <typename T, int dim>
