@@ -35,7 +35,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                 if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
                 setInterfaceAt(reader.requireAttribute<double>("interface"));
             } else if (reader.hasAttribute("object")) {
-                auto object = manager.requireGeometryObject<GeometryObjectD<2>>(reader.requireAttribute("object"));
+                auto object = manager.requireGeometryObject<GeometryObject>(reader.requireAttribute("object"));
                 PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
                 setInterfaceOn(object, path);
             } else if (reader.hasAttribute("path")) {
