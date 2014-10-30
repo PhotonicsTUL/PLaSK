@@ -36,7 +36,6 @@ class MaterialPlot(QtGui.QWidget):
 
     def __init__(self, model=None, parent=None):
         super(MaterialPlot, self).__init__(parent)
-        #self.setContentsMargins(0, 0, 0, 0)
 
         self.model = model
 

@@ -329,8 +329,8 @@ BOOST_PYTHON_MODULE(effective)
     }
 
     {CLASS(EffectiveFrequencyCylSolver, "EffectiveFrequencyCyl",
-        "Calculate optical modes and optical field distribution using the effective frequency\n"
-        "method in two-dimensional cylindrical space.\n")
+        "Calculate optical modes and optical field distribution using the effective\n"
+        "frequency method in two-dimensional cylindrical space.\n")
         solver.add_property("mesh", &EffectiveFrequencyCylSolver::getMesh, &Optical_setMesh<EffectiveFrequencyCylSolver>, "Mesh provided to the solver.");
         RW_FIELD(k0, "Reference normalized frequency.");
         RW_FIELD(vlam, "'Vertical wavelength' used as a helper for searching vertical modes.");

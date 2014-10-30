@@ -95,6 +95,7 @@ def table_and_manipulators(table, parent=None, model=None, title=None):
     else:
         external.setContentsMargins(0, 0, 0, 0)
     vbox.setContentsMargins(0, 0, 0, 0)
+    vbox.setSpacing(0)
 
     external.setLayout(vbox)
 
@@ -136,8 +137,8 @@ class TableController(Controller):
                 toolbar.addAction(a)
         layout.addWidget(toolbar)
         layout.addWidget(self.table)
-        widget.setContentsMargins(0, 0, 0, 0)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         widget.setLayout(layout)
         return widget
 

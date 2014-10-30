@@ -131,8 +131,8 @@ class SourceWidget(QtGui.QWidget):
         layout.addWidget(self.find_toolbar)
         layout.addWidget(self.replace_toolbar)
 
-        # self.setContentsMargins(0, 0, 0, 0)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 1, 0, 0)
+        layout.setSpacing(0)
 
         self.setLayout(layout)
 

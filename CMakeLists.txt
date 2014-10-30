@@ -336,9 +336,7 @@ if(BUILD_PYTHON)
         list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/lib/plask/python/plask/${stub}.py)
         list(APPEND plask_stubs_modules plask.${stub})
     endforeach()
-
     file(REMOVE ${plask_stubs_files}) # Wrong stubs can make build fail
-
     if(BUILD_GUI)
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
@@ -451,6 +449,11 @@ foreach(lst ${lst_lists})
         if (BUILD_GUI)
             list(APPEND plask_solvers_stubs_files ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py)
             file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir})
+            add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py
+                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${PLASK_PATH}/solvers/${lst_dir}/__init__.py
+                                                                     ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py
+                               DEPENDS ${PLASK_PATH}/solvers/${lst_dir}/__init__.py)
+            install(FILES ${CMAKE_BINARY_DIR}/share/plask/stubs/${lst_dir}/__init__.py DESTINATION share/plask/stubs/${lst_dir} COMPONENT gui)
         endif()
     endif()
 endforeach()
@@ -467,21 +470,11 @@ foreach(solv ${solvers})
             list(APPEND solvers_test_targets "solver-${solvtarget}-test")
         endif()
         add_subdirectory(solvers/${solv})
-        if(BUILD_PYTHON AND BUILD_GUI)
-            string(REPLACE "/" "." solvmodule ${solv})
-            list(APPEND plask_solvers_stubs_files ${CMAKE_BINARY_DIR}/share/plask/stubs/${solv}.py)
-            add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/plask/stubs/${solv}.py
-                               COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${solvmodule}
-                               DEPENDS solvers/${solv} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
-                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
-                              )
-        endif()
     endif()
 endforeach()
 
 if(BUILD_PYTHON AND BUILD_GUI)
     add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files} ${plask_solvers_stubs_files})
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs DESTINATION share/plask/ COMPONENT GUI)
 endif()
 
 # ----------===== Unit tests =====--------------------------------------------

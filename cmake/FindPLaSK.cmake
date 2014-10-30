@@ -105,6 +105,18 @@ macro(make_default)
         else()
             install(TARGETS ${SOLVER_PYTHON_MODULE} LIBRARY DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT solvers)
         endif()
+        if(BUILD_GUI)
+            string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
+            set(SOLVER_STUB ${CMAKE_BINARY_DIR}/share/plask/stubs/${SOLVER_DIR}.py)
+            add_custom_command(OUTPUT ${SOLVER_STUB}
+                               COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
+                               DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
+                              )
+            install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
+            add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
+        endif()
+
     endif()
 
     if(BUILD_TESTING)
