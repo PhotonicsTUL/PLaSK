@@ -41,7 +41,7 @@ try:
 except ImportError:
     pass
 
-def print_exc()
+def print_exc():
     """Print last exception to PLaSK log."""
     _plask._print_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
 

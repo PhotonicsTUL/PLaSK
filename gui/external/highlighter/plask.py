@@ -32,6 +32,7 @@ syntax = {
             'loadxpl',
             'runxpl',
             'print_log',
+            'print_exc',
             'save_field',
             'load_field',
             'plot_field',
