@@ -26,6 +26,7 @@ class GeometryController(Controller):
         self.model.beginInsertRows(parent_index, pos, pos)
         construct_using_constructor(type_constructor, parent_index.internalPointer())
         self.model.endInsertRows()
+        self.update_actions()
 
     def _get_add_child_menu(self, geometry_node_index):
         geometry_node = geometry_node_index.internalPointer()

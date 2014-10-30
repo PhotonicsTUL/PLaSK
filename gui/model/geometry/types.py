@@ -12,7 +12,7 @@
 
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
 from .container import GNStack, GNAlignContainer, GNShelf
-from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation
+from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation, GNIntersection
 from .copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
@@ -30,7 +30,8 @@ geometry_types_2d_core_transforms = {  #only unique names of types, displayed in
     'clip2d': GNClip.from_xml_2d,
     'flip2d': GNFlip.from_xml_2d,
     'mirror2d': GNMirror.from_xml_2d,
-    'translation2d': GNTranslation.from_xml_2d
+    'translation2d': GNTranslation.from_xml_2d,
+    'intersection2d': GNIntersection.from_xml_2d
 }
 
 geometry_types_2d_core = {}  #only unique names of types, displayed in add menu
@@ -67,7 +68,8 @@ geometry_types_3d_core_transforms = {
     'flip3d': GNFlip.from_xml_3d,
     'mirror3d': GNMirror.from_xml_3d,
     'translation3d': GNTranslation.from_xml_3d,
-    'revolution': GNRevolution.from_xml_3d
+    'revolution': GNRevolution.from_xml_3d,
+    'intersection3d': GNIntersection.from_xml_3d
 }
 geometry_types_3d_core_transforms.update(geometry_types_3d_core_extrusion)
 

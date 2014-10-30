@@ -174,6 +174,34 @@ class GNMirror(GNTransform):
         return result
 
 
+class GNIntersection(GNTransform):
+
+    def __init__(self, parent = None, dim = None):
+        super(GNIntersection, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        self.axis = None
+
+    def tag_name(self, full_name = True):
+        return "intersection{}d".format(self.dim) if full_name else "intersection"
+
+    def python_type(self):
+        return 'geometry.Intersection{}D'.format(self.dim)
+
+    def accept_new_child(self):
+        return len(self.children) < 2
+
+    @classmethod
+    def from_xml_2d(cls, element, conf):
+        result = GNIntersection(dim = 2)
+        result.set_xml_element(element, conf)
+        return result
+
+    @classmethod
+    def from_xml_3d(cls, element, conf):
+        result = GNIntersection(dim = 3)
+        result.set_xml_element(element, conf)
+        return result
+
+
 class GNExtrusion(GNTransform):
 
     def __init__(self, parent = None):
