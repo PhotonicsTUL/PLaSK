@@ -84,12 +84,12 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             return ('tag', 'name')[section]
         return None
 
-    def _children_list(self, parent_index):
+    def children_list(self, parent_index):
         return parent_index.internalPointer().children if parent_index.isValid() else self.roots
 
     def index(self, row, column, parent = QtCore.QModelIndex()):
         if not self.hasIndex(row, column, parent): return QtCore.QModelIndex()
-        l = self._children_list(parent)
+        l = self.children_list(parent)
         return self.createIndex(row, column, l[row]) #if 0 <= row < len(l) else QtCore.QModelIndex()
 
     def parent(self, index):
@@ -101,7 +101,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def rowCount(self, parent = QtCore.QModelIndex()):
         if parent.column() > 0: return 0
-        return len(self._children_list(parent))
+        return len(self.children_list(parent))
 
     def set(self, col, element, value):
         if col == 1:
@@ -119,7 +119,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
             return False
 
     def removeRows(self, row, count, parent = QtCore.QModelIndex()):
-        l = self._children_list(parent)
+        l = self.children_list(parent)
         end = row + count
         if row < 0 or end > len(l): return False
         self.beginRemoveRows(parent, row, end)
@@ -134,3 +134,29 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         self.roots.append(construct_by_name(type_name, geometry_types_geometries))
         self.endInsertRows()
         self.fire_changed()
+
+    def _swap_neighbour_nodes(self, parent_index, row1, row2):
+        if self.is_read_only(): return
+        if row2 < row1: row1, row2 = row2, row1
+        children = self.children_list(parent_index)
+        if row1 < 0 or row2 >= len(children): return
+        self.beginMoveRows(parent_index, row2, row2, parent_index, row1)
+        children[row1], children[row2] = children[row2], children[row1]
+        self.endMoveRows()
+        self.fire_changed()
+
+    def move_node_up(self, index):
+        if not index.isValid(): return
+        r = index.row()
+        self._swap_neighbour_nodes(index.parent(), r-1, r)
+
+    def move_node_down(self, index):
+        if not index.isValid(): return
+        r = index.row()
+        self._swap_neighbour_nodes(index.parent(), r, r+1)
+
+    def can_move_node_up_down(self, index):
+        if not index.isValid(): return False, False
+        children = self.children_list(index.parent())
+        r = index.row()
+        return r > 0, r+1 < len(children)

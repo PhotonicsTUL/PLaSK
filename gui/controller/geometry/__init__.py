@@ -17,6 +17,7 @@ from ...model.geometry.types import geometry_types_geometries_core
 from ...qt import QtGui, QtCore
 
 from .. import Controller
+from ...utils.widgets import table_last_col_fill
 
 
 class GeometryController(Controller):
@@ -61,6 +62,10 @@ class GeometryController(Controller):
         self.remove_action.setEnabled(not self.tree.selectionModel().selection().isEmpty())
         self.fill_add_menu()
 
+        u, d = self.model.can_move_node_up_down(self.tree.selectionModel().currentIndex())
+        self.move_up_action.setEnabled(u)
+        self.move_down_action.setEnabled(d)
+
         #hasCurrent = self.tree.selectionModel().currentIndex().isValid()
         #self.insertRowAction.setEnabled(hasCurrent)
         #self.insertColumnAction.setEnabled(hasCurrent)
@@ -73,6 +78,24 @@ class GeometryController(Controller):
         model = self.tree.model()
         if (model.removeRow(index.row(), index.parent())):
             self.update_actions()
+
+    def _swap_neighbour_nodes(self, parent_index, row1, row2):
+        if self.model.is_read_only(): return
+        if row2 < row1: row1, row2 = row2, row1
+        children = self.model.children_list(parent_index)
+        if row1 < 0 or row2 < len(children): return
+        self.model.beginMoveRows(parent_index, row2, row2, parent_index, row1)
+        children[row1], children[row2] = children[row2], children[row1]
+        self.model.endMoveRows()
+        self.fire_changed()
+
+    def move_current_up(self):
+        self.model.move_node_up(self.tree.selectionModel().currentIndex())
+        self.update_actions()
+
+    def move_current_down(self):
+        self.model.move_node_down(self.tree.selectionModel().currentIndex())
+        self.update_actions()
 
     def _construct_toolbar(self):
         toolbar = QtGui.QToolBar()
@@ -95,11 +118,24 @@ class GeometryController(Controller):
         self.remove_action.triggered.connect(self.remove_node)
         toolbar.addAction(self.remove_action)
 
+        self.move_up_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-up'), 'Move &up', toolbar)
+        self.move_up_action.setStatusTip('Change order of entries: move current entry up')
+        self.move_up_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Up)
+        self.move_up_action.triggered.connect(self.move_current_up)
+        toolbar.addAction(self.move_up_action)
+
+        self.move_down_action = QtGui.QAction(QtGui.QIcon.fromTheme('go-down'), 'Move &down', toolbar)
+        self.move_down_action.setStatusTip('Change order of entries: move current entry down')
+        self.move_down_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Down)
+        self.move_down_action.triggered.connect(self.move_current_down)
+        toolbar.addAction(self.move_down_action)
+
         return toolbar
 
     def _construct_tree(self, model):
         self.tree = QtGui.QTreeView()
         self.tree.setModel(model)
+        self.tree.setColumnWidth(0, 200)
         return self.tree
 
     def __init__(self, document, model=None):

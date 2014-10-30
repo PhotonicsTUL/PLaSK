@@ -171,7 +171,7 @@ class GNShelf(GNContainerBase):
         return 'geometry.Shelf2D{}'
 
     def add_child_options(self):
-        res = super(GNStack, self).add_child_options()
+        res = super(GNShelf, self).add_child_options()
         res.insert(0, {'gap': GNGap.from_xml, 'zero': GNZero.from_xml})
         return res
 
