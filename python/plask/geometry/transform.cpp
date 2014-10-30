@@ -162,7 +162,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(Clip, "Clip", "Transform that clips the held geomet
     GEOMETRY_ELEMENT_23D(Clip, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Clip_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("clip_box"))))
     .def("__init__", py::make_constructor(&Clip_constructor2<dim>::call, py::default_call_policies(), Clip_constructor2<dim>::args))
-    .def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box")
+    .def_readwrite("clip_box", &Clip<dim>::clipBox, "Clipping box.")
     ;
 }
 
@@ -175,7 +175,10 @@ DECLARE_GEOMETRY_ELEMENT_23D(Intersection, "Intersection", "Transform that clips
 {
     GEOMETRY_ELEMENT_23D(Intersection, GeometryObjectTransform<dim>, py::no_init)
         .def("__init__", py::make_constructor(&Intersection_constructor<dim>, py::default_call_policies(), (py::arg("item")=shared_ptr<GeometryObjectD<dim>>(), py::arg("shape")=shared_ptr<GeometryObjectD<dim>>())))
-        .add_property("clip_shape", &Intersection<dim>::getClippingShape, &Intersection<dim>::setClippingShape, "Clipping shape")
+        .add_property("envelope", &Intersection<dim>::getEnvelope, &Intersection<dim>::setEnvelope,
+                      "Clipping envelope.\n\n"
+                      "This is a geometry object that serves as a clipping envelope. The main item\n"
+                      "of this transform is clipped to the shape of the envelope.")
     ;
 }
 

@@ -58,20 +58,6 @@ scheme = {
 }
 
 
-class _DocstringThread(QtCore.QThread):
-
-    def __init__(self, document, text, block, column):
-        super(_DocstringThread, self).__init__()
-        self._document = document
-        self._text = text
-        self._block = block
-        self._column = column
-        self.completions = None
-
-    def run(self):
-        self.completions = get_docstring(self._document, self._text, self._block, self._column)
-
-
 class ScriptEditor(TextEdit):
     """Editor with some features usefult for script editing"""
 
@@ -91,16 +77,6 @@ class ScriptEditor(TextEdit):
         self.addAction(self.uncomment_action)
 
         self.completer = CompletionsController(self)
-        self.doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-browser'), 'Show &docstring', self)
-        self.doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
-        self.doc_action.triggered.connect(self.show_docstring)
-        self.addAction(self.doc_action)
-        self.help_window = None
-
-        hide_doc_action = QtGui.QAction('Hide help', self)
-        hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
-        hide_doc_action.triggered.connect(lambda: self.help_window.hide() if self.help_window is not None else None)
-        self.addAction(hide_doc_action)
 
     def update_selections(self):
         """Add our own custom selections"""
@@ -146,40 +122,6 @@ class ScriptEditor(TextEdit):
         except ValueError:
             pass
         cursor.endEditBlock()
-
-    def make_help_area(self):
-        help_window = QtGui.QTextEdit()
-        help_window.setReadOnly(True)
-        help_font = self.font()
-        help_font.setPointSize(8)  # TODO
-        pal = help_window.palette()
-        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
-        help_window.setPalette(pal)
-        help_window.setFont(help_font)
-        help_window.setMinimumWidth(88 * help_window.fontMetrics().width('W'))
-        help_window.setMinimumHeight(8 * help_window.fontMetrics().height())
-        return help_window
-
-    def show_help_window(self, name=None, docstring=None):
-        if docstring is not None:
-            if self.help_window is None:
-                self.help_window = self.make_help_area()
-                self.help_window.setParent(None)
-                self.help_window.setAttribute(Qt.WA_ShowWithoutActivating)
-                self.help_window.setWindowFlags(Qt.Tool | Qt.WindowStaysOnTopHint)
-            self.help_window.setWindowTitle("Help: " + name)
-            self.help_window.setText(docstring)
-            self.help_window.show()
-        QtGui.QApplication.restoreOverrideCursor()
-
-    def show_docstring(self):
-        cursor = self.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
-        row = cursor.blockNumber()
-        col = cursor.positionInBlock()
-        QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
-        BackgroundTask(lambda: get_docstring(self.controller.document, self.toPlainText(), row, col),
-                       self.show_help_window).start()
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -236,18 +178,6 @@ class ScriptEditor(TextEdit):
             self.completer.start_completion()
 
 
-class HelpDock(QtGui.QDockWidget):
-
-    def __init__(self, textarea, parent=None):
-        super(HelpDock, self).__init__(parent)
-        self.textarea = textarea
-        self.setWidget(self.textarea)
-        self.setObjectName('help')
-
-    def setText(self, text):
-        self.textarea.setText(text)
-
-
 class ScriptController(SourceEditController):
 
     def __init__(self, document, model=None):
@@ -278,17 +208,27 @@ class ScriptController(SourceEditController):
         button.setPopupMode(QtGui.QToolButton.InstantPopup)
         source.toolbar.addWidget(button)
         if self.model.is_read_only():
+            unindent_action.setEnabled(False)
+            indent_action.setEnabled(False)
             source.editor.comment_action.setEnabled(False)
             source.editor.uncomment_action.setEnabled(False)
-        source.toolbar.addSeparator()
-        source.toolbar.addAction(source.editor.doc_action)
 
-        dock = HelpDock(source.editor.make_help_area(), window)
-        source.editor.help_window = dock
+        self.help_dock = HelpDock(window)
         state = CONFIG['session/scriptwindow']
         if state is None or not window.restoreState(state):
-            window.addDockWidget(Qt.BottomDockWidgetArea, dock)
-        dock.hide()
+            window.addDockWidget(Qt.BottomDockWidgetArea, self.help_dock)
+        self.help_dock.hide()
+
+        doc_action = QtGui.QAction(QtGui.QIcon.fromTheme('help-browser'), 'Show &docstring', source)
+        doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
+        doc_action.triggered.connect(self.show_docstring)
+        source.editor.addAction(doc_action)
+        hide_doc_action = QtGui.QAction('Hide help', source)
+        hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
+        hide_doc_action.triggered.connect(self.help_dock.hide)
+        source.editor.addAction(hide_doc_action)
+        source.toolbar.addSeparator()
+        source.toolbar.addAction(doc_action)
 
         self.document.window.closed.connect(self.save_state)
 
@@ -322,3 +262,38 @@ class ScriptController(SourceEditController):
 
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()
+
+    def show_docstring(self):
+        cursor = self.source_widget.editor.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.EndOfWord)
+        row = cursor.blockNumber()
+        col = cursor.positionInBlock()
+        QtGui.QApplication.setOverrideCursor(Qt.BusyCursor)
+        BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col),
+                       self.help_dock.show_help).start()
+
+
+class HelpDock(QtGui.QDockWidget):
+
+    def __init__(self, parent=None):
+        super(HelpDock, self).__init__(parent)
+        self.textarea = QtGui.QTextEdit()
+        self.textarea.setReadOnly(True)
+        help_font = QtGui.QFont(DEFAULT_FONT)
+        help_font.setPointSize(DEFAULT_FONT.pointSize()-2)
+        pal = self.textarea.palette()
+        pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
+        self.textarea.setPalette(pal)
+        self.textarea.setFont(help_font)
+        self.textarea.setMinimumWidth(82 * self.textarea.fontMetrics().width('W'))
+        self.textarea.setMinimumHeight(8 * self.textarea.fontMetrics().height())
+        self.setWidget(self.textarea)
+        self.setObjectName('help')
+
+    def show_help(self, name=None, docstring=None):
+        if docstring is not None:
+            self.setWindowTitle("Help: " + name)
+            self.textarea.setText(docstring)
+            self.show()
+        QtGui.QApplication.restoreOverrideCursor()
+

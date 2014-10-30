@@ -45,7 +45,6 @@ Transforms always contain a single geometry object (possibly container) as their
        A single :ref:`two-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
 
-
 .. xml:tag:: <intersection2d> (or <intersection>)
 
    Corresponding Python class: :py:class:`plask.geometry.Intersection2D`.
@@ -58,8 +57,7 @@ Transforms always contain a single geometry object (possibly container) as their
 
    .. xml:contents::
 
-       Two :ref:`two-dimensional geometry objects <sec-xpl-Geometry-objects-2D>`. First is a child of this, second is a clipping shape (materials are not required in its leafs).
-
+       Two :ref:`two-dimensional geometry objects <sec-xpl-Geometry-objects-2D>`. First is a clipped object, second is a clipping envelope (materials are not required in its leafs).
 
 
 .. xml:tag:: <mirror2d> (or <mirror>)

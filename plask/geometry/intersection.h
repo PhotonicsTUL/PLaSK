@@ -32,13 +32,13 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
     /**
      * Cliping shape.
      */
-    shared_ptr<ChildType> clippingShape;
+    shared_ptr<ChildType> envelope;
 
-    shared_ptr<ChildType> getClippingShape() const { return clippingShape; }
+    shared_ptr<ChildType> getEnvelope() const { return envelope; }
 
-    void setClippingShape(shared_ptr<ChildType> clipShape) {
-        if (this->clippingShape == clipShape) return;
-        this->clippingShape = clipShape;
+    void setEnvelope(shared_ptr<ChildType> clipShape) {
+        if (this->envelope == clipShape) return;
+        this->envelope = clipShape;
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
@@ -49,14 +49,14 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
      * @param clipShape shape to which the child will be cliped, can have undefined materials in leafs
      */
     explicit Intersection(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >(), shared_ptr< GeometryObjectD<dim> > clipShape = shared_ptr< GeometryObjectD<dim> >())
-        : GeometryObjectTransform<dim>(child), clippingShape(clipShape) {}
+        : GeometryObjectTransform<dim>(child), envelope(clipShape) {}
 
     /**
      * @param child child geometry object to Intersection
      * @param clipShape shape to which the child will be clipped, can have undefined materials in leafs
      */
     explicit Intersection(GeometryObjectD<dim>& child, shared_ptr< GeometryObjectD<dim> > clipShape = shared_ptr< GeometryObjectD<dim> >())
-        : GeometryObjectTransform<dim>(child), clippingShape(clipShape) {}
+        : GeometryObjectTransform<dim>(child), envelope(clipShape) {}
 
     virtual Box getBoundingBox() const override;
 
@@ -77,7 +77,7 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
      * @return shallow copy of this
      */
     shared_ptr<Intersection<dim>> copyShallow() const {
-         return make_shared<Intersection<dim>>(getChild(), clippingShape);
+         return make_shared<Intersection<dim>>(getChild(), envelope);
     }
 
     virtual shared_ptr<GeometryObjectTransform<dim>> shallowCopy() const override;
