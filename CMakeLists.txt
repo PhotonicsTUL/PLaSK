@@ -353,7 +353,7 @@ if(BUILD_PYTHON)
     # GUI
     if(BUILD_GUI)
         if(WIN32)
-            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/qtplask.ico\"\n")
+            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n")
             add_executable(plaskgui python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc)
         else()
             add_executable(plaskgui python/exe_gui.cpp)
@@ -381,6 +381,18 @@ if(BUILD_PYTHON)
         if(UNIX)
             install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT GUI)
             install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
+            foreach(s 24 32 48)
+                install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/apps/plask.png
+                        DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT GUI)
+                install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/mimetypes/application-x-plask.png
+                        DESTINATION share/icons/hicolor/${s}x${s}/mimetypes COMPONENT GUI)
+            endforeach()
+            install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/16x16/mimetypes/application-x-plask.png
+                    DESTINATION share/icons/hicolor/16x16/mimetypes COMPONENT GUI)
+            install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/apps/plask.svg
+                    DESTINATION share/icons/hicolor/scalable/apps COMPONENT GUI)
+            install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/mimetypes/application-x-plask.svg
+                    DESTINATION share/icons/hicolor/scalable/mimetypes COMPONENT GUI)
         endif()
     endif()
 

@@ -2,7 +2,7 @@
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
     <mime-type type="application/x-plask">
         <comment>PLaSK input file</comment>
-        <icon name="text-xml"/>
+        <icon name="application-x-plask"/>
         <glob-deleteall/>
         <glob pattern="*.xpl"/>
     </mime-type>
