@@ -1,9 +1,20 @@
 # coding: utf8
+# Copyright (C) 2014 Photonics Group, Lodz University of Technology
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the license, or (at your
+# opinion) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
 from gui import solvers
 
 EffectiveIndex2D = {
-    'desc': 'Scalar optical solver based on the effective index method',
+    'desc': 'Scalar optical solver based on the effective index method.',
     'mesh': 'Rectangular2D',
     'conf': (
         ('mode', 'Mode properties', (
@@ -55,15 +66,14 @@ EffectiveIndex2D = {
              u'Initial range size (Muller method only).  (complex [a.u.])'))),
         ('mirrors', 'Mirror losses', (
             ('R1', 'Front reflectivity', 'Reflectivity of the front mirror.'),
-            ('R2', 'Back reflectivity', 'Reflectivity of the back mirror.'),
-        ))
+            ('R2', 'Back reflectivity', 'Reflectivity of the back mirror.')))
     ),
     u'flow': ('inTemperature', 'inGain',
              u'outLightMagnitude', 'outRefractiveIndex', 'outHeat', 'outLoss', 'outWavelenght'),
 }
 
 EffectiveFrequencyCyl = {
-    'desc': 'Scalar optical solver based on the frequency index method',
+    'desc': 'Scalar optical solver based on the frequency index method.',
     'mesh': 'Rectangular2D',
     'conf': (
         ('mode', 'Mode properties', (
@@ -120,7 +130,7 @@ EffectiveFrequencyCyl = {
             ('initial-range', 'Initial Muller range size',
              u'Initial range size (Muller method only).  (complex [a.u.])'))),
     ),
-    u'flow': ('inTemperature', 'inGain',
+    'flow': ('inTemperature', 'inGain',
               'outLightMagnitude', 'outRefractiveIndex', 'outHeat', 'outLoss', 'outWavelenght'),
 }
 

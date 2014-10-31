@@ -14,6 +14,8 @@ from ..qt import QtCore, QtGui
 from ..qt.QtGui import QSplitter, QItemSelectionModel
 from ..qt.QtCore import Qt
 
+from ..model.connects import PROPS
+
 from ..utils.widgets import table_last_col_fill
 from ..utils.textedit import TextEdit
 from ..utils.widgets import DEFAULT_FONT
@@ -80,17 +82,33 @@ class SolverAutoWidget(QtGui.QScrollArea):
             if type(items) in (tuple, list):
                 for item in items:
                     if len(item) == 4:
-                        attr, text, help, choices = item
+                        try:
+                            attr, text, help, choices = item
+                        except ValueError:
+                            import sys
+                            sys.stderr.write(str(item)+'\n')
+                            raise
                         edit = QtGui.QComboBox()
                         edit.setEditable(True)
                         edit.addItems([''] + list(choices))
                         edit.textChanged.connect(self.controller.fire_changed)
                         edit.currentIndexChanged.connect(self.controller.fire_changed)
+                        edit.setCompleter(defines)
                     else:
-                        attr, text, help = item
-                        edit = QtGui.QLineEdit()
-                        edit.textEdited.connect(self.controller.fire_changed)
-                    edit.setCompleter(defines)
+                        try:
+                            attr, text, help = item
+                        except ValueError:
+                            import sys
+                            sys.stderr.write(str(item)+'\n')
+                            raise
+                        if attr[-1] == '#':
+                            edit = QtGui.QPlainTextEdit()
+                            edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
+                            edit.textChanged.connect(self.controller.fire_changed)
+                        else:
+                            edit = QtGui.QLineEdit()
+                            edit.setCompleter(defines)
+                            edit.textEdited.connect(self.controller.fire_changed)
                     edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(group, attr, help))
                     self.controls[group, attr] = edit
                     layout.addRow(text + ':', edit)
@@ -131,12 +149,22 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 for item in items:
                     attr = item[0]
                     edit = self.controls[group, attr]
-                    value = model.data[group][attr]
-                    if type(edit) == QtGui.QComboBox:
-                        edit.setCurrentIndex(edit.findText(value))
-                        edit.setEditText(value)
+                    if attr[-1] == '#':
+                        attr = attr[:-1]
+                        skip = len(attr)
+                        data = model.data[group]
+                        items = [(int(k[skip:]), data[k]) for k in data.keys() if k[:skip] == attr and k[-1].isdigit()]
+                        values = (max(i[0] for i in items) + 1) * ['']
+                        for i, v in items:
+                            values[i] = v
+                        edit.setPlainText('\n'.join(values))
                     else:
-                        edit.setText(value)
+                        value = model.data[group][attr]
+                        if type(edit) == QtGui.QComboBox:
+                            edit.setCurrentIndex(edit.findText(value))
+                            edit.setEditText(value)
+                        else:
+                            edit.setText(value)
             else:
                 edit = self.controls[group]
                 edit.setPlainText(model.data[group])
@@ -152,10 +180,16 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 for item in items:
                     attr = item[0]
                     edit = self.controls[group, attr]
-                    if type(edit) == QtGui.QComboBox:
-                        model.data[group][attr] = edit.currentText()
+                    if attr[-1] == '#':
+                        attr = attr[:-1]
+                        values = edit.toPlainText().strip().splitlines()
+                        for i,value in enumerate(values):
+                            model.data[group][attr+str(i)] = value
                     else:
-                        model.data[group][attr] = edit.text()
+                        if type(edit) == QtGui.QComboBox:
+                            model.data[group][attr] = edit.currentText()
+                        else:
+                            model.data[group][attr] = edit.text()
             else:
                 edit = self.controls[group]
                 model.data[group] = edit.toPlainText()
@@ -194,6 +228,47 @@ class ConfSolverController(Controller):
         self.widget.save_data()
 
 
+class FilterController(Controller):
+
+    def __init__(self, document, model):
+        super(FilterController, self).__init__(document, model)
+
+        self.widget = QtGui.QWidget()
+        layout = QtGui.QFormLayout()
+        layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
+
+        self.what = QtGui.QComboBox()
+        self.what.addItems(PROPS)
+        self.what.currentIndexChanged.connect(self.fire_changed)
+        self.what.setToolTip('Name physical property to filter.')
+        layout.addRow('For:', self.what)
+
+        self.geometry = QtGui.QComboBox()
+        self.geometry.setEditable(True)
+        self.geometry.textChanged.connect(self.fire_changed)
+        self.geometry.currentIndexChanged.connect(self.fire_changed)
+        self.geometry.setCompleter(get_defines_completer(self.document.defines.model, self.widget))
+        self.geometry.setToolTip('Name of the target geometry for this filter.')
+        layout.addRow('Geometry:', self.geometry)
+
+        self.widget.setLayout(layout)
+
+    def get_widget(self):
+        return self.widget
+
+    def on_edit_enter(self):
+        #TODO update geometry list
+        self.notify_changes = False
+        self.geometry.setCurrentIndex(self.geometry.findText(self.model.geometry))
+        self.geometry.setEditText(self.model.geometry)
+        self.what.setCurrentIndex(self.what.findText(self.model.what))
+        self.notify_changes = True
+
+    def save_data_in_model(self):
+        self.model.geometry = self.geometry.currentText()
+        self.model.what = self.what.currentText()
+
+
 from ..model.solvers import SolversModel, CATEGORIES, SOLVERS as MODELS
 
 
@@ -211,7 +286,7 @@ class SolversController(Controller):
 
         self.solvers_table = QtGui.QTableView()
         self.solvers_table.setModel(self.model)
-        table_last_col_fill(self.solvers_table, self.model.columnCount(None), [80, 180])
+        table_last_col_fill(self.solvers_table, self.model.columnCount(None), [100, 200])
         self.solvers_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.solvers_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.splitter.addWidget(table_with_manipulators(self.solvers_table, self.splitter, title="Solvers"))
@@ -281,7 +356,9 @@ class NewSolverDialog(QtGui.QDialog):
         layout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
 
         self.category = QtGui.QComboBox()
-        self.category.addItems(CATEGORIES)
+        self.category.addItems([c.title() for c in CATEGORIES])
+        self.category.addItem("FILTER")
+        self.category.insertSeparator(len(CATEGORIES))
         self.category.currentIndexChanged.connect(self.category_changed)
         layout.addRow("Category:", self.category)
 
@@ -305,14 +382,18 @@ class NewSolverDialog(QtGui.QDialog):
         self.category_changed(self.category.currentIndex())
 
     def category_changed(self, index):
-        category = self.category.currentText()
+        category = self.category.currentText().lower()
         self.solver.clear()
-        self.solver.addItems([slv for cat,slv in MODELS if cat == category])
+        if category == 'filter':
+            self.solver.setEnabled(False)
+        else:
+            self.solver.setEnabled(True)
+            self.solver.addItems([slv for cat,slv in MODELS if cat == category])
 
 
 def get_new_solver():
     dialog = NewSolverDialog()
     if dialog.exec_() == QtGui.QDialog.Accepted:
-        return dict(category=dialog.category.currentText(),
+        return dict(category=dialog.category.currentText().lower(),
                     solver=dialog.solver.currentText(),
                     name=dialog.name.text())

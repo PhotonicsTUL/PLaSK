@@ -128,7 +128,7 @@ Optical solvers
 
    Corresponding Python class: :py:class:`optical.slab.Fourier2D`.
 
-   Scalar optical solver based on the effective index method.
+   Vectorial optical solver based on the plane-wave reflection transfer method.
 
    .. xml:contents::
 
@@ -145,7 +145,7 @@ Optical solvers
          :attr size: Expansion size. (integer)
          :attr refine: Number of refinement points for refractive index averaging. (integer)
          :attr smooth: Smoothing parameter for material boundaries (increases convergence). (float)
-         :attr group-layers: Should similar layers be grouped for better performance. (true)
+         :attr group-layers: Should similar layers be grouped for better performance. (bool)
 
       .. xml:tag:: <interface> [in Fourier2D optical solver]
 
@@ -218,7 +218,7 @@ Optical solvers
 
    Corresponding Python class: :py:class:`optical.slab.Fourier3D`.
 
-   Scalar optical solver based on the effective index method.
+   Vectorial optical solver based on the plane-wave reflection transfer method.
 
    .. xml:contents::
 
@@ -239,7 +239,7 @@ Optical solvers
          :attr refine-long: Number of refinement points for refractive index averaging along longitudinal axis. You cannot use this attribute together with :attr:`refine`. (integer)
          :attr refine-tran: Number of refinement points for refractive index averaging along transverse axis. You cannot use this attribute together with :attr:`refine`. (integer)
          :attr smooth: Smoothing parameter for material boundaries (increases convergence). (float)
-         :attr group-layers: Should similar layers be grouped for better performance. (true)
+         :attr group-layers: Should similar layers be grouped for better performance. (bool)
 
       .. xml:tag:: <interface> [in Fourier3D optical solver]
 

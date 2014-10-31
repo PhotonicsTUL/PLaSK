@@ -131,7 +131,7 @@ class ComboBoxDelegate(QtGui.QItemDelegate):
 
     #def paint(self, painter, option, index):
         #'''
-        #Paint a checkbox without the label.
+        #Paint a checkbox without the solver_label.
         #'''
         #checked = bool(index.model().data(index, QtCore.Qt.DisplayRole))
         #check_box_style_option = QtGui.QStyleOptionButton()

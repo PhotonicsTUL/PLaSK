@@ -5,7 +5,7 @@ Electrical solvers
 
    Corresponding Python class: :py:class:`electrical.fem.Shockley2D`.
 
-   Two-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
+   Two-dimensional phenomenological solver in Cartesian geometry based Shockley equation and using finite-element method.
 
    .. xml:contents::
 
@@ -25,7 +25,7 @@ Electrical solvers
 
          Configuration of the self-consistent loop.
 
-         :attr maxerr: Maximum allowed error. (float [%])
+         :attr maxerr: Maximum allowed current density error. (float [%])
 
       .. xml:tag:: <matrix/> [in Shockley2D electrical solver]
 
@@ -42,7 +42,7 @@ Electrical solvers
          Configuration of the effective model of p-n junction.
 
          :attr js#: Reverse bias current density. *#* can be a junction number. If the number is omitted, 0 is assumed. (float [A/m\ :sup:`2`])
-         :attr beta#: Junction coefficient. *#* can be a junction number. If the number is omitted, 0 is assumed. (float [1/V])
+         :attr beta#: Junction coefficient. This is an inverse of the junction thermal voltage. *#* can be a junction number. If the number is omitted, 0 is assumed. (float [1/V])
          :attr pnjcond: Initial vertical conductivity of the junctions. (float [S/m])
          :attr heat: Method of determination of the heat generated in the junction. (``joules`` or ``wavelength``)
          :attr wavelength: Emitted wavelength if ``heat`` is set to ``wavelength``.
@@ -62,7 +62,7 @@ Electrical solvers
 
       Corresponding Python class: :py:class:`electrical.fem.ShockleyCyl`.
 
-      Two-dimensional phenomenological solver in cylindrical geometry, based on finite-element method.
+      Two-dimensional phenomenological solver in cylindrical geometry based Shockley equation and using finite-element method.
 
       .. xml:contents::
 
@@ -72,7 +72,7 @@ Electrical solvers
 
       Corresponding Python class: :py:class:`electrical.fem3d.Shockley3D`.
 
-      Three-dimensional phenomenological solver in Cartesian geometry, based on finite-element method.
+      Three-dimensional phenomenological solver in Cartesian geometry based Shockley equation and using finite-element method.
 
       .. xml:contents::
 

@@ -23,7 +23,7 @@ Gain solvers
 
       .. xml:tag:: <config/> [in Fermi2D gain solver]
 
-         Configuration of the self-consistent loop.
+         Some important gain parameters.
 
          :attr lifetime: Carriers lifetime. (float)
          :attr matrix-elem: Value of the matrix element in gain computations (if not set it is estimated automatically). (float)
@@ -33,9 +33,9 @@ Gain solvers
 
          Custom energy levels in quantum wells. If this tag is used all levels must be set.
 
-         :attr required el: Comma-separated list of electron levels. (list of floats)
-         :attr required hh: Comma-separated list of heavy hole levels. (list of floats)
-         :attr required lh: Comma-separated list of light hole levels. (list of floats)
+         :attr required el: Comma-separated list of electron levels. (list of floats [eV])
+         :attr required hh: Comma-separated list of heavy hole levels. (list of floats [eV])
+         :attr required lh: Comma-separated list of light hole levels. (list of floats [eV])
 
 .. xml:tag:: <gain solver="FermiCyl"> [FermiCyl]
 

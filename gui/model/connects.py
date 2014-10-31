@@ -15,8 +15,27 @@ from lxml import etree
 
 from .table import TableModel
 from .info import Info
-#from guis import DefinesEditor
+
 from ..utils.xml import OrderedTagReader, AttributeReader
+
+PROPS = [
+    'Temperature',
+    'HeatFlux',
+    'Heat',
+    'Potential',
+    'CurrentDensity',
+    'CarriersConcentration',
+    'ElectronsConcentration',
+    'HolesConcentration',
+    'Gain',
+    'GainOverCarriersConcentration',
+    'LightMagnitude',
+    'LightE',
+    'LightH',
+    'ThermalConductivity',
+    'Conductivity',
+    'RefractiveIndex',
+]
 
 class ConnectsModel(TableModel):
 

@@ -90,25 +90,25 @@
     <condition value="300." place="bottom"/>
   </temperature>
   </thermal>
-  <electrical solver="ShockleyCyl" name="ELECTRICAL">
+  <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="fem">
     <geometry ref="GeoTE"/>
     <mesh ref="default"/>
-    <junction js="1" beta="11"/>
+    <junction beta0="{beta_def}" beta1="{beta_def - 1.2}" js0="{js_def}" js1="{js_def + 0.1}"/>
     <voltage>
-      <condition value="2.0">
-        <place object="p-contact" side="bottom"/>
-      </condition>
-      <condition value="0.0">
-        <place object="n-contact" side="top"/>
-      </condition>
-    </voltage>
+    <condition value="2.0">
+      <place object="p-contact" side="bottom"/>
+    </condition>
+    <condition value="0.0">
+      <place object="n-contact" side="top"/>
+    </condition>
+  </voltage>
   </electrical>
-  <electrical solver="DiffusionCyl" name="DIFFUSION">
+  <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">
     <geometry ref="GeoO"/>
     <mesh ref="diffusion"/>
-    <config fem-method="parabolic" accuracy="0.005"/>
+    <config accuracy="0.005" fem-method="parabolic"/>
   </electrical>
-  <gain solver="FermiCyl" name="GAIN">
+  <gain name="GAIN" solver="FermiCyl" lib="simple">
     <geometry ref="GeoO"/>
     <config lifetime="0.5" matrix-elem="8"/>
   </gain>
@@ -117,6 +117,8 @@
     <mesh ref="optical"/>
     <mode lam0="980"/>
   </optical>
+  <filter for="Temperature" geometry="GeoTE" name="filtr"/>
+  <optical name="fourier" solver="Fourier3D" lib="slab"/>
 </solvers>
 
 <connects>

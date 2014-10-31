@@ -30,7 +30,7 @@ from xml.sax.saxutils import quoteattr
 
 from ..utils.xml import print_interior, XML_parser, AttributeReader
 from ..controller.source import SourceEditController
-from ..controller.solvers import ConfSolverController
+from ..controller.solvers import ConfSolverController, FilterController
 from .table import TableModel
 from . import TreeFragmentModel
 
@@ -153,10 +153,13 @@ class ConfSolver(Solver):
         super(ConfSolver, self).__init__(category, solver, name, parent, info_cb)
         self.config = config
         self.lib = lib
+        self.set_fresh_data()
+
+    def set_fresh_data(self):
         self.data = dict((tag,
                           dict((a[0], '') for a in attrs) if type(attrs) in (tuple, list) else
                           ''  # TODO add proper support for boundary conditions
-                         ) for (tag,_,attrs) in self.config['conf'])
+                         ) for (tag, _, attrs) in self.config['conf'])
 
     def get_xml_element(self):
         element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
@@ -169,7 +172,7 @@ class ConfSolver(Solver):
         for tag,_,_ in self.config['conf']:
             data = self.data[tag]
             if type(data) is dict:
-                attrs = dict((item for item in data.items() if item[1]))
+                attrs = dict((item for item in data.items() if item[1] and item[0][-1] != '#'))
                 if attrs:
                     etree.SubElement(element, tag, attrs)
             else:
@@ -182,22 +185,30 @@ class ConfSolver(Solver):
         return element
 
     def set_xml_element(self, element):
+        self.set_fresh_data()
         super(ConfSolver, self).set_xml_element(element)
         for el in element:
             if el.tag == 'geometry':
                 self.geometry = el.attrib.get('ref')
-                #TODO report missing or missmatching geometry
+                #TODO report missing or mismatching geometry
             elif el.tag == 'mesh':
                 self.mesh = el.attrib.get('ref')
-                #TODO report missing or missmatching mesh
+                #TODO report missing or mismatching mesh
             else:
-                data = self.data[el.tag]
-                if type(data) is dict:
-                    with AttributeReader(el) as attr:
-                        for name in data:
-                            data[name] = attr.get(name, '')
+                try:
+                    data = self.data[el.tag]
+                except KeyError:
+                    pass
                 else:
-                    self.data[el.tag] = print_interior(el)
+                    if type(data) is dict:
+                        with AttributeReader(el) as attrs:
+                            for name in attrs:
+                                if name+'#' in data:
+                                    data[name+'0'] = attrs[name]
+                                else:
+                                    data[name] = attrs[name]
+                    else:
+                        self.data[el.tag] = print_interior(el)
 
     def get_controller(self, document):
         return ConfSolverController(document, self)
@@ -224,18 +235,48 @@ class ConfSolverFactory(object):
         return result
 
 
+class FilterSolver(Solver):
+
+    def __init__(self, what='', name='', parent=None, info_cb=None):
+        super(FilterSolver, self).__init__('filter', parent=parent, info_cb=info_cb)
+        self.what = what
+        self.name = name
+        self.geometry = ''
+
+    def get_xml_element(self):
+        return etree.Element(self.category, {"name": self.name, "for": self.what, "geometry": self.geometry})
+
+    def set_xml_element(self, element):
+        self.category = element.tag
+        with AttributeReader(element) as attr:
+            self.name = attr.get('name', None)
+            self.what = attr.get('for', None)
+            self.geometry = attr.get('geometry', None)
+
+    def get_controller(self, document):
+        return FilterController(document, self)
+
+    def stub(self):
+        return "{} = flow.{}Filter()".format(self.name, self.what)  # TODO: Geometry suffix
+
+
 class SolversModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(SolversModel, self).__init__('solvers', parent, info_cb, *args)
 
     def construct_solver(self, element):
-        try:
-            factory = SOLVERS[element.tag, element.attrib['solver']]
-        except KeyError:
-            return TreeFragmentSolver(element, self)
+        if element.tag == 'filter':
+            filter = FilterSolver(parent=self)
+            filter.set_xml_element(element)
+            return filter
         else:
-            return factory(element=element, parent=self)
+            try:
+                factory = SOLVERS[element.tag, element.attrib['solver']]
+            except KeyError:
+                return TreeFragmentSolver(element, self)
+            else:
+                return factory(element=element, parent=self)
 
     def set_xml_element(self, element):
         self.layoutAboutToBeChanged.emit()
@@ -263,7 +304,10 @@ class SolversModel(TableModel):
         return None
 
     def get(self, col, row):
-        if col == 0: return self.entries[row].category
+        if col == 0:
+            category = self.entries[row].category
+            if category == 'filter': return 'FILTER'
+            else: return category.title()
         if col == 1: return self.entries[row].solver
         if col == 2: return self.entries[row].name
         raise IndexError('column number for SolversModel should be 0, 1, or 2, but is %d' % col)
@@ -280,12 +324,15 @@ class SolversModel(TableModel):
         from ..controller.solvers import get_new_solver
         new_solver = get_new_solver()
         if new_solver is not None:
-            try:
-                factory = SOLVERS[new_solver['category'], new_solver['solver']]
-            except KeyError:
-                return TreeFragmentSolver.create_empty(parent=self, **new_solver)
+            if new_solver['category'] == 'filter':
+                return FilterSolver(new_solver['solver'], new_solver['name'], parent=self)
             else:
-                return factory(new_solver['name'], parent=self)
+                try:
+                    factory = SOLVERS[new_solver['category'], new_solver['solver']]
+                except KeyError:
+                    return TreeFragmentSolver.create_empty(parent=self, **new_solver)
+                else:
+                    return factory(new_solver['name'], parent=self)
 
     def stubs(self):
 

@@ -35,7 +35,7 @@ Static = {
         ('convection', 'Convective boundary conditions', None),  # TODO
         ('radiation', 'Radiative boundary conditions', None),  # TODO
     ),
-    u'flow': ('inHeat', 'outTemperature'),
+    'flow': ('inHeat', 'outTemperature'),
 }
 
 solvers.register_config('thermal', 'fem', Static2D=Static, StaticCyl=Static)

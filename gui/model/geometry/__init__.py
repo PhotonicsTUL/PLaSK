@@ -24,6 +24,7 @@ import sys
 
 __author__ = 'qwak'
 
+
 class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def __init__(self, parent=None, info_cb=None):

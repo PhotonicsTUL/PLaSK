@@ -123,6 +123,8 @@ class AttributeReader(object):
         if exc_type is None and exc_value is None and traceback is None:
             self.require_all_read()
 
+    def __iter__(self):
+        return self.element.attrib.__iter__()
 
 class OrderedTagReader(object):
     """Helper class to read children of XML element in required order.
