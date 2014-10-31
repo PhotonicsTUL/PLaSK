@@ -53,15 +53,30 @@ class RectilinearDivideGeneratorConroller(Controller):
         vbox = QtGui.QVBoxLayout()
         form_layout = QtGui.QFormLayout()
 
-        self.gradual = QtGui.QComboBox()    #not checkbox to allow put defines {}
+        options = QtGui.QHBoxLayout()
+
+        self.gradual = QtGui.QComboBox()    # not checkbox to allow put defines {}
         self.gradual.currentIndexChanged.connect(self.fire_changed)
         self.gradual.textChanged.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
         self.gradual.setEditable(True)
-        self.gradual.setToolTip('&lt;<b>gradual all</b>=""&gt;<br/>'
+        self.gradual.setMinimumWidth(150)
+        self.gradual.setToolTip('&lt;options <b>gradual</b>=""&gt;<br/>'
                                 'Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated'
                                 ' mesh may differ more than by the factor of two). Gradual is enabled by default.')
-        form_layout.addRow('Gradual change:', self.gradual)
+        options.addWidget(QtGui.QLabel("gradual:"))
+        options.addWidget(self.gradual)
+
+        self.aspect = QtGui.QLineEdit()
+        self.aspect.textEdited.connect(self.fire_changed)
+        self.aspect.setCompleter(defines)
+        self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
+                               'Maximum aspect ratio for the rectangular and cubic elements generated '
+                               'by this generator.')
+        options.addWidget(QtGui.QLabel("aspect:"))
+        options.addWidget(self.aspect)
+
+        form_layout.addRow('Options:', options)
 
         self.prediv = self._make_div_hbox(form_layout, 'Pre-refining divisions:',
                                           '&lt;<b>prediv {}</b>=""&gt;<br/>'
@@ -75,7 +90,7 @@ class RectilinearDivideGeneratorConroller(Controller):
             cb = QtGui.QComboBox()
             cb.currentIndexChanged.connect(self.fire_changed)
             cb.textChanged.connect(self.fire_changed)
-            cb.addItems(['', 'true', 'false'])
+            cb.addItems(['', 'yes', 'no'])
             cb.setEditable(True)
             cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
                           RectilinearDivideGeneratorConroller.warning_help.get(w, ''))
@@ -105,6 +120,7 @@ class RectilinearDivideGeneratorConroller(Controller):
     def save_data_in_model(self):
         for attr_name in ['gradual'] + ['warning_'+w for w in RectilinearDivideGenerator.warnings]:
             setattr(self.model, attr_name, empty_to_none(getattr(self, attr_name).currentText()))
+        self.model.aspect = self.aspect.text()
         self.model.set_prediv([empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)])
         self.model.set_postdiv([empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)])
 
@@ -113,6 +129,7 @@ class RectilinearDivideGeneratorConroller(Controller):
         for attr_name in ['gradual'] + ['warning_'+w for w in RectilinearDivideGenerator.warnings]:
             a = getattr(self.model, attr_name)
             getattr(self, attr_name).setEditText('' if a is None else a)
+        self.aspect.setText(self.model.aspect)
         for i in range(0, self.model.dim):
             self.prediv[i].setText(self.model.get_prediv(i))
             self.postdiv[i].setText(self.model.get_postdiv(i))

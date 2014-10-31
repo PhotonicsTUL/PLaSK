@@ -74,6 +74,7 @@
     <axis start="0" stop="{mesaRadius}" num="2000"></axis>
   </mesh>
   <generator method="divide" name="optical" type="rectangular2d">
+    <options aspect="100" gradual="no"/>
     <prediv by0="10" by1="3"/>
   </generator>
   <mesh name="plots" type="rectangular2d">

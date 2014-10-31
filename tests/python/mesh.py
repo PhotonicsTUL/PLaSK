@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
-
 from numpy import *
 
-import plask, plask.mesh
+import plask
+import plask.mesh
+import plask.geometry
+
 import plasktest
-
-
 
 
 class OrderedMeshes(unittest.TestCase):
@@ -218,3 +218,18 @@ class OrderedMeshes(unittest.TestCase):
         test.regular2d.axis0.stop = 12.
         self.assertTrue(test.regular2d_changed)
         test.regular2d.axis0.resize(20)
+
+
+class Aspect(unittest.TestCase):
+
+    def testAspect(self):
+        r1 = plask.geometry.Rectangle(1, 1, None)
+        r2 = plask.geometry.Rectangle(10, 20, None)
+        align = plask.geometry.AlignContainer2D()
+        align.append(r1, right=0, bottom=0)
+        align.append(r2, left=0, top=0)
+        geo = plask.geometry.Cartesian2D(align)
+        gen = plask.mesh.Rectangular2D.DivideGenerator(gradual=False, aspect=5)
+        msh = gen(geo)
+        self.assertEqual( list(msh.axis0), [-1., 0., 5., 10.] )
+        self.assertEqual( list(msh.axis1), [-20., -15., -10., -5., 0., 1.] )

@@ -197,6 +197,30 @@ shared_ptr<OrderedAxis> RectilinearMeshDivideGenerator<dim>::getAxis(shared_ptr<
     return initial_and_result;
 }
 
+template <int dim>
+std::pair<double, double> RectilinearMeshDivideGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
+{
+    double min = INFINITY, max = 0;
+    for (size_t i = 1; i != axis->size(); ++i) {
+        double L = axis->at(i) - axis->at(i-1);
+        if (L < min) min = L;
+        if (L > max) max = L;
+    }
+    return std::pair<double, double>(min, max);
+}
+
+template <int dim>
+void RectilinearMeshDivideGenerator<dim>::divideLargestSegment(shared_ptr<OrderedAxis> axis)
+{
+    double max = 0;
+    double newpoint;
+    for (size_t i = 1; i != axis->size(); ++i) {
+        double L = axis->at(i) - axis->at(i-1);
+        if (L > max) { max = L; newpoint = 0.5 * (axis->at(i-1) + axis->at(i)); }
+    }
+    axis->addPoint(newpoint);
+}
+
 template <> shared_ptr<MeshD<1>>
 RectilinearMeshDivideGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
@@ -210,10 +234,24 @@ template <> shared_ptr<MeshD<2>>
 RectilinearMeshDivideGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    getAxis(dynamic_pointer_cast<OrderedAxis>(mesh->axis0), geometry, 0);
-    getAxis(dynamic_pointer_cast<OrderedAxis>(mesh->axis1), geometry, 1);
+    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
+         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis1);
+    getAxis(axis0, geometry, 0);
+    getAxis(axis1, geometry, 1);
+
+    auto minmax0 = getMinMax(axis0), minmax1 = getMinMax(axis1);
+    double asp0 = minmax0.second / minmax1.first, asp1 = minmax1.second / minmax0.first;
+    double limit = (1+SMALL) * aspect;
+    while (aspect != 0. && (asp0 > limit || asp1 > limit)) {
+        if (asp0 > aspect) divideLargestSegment(axis0);
+        if (asp1 > aspect) divideLargestSegment(axis1);
+        minmax0 = getMinMax(axis0); minmax1 = getMinMax(axis1);
+        asp0 = minmax0.second / minmax1.first; asp1 = minmax1.second / minmax0.first;
+    }
+
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular2D::DivideGenerator: Generating new mesh (%1%x%2%)", mesh->axis0->size(), mesh->axis1->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular2D::DivideGenerator: Generating new mesh (%dx%d, max. aspect %.0f:1)",
+             mesh->axis0->size(), mesh->axis1->size(), max(asp0, asp1));
     return mesh;
 }
 
@@ -221,12 +259,31 @@ template <> shared_ptr<MeshD<3>>
 RectilinearMeshDivideGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    getAxis(dynamic_pointer_cast<OrderedAxis>(mesh->axis0), geometry, 0);
-    getAxis(dynamic_pointer_cast<OrderedAxis>(mesh->axis1), geometry, 1);
-    getAxis(dynamic_pointer_cast<OrderedAxis>(mesh->axis2), geometry, 2);
+    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
+         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis1),
+         axis2 = dynamic_pointer_cast<OrderedAxis>(mesh->axis2);
+    getAxis(axis0, geometry, 0);
+    getAxis(axis1, geometry, 1);
+    getAxis(axis2, geometry, 2);
+
+    auto minmax0 = getMinMax(axis0), minmax1 = getMinMax(axis1), minmax2 = getMinMax(axis2);
+    double asp0 = minmax0.second / min(minmax1.first, minmax2.first),
+           asp1 = minmax1.second / min(minmax0.first, minmax2.first),
+           asp2 = minmax2.second / min(minmax0.first, minmax1.first);
+    double limit = (1+SMALL) * aspect;
+    while (aspect != 0. && (asp0 > limit || asp1 > limit || asp2 > limit)) {
+        if (asp0 > aspect) divideLargestSegment(axis0);
+        if (asp1 > aspect) divideLargestSegment(axis1);
+        if (asp2 > aspect) divideLargestSegment(axis2);
+        minmax0 = getMinMax(axis0); minmax1 = getMinMax(axis1); minmax2 = getMinMax(axis2);
+        asp0 = minmax0.second / min(minmax1.first, minmax2.first);
+        asp1 = minmax1.second / min(minmax0.first, minmax2.first);
+        asp2 = minmax2.second / min(minmax0.first, minmax1.first);
+    }
+
     mesh->setOptimalIterationOrder();
-    writelog(LOG_DETAIL, "mesh.Rectangular3D::DivideGenerator: Generating new mesh (%1%x%2%x%3%)",
-                          mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular3D::DivideGenerator: Generating new mesh (%dx%dx%d, max. aspect %.0f:1)",
+                          mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size(), max(asp0, max(asp1, asp2)));
     return mesh;
 }
 
@@ -241,7 +298,7 @@ static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const M
 }
 
 template <int dim>
-static shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, const Manager& manager)
+shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reader, const Manager& manager)
 {
     auto result = make_shared<RectilinearMeshDivideGenerator<dim>>();
 
@@ -270,12 +327,9 @@ static shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader& reade
             } else
                 for (int i = 0; i < dim; ++i) result->post_divisions[i] = reader.getAttribute<size_t>(format("by%1%", i), 1);
             reader.requireTagEnd();
-        } else if (reader.getNodeName() == "gradual") {
-            result->setGradual(reader.requireAttribute<bool>("all"));
-            reader.requireTagEnd();
-        } else if (reader.getNodeName() == "no-gradual") {
-            writelog(LOG_WARNING, "Tag '<no-gradual>' is obsolete, type '<gradual all=\"false\"/>' instead");
-            result->setGradual(false);
+        } else if (reader.getNodeName() == "options") {
+            result->setGradual(reader.getAttribute<bool>("gradual", result->getGradual()));
+            result->setAspect(reader.getAttribute<double>("aspect", result->getAspect()));
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "warnings") {
             result->warn_missing = reader.getAttribute<bool>("missing", true);

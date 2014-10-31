@@ -142,10 +142,11 @@ class RectilinearDivideGenerator(Grid):
         e.set_xml_element(element)
         return e
 
-    def __init__(self, grids_model, name, type, gradual=False, prediv=None, postdiv=None, refinements=None,
+    def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
                  warning_missing=None, warning_multiple=None, warning_outside=None):
         super(RectilinearDivideGenerator, self).__init__(grids_model, name, type, 'divide')
         self.gradual = gradual
+        self.aspect = aspect
         self.prediv = prediv
         self.postdiv = postdiv
         self.refinements = Refinements(self, refinements)
@@ -172,8 +173,13 @@ class RectilinearDivideGenerator(Grid):
 
     def get_xml_element(self):
         res = super(RectilinearDivideGenerator, self).get_xml_element()
+        options = {}
         if self.gradual is not None:
-            SubElement(res, "gradual", attrib={'all': self.gradual})
+            options['gradual'] = self.gradual
+        if self.aspect:
+            options['aspect'] = self.aspect
+        if options:
+            SubElement(res, "options", attrib=options)
         self._append_div_xml_element('prediv', res)
         self._append_div_xml_element('postdiv', res)
         if len(self.refinements.entries) > 0:
@@ -202,14 +208,13 @@ class RectilinearDivideGenerator(Grid):
     def set_xml_element(self, element):
         super(RectilinearDivideGenerator, self).set_xml_element(element)
         with UnorderedTagReader(element) as r:
-            gradual_element = r.find('gradual')
-            if gradual_element is not None:
-                with AttributeReader(gradual_element) as a: self.gradual = a.get('all', None)
+            options = r.find('options')
+            if options is not None:
+                with AttributeReader(options) as a:
+                    self.gradual = a.get('gradual', None)
+                    self.aspect = a.get('aspect', None)
             else:
-                if r.find('no-gradual'):     #deprecated
-                    self.gradual = 'no'
-                else:
-                    self.gradual = None
+                self.gradual = self.aspect = None
             self._div_from_xml('prediv', r)
             self._div_from_xml('postdiv', r)
             self.refinements.entries = []

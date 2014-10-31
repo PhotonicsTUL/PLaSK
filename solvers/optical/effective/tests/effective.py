@@ -83,7 +83,7 @@ class EffectiveIndexLaser(unittest.TestCase):
                 m = self.solver.find_mode(1.15)
                 return self.solver.modes[m].neff.imag
             gain = brentq(fun, 0., 100.)
-            self.assertAlmostEqual(gain, 81.6495, 3)
+            self.assertAlmostEqual(gain, 81.648, 2)
 
     def testAbsorptionIntegral(self):
        self.profile[self.rect2] = 81.649513489

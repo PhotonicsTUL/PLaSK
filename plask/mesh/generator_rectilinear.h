@@ -109,29 +109,37 @@ public:
 template <int dim>
 struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
 
-    size_t pre_divisions[dim];
-    size_t post_divisions[dim];
-    bool gradual;
-
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
 
-
     typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>,PathHints>, std::set<double>> Refinements;
+
+    size_t pre_divisions[dim];
+    size_t post_divisions[dim];
+
+    bool gradual;
+    float aspect;
 
     Refinements refinements[dim];
 
     shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> initial_and_result, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir);
 
+    std::pair<double, double> getMinMax(const shared_ptr<OrderedAxis>& axis);
+
+    void divideLargestSegment(shared_ptr<OrderedAxis> axis);
+
+    template <int fd>
+    friend shared_ptr<MeshGenerator> readRectilinearDivideGenerator(XMLReader&, const Manager&);
+
     bool warn_multiple, ///< Warn if a single refinement points to more than one object.
-         warn_missing,     ///< Warn if a defined refinement points to object absent from provided geometry.
+         warn_missing,  ///< Warn if a defined refinement points to object absent from provided geometry.
          warn_outside;  ///< Warn if a defined refinement takes place outside of the pointed object.
 
     /**
      * Create new generator
-    **/
+     */
     RectilinearMeshDivideGenerator() :
-        gradual(true), warn_multiple(true), warn_missing(true), warn_outside(true)
+        gradual(true), aspect(0), warn_multiple(true), warn_missing(true), warn_outside(true)
     {
         for (int i = 0; i != dim; ++i) {
             pre_divisions[i] = 1;
@@ -176,6 +184,16 @@ struct PLASK_API RectilinearMeshDivideGenerator: public MeshGeneratorD<dim> {
         this->fireChanged();
     }
 
+    /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
+    double getAspect() const { return aspect; }
+
+    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
+    void setAspect(double value) {
+        if (value < 2.)
+            throw BadInput("DivideGenerator", "Maximum aspect must be larger than 2");
+        aspect = value;
+        this->fireChanged();
+    }
 
     /// \return map of refinements
     /// \param direction direction of the refinements
