@@ -174,7 +174,19 @@ class ConfSolver(Solver):
             if type(data) is dict:
                 attrs = dict((item for item in data.items() if item[1] and item[0][-1] != '#'))
                 if attrs:
-                    etree.SubElement(element, tag, attrs)
+                    if '/' in tag:
+                        path = tag.split('/')
+                        tag = path[-1]
+                        el = element
+                        for tg in path[:-1]:
+                            f = el.find(tg)
+                            if f is not None:
+                                el = f
+                            else:
+                                el = etree.SubElement(el, tg)
+                        etree.SubElement(el, tag, attrs)
+                    else:
+                        etree.SubElement(element, tag, attrs)
             else:
                 if data:
                     lines = data.encode('utf-8').split('\n')
@@ -187,16 +199,20 @@ class ConfSolver(Solver):
     def set_xml_element(self, element):
         self.set_fresh_data()
         super(ConfSolver, self).set_xml_element(element)
-        for el in element:
-            if el.tag == 'geometry':
-                self.geometry = el.attrib.get('ref')
-                #TODO report missing or mismatching geometry
-            elif el.tag == 'mesh':
+        el = element.find('geometry')
+        if el is not None:
+            self.geometry = el.attrib.get('ref')
+            #TODO report missing or mismatching geometry
+        if self.config['mesh']:
+            el = element.find('mesh')
+            if el is not None:
                 self.mesh = el.attrib.get('ref')
                 #TODO report missing or mismatching mesh
-            else:
+        for tag,_,_ in self.config['conf']:
+            el = element.find(tag)
+            if el is not None:
                 try:
-                    data = self.data[el.tag]
+                    data = self.data[tag]
                 except KeyError:
                     pass
                 else:
@@ -208,7 +224,7 @@ class ConfSolver(Solver):
                                 else:
                                     data[name] = attrs[name]
                     else:
-                        self.data[el.tag] = print_interior(el)
+                        self.data[tag] = print_interior(el)
 
     def get_controller(self, document):
         return ConfSolverController(document, self)

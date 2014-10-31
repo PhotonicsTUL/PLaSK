@@ -210,7 +210,7 @@ class MainWindow(QtGui.QMainWindow):
 
         menu_button = QtGui.QPushButton(self)
         menu_button.setText("&Operations")
-        menu_button.setIcon(save_action.icon())
+        menu_button.setIcon(icon)
         pal = menu_button.palette()
         pal.setColor(QtGui.QPalette.Button, QtGui.QColor("#88aaff"))
         menu_button.setPalette(pal)

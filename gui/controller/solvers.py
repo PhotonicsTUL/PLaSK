@@ -74,6 +74,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
         self.controls = {}
 
         for group, desc, items in config['conf']:
+            gname = group.split('/')[-1]
             label = QtGui.QLabel(desc)
             font = label.font()
             font.setBold(True)
@@ -109,7 +110,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                             edit = QtGui.QLineEdit()
                             edit.setCompleter(defines)
                             edit.textEdited.connect(self.controller.fire_changed)
-                    edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(group, attr, help))
+                    edit.setToolTip(u'&lt;{} <b>{}</b>=""&gt;<br/>{}'.format(gname, attr, help))
                     self.controls[group, attr] = edit
                     layout.addRow(text + ':', edit)
             else:
@@ -118,7 +119,7 @@ class SolverAutoWidget(QtGui.QScrollArea):
                 font.setPointSize(font.pointSize()-1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, scheme),
                                                      default_font=font)
-                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(group, desc))
+                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, desc))
                 self.controls[group] = edit
                 layout.addRow(edit)
                 edit.textChanged.connect(self.controller.fire_changed)

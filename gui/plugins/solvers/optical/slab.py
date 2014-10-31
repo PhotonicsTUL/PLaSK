@@ -66,7 +66,7 @@ Fourier2D = {
             ('polarization', 'Mode polarization',
                 u'Mode polarization. Give an existing field component here (e.g. ``Etran``, ``Hx``).',
                 ('Etran', 'Elong')))),
-        ('root', 'Parameters of the global root-finding algorithm', (
+        ('root', 'Parameters of the root-finding algorithm', (
             ('method', 'Root finding method',
              u'Root finding algorithm (Muller\'s method or Broyden\'s method.', ('muller', 'broyden')),
             ('tolx', 'Tolerance on effective index',
@@ -99,18 +99,19 @@ Fourier3D = {
     'mesh': None,
     'conf': (
         ('expansion', 'Details on Fourier expansion', (
-            ('size', 'Expansion size',
-                u'Expansion size.\n\n'
+            ('size', 'Expansion sizes',
+                u'Expansion sizes along longitudinal and transverse directions.\n\n'
                 u'You cannot set this attribute together with ‘Longitudinal expansion size’ and'
                 u'‘Transverse expansion size’. (integer)'),
             ('size-long', 'Longitudinal expansion size',
                 u'Expansion size along longitudinal axis.\n\n'
-                u'You cannot set this attribute together with ‘Expansion size’. (integer)'),
+                u'You cannot set this attribute together with ‘Expansion sizes’. (integer)'),
             ('size-tran', 'Transverse expansion size',
                 u'Expansion size along transverse axis.\n\n'
-                u'You cannot set this attribute together with ‘Expansion size’. (integer)'),
+                u'You cannot set this attribute together with ‘Expansion sizes’. (integer)'),
             ('refine', 'Averaging points',
-                u'Number of refinement points for refractive index averaging\n\n'
+                u'Number of refinement points for refractive index averaging '
+                u'along longitudinal and transverse directions.\n\n'
                 u'You cannot set this attribute together with ‘Longitudinal averaging points’ and'
                 u'‘Transverse averaging points’. (integer)'),
             ('refine-long', 'Longitudinal averaging points',
@@ -150,28 +151,27 @@ Fourier3D = {
             ('shift', u'Distance [µm]',
                 u'PML shift from the structure. (float [µm])'),
             ('size', u'Size [µm]',
-                u'PML size. (float [µm])')),
-            # (
-            #     ('long', 'Longitudinal PMLs', (
-            #         ('factor', 'Scaling factor',
-            #             u'PML scaling factor. (complex)'),
-            #         ('order', 'Shape order',
-            #             u'PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.). (float)'),
-            #         ('shift', u'Distance [µm]',
-            #             u'PML shift from the structure. (float [µm])'),
-            #         ('size', u'Size [µm]',
-            #             u'PML size. (float [µm])'))),
-            #     ('tran', 'Transverse PMLs', (
-            #         ('factor', 'Scaling factor',
-            #             u'PML scaling factor. (complex)'),
-            #         ('order', 'Shape order',
-            #             u'PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.). (float)'),
-            #         ('shift', u'Distance [µm]',
-            #             u'PML shift from the structure. (float [µm])'),
-            #         ('size', u'Size [µm]',
-            #             u'PML size. (float [µm])')))
-            # )
-        ),
+                u'PML size. (float [µm])'))),
+        ('pmls/long', u'Longitudinal PML '
+                      u'<span style="font-weight: normal;">(overrides ‘Longitudinal and transverse PMLs’)</span>', (
+            ('factor', 'Scaling factor',
+                u'PML scaling factor. (complex)'),
+            ('order', 'Shape order',
+                u'PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.). (float)'),
+            ('shift', u'Distance [µm]',
+                u'PML shift from the structure. (float [µm])'),
+            ('size', u'Size [µm]',
+                u'PML size. (float [µm])'))),
+        ('pmls/tran', u'Transverse PML '
+                      u'<span style="font-weight: normal;">(overrides ‘Longitudinal and transverse PMLs’)</span>', (
+            ('factor', 'Scaling factor',
+                u'PML scaling factor. (complex)'),
+            ('order', 'Shape order',
+                u'PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.). (float)'),
+            ('shift', u'Distance [µm]',
+                u'PML shift from the structure. (float [µm])'),
+            ('size', u'Size [µm]',
+                u'PML size. (float [µm])'))),
         ('mode', 'Mode properties', (
             ('wavelength', 'Wavelength [nm]',
                 u'Light wavelength. (float [nm])'),
@@ -179,10 +179,20 @@ Fourier3D = {
                 u'Transverse wave-vector component. (float [1/µm])'),
             ('k-long', u'Longitudinal wave-vector [1/µm]',
                 u'Longitudinal wave-vector component. (float [1/µm])'),
-            ('symmetry', 'Mode symmetry',
-                u'Mode symmetry. Specify a symmetric field component here (e.g. ``Etran``, ``Hx``).',
+            ('symmetry', 'Mode symmetries',
+                u'Mode symmetries along longitudinal and transverse directions. '
+                u'Specify symmetric field components here (e.g. ``Etran``, ``Hx``).\n\n'
+                u'You cannot set this attribute together with ‘Longitudinal mode symmetry’ '
+                u'and Transverse mode symmetry’.', ('Etran', 'Elong')),
+            ('symmetry-long', 'Longitudinal mode symmetry',
+                u'Mode symmetry along longitudinal axis. Specify a symmetric field component here '
+                u'(e.g. ``Etran``, ``Hx``).\n\nYou cannot set this attribute together with ‘Mode symmetries’.',
+                ('Etran', 'Elong')),
+            ('symmetry-tran', 'Transverse mode symmetry',
+                u'Mode symmetry along transverse axis. Specify a symmetric field component here '
+                u'(e.g. ``Etran``, ``Hx``).\n\nYou cannot set this attribute together with ‘Mode symmetries’.',
                 ('Etran', 'Elong')))),
-        ('root', 'Parameters of the global root-finding algorithm', (
+        ('root', 'Parameters of the root-finding algorithm', (
             ('method', 'Root finding method',
              u'Root finding algorithm (Muller\'s method or Broyden\'s method.', ('muller', 'broyden')),
             ('tolx', 'Tolerance on effective index',

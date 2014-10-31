@@ -21,6 +21,13 @@ static inline PML readPML(XMLReader& reader) {
     return pml;
 }
 
+static inline void updatePML(PML& pml, XMLReader& reader) {
+    pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
+    pml.size = reader.getAttribute<double>("size", pml.size);
+    pml.shift = reader.getAttribute<double>("shift", pml.shift);
+    pml.order = reader.getAttribute<double>("order", pml.order);
+}
+
 template <typename T>
 static inline void readComaAttr(XMLReader& reader, const std::string& attr, T& long_field, T& tran_field, bool nocommon=false) {
     if (reader.hasAttribute(attr)) {
@@ -101,9 +108,9 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             while (reader.requireTagOrEnd()) {
                 std::string node = reader.getNodeName();
                 if (node == "long") {
-                    pml_long = readPML(reader);
+                    updatePML(pml_long, reader);
                 } else if (node == "tran") {
-                    pml_tran = readPML(reader);
+                    updatePML(pml_tran, reader);
                 } else throw XMLUnexpectedElementException(reader, "<tran>, <long>, or </pmls>", node);
             }
         } else if (param == "mode") {

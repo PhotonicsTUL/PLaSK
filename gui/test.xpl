@@ -118,8 +118,14 @@
     <mesh ref="optical"/>
     <mode lam0="980"/>
   </optical>
+  <optical name="fourier" solver="Fourier3D" lib="slab">
+    <pmls factor="1-2j">
+      <long size="30"/>
+      <tran size="20"/>
+    </pmls>
+    <mode symmetry="Etran"/>
+  </optical>
   <filter for="Temperature" geometry="GeoTE" name="filtr"/>
-  <optical name="fourier" solver="Fourier3D" lib="slab"/>
 </solvers>
 
 <connects>
