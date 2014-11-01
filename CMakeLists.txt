@@ -679,7 +679,7 @@ if(WIN32)
         !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"
         !include ${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " 
-        !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
+        !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\ \\\$\\\\\\\"%1\\\$\\\\\\\""
         !insertmacro UPDATEFILEASSOC
     ")
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS " 
