@@ -672,9 +672,12 @@ if(WIN32)
     set(CPACK_NSIS_DISPLAY_NAME "PLaSK ${VERSION}")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     set(CPACK_NSIS_MODIFY_PATH ON)
-    set(CPACK_NSIS_COMPRESSOR "lzma\n\n  ;Default start menu folder\n  !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"") # very ugly hack!
     # File types association:
-    set(CPACK_NSIS_DEFINES "!include ${CMAKE_SOURCE_DIR}/cmake/fileassoc.nsh")
+    string(REPLACE "/" "\\\\" CMAKE_SOURCE_DIR_WINDOWS "${CMAKE_SOURCE_DIR}")
+    # Very ugly hack!
+    set(CPACK_NSIS_COMPRESSOR "lzma
+        !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"
+        !include ${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " 
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
         !insertmacro UPDATEFILEASSOC
