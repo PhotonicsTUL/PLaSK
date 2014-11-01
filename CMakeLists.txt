@@ -676,7 +676,7 @@ if(WIN32)
     # File types association:
     set(CPACK_NSIS_DEFINES "!include ${CMAKE_SOURCE_DIR}/cmake/fileassoc.nsh")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " 
-        !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\bin\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\bin\\plaskgui.exe\\\"
+        !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
         !insertmacro UPDATEFILEASSOC
     ")
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS " 
