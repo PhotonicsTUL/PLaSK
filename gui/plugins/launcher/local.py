@@ -221,28 +221,35 @@ class PlaskThread(QtCore.QThread):
         self.mutex = mutex
         self.terminated.connect(self.kill_process)
 
+    def parse_line(self, line):
+        if not line:
+            return
+        cat = line[:15]
+        line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        if   cat == "CRITICAL ERROR:": color = "red    "
+        elif cat == "ERROR         :": color = "red    "
+        elif cat == "WARNING       :": color = "brown  "
+        elif cat == "INFO          :": color = "blue   "
+        elif cat == "RESULT        :": color = "green  "
+        elif cat == "DATA          :": color = "#006060"
+        elif cat == "DETAIL        :": color = "black  "
+        elif cat == "ERROR DETAIL  :": color = "#800000"
+        elif cat == "DEBUG         :": color = "gray   "
+        else: color = "black; font-weight:bold"
+        line = line.replace(' ', '&nbsp;')
+        try:
+            self.mutex.lock()
+            self.lines.append((cat[:-1].strip(), '<span style="color:{};">{}</span>'.format(color, line)))
+        finally:
+            self.mutex.unlock()
+
     def run(self):
         while self.proc.poll() is None:
             line = self.proc.stdout.readline().rstrip()
-            if not line: continue
-            cat = line[:15]
-            line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-            if   cat == "CRITICAL ERROR:": color = "red    "
-            elif cat == "ERROR         :": color = "red    "
-            elif cat == "WARNING       :": color = "brown  "
-            elif cat == "INFO          :": color = "blue   "
-            elif cat == "RESULT        :": color = "green  "
-            elif cat == "DATA          :": color = "#006060"
-            elif cat == "DETAIL        :": color = "black  "
-            elif cat == "ERROR DETAIL  :": color = "#800000"
-            elif cat == "DEBUG         :": color = "gray   "
-            else: color = "black; font-weight:bold"
-            line = line.replace(' ', '&nbsp;')
-            try:
-                self.mutex.lock()
-                self.lines.append((cat[:-1].strip(), '<span style="color:{};">{}</span>'.format(color, line)))
-            finally:
-                self.mutex.unlock()
+            self.parse_line(line)
+        stdout, stderr = self.proc.communicate()
+        for line in stdout.splitlines():
+            self.parse_line(line)
 
     def kill_process(self):
         self.proc.terminate()
