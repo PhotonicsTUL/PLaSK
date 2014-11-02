@@ -5,9 +5,11 @@ import os
 
 from plask import *
 
+
 def _pad(val, l=11):
     s = str(val)
     return s + ''.join([' ']*max(l-len(s), 0))
+
 
 def _parse_material(mat):
     mat = str(mat).split(':')
@@ -19,11 +21,11 @@ def _parse_material(mat):
     return mat[0], dp, float(dc) * 1e6
 
 
-def write_dan(name, manager, geo, allm=True):
-    '''Write dan files for given prefix
+def write_dan(name, solvers, geo, allm=True):
+    """Write dan files for given prefix
 
        'allm' indicates whether consider all materials as ones with constant values
-    '''
+    """
 
     print_log(LOG_INFO, "Writing %s_temp.dan" % name)
     ofile = open(name+'_temp.dan', 'w')
@@ -48,14 +50,14 @@ def write_dan(name, manager, geo, allm=True):
 
     outl("%s 1e-6        number_or_regions_and_dimension_scale" % _pad(len(leafs)))
 
-    if len(manager.profiles) != 0:
-        print_log(LOG_WARNING, "Cannot determine where constant profiles defined in the XPL file are used.")
-        print_log(LOG_WARNING, "You must add constant heats to the '%s_temp.dan' manually." % name)
+    #if len(manager.profiles) != 0:
+        #print_log(LOG_WARNING, "Cannot determine where constant profiles defined in the XPL file are used.")
+        #print_log(LOG_WARNING, "You must add constant heats to the '%s_temp.dan' manually." % name)
 
     # Determine solvers
     thermal = None
     electrical = None
-    for solver in manager.solvers.values():
+    for solver in solvers:
         if type(solver).__module__.split('.')[0] == "thermal":
             thermal = solver
         elif type(solver).__module__ == 'electrical.fem': # or  type(solver).__module__ == 'electrical.other_relevant_lib':
@@ -145,18 +147,31 @@ if __name__ == "__main__":
     try:
         iname = sys.argv[1]
     except IndexError:
-        print_log(LOG_CRITICAL_ERROR, "Usage: %s input_file.xpl\n" % sys.argv[0])
+        print_log(LOG_CRITICAL_ERROR, "Usage: %s input_file.xpl [geometry_name]\n" % sys.argv[0])
         sys.exit(2)
     else:
+        
+        try:
+            geom = sys.argv[2]
+        except IndexError:
+            geom = None
+        
         dest_dir = os.path.dirname(iname)
         name = os.path.join(dest_dir, iname[:-4])
 
         manager = plask.Manager()
         manager.load(iname)
-        geos = [g for g in manager.geometrics.values() if isinstance(g, geometry.Geometry)]
-        if len(geos) != 1:
-            raise ValueError("More than one geometry defined in %s" % iname)
-        write_dan(name, manager, geos[0])
+        geos = [g for g in manager.geometry.values() if isinstance(g, geometry.Geometry)]
+        if geom is None:
+            if len(geos) != 1:
+                raise ValueError("More than one geometry defined in %s" % iname)
+            else:
+                geom = geos[0]
+        else:
+            geom = manager.geometry[geom]
+
+        write_dan(name, manager.solver.values(), geom)
 
         print_log(LOG_INFO, "Done!")
+        
 

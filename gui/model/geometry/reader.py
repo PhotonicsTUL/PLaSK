@@ -104,9 +104,9 @@ class GNReadConf(object):
 
     def aligners(self, dims, axis_nr):
         if dims is None: dims = self.parent.dim
-        return GNAligner.names(dims, self.axis_name(dims, axis_nr), axis_nr)
+        return GNAligner.names(dims, self.axes_names(dims), axis_nr)
 
-    def read_aligners(self, attribute_reader, dims = None, *axes_to_read):
+    def read_aligners(self, attribute_reader, dims=None, *axes_to_read):
         """
         Read aligners.
         :param attribute_reader:
@@ -116,7 +116,7 @@ class GNReadConf(object):
         """
         if dims is None: dims = self.parent.dim
         to_read = range(0, dims) if len(axes_to_read) == 0 else axes_to_read
-        res = (GNAligner(None, None) for _ in to_read)
+        res = [GNAligner(None, None) for _ in to_read]
         for axis_nr in to_read:
             for position_name in self.aligners(dims, axis_nr):
                 value = attribute_reader.get(position_name)

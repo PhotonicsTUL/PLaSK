@@ -1,21 +1,23 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-"""
-    This tool converts RPSMES .dan file to PLaSK .xpl file.
+# Copyright (C) 2014 Photonics Group, Lodz University of Technology
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the license, or (at your
+# opinion) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-    Usage:
+from gui.qt import QtGui, QtCore
 
-      dan2xpl input_file_temp.dan
-
-    If the conversion is successful, the script writes XPL file with the structure and sample commands.
-"""
-import sys
+import gui
 import os
-import os.path
 
 
-# Generator of unique names
 class UniqueId(object):
+    """Generator of unique names"""
 
     def __init__(self, prefix, fmt="%02d", initial=1):
         self.prefix = prefix
@@ -31,9 +33,9 @@ unique_object_name = UniqueId("object")
 
 unique_material_name = UniqueId("material")
 
-# Classes for storing data read from *.dan file
+
 class Region(object):
-    '''Region class'''
+    """Regions read from *.dan file"""
 
     def __init__(self, axes):
         self.a0 = axes[0]
@@ -50,18 +52,20 @@ class Region(object):
         if self.role: more += ' role="%s"' % self.role
         if self.name: more += ' name="%s"' % self.name
         locals().update(self.__dict__)
-        output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f"><block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></item>\n' % locals())
+        output.write('      <item %(a0)s="%(x0).4f" %(a1)s="%(y0).4f">'
+                     '<block d%(a0)s="%(w)s" d%(a1)s="%(h)s" material="%(material)s"%(more)s/></item>\n' % locals())
         if self.repeat:
             x = self.x0
             y = self.y0
             for i in range(self.repeat):
                 x += self.shift[0]
                 y += self.shift[1]
-                output.write('      <item %(a0)s="%(x).4f" %(a1)s="%(y).4f"><again ref="%(name)s"/></item>\n' % locals())
+                output.write('      <item %(a0)s="%(x).4f" %(a1)s="%(y).4f">'
+                             '<again ref="%(name)s"/></item>\n' % locals())
 
 
 class Material(object):
-    '''Material class'''
+    """Materials read from *.dan file"""
 
     def __init__(self, kind="metal"):
         self.base = None
@@ -83,7 +87,8 @@ class Material(object):
             output.write('  <material name="%s" base="%s">\n' % (name, self.base))
         else:
             if self.condtype:
-                output.write('  <material name="%s" base="%s">\n    <condtype>%s</condtype>\n' % (name, self.kind, self.condtype))
+                output.write('  <material name="%s" base="%s">\n    <condtype>%s</condtype>\n' % (
+                    name, self.kind, self.condtype))
             else:
                 output.write('  <material name="%s" base="%s">\n' % (name, self.kind))
         if self.kappa is not None:
@@ -93,13 +98,13 @@ class Material(object):
         output.write('  </material>\n')
 
 
-
 ownmats = {
     'LED_nGaN': "GaN:Si",
     'LED_active': "In(0.06)GaN",
     'LED_pAlGaN': "Al(0.17)GaN:Mg",
     'LED_pGaN': "GaN:Mg",
 }
+
 
 def parse_material_name(mat, comp, dopant):
     if mat in ownmats:
@@ -110,7 +115,7 @@ def parse_material_name(mat, comp, dopant):
         elements = []
     for l in mat:
         if l != l.lower(): elements.append('')
-        elements[-1] = elements[-1]+l
+        elements[-1] = elements[-1] + l
     if len(elements) == 1:
         result = elements[0]
     elif len(elements) == 2:
@@ -126,41 +131,37 @@ def parse_material_name(mat, comp, dopant):
     return result
 
 
-
 def read_dan(fname):
-    '''Open and read dan file
+    """Open and read dan file
 
        On exit this function returns dictionary of custom materials and list of regions
-    '''
-
-    print("Reading %s:" % fname)
+    """
 
     ifile = open(fname)
-
 
     # Set-up generator, which skips empty lines, strips the '\n' character, and splits line by tabs
     def Input(ifile):
         for line in ifile:
             if line[-1] == "\n": line = line[:-1]
-            print("> " + line)
             if line.strip(): yield line.split()
+
     input = Input(ifile)
 
     # Header
-    name = input.next()[0]                      # structure name (will be used for output file)
-    matdb = input.next()[0]                     # materials database spec (All by default)
-    line = input.next()                         # symmetry (0: Cartesian2D, 1: Cylindrical2D) type and length
+    name = input.next()[0]  # structure name (will be used for output file)
+    matdb = input.next()[0]  # materials database spec (All by default)
+    line = input.next()  # symmetry (0: Cartesian2D, 1: Cylindrical2D) type and length
     sym = int(line[0])
     length = float(line[1])
-    setting = int(input.next()[0])              # setting (10,11 - temporal calculations, 100,100 - 3D)
-    line = input.next()                         # number of defined regions and scale
+    setting = int(input.next()[0])  # setting (10,11 - temporal calculations, 100,100 - 3D)
+    line = input.next()  # number of defined regions and scale
     nregions = int(line[0])
-    scale = float(line[1]) * 1e6                # in xpl all dimensions are in microns
+    scale = float(line[1]) * 1e6  # in xpl all dimensions are in microns
 
     pnjcond = None
 
     if setting >= 10:
-        raise NotImplementedError("3D structure nor temporal data not implemented yet (%s)" % setting) # TODO
+        raise NotImplementedError("3D structure nor temporal data not implemented yet (%s)" % setting)  # TODO
 
     # Set up symmetry
     axes = ['xy', 'rz'][sym]
@@ -181,7 +182,7 @@ def read_dan(fname):
             r.shift = [0., 0.]
             r.shift[{'pionowo': 1, 'poziomo': 0}[line[3].lower()]] = scale * float(line[2])
             line = input.next()
-        r.x0, r.y0, r.x1, r.y1 = [ scale * float(x) for x in  line[1:5] ]
+        r.x0, r.y0, r.x1, r.y1 = [scale * float(x) for x in line[1:5]]
         mat = line[5]
         if mat == "WYPELNIENIE":
             line = input.next()
@@ -208,25 +209,25 @@ def read_dan(fname):
         kappa_t = line[2].lower()
 
         # create custom material if necessary
-        if sigma_t not in ('n','p','j') or kappa_t not in ('n','p'):
+        if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
             material = Material()
-            if sigma_t not in ('n','p'):
+            if sigma_t not in ('n', 'p'):
                 material.sigma = sigma
             else:
                 material.base = parse_material_name(mat, sigma[0], dopant)
-            if kappa_t not in ('n','p'):
+            if kappa_t not in ('n', 'p'):
                 material.kappa = kappa
             else:
                 material.base = parse_material_name(mat, kappa[0], dopant)
             found = False
-            for mk,mv in materials.items():
+            for mk, mv in materials.items():
                 if material == mv:
                     found = True
                     mat = mk
                     break
             if not found:
-                if sigma_t in ('n','p') or kappa_t in ('n','p'):
-                    mat = unique_material_name() # the given name is the one from database
+                if sigma_t in ('n', 'p') or kappa_t in ('n', 'p'):
+                    mat = unique_material_name()  # the given name is the one from database
                 while mat in materials and materials[mat] != material:
                     mat = unique_material_name()
                 materials[mat] = material
@@ -234,7 +235,7 @@ def read_dan(fname):
             mat = parse_material_name(mat, kappa[0], dopant)
 
         r.material = mat
-        if ':' in mat: r.material += "=%g" % doping     # add doping information
+        if ':' in mat: r.material += "=%g" % doping  # add doping information
 
         # heat sources
         line = input.next()
@@ -259,10 +260,13 @@ def read_dan(fname):
         nbc = int(line[0])
         for nc in range(nbc):
             line = input.next()
-            x0, y0, x1, y1 = [ scale * float(x) for x in line[0:4] ]
-            try: val = float(line[4])
-            except IndexError: val = 0.
-            except ValueError: val = 0.
+            x0, y0, x1, y1 = [scale * float(x) for x in line[0:4]]
+            try:
+                val = float(line[4])
+            except IndexError:
+                val = 0.
+            except ValueError:
+                val = 0.
             if (x0 == x1):
                 bounds.append(dict(dir='vertical', at=x0, start=y0, stop=y1, optional=opt, value=val, valname=vname))
             elif (y0 == y1):
@@ -271,34 +275,32 @@ def read_dan(fname):
                 raise ValueError("boundary condition line is neither horizontal nor vertical")
         return bounds
 
-    boundaries = {}
-    boundaries['voltage'] = parse_bc()
-    boundaries['temperature'] = parse_bc()
-    boundaries['convection'] = parse_bc('coeff', 'ambient="300"')
-    boundaries['radiation'] = parse_bc('emissivity', 'ambient="300"')
-    try: boundaries['mesh'] = parse_bc()
-    except: pass
+    boundaries = {
+        'voltage': parse_bc(),
+        'temperature': parse_bc(),
+        'convection': parse_bc('coeff', 'ambient="300"'),
+        'radiation': parse_bc('emissivity', 'ambient="300"')}
+    try:
+        boundaries['mesh'] = parse_bc()
+    except:
+        pass
 
-    actives = [ r for r in regions if r.role == 'active' ]
+    actives = [r for r in regions if r.role == 'active']
     if len(actives) == 1:
         actives[0].name = "active"
         actlevel = True
     elif len(actives) == 0:
         actlevel = False
     else:
-        actlevel = sum([ 0.5 * (r.y0 + r.y1) for r in actives ]) / len(actives)
-
-    print("")
+        actlevel = sum([0.5 * (r.y0 + r.y1) for r in actives]) / len(actives)
 
     return name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel
 
 
 def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pnjcond, actlevel):
-    '''Write output xpl file'''
+    """Write output xpl file"""
 
-    print("Writing %s.xpl" % name)
-
-    ofile = open(name+'.xpl', 'w')
+    ofile = open(name, 'w')
 
     def out(text=''):
         ofile.write(text)
@@ -319,21 +321,22 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
     materials.sort(key=lambda t: t[0])
     if materials:
         out('<materials>')
-        for mn,mat in materials:
+        for mn, mat in materials:
             mat.write(ofile, mn)
         out('</materials>\n')
 
     # geometry
     out('<geometry>\n  <%s name="main" axes="%s"%s>' % (geometry, axes, geomore))
-    out('<container>')
+    out('    <container>')
     for r in regions:
         r.write(ofile)
-    out('</container>')
+    out('    </container>')
     out('  </%s>\n</geometry>\n' % geometry)
 
     # default mesh generator
     out('<grids>')
-    out('  <generator type="rectilinear2d" method="divide" name="default">\n    <postdiv by0="4" by1="2"/>\n  </generator>')
+    out('  <generator type="rectangular2d" method="divide" name="default">\n'
+        '    <postdiv by0="4" by1="2"/>\n  </generator>')
     out('</grids>\n')
 
     def save_boundaries(name):
@@ -341,11 +344,11 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('    <%s>' % name)
             for data in boundaries[name]:
                 out(('      <condition %(valname)s="%(value)s" %(optional)s><place line="%(dir)s"' +
-                             ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>') % data)
+                     ' start="%(start)s" stop="%(stop)s" at="%(at)s"/></condition>') % data)
             out('    </%s>' % name)
 
     # default solvers
-    therm =  boundaries['temperature'] or boundaries['convection'] or boundaries['radiation'] or heats
+    therm = boundaries['temperature'] or boundaries['convection'] or boundaries['radiation'] or heats
     electr = boundaries['voltage']
 
     if therm or electr:
@@ -361,7 +364,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('  <electrical solver="Shockley%s" name="ELECTRICAL">' % suffix)
             out('    <geometry ref="main"/>\n    <mesh ref="default"/>')
             if pnjcond is not None:
-                out('    <junction pnjcond="%g" heat="wavelength"/>' % pnjcond[1])
+                out('    <junction pnjcond="%g" beta="18" js="1"/>' % pnjcond[1])
             save_boundaries('voltage')
             out('  </electrical>')
         out('</solvers>\n')
@@ -376,12 +379,12 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('  <!-- heats are attached in the script -->')
         out('</connects>\n')
 
-    ## script
-    out('<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
+    # # script
+    out(
+        '<script><![CDATA[\n# Here you may put your calculations. Below there is a sample script (tune it to your needs):\n')
 
     if bool(therm) ^ bool(electr):
         out('import sys, os')
-
 
     if heats:
         out('heat_profile = StepProfile(GEO.main)')
@@ -392,12 +395,6 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
             out('THERMAL.inHeat = ELECTRICAL.outHeat + heat_profile.outHeat\n')
         else:
             out('THERMAL.inHeat = heat_profile.outHeat\n')
-
-    if electr:
-        out('# Adjust the values below!')
-        out('ELECTRICAL.inWavelength = 1300.')
-        out('ELECTRICAL.js = 1.1')
-        out('ELECTRICAL.beta = 19.\n')
 
     if therm and electr:
         out('task = algorithm.ThermoElectric(THERMAL, ELECTRICAL)')
@@ -492,28 +489,72 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
     out('</plask>')
 
 
-if __name__ == "__main__":
+def load_dan(parent):
+    """Convert _temp.dan file to .xpl, save it to disk and open oi PLaSK"""
 
-    code = 0
+    remove_self = parent.document.filename is None and not parent.isWindowModified()
+
+    iname = QtGui.QFileDialog.getOpenFileName(parent, "Import RPSMES file", gui.CURRENT_DIR,
+                                              "RPSMES file (*.dan)")
+    if type(iname) == tuple:
+        iname = iname[0]
+    if not iname:
+        return
+    dest_dir = os.path.dirname(iname)
 
     try:
-        iname = sys.argv[1]
-    except IndexError:
-        sys.stderr.write("Usage: %s input_file_temp.dan\n" % sys.argv[0])
-        code = 2
+        read = read_dan(iname)
+        obase = os.path.join(dest_dir,
+                             os.path.basename(iname)[:-9] if iname[-9] == '_' else os.path.basename(iname)[:-4])
+    except Exception as err:
+        msgbox = QtGui.QMessageBox()
+        msgbox.setWindowTitle("Import Error")
+        msgbox.setText("There was an error while reading the RPSMES file.\n\n"
+                       "Probably the chosen file was not in a RPSMES or the parser does not understand its syntax.")
+        msgbox.setDetailedText(str(err))
+        msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+        msgbox.setIcon(QtGui.QMessageBox.Error)
+        msgbox.exec_()
     else:
-        dest_dir = os.path.dirname(iname)
-
+        oname = obase + '.xpl'
+        n = 1
+        while os.path.exists(oname):
+            oname = obase + '-{}.xpl'.format(n)
+            n += 1
         try:
-            read = read_dan(iname)
-            name = os.path.join(dest_dir, os.path.basename(iname)[:-9])
-            write_xpl(name, *read[1:])
+            write_xpl(oname, *read[1:])
         except Exception as err:
-            import traceback as tb
-            tb.print_exc()
-            #sys.stderr.write("\n%s: %s\n" % (err.__class__.__name__, err))
-            code = 1
+            msgbox = QtGui.QMessageBox()
+            msgbox.setWindowTitle("Import Error")
+            msgbox.setText("There was an error while saving the converted XPL file.")
+            msgbox.setDetailedText(str(err))
+            msgbox.setStandardButtons(QtGui.QMessageBox.Ok)
+            msgbox.setIcon(QtGui.QMessageBox.Error)
+            msgbox.exec_()
         else:
-            print("\nDone!")
+            new_window = gui.MainWindow(oname)
+            try:
+                if new_window.document.filename is not None:
+                    new_window.resize(parent.size())
+                    gui.WINDOWS.add(new_window)
+                    if remove_self:
+                        parent.close()
+                        gui.WINDOWS.remove(parent)
+                    else:
+                        new_window.move(parent.x() + 24, parent.y() + 24)
+                else:
+                    new_window.setWindowModified(False)
+                    new_window.close()
+            except AttributeError:
+                new_window.setWindowModified(False)
+                new_window.close()
 
-    sys.exit(code)
+
+def load_dan_operation(parent):
+    action = QtGui.QAction(QtGui.QIcon.fromTheme('document-open'),
+                           '&Import RPSMES .dan file...', parent)
+    action.triggered.connect(lambda: load_dan(parent))
+    return action
+
+
+gui.OPERATIONS.append(load_dan_operation)

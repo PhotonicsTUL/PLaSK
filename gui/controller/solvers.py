@@ -155,10 +155,11 @@ class SolverAutoWidget(QtGui.QScrollArea):
                         skip = len(attr)
                         data = model.data[group]
                         items = [(int(k[skip:]), data[k]) for k in data.keys() if k[:skip] == attr and k[-1].isdigit()]
-                        values = (max(i[0] for i in items) + 1) * ['']
-                        for i, v in items:
-                            values[i] = v
-                        edit.setPlainText('\n'.join(values))
+                        if items:
+                            values = (max(i[0] for i in items) + 1) * ['']
+                            for i, v in items:
+                                values[i] = v
+                            edit.setPlainText('\n'.join(values))
                     else:
                         value = model.data[group][attr]
                         if type(edit) == QtGui.QComboBox:
