@@ -140,7 +140,9 @@ class StubCreator(object):
 
     #e.g. BottomOf( (GeometryObject)object [, (PathHints)path=None]) -> Boundary :
     # search for: (type)name[=default_value]
-    funcarg_re = re.compile("\\(([a-zA-Z0-9_]+)\\)([a-zA-Z0-9_]+)(?:=([a-zA-Z0-9_]+|'[^']*'|\"[^\"]*\"))?")
+    funcarg_re = re.compile("\\(([a-zA-Z0-9_]+)\\)"
+                            "([a-zA-Z0-9_]+)"
+                            "(?:=([a-zA-Z0-9_+-]+|'[^']*'|\"[^\"]*\"|\\([0-9eEj+-]+\\)))?")
 
     def func_args(self, func):
         try:
@@ -221,7 +223,6 @@ class StubCreator(object):
 if __name__ == "__main__":
     for arg in sys.argv[1:]:
         try:
-            print("Generating stubs for module: " + arg)
             c = StubCreator(arg)
             c.create_stub_from_module(arg)
             path_comp = arg.split('.')
@@ -236,5 +237,6 @@ if __name__ == "__main__":
             file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+')
             print(c, file=file)
         except Exception as e:
+            print("Error while generating stubs for module:", arg, file=sys.stderr)
             import traceback
             traceback.print_exc(e)

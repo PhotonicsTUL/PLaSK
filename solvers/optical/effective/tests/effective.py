@@ -194,7 +194,7 @@ class EffectiveFrequency(unittest.TestCase):
         )
 
     def testComputations(self):
-        m = self.solver.find_mode(980.)
+        m = self.solver.find_mode(980.1)
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
         self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )
@@ -207,14 +207,14 @@ class EffectiveFrequency(unittest.TestCase):
         else:
             def fun(g):
                 self.profile[self.manager.geometry['active']] = g
-                m = self.solver.find_mode(980.)
+                m = self.solver.find_mode(980.1)
                 return imag(self.solver.modes[m].lam)
             threshold = brentq(fun, 0., 2000., xtol=1e-6)
             self.assertAlmostEqual( threshold, 1181.7, 1 )
 
     def testAbsorptionIntegral(self):
         self.profile[self.manager.geometry['active']] = 1181.6834
-        m = self.solver.find_mode(980.)
+        m = self.solver.find_mode(980.1)
         self.solver.modes[m].power = 2.0
         box = self.solver.geometry.item.bbox
         field = self.solver.outLightMagnitude(m, mesh.Rectangular2D(mesh.Ordered([0.]), mesh.Ordered([box.lower.z, box.upper.z])))
@@ -223,7 +223,7 @@ class EffectiveFrequency(unittest.TestCase):
 
     def testAbsorbedHeat(self):
         self.profile[self.manager.geometry['active']] = 1181.6834
-        m = self.solver.find_mode(980.)
+        m = self.solver.find_mode(980.1)
         self.solver.modes[m].power = 2.0
         box = self.solver.geometry.get_object_bboxes(self.manager.geometry['active'])[0]
         msh = mesh.Rectangular2D(mesh.Regular(0., 10., 1000), [0.5 * (box.lower.z + box.upper.z)])

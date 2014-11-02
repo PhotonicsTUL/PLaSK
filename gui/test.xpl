@@ -126,6 +126,7 @@
     <mode symmetry="Etran"/>
   </optical>
   <filter for="Temperature" geometry="GeoTE" name="filtr"/>
+  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective"/>
 </solvers>
 
 <connects>
@@ -171,6 +172,8 @@ a.prop
 a.fun()
 
 config.axes = 'rz'
+
+efm.
 
 cyl = geometry.Cylinder(2, 1, None)
 cyl.get_object_positions

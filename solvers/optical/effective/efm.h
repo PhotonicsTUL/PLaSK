@@ -52,16 +52,30 @@ struct PLASK_SOLVER_API EffectiveFrequencyCylSolver: public SolverWithMesh<Geome
         FieldR(dcomplex j, dcomplex h): J(j), H(h) {}
         FieldR operator*(dcomplex a) const { return FieldR(a*J, a*H); }
         FieldR operator/(dcomplex a) const { return FieldR(J/a, H/a); }
-        FieldR operator*=(dcomplex a) { J *= a; H *= a; return *this; }
-        FieldR operator/=(dcomplex a) { J /= a; H /= a; return *this; }
+        FieldR& operator*=(dcomplex a) { J *= a; H *= a; return *this; }
+        FieldR& operator/=(dcomplex a) { J /= a; H /= a; return *this; }
     };
 
     struct MatrixR {
         dcomplex JJ, JH, HJ, HH;
         MatrixR(dcomplex jj, dcomplex jh, dcomplex hj, dcomplex hh): JJ(jj), JH(jh), HJ(hj), HH(hh) {}
-        FieldR operator*(const FieldR& v) { return FieldR(JJ*v.J + JH*v.H, HJ*v.J + HH*v.H); }
+        static MatrixR eye() { return MatrixR(1.,0.,0.,1.); }
+        static MatrixR diag(dcomplex j, dcomplex h) { return MatrixR(j,0.,0.,h); }
+        MatrixR& operator*(dcomplex c) { JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
+        MatrixR& operator/(dcomplex d) { dcomplex c = 1./d; JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
+        FieldR operator*(const FieldR& v) {
+            return FieldR(JJ*v.J + JH*v.H, HJ*v.J + HH*v.H);
+        }
+        MatrixR operator*(const MatrixR& o) {
+            return MatrixR(JJ*o.JJ + JH*o.HJ, JJ*o.JH + JH*o.HH,
+                           HJ*o.JJ + HH*o.HJ, HJ*o.JH + HH*o.HH);
+        }
         FieldR solve(const FieldR& v) {
             return FieldR(HH*v.J - JH*v.H, -HJ*v.J + JJ*v.H) / (JJ*HH - JH*HJ);
+        }
+        MatrixR solve(const MatrixR& o) {
+            return MatrixR(HH*o.JJ - JH*o.HJ, HH*o.JH - JH*o.HH, -HJ*o.JJ + JJ*o.HJ, -HJ*o.JH + JJ*o.HH)
+                    / (JJ*HH - JH*HJ);
         }
     };
 

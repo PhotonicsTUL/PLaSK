@@ -339,7 +339,7 @@ if(BUILD_PYTHON)
     file(REMOVE ${plask_stubs_files}) # Wrong stubs can make build fail
     if(BUILD_GUI)
         add_custom_command(OUTPUT ${plask_stubs_files}
-                           COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
+                           COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py
                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/python
                           )

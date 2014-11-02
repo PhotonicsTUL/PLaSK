@@ -109,7 +109,7 @@ macro(make_default)
             string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
             set(SOLVER_STUB ${CMAKE_BINARY_DIR}/share/plask/stubs/${SOLVER_DIR}.py)
             add_custom_command(OUTPUT ${SOLVER_STUB}
-                               COMMAND plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
+                               COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
                                DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
                                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/stubs
                               )

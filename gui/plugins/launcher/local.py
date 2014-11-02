@@ -24,7 +24,7 @@ from gui.utils.config import CONFIG
 
 
 class OutputWindow(QtGui.QMainWindow):
-    '''Main Qt window class'''
+    """Main Qt window class"""
 
     def __init__(self, filename, launcher, parent=None):
         super(OutputWindow, self).__init__(parent)
@@ -45,6 +45,7 @@ class OutputWindow(QtGui.QMainWindow):
         font.setFamily(font_family)
         font.setPointSize(int(CONFIG('launcher_local/font_size', 10)))
         self.messages = QtGui.QTextEdit()
+        self.messages.setWordWrapMode(QtGui.QTextOption.NoWrap)
         self.messages.setReadOnly(True)
         self.messages.setAcceptRichText(True)
         self.messages.setFont(font)
@@ -247,8 +248,8 @@ class PlaskThread(QtCore.QThread):
         while self.proc.poll() is None:
             line = self.proc.stdout.readline().rstrip()
             self.parse_line(line)
-        stdout, stderr = self.proc.communicate()
-        for line in stdout.splitlines():
+        out, _ = self.proc.communicate()
+        for line in out.splitlines():
             self.parse_line(line)
 
     def kill_process(self):

@@ -147,12 +147,18 @@ def get_docstring(document, text, block, column):
             defs = script.completions()
             if defs:
                 doc = defs[0].docstring(raw="True")
-                if doc:
-                    return defs[0].name, doc
-                else:
+                name = defs[0].name
+                if not doc:
                     defs = script.goto_definitions()
                     if defs:
-                        return defs[0].name, defs[0].docstring()
+                        name = defs[0].name
+                        doc = defs[0].docstring()
+                if _DEBUG:
+                    d = defs[0]
+                    print('{}: [{}] {}'.format(d.name, d.type, d.description))
+                    sys.stdout.flush()
+                if doc:
+                    return name, doc
         except:
             if _DEBUG:
                 import traceback
