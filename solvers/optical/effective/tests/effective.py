@@ -177,7 +177,7 @@ class EffectiveFrequency(unittest.TestCase):
         axis1  = plask.mesh.Ordered([self.manager.geometry.layers.bbox.upper.z+-1e-6])
         dr = axis0[1]-axis0[0]
         msh = mesh.Rectangular2D(axis0, axis1)
-        self.solver.find_mode(980., 0)
+        self.solver.find_mode(980.1, 0)
         self.solver.modes[0].power = 2000.
         field = self.solver.outLightMagnitude(0,msh).array[:,-1]
         integral = 2e-12 * pi * sum(field * msh.axis0) * dr
