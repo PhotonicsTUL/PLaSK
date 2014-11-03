@@ -140,4 +140,5 @@ class GNReadConf(object):
 
 def axes_to_str(axes, none_axes_result = ''):
     if axes is None: return none_axes_result
+    if isinstance(axes, basestring): return axes
     return ', '.join(axes)

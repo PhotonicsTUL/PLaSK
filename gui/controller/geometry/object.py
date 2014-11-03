@@ -26,7 +26,7 @@ class GNObjectController(GNodeController):
         self.form_layout.addRow('roles', self.role)
 
         self.axes = QtGui.QComboBox()
-        self.axes.setEditable(True)
+        self.axes.setEditable(True)     #TODO zablokować możliwość podawania {
         self.axes.addItems(['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])
         self.form_layout.addRow('axes', self.axes)
 
@@ -36,4 +36,4 @@ class GNObjectController(GNodeController):
 
     def on_edit_enter(self):
         self.role.setText(none_to_empty(self.node.role))
-        self.axes.setEditText(none_to_empty(self.node.axes))
+        self.axes.setEditText(axes_to_str(self.node.axes))
