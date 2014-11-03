@@ -108,3 +108,6 @@ class GNode(object):
     def stub(self):
         return ''
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.node import GNodeController
+        return GNodeController(document, model, self)

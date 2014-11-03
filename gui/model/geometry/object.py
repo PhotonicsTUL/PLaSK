@@ -45,3 +45,7 @@ class GNObject(GNode):
                 res += cs
                 res += '\n'
         return res[:-1]
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.object import GNObjectController
+        return GNObjectController(document, model, self)

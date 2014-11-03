@@ -18,7 +18,7 @@ from ...utils.widgets import table_last_col_fill
 from ..table import table_with_manipulators
 from ...model.grids import GridsModel
 
-# TODO use ControllerWithSubController
+# TODO use ControllerWithSubController (?)
 class GridsController(Controller):
 
     def __init__(self, document, model=None):
@@ -73,7 +73,7 @@ class GridsController(Controller):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
+            self.grids_table.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
 
     def get_widget(self):
         return self.splitter

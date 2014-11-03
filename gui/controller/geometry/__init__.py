@@ -141,6 +141,10 @@ class GeometryController(Controller):
         if model is None: model = GeometryModel()
         Controller.__init__(self, document, model)
 
+        self._current_index = None
+        self._last_index = None
+        self._current_controller = None
+
         external = QtGui.QGroupBox()
         vbox = QtGui.QVBoxLayout()
         external.setLayout(vbox)
@@ -148,7 +152,7 @@ class GeometryController(Controller):
         vbox.addWidget(self._construct_toolbar())
         vbox.addWidget(self._construct_tree(model))
         tree_selection_model = self.tree.selectionModel()   #workaround of segfault in pySide, see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
-        self.tree.selectionModel().selectionChanged.connect(self.update_actions)
+        tree_selection_model.selectionChanged.connect(self.grid_selected)
         self.update_actions()
 
         self.splitter = QtGui.QSplitter()
@@ -157,6 +161,45 @@ class GeometryController(Controller):
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
         self.splitter.addWidget(self.parent_for_editor_widget)
+
+    def set_current_index(self, new_index):
+        """
+            Try to change current script.
+            :param QtCore.QModelIndex new_index: index of new current script
+            :return: False only when script should restore old selection
+        """
+        if self._current_index == new_index: return True
+        if self._current_controller is not None:
+            if not self._current_controller.on_edit_exit():
+                return False
+        self._current_index = new_index
+        for i in reversed(range(self.parent_for_editor_widget.count())):
+            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
+        if self._current_index is None:
+            self._current_controller = None
+        else:
+            self._current_controller = self._current_index.internalPointer().get_controller(self.document, self.model)
+            self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
+            self._current_controller.on_edit_enter()
+        self.update_actions()
+        return True
+
+    def grid_selected(self, new_selection, old_selection):
+        if new_selection.indexes() == old_selection.indexes(): return
+        indexes = new_selection.indexes()
+        if not self.set_current_index(new_index=(indexes[0] if indexes else None)):
+            self.tree.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
+
+    def on_edit_enter(self):
+        self.tree.selectionModel().clear()   # model could completly changed
+        #if self._last_index is not None:
+        #    self.tree.selectRow(self._last_index)
+
+    def on_edit_exit(self):
+        if self._current_controller is not None:
+            self._last_index = self._current_index
+            self.tree.selectionModel().clear()
+        return True
 
     def get_widget(self):
         return self.splitter

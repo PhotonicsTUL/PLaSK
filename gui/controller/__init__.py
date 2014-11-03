@@ -96,12 +96,18 @@ class NoConfController(Controller):
         return self.label
 
 
+# unused now
 class ControllerWithSubController(Controller):
-    """Subclass must have grid field or property (qt table or tree) and implement get_controller_for_index."""
+    """
+        Subclass must have grid field or property (qt table or tree) and implement get_controller_for_index.
+        After changing index, on_current_index_changed is called.
+    """
 
     def __init__(self, document, model):
-        super(ControllerWithSubController, self).__init__(self, document, model)
+        """self.grid must be available before call this __init__"""
+        super(ControllerWithSubController, self).__init__(document, model)
 
+        self._last_index = None
         self._current_index = None
         self._current_controller = None
 
@@ -111,12 +117,15 @@ class ControllerWithSubController(Controller):
 
         self.parent_for_editor_widget = QtGui.QStackedWidget()
 
-        selection_model = self.grids_table.selectionModel()
+        selection_model = self.grid.selectionModel()
         selection_model.selectionChanged.connect(self.grid_selected) #currentChanged ??
 
     def get_controller_for_index(self, index):
         #self.model.entries[new_index].get_controller(self.document)
         return None
+
+    def on_current_index_changed(self, new_index):
+        pass
 
     def set_current_index(self, new_index):
         """
@@ -138,6 +147,7 @@ class ControllerWithSubController(Controller):
             if self._current_controller is not None:
                 self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
                 self._current_controller.on_edit_enter()
+        self.on_current_index_changed(new_index)
         return True
 
     def grid_selected(self, new_selection, old_selection):
@@ -145,3 +155,14 @@ class ControllerWithSubController(Controller):
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
             self.grid.selectionModel().select(old_selection, QtGui.QItemSelectionModel.ClearAndSelect)
+
+    def on_edit_enter(self):
+        self.grid.selectionModel().clear()   # model could completly changed
+        if self._last_index is not None:
+            self.grid.selectRow(self._last_index)
+
+    def on_edit_exit(self):
+        if self._current_controller is not None:
+            self._last_index = self._current_index
+            self.grid.selectionModel().clear()
+        return True
