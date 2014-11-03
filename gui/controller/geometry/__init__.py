@@ -18,7 +18,7 @@ from ...qt import QtGui, QtCore
 
 from .. import Controller
 
-# TODO use ControllerWithSubController
+# TODO use ControllerWithSubController (?)
 class GeometryController(Controller):
 
     def _add_child(self, type_constructor, parent_index):

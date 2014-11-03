@@ -100,7 +100,7 @@ class GNReadConf(object):
     @axes.setter
     def axes(self, name_or_list):
         if name_or_list is None: return
-        self._axes =  axeslist_by_name(name_or_list) if isinstance(name_or_list, basestring) else list(name_or_list)
+        self._axes =  axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) else list(name_or_list)
 
     def aligners(self, dims, axis_nr):
         if dims is None: dims = self.parent.dim
@@ -136,3 +136,8 @@ class GNReadConf(object):
             pos_str = aligner.position_str(dims, self.axes_names(dims), axis_nr)
             if pos_str is not None and aligner.value:
                 element.attrib[pos_str] = aligner.value
+
+
+def axes_to_str(axes, none_axes_result = ''):
+    if axes is None: return none_axes_result
+    return ', '.join(axes)

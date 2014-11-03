@@ -12,6 +12,7 @@
 # GNU General Public License for more details.
 
 from .node import GNodeController
+from ...model.geometry.reader import axes_to_str
 from ..defines import get_defines_completer
 from ...qt import QtGui
 from ...utils.str import empty_to_none, none_to_empty
@@ -24,13 +25,15 @@ class GNObjectController(GNodeController):
         self.role.setCompleter(self.defines_completer)
         self.form_layout.addRow('roles', self.role)
 
+        self.axes = QtGui.QComboBox()
+        self.axes.setEditable(True)
+        self.axes.addItems(['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])
+        self.form_layout.addRow('axes', self.axes)
+
     def save_data_in_model(self):
         self.node.role = empty_to_none(self.role.text())
+        self.node.axes = empty_to_none(self.axes.currentText())
 
     def on_edit_enter(self):
         self.role.setText(none_to_empty(self.node.role))
-        pass
-        #self.notify_changes = False
-        #for i in range(0, self.model.dim):
-        #    self.axis_edit[i].from_model(self.model.axis[i])
-        #self.notify_changes = True
+        self.axes.setEditText(none_to_empty(self.node.axes))
