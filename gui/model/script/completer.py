@@ -123,7 +123,8 @@ def get_completions(document, text, block, column):
                 print("------------------------------------------------------------------------------------")
                 sys.stdout.flush()
             script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
-            items = [(c.name, _try_type(c)) for c in script.completions() if not c.name.startswith('_') and c.name != 'mro']
+            items = [(c.name, _try_type(c)) for c in script.completions()
+                     if not c.name.startswith('_') and c.name != 'mro']
         except:
             if _DEBUG:
                 import traceback
@@ -146,7 +147,7 @@ def get_docstring(document, text, block, column):
             script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
             defs = script.completions()
             if defs:
-                doc = defs[0].docstring(raw="True")
+                doc = defs[0].docstring()
                 name = defs[0].name
                 if not doc:
                     defs = script.goto_definitions()

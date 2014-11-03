@@ -71,12 +71,13 @@ elif type(RECENT) is not list:
 def update_recent_files(filename):
     global RECENT, CURRENT_DIR
     CURRENT_DIR = os.path.dirname(filename)
-    CONFIG['session/recent_dir'] = CURRENT_DIR  # update_recent_files() will call CONFIG.sync()
+    CONFIG['session/recent_dir'] = CURRENT_DIR
     try:
         RECENT.remove(filename)
     except ValueError:
         pass
-    RECENT.append(filename)
+    if os.path.isfile(filename):
+        RECENT.append(filename)
     RECENT = RECENT[-10:]
     CONFIG['session/recent_files'] = RECENT
     CONFIG.sync()
@@ -264,6 +265,7 @@ class MainWindow(QtGui.QMainWindow):
             self.recent_menu.addAction(action)
 
     def _try_load_from_file(self, filename):
+        update_recent_files(os.path.abspath(filename))
         document = PyDocument(self) if filename.endswith('.py') else XPLDocument(self)
         try:
             document.load_from_file(filename)
@@ -273,7 +275,6 @@ class MainWindow(QtGui.QMainWindow):
                                        'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
-            update_recent_files(os.path.abspath(filename))
             self.document = document
             self.setup_model()
             self.set_changed(False)

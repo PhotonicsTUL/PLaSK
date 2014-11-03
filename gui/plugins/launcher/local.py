@@ -225,6 +225,7 @@ class PlaskThread(QtCore.QThread):
     def parse_line(self, line):
         if not line:
             return
+        line = line
         cat = line[:15]
         line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
         if   cat == "CRITICAL ERROR:": color = "red    "
@@ -240,7 +241,8 @@ class PlaskThread(QtCore.QThread):
         line = line.replace(' ', '&nbsp;')
         try:
             self.mutex.lock()
-            self.lines.append((cat[:-1].strip(), '<span style="color:{};">{}</span>'.format(color, line)))
+            self.lines.append((cat[:-1].strip(),
+                               '<span style="color:{};">{}</span>'.format(color, line)))
         finally:
             self.mutex.unlock()
 

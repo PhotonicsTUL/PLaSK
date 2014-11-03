@@ -259,11 +259,11 @@ py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs) {
     switch (what) {
         case WHAT_NOTHING: return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+            [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
             array
         );
         case WHAT_K0: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+            [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
             array
         );
         case WHAT_NEFF: return UFUNC<dcomplex>(
@@ -685,11 +685,11 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     switch (what) {
         case WHAT_NOTHING: return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setWavelength(x); return self->getDeterminant(); },
+            [self, dispersive](dcomplex x) -> dcomplex { self->setWavelength(x, dispersive); return self->getDeterminant(); },
             array
         );
         case WHAT_K0: return UFUNC<dcomplex>(
-            [self](dcomplex x) -> dcomplex { self->setK0(x); return self->getDeterminant(); },
+            [self, dispersive](dcomplex x) -> dcomplex { self->setK0(x, dispersive); return self->getDeterminant(); },
             array
         );
         case WHAT_KLONG: return UFUNC<dcomplex>(

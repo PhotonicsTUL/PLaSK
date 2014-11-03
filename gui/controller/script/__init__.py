@@ -311,7 +311,7 @@ class HelpDock(QtGui.QDockWidget):
         pal.setColor(QtGui.QPalette.Base, QtGui.QColor("#ffe"))
         self.textarea.setPalette(pal)
         self.textarea.setFont(help_font)
-        self.textarea.setMinimumWidth(82 * self.textarea.fontMetrics().width('W'))
+        self.textarea.setMinimumWidth(86 * self.textarea.fontMetrics().width('W'))
         self.textarea.setMinimumHeight(8 * self.textarea.fontMetrics().height())
         self.setWidget(self.textarea)
         self.setObjectName('help')
