@@ -465,7 +465,7 @@ void register_data_vectors() {
             "        mesh ordering must match the data stride, so it is possible to avoid\n"
             "        data copying (defaults for both are fine).\n"
             "Returns:\n"
-            "    plask._Data: Data based on the specified mesh and array."
+            "    plask._Data: Data based on the specified mesh and array.\n\n"
 
             "Examples:\n"
             "    To create the data from the flat sequential array:\n\n"
@@ -495,7 +495,7 @@ void register_data_vectors() {
             "    array([[1., 2.], [3., 4.], [5., 6.]])\n\n"
 
             "Construction of the data objects is efficient i.e. no data is copied in the\n"
-            "memory from the provided array.\n"
+            "memory from the provided array.\n\n"
            );
 }
 

@@ -236,7 +236,7 @@ class MaterialPropertyModel(QtCore.QAbstractTableModel, TableModelEditMethods):
         elif col == 1:
             self._material.properties[row] = (n, value)
 
-    def setData(self, index, value, role = QtCore.Qt.EditRole):
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
         self.set(index.column(), index.row(), value)
         self.fire_changed()
         self.dataChanged.emit(index, index)

@@ -81,7 +81,7 @@ class DefinesModel(TableModel):
         for name, indexes in names.items():
             if len(indexes) > 1:
                 res.append(Info('Duplicated definition name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
-                                Info.ERROR, rows=[0]))
+                                Info.ERROR, cols=[0], rows=indexes))
         return res
 
     def create_default_entry(self):

@@ -9,19 +9,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-SOLVERS = {}
-
-CATEGORIES = (
-    'thermal',
-    'electrical',
-    'gain',
-    'optical'
-)
-
 import sys
 import os
 import re
+
+from collections import OrderedDict
 
 from ..qt import QtCore
 
@@ -32,8 +24,16 @@ from ..utils.xml import print_interior, XML_parser, AttributeReader
 from ..controller.source import SourceEditController
 from ..controller.solvers import ConfSolverController, FilterController
 from .table import TableModel
-from . import TreeFragmentModel
+from . import TreeFragmentModel, Info
 
+SOLVERS = {}
+
+CATEGORIES = (
+    'thermal',
+    'electrical',
+    'gain',
+    'optical'
+)
 
 class Solver(TreeFragmentModel):
     """Base class for all solver models"""
@@ -74,18 +74,18 @@ class Solver(TreeFragmentModel):
     def stub(self):
         if self.category is not None and self.solver is not None:
             lib = self.lib
-            if lib is None:
-                try:
-                    prefix = os.path.dirname(os.path.dirname(sys.executable))
-                    lst_re = re.compile(r'(\w+)\.{}'.format(self.solver))
-                    with open(os.path.join(prefix, 'lib', 'plask', 'solvers', self.category, 'solvers.lst')) as lfile:
-                        for line in lfile:
-                            match = lst_re.match(line)
-                            if match:
-                                lib = match.group(1)
-                                break
-                except (IOError, SystemError):
-                    pass
+            # if lib is None:
+            #     try:
+            #         prefix = os.path.dirname(os.path.dirname(sys.executable))
+            #         lst_re = re.compile(r'(\w+)\.{}'.format(self.solver))
+            #         with open(os.path.join(prefix, 'lib', 'plask', 'solvers', self.category, 'solvers.lst')) as lfile:
+            #             for line in lfile:
+            #                 match = lst_re.match(line)
+            #                 if match:
+            #                     lib = match.group(1)
+            #                     break
+            #     except (IOError, SystemError):
+            #         pass
             if lib is not None:
                 return "import {1}.{2}.{3} as {0}\n{0} = {0}()".format(self.name, self.category, lib, self.solver)
             else:
@@ -351,5 +351,23 @@ class SolversModel(TableModel):
                     return factory(new_solver['name'], parent=self)
 
     def stubs(self):
-
         return "\n".join(solver.stub() for solver in self.entries)
+
+    def create_info(self):
+        res = super(SolversModel, self).create_info()
+        names = OrderedDict()
+        for i, entry in enumerate(self.entries):
+            if not entry.category:
+                res.append(Info('Solver category is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))
+            if not entry.solver and entry.category != 'filter':
+                res.append(Info('Solver type is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(1,)))
+            if not entry.name:
+                res.append(Info('Solver name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(2,)))
+            else:
+                names.setdefault(entry.name, []).append(i)
+        for name, indexes in names.items():
+            if len(indexes) > 1:
+                res.append(Info('Duplicated solver name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
+                                Info.ERROR, cols=[2], rows=indexes))
+        return res
+

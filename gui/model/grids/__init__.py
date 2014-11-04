@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 # Base classes for entries in grids model
+from collections import OrderedDict
 from lxml import etree
 from xml.sax.saxutils import quoteattr
 
@@ -18,8 +19,7 @@ from ...qt import QtCore
 
 from ...utils.xml import print_interior, XML_parser, AttributeReader
 from ...controller.source import SourceEditController
-from .. import TreeFragmentModel
-from ..info import InfoSource
+from .. import TreeFragmentModel, Info
 from ..table import TableModel
 
 
@@ -212,3 +212,18 @@ class GridsModel(TableModel):
                             .format(e.name.replace('-', '_'), display_name(e.type), display_name(e.method))
                          for e in self.entries if e.is_generator)
         return res
+
+    def create_info(self):
+        res = super(GridsModel, self).create_info()
+        names = OrderedDict()
+        for i, entry in enumerate(self.entries):
+            if not entry.name:
+                res.append(Info('Grid name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))
+            else:
+                names.setdefault(entry.name, []).append(i)
+        for name, indexes in names.items():
+            if len(indexes) > 1:
+                res.append(Info('Duplicated solver name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
+                                Info.ERROR, cols=[0], rows=indexes))
+        return res
+

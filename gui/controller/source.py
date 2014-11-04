@@ -180,11 +180,11 @@ class SourceWidget(QtGui.QWidget):
 
     def find_next(self):
         self._find()
-        self.editor.setFocus()
+        #self.editor.setFocus()
 
     def find_prev(self):
         self._find(backward=True)
-        self.editor.setFocus()
+        #self.editor.setFocus()
 
     def find_type(self):
         self._find(cont=True)
@@ -202,7 +202,7 @@ class SourceWidget(QtGui.QWidget):
             cursor.setPosition(start)
             cursor.setPosition(end, QtGui.QTextCursor.KeepAnchor)
             self.editor.setTextCursor(cursor)
-        self.editor.setFocus()
+        # self.editor.setFocus()
         return True
 
     def replace_all(self):
