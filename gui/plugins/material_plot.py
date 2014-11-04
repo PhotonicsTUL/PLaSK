@@ -268,8 +268,10 @@ class MaterialPlot(QtGui.QWidget):
                 continue
             val = v[0].text()
             if val:
-                try: val = float(val)
-                except ValueError: pass
+                try:
+                    val = float(val)
+                except ValueError:
+                    val = str(val)
                 yield str(k.text())[:-1], val
 
     def update_plot(self):

@@ -241,6 +241,7 @@ class MaterialsController(Controller):
         self.propedit.hide()
 
         self.property_model.dataChanged.connect(self.property_data_changed)
+
         self._update_edit = True
 
         prop_splitter.addWidget(self.propedit)
@@ -275,11 +276,18 @@ class MaterialsController(Controller):
     def propedit_changed(self, row):
         if self._update_edit:
             self._update_edit = False
-            self.property_model.setData(self.property_model.createIndex(row, 1), self.propedit.toPlainText())
-            self._update_edit = True
+            try:
+                self.property_model.setData(self.property_model.createIndex(row, 1), self.propedit.toPlainText())
+            finally:
+                self._update_edit = True
 
     def property_data_changed(self, tl, br):
-        self.propedit.setPlainText(self.property_model.get(1, tl.row()))
+        if self._update_edit:
+            self._update_edit = False
+            try:
+                self.propedit.setPlainText(self.property_model.get(1, tl.row()))
+            finally:
+                self._update_edit = True
 
     def get_widget(self):
         return self.splitter
