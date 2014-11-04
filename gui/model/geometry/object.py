@@ -49,3 +49,9 @@ class GNObject(GNode):
     def get_controller(self, document, model):
         from ...controller.geometry.object import GNObjectController
         return GNObjectController(document, model, self)
+
+    def minor_properties(self):
+        res = super(GNObject, self).minor_properties()
+        res.append(('axes', self.axes))
+        res.append(('role', self.role))
+        return res

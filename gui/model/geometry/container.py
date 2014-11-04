@@ -125,6 +125,14 @@ class GNStack(GNContainerBase):
         res.insert(0, {'zero': GNZero.from_xml})
         return res
 
+    def major_properties(self):
+        res = super(GNStack, self).major_properties()
+        #if self.aligner.position is not None:
+        #    res.append((self.aligner.position_str(self.children_dim, ), self.aligner.value))
+        res.append(('repeat', self.repeat))
+        res.append(('shift', self.shift))
+        return res
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNStack(dim = 2)
@@ -173,6 +181,17 @@ class GNShelf(GNContainerBase):
     def add_child_options(self):
         res = super(GNShelf, self).add_child_options()
         res.insert(0, {'gap': GNGap.from_xml, 'zero': GNZero.from_xml})
+        return res
+
+    def major_properties(self):
+        res = super(GNShelf, self).major_properties()
+        res.append(('repeat', self.repeat))
+        res.append(('shift', self.shift))
+        return res
+
+    def minor_properties(self):
+        res = super(GNShelf, self).minor_properties()
+        res.append(('flat', self.flat))
         return res
 
     @classmethod

@@ -40,6 +40,25 @@ class GNLeaf(GNObject):
             if self.material_top is not None: element.attrib['material-top'] = self.material_top
             if self.material_bottom is not None: element.attrib['material-bottom'] = self.material_bottom
 
+    def major_properties(self):
+        res = super(GNLeaf, self).major_properties()
+        if self.material_top == self.material_bottom:
+            res.append(('material', self.material_top))
+        else:
+            if self.material_top is not None and self.material_bottom is not None:
+                res.append(('top / bottom materials', '{} / {}'.format(self.material_top, self.material_bottom)))
+            else:
+                res.append(('top material', self.material_top))
+                res.append(('bottom material', self.material_bottom))
+        return res
+
+
+    def minor_properties(self):
+        res = super(GNLeaf, self).minor_properties()
+        res.append(('step dist', self.step_dist))
+        res.append(('step num', self.step_num))
+        return res
+
     def set_material(self, material):
         self.material_bottom = self.material_top = material
 
@@ -67,6 +86,11 @@ class GNBlock(GNLeaf):
 
     def python_type(self):
         return 'geometry.Block{}D'.format(self.dim)
+
+    def major_properties(self):
+        res = super(GNBlock, self).major_properties()
+        if any(self.size): res.append(('size', ', '.join('?' if x is None else x for x in self.size)))
+        return res
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -102,6 +126,12 @@ class GNCylinder(GNLeaf):
     def python_type(self):
         return 'geometry.Cylinder'
 
+    def major_properties(self):
+        res = super(GNCylinder, self).major_properties()
+        res.append(('radius', self.radius))
+        res.append(('height', self.height))
+        return res
+
     @classmethod
     def from_xml_3d(cls, element, conf):
         result = GNCylinder()
@@ -128,6 +158,11 @@ class GNCircle(GNLeaf):
 
     def python_type(self):
         return 'geometry.Circle' if self.dim == 2 else 'geometry.Sphere'
+
+    def major_properties(self):
+        res = super(GNCircle, self).major_properties()
+        res.append(('radius', self.radius))
+        return res
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -167,6 +202,12 @@ class GNTriangle(GNLeaf):
 
     def python_type(self):
         return 'geometry.Triangle'
+
+    def major_properties(self):
+        res = super(GNTriangle, self).major_properties()
+        points_str = ', '.join('({}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?') for x in self.points if x != (None, None))
+        if points_str: res.append(('points', points_str))
+        return res
 
     @classmethod
     def from_xml_2d(cls, element, conf):

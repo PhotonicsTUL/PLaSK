@@ -52,6 +52,12 @@ class GNTranslation(GNTransform):
     def python_type(self):
         return 'geometry.Translation{}D'.format(self.dim)
 
+    def major_properties(self):
+        res = super(GNTranslation, self).major_properties()
+        if any(self.size):
+            res.append('translation', ', '.join(x if x else '?' for x in self.size))
+        return res
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNTranslation(dim = 2)
@@ -95,6 +101,13 @@ class GNClip(GNTransform):
     def python_type(self):
         return 'geometry.Clip{}D'.format(self.dim)
 
+    def major_properties(self):
+        res = super(GNClip, self).major_properties()
+        res.extend((n, getattr(self, n)) for n in ('left', 'right', 'bottom', 'top'))
+        if self.dim == 3:
+            res.extend((n, getattr(self, n)) for n in ('back', 'front'))
+        return res
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNClip(dim = 2)
@@ -128,6 +141,11 @@ class GNFlip(GNTransform):
     def python_type(self):
         return 'geometry.Flip{}D'.format(self.dim)
 
+    def major_properties(self):
+        res = super(GNFlip, self).major_properties()
+        res.append(('axis'), self.axis)
+        return res
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNFlip(dim = 2)
@@ -160,6 +178,11 @@ class GNMirror(GNTransform):
 
     def python_type(self):
         return 'geometry.Mirror{}D'.format(self.dim)
+
+    def major_properties(self):
+        res = super(GNMirror, self).major_properties()
+        res.append(('axis'), self.axis)
+        return res
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -221,6 +244,11 @@ class GNExtrusion(GNTransform):
 
     def python_type(self):
         return 'geometry.Extrusion'
+
+    def major_properties(self):
+        res = super(GNExtrusion, self).major_properties()
+        res.append(('length', self.length))
+        return res
 
     @classmethod
     def from_xml_3d(cls, element, conf):

@@ -9,8 +9,10 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import cgi
 
 from lxml import etree
+import operator
 from ...qt import QtCore
 
 from .. import SectionModel
@@ -65,24 +67,36 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
 
     def data(self, index, role = QtCore.Qt.DisplayRole):
         if not index.isValid(): return None
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+        if role == QtCore.Qt.DisplayRole: #or role == QtCore.Qt.EditRole:
             item = index.internalPointer()
             if index.column() == 0:
                 return item.tag_name(full_name=True)
             else:
-                return none_to_empty(getattr(item, 'name', ''))
+                name = getattr(item, 'name', '')
+                if name:
+                    res = '<span style="color: #866">name</span> <b>{}</b>'.format(cgi.escape(name))
+                else:
+                    res = ''
+                for prop_table in (item.major_properties(), item.minor_properties()):
+                    sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
+                    for n, v in sorted_prop:
+                        if v is None: continue
+                        if res: res += ' &nbsp; '
+                        res += '<span style="color: #766">{}</span>&nbsp;{}'.format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
+                        #replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
+                return res
 
     def flags(self, index):
         if not index.isValid(): return QtCore.Qt.NoItemFlags
         res = QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-        if not self.is_read_only():
-            if index.column() == 1 and hasattr(index.internalPointer(), 'name'): #name
-                res |= QtCore.Qt.ItemIsEditable
+        #if not self.is_read_only():
+        #    if index.column() == 1 and hasattr(index.internalPointer(), 'name'): #name
+        #        res |= QtCore.Qt.ItemIsEditable
         return res
 
     def headerData(self, section, orientation, role = QtCore.Qt.DisplayRole):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            return ('tag', 'name')[section]
+            return ('tag', 'properties')[section]
         return None
 
     def children_list(self, parent_index):

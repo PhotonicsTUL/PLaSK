@@ -37,6 +37,11 @@ class GNAgain(GNode):
     def stub(self):
         return ''
 
+    def major_properties(self):
+        res = super(GNAgain, self).major_properties()
+        res.append(('ref', self.ref))
+        return res
+
     @classmethod
     def from_xml(cls, element, conf):
         result = GNAgain()
@@ -58,6 +63,11 @@ class GNCopyChild(GNode):
     def attributes_to_xml(self, element, conf):
         super(GNCopyChild, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'object')
+
+    def major_properties(self):
+        res = super(GNCopyChild, self).major_properties()
+        res.append(('object', self.object))
+        return res
 
 
 class GNCDelete(GNCopyChild):
@@ -90,6 +100,11 @@ class GNCReplace(GNCopyChild):
     def tag_name(self, full_name = True):
         return "replace"
 
+    def major_properties(self):
+        res = super(GNCReplace, self).major_properties()
+        res.append(('with', self.replacer))
+        return res
+
 
 class GNCToBlock(GNCopyChild):
 
@@ -107,6 +122,11 @@ class GNCToBlock(GNCopyChild):
 
     def tag_name(self, full_name = True):
         return "toblock"
+
+    def major_properties(self):
+        res = super(GNCToBlock, self).major_properties()
+        res.append(('material', self.material))
+        return res
 
 
 class GNCopy(GNObject):

@@ -17,6 +17,7 @@ from ...model.geometry.types import geometry_types_geometries_core
 from ...qt import QtGui, QtCore
 
 from .. import Controller
+from ...utils.widgets import HTMLDelegate
 
 # TODO use ControllerWithSubController (?)
 class GeometryController(Controller):
@@ -134,6 +135,8 @@ class GeometryController(Controller):
     def _construct_tree(self, model):
         self.tree = QtGui.QTreeView()
         self.tree.setModel(model)
+        self.properties_delegate = HTMLDelegate(self.tree)
+        self.tree.setItemDelegateForColumn(1, self.properties_delegate)
         self.tree.setColumnWidth(0, 200)
         return self.tree
 

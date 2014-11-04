@@ -21,6 +21,10 @@ from ...utils.str import empty_to_none, none_to_empty
 class GNObjectController(GNodeController):
 
     def fill_form(self):
+        self.name = QtGui.QLineEdit()
+        self.name.setCompleter(self.defines_completer)
+        self.form_layout.addRow('name', self.name)
+
         self.role = QtGui.QLineEdit()
         self.role.setCompleter(self.defines_completer)
         self.form_layout.addRow('roles', self.role)
@@ -31,9 +35,11 @@ class GNObjectController(GNodeController):
         self.form_layout.addRow('axes', self.axes)
 
     def save_data_in_model(self):
+        self.node.name = empty_to_none(self.name.text())
         self.node.role = empty_to_none(self.role.text())
         self.node.axes = empty_to_none(self.axes.currentText())
 
     def on_edit_enter(self):
+        self.name.setText(none_to_empty(self.node.name))
         self.role.setText(none_to_empty(self.node.role))
         self.axes.setEditText(axes_to_str(self.node.axes))

@@ -111,3 +111,9 @@ class GNode(object):
     def get_controller(self, document, model):
         from ...controller.geometry.node import GNodeController
         return GNodeController(document, model, self)
+
+    def major_properties(self):
+        return []
+
+    def minor_properties(self):
+        return []
