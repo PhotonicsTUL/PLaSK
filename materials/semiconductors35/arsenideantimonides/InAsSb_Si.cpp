@@ -19,14 +19,18 @@ InAsSb_Si::InAsSb_Si(const Material::Composition& Comp, DopingAmountType Type, d
     else
     {
         ND = Val;
-        if (ND <= 1e18) // assumed (no data)
+        // Barashar (2010) only data for InAs used - use it for InAsSb with high As content
+        if (ND <= 1e19)
             Nf_RT = ND;
         else
-            Nf_RT = (0.63*(ND*1e-18-1)+1)*1e18;
+        {
+            double tNL = log10(ND);
+            double tnL = -0.259963*tNL*tNL + 10.9705*tNL - 95.5924;
+            Nf_RT = ( pow(10.,tnL) );
+        }
     }
-    double tInSb_mob_RT = 60000e-4/(1.+pow((Nf_RT/8e16),0.73));
-    double tInAs_mob_RT = 15000e-4/(1.+pow((Nf_RT/1e18),0.81));
-    mob_RT = 1./(As/tInAs_mob_RT+Sb/tInSb_mob_RT) + As*Sb*7000.;
+    double tInAs_mob_RT = 450e-4 + (12000e-4 - 450e-4) / (1.+pow(ND/2e18,0.80)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = tInAs_mob_RT; // data for InAs(0.91)Sb(0.09) fit to above relation (see: Talercio 2014)
 }
 
 MI_PROPERTY(InAsSb_Si, mob,
@@ -36,7 +40,7 @@ MI_PROPERTY(InAsSb_Si, mob,
             MIComment("mob(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InAsSb_Si::mob(double T) const {
-    double tmob = mob_RT * pow(300./T,1.5);
+    double tmob = mob_RT * pow(300./T,1.7); // Adachi (2005) book (d=1.7 for InAs)
     return ( Tensor2<double>(tmob, tmob) );
 }
 
@@ -46,7 +50,8 @@ MI_PROPERTY(InAsSb_Si, Nf,
             MIComment("no temperature dependence")
             )
 double InAsSb_Si::Nf(double T) const {
-    return ( Nf_RT );
+    double tD = -0.00332*log10(Nf_RT)+0.26;
+    return ( Nf_RT*pow(T/300.,tD) );
 }
 
 double InAsSb_Si::Dop() const {
@@ -54,42 +59,41 @@ double InAsSb_Si::Dop() const {
 }
 
 MI_PROPERTY(InAsSb_Si, cond,
-            MIComment("cond(T) assumed, TODO: find exp. data")
+            MIComment("cond(N,T) = q * n(N,T) * mob(n(N,T),T)")
             )
 Tensor2<double> InAsSb_Si::cond(double T) const {
-    double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT;
-    double tCond = tCond_RT * pow(300./T,1.5);
+    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
     return ( Tensor2<double>(tCond, tCond) );
 }
 
 MI_PROPERTY(InAsSb_Si, nr,
-            MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
-            MIArgumentRange(MaterialInfo::wl, 500, 7000),
-            MIComment("TODO")
+            MISource("Paskov"),
+            MIArgumentRange(MaterialInfo::wl, 2050, 3450),
+            MIComment("for high (0.80-1.0) As content")
             )
 double InAsSb_Si::nr(double wl, double T, double n) const {
-    double nR300K = sqrt(1.+8.75e-6*wl*wl/(1e-6*wl*wl-0.15)); // 1e-3: nm-> um
-    double nR = nR300K - 0.034*(Nf_RT*1e-18); // -3.4e-2 - the same as for GaSb TODO
+    double nR_InAs080Sb020_300K = 0.01525*pow(wl*1e-3,1.783)+3.561; // 2.05 um < wl < 5.4 um
+    double nR_InAs_300K = 2.873e-5*pow(wl*1e-3,6.902)+3.438; // 2.05 um < wl < 3.45 um
+    double v = 5.*As-4;
+    double nR300K = v*nR_InAs_300K + (1.-v)*nR_InAs080Sb020_300K;
 
-    if (wl > 500.)
-        return ( nR + nR*(As*4.6e-5+Sb*1.19e-5)*(T-300.) ); // 4.6e-5, 1.19e-5 - from Adachi (2005) ebook p.243 tab. 10.6
-    else
-        return 0.;
+    double dnRn = 0.; // influence of free carrier conc.
+    if (Nf_RT >= 3.59e16) dnRn = -0.06688*pow((log10(Nf_RT)),2.) + 2.18936*log10(Nf_RT) -17.9151;
+    double nR = nR300K + dnRn;
+
+    double dnRdT = As*12e-5 + Sb*6.9e-5; // from Adachi (2005) ebook p.243 tab. 10.6
+
+    return ( nR + nR*dnRdT*(T-300.) );
 }
 
 MI_PROPERTY(InAsSb, absp,
             MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
             MIArgumentRange(MaterialInfo::wl, 2000, 20000),
-            MIComment("no temperature dependence"),
-            MIComment("taken from n-GaSb:Te")
+            MIComment("use it for highly doped InAsSb with high As content") // energy band narrowing included
             )
 double InAsSb_Si::absp(double wl, double T) const {
-    double N = Nf_RT*1e-18;
-    double L = wl*1e-3;
-    double tFCabs = 2.42*N*pow(L,2.16-0.22*N);
-    double tIVCBabs = (24.1*N+12.5)*(1.24/L-(0.094*N+0.12))+(-2.05*N-0.37);
-    if (tIVCBabs>0) return ( tFCabs + tIVCBabs );
-    else return ( tFCabs );
+    double tAbs_RT = 1e24*exp(-wl/33.) + ( As*6.5e-29*Nf_RT*pow(wl,3.) + Sb*2.8e-25*Nf_RT*pow(wl,2.) ) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
+    return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 
 bool InAsSb_Si::isEqual(const Material &other) const {

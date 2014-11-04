@@ -231,7 +231,9 @@ MI_PROPERTY(GaInAsSb, nr,
             MIComment("TODO")
             )
 double GaInAsSb::nr(double wl, double T, double n) const {
-    return ( 0. );
+    double a0 = mGaSb.lattC(T,'a'); // typical substrate when GaInAsSb QW
+    double e = a0/lattC(T,'a') - 1.;
+    return ( 3.3668 * pow(Eg(T,e,'G'),-0.32234) ); // Kumar (20100
 }
 
 MI_PROPERTY(GaInAsSb, absp,

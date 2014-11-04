@@ -18,12 +18,14 @@ Tensor2<double> aSiO2::cond(double T) const {
 
 MI_PROPERTY(aSiO2, thermk,
             MISource("D.G. Cahill et al., Review of Scientific Instruments 61 (1990) 802-808"),
-            MIComment("fit from: Lukasz Piskorski, unpublished"),
-            MIArgumentRange(MaterialInfo::T, 200, 670)
+            MIComment("fit from: Lukasz Piskorski, unpublished"),
+            MIArgumentRange(MaterialInfo::T, 77, 750)
             )
 Tensor2<double> aSiO2::thermk(double T, double h) const {
-    double tK = 2.66*pow(T/300.,0.53) - 0.82*(T/300.) - 0.55;
-    return ( Tensor2<double>(tK, tK) );
+    double tK;
+    if (T < 750.) tK = 0.303*pow(T/300.,0.0194) - 1.9e-4*pow(T/300.,2.) - 0.2899; // [tK] = W/(cm*K)
+    else tK = 4.81150e-6 * T + 0.013738175; // [tK] = W/(cm*K)
+    return ( Tensor2<double>(tK*100., tK*100.) );
 }
 
 MI_PROPERTY(aSiO2, nr,
@@ -32,14 +34,22 @@ MI_PROPERTY(aSiO2, nr,
             )
 double aSiO2::nr(double wl, double T, double n) const {
     double L = wl*1e-3;
-    double nR293K = sqrt(1.+0.6961663*L*L/(L*L-pow(0.0684043,2.))
-                         +0.4079426*L*L/(L*L-pow(0.1162414,2.))
-                         +0.8974794*L*L/(L*L-pow(9.896161,2.))); // 1e-3: nm-> um
+    double nR293K = sqrt( 1. + 0.6961663*L*L/(L*L-pow(0.0684043,2.)) + 0.4079426*L*L/(L*L-pow(0.1162414,2.)) + 0.8974794*L*L/(L*L-pow(9.896161,2.)) ); // 1e-3: nm-> um
+    return ( nR293K + 1.1e-5*(T-293.) ); // based on fig.3 in "I.H. Malitson, Journal of the Optical Society of America 55 (1965) 1205-1209"
+}
 
-    if (wl > 210.)
-        return ( nR293K + ((0.08*L+0.01)/pow(L,3.5)+13.2*pow(L,0.69)-7.4*L+4.9)*1e-6*(T-293.) ); // fit by L. Piskorski, based on "I.H. Malitson, Journal of the Optical Society of America 55 (1965) 1205-1209"
-    else
-        return 0.;
+MI_PROPERTY(aSiO2, absp,
+            MISource("TODO"),
+            MIArgumentRange(MaterialInfo::wl, 400, 4500),
+            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MIComment("fit by Lukasz Piskorski")
+            )
+double aSiO2::absp(double wl, double T) const {
+    double tAbsRTL;
+    if (wl < 1173.15) tAbsRTL = 0.982 * (wl*1e-3) - 3.542;
+    else tAbsRTL = -0.257 * pow(wl*1e-3,6.) - 1.72;
+    double tAbsRT = pow(10.,tAbsRTL);
+    return ( tAbsRT + tAbsRT*1e-3*(T-300.) );
 }
 
 bool aSiO2::isEqual(const Material &other) const {

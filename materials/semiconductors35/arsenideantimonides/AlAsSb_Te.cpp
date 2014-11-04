@@ -19,7 +19,8 @@ AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, DopingAmountType Type, d
     else
     {
         ND = Val;
-        if (ND <= 1e18) // taken from n-GaSb:Te
+        // taken from n-GaSb:Te - use it for low doping conc
+        if (ND <= 1e18)
             Nf_RT = ND;
         else // taken from n-GaSb:Te
         {
@@ -28,15 +29,16 @@ AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, DopingAmountType Type, d
             Nf_RT = ( pow(10.,tnL) );
         }
     }
-    double tAlSb_mob_RT = 240e-4/(1.+pow(Nf_RT/2e17,1.14)); // (m^2/(V*s)) (fitted by Lukasz)
-    mob_RT = tAlSb_mob_RT; // Springer AlSb
+    double mob_RT_AlAs = 30e-4 + (310e-4 - 30e-4) / (1.+pow(ND/8e17,2.)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double mob_RT_AlSb = 30e-4 + (200e-4 - 30e-4) / (1.+pow(ND/4e17,3.25)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 1. / (As/mob_RT_AlAs + Sb/mob_RT_AlSb - 9.3e-3*As*Sb); // for small amount of arsenide
 }
 
 MI_PROPERTY(AlAsSb_Te, mob,
-            MISource("Springer - AlSb")
+            MISource("Strin 1966")
             )
 Tensor2<double> AlAsSb_Te::mob(double T) const {
-    double tmob = mob_RT * pow(300./T,1.5);
+    double tmob = mob_RT * pow(300./T,1.8);
     return ( Tensor2<double>(tmob, tmob) );
 }
 
@@ -53,8 +55,7 @@ double AlAsSb_Te::Dop() const {
 }
 
 Tensor2<double> AlAsSb_Te::cond(double T) const {
-    double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT;
-    double tCond = tCond_RT * pow(300./T,1.5);
+    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
     return ( Tensor2<double>(tCond, tCond) );
 }
 
@@ -64,28 +65,30 @@ MI_PROPERTY(AlAsSb_Te, nr,
             MIComment("TODO")
             )
 double AlAsSb_Te::nr(double wl, double T, double n) const {
-    double nR300K = sqrt(1.+8.75e-6*wl*wl/(1e-6*wl*wl-0.15)); // 1e-3: nm-> um
-    double nR = nR300K - 0.034*(Nf_RT*1e-18); // -3.4e-2 - the same as for GaSb TODO
+    double tE = phys::h_eVc1e9/wl; // wl -> E
+    double tE0 = 3.2;
+    double tEd = 28.;
+    double tEG = 2.338;
+    double nR300K2 = 1. + tEd/tE0 + tEd*tE*tE/pow(tE0,3.) + tEd*pow(tE,4.)/(2.*pow(tE0,3.)*(tE0*tE0-tEG*tEG)) * log((2.*tE0*tE0-tEG*tEG-tE*tE)/(tEG*tEG-tE*tE));
 
-    if (wl > 500.)
-        return ( nR + nR*(As*4.6e-5+Sb*1.19e-5)*(T-300.) ); // 4.6e-5, 1.19e-5 - from Adachi (2005) ebook p.243 tab. 10.6
-    else
-        return 0.;
+    double nR300K;
+    if (nR300K2>0) nR300K = sqrt(nR300K2);
+    else nR300K = 1.; // TODO
+    //taken from n-GaSb
+    double nR = nR300K; // TODO // for E << Eg: dnR/dn = 0
+    double dnRdT = As*4.6e-5 + Sb*1.19e-5; // from Adachi (2005) ebook p.243 tab. 10.6
+    return ( nR + nR*dnRdT*(T-300.) );
 }
 
 MI_PROPERTY(AlAsSb, absp,
-            MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
-            MIArgumentRange(MaterialInfo::wl, 2000, 20000),
-            MIComment("no temperature dependence"),
-            MIComment("taken from n-GaSb:Te")
+            MISource("H. Hattasan (2013)"),
+            //MIArgumentRange(MaterialInfo::wl, 2000, 20000),
+            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MIComment("only free-carrier absorption assumed")
             )
 double AlAsSb_Te::absp(double wl, double T) const {
-    double N = Nf_RT*1e-18;
-    double L = wl*1e-3;
-    double tFCabs = 2.42*N*pow(L,2.16-0.22*N);
-    double tIVCBabs = (24.1*N+12.5)*(1.24/L-(0.094*N+0.12))+(-2.05*N-0.37);
-    if (tIVCBabs>0) return ( tFCabs + tIVCBabs );
-    else return ( tFCabs );
+    double tAbs_RT = 1.9e-24 * Nf_RT * pow(wl,2.);
+    return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 
 bool AlAsSb_Te::isEqual(const Material &other) const {
