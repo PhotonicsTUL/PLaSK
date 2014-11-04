@@ -231,7 +231,18 @@ MI_PROPERTY(AlGaAsSb, nr,
             MIComment("TODO")
             )
 double AlGaAsSb::nr(double wl, double T, double n) const {
-    return ( 0. );
+    // from Alibert
+    double tE = phys::h_eVc1e9/wl; // wl -> E
+    double tE0 = 1.89*Ga+3.2*Al-0.36*Al*Ga;
+    double tEd = 24.5*Ga+28.*Al-4.4*Al*Ga;
+    double tEG = 0.725*Ga+2.338*Al-0.47*Al*Ga;
+    double nR300K2 = 1. + tEd/tE0 + tEd*tE*tE/pow(tE0,3.) + tEd*pow(tE,4.)/(2.*pow(tE0,3.)*(tE0*tE0-tEG*tEG)) * log((2.*tE0*tE0-tEG*tEG-tE*tE)/(tEG*tEG-tE*tE));
+
+    double nR300K;
+    if (nR300K2>0) nR300K = sqrt(nR300K2);
+    else nR300K = 1.; // TODO
+    double dnRdT = Al*As*4.6e-5 + Al*Sb*1.19e-5 + Ga*As*4.5e-5 + Ga*Sb*8.2e-5;
+    return ( nR300K + nR300K*dnRdT*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
 }
 
 MI_PROPERTY(AlGaAsSb, absp,

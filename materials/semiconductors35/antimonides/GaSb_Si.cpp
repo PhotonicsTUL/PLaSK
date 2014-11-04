@@ -21,25 +21,27 @@ GaSb_Si::GaSb_Si(DopingAmountType Type, double Val) {
         else
             Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
     }
-    mob_RT = 190e-4 + 685e-4 / (1.+pow(NA/9e17,0.65)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 95e-4 + (565e-4 - 95e-4) / (1.+pow(NA/4e18,0.85)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
 MI_PROPERTY(GaSb_Si, mob,
-            MISource("D. Martin et al., Semiconductors Science and Technology 19 (2004) 1040-1052"),
-            MIComment("for all dopants") // TODO
+            MISource("D. Martin et al., Semiconductors Science and Technology 19 (2004) 1040-1052"), // TODO
+            MIComment("fit by Lukasz Piskorski")
             )
 Tensor2<double> GaSb_Si::mob(double T) const {
-    double tmob = 190. + (875.*pow(300./T,1.7)-190.) / (1.+pow(NA/(9e17*pow(T/300.,2.7)),0.65));
-    return ( Tensor2<double>(tmob*1e-4,tmob*1e-4) ); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double tmob = mob_RT * pow(300./T,1.2);
+    return ( Tensor2<double>(tmob,tmob) ); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
 MI_PROPERTY(GaSb_Si, Nf,
             MISource("Mirowska et al., Domieszkowanie ..."), // TODO
-            MIComment("no temperature dependence")
+            MIComment("fit by Lukasz Piskorski")
             )
 double GaSb_Si::Nf(double T) const {
-    if ( NA < pow(10.,((1.-2.27)/(-0.0731))) ) return NA;
-    else return ( (-0.0731*log10(NA)+2.27) * NA );
+    double tD;
+    if (Nf_RT <= 6.4e17) tD = 1e17*pow(Nf_RT,-1.014);
+    else tD = 0.088;
+    return ( Nf_RT*pow(T/300.,tD) );
 }
 
 double GaSb_Si::Dop() const {
@@ -50,8 +52,7 @@ MI_PROPERTY(GaSb_Si, cond,
             MIComment("cond(T) = cond(300K)*(300/T)^d")
             )
 Tensor2<double> GaSb_Si::cond(double T) const {
-    double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT;
-    double tCond = tCond_RT * pow(300./T, 1.5);
+    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
     return ( Tensor2<double>(tCond, tCond) );
 }
 
@@ -67,7 +68,7 @@ MI_PROPERTY(GaSb_Si, nr,
 double GaSb_Si::nr(double wl, double T, double) const {
     double tE = phys::h_eVc1e9/wl; // wl -> E
     double nR300K = 0.502*tE*tE*tE - 1.216*tE*tE + 1.339*tE + 3.419;
-    double nR = nR300K - 0.0079*(Nf_RT*1e-18); // -7.9e-3 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
+    double nR = nR300K - 0.0074*(Nf_RT*1e-18); // -7.4e-3 - fit by Lukasz Piskorski (based on: P.P. Paskov (1997) J. Appl. Phys. 81, 1890-1898)
     return ( nR + nR*8.2e-5*(T-300.) ); // 8.2e-5 - from Adachi (2005) ebook p.243 tab. 10.6
 }
 
@@ -75,10 +76,8 @@ MI_PROPERTY(GaSb_Si, absp,
             MIComment("fit by Lukasz Piskorski")
             )
 double GaSb_Si::absp(double wl, double T) const {
-    double tP = Nf_RT*1e-18;
-    double tLam = wl*1e-3;
-    double tFCabs = (42600.*pow(tP,0.17))*pow(tLam,1.8);
-    return ( tFCabs );
+    double tAbs_RT = 1e24*exp(-wl/33.) + 2.02e-24*Nf_RT*pow(wl,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);
+    return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 
 bool GaSb_Si::isEqual(const Material &other) const {

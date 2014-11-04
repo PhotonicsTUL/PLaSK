@@ -1,23 +1,23 @@
-#ifndef PLASK__GaSb_Te_H
-#define PLASK__GaSb_Te_H
+#ifndef PLASK__AlGaAsSb_Te_H
+#define PLASK__AlGaAsSb_Te_H
 
 /** @file
-This file contains Te-doped GaSb
+This file contains Te-doped AlGaAsSb
 */
 
 #include <plask/material/material.h>
-#include "GaSb.h"
+#include "AlGaAsSb.h"
 
 namespace plask { namespace materials {
 
 /**
- * Represent Te-doped GaSb, its physical properties.
+ * Represent Te-doped AlGaAsSb, its physical properties.
  */
-struct GaSb_Te: public GaSb {
+struct AlGaAsSb_Te: public AlGaAsSb {
 
-    static constexpr const char* NAME = "GaSb:Te";
+    static constexpr const char* NAME = "AlGaAsSb:Te";
 
-    GaSb_Te(DopingAmountType Type, double Val);
+    AlGaAsSb_Te(const Composition &Comp, DopingAmountType Type, double Val);
     virtual std::string name() const override;
     virtual std::string str() const override;
     virtual Tensor2<double> mob(double T) const override;
@@ -39,4 +39,4 @@ private:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__GaAs_Te_H
+#endif	//PLASK__AlGaAsSb_Te_H
