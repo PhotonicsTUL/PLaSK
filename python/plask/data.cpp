@@ -360,7 +360,64 @@ template <typename T, int dim>
 void register_data_vector() {
 
     py::class_<DataVectorWrap<const T,dim>, shared_ptr<DataVectorWrap<const T,dim>>>
-    data("_Data", "Data returned by field providers.", py::no_init);
+    data("_Data",
+    "Data returned by field providers.\n\n"
+    "This class is returned by field providers and receivers and cointains the values\n"
+    "of the computed field at specified mesh points. It can be passed to the field\n"
+    "plotting and saving functions or even feeded to some receivers. Also, if the\n"
+    "mesh is a rectangular one, the data can be converted into an multi-dimensional\n"\
+    "numpy array.\n\n"
+
+    "You may access the data by indexing the :class:`~plask.Data` object, where the\n"
+    "index always corresponds to the index of the mesh point where the particular\n"
+    "value is specified. Hence, you may also iterate :class:`~plask.Data` objects as\n"
+    "normal Python sequences.\n\n"
+
+    "You may construct the data object manually from a numpy array and a mesh.\n"
+    "The constructor always take two argumentsa as specified below:\n\n"
+
+    "Args:\n"
+    "    array: The array with a custom data.\n"
+    "        It must be either a one dimensional array with sequential data of the\n"
+    "        desired type corresponding to the sequential mesh points or—for the\n"
+    "        rectangular meshes—an array with the same shape as returned by the\n"
+    "        :attr:`array` attribute.\n"
+    "    mesh: The mesh specifying where the data points are located.\n"
+    "        The size of the mesh must be equal to the size of the provided array.\n"
+    "        Furthermore, when constructing the data from the structured array, the\n"
+    "        mesh ordering must match the data stride, so it is possible to avoid\n"
+    "        data copying (defaults for both are fine).\n"
+
+    "Examples:\n"
+    "    To create the data from the flat sequential array:\n\n"
+
+    "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2, 3]),\n"
+    "    ... plask.mesh.Rectilinear([10, 20]))\n"
+    "    >>> Data(array([1., 2., 3., 4., 5., 6.]), msh)\n"
+    "    <plask.Data at 0x4698938>\n\n"
+
+    "    As the ``msh`` is a rectangular mesh, the data can be created from the\n"
+    "    structured array with the shape (3, 2), as the first and second mesh\n"
+    "    dimensions are 3 and 2, respectively:\n\n"
+
+    "    >>> dat = Data(array([[1., 2.], [3., 4.], [5., 6.]]), msh)\n"
+    "    >>> dat[0]\n"
+    "    1.0\n\n"
+
+    "    By adding one more dimension, you can create an array of vectors:\n\n"
+
+    "    >>> d = Data(array([[[1.,0.], [2.,0.]], [[3.,0.], [4.,1.]],\n"
+    "    ...                 [[5.,1.], [6.,1.]]]), msh)\n"
+    "    >>> d.dtype\n"
+    "    plask.vec\n"
+    "    >>> d[1]\n"
+    "    plask.vec(2, 0)\n"
+    "    >>> d.array[:,:,0]    # retrieve first components of all the vectors\n"
+    "    array([[1., 2.], [3., 4.], [5., 6.]])\n\n"
+
+    "Construction of the data objects is efficient i.e. no data is copied in the\n"
+    "memory from the provided array.\n\n",
+    py::no_init);
     data
         .def_readonly("mesh", &DataVectorWrap<const T,dim>::mesh,
             "The mesh at which the data was obtained.\n\n"

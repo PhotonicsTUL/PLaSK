@@ -392,42 +392,10 @@ doc = plask.vec.__doc__
 plask.vec = type(vec)
 plask.vec.__doc__ = doc
 del vec
+
+plask.Data = plask._plask._Data
+plask.Data.__name__ = 'Data'
+
 del doc
-
-plask.Data.__doc__ = plask.Data.__doc__ + """\
-Attributes
-----------
-
-.. autosummary::
-
-   ~plask.Data.array
-   ~plask.Data.mesh
-
-Static Attributes
------------------
-
-======= ========================================================
-|dtype| Value type.
-======= ========================================================
-
-.. |dtype| replace:: :attr:`~plask.Data.dtype`
-
-Descriptions
-------------
-
-.. rubric:: Attribute Details
-
-.. autoattribute:: plask.Data.array
-
-.. autoattribute:: plask.Data.mesh
-
-.. rubric:: Static Attribute Details
-
-.. attribute:: plask.Data.dtype
-
-   Value type.
-
-   This attribute is the type of a single element in this vector.
-"""
 
 plask.config = type(plask.config)
