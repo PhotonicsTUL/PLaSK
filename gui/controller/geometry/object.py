@@ -13,26 +13,15 @@
 
 from .node import GNodeController
 from ...model.geometry.reader import axes_to_str
-from ..defines import get_defines_completer
-from ...qt import QtGui
 from ...utils.str import empty_to_none, none_to_empty
 
 
 class GNObjectController(GNodeController):
 
     def fill_form(self):
-        self.name = QtGui.QLineEdit()
-        self.name.setCompleter(self.defines_completer)
-        self.form_layout.addRow('name', self.name)
-
-        self.role = QtGui.QLineEdit()
-        self.role.setCompleter(self.defines_completer)
-        self.form_layout.addRow('roles', self.role)
-
-        self.axes = QtGui.QComboBox()
-        self.axes.setEditable(True)     #TODO zablokować możliwość podawania {
-        self.axes.addItems(['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])
-        self.form_layout.addRow('axes', self.axes)
+        self.name = self.construct_line_edit('name')
+        self.role = self.construct_line_edit('roles')
+        self.axes = self.construct_combo_box('axes', ['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])   #TODO zablokować możliwość podawania {
 
     def save_data_in_model(self):
         self.node.name = empty_to_none(self.name.text())

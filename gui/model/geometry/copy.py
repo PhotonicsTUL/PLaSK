@@ -42,6 +42,10 @@ class GNAgain(GNode):
         res.append(('ref', self.ref))
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.copy import GNAgainController
+        return GNAgainController(document, model, self)
+
     @classmethod
     def from_xml(cls, element, conf):
         result = GNAgain()
@@ -68,6 +72,10 @@ class GNCopyChild(GNode):
         res = super(GNCopyChild, self).major_properties()
         res.append(('object', self.object))
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.copy import GNCopyChildController
+        return GNCopyChildController(document, model, self)
 
 
 class GNCDelete(GNCopyChild):
@@ -105,6 +113,10 @@ class GNCReplace(GNCopyChild):
         res.append(('with', self.replacer))
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.copy import GNCReplaceController
+        return GNCReplaceController(document, model, self)
+
 
 class GNCToBlock(GNCopyChild):
 
@@ -128,6 +140,10 @@ class GNCToBlock(GNCopyChild):
         res.append(('material', self.material))
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.copy import GNCToBlockController
+        return GNCToBlockController(document, model, self)
+
 
 class GNCopy(GNObject):
 
@@ -141,7 +157,7 @@ class GNCopy(GNObject):
 
     def attributes_to_xml(self, element, conf):
         super(GNCopy, self).attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'from')
+        if self.source is not None: element.attrib['from'] = self.source
 
     def children_from_xml(self, ordered_reader, conf):
         for t in ordered_reader.iter():
@@ -168,6 +184,10 @@ class GNCopy(GNObject):
                 'replace': lambda i1, i2: GNCReplace(),
                 'toblock': lambda i1, i2: GNCToBlock()
                 }]
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.copy import GNCopyController
+        return GNCopyController(document, model, self)
 
     @classmethod
     def from_xml(cls, element, conf):

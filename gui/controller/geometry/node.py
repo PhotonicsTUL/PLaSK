@@ -6,6 +6,21 @@ from ...utils.str import empty_to_none, none_to_empty
 
 class GNodeController(Controller):
 
+    def construct_line_edit(self, row_name = None, use_defines_completer = True):
+        res = QtGui.QLineEdit()
+        if use_defines_completer: res.setCompleter(self.defines_completer)
+        if row_name: self.form_layout.addRow(row_name, res)
+        res.editingFinished.connect(self.after_field_change)
+        return res
+
+    def construct_combo_box(self, row_name = None, items = [], editable = True):
+        res = QtGui.QComboBox()
+        res.setEditable(editable)
+        res.addItems(items)
+        if row_name: self.form_layout.addRow(row_name, res)
+        res.editTextChanged.connect(self.after_field_change)
+        return res
+
     def __init__(self, document, model, node):
         super(GNodeController, self).__init__(document=document, model=model)
         self.node = node
@@ -20,8 +35,18 @@ class GNodeController(Controller):
         #self.vbox.addStretch()
         self.form.setLayout(self.form_layout)
 
+    @property
+    def node_index(self):
+        self.model.index_for_node(self.node)
+
     def fill_form(self):
         pass
+
+    def after_field_change(self):
+        self.save_data_in_model()
+        index = self.node_index
+        self.model.dataChanged.emit(index, index)
+        self.model.fire_changed()
 
     def save_data_in_model(self):
         pass

@@ -144,6 +144,11 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
         return True
 
     # other actions:
+    def index_for_node(self, node):
+        if node is None: return QtCore.QModelIndex()
+        c = node.parent.children if node.parent else self.roots
+        return self.createIndex(c.index(node), 0, node)
+
     def append_geometry(self, type_name):
         self.beginInsertRows(QtCore.QModelIndex(), len(self.roots), len(self.roots))
         self.roots.append(construct_by_name(type_name, geometry_types_geometries))
