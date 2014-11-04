@@ -394,7 +394,7 @@ plask.vec.__doc__ = doc
 del vec
 del doc
 
-plask.Data.__doc__ =+ """\
+plask.Data.__doc__ = plask.Data.__doc__ + """\
 Attributes
 ----------
 
