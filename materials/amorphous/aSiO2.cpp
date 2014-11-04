@@ -46,8 +46,8 @@ MI_PROPERTY(aSiO2, absp,
             )
 double aSiO2::absp(double wl, double T) const {
     double tAbsRTL;
-    if (wl < 1173.15) tAbsRTL = 0.982 * (wl*1e-3) - 3.542;
-    else tAbsRTL = -0.257 * pow(wl*1e-3,6.) - 1.72;
+    if (wl < 1173.15) tAbsRTL = -0.257 * pow(wl*1e-3,6.) - 1.72;
+    else tAbsRTL = 0.982 * (wl*1e-3) - 3.542;
     double tAbsRT = pow(10.,tAbsRTL);
     return ( tAbsRT + tAbsRT*1e-3*(T-300.) );
 }

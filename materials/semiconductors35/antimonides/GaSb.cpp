@@ -166,6 +166,18 @@ Tensor2<double> GaSb::thermk(double T, double t) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+MI_PROPERTY(GaSb, cond,
+            MISource("V. Sestakova et al., Proceedings of SPIE 4412 (2001) 161-165"), // condRT = 1515 S/m
+            MISource("N.K. Udayashankar et al., Bull. Mater. Sci. 24 (2001) 445-453"), // condRT = 1923 S/m
+            MIComment("RT value: average value of electrical conductivity"),
+            MISource("M.W. Heller et al., J. Appl. Phys. 57 (1985) 4626-4632"), // cond(T)
+            MIComment("cond(T) = cond(300K)*(300/T)^d; d=0.53: L. Piskorski, based on Fig.1 from Heller")
+            )
+Tensor2<double> GaSb::cond(double T) const {
+    double condT = 1700.*pow(300./T,0.53);
+    return ( Tensor2<double>(condT, condT) );
+}
+
 MI_PROPERTY(GaSb, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
             MIComment("no temperature dependence")
