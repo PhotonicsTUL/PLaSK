@@ -98,6 +98,8 @@ MATERIALS_PROPERTES = OrderedDict((
     ('Mlh', (u'Light hole effective mass <i>M<sub>lh</sub></i> in lateral '
              u'and verical directions', u'<i>m</i><sub>0</sub>',
              [(u'T', u'temperature [K]'), (u'e', u'lateral strain [-]')])),
+    ('mob', (u'Mobility <i>µ</i> lateral and vertical directions', u'm<sup>2</sup>/(V s)',
+              [(u'T', u'temperature [K]')])),
     ('Mso', (u'Split-off mass <i>M</i><sub>so</sub>', u'<i>m</i><sub>0</sub>',
              [(u'T', u'temperature [K]'),
               (u'e', u'lateral strain [-]')])),
