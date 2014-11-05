@@ -19,6 +19,7 @@ class Mat(material.Material):
 class Averaging_Test(unittest.TestCase):
 
     def setUp(self):
+        config.axes = 'xyz'
         background = geometry.Cuboid(1.0, 1.0, 0.2, None)
         obj = geometry.Cuboid(0.5, 0.5, 0.2, Mat())
         align = geometry.AlignContainer3D()
@@ -88,16 +89,6 @@ class Averaging_Test(unittest.TestCase):
         # xlabel(u'$z$ [µm]')
         # ylabel(u'$n_r$')
 
-
-class Solver_Test(unittest.TestCase):
-
-    def setUp(self):
-        config.axes = 'xyz'
-        background = geometry.Cuboid(1.0, 1.0, 0.2, None)
-        geom = geometry.Cartesian3D(background, back='periodic', front='periodic', left='periodic', right='periodic')
-        self.solver = Fourier3D()
-        self.solver.geometry = geom
-        self.solver.interface = 1
 
     def testWrappers(self):
         self.solver.size = 2, 3
