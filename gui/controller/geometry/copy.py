@@ -9,8 +9,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from plask import material
-
 from .object import GNObjectController
 from .node import GNodeController
 from ...utils.str import empty_to_none, none_to_empty

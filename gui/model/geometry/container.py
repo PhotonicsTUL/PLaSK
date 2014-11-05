@@ -38,6 +38,7 @@ class GNGap(GNode):
     def __init__(self, parent = None):
         super(GNGap, self).__init__(parent=parent, dim=2)
         self.size = None
+        self.size_is_total = False
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNGap, self).attributes_from_xml(attribute_reader, conf)
@@ -55,6 +56,16 @@ class GNGap(GNode):
 
     def tag_name(self, full_name = True):
         return 'gap'
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.container import GNGapController
+        return GNGapController(document, model, self)
+
+    def major_properties(self):
+        res = super(GNGap, self).major_properties()
+        if self.size is not None:
+            res.append(('total container size' if self.size_is_total else 'gap size', self.size))
+        return res
 
     @classmethod
     def from_xml(cls, element, conf):
@@ -203,6 +214,10 @@ class GNShelf(GNContainerBase):
         res = super(GNShelf, self).minor_properties()
         res.append(('flat', self.flat))
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.container import GNShelfController
+        return GNShelfController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
