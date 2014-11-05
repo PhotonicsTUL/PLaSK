@@ -65,9 +65,9 @@ void SimpleDiagonalizer::initDiagonalization(dcomplex ko, dcomplex kx, dcomplex 
 }
 
 
-void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
+bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 {
-    if (diagonalized[layer]) return;
+    if (diagonalized[layer]) return false;
 
     int N = src->matrixSize();         // Size of each matrix
     int NN = N*N;
@@ -218,6 +218,8 @@ void SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
     // Mark that layer has been diagonalized
     diagonalized[layer] = true;
+
+    return true;
 }
 
 }}} // namespace plask::solvers::slab

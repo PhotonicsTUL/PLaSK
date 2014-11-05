@@ -54,7 +54,8 @@ class Diagonalizer
     virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky) = 0;
 
     /// Calculate the diagonalization of given layer
-    virtual void diagonalizeLayer(size_t layer) = 0;
+    /// \return \c true if any work has been done and \c false if it was not necessary
+    virtual bool diagonalizeLayer(size_t layer) = 0;
 
     /// Return true is layer is diagonalized
     bool isDiagonalized(size_t layer) {
@@ -110,7 +111,7 @@ class SimpleDiagonalizer : public Diagonalizer
 
     virtual void initDiagonalization(dcomplex ko, dcomplex kx, dcomplex ky);
 
-    virtual void diagonalizeLayer(size_t layer);
+    virtual bool diagonalizeLayer(size_t layer);
 
     // Functions returning references to calculated matrices
     virtual const cdiagonal& Gamma(size_t layer) const { return gamma[layer]; }
