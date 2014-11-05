@@ -319,7 +319,7 @@ struct PLASK_API Material {
      * @param point point in the Brillouin zone [-]
      * @return energy gap Eg [eV]
      */
-    virtual double Eg(double T, double e=0., char point='G') const;
+    virtual double Eg(double T, double e=0., char point='*') const;
 
     /**
      * Get conduction band level CB [eV].
@@ -328,7 +328,7 @@ struct PLASK_API Material {
      * @param point point in the Brillouin zone [-]
      * @return conduction band level CB [eV]
      */
-    virtual double CB(double T, double e=0., char point='G') const;
+    virtual double CB(double T, double e=0., char point='*') const;
 
     /**
      * Get valence band level VB[eV].
@@ -338,7 +338,7 @@ struct PLASK_API Material {
      * @param hole hole type ('H'eavy or 'L'ight) [-]
      * @return valence band level VB[eV]
      */
-    virtual double VB(double T, double e=0., char point='G', char hole='H') const;
+    virtual double VB(double T, double e=0., char point='*', char hole='H') const;
 
     /**
      * Get split-off energy Dso [eV].
@@ -363,7 +363,7 @@ struct PLASK_API Material {
      * @param point point in Brillouin zone [-]
      * @return electron effective mass Me [\f$m_0\f$]
      */
-    virtual Tensor2<double> Me(double T, double e=0., char point='G') const;
+    virtual Tensor2<double> Me(double T, double e=0., char point='*') const;
 
     /**
      * Get heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
@@ -452,7 +452,7 @@ struct PLASK_API Material {
      * @param point point in Brillouin zone [-]
      * @return electron affinity Chi [eV]
      */
-    virtual double chi(double T, double e=0., char point='G') const;
+    virtual double chi(double T, double e=0., char point='*') const;
 
     /**
      * Get effective density of states in the conduction band Nc [cm^(-3)].
@@ -461,7 +461,7 @@ struct PLASK_API Material {
      * @param point point in Brillouin zone [-]
      * @return effective density of states in the conduction band Nc [cm^(-3)]
      */
-    virtual double Nc(double T, double e=0., char point='G') const;
+    virtual double Nc(double T, double e=0., char point='*') const;
 
     /**
      * Get effective density of states in the valance band Nv [cm^(-3)].
@@ -470,7 +470,7 @@ struct PLASK_API Material {
      * @param point point in Brillouin zone [-]
      * @return effective density of states in the valance band Nv [cm^(-3)]
      */
-    virtual double Nv(double T, double e=0., char point='G') const;
+    virtual double Nv(double T, double e=0., char point='*') const;
 
     /**
      * Get intrinsic carrier concentration Ni [cm^(-3)].
@@ -760,17 +760,17 @@ struct PLASK_API MixedMaterial: public Material {
 
     virtual double lattC(double T, char x) const override;
 
-    virtual double Eg(double T, double e=0., char point='G') const override;
+    virtual double Eg(double T, double e=0., char point='*') const override;
 
-    virtual double CB(double T, double e=0., char point='G') const override;
+    virtual double CB(double T, double e=0., char point='*') const override;
 
-    virtual double VB(double T, double e=0., char point='G', char hole='H') const override;
+    virtual double VB(double T, double e=0., char point='*', char hole='H') const override;
 
     virtual double Dso(double T, double e=0.) const override;
 
     virtual double Mso(double T, double e=0.) const override;
 
-    virtual Tensor2<double> Me(double T, double e=0., char point='G') const override;
+    virtual Tensor2<double> Me(double T, double e=0., char point='*') const override;
 
     virtual Tensor2<double> Mhh(double T, double e=0.) const override;
 
@@ -794,11 +794,11 @@ struct PLASK_API MixedMaterial: public Material {
 
     virtual double eps(double T) const override;
 
-    virtual double chi(double T, double e=0., char point='G') const override;
+    virtual double chi(double T, double e=0., char point='*') const override;
 
-    virtual double Nc(double T, double e=0., char point='G') const override;
+    virtual double Nc(double T, double e=0., char point='*') const override;
 
-    virtual double Nv(double T, double e=0., char point='G') const override;
+    virtual double Nv(double T, double e=0., char point='*') const override;
 
     virtual double Ni(double T=0.) const override;
 
