@@ -101,12 +101,12 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
         #pragma omp for schedule(dynamic,1) nowait
         for (int l = 0; l < diagonalizer->lcount; ++l) {
             try {
-                if (!error && diagonalizer->diagonalizeLayer(l)) {
-                    #ifdef OPENMP_FOUND
-                        layer_locks[l].unlock();
-                        write_debug("%s: layer %d diagonalized", solver->getId(), l);
-                    #endif
-                }
+                bool worked = false;
+                if (!error) worked = diagonalizer->diagonalizeLayer(l);
+                #ifdef OPENMP_FOUND
+                    if (worked) write_debug("%s: layer %d diagonalized", solver->getId(), l);
+                    layer_locks[l].unlock();
+                #endif
             } catch(...) {
                 error = std::current_exception();
             }
