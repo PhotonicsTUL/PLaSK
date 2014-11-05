@@ -61,6 +61,16 @@ class GNAligner(object):
         return None if self.position is None else GNAligner.names(dims, axis_names_in_dims, axis_nr)[self.position]
 
 
+def axes_dim(axes, dim):
+    """
+    Calculate axes names for given number of dimensions.
+    :param list axes: 3D axes
+    :param int dim: number of dimensions, 2 or 3
+    :return list: list with axes names
+    """
+    return axes if dim == 3 else axes[1:]
+
+
 class GNReadConf(object):
     """ Configuration using while geometry objects are read.
         Stores information about expected suffix, axes configuration and parent node for new elements.
@@ -87,8 +97,7 @@ class GNReadConf(object):
         return None if d is None else '{}d'.format(d)
 
     def axes_names(self, dim = None):
-        if dim is None: dim = self.parent.dim
-        return self.axes if dim == 3 else self.axes[1:]
+        return axes_dim(self.axes, self.parent.dim if dim is None else dim)
 
     def axis_name(self, dim, axis_nr):
         return self.axes_names(dim)[axis_nr]

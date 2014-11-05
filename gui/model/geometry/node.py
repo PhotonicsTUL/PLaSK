@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 from lxml import etree
 
-from .reader import GNReadConf
+from .reader import GNReadConf, axes_dim
 from ...utils.xml import AttributeReader, OrderedTagReader
 
 
@@ -117,3 +117,17 @@ class GNode(object):
 
     def minor_properties(self):
         return []
+
+    def child_properties(self, child_in_parent):
+        return []
+
+    def in_parent_properties(self):
+        if self._parent is None: return []
+        return self._parent.child_properties(self.in_parent)
+
+    def get_axes_conf(self):
+        ''':return: Axes configuration for this node (3D list with name of axes).'''
+        return ['z', 'x', 'y'] if self._parent is None else self._parent.get_axes_conf()
+
+    def get_axes_conf_dim(self, dim = None):
+        return axes_dim(self.get_axes_conf(), self.dim if dim is None else dim)

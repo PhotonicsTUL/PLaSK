@@ -78,16 +78,19 @@ class GNStack(GNContainerBase):
         self.shift = None
         self.aligner = GNAligner(None, None)
 
+    def aligner_dir(self):
+        return self.children_dim-2
+
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNStack, self).attributes_from_xml(attribute_reader, conf)
         self.repeat = attribute_reader.get('repeat')
         self.shift = attribute_reader.get('shift')
-        self.aligner, = conf.read_aligners(attribute_reader, self.children_dim, self.children_dim-2)  #self.children_dim-2 is direction tran
+        self.aligner, = conf.read_aligners(attribute_reader, self.children_dim, self.aligner_dir())  #self.children_dim-2 is direction tran
 
     def attributes_to_xml(self, element, conf):
         super(GNStack, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift')
-        conf.write_aligners(element, self.children_dim, {self.children_dim-2 : self.aligner})    #self.children_dim-2 is direction tran
+        conf.write_aligners(element, self.children_dim, {self.aligner_dir() : self.aligner})    #self.children_dim-2 is direction tran
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
@@ -95,7 +98,7 @@ class GNStack(GNContainerBase):
                 with OrderedTagReader(c) as item_child_reader:
                     child = construct_geometry_object(item_child_reader.require(), conf)
                 with AttributeReader(c) as item_attr_reader:
-                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.children_dim-2)  #self.children_dim-2 is direction tran
+                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.aligner_dir())  #self.children_dim-2 is direction tran
             elif c.tag == 'zero':
                 GNZero(self, self.children_dim)
             else:
@@ -106,7 +109,7 @@ class GNStack(GNContainerBase):
         if child.in_parent is not None:
             res = etree.Element('item')
             res.append(child_element)
-            conf.write_aligners(res, self.children_dim, {self.children_dim-2 : child.in_parent})
+            conf.write_aligners(res, self.children_dim, {self.aligner_dir() : child.in_parent})
             return res
         else:
             return child_element
@@ -125,13 +128,20 @@ class GNStack(GNContainerBase):
         res.insert(0, {'zero': GNZero.from_xml})
         return res
 
+    def _aligner_to_property(self, aligner):
+        return (aligner.position_str(self.children_dim, self.get_axes_conf_dim(self.children_dim), self.aligner_dir()), aligner.value)
+
     def major_properties(self):
         res = super(GNStack, self).major_properties()
-        #if self.aligner.position is not None:
-        #    res.append((self.aligner.position_str(self.children_dim, ), self.aligner.value))
+        if self.aligner.position is not None:
+            res.append(self._aligner_to_property(self.aligner))
         res.append(('repeat', self.repeat))
         res.append(('shift', self.shift))
         return res
+
+    def child_properties(self, child_in_parent):
+        if child_in_parent is None or child_in_parent.position is None: return []
+        return [self._aligner_to_property(child_in_parent)]
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -241,6 +251,21 @@ class GNAlignContainer(GNContainerBase):
 
     def python_type(self):
         return 'geometry.AlignContainer{}D'.format(self.dim)
+
+    def _aligners_to_properties(self, aligners):
+        res = []
+        axes_conf = self.get_axes_conf_dim(self.children_dim)
+        for axis_nr, aligner in enumerate(aligners):
+            if aligner.position is not None:
+                res.append((aligner.position_str(self.children_dim, axes_conf, axis_nr), aligner.value))
+        return res
+
+    def major_properties(self):
+        return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
+
+    def child_properties(self, child_in_parent):
+        if child_in_parent is None: return []
+        return self._aligners_to_properties(child_in_parent)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

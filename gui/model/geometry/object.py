@@ -55,3 +55,8 @@ class GNObject(GNode):
         res.append(('axes', self.axes))
         res.append(('role', self.role))
         return res
+    
+    def get_axes_conf(self):
+        if self.axes is not None: return self.axes
+        return super(GNObject, self).get_axes_conf()
+

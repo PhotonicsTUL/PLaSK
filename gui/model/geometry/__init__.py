@@ -77,7 +77,7 @@ class GeometryModel(QtCore.QAbstractItemModel, SectionModel):
                     res = '<span style="color: #866">name</span> <b>{}</b>'.format(cgi.escape(name))
                 else:
                     res = ''
-                for prop_table in (item.major_properties(), item.minor_properties()):
+                for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
                     sorted_prop = sorted(prop_table, key=operator.itemgetter(0))
                     for n, v in sorted_prop:
                         if v is None: continue
