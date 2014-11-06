@@ -112,6 +112,13 @@ class GNode(object):
         from ...controller.geometry.node import GNodeController
         return GNodeController(document, model, self)
 
+    def get_controller_for_child_inparent(self, child):
+        return None
+
+    def get_controller_for_inparent(self):
+        if self._parent is None: return None
+        return self._parent.get_controller_for_child_inparent(self)
+
     def major_properties(self):
         return []
 
