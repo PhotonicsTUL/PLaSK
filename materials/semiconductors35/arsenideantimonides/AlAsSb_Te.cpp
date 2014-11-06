@@ -8,7 +8,7 @@ namespace plask { namespace materials {
 
 std::string AlAsSb_Te::name() const { return NAME; }
 
-std::string AlAsSb_Te::str() const { return StringBuilder("Al")("As")("Sb", Sb).dopant("Si", ND); }
+std::string AlAsSb_Te::str() const { return StringBuilder("Al")("As")("Sb", Sb).dopant("Te", ND); }
 
 MI_PARENT(AlAsSb_Te, AlAsSb)
 
@@ -35,7 +35,7 @@ AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, DopingAmountType Type, d
 }
 
 MI_PROPERTY(AlAsSb_Te, mob,
-            MISource("Strin 1966")
+            MISource("Stirn 1966")
             )
 Tensor2<double> AlAsSb_Te::mob(double T) const {
     double tmob = mob_RT * pow(300./T,1.8);
@@ -74,7 +74,7 @@ double AlAsSb_Te::nr(double wl, double T, double n) const {
     double nR300K;
     if (nR300K2>0) nR300K = sqrt(nR300K2);
     else nR300K = 1.; // TODO
-    //taken from n-GaSb
+
     double nR = nR300K; // TODO // for E << Eg: dnR/dn = 0
     double dnRdT = As*4.6e-5 + Sb*1.19e-5; // from Adachi (2005) ebook p.243 tab. 10.6
     return ( nR + nR*dnRdT*(T-300.) );

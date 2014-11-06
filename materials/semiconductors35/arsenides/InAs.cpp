@@ -53,11 +53,28 @@ MI_PROPERTY(InAs, Me,
            )
 Tensor2<double> InAs::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
+    double tMeG(0.024), tMeX(0.98), tMeL(0.94);
     if (point == 'G') {
-        tMe.c00 = 0.024;
-        tMe.c11 = 0.024;
+        tMe.c00 = tMeG; tMe.c11 = tMeG;
     }
-    return tMe;
+    else if (point == 'X') {
+        tMe.c00 = tMeX; tMe.c11 = tMeX;
+    }
+    else if (point == 'L') {
+        tMe.c00 = tMeL; tMe.c11 = tMeL;
+    }
+    else if (point == '*') {
+        if ( Eg(T,e,'G') == Eg(T,e,'*') ) {
+            tMe.c00 = tMeG; tMe.c11 = tMeG;
+        }
+        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) {
+            tMe.c00 = tMeX; tMe.c11 = tMeX;
+        }
+        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) {
+            tMe.c00 = tMeL; tMe.c11 = tMeL;
+        }
+    }
+    return ( tMe );
 }
 
 
@@ -80,6 +97,17 @@ Tensor2<double> InAs::Mlh(double T, double e) const {
     return tMlh;
 }
 
+MI_PROPERTY(InAs, Mh,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MIComment("no temperature dependence; "),
+            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            )
+Tensor2<double> InAs::Mh(double T, double e) const {
+    double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
+    double tMc11 = pow(pow(Mhh(T,e).c11,1.5)+pow(Mlh(T,e).c11,1.5),(2./3.));
+    Tensor2<double> tMh(tMc00, tMc11); // [001]
+    return ( tMh );
+}
 
 MI_PROPERTY(InAs, CB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")

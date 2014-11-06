@@ -67,9 +67,11 @@ Tensor2<double> InAsSb_Si::cond(double T) const {
 }
 
 MI_PROPERTY(InAsSb_Si, nr,
-            MISource("Paskov"),
-            MIArgumentRange(MaterialInfo::wl, 2050, 3450),
-            MIComment("for high (0.80-1.0) As content")
+            MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898; "), // nR @ RT
+            MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
+            MIComment("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished; "),
+            MIComment("do not use for InAsSb with Sb content higher than 0.20"),
+            MIArgumentRange(MaterialInfo::wl, 2050, 3450)
             )
 double InAsSb_Si::nr(double wl, double T, double n) const {
     double nR_InAs080Sb020_300K = 0.01525*pow(wl*1e-3,1.783)+3.561; // 2.05 um < wl < 5.4 um
