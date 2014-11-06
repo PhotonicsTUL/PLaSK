@@ -19,13 +19,13 @@ AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, DopingAmountType Type, d
     else
     {
         ND = Val;
-        // taken from n-GaSb:Te - use it for low doping conc
+        // based on: Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4), fit by L. Piskorski
         if (ND <= 1e18)
             Nf_RT = ND;
-        else // taken from n-GaSb:Te
+        else
         {
             double tNL = log10(ND);
-            double tnL = 0.499626*tNL*tNL*tNL - 28.7231*tNL*tNL + 549.517*tNL - 3480.87;
+            double tnL = 0.383027*tNL*tNL*tNL - 22.1278*tNL*tNL + 425.212*tNL - 2700.2222;
             Nf_RT = ( pow(10.,tnL) );
         }
     }

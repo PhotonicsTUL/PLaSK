@@ -25,7 +25,7 @@ AlGaAsSb_Te::AlGaAsSb_Te(const Material::Composition& Comp, DopingAmountType Typ
         else
         {
             double tNL = log10(ND);
-            double tnL = 0.499626*tNL*tNL*tNL - 28.7231*tNL*tNL + 549.517*tNL - 3480.87;
+            double tnL = 0.383027*tNL*tNL*tNL - 22.1278*tNL*tNL + 425.212*tNL - 2700.2222;
             Nf_RT = ( pow(10.,tnL) );
         }
     }

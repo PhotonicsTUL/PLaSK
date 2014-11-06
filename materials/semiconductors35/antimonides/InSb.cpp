@@ -19,7 +19,7 @@ double InSb::lattC(double T, char x) const {
 
 MI_PROPERTY(InSb, Eg,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("temperature dependences for X and L assumed to be the same as for G")
+            MIComment("temperature dependences for points X and L assumed to be the same as for Gamma point")
             )
 double InSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -46,21 +46,21 @@ double InSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(InSb, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
-            MIComment("only for Gamma point"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MIComment("no temperature dependence; "),
+            MIComment("only for Gamma point")
             )
 Tensor2<double> InSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
-    if (point == 'G') {
-        tMe.c00 = 0.013;
-        tMe.c11 = 0.013;
+    double tMeG(0.013);
+    if (point == 'G' || point == '*') {
+        tMe.c00 = tMeG; tMe.c11 = tMeG;
     }
     return ( tMe );
 }
 
 MI_PROPERTY(InSb, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
             )
 Tensor2<double> InSb::Mhh(double T, double e) const {
@@ -69,12 +69,24 @@ Tensor2<double> InSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(InSb, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"),
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
             )
 Tensor2<double> InSb::Mlh(double T, double e) const {
-    Tensor2<double> tMlh(0.015, 0.015);
+    Tensor2<double> tMlh(0.015, 0.015); // [001]
     return ( tMlh );
+}
+
+MI_PROPERTY(InSb, Mh,
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MIComment("no temperature dependence; "),
+            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            )
+Tensor2<double> InSb::Mh(double T, double e) const {
+    double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
+    double tMc11 = pow(pow(Mhh(T,e).c11,1.5)+pow(Mlh(T,e).c11,1.5),(2./3.));
+    Tensor2<double> tMh(tMc00, tMc11); // [001]
+    return ( tMh );
 }
 
 MI_PROPERTY(InSb, CB,
@@ -158,8 +170,8 @@ double InSb::c44(double T) const {
 }
 
 MI_PROPERTY(InSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, Wiley 2009"), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 20, 300)
            )
 Tensor2<double> InSb::thermk(double T, double t) const {
@@ -168,13 +180,13 @@ Tensor2<double> InSb::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(InSb, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
             MIComment("no temperature dependence")
             )
 double InSb::dens(double T) const { return 5.77677e3; }
 
 MI_PROPERTY(InSb, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons, 2009"),
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
             MIComment("no temperature dependence")
             )
 double InSb::cp(double T) const { return 0.350e3; }
