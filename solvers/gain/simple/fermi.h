@@ -158,8 +158,10 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
 
     double cond_waveguide_depth;    ///< waveguide conduction band depth [eV]
     double vale_waveguide_depth;    ///< waveguide valence band depth [eV]
-    double lifetime;               ///< stimulated emission lifetime [ps]
-    double matrixelem;             ///< optical matrix element [m0*eV]
+    double cond_qw_shift;           ///< additional conduction band shift for qw [eV]
+    double vale_qw_shift;           ///< additional valence band shift for qw [eV]
+    double lifetime;                ///< stimulated emission lifetime [ps]
+    double matrixelem;              ///< optical matrix element [m0*eV]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
@@ -228,6 +230,12 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Rec
 
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
+
+    double getCondQWShift() const { return cond_qw_shift; }
+    void setCondQWShift(double iCondQWShift)  { cond_qw_shift = iCondQWShift; }
+
+    double getValeQWShift() const { return vale_qw_shift; }
+    void setValeQWShift(double iValeQWShift)  { vale_qw_shift = iValeQWShift; }
 
     /**
      * Reg gain spectrum object for future use;

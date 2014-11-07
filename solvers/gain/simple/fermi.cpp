@@ -12,6 +12,8 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
     matrixelem = 0.0;
     cond_waveguide_depth = 0.26; // [eV]
     vale_waveguide_depth = 0.13; // [eV]
+    cond_qw_shift = 0.; // [eV]
+    vale_qw_shift = 0.; // [eV]
     differenceQuotient = 0.01;  // [%]
     if_strain = false;
     inTemperature.changedConnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
@@ -40,6 +42,8 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
         if (param == "config") {
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
+            cond_qw_shift = reader.getAttribute<double>("cond-qw-shift", cond_qw_shift);
+            vale_qw_shift = reader.getAttribute<double>("vale-qw-shift", vale_qw_shift);
             if_strain = reader.getAttribute<bool>("strained", if_strain);
             reader.requireTagEnd();
         } else if (param == "levels") {
@@ -297,9 +301,9 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
         qmhh = region.materialQW->Mhh(T,qstrain);
         qmlh = region.materialQW->Mlh(T,qstrain);
 
-        qEc = region.materialQW->CB(T,qstrain);
-        qEvhh = region.materialQW->VB(T,qstrain,'G','H');
-        qEvlh = region.materialQW->VB(T,qstrain,'G','L');
+        qEc = region.materialQW->CB(T,qstrain) + cond_qw_shift;
+        qEvhh = region.materialQW->VB(T,qstrain,'G','H') + vale_qw_shift;
+        qEvlh = region.materialQW->VB(T,qstrain,'G','L') + vale_qw_shift;
 
         gainModule.Set_refr_index(region.materialQW->nr(wavelength, T));
         gainModule.Set_split_off(region.materialQW->Dso(T,qstrain));

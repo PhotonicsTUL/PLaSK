@@ -9,6 +9,8 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
     outGainOverCarriersConcentration(this, &FerminewGainSolver<GeometryType>::getdGdn)*/ // getDelegated will be called whether provider value is requested
 {
     inTemperature = 300.; // temperature receiver has some sensible value
+    cond_qw_shift = 0.; // [eV]
+    vale_qw_shift = 0.; // [eV]
     roughness = 0.05; // [-]
     lifetime = 0.1; // [ps]
     matrixelem = 0.; // [m0*eV]
@@ -37,7 +39,8 @@ void FerminewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
             roughness = reader.getAttribute<double>("roughness", roughness);
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
-
+            cond_qw_shift = reader.getAttribute<double>("cond-qw-shift", cond_qw_shift);
+            vale_qw_shift = reader.getAttribute<double>("vale-qw-shift", vale_qw_shift);
             if_strain = reader.getAttribute<bool>("strained", if_strain);
             if_fixed_QWs_widths = reader.getAttribute<bool>("fixedQWsWidths", if_fixed_QWs_widths);
             reader.requireTagEnd();
@@ -445,7 +448,9 @@ int FerminewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionInfo& 
         double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
         double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
         //writelog(LOG_DETAIL, "tH i buildEc function: %1%", tH);
-        mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)-tDEc)); // wells and barriers
+        double tCBaddShift(0.);
+        if (region.isQW(i)) tCBaddShift = cond_qw_shift;
+        mpLay = new QW::warstwa(region.getLayerMaterial(i)->Me(T,e).c00, region.getLayerMaterial(i)->Me(T,e).c11, tX, (region.getLayerMaterial(i)->CB(T,e)+tCBaddShift-tDEc), (tX+tH), (region.getLayerMaterial(i)->CB(T,e)+tCBaddShift-tDEc)); // wells and barriers
         mpEc.push_back(mpLay); tX += tH;
         if (region.getLayerMaterial(i)->CB(T,e) >= tDEc)
             tfStructOK = false;
@@ -478,7 +483,9 @@ int FerminewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionInfo
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
             double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
-            mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','H')+tDEvhh)); // wells and barriers
+            double tVBaddShift(0.);
+            if (region.isQW(i)) tVBaddShift = vale_qw_shift;
+            mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mhh(T,e).c00, region.getLayerMaterial(i)->Mhh(T,e).c11, tX, -(region.getLayerMaterial(i)->VB(T,e,'G','H')+tVBaddShift-tDEvhh), (tX+tH), -(region.getLayerMaterial(i)->VB(T,e,'G','H')+tVBaddShift-tDEvhh)); // wells and barriers
             mpEvhh.push_back(mpLay); tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','H') <= tDEvhh)
                 tfStructOK = false;
@@ -511,7 +518,9 @@ int FerminewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionInfo
         {
             double e = (this->materialSubstrate->lattC(T,'a') - region.getLayerMaterial(i)->lattC(T,'a')) / region.getLayerMaterial(i)->lattC(T,'a');
             double tH = region.lens[i]; // tH (A) //cutNumber(region.getLayerBox(i).height()*1e4,2); // tH (A)
-            mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh), (tX+tH), (-region.getLayerMaterial(i)->VB(T,e,'G','L')+tDEvlh)); // wells and barriers
+            double tVBaddShift(0.);
+            if (region.isQW(i)) tVBaddShift = vale_qw_shift;
+            mpLay = new QW::warstwa(region.getLayerMaterial(i)->Mlh(T,e).c00, region.getLayerMaterial(i)->Mlh(T,e).c11, tX, -(region.getLayerMaterial(i)->VB(T,e,'G','L')+tVBaddShift-tDEvlh), (tX+tH), -(region.getLayerMaterial(i)->VB(T,e,'G','L')+tVBaddShift-tDEvlh)); // wells and barriers
             mpEvlh.push_back(mpLay); tX += tH;
             if (region.getLayerMaterial(i)->VB(T,e,'G','L') <= tDEvlh)
                 tfStructOK = false;
