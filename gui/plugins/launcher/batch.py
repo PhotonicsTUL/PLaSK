@@ -19,9 +19,13 @@ from gui.qt import QtCore, QtGui
 from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
+try:
+    import paramiko
+except ImportError:
+    paramiko = None
 
 class Launcher(object):
-    name = 'Remote Batch Job'
+    name = "Remote Batch Job"
 
     def widget(self):
         widget = QtGui.QWidget()

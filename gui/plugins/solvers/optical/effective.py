@@ -46,7 +46,7 @@ EffectiveIndex2D = {
              u'Initial range size (Muller method only).  (complex [a.u.])'))),
         ('stripe-root', 'Parameters of the vertical root-finding algorithm', (
             ('method', 'Root finding method',
-             u'Root finding algorithm (Muller\'s method or Broyden\'s method.', ('muller', 'broyden')),
+             u'Root finding algorithm (Muller\'s method or Broyden\'s method.', ('muller', 'broyden', 'brent')),
             ('tolx', 'Tolerance on effective index',
              u'Maximum change of the effective index which is allowed for onvergent solution. (float)'),
             ('tolf-min', 'Sufficient determinant value',
@@ -62,8 +62,8 @@ EffectiveIndex2D = {
              '(float&nbsp;[a.u.])'),
             ('lambda', 'Minimum Broyden step decrease ratio',
              u'Minimum decrease ratio of one step (Broyden method only). (float&nbsp;[a.u.])'),
-            ('initial-range', 'Initial Muller range size',
-             u'Initial range size (Muller method only).  (complex [a.u.])'))),
+            ('initial-range', 'Initial range size',
+             u'Initial range size (Muller and Brent methods only).  (complex [a.u.])'))),
         ('mirrors', 'Mirror losses', (
             ('R1', 'Front reflectivity', 'Reflectivity of the front mirror.'),
             ('R2', 'Back reflectivity', 'Reflectivity of the back mirror.')))

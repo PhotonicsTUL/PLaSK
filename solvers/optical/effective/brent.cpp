@@ -3,9 +3,84 @@ using namespace std;
 
 namespace plask { namespace solvers { namespace effective {
 
+#define carg(x) realaxis? dcomplex(x, imag(start)) : dcomplex(real(start), x)
+#define fun(x) abs(val_function(carg(x)))
 
-double RootBrent::axisBrent(double a, double b, std::function<double(double)>fun, double& fx)
+double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
 {
+    const double C = 0.5 * (3. - sqrt(5.));
+    const double G = 2. / (sqrt(5.) - 1.);
+
+    unsigned i = 0;
+    double x, dist;
+
+    if (realaxis) {
+        x = real(start);
+        dist = real(params.initial_dist);
+    } else {
+        x = imag(start);
+        if (imag(params.initial_dist) == 0) dist = real(params.initial_dist);
+        else dist = imag(params.initial_dist);
+    }
+
+    // Exponential search
+    double a = x - dist,
+           b = x + dist;
+
+    writelog(LOG_DETAIL, "Searching for the root with Brent method between %1% and %2% in the %3% axis",
+                         str(a), str(b), realaxis?"real":"imaginary");
+
+    if (isnan(fx)) fx = fun(x);
+
+    double fw = fun(a),
+           fv = fun(b);
+    log_value(carg(a), fw);
+    log_value(carg(x), fx);
+    log_value(carg(b), fv);
+
+    double d, u;
+
+    log_value.resetCounter();
+
+    bool bounded = false;
+    if (fw <= fx && fx <= fv) {
+        writelog(LOG_DETAIL, "Extending search range to lower values");
+        for (; i < params.maxiter; ++i) {
+            u = a - G * (x - a);
+            b = x; fv = fx;
+            x = a; fx = fw;
+            a = u; fw = fun(a);
+            log_value.count(a, fw);
+            if (fw > fx) {
+                bounded = true;
+                break;
+            }
+        }
+        if (bounded) writelog(LOG_DETAIL, "Searching minimum in range between %1% and %2%", a, b);
+    } else if (fw >= fx && fx >= fv) {
+        writelog(LOG_DETAIL, "Extending search range to higher values");
+        for (; i < params.maxiter; ++i) {
+            u = b + G * (b - x);
+            a = x; fw = fx;
+            x = b; fx = fv;
+            b = u; fv = fun(b);
+            log_value.count(carg(b), fv);
+            if (fv > fx) {
+                bounded = true;
+                break;
+            }
+        }
+        if (bounded) writelog(LOG_DETAIL, "Searching minimum in range between %1% and %2%", a, b);
+    } else bounded = true;
+
+    if (!bounded)
+        throw ComputationError(solver.getId(),
+                               "Brent: %1%: minimum still unbounded after maximum number of iterations",
+                               log_value.chart_name);
+
+    double sa = a, sb = b, w = x, v = x, e = 0.0;
+    fw = fv = fx;
+
     //  Reference:
     //    Richard Brent,
     //    Algorithms for Minimization Without Derivatives,
@@ -13,21 +88,14 @@ double RootBrent::axisBrent(double a, double b, std::function<double(double)>fun
     //    ISBN: 0-486-41998-3,
     //    LC: QA402.5.B74.
 
-    const double C = 0.5 * (3. - sqrt(5.));
+    double tol = SMALL * abs(x) + params.tolx;
+    double tol2 = 2.0 * tol;
 
-    double sa = a, sb = b, x = sa + C * (b - a), w = x, v = w, e = 0.0;
-    fx = fun(x);
-    double fw = fx, fv = fx;
-
-    double d, u;
-
-    for (unsigned i = 0; i < params.maxiter; ++i) {
+    for (; i < params.maxiter; ++i) {
         double m = 0.5 * (sa + sb) ;
-        double tol = SMALL * abs(x) + params.tolx;
-        double t2 = 2.0 * tol;
 
         // Check the stopping criterion.
-        if (abs(x - m) <= t2 - 0.5 * (sb - sa)) return x;
+        if (abs(x - m) <= tol2 - 0.5 * (sb - sa)) return x;
 
         // Fit a parabola.
         double r = 0., q = 0., p = 0.;
@@ -46,7 +114,7 @@ double RootBrent::axisBrent(double a, double b, std::function<double(double)>fun
             d = p / q;
             u = x + d;
             // F must not be evaluated too close to a or b
-            if ((u - sa) < t2 || (sb - u) < t2) {
+            if ((u - sa) < tol2 || (sb - u) < tol2) {
                 if (x < m) d = tol;
                 else d = - tol;
             }
@@ -80,6 +148,7 @@ double RootBrent::axisBrent(double a, double b, std::function<double(double)>fun
                 v = u; fv = fu;
             }
         }
+        log_value.count(carg(x), fx);
     }
     throw ComputationError(solver.getId(), "Brent: %1%: maximum number of iterations reached", log_value.chart_name);
     return 0;
@@ -88,13 +157,19 @@ double RootBrent::axisBrent(double a, double b, std::function<double(double)>fun
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
-dcomplex RootBrent::find(dcomplex start) const
+dcomplex RootBrent::find(dcomplex xstart) const
 {
-    dcomplex first = start - 0.5 * params.initial_dist;
-    dcomplex second = start + 0.5 * params.initial_dist;
+    double f0 = NAN;
 
-    writelog(LOG_DETAIL, "Searching for the root with two-step Brent method between %1% and %2%", str(first), str(second));
-    log_value.resetCounter();
+    xstart.real(axisBrent(xstart, f0, true));
+    xstart.imag(axisBrent(xstart, f0, false));
+    xstart.real(axisBrent(xstart, f0, true));
+
+    if (f0 > params.tolf_min)
+        ComputationError(solver.getId(),
+                         "Brent: %1%: After real and imaginary minimum search, determinant still not small enough",
+                         log_value.chart_name);
+    return xstart;
 }
 
 }}} // namespace plask::solvers::effective

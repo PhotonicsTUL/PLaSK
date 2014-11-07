@@ -259,7 +259,7 @@ class PlaskThread(QtCore.QThread):
 
 
 class Launcher(object):
-    name = 'Local Process'
+    name = "Local Process"
 
     def __init__(self):
         self.windows = set()

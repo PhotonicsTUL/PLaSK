@@ -33,7 +33,7 @@ Optical solvers
 
          Parameters of the global root-finding algorithm.
 
-         :attr method: Root finding method (‘muller’ or ‘broyden’)
+         :attr method: Root finding method (‘muller’, ‘broyden’, or ‘brent’)
          :attr tolx: Maximum change of the effective index which is allowed for convergent solution. (float [-])
          :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
          :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])
@@ -41,7 +41,7 @@ Optical solvers
          :attr maxiter: Maximum number of root finding iterations. (int)
          :attr alpha: Parameter ensuring sufficient decrease of determinant in each step (Broyden method only). (float [a.u.])
          :attr lambda: Minimum decrease ratio of one step (Broyden method only). (float [a.u.])
-         :attr initial-range: Initial range size (Muller method only).  (complex [a.u.])
+         :attr initial-range: Initial range size (Muller and Brent methods only).  (complex [a.u.])
 
       .. xml:tag:: <stripe-root> [in EffectiveIndex2D optical solver]
 
@@ -100,7 +100,7 @@ Optical solvers
 
          Parameters of the global root-finding algorithm.
 
-         :attr method: Root finding method (‘muller’ or ‘broyden’)
+         :attr method: Root finding method (‘muller’, ‘broyden’, or ‘brent’)
          :attr tolx: Maximum change of the effective frequency parameter which is allowed for convergent solution. (float [-])
          :attr tolf-min: Minimum value of the determinant sufficient to assume convergence. (float [a.u.])
          :attr tolf-max: Maximum value of the determinant required to assume convergence. (float [a.u.])

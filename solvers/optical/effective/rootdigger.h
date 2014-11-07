@@ -13,7 +13,8 @@ struct RootDigger {
     /// Root finding method
     enum Method {
         ROOT_MULLER,
-        ROOT_BROYDEN
+        ROOT_BROYDEN,
+        ROOT_BRENT,
     };
 
     struct Params {
@@ -36,7 +37,7 @@ struct RootDigger {
             maxiter(500),
             alpha(1e-7),
             lambda_min(1e-8),
-            initial_dist(1e-12) {}
+            initial_dist(1e-3) {}
     };
 
   protected:

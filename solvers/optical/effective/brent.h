@@ -1,5 +1,5 @@
-#ifndef PLASK__OPTICAL_EFFECTIVE_MULLER_H
-#define PLASK__OPTICAL_EFFECTIVE_MULLER_H
+#ifndef PLASK__OPTICAL_EFFECTIVE_BRENT_H
+#define PLASK__OPTICAL_EFFECTIVE_BRENT_H
 
 #include "rootdigger.h"
 
@@ -16,7 +16,7 @@ class RootBrent: public RootDigger {
 
   protected:
 
-    double axisBrent(double a, double b, std::function<double(double)>fun, double& fx);
+    double axisBrent(dcomplex start, double& fx, bool real) const;
 
   public:
 
@@ -29,4 +29,4 @@ class RootBrent: public RootDigger {
 };
 
 }}} // namespace plask::solvers::effective
-#endif // PLASK__OPTICAL_EFFECTIVE_MULLER_H
+#endif // PLASK__OPTICAL_EFFECTIVE_BRENT_H
