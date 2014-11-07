@@ -19,6 +19,7 @@ from ...utils.str import empty_to_none, none_to_empty
 class GNObjectController(GNodeController):
 
     def fill_form(self):
+        self.construct_group('Basic settings')
         self.name = self.construct_line_edit('name')
         self.role = self.construct_line_edit('roles')
         self.axes = self.construct_combo_box('axes', ['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])   #TODO zablokować możliwość podawania {

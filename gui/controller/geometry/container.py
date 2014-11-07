@@ -42,10 +42,11 @@ class GNGapController(GNodeController):
 class GNShelfController(GNObjectController):
     
     def fill_form(self):
-        super(GNShelfController, self).fill_form()
+        self.construct_group('Shelf specific settings')
         self.repeat = self.construct_line_edit('repeat')
         self.shift = self.construct_line_edit('shift')
         self.flat = self.construct_combo_box('flat', items=['', 'yes', 'no'])
+        super(GNShelfController, self).fill_form()
 
     def save_data_in_model(self):
         super(GNShelfController, self).save_data_in_model()
