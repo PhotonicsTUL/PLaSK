@@ -52,6 +52,7 @@ struct SlabBase {
         root.lambda_min = reader.getAttribute<double>("lambd", root.lambda_min);
         root.initial_dist = reader.getAttribute<dcomplex>("initial-range", root.initial_dist);
         root.method = reader.enumAttribute<RootDigger::Method>("method")
+            .value("brent", RootDigger::ROOT_BRENT)
             .value("broyden", RootDigger::ROOT_BROYDEN)
             .value("muller", RootDigger::ROOT_MULLER)
             .get(root.method);
