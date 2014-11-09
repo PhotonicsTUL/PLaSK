@@ -169,10 +169,10 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     std::vector<QW::warstwa *> mpEc, mpEvhh, mpEvlh;
     QW::warstwa *mpLay;
     QW::struktura *mpStrEc, *mpStrEvhh, *mpStrEvlh;
-    int buildStructure(double T, const ActiveRegionInfo& region);
-    int buildEc(double T, const ActiveRegionInfo& region);
-    int buildEvhh(double T, const ActiveRegionInfo& region);
-    int buildEvlh(double T, const ActiveRegionInfo& region);
+    int buildStructure(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    int buildEc(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    int buildEvhh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
+    int buildEvlh(double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     //double cutNumber(double iNumber, int iN);
     double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR);
 
