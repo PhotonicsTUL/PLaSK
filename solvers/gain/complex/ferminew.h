@@ -100,7 +100,6 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                     if (lastbarrier) ++qwn;
                     else solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
                     lastbarrier = false;
-                    //writelog(LOG_DETAIL, "has role QW checked");
                 }
                 else //if (static_cast<Translation<2>*>(layer.get())->getChild()->hasRole("barrier")) // TODO 4.09.2014
                 {
@@ -116,7 +115,6 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
                              !is_zero(material->VB(300) - materialBarrier->VB(300)))
                         throw Exception("%1%: Multiple barrier materials around active region.", solver->getId());*/
                     lastbarrier = true;
-                    //writelog(LOG_DETAIL, "has role barrier checked");
                 } // TODO something must be added here because of spacers placed next to external barriers
             }
             qwtotallen *= 1e4; // µm -> Å
@@ -160,6 +158,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 
     double cond_qw_shift;           ///< additional conduction band shift for qw [eV]
     double vale_qw_shift;           ///< additional valence band shift for qw [eV]
+    double qw_width_mod;            ///< qw width modifier [-]
     double roughness;               ///< roughness [-]
     double lifetime;                ///< lifetime [ps]
     double matrixelem;              ///< optical matrix element [m0*eV]
@@ -174,7 +173,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
     int buildEc(double T, const ActiveRegionInfo& region);
     int buildEvhh(double T, const ActiveRegionInfo& region);
     int buildEvlh(double T, const ActiveRegionInfo& region);
-    double cutNumber(double iNumber, int iN);
+    //double cutNumber(double iNumber, int iN);
     double recalcConc(plask::shared_ptr<QW::obszar_aktywny> iAktyw, double iN, double iQWTotH, double iT, double iQWnR);
 
     DataVector<const double> nOnMesh; // carriers concentration on the mesh
@@ -184,7 +183,7 @@ struct PLASK_SOLVER_API FerminewGainSolver: public SolverWithMesh<GeometryType,O
 //    double lambda_stop;
 //    double lambda;
 
-    QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
+    QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
 
     void prepareLevels(QW::gain& gmodule, const ActiveRegionInfo& region) {
     }
@@ -305,13 +304,13 @@ struct GainSpectrum {
     double getGain(double wavelength)
     {
         //std::cout << "Runing getGain in spectrum\n"; // added
-    //double getGain(double wavelength) {
+        //double getGain(double wavelength) {
         if (isnan(T)) T = solver->inTemperature(make_shared<const OnePointMesh<2>>(point))[0];
         if (isnan(n)) n = solver->inCarriersConcentration(make_shared<const OnePointMesh<2>>(point))[0];
         if (!gModExist) // added
         { // added
             //std::cout << "Getting GainModule in spectrum\n"; // added
-            gMod = solver->getGainModule(wavelength, T, n, *region); // added
+            gMod = solver->getGainModule(wavelength, T, n, *region, true); // added
             gModExist = true; // added
         } // added
         return gMod.Get_gain_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen, solver->getLifeTime()); // added
@@ -378,7 +377,7 @@ struct LuminescenceSpectrum {
         if (!gModExist) // added
         { // added
             //std::cout << "Getting GainModule in spectrum\n"; // added
-            gMod = solver->getGainModule(wavelength, T, n, *region); // added
+            gMod = solver->getGainModule(wavelength, T, n, *region, true); // added
             gModExist = true; // added
         } // added
         return gMod.Get_luminescence_at_n(solver->nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen); // added

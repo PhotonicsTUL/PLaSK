@@ -1811,58 +1811,85 @@ void struktura::struktura_do_pliku(std::ofstream & plik)
 /*****************************************************************************/
 void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
 {
-  if (mInfo) std::clog<<"W f_do_p"<<std::endl; // LUKASZ
-  plik<<"#\t";
-  std::vector<stan>::iterator it_stan = rozwiazania.begin();
-  while(it_stan != rozwiazania.end())
+    //if (mInfo) std::clog<<"W f_do_p"<<std::endl; // LUKASZ
+    //plik<<"#\t";
+    int tN = rozwiazania.size(); // number of levels
+    std::vector<stan>::iterator it_stan = rozwiazania.begin();
+    plik << tN;
+    while(it_stan != rozwiazania.end())
+      {
+        plik << "\t" << /*" E="<<*/ (it_stan->poziom);
+        it_stan++;
+      }
+    plik << "\n";
+    double szer = prawa.iks - lewa.iks;
+    double bok = szer/4.;
+    double x = lewa.iks - bok;
+    while(x <= lewa.iks)
+      {
+        plik<<dlugosc_na_A(x)*10.<<"\t"; // w pliku: x(nm)
+        it_stan = rozwiazania.begin();
+        while(it_stan != rozwiazania.end())
+      {
+        plik<<"\t"<<lewa.funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki[0]);//<<" ";
+        it_stan++;
+      }
+        plik<<"\n";
+        x += krok;
+      }
+    for(int i = 0; i <= (int) kawalki.size() - 1; i++)
+      {
+        x = kawalki[i].x_pocz;
+        while(x <= kawalki[i].x_kon)
+      {
+        plik<<dlugosc_na_A(x)*10.<<"\t"; // w pliku: x(nm)
+        it_stan = rozwiazania.begin();
+        while(it_stan != rozwiazania.end())
+          {
+            plik<<"\t"<<kawalki[i].funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki[2*i + 1], it_stan->wspolczynniki[2*i + 2]);//<<" ";
+            it_stan++;
+          }
+        plik<<"\n";
+        x += krok;
+      }
+      }
+    x = prawa.iks ;
+    while(x <= prawa.iks + bok)
+      {
+        plik<<dlugosc_na_A(x)*10.<<"\t"; // w pliku: x(nm)
+        it_stan = rozwiazania.begin();
+        while(it_stan != rozwiazania.end())
+      {
+        plik<<"\t"<<prawa.funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki.back());//<<" ";
+        it_stan++;
+      }
+        plik<<"\n";
+        x += krok;
+      }
+}
+/*****************************************************************************/
+void struktura::showEnergyLevels(std::string iStr, double iNoOfQWs) // LUKASZ
+{
+    std::vector<stan>::iterator it_stan = rozwiazania.begin();
+    int tQWno = 1;
+    while(it_stan != rozwiazania.end())
     {
-      plik<<" E="<<(it_stan->poziom);
-      it_stan++;
-    }
-  plik<<"\n";
-  double szer = prawa.iks - lewa.iks;
-  double bok = szer/4;
-  double x = lewa.iks - bok;
-  while(x <= lewa.iks)
-    {
-      plik<<dlugosc_na_A(x)<<"\t";
-      it_stan = rozwiazania.begin();
-      while(it_stan != rozwiazania.end())
-	{
-	  plik<<lewa.funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki[0])<<" ";
-	  it_stan++;
-	}
-      plik<<"\n";
-      x += krok;
-    }
-  for(int i = 0; i <= (int) kawalki.size() - 1; i++)
-    {
-      x = kawalki[i].x_pocz;
-      while(x <= kawalki[i].x_kon)
-	{
-	  plik<<dlugosc_na_A(x)<<"\t";
-	  it_stan = rozwiazania.begin();
-	  while(it_stan != rozwiazania.end())
-	    {
-	      plik<<kawalki[i].funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki[2*i + 1], it_stan->wspolczynniki[2*i + 2])<<" ";
-	      it_stan++;
-	    }
-	  plik<<"\n";
-	  x += krok;
-	}
-    }
-  x = prawa.iks ;
-  while(x <= prawa.iks + bok)
-    {
-      plik<<dlugosc_na_A(x)<<"\t";
-      it_stan = rozwiazania.begin();
-      while(it_stan != rozwiazania.end())
-	{
-	  plik<<prawa.funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki.back())<<" ";
-	  it_stan++;
-	}
-      plik<<"\n";
-      x += krok;
+        bool tCalcAvg = true;
+        double tAvgEnLev = 0.;
+        for (int i=0; i<iNoOfQWs; i++)
+        {
+            tAvgEnLev += it_stan->poziom;
+            writelog(LOG_DETAIL, "QW %1% - energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, it_stan->poziom);
+            it_stan++;
+            if (it_stan == rozwiazania.end())
+            {
+                tCalcAvg = false;
+                break;
+            }
+        }
+        if (tCalcAvg)
+            writelog(LOG_DETAIL, "QW %1% - average energy level for %2%: %3% eV from cladding band edge", tQWno, iStr, tAvgEnLev/iNoOfQWs);
+        tQWno++;
     }
 }
 /*****************************************************************************/
@@ -1893,7 +1920,7 @@ double dE_po_dl(size_t nr, chrop ch)
   double licznik = 
 }
 *****************************************************************************/
-obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo)
+obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, bool iShowM)
 {
   przekr_max = 0.;
   pasmo_przew.push_back(elektron);
@@ -1923,7 +1950,7 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
   for(int i = 0; i <= liczba_war - 1; i++)
     {
       el_mac.push_back(element(i));
-      writelog(LOG_DETAIL, "M for layer %1%: %2%", i+1, el_mac[i]); // LUKASZ
+      if (iShowM) writelog(LOG_DETAIL, "Layer %1% - M: %2% m0*eV", i+1, el_mac[i]); // LUKASZ
     }
   zrob_macierze_przejsc();
 }

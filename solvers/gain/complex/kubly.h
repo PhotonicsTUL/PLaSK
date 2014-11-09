@@ -204,6 +204,7 @@ public:
     double ilenosnikow(double qFl, double T);
     std::vector<double> koncentracje_w_warstwach(double qFl, double T);
     void funkcje_do_pliku(std::ofstream & plik, double krok);
+    void showEnergyLevels(std::string iStr, double iNoOfQWs);
     void struktura_do_pliku(std::ofstream & plik); // do rysowania studni
     void przesun_energie(double);
     //  double dE_po_dl(size_t nr, chrop ch); //pochodna nr-tego poziomu po szerokosci studni
@@ -231,7 +232,7 @@ class obszar_aktywny
 
 public:
 
-    obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DeltaSO, double chropo); // najprostszy konstruktor: jeden elektron i wspolna przerwa
+    obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DeltaSO, double chropo, bool iShowM); // najprostszy konstruktor: jeden elektron i wspolna przerwa
 
     double min_przerwa_energetyczna();
     //  void policz_calki(const struktura * elektron, const struktura * dziura, A2D & macierz);
