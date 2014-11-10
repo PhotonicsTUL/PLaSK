@@ -90,7 +90,7 @@ class GNStack(GNContainerBase):
         self.aligners = (GNAligner(None, None) for _ in range(0, dim-1))
 
     def aligners_dir(self):
-        return (0,) if self.children_dim == 2 else (0, 2)
+        return (0,) if self.children_dim == 2 else (0, 1)
 
     def aligners_dict(self):
         return dict(zip(self.aligners_dir(), self.aligners))
