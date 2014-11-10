@@ -87,21 +87,24 @@ class GNStack(GNContainerBase):
         super(GNStack, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.repeat = None
         self.shift = None
-        self.aligner = GNAligner(None, None)
+        self.aligners = (GNAligner(None, None) for _ in range(0, dim-1))
 
-    def aligner_dir(self):
-        return self.children_dim-2
+    def aligners_dir(self):
+        return (0,) if self.children_dim == 2 else (0, 2)
+
+    def aligners_dict(self):
+        return dict(zip(self.aligners_dir(), self.aligners))
 
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNStack, self).attributes_from_xml(attribute_reader, conf)
         self.repeat = attribute_reader.get('repeat')
         self.shift = attribute_reader.get('shift')
-        self.aligner, = conf.read_aligners(attribute_reader, self.children_dim, self.aligner_dir())  #self.children_dim-2 is direction tran
+        self.aligners = conf.read_aligners(attribute_reader, self.children_dim, *self.aligners_dir())
 
     def attributes_to_xml(self, element, conf):
         super(GNStack, self).attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift')
-        conf.write_aligners(element, self.children_dim, {self.aligner_dir() : self.aligner})    #self.children_dim-2 is direction tran
+        conf.write_aligners(element, self.children_dim, self.aligners_dict())
 
     def children_from_xml(self, ordered_reader, conf):
         for c in ordered_reader.iter():
@@ -109,7 +112,7 @@ class GNStack(GNContainerBase):
                 with OrderedTagReader(c) as item_child_reader:
                     child = construct_geometry_object(item_child_reader.require(), conf)
                 with AttributeReader(c) as item_attr_reader:
-                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.aligner_dir())  #self.children_dim-2 is direction tran
+                    child.in_parent, = conf.read_aligners(item_attr_reader, self.children_dim, self.aligners_dir())  #self.children_dim-2 is direction tran
             elif c.tag == 'zero':
                 GNZero(self, self.children_dim)
             else:
@@ -120,7 +123,7 @@ class GNStack(GNContainerBase):
         if child.in_parent is not None:
             res = etree.Element('item')
             res.append(child_element)
-            conf.write_aligners(res, self.children_dim, {self.aligner_dir() : child.in_parent})
+            conf.write_aligners(res, self.children_dim, self.aligners_dict())
             return res
         else:
             return child_element
@@ -139,13 +142,14 @@ class GNStack(GNContainerBase):
         res.insert(0, {'zero': GNZero.from_xml})
         return res
 
-    def _aligner_to_property(self, aligner):
-        return (aligner.position_str(self.children_dim, self.get_axes_conf_dim(self.children_dim), self.aligner_dir()), aligner.value)
+    def _aligner_to_property(self, aligner_dir, aligner):
+        return (aligner.position_str(self.children_dim, self.get_axes_conf_dim(self.children_dim), aligner_dir), aligner.value)
 
     def major_properties(self):
         res = super(GNStack, self).major_properties()
-        if self.aligner.position is not None:
-            res.append(self._aligner_to_property(self.aligner))
+        for aligner_dir, aligner in zip(self.aligners_dir(), self.aligners):
+            if aligner.position is not None:
+                res.append(self._aligner_to_property(aligner_dir, aligner))
         res.append(('repeat', self.repeat))
         res.append(('shift', self.shift))
         return res
@@ -153,6 +157,10 @@ class GNStack(GNContainerBase):
     def child_properties(self, child_in_parent):
         if child_in_parent is None or child_in_parent.position is None: return []
         return [self._aligner_to_property(child_in_parent)]
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.container import GNStackController
+        return GNStackController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

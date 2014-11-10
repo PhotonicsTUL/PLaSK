@@ -25,7 +25,7 @@ class GNAligner(object):
         self.value = value
 
     @classmethod
-    def names(cls, dims, axis_names_in_dims, axis_nr):
+    def names(cls, dims, axis_names_in_dims, axis_nr, with_alternative_names = True):
         """
         Get name of aligners.
         :param int dims: number of dims, 2 or 3
@@ -33,6 +33,7 @@ class GNAligner(object):
         :param int axis_nr: axis number, from 0 to dims-1
         :return: tuple with aligner names: lo, center, hi, origin, center (alternative name)
         """
+        if not with_alternative_names: return cls.names(dims, axis_names_in_dims, axis_nr, True)[:4]
         a = axis_names_in_dims[axis_nr]
         if dims == 2: axis_nr += 1
         if axis_nr == 0: return ('back', 'longcenter', 'front', a, a + 'center')

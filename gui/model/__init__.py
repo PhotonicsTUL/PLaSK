@@ -13,10 +13,9 @@
 import os
 from lxml import etree
 
-from ..model.info import InfoSource
+from .info import InfoSource, Info
 from ..utils.signal import Signal
 from ..utils.xml import print_interior, XML_parser, AttributeReader
-from .info import Info
 
 
 def getSectionXMLFromFile(section_name, filename, original_filename=None):
