@@ -1920,7 +1920,7 @@ double dE_po_dl(size_t nr, chrop ch)
   double licznik = 
 }
 *****************************************************************************/
-obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, bool iShowM)
+obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura *> dziury, double Eg, std::vector<double> DSO, double chropo, double iMatrixElemScFact, bool iShowM)
 {
   przekr_max = 0.;
   pasmo_przew.push_back(elektron);
@@ -1949,7 +1949,7 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
   el_mac.reserve(liczba_war);
   for(int i = 0; i <= liczba_war - 1; i++)
     {
-      el_mac.push_back(element(i));
+      el_mac.push_back(element(i)*iMatrixElemScFact);
       if (iShowM) writelog(LOG_DETAIL, "Layer %1% - M: %2% m0*eV", i+1, el_mac[i]); // LUKASZ
     }
   zrob_macierze_przejsc();

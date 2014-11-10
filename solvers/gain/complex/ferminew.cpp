@@ -15,6 +15,7 @@ FerminewGainSolver<GeometryType>::FerminewGainSolver(const std::string& name): S
     roughness = 0.05; // [-]
     lifetime = 0.1; // [ps]
     matrixelem = 0.; // [m0*eV]
+    matrixelemscfact = 1.; // [-] change it when numerical value is different from the experimental one
     differenceQuotient = 0.01;  // [%]
     if_strain = false;
     if_fixed_QWs_widths = false;
@@ -381,7 +382,7 @@ QW::gain FerminewGainSolver<GeometryType>::getGainModule(double wavelength, doub
             tDso.push_back(region.getLayerMaterial(i)->Dso(T));
         bool tShowM = false;
         if (iShowSpecLogs) tShowM = true;
-        plask::shared_ptr<QW::obszar_aktywny> aktyw(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tDso, roughness, tShowM)); // roughness = 0.05 for example // TODO
+        plask::shared_ptr<QW::obszar_aktywny> aktyw(new QW::obszar_aktywny(&(*mpStrEc), tHoles, tCladEg, tDso, roughness, matrixelemscfact, tShowM)); // roughness = 0.05 for example // TODO
         aktyw->zrob_macierze_przejsc();
 
         n = recalcConc(aktyw, n, tQWTotH, T, tQWnR); // LUKASZ

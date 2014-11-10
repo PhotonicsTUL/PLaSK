@@ -93,6 +93,7 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
+        RW_PROPERTY(matrix_elem_sc_fact, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_qw_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
         RW_PROPERTY(vale_qw_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
@@ -127,6 +128,7 @@ BOOST_PYTHON_MODULE(complex)
         RW_PROPERTY(roughness, getRoughness, setRoughness, "Roughness [-]");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
+        RW_PROPERTY(matrix_elem_sc_fact, getMatrixElemScFact, setMatrixElemScFact, "Scale factor for optical matrix element [-]");
         RW_PROPERTY(cond_qw_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
         RW_PROPERTY(vale_qw_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
