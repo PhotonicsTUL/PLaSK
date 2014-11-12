@@ -145,22 +145,32 @@ class GNStack(GNContainerBase):
     def _aligner_to_property(self, aligner_dir, aligner):
         return (aligner.position_str(self.children_dim, self.get_axes_conf_dim(self.children_dim), aligner_dir), aligner.value)
 
-    def major_properties(self):
-        res = super(GNStack, self).major_properties()
-        for aligner_dir, aligner in zip(self.aligners_dir(), self.aligners):
+    def _aligners_to_properties(self, aligners):
+        res = []
+        if aligners is None: return res
+        for aligner_dir, aligner in zip(self.aligners_dir(), aligners):
             if aligner.position is not None:
                 res.append(self._aligner_to_property(aligner_dir, aligner))
+        return res
+
+    def major_properties(self):
+        res = super(GNStack, self).major_properties()
+        res += self._aligners_to_properties(self.aligners)
         res.append(('repeat', self.repeat))
         res.append(('shift', self.shift))
         return res
 
     def child_properties(self, child_in_parent):
-        if child_in_parent is None or child_in_parent.position is None: return []
-        return [self._aligner_to_property(child_in_parent)]
+        res = super(GNStack, self).child_properties(child_in_parent)
+        return res + self._aligners_to_properties(child_in_parent)
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNStackController
         return GNStackController(document, model, self)
+
+    def get_controller_for_child_inparent(self, document, model, child):
+        from ...controller.geometry.container import GNStackChildController
+        return GNStackChildController(document, model, self, child)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

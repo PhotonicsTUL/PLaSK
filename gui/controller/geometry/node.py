@@ -1,7 +1,7 @@
 from .. import Controller
 from ..defines import get_defines_completer
+from ...model.geometry.reader import GNAligner
 from ...qt import QtGui
-from ...utils.str import empty_to_none, none_to_empty
 
 
 class GNodeController(Controller):
@@ -41,6 +41,24 @@ class GNodeController(Controller):
         external.setLayout(form_layout)
         self._current_form = form_layout
         return form_layout
+
+    def construct_align_controllers(self, add_to_current = True, *aligners_dir):
+        ''':return: list of controllers pairs, first is combo box to select aligner type, second is line edit for its value'''
+        if len(aligners_dir) == 0:
+            return self.construct_align_controllers(add_to_current, *self.node.aligners_dir())
+        positions = []
+        axes_conf = self.node.get_axes_conf()
+        for c in aligners_dir:
+            position = QtGui.QComboBox()
+            position.addItems(
+                [('{} origin at' if i == 3 else '{} at').format(x)
+                for i, x in enumerate(GNAligner.names(self.node.children_dim, axes_conf, c, False))]
+            )
+            position.currentIndexChanged.connect(self.after_field_change)
+            pos_value = self.construct_line_edit()
+            if add_to_current: self._get_current_form().addRow(position, pos_value)
+            positions.append((position, pos_value))
+        return positions
 
     def __init__(self, document, model, node):
         super(GNodeController, self).__init__(document=document, model=model)
@@ -82,3 +100,10 @@ class GNodeController(Controller):
 
     def get_widget(self):
         return self.form
+
+
+class GNChildController(GNodeController):
+
+    def __init__(self, document, model, node, child_node):
+        super(GNChildController, self).__init__(document, model, node)
+        self.child_node = child_node

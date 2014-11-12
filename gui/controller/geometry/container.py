@@ -13,7 +13,7 @@
 from ...qt import QtGui
 
 from .object import GNObjectController
-from .node import GNodeController
+from .node import GNodeController, GNChildController
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...model.geometry.reader import GNAligner
@@ -63,6 +63,20 @@ class GNShelfController(GNObjectController):
         self.flat.setEditText(none_to_empty(self.node.flat))
 
 
+def controller_to_aligners(position_controllers):
+    aligners_list = []
+    for i, pos in enumerate(position_controllers):
+        aligners_list.append(GNAligner(pos[0].currentIndex(), empty_to_none(pos[1].text())))
+    return aligners_list
+
+def aligners_to_controllers(aligners_list, position_controllers):
+    if aligners_list is None: return
+    for i, pos in enumerate(position_controllers):
+        aligner = aligners_list[i]
+        if aligner.position is not None:
+            pos[0].setCurrentIndex(aligner.position)
+        pos[1].setText(none_to_empty(aligner.value))
+
 class GNStackController(GNObjectController):
 
     def fill_form(self):
@@ -70,19 +84,8 @@ class GNStackController(GNObjectController):
         self.repeat = self.construct_line_edit('repeat')
         self.shift = self.construct_line_edit('shift')
 
-        self.pos_layout = self.construct_group('Default children position')
-        self.position = []
-        axes_conf = self.node.get_axes_conf()
-        for c in self.node.aligners_dir():
-            position = QtGui.QComboBox()
-            position.addItems(
-                [('{} origin at' if i == 3 else '{} at').format(x)
-                for i, x in enumerate(GNAligner.names(self.node.children_dim, axes_conf, c, False))]
-            )
-            position.currentIndexChanged.connect(self.after_field_change)
-            pos_value = self.construct_line_edit()
-            self.pos_layout.addRow(position, pos_value)
-            self.position.append((position, pos_value))
+        self.pos_layout = self.construct_group('Default children positions')
+        self.positions = self.construct_align_controllers()
 
         #self.child_pos = self.construct_combo_box('flat', items=['', 'yes', 'no'])
         super(GNStackController, self).fill_form()
@@ -91,17 +94,23 @@ class GNStackController(GNObjectController):
         super(GNStackController, self).save_data_in_model()
         self.node.repeat = empty_to_none(self.repeat.text())
         self.node.shift = empty_to_none(self.shift.text())
-        for i, pos in enumerate(self.position):
-            val = pos[1].text()
-            if val:
-                self.node.aligners[i] = GNAligner(pos[0].currentIndex(), val)
+        self.node.aligners = controller_to_aligners(self.positions)
 
     def on_edit_enter(self):
         super(GNStackController, self).on_edit_enter()
         self.repeat.setText(none_to_empty(self.node.repeat))
         self.shift.setText(none_to_empty(self.node.shift))
-        for i, pos in enumerate(self.position):
-            aligner = self.node.aligners[i]
-            if aligner.position is not None:
-                pos[0].setCurrentIndex(aligner.position)
-            pos[1].setText(none_to_empty(aligner.value))
+        aligners_to_controllers(self.node.aligners, self.positions)
+
+
+class GNStackChildController(GNChildController):
+
+    def fill_form(self):
+        self.construct_group('Position in parent stack')
+        self.positions = self.construct_align_controllers()
+
+    def save_data_in_model(self):
+        self.child_node.in_parent = controller_to_aligners(self.positions)
+
+    def on_edit_enter(self):
+        aligners_to_controllers(self.child_node.in_parent, self.positions)
