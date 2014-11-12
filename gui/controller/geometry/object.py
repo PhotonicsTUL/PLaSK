@@ -26,7 +26,7 @@ class GNObjectController(GNodeController):
         self.construct_group('Basic settings')
         self.name = self.construct_line_edit('name')
         self.role = self.construct_line_edit('roles')
-        self.axes = self.construct_combo_box('axes', ['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])   #TODO zablokować możliwość podawania {
+        self.axes = self.construct_combo_box('axes', ['', 'x, y, z', 'z, x, y', 'p, r, z', 'l, t, v', 'long, tran, vert'])
         self.in_parent_controller = self.node.get_controller_for_inparent(self.document, self.model)
         if self.in_parent_controller is not None:
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())

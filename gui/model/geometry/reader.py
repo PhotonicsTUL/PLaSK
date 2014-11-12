@@ -62,6 +62,18 @@ class GNAligner(object):
         return None if self.position is None else GNAligner.names(dims, axis_names_in_dims, axis_nr)[self.position]
 
 
+def axes_as_list(name_or_list):
+    """
+    Convert a string to axes list.
+    :param str name_or_list: string which describe axes scheme (can also be a list)
+    :return: list of 3 axes names, described by name_or_list string or name_or_list if it is a list or
+                neutral axes names if name_or_list is improper string
+    """
+    try:
+        return axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) else list(name_or_list)
+    except:
+        return ['long', 'tran', 'vert']
+
 def axes_dim(axes, dim):
     """
     Calculate axes names for given number of dimensions.
@@ -69,10 +81,8 @@ def axes_dim(axes, dim):
     :param int dim: number of dimensions, 2 or 3
     :return list: list with axes names
     """
-    return axes if dim == 3 else axes[1:]
+    return axes_as_list(axes) if dim == 3 else axes_as_list(axes)[1:]
 
-def axes_as_list(name_or_list):
-    return axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) else list(name_or_list)
 
 class GNReadConf(object):
     """ Configuration using while geometry objects are read.

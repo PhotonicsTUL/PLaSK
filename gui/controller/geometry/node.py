@@ -42,17 +42,18 @@ class GNodeController(Controller):
         self._current_form = form_layout
         return form_layout
 
-    def construct_align_controllers(self, add_to_current = True, *aligners_dir):
+    def construct_align_controllers(self, dim = None, add_to_current = True, *aligners_dir):
         ''':return: list of controllers pairs, first is combo box to select aligner type, second is line edit for its value'''
         if len(aligners_dir) == 0:
-            return self.construct_align_controllers(add_to_current, *self.node.aligners_dir())
+            return self.construct_align_controllers(dim, add_to_current, *self.node.aligners_dir())
+        if dim is None: dim = self.node.children_dim
         positions = []
-        axes_conf = self.node.get_axes_conf()
+        axes_conf = self.node.get_axes_conf_dim(dim)
         for c in aligners_dir:
             position = QtGui.QComboBox()
             position.addItems(
                 [('{} origin at' if i == 3 else '{} at').format(x)
-                for i, x in enumerate(GNAligner.names(self.node.children_dim, axes_conf, c, False))]
+                for i, x in enumerate(GNAligner.names(dim, axes_conf, c, False))]
             )
             position.currentIndexChanged.connect(self.after_field_change)
             pos_value = self.construct_line_edit()
