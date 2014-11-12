@@ -75,10 +75,10 @@ class GNStackController(GNObjectController):
         axes_conf = self.node.get_axes_conf()
         for c in self.node.aligners_dir():
             position = QtGui.QComboBox()
-            name_items = ['{} at'.format(x) for x in GNAligner.names(self.node.children_dim, axes_conf, c, False)]
-            name_items[1] = 'center at'
-            name_items[-1] = 'origin at'
-            position.addItems(name_items)
+            position.addItems(
+                [('{} origin at' if i == 3 else '{} at').format(x)
+                for i, x in enumerate(GNAligner.names(self.node.children_dim, axes_conf, c, False))]
+            )
             position.currentIndexChanged.connect(self.after_field_change)
             pos_value = self.construct_line_edit()
             self.pos_layout.addRow(position, pos_value)

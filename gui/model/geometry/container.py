@@ -87,7 +87,7 @@ class GNStack(GNContainerBase):
         super(GNStack, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.repeat = None
         self.shift = None
-        self.aligners = (GNAligner(None, None) for _ in range(0, dim-1))
+        self.aligners = [GNAligner(None, None) for _ in range(0, dim-1)]
 
     def aligners_dir(self):
         return (0,) if self.children_dim == 2 else (0, 1)
