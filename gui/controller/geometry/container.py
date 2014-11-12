@@ -77,6 +77,24 @@ def aligners_to_controllers(aligners_list, position_controllers):
             pos[0].setCurrentIndex(aligner.position)
         pos[1].setText(none_to_empty(aligner.value))
 
+
+class GNContainerBaseController(GNObjectController):
+
+    def fill_form(self):
+        self.pos_layout = self.construct_group('Default children positions')
+        self.positions = self.construct_align_controllers()
+
+        super(GNContainerBaseController, self).fill_form()
+
+    def save_data_in_model(self):
+        super(GNContainerBaseController, self).save_data_in_model()
+        self.node.aligners = controller_to_aligners(self.positions)
+
+    def on_edit_enter(self):
+        super(GNContainerBaseController, self).on_edit_enter()
+        aligners_to_controllers(self.node.aligners, self.positions)
+
+
 class GNStackController(GNObjectController):
 
     def fill_form(self):
@@ -87,7 +105,6 @@ class GNStackController(GNObjectController):
         self.pos_layout = self.construct_group('Default children positions')
         self.positions = self.construct_align_controllers()
 
-        #self.child_pos = self.construct_combo_box('flat', items=['', 'yes', 'no'])
         super(GNStackController, self).fill_form()
 
     def save_data_in_model(self):
@@ -103,10 +120,10 @@ class GNStackController(GNObjectController):
         aligners_to_controllers(self.node.aligners, self.positions)
 
 
-class GNStackChildController(GNChildController):
+class GNContainerChildBaseController(GNChildController):
 
     def fill_form(self):
-        self.construct_group('Position in parent stack')
+        self.construct_group('Position in parent container')
         self.positions = self.construct_align_controllers()
 
     def save_data_in_model(self):

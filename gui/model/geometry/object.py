@@ -11,8 +11,8 @@
 # GNU General Public License for more details.
 
 from .node import GNode
+from .reader import axes_as_list
 from ...utils.xml import xml_to_attr, attr_to_xml
-from ...utils.str import empty_to_none
 
 
 class GNObject(GNode):
@@ -57,6 +57,6 @@ class GNObject(GNode):
         return res
     
     def get_axes_conf(self):
-        if self.axes is not None: return self.axes
+        if self.axes is not None: return axes_as_list(self.axes)
         return super(GNObject, self).get_axes_conf()
 

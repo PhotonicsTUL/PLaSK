@@ -169,8 +169,8 @@ class GNStack(GNContainerBase):
         return GNStackController(document, model, self)
 
     def get_controller_for_child_inparent(self, document, model, child):
-        from ...controller.geometry.container import GNStackChildController
-        return GNStackChildController(document, model, self, child)
+        from ...controller.geometry.container import GNContainerChildBaseController
+        return GNContainerChildBaseController(document, model, self, child)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
@@ -251,6 +251,9 @@ class GNAlignContainer(GNContainerBase):
         super(GNAlignContainer, self).__init__(parent=parent, dim=dim, children_dim=dim)
         self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
 
+    def aligners_dir(self):
+        return range(0, self.children_dim)
+
     def attributes_from_xml(self, attribute_reader, conf):
         super(GNAlignContainer, self).attributes_from_xml(attribute_reader, conf)
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim)
@@ -299,6 +302,14 @@ class GNAlignContainer(GNContainerBase):
     def child_properties(self, child_in_parent):
         if child_in_parent is None: return []
         return self._aligners_to_properties(child_in_parent)
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.container import GNContainerBaseController
+        return GNContainerBaseController(document, model, self)
+
+    def get_controller_for_child_inparent(self, document, model, child):
+        from ...controller.geometry.container import GNContainerChildBaseController
+        return GNContainerChildBaseController(document, model, self, child)
 
     @classmethod
     def from_xml_2d(cls, element, conf):

@@ -71,6 +71,8 @@ def axes_dim(axes, dim):
     """
     return axes if dim == 3 else axes[1:]
 
+def axes_as_list(name_or_list):
+    return axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) else list(name_or_list)
 
 class GNReadConf(object):
     """ Configuration using while geometry objects are read.
@@ -110,7 +112,7 @@ class GNReadConf(object):
     @axes.setter
     def axes(self, name_or_list):
         if name_or_list is None: return
-        self._axes =  axeslist_by_name(name_or_list.encode('utf-8')) if isinstance(name_or_list, basestring) else list(name_or_list)
+        self._axes = axes_as_list(name_or_list)
 
     def aligners(self, dims, axis_nr):
         if dims is None: dims = self.parent.dim
