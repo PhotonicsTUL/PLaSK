@@ -1,3 +1,5 @@
+# coding utf:8
+
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -10,8 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# coding utf:8
-
 import sys
 import os
 import subprocess
@@ -23,8 +23,7 @@ from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
 
-class OutputWindow(QtGui.QMainWindow):
-    """Main Qt window class"""
+class OutputWindow(QtGui.QWidget):
 
     def __init__(self, filename, launcher, parent=None):
         super(OutputWindow, self).__init__(parent)
@@ -50,7 +49,7 @@ class OutputWindow(QtGui.QMainWindow):
         self.messages.setAcceptRichText(True)
         self.messages.setFont(font)
 
-        toolbar = self.addToolBar("Launcher")
+        toolbar = QtGui.QToolBar()
 
         self.action_error = QtGui.QAction(self)
         self.action_error.setText("&Error")
@@ -119,7 +118,12 @@ class OutputWindow(QtGui.QMainWindow):
         self.halt_action.setShortcut('Ctrl+h')
         toolbar.addAction(self.halt_action)
 
-        self.setCentralWidget(self.messages)
+        layout = QtGui.QVBoxLayout()
+        layout.setContentsMargins(1, 1, 1, 1)
+        layout.setSpacing(0)
+        layout.addWidget(toolbar)
+        layout.addWidget(self.messages)
+        self.setLayout(layout)
 
         self.resize(CONFIG('launcher_local/window_size', QtCore.QSize(700, 400)))
 
@@ -339,7 +343,19 @@ class Launcher(object):
         window.thread.finished.connect(window.thread_finished)
         window.halt_action.triggered.connect(window.halt_thread)
         window.thread.start()
-        window.show()
+
+        dock = QtGui.QDockWidget("Launch local [{}]".format(strftime('%X')), main_window)
+        dock.setWidget(window)
+        try:
+            bottom_docked = [w for w in main_window.findChildren(QtGui.QDockWidget)
+                             if main_window.dockWidgetArea(w) == (QtCore.Qt.BottomDockWidgetArea)][-1]
+        except IndexError:
+            main_window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, dock)
+        else:
+            main_window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, dock)
+            main_window.tabifyDockWidget(bottom_docked, dock)
+            dock.show()
+            dock.raise_()
 
     def select_workdir(self, filename):
         if self.dirname:

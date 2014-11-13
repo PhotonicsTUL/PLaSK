@@ -522,13 +522,13 @@ void ExpansionPW3D::prepareField()
     if (symmetric_long() || symmetric_tran()) {
         Component syml = (field_params.which == FieldParams::E)? symmetry_long : Component(2-symmetry_long),
                   symt = (field_params.which == FieldParams::E)? symmetry_tran : Component(2-symmetry_tran);
-        if (field_params.method != INTERPOLATION_FOURIER) {
-            fft_x = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(2-syml), FFT::Symmetry(2-symt), 3, Nl+1);
-            fft_y = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(symt), 3, Nl+1);
-            fft_z = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(2-symt), 3, Nl+1);
-        }
         size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl;
         size_t nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
+        if (field_params.method != INTERPOLATION_FOURIER) {
+            fft_x = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(2-syml), FFT::Symmetry(2-symt), 3, nl);
+            fft_y = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(symt), 3, nl);
+            fft_z = FFT::Backward2D(1, Nl, Nt, FFT::Symmetry(syml), FFT::Symmetry(2-symt), 3, nl);
+        }
         field.reset(nl*nt);
     } else {
         if (field_params.method != INTERPOLATION_FOURIER)

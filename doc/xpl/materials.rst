@@ -61,7 +61,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <B>
 
-         Radiative recombination coefficient *B* [m\ :sup:`3`/s].
+         Radiative recombination coefficient *B* [cm\ :sup:`3`/s].
 
          Variables: ``T`` — temperature [K].
 
@@ -73,7 +73,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <C>
 
-         Auger recombination coefficient *C* [m\ :sup:`6`/s].
+         Auger recombination coefficient *C* [cm\ :sup:`6`/s].
 
          Variables: ``T`` — temperature [K].
 
@@ -121,7 +121,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <D>
 
-         Ambipolar diffusion coefficient *D* [m\ :sup:`2`/s].
+         Ambipolar diffusion coefficient *D* [cm\ :sup:`2`/s].
 
          Variables: ``T`` — temperature [K].
 
@@ -200,7 +200,7 @@ This section contains specification of custom materials that can be used togethe
       .. xml:tag:: <mob>
 
          Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction
-         [m\ :sup:`2`/(V s)].
+         [cm\ :sup:`2`/(V s)].
 
          Variables: T — temperature [K].
 

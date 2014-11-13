@@ -650,7 +650,6 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return product;
 }
 
-
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(int i)
 {
     double T = T_on_the_mesh[i];
@@ -677,7 +676,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     double dr = 0.0;
 
     auto& current_mesh = this->current_mesh();
-    if (fem_method != FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
+    if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
     {
         dr = (current_mesh.last() - current_mesh.first())*1e-4/(double)current_mesh.size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
@@ -688,10 +687,11 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_left = n_present[i-1];
             n_central = n_present[i];
 
-            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(current_mesh()[i]*1e-4);
 
             if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
                 n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(current_mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
+            else
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(current_mesh()[i]*1e-4);
         }
         else if (i == 0)     // punkt r = 0
         {
@@ -707,17 +707,17 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
             n_left = n_present[i-1];    // podobnie jak we wczesniejszym warunku
             n_central = n_present[i];
 
-            n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(current_mesh()[i]*1e-4);
 
             if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
                 n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr) + 1.0/(current_mesh[i]*1e-4) * (n_right - n_left) / (2*dr);
+            else
+                n_second_deriv = (n_right - 2*n_central + n_left)/(dr*dr); // + 1.0/(current_mesh()[i]*1e-4);
         }
     }
     else if (fem_method == FEM_PARABOLIC)  // 02.10.2012 Marcin Gebski
     {
         dr = (current_mesh[i+1] - current_mesh[i-1])*1e-4;
         n_second_deriv = (n_present[i-1] + n_present[i+1] - 2.0*n_present[i]) * (4.0/(dr*dr));
-
         if (std::is_same<Geometry2DType, Geometry2DCylindrical>::value)
             n_second_deriv += (1.0/(current_mesh[i]*1e-4)) * (1.0/dr) * (n_present[i+1] - n_present[i-1]); // adding cylindrical component of laplace operator
     }

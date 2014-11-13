@@ -986,7 +986,7 @@ void initMaterials() {
              "    T (float): Temperature [K].\n")
 
         .def("mob", &Material::mob, (py::arg("T")=300.),
-             "Get mobility [m²/(V s)].\n\n"
+             "Get mobility [cm²/(V s)].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
@@ -1004,17 +1004,17 @@ void initMaterials() {
              "    T (float): Temperature [K].\n")
 
         .def("B", &Material::B, (py::arg("T")=300.),
-             "Get radiative recombination coefficient B [m³/s].\n\n"
+             "Get radiative recombination coefficient B [cm³/s].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
         .def("C", &Material::C, (py::arg("T")=300.),
-             "Get Auger recombination coefficient C [m⁶/s].\n\n"
+             "Get Auger recombination coefficient C [cm⁶/s].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 
         .def("D", &Material::D, (py::arg("T")=300.),
-             "Get ambipolar diffusion coefficient D [m²/s].\n\n"
+             "Get ambipolar diffusion coefficient D [cm²/s].\n\n"
              "Args:\n"
              "    T (float): Temperature [K].\n")
 

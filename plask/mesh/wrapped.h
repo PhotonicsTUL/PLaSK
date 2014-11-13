@@ -24,7 +24,7 @@ struct PLASK_API WrappedMesh: public MeshD<dim> {
 
   protected:
 
-      shared_ptr<const MeshD<dim>> original;                   ///< Original mesh
+      shared_ptr<const MeshD<dim>> original;        ///< Original mesh
       shared_ptr<const GeometryD<dim>> geometry;    ///< Geometry of the mesh
 
       bool ignore_symmetry[dim];                    ///< If true, the structure symmetry is ignored

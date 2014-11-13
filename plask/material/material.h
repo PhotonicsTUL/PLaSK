@@ -503,7 +503,7 @@ struct PLASK_API Material {
     /**
      * Get mobility in-plane (lateral) and cross-plane (vertical) direction [m^2/(V*s)].
      * @param T temperature [K]
-     * @return mobility [m^2/(V*s)]
+     * @return mobility [cm^2/(V*s)]
      */
     virtual Tensor2<double> mob(double T) const;
 
@@ -528,23 +528,23 @@ struct PLASK_API Material {
     virtual double A(double T) const;
 
     /**
-     * Get radiative recombination coefficient B [m^3/s].
+     * Get radiative recombination coefficient B [cm^3/s].
      * @param T temperature [K]
-     * @return radiative recombination coefficient B [m^3/s]
+     * @return radiative recombination coefficient B [cm^3/s]
      */
     virtual double B(double T) const;
 
     /**
-     * Get Auger recombination coefficient C [m^6/s].
+     * Get Auger recombination coefficient C [cm^6/s].
      * @param T temperature [K]
-     * @return Auger recombination coefficient C [m^6/s]
+     * @return Auger recombination coefficient C [cm^6/s]
      */
     virtual double C(double T) const;
 
     /**
-     * Get ambipolar diffusion coefficient D [m^2/s].
+     * Get ambipolar diffusion coefficient D [cm^2/s].
      * @param T temperature [K]
-     * @return ambipolar diffusion coefficient D [m^2/s]
+     * @return ambipolar diffusion coefficient D [cm^2/s]
      */
     virtual double D(double T) const;
 
