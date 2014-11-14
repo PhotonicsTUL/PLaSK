@@ -61,6 +61,21 @@ class GNodeController(Controller):
             positions.append((position, pos_value))
         return positions
 
+    def construct_point_controllers(self, row_name = None, dim = None):
+        if dim is None: dim = self.node.dim
+        hbox = QtGui.QHBoxLayout()
+        res = tuple(self.construct_line_edit() for _ in range(0, dim))
+        for i in range(0, dim):
+            hbox.addWidget(res[i])
+        group = QtGui.QGroupBox(self.form)
+        group.setContentsMargins(0, 0, 0, 0)
+        group.setLayout(hbox)
+        if row_name:
+            self._get_current_form().addRow(row_name, group)
+            return res
+        else:
+            return res, group
+
     def __init__(self, document, model, node):
         super(GNodeController, self).__init__(document=document, model=model)
         self.node = node

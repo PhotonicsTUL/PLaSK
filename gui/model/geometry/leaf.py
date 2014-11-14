@@ -65,6 +65,11 @@ class GNLeaf(GNObject):
     def stub(self):
         return ''
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNLeafController
+        return GNLeafController(document, model, self)
+
+
 class GNBlock(GNLeaf):
 
     def __init__(self, parent = None, dim = None):
@@ -91,6 +96,10 @@ class GNBlock(GNLeaf):
         res = super(GNBlock, self).major_properties()
         if any(self.size): res.append(('size', ', '.join('?' if x is None else x for x in self.size)))
         return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNBlockController
+        return GNBlockController(document, model, self)
 
     @classmethod
     def from_xml_2d(cls, element, conf):
