@@ -218,6 +218,10 @@ class GNTriangle(GNLeaf):
         if points_str: res.append(('points', points_str))
         return res
 
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNTriangleController
+        return GNTriangleController(document, model, self)
+
     @classmethod
     def from_xml_2d(cls, element, conf):
         result = GNTriangle()

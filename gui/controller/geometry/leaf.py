@@ -34,3 +34,25 @@ class GNBlockController(GNLeafController):
         super(GNBlockController, self).on_edit_enter()
         for i in range(0, self.node.dim):
             self.size[i].setText(none_to_empty(self.node.size[i]))
+
+
+class GNTriangleController(GNLeafController):
+
+    def fill_form(self):
+        self.construct_group('Vertexes coordinates:')
+        self.p0 = self.construct_point_controllers(row_name='first')
+        self.p1 = self.construct_point_controllers(row_name='second')
+        super(GNTriangleController, self).fill_form()
+
+    def save_data_in_model(self):
+        super(GNTriangleController, self).save_data_in_model()
+        self.node.points = (
+            tuple(empty_to_none(p.text()) for p in self.p0),
+            tuple(empty_to_none(p.text()) for p in self.p1)
+        )
+
+    def on_edit_enter(self):
+        super(GNTriangleController, self).on_edit_enter()
+        for i in range(0, self.node.dim):
+            self.p0[i].setText(none_to_empty(self.node.points[0][i]))
+            self.p1[i].setText(none_to_empty(self.node.points[1][i]))
