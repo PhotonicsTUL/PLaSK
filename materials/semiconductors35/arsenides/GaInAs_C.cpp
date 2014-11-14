@@ -17,7 +17,7 @@ GaInAs_C::GaInAs_C(const Material::Composition& Comp, DopingAmountType Type, dou
     Nf_RT = Val; // TODO
     NA = Val; // TODO
     if (In == 0.53)
-        mob_RT = 570e-4/(1+pow((Nf_RT/9e14),0.21)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+        mob_RT = 570./(1+pow((Nf_RT/9e14),0.21));
     else
         mob_RT = 0.; // TODO
 }
@@ -47,7 +47,7 @@ MI_PROPERTY(GaInAs_C, cond,
             )
 Tensor2<double> GaInAs_C::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

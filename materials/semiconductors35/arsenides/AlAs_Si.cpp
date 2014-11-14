@@ -22,7 +22,7 @@ AlAs_Si::AlAs_Si(DopingAmountType Type, double Val) {
         Nf_RT = 0.78*Val; // (act_GaAs*fx1)*Val;
         ND = Val;
     }
-    double mob_RT_GaAs = 6600e-4/(1+pow((Nf_RT/5e17),0.53)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double mob_RT_GaAs = 6600./(1+pow((Nf_RT/5e17),0.53));
     double fx2 = 0.045; // 0.054*Al-0.009;
     mob_RT = mob_RT_GaAs * fx2;
 }
@@ -51,7 +51,7 @@ MI_PROPERTY(AlAs_Si, cond,
             )
 Tensor2<double> AlAs_Si::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

@@ -13,7 +13,7 @@ std::string InAs_Si::str() const { return StringBuilder("InAs").dopant("Si", ND)
 InAs_Si::InAs_Si(DopingAmountType Type, double Val) {
     Nf_RT = Val; //TODO
     ND = Val; //TODO
-    mob_RT = 15000e-4/(1.+pow((Nf_RT/1e18),0.81)); // 1e-4: cm^2/(V*s) -> m^2/(V*s);
+    mob_RT = 15000./(1.+pow((Nf_RT/1e18),0.81)); // 1e-4: cm^2/(V*s) -> m^2/(V*s);
 }
 
 MI_PROPERTY(InAs_Si, mob,
@@ -41,7 +41,7 @@ MI_PROPERTY(InAs_Si, cond,
             MIComment("cond(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InAs_Si::cond(double T) const {
-    double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT;
+    double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT*1e-4;
     double tCond = tCond_RT * pow(300./T,1.5);
     return ( Tensor2<double>(tCond, tCond) );
 }

@@ -23,7 +23,7 @@ AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, dou
         //double Nf_GaAs_C_RT = 0.92*NA; do not delete this!
         Nf_RT = 0.92*NA/*Nf_GaAs_C_RT*/; // fx1 = 1
     }
-    double mob_GaAs_C_RT = 530e-4/(1+pow((Nf_RT/1e17),0.30));
+    double mob_GaAs_C_RT = 530./(1+pow((Nf_RT/1e17),0.30));
     double fx = 0.66 / (1. + pow(Al/0.21,3.0)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.0)) + 0.34;
     mob_RT = mob_GaAs_C_RT * fx;
 }
@@ -51,7 +51,7 @@ double AlGaAs_C::Dop() const {
 
 Tensor2<double> AlGaAs_C::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

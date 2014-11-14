@@ -24,9 +24,9 @@ AlGaAsSb_Si::AlGaAsSb_Si(const Material::Composition& Comp, DopingAmountType Typ
         else
             Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
     }
-    double mob_RT_AlSb = 30e-4 + (300e-4 - 30e-4) / (1.+pow(NA/3e17,1.54)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
-    double mob_RT_GaSb = 95e-4 + (565e-4 - 95e-4) / (1.+pow(NA/4e18,0.85)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
-    mob_RT = 1. / (Al/mob_RT_AlSb + Ga/mob_RT_GaSb + 6e-4*Al*Ga); // for small amount of arsenide
+    double mob_RT_AlSb = 30. + (300. - 30.) / (1.+pow(NA/3e17,1.54)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double mob_RT_GaSb = 95. + (565. - 95.) / (1.+pow(NA/4e18,0.85)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 1e-4 / (Al/mob_RT_AlSb + Ga/mob_RT_GaSb + 6e-8*Al*Ga); // for small amount of arsenide
 }
 
 MI_PROPERTY(AlGaAsSb_Si, mob,
@@ -57,7 +57,7 @@ MI_PROPERTY(AlGaAsSb_Si, cond,
             MIComment("cond(T) = cond(300K)*(300/T)^d")
             )
 Tensor2<double> AlGaAsSb_Si::cond(double T) const {
-    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
+    double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

@@ -21,7 +21,7 @@ AlAs_C::AlAs_C(DopingAmountType Type, double Val) {
         Nf_RT = 0.92*Val; // (act_GaAs*fx1)*Val;
         NA = Val;
     }
-    double mob_RT_GaAs = 530e-4/(1+pow((Nf_RT/1e17),0.30)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double mob_RT_GaAs = 530./(1+pow((Nf_RT/1e17),0.30));
     //double Al = 1.; // AlAs (not AlGaAs)
     double fx2 = 0.66 / (1. + pow(1./0.21,3.)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.)) + 0.34;
     mob_RT = mob_RT_GaAs * fx2;
@@ -51,7 +51,7 @@ MI_PROPERTY(AlAs_C, cond,
             )
 Tensor2<double> AlAs_C::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

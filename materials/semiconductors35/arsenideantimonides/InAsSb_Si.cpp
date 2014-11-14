@@ -29,7 +29,7 @@ InAsSb_Si::InAsSb_Si(const Material::Composition& Comp, DopingAmountType Type, d
             Nf_RT = ( pow(10.,tnL) );
         }
     }
-    double tInAs_mob_RT = 450e-4 + (12000e-4 - 450e-4) / (1.+pow(ND/2e18,0.80)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double tInAs_mob_RT = 450. + (12000. - 450.) / (1.+pow(ND/2e18,0.80));
     mob_RT = tInAs_mob_RT; // data for InAs(0.91)Sb(0.09) fit to above relation (see: Talercio 2014)
 }
 
@@ -62,7 +62,7 @@ MI_PROPERTY(InAsSb_Si, cond,
             MIComment("cond(N,T) = q * n(N,T) * mob(n(N,T),T)")
             )
 Tensor2<double> InAsSb_Si::cond(double T) const {
-    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
+    double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

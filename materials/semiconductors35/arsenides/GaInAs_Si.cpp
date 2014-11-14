@@ -25,7 +25,7 @@ GaInAs_Si::GaInAs_Si(const Material::Composition& Comp, DopingAmountType Type, d
         ND = Val;
     }
     if (In == 0.53)
-        mob_RT = 16700e-4/(1+pow((Nf_RT/6e16),0.42)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+        mob_RT = 16700./(1+pow((Nf_RT/6e16),0.42));
     else
         mob_RT = 0.; // TODO
 }
@@ -55,7 +55,7 @@ MI_PROPERTY(GaInAs_Si, cond,
             )
 Tensor2<double> GaInAs_Si::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob * pow(300./T,1.59);
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4 * pow(300./T,1.59);
     return ( Tensor2<double>(tCond, tCond) );
 }
 

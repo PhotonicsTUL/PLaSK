@@ -26,7 +26,7 @@ GaSb_Te::GaSb_Te(DopingAmountType Type, double Val) {
             Nf_RT = ( pow(10.,tnL) );
         }
     }
-    mob_RT = 550e-4 + (6300e-4 - 550e-4) / (1.+pow(Nf_RT/2e17,0.786)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 550. + (6300. - 550.) / (1.+pow(Nf_RT/2e17,0.786));
 }
 
 MI_PROPERTY(GaSb_Te, mob,
@@ -55,7 +55,7 @@ MI_PROPERTY(GaSb_Te, cond,
             MIComment("-") // TODO
             )
 Tensor2<double> GaSb_Te::cond(double T) const {
-    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
+    double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

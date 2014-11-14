@@ -501,7 +501,7 @@ struct PLASK_API Material {
     virtual double EactA(double T) const;
 
     /**
-     * Get mobility in-plane (lateral) and cross-plane (vertical) direction [m^2/(V*s)].
+     * Get mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
      * @param T temperature [K]
      * @return mobility [cm^2/(V*s)]
      */

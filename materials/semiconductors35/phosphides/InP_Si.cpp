@@ -13,7 +13,7 @@ std::string InP_Si::str() const { return StringBuilder("InP").dopant("Si", ND); 
 InP_Si::InP_Si(DopingAmountType Type, double Val) {
     Nf_RT = Val;
     ND = Val;
-    mob_RT = 3900e-4/(1+pow((Nf_RT/1e18),0.51)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 3900./(1+pow((Nf_RT/1e18),0.51));
 }
 
 MI_PROPERTY(InP_Si, mob,
@@ -40,7 +40,7 @@ MI_PROPERTY(InP_Si, cond,
             MIComment("")
             )
 Tensor2<double> InP_Si::cond(double T) const {
-    double tCond = phys::qe * Nf_RT*1e6 * mob_RT * pow(300./T,0.8);
+    double tCond = phys::qe * Nf_RT*1e6 * mob_RT*1e-4 * pow(300./T,0.8);
     return (Tensor2<double>(tCond, tCond));
 }
 

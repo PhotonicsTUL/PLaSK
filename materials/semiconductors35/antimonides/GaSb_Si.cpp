@@ -21,7 +21,7 @@ GaSb_Si::GaSb_Si(DopingAmountType Type, double Val) {
         else
             Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
     }
-    mob_RT = 95e-4 + (565e-4 - 95e-4) / (1.+pow(NA/4e18,0.85)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 95. + (565. - 95.) / (1.+pow(NA/4e18,0.85));
 }
 
 MI_PROPERTY(GaSb_Si, mob,
@@ -52,7 +52,7 @@ MI_PROPERTY(GaSb_Si, cond,
             MIComment("cond(T) = cond(300K)*(300/T)^d")
             )
 Tensor2<double> GaSb_Si::cond(double T) const {
-    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
+    double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

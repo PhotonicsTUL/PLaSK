@@ -13,7 +13,7 @@ std::string GaAs_Zn::str() const { return StringBuilder("GaAs").dopant("Zn", NA)
 GaAs_Zn::GaAs_Zn(DopingAmountType Type, double Val) {
     Nf_RT = Val; // TODO (it is not from publication)
     NA = Val; // TODO (it is not from publication)
-    mob_RT = 480e-4/(1+pow((Nf_RT/4e17),0.47)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 480./(1+pow((Nf_RT/4e17),0.47)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
 }
 
 MI_PROPERTY(GaAs_Zn, mob,
@@ -42,7 +42,7 @@ MI_PROPERTY(GaAs_Zn, cond,
             )
 Tensor2<double> GaAs_Zn::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4;
     return (Tensor2<double>(tCond, tCond));
 }
 

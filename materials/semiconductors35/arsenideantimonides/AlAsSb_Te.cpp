@@ -29,9 +29,9 @@ AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, DopingAmountType Type, d
             Nf_RT = ( pow(10.,tnL) );
         }
     }
-    double mob_RT_AlAs = 30e-4 + (310e-4 - 30e-4) / (1.+pow(ND/8e17,2.)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
-    double mob_RT_AlSb = 30e-4 + (200e-4 - 30e-4) / (1.+pow(ND/4e17,3.25)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
-    mob_RT = 1. / (As/mob_RT_AlAs + Sb/mob_RT_AlSb - 9.3e-3*As*Sb); // for small amount of arsenide
+    double mob_RT_AlAs = 30. + (310. - 30.) / (1.+pow(ND/8e17,2.)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    double mob_RT_AlSb = 30. + (200. - 30.) / (1.+pow(ND/4e17,3.25)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 1e-4 / (As/mob_RT_AlAs + Sb/mob_RT_AlSb - 9.3e-7*As*Sb); // for small amount of arsenide
 }
 
 MI_PROPERTY(AlAsSb_Te, mob,
@@ -55,7 +55,7 @@ double AlAsSb_Te::Dop() const {
 }
 
 Tensor2<double> AlAsSb_Te::cond(double T) const {
-    double tCond = phys::qe * Nf(T)*1e6 * mob(T).c00;
+    double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

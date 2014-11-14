@@ -13,7 +13,7 @@ std::string GaAs_Si::str() const { return StringBuilder("GaAs").dopant("Si", ND)
 GaAs_Si::GaAs_Si(DopingAmountType Type, double Val) {
     Nf_RT = Val;
     ND = Val;
-    mob_RT = 6600e-4/(1+pow((Nf_RT/5e17),0.53)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 6600./(1+pow((Nf_RT/5e17),0.53));
 }
 
 MI_PROPERTY(GaAs_Si, mob,
@@ -42,7 +42,7 @@ MI_PROPERTY(GaAs_Si, cond,
             )
 Tensor2<double> GaAs_Si::cond(double T) const {
     double tMob = mob(T).c00;
-    double tCond = phys::qe * Nf_RT*1e6 * tMob;
+    double tCond = phys::qe * Nf_RT*1e6 * tMob*1e-4;
     return ( Tensor2<double>(tCond, tCond) );
 }
 

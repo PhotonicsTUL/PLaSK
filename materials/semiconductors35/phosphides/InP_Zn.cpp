@@ -19,7 +19,7 @@ InP_Zn::InP_Zn(DopingAmountType Type, double Val) {
         Nf_RT = 0.75*Val;
         NA = Val;
     }
-    mob_RT = 120e-4/(1+pow((Nf_RT/2e18),1.00)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
+    mob_RT = 120./(1+pow((Nf_RT/2e18),1.00));
 }
 
 MI_PROPERTY(InP_Zn, mob,
@@ -46,7 +46,7 @@ MI_PROPERTY(InP_Zn, cond,
 			MIComment("no temperature dependence")
             )
 Tensor2<double> InP_Zn::cond(double T) const {
-    double tCond = phys::qe * Nf_RT*1e6 * mob_RT;
+    double tCond = phys::qe * Nf_RT*1e6 * mob_RT*1e-4;
     return (Tensor2<double>(tCond, tCond));
 }
 
