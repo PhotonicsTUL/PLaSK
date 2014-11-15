@@ -18,17 +18,17 @@ import subprocess
 from time import strftime
 
 from gui.qt import QtCore, QtGui
+from gui.qt.QtCore import Qt
 
 from gui.launch import LAUNCHERS
 from gui.utils.config import CONFIG
 
 
-class OutputWindow(QtGui.QWidget):
+class OutputWindow(QtGui.QDockWidget):
 
     def __init__(self, filename, launcher, parent=None):
-        super(OutputWindow, self).__init__(parent)
+        super(OutputWindow, self).__init__("Launch local [{}]".format(strftime('%X')), parent)
         self.launcher = launcher
-        self.setWindowTitle("{} @ {}".format(filename, strftime('%X')))
 
         font = QtGui.QFont()
         font_family = CONFIG['launcher_local/font_family']
@@ -56,43 +56,58 @@ class OutputWindow(QtGui.QWidget):
         self.action_error.setCheckable(True)
         self.action_error.setChecked(launcher.error.isChecked())
         self.action_error.triggered.connect(self.update_view)
+        self.action_error.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_error.setShortcut('1')
         self.action_warning = QtGui.QAction(self)
         self.action_warning.setText("&Warning")
         self.action_warning.setCheckable(True)
         self.action_warning.setChecked(launcher.warning.isChecked())
         self.action_warning.triggered.connect(self.update_view)
+        self.action_warning.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_warning.setShortcut('2')
         self.action_info = QtGui.QAction(self)
         self.action_info.setText("&Info")
         self.action_info.setCheckable(True)
         self.action_info.setChecked(launcher.info.isChecked())
         self.action_info.triggered.connect(self.update_view)
+        self.action_info.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_info.setShortcut('3')
         self.action_result = QtGui.QAction(self)
         self.action_result.setText("&Result")
         self.action_result.setCheckable(True)
         self.action_result.setChecked(launcher.result.isChecked())
         self.action_result.triggered.connect(self.update_view)
+        self.action_result.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_result.setShortcut('4')
         self.action_data = QtGui.QAction(self)
         self.action_data.setText("&Data")
         self.action_data.setCheckable(True)
         self.action_data.setChecked(launcher.data.isChecked())
         self.action_data.triggered.connect(self.update_view)
+        self.action_data.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_data.setShortcut('5')
         self.action_detail = QtGui.QAction(self)
         self.action_detail.setText("De&tail")
         self.action_detail.setCheckable(True)
         self.action_detail.setChecked(launcher.detail.isChecked())
         self.action_detail.triggered.connect(self.update_view)
+        self.action_detail.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_detail.setShortcut('6')
         self.action_debug = QtGui.QAction(self)
         self.action_debug.setText("De&bug")
         self.action_debug.setCheckable(True)
         self.action_debug.setChecked(launcher.debug.isChecked())
         self.action_debug.triggered.connect(self.update_view)
+        self.action_debug.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_debug.setShortcut('7')
+
+        self.addAction(self.action_error)
+        self.addAction(self.action_warning)
+        self.addAction(self.action_info)
+        self.addAction(self.action_result)
+        self.addAction(self.action_data)
+        self.addAction(self.action_detail)
+        self.addAction(self.action_debug)
 
         view_menu = QtGui.QMenu("Show")
         view_menu.addAction(self.action_error)
@@ -107,15 +122,17 @@ class OutputWindow(QtGui.QWidget):
         menu_button.setMenu((view_menu))
         menu_button.setPopupMode(QtGui.QToolButton.InstantPopup)
         menu_button.setIcon(QtGui.QIcon.fromTheme('edit-find'))
-        menu_button.setFocusPolicy(QtCore.Qt.NoFocus)
+        menu_button.setFocusPolicy(Qt.NoFocus)
         # menu_button.setText("Log Levels")
         tool_action = QtGui.QWidgetAction(self)
         tool_action.setDefaultWidget(menu_button)
         toolbar.addAction(tool_action)
 
         self.halt_action = QtGui.QAction(QtGui.QIcon.fromTheme('process-stop'),
-                                         "Halt", self)
-        self.halt_action.setShortcut('Ctrl+h')
+                                         "Halt (Alt+X)", self)
+        self.halt_action.setShortcut('Alt+x')
+        self.halt_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.messages.addAction(self.halt_action)
         toolbar.addAction(self.halt_action)
 
         layout = QtGui.QVBoxLayout()
@@ -123,13 +140,15 @@ class OutputWindow(QtGui.QWidget):
         layout.setSpacing(0)
         layout.addWidget(toolbar)
         layout.addWidget(self.messages)
-        self.setLayout(layout)
 
-        self.resize(CONFIG('launcher_local/window_size', QtCore.QSize(700, 400)))
+        widget = QtGui.QWidget(self)
+        widget.setLayout(layout)
+        self.setWidget(widget)
 
         close_action = QtGui.QAction(self)
         close_action.setShortcut('Ctrl+w')
         close_action.triggered.connect(self.close)
+        close_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.addAction(close_action)
 
         self.lines = []
@@ -138,6 +157,8 @@ class OutputWindow(QtGui.QWidget):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_output)
         self.timer.start(250)
+
+        self.messages.setFocus()
 
     def update_view(self):
         self.messages.clear()
@@ -183,6 +204,7 @@ class OutputWindow(QtGui.QWidget):
         self.halt_action.setEnabled(False)
 
     def closeEvent(self, event):
+        focus = self.messages.hasFocus()
         if self.thread.isRunning():
             confirm = QtGui.QMessageBox.question(self, "Close Window",
                                                  "PLaSK process is currently running. Closing the window "
@@ -201,9 +223,13 @@ class OutputWindow(QtGui.QWidget):
             else:
                 event.ignore()
                 return
-        CONFIG['launcher_local/window_size'] = self.size()
         super(OutputWindow, self).closeEvent(event)
-        self.launcher.windows.remove(self)
+        if focus:
+            main_window = self.parent()
+            others = [w for w in main_window.findChildren(QtGui.QDockWidget)
+                      if isinstance(w, OutputWindow) and w is not self and w.isVisible()]
+            if others:
+                others[-1].messages.setFocus()
 
 
 class PlaskThread(QtCore.QThread):
@@ -266,7 +292,6 @@ class Launcher(object):
     name = "Local Process"
 
     def __init__(self):
-        self.windows = set()
         self.dirname = None
 
     def widget(self, main_window):
@@ -336,26 +361,24 @@ class Launcher(object):
             dirname = self.dirname
         else:
             dirname = os.path.dirname(filename)
-        window = OutputWindow(main_window.document.filename, self)
-        self.windows.add(window)
-        self.mutex = QtCore.QMutex()
-        window.thread = PlaskThread(filename, dirname, window.lines, self.mutex, *args)
-        window.thread.finished.connect(window.thread_finished)
-        window.halt_action.triggered.connect(window.halt_thread)
-        window.thread.start()
-
-        dock = QtGui.QDockWidget("Launch local [{}]".format(strftime('%X')), main_window)
-        dock.setWidget(window)
+            
+        dock = OutputWindow(main_window.document.filename, self, main_window)
         try:
             bottom_docked = [w for w in main_window.findChildren(QtGui.QDockWidget)
-                             if main_window.dockWidgetArea(w) == (QtCore.Qt.BottomDockWidgetArea)][-1]
+                             if main_window.dockWidgetArea(w) == (Qt.BottomDockWidgetArea)][-1]
         except IndexError:
-            main_window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, dock)
+            main_window.addDockWidget(Qt.BottomDockWidgetArea, dock)
         else:
-            main_window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, dock)
+            main_window.addDockWidget(Qt.BottomDockWidgetArea, dock)
             main_window.tabifyDockWidget(bottom_docked, dock)
             dock.show()
             dock.raise_()
+
+        self.mutex = QtCore.QMutex()
+        dock.thread = PlaskThread(filename, dirname, dock.lines, self.mutex, *args)
+        dock.thread.finished.connect(dock.thread_finished)
+        dock.halt_action.triggered.connect(dock.halt_thread)
+        dock.thread.start()
 
     def select_workdir(self, filename):
         if self.dirname:

@@ -177,7 +177,7 @@ class MainWindow(QtGui.QMainWindow):
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QtGui.QAction('&Go to Line...', self)
-        goto_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_G)
+        goto_action.setShortcut(QtCore.Qt.CTRL + QtCore.Qt.Key_L)
         goto_action.setStatusTip('Go to specified line')
         goto_action.triggered.connect(self.goto_line)
 

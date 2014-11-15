@@ -3,6 +3,8 @@
 <defines>
   <define name="mesaRadius" value="10."/>
   <define name="aperture" value="{mesaRadius-6.}"/>
+  <define name="beta_def" value="19"/>
+  <define name="js_def" value="1"/>
 </defines>
 
 <materials>
@@ -119,11 +121,7 @@
     <mode lam0="980"/>
   </optical>
   <optical name="fourier" solver="Fourier3D" lib="slab">
-    <pmls factor="1-2j">
-      <long size="30"/>
-      <tran size="20"/>
-    </pmls>
-    <mode symmetry="Etran"/>
+    <mode symmetry="Etran,Etran"/>
   </optical>
   <filter for="Temperature" geometry="GeoTE" name="filtr"/>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective"/>
@@ -172,8 +170,6 @@ a.prop
 a.fun()
 
 config.axes = 'rz'
-
-efm.
 
 cyl = geometry.Cylinder(2, 1, None)
 cyl.get_object_positions

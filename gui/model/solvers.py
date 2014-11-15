@@ -329,7 +329,7 @@ class SolversModel(TableModel):
         raise IndexError('column number for SolversModel should be 0, 1, or 2, but is %d' % col)
 
     def set(self, col, row, value):
-        if col == 0: self.entries[row].name = value
+        if col == 2: self.entries[row].name = value
 
     def flags(self, index):
         flags = super(SolversModel, self).flags(index)
