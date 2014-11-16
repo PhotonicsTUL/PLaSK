@@ -33,7 +33,7 @@ class LaunchDialog(QtGui.QDialog):
         combo.currentIndexChanged.connect(self.launcher_changed)
         self.layout.addWidget(combo)
 
-        self.layout.addWidget(QtGui.QLabel("Command line argument:"))
+        self.layout.addWidget(QtGui.QLabel("Command line arguments:"))
         self.args = QtGui.QLineEdit()
         self.args.setText(_launch_args)
         self.layout.addWidget(self.args)
